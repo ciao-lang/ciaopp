@@ -39,7 +39,7 @@
 	  clkey/1,
 	  predkey/1
 	],
-	[assertions, basicmodes, regtypes, andprolog, datafacts]).
+	[assertions, basicmodes, regtypes, datafacts]).
 
 :- doc(module,"This module handles the format of the structures used to
    represent the program. It is a list of clauses, where each clause is
@@ -60,6 +60,12 @@ clause_key(H,ClId), rewrite_source_clause(clause(H,Body),ClId,Clause),
 
 :- use_module(ciaopp(p_unit/prednames), [orig_pred_name/2]).
 :- use_module(ciaopp(p_unit/p_unit_basic), [type_of_goal/2, meta_to_list/2]).
+
+%----------------------------------------------------------------------------
+
+% :- use_package(andprolog).
+% TODO: copied from andprolog_ops.pl (fixme)
+:- op(950, xfy, [&]).
 
 %----------------------------------------------------------------------------
 

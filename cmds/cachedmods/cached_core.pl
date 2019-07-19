@@ -14,7 +14,7 @@
 %:- use_module(library(assertions/assrt_write)).                               % it uses assrt_lib+assertions_props+vndict!!
 %:- use_module(library(assertions/assertions_props)).                          % it has wrong regtypes.
 :- use_module(library(assertions/native_props)).
-:- use_module(library(andprolog/andprolog_rt)).
+%:- use_module(library(andprolog/andprolog_rt)).
 :- use_module(library(concurrency)).
 %:- use_module(library(miscprops)).
 :- use_module(library(dcg/dcg_tr)).

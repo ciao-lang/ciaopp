@@ -1,6 +1,6 @@
 :- module(gather_modes, [gather_modes/4, gather_modes_simple/4,
 		vartypes_to_modes/2],
-	    [andprolog, assertions, nativeprops, datafacts, ciaopp(ciaopp_options)]).
+	    [assertions, nativeprops, datafacts, ciaopp(ciaopp_options)]).
 
 %% A first shot at an input/output modes analysis
 
@@ -50,6 +50,12 @@ mode information by using mode information. If granularity is used, then it
 cannot be gathered from mode information because this info is inferred from
 program points and granularity works on a transformed program which does
 not preserve the order of those program points. -JNL").
+
+%----------------------------------------------------------------------------
+
+% :- use_package(andprolog).
+% TODO: copied from andprolog_ops.pl (fixme)
+:- op(950, xfy, [&]).
 
 %--------------------------------------------------------------------------
 
