@@ -20,7 +20,7 @@
 :- doc(author, "Germ@'{a}n Puebla").
 :- doc(module," This module contains the required machinery for
    performing minimal multiple specialization for allowing all
-   optimizations based on the notiong of @em{abstract executability}.").
+   optimizations based on the notion of @em{abstract executability}.").
 
 :- doc(bug,"1. Though it seems to work, it is unclear why keys for
        external entries sometimes have two and sometimes have tree

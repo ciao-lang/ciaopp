@@ -55,7 +55,7 @@ special_ground_acc([(N,_)|MoreAcc],K,L,Abs):-
 % simplify_indep(+,+,+,_)                                           %
 % simplify_indep(List,Abs,Info,NewList)                             %
 %  NewList is the simplified list of couples obtained from List     %
-% using Info. It fails if any of the couples is not independent     %
+% using Info. It fails if any of the couples is not independent.    %
 %-------------------------------------------------------------------%
 simplify_indep([],_,_,[]).
 simplify_indep([[X,Y]|_],Abs,Info,_):-
