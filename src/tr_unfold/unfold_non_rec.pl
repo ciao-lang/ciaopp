@@ -22,7 +22,9 @@
 :- use_module(unfold_core).
 :- use_module(readprog).
 
+:- if(defined(has_ciaopp_extra)).
 :- use_module(ciao_llvm(xs1_transformation), [preds2unfold/2]). % TODO: this should not be here
+:- endif.
 
 :- op(1150, fx, entry).
 
@@ -31,14 +33,7 @@ unfold(Cs,Ds,RemoveUnsat,FinalCls,FinalDs) :-
 	jpg_program_format(Cs,Ds,Cls),
 	setof(E,entryPred(E),Entries1),
 	%
-	( current_pp_flag(xc_layer, isa)-> % TODO: fixme (e.g., add entries from xs1_transformation?)
-	    Entries1=[ModuleName_|_Rs],
-	    ModuleName_=_F/__A,
-	    module_split(_F, ModuleName, _),
-	    xs1_transformation:preds2unfold(ModuleName, PredsNotToUnfold),
-	    append(PredsNotToUnfold, Entries1, Entries)
-	; Entries=Entries1
-	),
+	get_unfold_entries(Entries1, Entries),
 	%
 	unfold_core:unfold(Cls,Entries,UCls),
 	jpg_program_format_inverse(UCls,UCls2,UDs2),
@@ -48,6 +43,17 @@ unfold(Cs,Ds,RemoveUnsat,FinalCls,FinalDs) :-
 	),
 	rewrite_source_all_clauses(UCls3,FinalCls),
 	!. % TODO: why cut?
+
+:- if(defined(has_ciaopp_extra)).
+get_unfold_entries(Entries1, Entries) :- current_pp_flag(xc_layer, isa), !,
+	% TODO: fixme (e.g., add entries from xs1_transformation?)
+	Entries1=[ModuleName_|_Rs],
+	ModuleName_=_F/__A,
+	module_split(_F, ModuleName, _),
+	xs1_transformation:preds2unfold(ModuleName, PredsNotToUnfold),
+	append(PredsNotToUnfold, Entries1, Entries).
+:- endif.
+get_unfold_entries(Entries, Entries).
 
 % TODO: document
 entryPred(P/N) :-
