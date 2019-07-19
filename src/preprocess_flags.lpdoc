@@ -1,0 +1,83 @@
+@begin{alert}
+(This list is outdated -- see source code for a complete description)
+@end{alert}
+
+@begin{itemize}
+@item for the output:
+@begin{itemize}
+ @item @tt{analysis_info} (@tt{off, on})
+       Whether to output the results of analysis.
+ @item @tt{point_info} (@tt{off,on}) 
+       Whether to output analysis information for program points within
+        clauses.
+ @item @tt{collapse_ai_vers} (@tt{off, on})
+       to output all the versions of call/success patterns inferred by
+        analysis or just one version (summing-up all of them).
+ @item @tt{type_output} (@tt{defined, all})
+       to output the types inferred for predicates in terms only of 
+	types defined by the user or including types inferred anew.
+@end{itemize}
+@item for analysis:
+@begin{itemize}
+ @item @tt{fixpoint} (@tt{plai, dd, di, check_di, check_di2, check_di3, check_di4}) The kind of fixpoint computation used.
+ @item @tt{multi_success} (@tt{off, on})
+       Whether to allow success multivariance.
+ @item @tt{widen} (@tt{off, on})
+       Whether to perform widening.
+ @item @tt{intermod} (@tt{off, on, auto})
+       The policy for inter-modular analysis.
+ @item @tt{success_policy} (@tt{best, first, all, top, botfirst, botbest, botall, bottom})
+       The policy for obtaining success information for imported predicates
+        during inter-modular analysis.
+ @item @tt{entry_policy} (@tt{all, top_level, force, force_assrt})
+       The policy for obtaining entry call patterns for exported predicates 
+       during inter-modular analysis.
+ @item @tt{process_libraries} (@tt{on, off, no_engine}) Whether to
+       perform the analysis of Ciao system libraries when a modular
+       user program is analyzed.
+ @item @tt{initial_guess} (@tt{botfirst, botbest, botall, bottom})
+       The policy for obtaining initial guess when computing
+       the analysis of a predicate from the current module.
+ @item @tt{use_check_assrt} (@tt{off, on})
+       Whether to use check assertions for imported predicates as if they
+       were trust assertions.
+ @item @tt{depth} (a non-negative integer)
+       The maximum depth of abstractions in analyses based on term depth.
+ @item @tt{type_eval} (@tt{on, off})
+       Whether to attempt concrete evaluation of types being inferred.
+ @item @tt{type_precision} (@tt{defined, all})
+       to use during type analysis only types defined by the user or also
+        types inferred anew.
+@end{itemize}
+@item for partial evaluation:
+@begin{itemize}
+ @item @tt{global_control} (@tt{off, id, inst, hom_emb})
+       The abstraction function to use to control the creation of new
+       patterns to analyze as a result of unfolding.
+ @item @tt{comp_rule} (@tt{leftmost, safe_jb, bind_ins_jb, no_sideff_jb, jump_builtin, eval_builtin, local_emb})
+       The computation rule for the selection of atoms in a goal.
+ @item @tt{local_control} (@tt{off, orig, inst, det, det_la, depth, first_sol, first_sol_d, all_sol, hom_emb, hom_emb_anc, hom_emb_as, df_hom_emb_as, df_tree_hom_emb, df_hom_emb})
+       The unfolding rule to use during partial evaluation.
+ @item @tt{unf_depth} (a non-negative integer)
+       The depth limit for unfolding.
+ @item @tt{rem_use_cls} (@tt{off, pre, post, both}) 
+       Whether to remove useless clauses.
+ @item @tt{abs_spec_defs} (@tt{off, rem, exec, all}) 
+       Whether to exploit abstract substitutions while obtaining specialized 
+       definitions on unfolding.
+ @item @tt{filter_nums} (@tt{off, on}) 
+       Whether to filter away numbers in partial evaluation.
+ @item @tt{exec_unif} (@tt{off, on}) 
+       Whether to execute unifications during specialization time or not.
+ @item @tt{pres_inf_fail} (@tt{off, on}) 
+       Whether infinite failure should be preserved in the specialized program.
+ @item @tt{part_concrete} (@tt{off, mono, multi}) 
+       The kind of partial concretization to be performed.
+@end{itemize}
+@item for parallelization and granularity control:
+@begin{itemize}
+ @item @tt{granularity_threshold} (a non-negative integer)
+       The threshold on computational cost at which parallel execution
+        pays off.
+@end{itemize}
+@end{itemize}
