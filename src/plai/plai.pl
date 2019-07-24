@@ -373,7 +373,7 @@ entry_point(AbsInt,Goal,Qv,Call,Name):-
 %         builtin_info(U,'=/2',AbsInt,T,_,Cv),
 % 	varset(U,Sv),
 % 	project(AbsInt,Sv,_,Call0,Proj),
-% 	body_succ_builtin(T,AbsInt,U,Cv,Sv,_,Call0,Proj,Call1),!,
+% 	body_succ_builtin(AbsInt,T,U,Cv,Sv,_,Call0,Proj,Call1),!,
 % 	analyze_unify(Unif,AbsInt,Call1,Call).
 	
 

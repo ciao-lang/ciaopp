@@ -159,7 +159,7 @@ each_body_succ_builtin([],_,_T,_Tg,_,_,_Sg,_Sv,_HvFv_u,_F,_N,[]).
 each_body_succ_builtin([Call|Calls],AbsInt,T,Tg,Vs,SgKey,Sg,Sv,HvFv_u,
 	               F,N,[Succ|Succs]):-
 	project(AbsInt,Sg,Sv,HvFv_u,Call,Proj),
-	body_succ_builtin(T,AbsInt,Tg,Vs,Sv,HvFv_u,Call,Proj,Succ),!,
+	body_succ_builtin(AbsInt,T,Tg,Vs,Sv,HvFv_u,Call,Proj,Succ),!,
 	project(AbsInt,Sg,Sv,HvFv_u,Succ,Prime),
 	singleton(Prime,LPrime),
 	asserta_fact(complete(SgKey,AbsInt,Sg,Proj,LPrime,no,[(F,N)])),
@@ -244,7 +244,7 @@ meta_call_to_success([],_,_Call,_AbsInt,_Sg,_Type,_Cvs,_Vars,[]).
 meta_call_to_success([Exit|Exits],HvFv,[Call|Calls],AbsInt,Sg,Type,Cvs,Sv,
 	             [Succ|Succs]):-
 	project(AbsInt,Sg,Sv,HvFv,Exit,Proj),
-	body_succ_builtin(Type,AbsInt,Sg,Cvs,Sv,HvFv,Exit,Proj,PseudoSucc),
+	body_succ_builtin(AbsInt,Type,Sg,Cvs,Sv,HvFv,Exit,Proj,PseudoSucc),
 	extend_meta(Sg,AbsInt,PseudoSucc,HvFv,Call,Succ),
 	meta_call_to_success(Exits,HvFv,Calls,AbsInt,Sg,Type,Cvs,Sv,Succs).
 

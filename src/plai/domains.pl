@@ -403,7 +403,7 @@ less_or_equal_proj(AbsInt,Sg,Proj,Sg1,Proj1) :-
     to some abstract substitution in list @var{LASub2}.").
 
 % TODO:[new-resources] version with K, really needed?
-% TODO: The cut should be done before calling the domain operation.
+% TODO: Changed the cut before calling the domain operation, check that it is OK (JF)
 :- export(call_to_success_fact/10). % TODO:[new-resources] (extra)
 :- pred call_to_success_fact(+AbsInt,+Sg,+Hv,+Head,+K,+Sv,+Call,+Proj,-Prime,-Succ)
         : atm(AbsInt) + not_fails.
@@ -430,7 +430,7 @@ less_or_equal_proj(AbsInt,Sg,Proj,Sg1,Proj1) :-
 
 % TODO: fix modes, it was: body_succ_builtin(+,+,+,+,+,+,+,+,-)
 :- export(body_succ_builtin/9).
-:- pred body_succ_builtin(+Type,+AbsInt,+Sg,?Vs,+Sv,+Hv,+Call,+Proj,-Succ) :
+:- pred body_succ_builtin(+AbsInt,+Type,+Sg,?Vs,+Sv,+Hv,+Call,+Proj,-Succ) :
         atm(AbsInt) + not_fails % this predicate should not fail
    #"Specialized version of call_to_entry + entry_to_exit + exit_to_prime +
     extend for predicate @var{Sg} considered a ""builtin"" of type @var{Type}
@@ -484,9 +484,8 @@ info_to_asub(AbsInt,Kind,InputUser,Qv,ASub) :-
     @tt{input_user_interface/4}.").
 info_to_asub(AbsInt,Kind,InputUser,Qv,ASub,Sg) :-
 	info_to_asub_(InputUser,AbsInt,Kind,_,Input),
-	( input_user_interface(AbsInt,Input,Qv,ASub)
-	%-> true
-	 ; input_user_interface(AbsInt,Input,Qv,ASub,Sg)
+	( input_user_interface(AbsInt,Input,Qv,ASub) %-> true
+	; input_user_interface5(AbsInt,Input,Qv,ASub,Sg)
 	),
 	!. % TODO:[new-resources] cut before; or better: do not maintain 2 versions of the domain interface!
 
@@ -494,9 +493,8 @@ info_to_asub(AbsInt,Kind,InputUser,Qv,ASub,Sg) :-
 info_to_asub(AbsInt,Kind,InputUser,Qv,ASub,Sg,CallInfo) :-
 	info_to_asub_(InputUser,AbsInt,Kind,_,Input),
 	( input_user_interface(AbsInt,Input,Qv,ASub)
-	; ( input_user_interface(AbsInt,Input,Qv,ASub,Sg,CallInfo)
-	  -> true
-	   ; input_user_interface(AbsInt,Input,Qv,ASub,Sg)
+	; ( input_user_interface6(AbsInt,Input,Qv,ASub,Sg,CallInfo) -> true
+	  ; input_user_interface5(AbsInt,Input,Qv,ASub,Sg)
 	  )
 	), !. % TODO:[new-resources] cut before; or better: do not maintain 3 versions of the domain interface!
 
@@ -523,9 +521,8 @@ info_to_asub_([I|Info],AbsInt,_Kind,Acc0,Acc) :-
 
 full_info_to_asub(AbsInt,InputUser,Qv,ASub,Sg) :-
 	full_info_to_asub_(InputUser,AbsInt,_,Input),
-	( input_user_interface(AbsInt,Input,Qv,ASub)
-	%-> true
-	 ; input_user_interface(AbsInt,Input,Qv,ASub,Sg)
+	( input_user_interface(AbsInt,Input,Qv,ASub) %-> true
+	; input_user_interface5(AbsInt,Input,Qv,ASub,Sg)
 	),
 	!. % TODO:[new-resources] cut before; or better: do not maintain 2 versions of the domain interface!
 

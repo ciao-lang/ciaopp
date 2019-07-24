@@ -142,7 +142,7 @@ one_clause_body(Atom,Vars,Entry,AbsInt,Exit):-
 	one_clause_atom(Info,SgKey,Sg,Sv,Vars,Entry,AbsInt,Exit).
 
 one_clause_atom('$built'(T,Tg,Vs),SgKey,_Sg,Sv,_Vars,Call,AbsInt,Succ):-
-	body_succ_builtin(T,AbsInt,Tg,Vs,Sv,_HvFv_u,Call,Call,Succ),!,
+	body_succ_builtin(AbsInt,T,Tg,Vs,Sv,_HvFv_u,Call,Call,Succ),!,
 	show_if_debug(Succ,success_builtin,SgKey,AbsInt).
 one_clause_atom(_Info,SgKey,Sg,_Sv,Vars,Entry,AbsInt,Entry1):-
 	current_fact(complete(SgKey,AbsInt,H,_,[Exit0],_,_)),!,
