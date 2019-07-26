@@ -1,6 +1,9 @@
 % File included in nonrel.pl
 
 :- use_module(library(terms_vars), [varset/2]).
+:- use_module(ciaopp(preprocess_flags), [push_pp_flag/2]).
+
+nonrel_intervals_init_abstract_domain([widen]) :- push_pp_flag(widen,on).
 
 :- prop interval_avalue/1.
 :- doc(interval_avalue/1, "Data structure of the substitution that the intervals
@@ -291,14 +294,15 @@ process_list_constraints([C|Cs], Struct, _Struct1) :-
 :- doc(section, "Builtin operations").
 
 % Note: the following are specific for intervals domain 
-nonrel_intervals_special_builtin('>/2',_,_,_).
-nonrel_intervals_special_builtin('>=/2',_,_,_).
-nonrel_intervals_special_builtin('</2',_,_,_).
-nonrel_intervals_special_builtin('=</2',_,_,_).
-nonrel_intervals_special_builtin('is/2',_,_,_).
-% nonrel_intervals_special_builtin('nnegint/1',_,_,_).
+% TODO: unbound Type and Condvars? (JF)
+nonrel_intervals_special_builtin0('>/2',_,_,_).
+nonrel_intervals_special_builtin0('>=/2',_,_,_).
+nonrel_intervals_special_builtin0('</2',_,_,_).
+nonrel_intervals_special_builtin0('=</2',_,_,_).
+nonrel_intervals_special_builtin0('is/2',_,_,_).
+% nonrel_intervals_special_builtin0('nnegint/1',_,_,_).
 
-nonrel_intervals_call_to_success_builtin_('=</2','=<'(X,Y),_Sv,Call,_Proj,Succ):-
+nonrel_intervals_call_to_success_builtin0('=</2','=<'(X,Y),_Sv,Call,_Proj,Succ):-
         nonrel_intervals_abstract_term(X,Call,ValX),
         nonrel_intervals_abstract_term(Y,Call,ValY),
         nonrel_intervals_compute_glb_elem(ValX,ValY,Glb),
@@ -323,15 +327,15 @@ nonrel_intervals_call_to_success_builtin_('=</2','=<'(X,Y),_Sv,Call,_Proj,Succ):
             nonrel_replace_value_asub(Call,X,NValX,Succ0),
             nonrel_replace_value_asub(Succ0,Y,NValY,Succ)
         ).
-nonrel_intervals_call_to_success_builtin_('>=/2','>='(X,Y),Sv,Call,Proj,Succ):-
-        nonrel_intervals_call_to_success_builtin_('=</2','=<'(Y,X),Sv,Call,Proj,Succ).
+nonrel_intervals_call_to_success_builtin0('>=/2','>='(X,Y),Sv,Call,Proj,Succ):-
+        nonrel_intervals_call_to_success_builtin0('=</2','=<'(Y,X),Sv,Call,Proj,Succ).
 % For this example domain we over-approximate > and < as >= and =< respectively
-nonrel_intervals_call_to_success_builtin_('>/2','>'(X,Y),Sv,Call,Proj,Succ):-
-        nonrel_intervals_call_to_success_builtin_('>=/2','>='(X,Y),Sv,Call,Proj,Succ).
-nonrel_intervals_call_to_success_builtin_('</2','<'(X,Y),Sv,Call,Proj,Succ):-
-        nonrel_intervals_call_to_success_builtin_('=</2','=<'(X,Y),Sv,Call,Proj,Succ).
-
-nonrel_intervals_call_to_success_builtin_('is/2','is'(X,Y),_Sv,Call,_Proj,Succ):-
+nonrel_intervals_call_to_success_builtin0('>/2','>'(X,Y),Sv,Call,Proj,Succ):-
+        nonrel_intervals_call_to_success_builtin0('>=/2','>='(X,Y),Sv,Call,Proj,Succ).
+nonrel_intervals_call_to_success_builtin0('</2','<'(X,Y),Sv,Call,Proj,Succ):-
+        nonrel_intervals_call_to_success_builtin0('=</2','=<'(X,Y),Sv,Call,Proj,Succ).
+%
+nonrel_intervals_call_to_success_builtin0('is/2','is'(X,Y),_Sv,Call,_Proj,Succ):-
         ( nonrel_is_abs_operate(Y,Call,NVal0) ->
             nonrel_get_value_asub(Call,X,Val0),
             nonrel_intervals_compute_glb_elem(NVal0,Val0,NVal),

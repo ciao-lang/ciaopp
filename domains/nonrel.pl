@@ -6,82 +6,87 @@
 :- doc(stability, devel).
 
 :- doc(module, "
+   This module offers a simplified interface to the domain operations
+   of the fixpoint algorithms. Its goal is to provide a @em{simpler
+   way of implementing (non-relational) abstract domains}.  The idea
+   is that using this interface only a small number of basic lattice
+   operations (those marked explicitly as \"to be implemented by the
+   user\" below) need to be implemented. The more complex operations
+   of CiaoPP's standard interface between fixpoints and domains (e.g.,
+   @pred{nonrel_call_to_entry/9} and the other exports of this module)
+   are then derived automatically from these basic operations and
+   exported.
 
-        This module offers a simplified interface to the domain
-operations of CiaoPP's fixpoint algorithms. Its goal is to provide a
-@em{simpler way of implementing (non-relational) abstract domains} for
-CiaoPP.  The idea is that using this interface only a small number of
-basic lattice operations (those marked explicitly as \"to be
-implemented by the user\" below) need to be implemented. The more
-complex operations of CiaoPP's standard interface between fixpoints
-and domains (e.g., @pred{nonrel_call_to_entry/9} and the other exports
-of this module) are then derived automatically from these basic
-operations and exported. 
+   @begin{alert} 
+   @bf{Warning}: when using the output predicates provided with
+     CiaoPP, no analysis result will be shown if predicate
+     @pred{nonrel_asub_to_native/2} does not translate to properties
+     that CiaoPP can express natively. This is the case of the current
+     implementation.
 
-@begin{alert} 
-
-        @bf{Warning}: when using the output predicates provided with
-        CiaoPP, no analysis result will be shown if predicate
-        @pred{nonrel_asub_to_native/2} does not translate to
-        properties that CiaoPP can express natively. This is the case
-        of the current implementation.
-
-        However, analysis results can output in the @em{raw} format,
-        which does not process analysis information. This can be done
-        by setting the @tt{output_lang} flag.
-
+     However, analysis results can output in the @em{raw} format,
+     which does not process analysis information. This can be done by
+     setting the @tt{output_lang} flag.
 @begin{verbatim}
 ?- set_pp_flag(ouput_lang, raw).
 @end{verbatim}
+   @end{alert}
 
-@end{alert}
+   @begin{alert}
+     @bf{Warning}: The domains that can take advantage of this module
+     are required to be non-relational. This limitation may be lifted in
+     the future.
+   @end{alert}
 
-@begin{alert} @bf{Warning}: The domains that can take advantage of
-this module are required to be non-relational. This limitation may be
-lifted in the future.  @end{alert}
+   The predicates to be implemented are:
+   @begin{itemize}
+   @item @pred{nonrel_init_abstract_domain/2},
+   @item @pred{nonrel_top/2},
+   @item @pred{nonrel_bot/2}, 
+   @item @pred{nonrel_var/2}, 
+   @item @pred{nonrel_amgu/5},
+   @item @pred{nonrel_less_or_equal_elem/3}, 
+   @item @pred{nonrel_compute_glb_elem/4},
+   @item @pred{nonrel_compute_lub_elem/4},
+   @item @pred{nonrel_widen_elem/4}, and
+   @item @pred{nonrel_special_builtin0/5},
+      @pred{nonrel_call_to_success_builtin0/7} (give a special
+      interpretation to some builtin operations, except predefined
+      @pred{true/0}, @pred{=/2}, @pred{==/2}).
+   @end{itemize}
 
-The predicates to be implemented are:
+   Optionally, the user may implement predicates related to the input
+   and the output of analysis results. Predicates
+   @pred{nonrel_input_interface/5} and
+   @pred{nonrel_input_user_interface/4} are used to translate native
+   properties, typically present in assertions, to abstract
+   substitutions. Predicate @pred{nonrel_asub_to_native/3} translates
+   abstract substitutions to properties that CiaoPP can express
+   natively.
+   @begin{alert}
+     @bf{TODO}: Not yet available
+   @end{alert}
 
-@begin{itemize}
-@item @pred{nonrel_top/2},
-@item @pred{nonrel_bot/2}, 
-@item @pred{nonrel_var/2}, 
-@item @pred{nonrel_amgu/5},
-@item @pred{nonrel_less_or_equal_elem/3}, 
-@item @pred{nonrel_compute_glb_elem/4},
-@item @pred{nonrel_compute_lub_elem/4}, and
-@item @pred{nonrel_widen_elem/4}.
-@end{itemize}
+   @begin{note}
+     @bf{Tip}: When developing a new domain the raw output of the
+     analyzer may come handy. This is set with
+     @tt{set_pp_flag(output_lang, raw)}. With the default output
+     options, CiaoPP will try to show the inferred properties in a nicer
+     way. This has to be implemented by the user for each domain and may
+     summarize the information without explicit notice.
+   @end{note}
 
-Additionally, the user can give a special interpretation to some
-builtin operations.  This can be done by using the predicates
-@pred{nonrel_special_builtin/5} and
-@pred{nonrel_call_to_success_builtin/7}.
+   @section{An example of a simplified, non-relational domain: Intervals}
 
-Optionally, the user may implement predicates related to the input and the
-output of analysis results. Predicates @pred{nonrel_input_interface/5} and
-@pred{nonrel_input_user_interface/4} are used to translate native properties,
-typically present in assertions, to abstract substitutions. Predicate
-@pred{nonrel_asub_to_native/3} translates abstract substitutions to properties
-that CiaoPP can express natively.
+   An example implementation of the predicates listed above for a
+   domain of @em{intervals} can be found in @file{nonrel_intervals.pl}.
 
-@begin{note}
-@bf{Tip}: When developing a new domain the raw output of the analyzer may come
-handy. This is set with @tt{set_pp_flag(ouput_lang, raw)}. With the default
-output options, CiaoPP will try to show the inferred properties in a nicer
-way. This has to be implemented by the user for each domain and may summarize
-the information without explicit notice.
-@end{note}
-
-@section{An example of a simplified, non-relational domain: Intervals}
-
-        An example implementation of the predicates listed above for a
-domain of @em{intervals} can be found in @file{nonrel_intervals.pl}.
-
-@begin{note} The simple intervals domain in @file{nonrel_intervals.pl}
-does not reason with open and closed intervals. It only uses closed
-intervals as abstractions, over-approximating the necessary builtins.
-@end{note} ").
+   @begin{note}
+     The simple intervals domain in @file{nonrel_intervals.pl}
+     does not reason with open and closed intervals. It only uses closed
+     intervals as abstractions, over-approximating the necessary builtins.
+   @end{note}
+").
 
 :- use_module(library(sort)).
 :- use_module(library(terms_check), [variant/2]).
@@ -90,73 +95,63 @@ intervals as abstractions, over-approximating the necessary builtins.
 %-----------------------------------------------------------------------
 :- doc(section, "Domain-dependent predicates.").
 %-----------------------------------------------------------------------
-:- include(nonrel_intervals).
 
 % The following predicates are implemented in nonrel_intervals.pl
-% This should be done with traits
+% TODO: This should be done with traits
+
+:- export(nonrel_init_abstract_domain/2).
+:- comment(doinclude, nonrel_init_abstract_domain/2).
+:- pred nonrel_init_abstract_domain(AbsInt, PushedFlags) #
+   "Initializes abstract domain @var{AbsInt}. Tells the list of
+   modified (pushed) PP flags to pop afterwards.".
 
 :- comment(doinclude, nonrel_top/2).
-:- pred nonrel_top(AbsInt, X) #"@var{X} is the representation of ``top'' in the abstract
-        domain.@begin{alert}This predicate needs to be implemented by the
-        user.@end{alert}".
-nonrel_top(nonrel_intervals, X) :- nonrel_intervals_top(X).
+:- pred nonrel_top(AbsInt, X) # "@var{X} is the representation of
+   ``top'' in the abstract domain.@begin{alert}This predicate needs to
+   be implemented by the user.@end{alert}".
 
 :- comment(doinclude, nonrel_bot/2).
-:- pred nonrel_bot(AbsInt, X) #"@var{X} is the representation of ``bot'' in the abstract
-        domain. @begin{alert}This predicate needs to be implemented by the
-        user.@end{alert}".
-nonrel_bot(nonrel_intervals, X) :-
-        nonrel_intervals_bot(X).
+:- pred nonrel_bot(AbsInt, X) # "@var{X} is the representation of
+   ``bot'' in the abstract domain. @begin{alert}This predicate needs
+   to be implemented by the user.@end{alert}".
 
 :- comment(doinclude, nonrel_var/2).
-:- pred nonrel_var(AbsInt, X) #"@var{X} is the abstraction of a free variable in the
-        abstract domain.@begin{alert}This predicate needs to be implemented by
-        the user.@end{alert}".
-nonrel_var(nonrel_intervals, X) :-
-        nonrel_intervals_var(X).
+:- pred nonrel_var(AbsInt, X) # "@var{X} is the abstraction of a free
+   variable in the abstract domain.@begin{alert}This predicate needs
+   to be implemented by the user.@end{alert}".
 
 :- export(nonrel_amgu/5).
-:- pred nonrel_amgu(+AbsInt, +Term1,+Term2,+ASub0,-NASub) #"@var{NASub} is the abstract
-        unification of @var{Term1} and @var{Term2}, with @var{ASub0} an abstract
-        substitution that represents the state of both terms.
-         @begin{alert}This predicate needs to be implemented by the
-        user.@end{alert}".
+:- pred nonrel_amgu(+AbsInt, +Term1,+Term2,+ASub0,-NASub) #
+   "@var{NASub} is the abstract unification of @var{Term1} and
+   @var{Term2}, with @var{ASub0} an abstract substitution that
+   represents the state of both terms.  @begin{alert}This predicate
+   needs to be implemented by the user.@end{alert}".
 % TODO: The abstract unification could be simplified even more if domains are
 % non relational
-nonrel_amgu(nonrel_intervals, T1,T2,ASub0,NASub) :-
-        nonrel_intervals_amgu(T1,T2,ASub0,NASub).
 
 :- comment(doinclude, nonrel_less_or_equal_elem/3).
 :- pred nonrel_less_or_equal_elem(+AbsInt,+E1,+E2) #"
         Succeeds if @var{E1} is smaller than @var{E2}.
         @begin{alert}This predicate needs to be implemented by the
         user.@end{alert}".
-nonrel_less_or_equal_elem(nonrel_intervals,E1,E2) :-
-        nonrel_intervals_less_or_equal_elem(E1,E2).
 
 :- comment(doinclude, nonrel_compute_glb_elem/4).
 :- pred nonrel_compute_glb_elem(+AbsInt,+E1,+E2,EG) #"
         @var{EG} is the @em{greatest lower bound} of @var{E1} and @var{E2}.
         @begin{alert}This predicate needs to be implemented by the
         user.@end{alert}".
-nonrel_compute_glb_elem(nonrel_intervals,E1,E2,EG) :-
-        nonrel_intervals_compute_glb_elem(E1,E2,EG).
 
 :- comment(doinclude, nonrel_compute_lub_elem/4).
 :- pred nonrel_compute_lub_elem(+AbsInt,+E1,+E2,EL) #"
         @var{EL} is the @em{least upper bound} of @var{E1} and @var{E2}.
         @begin{alert}This predicate needs to be implemented by the
         user.@end{alert}".
-nonrel_compute_lub_elem(nonrel_intervals,E1,E2,EL) :-
-        nonrel_intervals_compute_lub_elem(E1,E2,EL).
 
 :- comment(doinclude, nonrel_widen_elem/4).
 :- pred nonrel_widen_elem(+AbsInt,+E1,+E2,EW) #"
         @var{EW} is the @em{widening} of @var{E1} and @var{E2}.
         @begin{alert}This predicate needs to be implemented by the
         user.@end{alert}".
-nonrel_widen_elem(nonrel_intervals,E1,E2,EW) :-
-        nonrel_intervals_widen_elem(E1,E2,EW).
 
 %-----------------------------------------------------------------------
 :- doc(section, "Generic functionality for non-relational domains").
@@ -382,7 +377,7 @@ nonrel_extend_([X1/V1|ASub1], [X2/V2|ASub2], AbsInt, Succ) :-  % generic
         + @pred{extend/4} for facts".
 nonrel_call_to_success_fact(AbsInt,_,_,_,_,Call,Proj,Bot,Bot) :-
         nonrel_bot(AbsInt,Bot),
-        ( Proj = Bot ; Call = Bot), !.
+        ( Proj = Bot ; Call = Bot ), !.
 nonrel_call_to_success_fact(AbsInt,Sg,Hv,Head,Sv,Call,Proj,Prime,Succ) :-
         nonrel_top(AbsInt,Top),
         insert_values_asub(Hv,Proj,Top,Call0),
@@ -400,14 +395,14 @@ nonrel_special_builtin(_,'==/2',_,_,_) :- !.
 nonrel_special_builtin(_,'true/0',_,_,_) :- !.
 % true/0 is necessary but it does not need a specific implementation in
 % "call_to_success_builtin", it is included in the fixpoints
-nonrel_special_builtin(nonrel_intervals,SgKey,Sg,Type,Condvars) :-
-        nonrel_intervals_special_builtin(SgKey,Sg,Type,Condvars).
+nonrel_special_builtin(AbsInt,SgKey,Sg,Type,Condvars) :-
+	nonrel_special_builtin0(AbsInt,SgKey,Sg,Type,Condvars).
 
 :- export(nonrel_success_builtin/5).
 :- pred nonrel_success_builtin(+AbsInt,+Type,+Condv,+Call,-Succ)
         : atm * atm * term * term * term
     #"Obtains the success for some particular builtins.".
-nonrel_success_builtin(_,_,_,_,_).
+nonrel_success_builtin(_,_,_,_,_). % TODO: not finished, Succ is unbound (JF)
 
 :- export(nonrel_call_to_success_builtin/7).
 :- pred nonrel_call_to_success_builtin(+AbsInt,+SgKey,+Sg,+Sv,+Call,+Proj,-Succ)
@@ -432,8 +427,8 @@ nonrel_call_to_success_builtin_('==/2',AbsInt,'=='(X,Y),_Sv,Call,_Proj,Succ) :- 
 % X and Y have asociated a value of type interval asub. asuming runtime
 % semantics of the operator (i.e. X and Y are instantiated, otherwise an error
 % is raised and the execution is stops)
-nonrel_call_to_success_builtin_(SgKey,nonrel_intervals,Sg,Sv,Call,Proj,Succ) :-
-        nonrel_intervals_call_to_success_builtin_(SgKey,Sg,Sv,Call,Proj,Succ).
+nonrel_call_to_success_builtin_(SgKey,AbsInt,Sg,Sv,Call,Proj,Succ) :-
+	nonrel_call_to_success_builtin0(AbsInt,SgKey,Sg,Sv,Call,Proj,Succ).
 
 :- export(nonrel_input_user_interface/4).
 :- pred nonrel_input_user_interface(+AbsInt,+InputUser,+Qv,+ASub)
@@ -453,8 +448,7 @@ nonrel_input_user_interface(AbsInt,_,Qv,ASub) :-
 % TODO: No properties processed because as default operation we abstract the
 % entry as top (more precise understanding of the properties should be
 % implemented by the user).
-nonrel_input_interface(_AbsInt,_Prop,_Kind,_Struct0,_Struct1).
-%        nonrel_intervals_input_interface(Prop,Kind,Struct0,Struct1).
+nonrel_input_interface(_AbsInt,_Prop,_Kind,_Struct0,_Struct1). % TODO: not finished
 
 :- export(nonrel_asub_to_native/3).
 :- pred nonrel_asub_to_native(+AbsInt,+ASub,-ASub_user) : atm * term * term
@@ -540,4 +534,35 @@ nonrel_widen_(_,_,_,_):-
 :- pred nonrel_widencall(+AbsInt,+Asub1,+ASub2,-WAsub).
 nonrel_widencall(AbsInt,Asub1,ASub2,WAsub) :-
         nonrel_widen_(Asub1,AbsInt,ASub2,WAsub).
+
+% ===========================================================================
+:- doc(section, "Example non-relational domain: Intervals").
+
+:- discontiguous(nonrel_init_abstract_domain/2).
+:- discontiguous(nonrel_top/2).
+:- discontiguous(nonrel_bot/2).
+:- discontiguous(nonrel_var/2).
+:- discontiguous(nonrel_amgu/5).
+:- discontiguous(nonrel_less_or_equal_elem/3).
+:- discontiguous(nonrel_compute_glb_elem/4).
+:- discontiguous(nonrel_compute_lub_elem/4).
+:- discontiguous(nonrel_widen_elem/4).
+%:- discontiguous(nonrel_input_interface/5).
+:- discontiguous(nonrel_special_builtin0/5).
+:- discontiguous(nonrel_call_to_success_builtin0/7).
+
+nonrel_init_abstract_domain(nonrel_intervals, PushedFlags) :- !, nonrel_intervals_init_abstract_domain(PushedFlags).
+nonrel_top(nonrel_intervals, X) :- !, nonrel_intervals_top(X).
+nonrel_bot(nonrel_intervals, X) :- !, nonrel_intervals_bot(X).
+nonrel_var(nonrel_intervals, X) :- !, nonrel_intervals_var(X).
+nonrel_amgu(nonrel_intervals, T1,T2,ASub0,NASub) :- !, nonrel_intervals_amgu(T1,T2,ASub0,NASub).
+nonrel_less_or_equal_elem(nonrel_intervals,E1,E2) :- !, nonrel_intervals_less_or_equal_elem(E1,E2).
+nonrel_compute_glb_elem(nonrel_intervals,E1,E2,EG) :- !, nonrel_intervals_compute_glb_elem(E1,E2,EG).
+nonrel_compute_lub_elem(nonrel_intervals,E1,E2,EL) :- !, nonrel_intervals_compute_lub_elem(E1,E2,EL).
+nonrel_widen_elem(nonrel_intervals,E1,E2,EW) :- !, nonrel_intervals_widen_elem(E1,E2,EW).
+% nonrel_input_interface(nonrel_intervals,Prop,Kind,Struct0,Struct1) :- !, nonrel_intervals_input_interface(Prop,Kind,Struct0,Struct1).
+nonrel_special_builtin0(nonrel_intervals,SgKey,Sg,Type,Condvars) :- !, nonrel_intervals_special_builtin0(SgKey,Sg,Type,Condvars).
+nonrel_call_to_success_builtin0(nonrel_intervals,SgKey,Sg,Sv,Call,Proj,Succ) :- !, nonrel_intervals_call_to_success_builtin0(SgKey,Sg,Sv,Call,Proj,Succ).
+
+:- include(nonrel_intervals).
 

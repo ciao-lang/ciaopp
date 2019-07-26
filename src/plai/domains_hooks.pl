@@ -1259,11 +1259,31 @@ deftypes_init_abstract_domain([widen]) :-
 aidomain(nonrel_intervals).
 % implementations of domains using the non relational interface
 is_nonrel_domain(nonrel_intervals).
-init_abstract_domain(nonrel_intervals,PushedFlags) :- !, nonrel_intervals_init_abstract_domain(PushedFlags).
-%
-:- use_module(ciaopp(preprocess_flags), [push_pp_flag/2]).
-nonrel_intervals_init_abstract_domain([widen]) :-
-        push_pp_flag(widen,on).
+% Based on nonrel_domain ([IG] new)
+init_abstract_domain(AbsInt,PushedFlags) :- is_nonrel_domain(AbsInt), !, nonrel_init_abstract_domain(AbsInt, PushedFlags).
+amgu(AbsInt,Sg,Head,ASub,NewASub) :- is_nonrel_domain(AbsInt), !, nonrel_amgu(AbsInt,Sg,Head,ASub,NewASub).
+call_to_entry(AbsInt,Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo) :- is_nonrel_domain(AbsInt), !, nonrel_call_to_entry(AbsInt,Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo).
+exit_to_prime(AbsInt,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime) :- is_nonrel_domain(AbsInt), !, nonrel_exit_to_prime(AbsInt,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime).
+project(AbsInt,_,Vars,_,ASub,Proj) :- is_nonrel_domain(AbsInt), !, nonrel_project(ASub,Vars,Proj).
+widencall(AbsInt,Prime0,Prime1,NewPrime) :- is_nonrel_domain(AbsInt), !, nonrel_widencall(AbsInt,Prime0,Prime1,NewPrime).
+widen(AbsInt, Prime0, Prime1, NewPrime) :- is_nonrel_domain(AbsInt), !, nonrel_widen(AbsInt,Prime0,Prime1,NewPrime).
+compute_lub(AbsInt,ListASub,LubASub) :- is_nonrel_domain(AbsInt), !, nonrel_compute_lub(AbsInt,ListASub,LubASub).
+identical_abstract(AbsInt, ASub1, ASub2) :- is_nonrel_domain(AbsInt), !, nonrel_identical_abstract(ASub1, ASub2).
+abs_sort(AbsInt,ASub,ASub_s) :- is_nonrel_domain(AbsInt), !, nonrel_abs_sort(ASub,ASub_s).
+extend(AbsInt,_,Prime,Sv,Call,Succ) :- is_nonrel_domain(AbsInt), !, nonrel_extend(AbsInt,Prime,Sv,Call,Succ).
+less_or_equal(AbsInt,ASub0,ASub1) :- is_nonrel_domain(AbsInt), !, nonrel_less_or_equal(AbsInt,ASub0,ASub1).
+glb(AbsInt,ASub0,ASub1,ASub) :- is_nonrel_domain(AbsInt), !, nonrel_glb(AbsInt,ASub0,ASub1,ASub).
+eliminate_equivalent(AbsInt,TmpLSucc,LSucc) :- is_nonrel_domain(AbsInt), !, sort(TmpLSucc,LSucc).
+call_to_success_fact(AbsInt,Sg,Hv,Head,Sv,Call,Proj,Prime,Succ) :- is_nonrel_domain(AbsInt), !, nonrel_call_to_success_fact(AbsInt,Sg,Hv,Head,Sv,Call,Proj,Prime,Succ).
+special_builtin(AbsInt,SgKey,Sg,_,Type,Condvars) :- is_nonrel_domain(AbsInt), !, nonrel_special_builtin(AbsInt,SgKey,Sg,Type,Condvars).
+success_builtin(AbsInt,Type,_Sv_uns,Condvars,_,Call,Succ) :- is_nonrel_domain(AbsInt), !, nonrel_success_builtin(AbsInt,Type,Condvars,Call,Succ).
+call_to_success_builtin(AbsInt,SgKey,Sg,Sv,Call,Proj,Succ) :- is_nonrel_domain(AbsInt), !, nonrel_call_to_success_builtin(AbsInt,SgKey,Sg,Sv,Call,Proj,Succ).
+input_interface(AbsInt,InputUser,Kind,Struct0,Struct1) :- is_nonrel_domain(AbsInt), !, nonrel_input_interface(AbsInt,InputUser,Kind,Struct0,Struct1).
+input_user_interface(AbsInt,InputUser,Qv,ASub) :- is_nonrel_domain(AbsInt), !, nonrel_input_user_interface(AbsInt,InputUser,Qv,ASub).
+asub_to_native(AbsInt,ASub,_Qv,OutputUser,[]) :- is_nonrel_domain(AbsInt), !, nonrel_asub_to_native(AbsInt,ASub,OutputUser).
+unknown_call(AbsInt,Vars,Call,Succ) :- is_nonrel_domain(AbsInt), !, nonrel_unknown_call(AbsInt,Call,Vars,Succ).
+unknown_entry(AbsInt,Qv,Call) :- is_nonrel_domain(AbsInt), !, nonrel_unknown_entry(AbsInt,Qv,Call).
+empty_entry(AbsInt,Qv,Call) :- is_nonrel_domain(AbsInt), !, nonrel_unknown_entry(AbsInt,Qv,Call).
 % ---------------------------------------------------------------------------
 :- if(defined(has_ciaopp_extra)).
 :- use_module(domain(polyhedra)).
@@ -1712,57 +1732,6 @@ absub_is_subset([Sub1|Subs1],AbsInt,LASub2) :-
 % OR:
 %	fixpoint_covered(AbsInt,Sub1,ASub2),
 	absub_is_subset(Subs1,AbsInt,LASub2).
-
-% ===========================================================================
-:- doc(section, "(nonrel domain definitions)").
-% [IG] new
-
-amgu(AbsInt,Sg,Head,ASub,NewASub) :- is_nonrel_domain(AbsInt), !,
-        nonrel_amgu(AbsInt,Sg,Head,ASub,NewASub).
-call_to_entry(AbsInt,Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo) :- is_nonrel_domain(AbsInt), !,
-        nonrel_call_to_entry(AbsInt,Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo).
-exit_to_prime(AbsInt,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime) :- is_nonrel_domain(AbsInt), !,
-        nonrel_exit_to_prime(nonrel_intervals,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime).
-project(AbsInt,_,Vars,_,ASub,Proj) :- is_nonrel_domain(AbsInt), !,
-        nonrel_project(ASub,Vars,Proj).
-widencall(AbsInt,Prime0,Prime1,NewPrime) :- is_nonrel_domain(AbsInt), !,
-        nonrel_widencall(AbsInt,Prime0,Prime1,NewPrime).
-widen(AbsInt, Prime0, Prime1, NewPrime) :- is_nonrel_domain(AbsInt), !,
-        nonrel_widen(AbsInt,Prime0,Prime1,NewPrime).
-compute_lub(AbsInt,ListASub,LubASub) :- is_nonrel_domain(AbsInt), !,
-        nonrel_compute_lub(AbsInt,ListASub,LubASub).
-identical_abstract(AbsInt, ASub1, ASub2) :- is_nonrel_domain(AbsInt), !,
-        nonrel_identical_abstract(ASub1, ASub2).
-abs_sort(AbsInt,ASub,ASub_s) :- is_nonrel_domain(AbsInt), !,
-        nonrel_abs_sort(ASub,ASub_s).
-extend(AbsInt,_,Prime,Sv,Call,Succ) :- is_nonrel_domain(AbsInt), !,
-        nonrel_extend(AbsInt,Prime,Sv,Call,Succ).
-less_or_equal(AbsInt,ASub0,ASub1) :- is_nonrel_domain(AbsInt), !,
-        nonrel_less_or_equal(AbsInt,ASub0,ASub1).
-glb(AbsInt,ASub0,ASub1,ASub) :- is_nonrel_domain(AbsInt), !,
-        nonrel_glb(AbsInt,ASub0,ASub1,ASub).
-eliminate_equivalent(AbsInt,TmpLSucc,LSucc) :- is_nonrel_domain(AbsInt), !,
-        sort(TmpLSucc,LSucc).
-call_to_success_fact(AbsInt,Sg,Hv,Head,Sv,Call,Proj,Prime,Succ) :- is_nonrel_domain(AbsInt), !,
-        nonrel_call_to_success_fact(AbsInt,Sg,Hv,Head,Sv,Call,Proj,Prime,Succ).
-special_builtin(AbsInt,SgKey,Sg,_,Type,Condvars) :- is_nonrel_domain(AbsInt), !,
-        nonrel_special_builtin(AbsInt,SgKey,Sg,Type,Condvars).
-success_builtin(AbsInt,Type,_Sv_uns,Condvars,_,Call,Succ) :- is_nonrel_domain(AbsInt), !,
-        nonrel_success_builtin(AbsInt,Type,Condvars,Call,Succ).
-call_to_success_builtin(AbsInt,SgKey,Sg,Sv,Call,Proj,Succ) :- is_nonrel_domain(AbsInt), !,
-        nonrel_call_to_success_builtin(AbsInt,SgKey,Sg,Sv,Call,Proj,Succ).
-input_interface(AbsInt,InputUser,Kind,Struct0,Struct1) :- is_nonrel_domain(AbsInt), !,
-        nonrel_input_interface(AbsInt,InputUser,Kind,Struct0,Struct1).
-input_user_interface(AbsInt,InputUser,Qv,ASub) :- is_nonrel_domain(AbsInt), !,
-        nonrel_input_user_interface(AbsInt,InputUser,Qv,ASub).
-asub_to_native(AbsInt,ASub,_Qv,OutputUser,[]) :- is_nonrel_domain(AbsInt), !,
-        nonrel_asub_to_native(AbsInt,ASub,OutputUser).
-unknown_call(AbsInt,Vars,Call,Succ) :- is_nonrel_domain(AbsInt), !,
-        nonrel_unknown_call(AbsInt,Call,Vars,Succ).
-unknown_entry(AbsInt,Qv,Call) :- is_nonrel_domain(AbsInt), !,
-        nonrel_unknown_entry(AbsInt,Qv,Call).
-empty_entry(AbsInt,Qv,Call) :- is_nonrel_domain(AbsInt), !,
-        nonrel_unknown_entry(AbsInt,Qv,Call).
 
 % ===========================================================================
 :- doc(section, "(Default domain definitions)").
