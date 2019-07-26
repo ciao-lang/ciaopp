@@ -4,11 +4,11 @@ INSTALLATION_CIAOPP
 *******************
 
 The distribution of CiaoPP consists of its source files, written in the
-Ciao language. By default, Ciao will detect and build CiaoPP during the
+Ciao language. By default, Ciao will detect and build CiaoPP during
 system compilation. In order to customize the default configuration
-options, please refer to Ciao installation instructions.
+options, please refer to the Ciao installation instructions.
 
-It is possible to do separate build and install of CiaoPP with the
+It is possible to do a separate build and install of CiaoPP with the
 following commands:
 
      $ ciao build ciaopp
@@ -21,6 +21,6 @@ Among other things, those commands will:
 
   3. Set up things so that you can use CiaoPP as a library module from,
      e.g., the Ciao shell. In order to do this, please follow the
-     (short) instructions that installation prints out at the end when
-     you run it.
+     (short) instructions that the installation prints out at the end
+     when you run it.
 
