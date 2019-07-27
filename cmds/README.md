@@ -1,5 +1,8 @@
 # Simple examples of use
 
+Please consult the manual and the tutorial for instructions. The
+following are very simple examples of use. 
+
 Run `analyse` with default options:
 ```  
 $ ciaopp -A ~/PrologTemp/fact.pl
@@ -8,7 +11,7 @@ Run `optimise` with default options:
 ```
 $ ciaopp -O ~/PrologTemp/fact.pl
 ```
-Some options can be set in order to modify default behaviour.
+Some options can be set in order to modify the default behavior.
 
 Examples:
  - for setting a different `modes` domain:
@@ -61,8 +64,8 @@ Menu Configuration Name:          (none) ? default
 
 B) Now we can use the stored configuration (called `default`):
 
-(For the moment the analysed files have to have a module declaration,
-e.g., `:- module(_,_).` )
+(For the moment the analysed files have to have a --possibly minimal--
+module declaration, e.g., at least `:- module(_,_).` )
  
 ```
 $ ciaopp -U default ~/PrologTemp/fact.pl
