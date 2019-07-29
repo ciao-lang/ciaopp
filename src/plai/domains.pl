@@ -162,17 +162,17 @@
    projecting the resulting substitution onto @var{Sv}.".
 
 % TODO:[new-resources] compatibility with project/5 (unbound Sg!)
-:- export(project/6). % TODO:[new-resources] (extra)
+:- export(project/5).
 :- pred project(+AbsInt,+Vars,+HvFv_u,+ASub,-Proj)
         : atm * list * list * term * term + not_fails
         #"Projects the abstract substitution @var{ASub} onto the variables of
          list @var{Vars} resulting in the projected abstract substitution
          @var{Proj}.".
 project(AbsInt,Vars,HvFv,ASub,Proj) :-
-	project(AbsInt,_,Vars,HvFv,ASub,Proj).
+	project(AbsInt,_,Vars,HvFv,ASub,Proj). % TODO: Unbound Sg is a problem! (IG)
 
 % TODO:[new-resources] version with Sg, really needed?
-:- export(project/5).
+:- export(project/6). % TODO:[new-resources] (extra)
 :- pred project(+AbsInt,+Sg,+Vars,+HvFv_u,+ASub,-Proj)
         : atm * term * list * list * term * term + not_fails
         #"Projects the abstract substitution @var{ASub} onto the variables of
