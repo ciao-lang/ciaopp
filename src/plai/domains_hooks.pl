@@ -26,8 +26,6 @@
 :- discontiguous(extend/6).
 :- discontiguous(less_or_equal/3).
 :- discontiguous(glb/4).
-glb(_AbsInt,'$bottom',_ASub1,'$bottom') :- !. % TODO: move to each domain impl?
-glb(_AbsInt,_ASub0,'$bottom','$bottom') :- !. % TODO: move to each domain impl?
 :- discontiguous(eliminate_equivalent/3).
 :- discontiguous(abs_subset/3).
 :- discontiguous(call_to_success_fact/10).
@@ -90,7 +88,7 @@ identical_abstract(pd,ASub1,ASub2) :- !, ASub1 == ASub2.
 abs_sort(pd,ASub,ASub) :- !.
 extend(pd,_Sg,Prime,_Sv,_Call,Prime) :- !.
 less_or_equal(pd,_,_) :- !.
-glb(pd,_,_,top) :- !.
+glb(pd,ASub0,ASub1,ASub) :- !, pd_glb(ASub0,ASub1,ASub).
 eliminate_equivalent(pd,TmpLSucc,LSucc) :- !, sort(TmpLSucc,LSucc).
 call_to_success_fact(pd,_Sg,_Hv,_Head,_Sv,Call,_Proj,Call,Call) :- !.
 special_builtin(pd,SgKey,Sg,_,Type,Condvars) :- !, pd_special_builtin(SgKey,Sg,Type,Condvars).
@@ -101,6 +99,10 @@ asub_to_native(pd,_ASub,_Qv,[true],[]) :- !.
 unknown_call(pd,_Vars,Call,Call) :- !.
 unknown_entry(pd,_Qv,'top') :- !.
 empty_entry(pd,_Qv,'top') :- !.
+%
+pd_glb('$bottom',_ASub1,ASub) :- !, ASub = '$bottom'.
+pd_glb(_ASub0,'$bottom',ASub) :- !, ASub = '$bottom'.
+pd_glb(_,_,top).
 % ---------------------------------------------------------------------------
 % PD domain with bottom
 :- use_module(domain(pdb)).
@@ -113,7 +115,7 @@ identical_abstract(pdb,ASub1,ASub2) :- !, ASub1 == ASub2.
 abs_sort(pdb,ASub,ASub) :- !.
 extend(pdb,_,Prime,Sv,Call,Succ) :- !, pdb_extend(Prime,Sv,Call,Succ).
 less_or_equal(pdb,ASub0,ASub1) :- !, pdb_less_or_equal(ASub0,ASub1).
-glb(pdb,_,_,top) :- !.
+glb(pdb,ASub0,ASub1,ASub) :- !, pdb_glb(ASub0,ASub1,ASub).
 eliminate_equivalent(pdb,TmpLSucc,LSucc) :- !, sort(TmpLSucc,LSucc).
 call_to_success_fact(pdb,_Sg,_Hv,_Head,_Sv,Call,_Proj,Call,Call) :- !.
 special_builtin(pdb,SgKey,Sg,_,Type,Condvars) :- !, pdb_special_builtin(SgKey,Sg,Type,Condvars).
@@ -124,6 +126,10 @@ asub_to_native(pdb,ASub,_Qv,OutputUser,[]) :- !, pdb_asub_to_native(ASub,_Qv,Out
 unknown_call(pdb,_Vars,Call,Call) :- !.
 unknown_entry(pdb,_Qv,'top') :- !.
 empty_entry(pdb,_Qv,'top') :- !.
+%
+pdb_glb('$bottom',_ASub1,ASub) :- !, ASub = '$bottom'.
+pdb_glb(_ASub0,'$bottom',ASub) :- !, ASub = '$bottom'.
+pdb_glb(_,_,top).
 % ===========================================================================
 :- doc(section, "Constraint domains").
 % ---------------------------------------------------------------------------

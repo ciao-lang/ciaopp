@@ -253,8 +253,8 @@ son_lub((Gx,Shx),(Gy,Shy),(Gz,Shz)) :-
 % son_glb(ASub0,ASub1,Lub)                                               %
 %------------------------------------------------------------------------%
 
-son_glb('$bottom',_Yss,'$bottom'):- !.
-son_glb(_Xss,'$bottom','$bottom'):- !.
+son_glb('$bottom',_ASub,ASub3) :- !, ASub3='$bottom'.
+son_glb(_ASub,'$bottom',ASub3) :- !, ASub3='$bottom'.
 son_glb(Xss,Yss,Zss) :-
 	Xss == Yss, !,
 	Zss = Xss.

@@ -301,6 +301,8 @@ compute_lub_fr([X/_|Fr1],[X/_|Fr2],[X/nf|Lub_fr]):-
 % shfr_glb(+,+,-)                                                        %
 % shfr_glb(ASub0,ASub1,Glb)                                              %
 %------------------------------------------------------------------------%
+shfr_glb('$bottom',_ASub,ASub3) :- !, ASub3='$bottom'.
+shfr_glb(_ASub,'$bottom',ASub3) :- !, ASub3='$bottom'.
 shfr_glb((Sh1,Fr1),(Sh2,Fr2),Glb):-
 	member_value_freeness(Fr1,FVars1,f),
 	member_value_freeness(Fr2,FVars2,f),

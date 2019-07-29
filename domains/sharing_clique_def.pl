@@ -89,19 +89,19 @@ share_clique_def_sort((SH_ASub,Def_ASub),ASub_s ):-
 	share_clique_sort(SH_ASub,SH_ASub_s),
 	ASub_s = (SH_ASub_s,Def_ASub_s).
 
-
 %------------------------------------------------------------------------%
 % share_clique_def_glb(+,+,-)                                            |
 % share_clique_def_glb(ASub0,ASub1,Lub)                                  |
 %------------------------------------------------------------------------%
 
+share_clique_def_glb('$bottom',_ASub,ASub3) :- !, ASub3='$bottom'.
+share_clique_def_glb(_ASub,'$bottom',ASub3) :- !, ASub3='$bottom'.
 share_clique_def_glb((SH_ASub0,Def_ASub0),(SH_ASub1,Def_ASub1),Glb):- 
 	def_glb(Def_ASub0,Def_ASub1,Def_glb),
 	share_clique_def_compose((SH_ASub0,Def_glb),NewSH_ASub0),
 	share_clique_def_compose((SH_ASub1,Def_glb),NewSH_ASub1),
 	share_clique_glb(NewSH_ASub0,NewSH_ASub1,SH_Glb),
 	Glb = (SH_Glb,Def_glb).
-
 
 %------------------------------------------------------------------------%
 % share_clique_def_identical_abstract(+,+)                               |

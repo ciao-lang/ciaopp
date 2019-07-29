@@ -1055,6 +1055,8 @@ gr_less_or_equal_el(any,any).
 :- pred gr_glb(+ASub0,+ASub1,-Glb): absu * absu * absu # 
 "@var{Glb} is the great lower bound of @var{ASub0} and @var{ASub1}".
 
+gr_glb('$bottom',_ASub,ASub3) :- !, ASub3='$bottom'.
+gr_glb(_ASub,'$bottom',ASub3) :- !, ASub3='$bottom'.
 gr_glb(ASub0,ASub1,Glb):-
 	ASub0 == ASub1,!,
 	Glb = ASub1.

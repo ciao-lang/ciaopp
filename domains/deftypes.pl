@@ -539,12 +539,10 @@ subtract_keys([X|Xs],Ks,[X|Dict]):-
 	subtract_keys(Xs,Ks,Dict).
 subtract_keys([],_Ks,[]).
 
-
 %------------------------------------------------------------------%
 :- pred deftypes_less_or_equal(+ASub0,+ASub1): absu * absu # 
 "Succeeds if @var{ASub1} is more general or equal to @var{ASub0}.
 it's assumed the two abstract substitutions are defined on the same variables".
-
 
 deftypes_less_or_equal('$bottom',_ASub):- !.
 deftypes_less_or_equal(ASub1,ASub2):-
@@ -563,9 +561,8 @@ deftypes_less_or_equal0([],[]).
 :- pred deftypes_glb(+ASub0,+ASub1,-Glb): absu * absu * absu # 
 "@var{Glb} is the great lower bound of @var{ASub0} and @var{ASub1}".
 
-
-deftypes_glb('$bottom',_ASub,'$bottom'):- !.
-deftypes_glb(_ASub,'$bottom','$bottom'):- !.
+deftypes_glb('$bottom',_ASub,ASub3) :- !, ASub3='$bottom'.
+deftypes_glb(_ASub,'$bottom',ASub3) :- !, ASub3='$bottom'.
 deftypes_glb(ASub1,ASub2,ASub3):-
 	ASub1 == ASub2, !,
 	ASub3 = ASub2.
@@ -573,16 +570,12 @@ deftypes_glb(ASub1,ASub2,ASub3):-
 	deftypes_glb0(ASub1,ASub2,ASub3), !.
 deftypes_glb(_ASub1,_ASub2,'$bottom').
 
-
-
 deftypes_glb0([X:T1|ASub1],[Y:T2|ASub2],[X:T3|ASub3]):-
 	X==Y,
 	types_glb(T1,T2,T3),!,
 	T3 \== bot,
 	deftypes_glb0(ASub1,ASub2,ASub3).
 deftypes_glb0([],[],[]).
-
-
 
 %------------------------------------------------------------------%
 :- pred deftypes_unknown_entry(+Qv,-Call): list * absu # 

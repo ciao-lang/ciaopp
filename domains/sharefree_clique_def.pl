@@ -95,6 +95,8 @@ sharefree_clique_def_sort((SHF_ASub,Def_ASub),ASub_s ):-
 % sharefree_clique_def_glb(ASub0,ASub1,Lub)                              |
 %------------------------------------------------------------------------%
 
+sharefree_clique_def_glb('$bottom',_ASub,ASub3) :- !, ASub3='$bottom'.
+sharefree_clique_def_glb(_ASub,'$bottom',ASub3) :- !, ASub3='$bottom'.
 sharefree_clique_def_glb((SHF_ASub0,Def_ASub0),(SHF_ASub1,Def_ASub1),Lub):- 
 	def_glb(Def_ASub0,Def_ASub1,Def_lub),
 	sharefree_clique_def_compose(SHF_ASub0,Def_lub,NewSHF_ASub0),

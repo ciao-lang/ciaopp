@@ -286,8 +286,8 @@ def_lub_each(Tx,Ty,Lub):-
 %-------------------------------------------------------------------------
 % Not quiet sure this is correct, but looks good... (PBC)
 
-def_glb(_,'$bottom','$bottom'):- !.
-def_glb('$bottom',_,'$bottom').
+def_glb('$bottom',_ASub,ASub3) :- !, ASub3='$bottom'.
+def_glb(_ASub,'$bottom',ASub3) :- !, ASub3='$bottom'.
 def_glb(a(G1,SS1),a(G2,SS2),Conj):-
 	merge(G1,G2,Gr),
 	def_conjunct_constr(a(Gr,[]),a(G1,SS1),ASub1),

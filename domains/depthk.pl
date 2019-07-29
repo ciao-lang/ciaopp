@@ -204,8 +204,8 @@ lub_each_eq([X=T1|ASub1],[X=T2|ASub2],[X=T|Lub]):-
 % depthk_glb(ASub1,ASub2)                                                %
 %-------------------------------------------------------------------------
 
-depthk_glb('$bottom',ASub,Glb):- !, Glb = ASub.
-depthk_glb(ASub,'$bottom',Glb):- !, Glb = ASub.
+depthk_glb('$bottom',_ASub,ASub3) :- !, ASub3='$bottom'.
+depthk_glb(_ASub,'$bottom',ASub3) :- !, ASub3='$bottom'.
 depthk_glb(ASub1,ASub2,Glb):-
 	glb_each_eq(ASub1,ASub2,Glb).
 

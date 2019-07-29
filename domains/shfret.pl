@@ -131,8 +131,8 @@ shfret_split_combined_domain(ListASub,[LTypes,LModes],[eterms,shfr]):-
 % shfret_glb(+,+,-)                                                          %
 % shfret_glb(ASub0,ASub1,Glb)                                                %
 %------------------------------------------------------------------------%
-shfret_glb('$bottom',_ASub1,'$bottom'):- !.
-shfret_glb(_ASub0,'$bottom','$bottom'):- !.
+shfret_glb('$bottom',_ASub,ASub3) :- !, ASub3='$bottom'.
+shfret_glb(_ASub,'$bottom',ASub3) :- !, ASub3='$bottom'.
 shfret_glb(ASub0,ASub1,Glb):-
 	asub(ASub0,ATypes0,AModes0),
 	asub(ASub1,ATypes1,AModes1),

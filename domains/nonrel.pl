@@ -487,8 +487,8 @@ nonrel_less_or_equal_(_,_,_):-
 :- pred nonrel_glb(+AbsInt,+ASub0,+ASub1,-Glb): atm * list * list * var 
         #"@var{Glb} is the great lower bound of @var{ASub0} and @var{ASub1}, two
         substitutions that describe the same set of variables.".
-nonrel_glb(_,'$bottom',ASub,ASub) :- !.
-nonrel_glb(_,ASub,'$bottom',ASub) :- !.
+nonrel_glb(_, '$bottom',_ASub,ASub3) :- !, ASub3='$bottom'.
+nonrel_glb(_, _ASub,'$bottom',ASub3) :- !, ASub3='$bottom'.
 nonrel_glb(_,ASub0,ASub1,Glb):-  % TODO: unnecessary case?
         ASub0 == ASub1,!,
         Glb = ASub1.

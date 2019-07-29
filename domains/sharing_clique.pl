@@ -509,6 +509,8 @@ merge_subst((Cl1,Sh1),(Cl2,Sh2),Lub) :-
 % Glb is just intersection.                                              |
 %------------------------------------------------------------------------%
 
+share_clique_glb('$bottom',_ASub,ASub3) :- !, ASub3='$bottom'.
+share_clique_glb(_ASub,'$bottom',ASub3) :- !, ASub3='$bottom'.
 share_clique_glb(ASub0,ASub1,Glb):- 
 	ord_intersection_w(ASub0,ASub1,Glb).
 

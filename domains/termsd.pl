@@ -1126,9 +1126,8 @@ terms_less_or_equal0([],[]).
 :- pred terms_glb(+ASub0,+ASub1,-Glb): absu * absu * absu # 
 "@var{Glb} is the great lower bound of @var{ASub0} and @var{ASub1}".
 
-
-terms_glb('$bottom',_ASub,'$bottom'):- !.
-terms_glb(_ASub,'$bottom','$bottom'):- !.
+terms_glb('$bottom',_ASub,ASub3) :- !, ASub3='$bottom'.
+terms_glb(_ASub,'$bottom',ASub3) :- !, ASub3='$bottom'.
 terms_glb(ASub1,ASub2,ASub3):-
 	ASub1 == ASub2, !,
 	ASub3 = ASub2.

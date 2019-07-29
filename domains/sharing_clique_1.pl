@@ -357,6 +357,9 @@ merge_subst_clique_1((Cl1,Sh1),(Cl2,Sh2),Lub) :-
 % share_clique_1_glb(+,+,-)                                              |
 % share_clique_1_glb(ASub0,ASub1,Lub)                                    |
 %------------------------------------------------------------------------%
+
+share_clique_1_glb('$bottom',_ASub,ASub3) :- !, ASub3='$bottom'.
+share_clique_1_glb(_ASub,'$bottom',ASub3) :- !, ASub3='$bottom'.
 share_clique_1_glb((Cl1,Sh1),(Cl2,Sh2),Lub):-
 	intersection_list_of_lists(Cl1,Cl2,Cl0),
 	split_list_of_lists_singleton(Cl0,Cl0_Non_sing,_),

@@ -254,6 +254,8 @@ merge_subst(Xss,Yss,Zss) :-
 % Glb is just intersection.                                              %
 %------------------------------------------------------------------------%
 
+share_glb('$bottom',_ASub,ASub3) :- !, ASub3='$bottom'.
+share_glb(_ASub,'$bottom',ASub3) :- !, ASub3='$bottom'.
 share_glb(ASub0,ASub1,Glb):-
 	ord_intersection(ASub0,ASub1,ASub),
 %% 	( ASub=[], ASub0\==[], ASub1\==[] -> Glb = '$bottom' ; Glb=ASub ).

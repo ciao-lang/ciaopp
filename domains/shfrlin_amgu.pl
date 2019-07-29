@@ -149,6 +149,8 @@ shfrlin_sort((Sh,F,L),(Sh_s,F_s,L_s)):-
 % shfrlin_glb(+,+,-)                                                     |
 % shfrlin_glb(ASub0,ASub1,Glb)                                           |
 %------------------------------------------------------------------------%
+shfrlin_glb('$bottom',_ASub,ASub3) :- !, ASub3='$bottom'.
+shfrlin_glb(_ASub,'$bottom',ASub3) :- !, ASub3='$bottom'.
 shfrlin_glb((Sh1,Fr1,Lin1),(Sh2,Fr2,Lin2),Glb):-
 	shfr_glb((Sh1,Fr1),(Sh2,Fr2),Glb0),
 	( Glb0 == '$bottom' 

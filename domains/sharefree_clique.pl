@@ -381,6 +381,8 @@ compute_lub_fr([X/_|Fr1],[X/_|Fr2],[X/nf|Lub_fr]):-
 % sharefree_clique_glb(ASub0,ASub1,Lub)                                  |
 % Glb is just intersection.                                              |
 %------------------------------------------------------------------------%
+sharefree_clique_glb('$bottom',_ASub,ASub3) :- !, ASub3='$bottom'.
+sharefree_clique_glb(_ASub,'$bottom',ASub3) :- !, ASub3='$bottom'.
 sharefree_clique_glb((SH1,Fr1),(SH2,Fr2),Glb):-
 	member_value_freeness(Fr1,FVars1,f),
 	member_value_freeness(Fr2,FVars2,f),
