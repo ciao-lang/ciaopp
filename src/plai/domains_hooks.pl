@@ -715,7 +715,7 @@ success_builtin(share_amgu,Type,Sv_uns,Condvars,_,Call,Succ) :- !, share_amgu_su
 call_to_success_builtin(share_amgu,SgKey,Sg,Sv,Call,Proj,Succ) :- !, share_amgu_call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,Succ).
 input_interface(share_amgu,InputUser,Kind,Struct0,Struct1) :- !, share_input_interface(InputUser,Kind,Struct0,Struct1).
 input_user_interface(share_amgu,InputUser,Qv,ASub) :- !, share_input_user_interface(InputUser,Qv,ASub).
-asub_to_native(share_amgu,ASub,Qv,OutputUser,_) :- !, share_asub_to_native(ASub,Qv,OutputUser).
+asub_to_native(share_amgu,ASub,Qv,OutputUser,[]) :- !, share_asub_to_native(ASub,Qv,OutputUser).
 unknown_call(share_amgu,Vars,Call,Succ) :- !, share_unknown_call(Call,Vars,Succ).
 unknown_entry(share_amgu,Qv,Call) :- !, share_unknown_entry(Qv,Call).
 empty_entry(share_amgu,Qv,Call) :- !, share_empty_entry(Qv,Call).
@@ -741,7 +741,7 @@ call_to_success_builtin(sharefree_amgu,SgKey,Sg,Sv,Call,Proj,Succ) :- !, sharefr
 obtain_info(sharefree_amgu,Prop,Vars,ASub,Info) :- !, shfr_obtain(Prop,Vars,ASub,Info).
 input_interface(sharefree_amgu,InputUser,Kind,Struct0,Struct1) :- !, shfr_input_interface(InputUser,Kind,Struct0,Struct1).
 input_user_interface(sharefree_amgu,InputUser,Qv,ASub) :- !, shfr_input_user_interface(InputUser,Qv,ASub).
-asub_to_native(sharefree_amgu,ASub,Qv,OutputUser,_) :- !, shfr_asub_to_native(ASub,Qv,OutputUser).
+asub_to_native(sharefree_amgu,ASub,Qv,OutputUser,[]) :- !, shfr_asub_to_native(ASub,Qv,OutputUser).
 unknown_call(sharefree_amgu,Vars,Call,Succ) :- !, shfr_unknown_call(Call,Vars,Succ).
 unknown_entry(sharefree_amgu,Qv,Call) :- !, shfr_unknown_entry(Qv,Call).
 empty_entry(sharefree_amgu,Qv,Call) :- !, shfr_empty_entry(Qv,Call).
@@ -766,7 +766,7 @@ call_to_success_builtin(shfrlin_amgu,SgKey,Sg,Sv,Call,Proj,Succ) :- !, shfrlin_c
 obtain_info(shfrlin_amgu,Prop,Vars,(Sh,Fr,_Lin),Info) :- !, shfr_obtain(Prop,Vars,(Sh,Fr),Info).
 input_interface(shfrlin_amgu,InputUser,Kind,Struct0,Struct1) :- !, shfrlin_input_interface(InputUser,Kind,Struct0,Struct1).
 input_user_interface(shfrlin_amgu,InputUser,Qv,ASub) :- !, shfrlin_input_user_interface(InputUser,Qv,ASub).
-asub_to_native(shfrlin_amgu,ASub,Qv,OutputUser,_) :- !, shfrlin_asub_to_native(ASub,Qv,OutputUser).
+asub_to_native(shfrlin_amgu,ASub,Qv,OutputUser,[]) :- !, shfrlin_asub_to_native(ASub,Qv,OutputUser).
 unknown_call(shfrlin_amgu,Vars,Call,Succ) :- !, shfrlin_unknown_call(Call,Vars,Succ).
 unknown_entry(shfrlin_amgu,Qv,Call) :- !, shfrlin_unknown_entry(Qv,Call).
 empty_entry(shfrlin_amgu,Qv,Call) :- !, shfrlin_empty_entry(Qv,Call).
@@ -791,7 +791,7 @@ success_builtin(share_clique,Type,Sv_uns,Condvars,_,Call,Succ) :- !, share_cliqu
 call_to_success_builtin(share_clique,SgKey,Sg,Sv,Call,Proj,Succ) :- !, share_clique_call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,Succ).
 input_interface(share_clique,InputUser,Kind,Struct0,Struct1) :- !, share_clique_input_interface(InputUser,Kind,Struct0,Struct1).
 input_user_interface(share_clique,InputUser,Qv,ASub) :- !, share_clique_input_user_interface(InputUser,Qv,ASub).
-asub_to_native(share_clique,ASub,Qv,OutputUser,_) :- !, share_clique_asub_to_native(ASub,Qv,OutputUser).
+asub_to_native(share_clique,ASub,Qv,OutputUser,[]) :- !, share_clique_asub_to_native(ASub,Qv,OutputUser).
 unknown_call(share_clique,Vars,Call,Succ) :- !, share_clique_unknown_call(Call,Vars,Succ).
 unknown_entry(share_clique,Qv,Call) :- !, share_clique_unknown_entry(Qv,Call).
 empty_entry(share_clique,Qv,Call) :- !, share_clique_empty_entry(Qv,Call).
@@ -814,7 +814,7 @@ success_builtin(share_clique_1,Type,Sv_uns,Condvars,_,Call,Succ) :- !, share_cli
 call_to_success_builtin(share_clique_1,SgKey,Sg,Sv,Call,Proj,Succ) :- !, share_clique_1_call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,Succ).
 input_interface(share_clique_1,InputUser,Kind,Struct0,Struct1) :- !, share_clique_1_input_interface(InputUser,Kind,Struct0,Struct1).
 input_user_interface(share_clique_1,InputUser,Qv,ASub) :- !, share_clique_input_user_interface(InputUser,Qv,ASub).
-asub_to_native(share_clique_1,ASub,Qv,OutputUser,_) :- !, share_clique_1_asub_to_native(ASub,Qv,OutputUser).
+asub_to_native(share_clique_1,ASub,Qv,OutputUser,[]) :- !, share_clique_1_asub_to_native(ASub,Qv,OutputUser).
 unknown_call(share_clique_1,Vars,Call,Succ) :- !, share_clique_1_unknown_call(Call,Vars,Succ).
 unknown_entry(share_clique_1,Qv,Call) :- !, share_clique_1_unknown_entry(Qv,Call).
 empty_entry(share_clique_1,Qv,Call) :- !, share_clique_empty_entry(Qv,Call).
@@ -840,7 +840,7 @@ call_to_success_builtin(sharefree_clique,SgKey,Sg,Sv,Call,Proj,Succ) :- !, share
 obtain_info(sharefree_clique,Prop,Vars,ASub,Info) :- !, shfr_obtain(Prop,Vars,ASub,Info).
 input_interface(sharefree_clique,InputUser,Kind,Struct0,Struct1) :- !, sharefree_clique_input_interface(InputUser,Kind,Struct0,Struct1).
 input_user_interface(sharefree_clique,InputUser,Qv,ASub) :- !, sharefree_clique_input_user_interface(InputUser,Qv,ASub).
-asub_to_native(sharefree_clique,ASub,Qv,OutputUser,_) :- !, sharefree_clique_asub_to_native(ASub,Qv,OutputUser).
+asub_to_native(sharefree_clique,ASub,Qv,OutputUser,[]) :- !, sharefree_clique_asub_to_native(ASub,Qv,OutputUser).
 unknown_call(sharefree_clique,Vars,Call,Succ) :- !, sharefree_clique_unknown_call(Call,Vars,Succ).
 unknown_entry(sharefree_clique,Qv,Call) :- !, sharefree_clique_unknown_entry(Qv,Call).
 empty_entry(sharefree_clique,Qv,Call) :- !, sharefree_clique_empty_entry(Qv,Call).
@@ -862,7 +862,7 @@ special_builtin(share_clique_def,SgKey,Sg,_,Type,Condvars) :- !, share_clique_de
 body_succ_builtin(share_clique_def,Type,Sg,Condvs,Sv,HvFv_u,Call,Proj,Succ) :- !, share_clique_def_body_succ_builtin(Type,Sg,Condvs,Sv,HvFv_u,Call,Proj,Succ).
 input_interface(share_clique_def,InputUser,Kind,Struct0,Struct1) :- !, share_clique_input_interface(InputUser,Kind,Struct0,Struct1).
 input_user_interface(share_clique_def,InputUser,Qv,ASub) :- !, share_clique_def_input_user_interface(InputUser,Qv,ASub).
-asub_to_native(share_clique_def,ASub,Qv,OutputUser,_) :- !, share_clique_def_asub_to_native(ASub,Qv,OutputUser).
+asub_to_native(share_clique_def,ASub,Qv,OutputUser,[]) :- !, share_clique_def_asub_to_native(ASub,Qv,OutputUser).
 unknown_call(share_clique_def,Vars,Call,Succ) :- !, share_clique_def_unknown_call(Call,Vars,Succ).
 unknown_entry(share_clique_def,Qv,Call) :- !, share_clique_def_unknown_entry(Qv,Call).
 empty_entry(share_clique_def,Qv,Call) :- !, share_clique_def_empty_entry(Qv,Call).
@@ -900,7 +900,7 @@ special_builtin(sharefree_clique_def,SgKey,Sg,_,Type,Condvars) :- !, sharefree_c
 body_succ_builtin(sharefree_clique_def,Type,Sg,Condvs,Sv,HvFv_u,Call,Proj,Succ) :- !, sharefree_clique_def_body_succ_builtin(Type,Sg,Condvs,Sv,HvFv_u,Call,Proj,Succ).
 input_interface(sharefree_clique_def,InputUser,Kind,Struct0,Struct1) :- !, sharefree_clique_input_interface(InputUser,Kind,Struct0,Struct1).
 input_user_interface(sharefree_clique_def,InputUser,Qv,ASub) :- !, sharefree_clique_def_input_user_interface(InputUser,Qv,ASub).
-asub_to_native(sharefree_clique_def,ASub,Qv,OutputUser,_) :- !, sharefree_clique_def_asub_to_native(ASub,Qv,OutputUser).
+asub_to_native(sharefree_clique_def,ASub,Qv,OutputUser,[]) :- !, sharefree_clique_def_asub_to_native(ASub,Qv,OutputUser).
 unknown_call(sharefree_clique_def,Vars,Call,Succ) :- !, sharefree_clique_def_unknown_call(Call,Vars,Succ).
 unknown_entry(sharefree_clique_def,Qv,Call) :- !, sharefree_clique_def_unknown_entry(Qv,Call).
 empty_entry(sharefree_clique_def,Qv,Call) :- !, sharefree_clique_def_empty_entry(Qv,Call).
