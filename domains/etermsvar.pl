@@ -39,7 +39,7 @@
 	etermsvar_input_interface/4,
 	etermsvar_input_user_interface/3,
 	etermsvar_output_interface/2,
-	etermsvar_asub_to_native/3,
+	etermsvar_asub_to_native/5,
 	etermsvar_asub_to_native1/3,
 	etermsvar_collect_abstypes/3,
 	etermsvar_rename_abs/4,
@@ -2005,11 +2005,11 @@ may_be_var([]):- !.
 may_be_var(_Acc).
 
 %------------------------------------------------------------------------%
-% etermsvar_asub_to_native(+ASub,+Flag,-OutputUser)                      %
+% etermsvar_asub_to_native(+ASub,+Qv,+Flag,-OutputUser,-Comps)           %
 % Transforms abstract substitution ASub to user friendly format.         %
 %------------------------------------------------------------------------%
 
-etermsvar_asub_to_native(ASub,Flag,OutputUser):-
+etermsvar_asub_to_native(ASub,_Qv,Flag,OutputUser,[]):-
 	etermsvar_asub_to_native0(ASub,OutputUser1),
 	etermsvar_asub_to_native1(OutputUser1,Flag,OutputUserPre),
         etermsvar_input_interface_convert_free_and_ground_args(OutputUser,OutputUserPre).

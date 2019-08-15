@@ -18,7 +18,7 @@
 	eterms_input_interface/4,
 	eterms_input_user_interface/3,
 	eterms_output_interface/2,
-	eterms_asub_to_native/3,
+	eterms_asub_to_native/5,
 	eterms_asub_to_native1/3,
 	eterms_collect_abstypes/3,
 	eterms_rename_abs/4,
@@ -1889,11 +1889,11 @@ may_be_var([]):- !.
 may_be_var(_Acc).
 
 %------------------------------------------------------------------------%
-% eterms_asub_to_native(+ASub,+Flag,-OutputUser)                         %
+% eterms_asub_to_native(+ASub,+Qv,+Flag,-OutputUser,-Comps)              %
 % Transforms abstract substitution ASub to user friendly format.         %
 %------------------------------------------------------------------------%
 
-eterms_asub_to_native(ASub,Flag,OutputUser):-
+eterms_asub_to_native(ASub,_Qv,Flag,OutputUser,[]):-
 	eterms_asub_to_native0(ASub,OutputUser1),
 	eterms_asub_to_native1(OutputUser1,Flag,OutputUser).
 

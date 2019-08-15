@@ -8,7 +8,7 @@
 	  shareson_input_user_interface/3,
 	  shareson_input_interface/4,
 	  shareson_less_or_equal/2, 
-	  shareson_asub_to_native/3,
+	  shareson_asub_to_native/5,
 	  shareson_project/3, 
 	  shareson_sort/2,    
 	  shareson_unknown_call/3,  
@@ -164,7 +164,7 @@ shareson_input_interface(Info,Kind,Struct0,Struct):-
 
 %--------------------------------------------------------------------------
 
-shareson_asub_to_native(((Gr,SSon),Sh),Qv,ASub_user):-
+shareson_asub_to_native(((Gr,SSon),Sh),Qv,_OutFlag,ASub_user,[]):-
 	collect_singletons(SSon,Singletons),
 	varset(Singletons,NonLinearVars),
 	ord_subtract(Qv,NonLinearVars,LinearVars),

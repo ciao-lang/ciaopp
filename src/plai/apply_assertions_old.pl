@@ -12,7 +12,7 @@
 :- use_module(ciaopp(p_unit), [type_of_goal/2, dynamic_or_unknown_predicate/1,
 	                       get_call_from_call_assrt/7]).
 :- use_module(ciaopp(plai/domains), 
-	[ abs_sort/3, asub_to_native/5,
+	[ abs_sort/3, asub_to_native/6,
 	  compute_lub/3, glb/4, less_or_equal/3, unknown_call/4,
 	  call_to_entry/9, full_info_to_asub/5, info_to_asub/6, info_to_asub/7,
 	  contains_parameters/2, unknown_entry/3,
@@ -114,7 +114,7 @@ apply_trusted0(Proj,_SgKey,Sg,Sv,AbsInt,ClId,Prime):-
 	 ; 
 	    ( current_pp_flag(verbosity,very_high) ->
 		maybe_clause_locator(ClId,Loc),
-		asub_to_native(AbsInt,Proj,Sv,Output,_Comp),
+		asub_to_native(AbsInt,Proj,Sv,no,Output,_Comp),
 		warning_message(Loc,"Cannot analyze one version of ~w
  i.e., there is no trust for call pattern:~n   ~q",[Sg,Output])
 	    ;
@@ -145,7 +145,7 @@ apply_trusted_modular(Proj,SgKey,Sg,Sv,AbsInt,Prime) :-
 	    Prime = Prime0,
 	    ( current_pp_flag(verbosity,very_high) ->
 		( PatternsApplied == no, \+ module_is_processable(AbsBase) ->
-		    asub_to_native(AbsInt,Proj,Sv,Output,_Comp),
+		    asub_to_native(AbsInt,Proj,Sv,no,Output,_Comp),
 		    warning_message("In ~q ~n there is no trust for call pattern:~n   ~q
 ~n Assumed success substitution:~n    ~q",[Sg,Output,Prime])
 	        ;  true
@@ -191,8 +191,8 @@ apply_glb_inferred(AbsInt,Sg,Sv,Loc,Prime0,Switch,Prime1,Prime):-
 	glb(AbsInt,Prime1,Prime0,Prime2), !,
 	( Prime2='$bottom', Prime1\=='$bottom', Prime0\=='$bottom',
 	  Switch=abs -> 
-	  asub_to_native(AbsInt,Prime0,Sv,Output0,_Comp0),
-	  asub_to_native(AbsInt,Prime1,Sv,Output1,_Comp1),
+	  asub_to_native(AbsInt,Prime0,Sv,no,Output0,_Comp0),
+	  asub_to_native(AbsInt,Prime1,Sv,no,Output1,_Comp1),
 	  warning_message(Loc,
 	  "invalid trust for ~w:~n   ~w~n analysis infers:~n   ~w",
 	  [Sg,Output1,Output0]),

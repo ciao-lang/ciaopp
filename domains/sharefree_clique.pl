@@ -444,12 +444,12 @@ myinsert(Fr0,X,Fr):-
 	insert(Fr0,X,Fr).
 
 %------------------------------------------------------------------------%
-% sharefree_clique_asub_to_native(+,+,-)                                 |
-% sharefree_clique_asub_to_native(ASub,Qv,ASub_user)                     |
+% sharefree_clique_asub_to_native(+,+,+,-,-)                             |
+% sharefree_clique_asub_to_native(ASub,Qv,OutFlag,ASub_user,Comps)       |
 % The user friendly format consists in extracting the ground variables   |
 % and the free variables                                                 |
 %------------------------------------------------------------------------%
-sharefree_clique_asub_to_native((SH,Fr),_Qv,Info):-
+sharefree_clique_asub_to_native((SH,Fr),_Qv,_OutFlag,Info,[]):-
 	SH = (Cl,Sh),
 	if_not_nil(Cl,clique(Cl),Info,Info0),
 	if_not_nil(Sh,sharing(Sh),Info0,Info1),

@@ -537,27 +537,30 @@ myinsert(Fr0,X,Fr):-
 %% 	shfr_output_interface0(LSucc,LOutSucc).
 
 %------------------------------------------------------------------------%
-% shfr_asub_to_native(+,+,-)                                             %
-% shfr_asub_to_native(ASub,Qv,ASub_user)                                 %
+% shfr_asub_to_native(+,+,+,-,-)                                         %
+% shfr_asub_to_native(ASub,Qv,OutFlag,ASub_user,Comps)                   %
 % The user friendly format consists in extracting the ground variables   %
 % and the free variables                                                 %
 %------------------------------------------------------------------------%
-shfr_asub_to_native(ac(ASub,Flag),_Qv,[flag(Flag)|ASub_user]):- 
-	shfr_asub_to_native(ASub,_Qv,ASub_user).
-%% shfr_asub_to_native(ac(ASub,_),_Qv,ASub_user):- 
-%% 	shfr_asub_to_native(ASub,_Qv,ASub_user).
-shfr_asub_to_native(d((Sh,Fr),Del),_Qv,ASub_user):- 
-	shfr_asub_to_native((Sh,Fr),_Qv,Info),
+shfr_asub_to_native(ASub,_Qv,_OutFlag,Succ,[]) :-
+	shfr_asub_to_native_(ASub,Succ).
+
+shfr_asub_to_native_(ac(ASub,Flag),[flag(Flag)|ASub_user]):- 
+	shfr_asub_to_native_(ASub,ASub_user).
+%% shfr_asub_to_native(ac(ASub,_),ASub_user):- 
+%% 	shfr_asub_to_native(ASub,ASub_user).
+shfr_asub_to_native_(d((Sh,Fr),Del),ASub_user):- 
+	shfr_asub_to_native_((Sh,Fr),Info),
 	if_not_nil(Del,delayed(Del),Comp,[]),
 	( Comp==[] -> ASub_user=comp(Info,Comp) ; ASub_user=Info ).
-shfr_asub_to_native((Sh,Fr),_Qv,Info):-
+shfr_asub_to_native_((Sh,Fr),Info):-
 	if_not_nil(Sh,sharing(Sh),Info,Info0),
 	member_value_freeness(Fr,Fv,f),
 	if_not_nil(Fv,free(Fv),Info0,Info1),
 	member_value_freeness(Fr,Gv,g),
 	if_not_nil(Gv,ground(Gv),Info1,[]).
 % fail:
-% shfr_asub_to_native('$bottom',_Qv,[solutions(0)]).
+% shfr_asub_to_native_('$bottom',[solutions(0)]).
 
 %------------------------------------------------------------------------%
 % shfr_obtain(+,+,+,-)                                                   %

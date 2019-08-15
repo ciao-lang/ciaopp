@@ -455,12 +455,12 @@ share_clique_1_input_interface(Prop,Any,(Gv0,Sh0,Cl,I0),(Gv,Sh,Cl,I)):-
 	share_input_interface(Prop,Any,(Gv0,Sh0,I0),(Gv,Sh,I)).
 
 %------------------------------------------------------------------------%
-% share_clique_1_asub_to_native(+,+,-)                                   |
-% share_clique_1_asub_to_native(ASub,Qv,ASub_user)                       |
+% share_clique_1_asub_to_native(+,+,+,-,-)                               |
+% share_clique_1_asub_to_native(ASub,Qv,OutFlag,ASub_user,Comps)         |
 %------------------------------------------------------------------------%
 
-share_clique_1_asub_to_native('$bottom',_Qv,_ASub_user):- !, fail.
-share_clique_1_asub_to_native((Cl,Sh),Qv,Info):-
+share_clique_1_asub_to_native('$bottom',_Qv,_OutFlag,_ASub_user,_Comps):- !, fail.
+share_clique_1_asub_to_native((Cl,Sh),Qv,_OutFlag,Info,[]):-
 	ord_union(Sh,Cl,All),
 	projected_gvars(All,Qv,Gv),
 	if_not_nil(Cl,clique_1(Cl),Info,Info0),

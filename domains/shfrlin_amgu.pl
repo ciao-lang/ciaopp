@@ -433,12 +433,12 @@ myinsert(Fr0,X,Fr):-
 	insert(Fr0,X,Fr).
 
 %------------------------------------------------------------------------%
-% shfrlin_asub_to_native(+,+,-)                                          |
-% shfrlin_asub_to_native(ASub,Qv,ASub_user)                              |
+% shfrlin_asub_to_native(+,+,+,-,-)                                      |
+% shfrlin_asub_to_native(ASub,Qv,OutFlag,ASub_user,Comps)                |
 % The user friendly format consists in extracting the ground variables,  |
 % free variables, and linear variables.                                  |
 %------------------------------------------------------------------------%
-shfrlin_asub_to_native((Sh,Fr,L),_Qv,Info):-
+shfrlin_asub_to_native((Sh,Fr,L),_Qv,_OutFlag,Info,[]):-
 	if_not_nil(Sh,sharing(Sh),Info,Info0),
 	member_value_freeness(Fr,Fv,f),
 	if_not_nil(Fv,free(Fv),Info0,Info1),

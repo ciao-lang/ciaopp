@@ -175,11 +175,11 @@ sharefree_clique_def_input_user_interface((SH,Fv),Qv,Call):-
 	Call = ((SH_call,Fr_call),Def_call).
 
 %------------------------------------------------------------------------%
-% sharefree_clique_def_asub_to_native(+,+,-)                             |
-% sharefree_clique_def_asub_to_native(ASub,Qv,ASub_user)                 |
+% sharefree_clique_def_asub_to_native(+,+,+,-,-)                         |
+% sharefree_clique_def_asub_to_native(ASub,Qv,OutFlag,ASub_user,Comps)   |
 %------------------------------------------------------------------------%
-sharefree_clique_def_asub_to_native('$bottom',_Qv,_ASub_user):- !, fail.
-sharefree_clique_def_asub_to_native(((SH,Fr),a(_G,_SS)),_Qv,Info):-!,
+sharefree_clique_def_asub_to_native('$bottom',_Qv,_OutFlag,_ASub_user,_Comps):- !, fail.
+sharefree_clique_def_asub_to_native(((SH,Fr),a(_G,_SS)),_Qv,_OutFlag,Info,[]):-!,
 	SH = (Cl,Sh),
 	if_not_nil(Cl,clique(Cl),Info,Info0),
 	if_not_nil(Sh,sharing(Sh),Info0,Info1),

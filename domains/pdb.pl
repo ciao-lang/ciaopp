@@ -15,7 +15,7 @@
 %% 	pdb_call_to_success_builtin/6,
 %% 	pdb_input_interface/4,
 %% 	pdb_input_user_interface/3,
- 	pdb_asub_to_native/3
+ 	pdb_asub_to_native/5
 %% 	%pdb_output_interface/2,
 %% 	pdb_unknown_call/3,
 %% 	pdb_unknown_entry/2,
@@ -61,5 +61,5 @@ pdb_very_special_builtin('\==/2').
 
 pdb_success_builtin(_unchanged,_,_,Lda,Lda).
 
-pdb_asub_to_native('$bottom',_Qv,_ASub_user):- !, fail.
-pdb_asub_to_native(_Succ,_Qv,[true]).
+pdb_asub_to_native('$bottom',_Qv,_OutFlag,_ASub_user,_Comps):- !, fail.
+pdb_asub_to_native(_Succ,_Qv,_OutFlag,[true],[]).

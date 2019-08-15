@@ -12,7 +12,7 @@
 	  fd_input_user_interface/3,  
 	  fd_input_interface/4,  
 	  fd_less_or_equal/2,
-	  fd_output_interface/3,
+	  fd_asub_to_native/5,
 	  fd_project/3,       
 	  fd_sort/2,          
 	  fd_success_builtin/5,
@@ -184,9 +184,9 @@ compose_kind(_Kind0,_Kind1,perfect).
 
 %------------------------------------------------------------------------------
 
-%fail: fd_output_interface('$bottom',_,'$bottom').
-fd_output_interface((F,D),Qv,Succ):-
-	def_asub_to_native(D,Succ1),
+%fail: fd_asub_to_native('$bottom',_,_,'$bottom',[]).
+fd_asub_to_native((F,D),Qv,OutFlag,Succ,Comps):-
+	def_asub_to_native(D,Qv,OutFlag,Succ1,Comps1),
 	( member(ground(Gv),Succ1) -> true ; Gv=[] ),
         sort(Qv,Qv_s),
         ord_subtract(Qv_s,Gv,Rest),
@@ -195,7 +195,8 @@ fd_output_interface((F,D),Qv,Succ):-
         vero_output_interface(F,[Dep]),
         arg(1,Dep,Free_dep),
 	if_not_nil(Fv,free(Fv),Succ,Succ0),
-	if_not_nil(Free_dep,posdeps(Free_dep),Succ0,Succ1).
+	if_not_nil(Free_dep,posdeps(Free_dep),Succ0,Succ1),
+	Comps = Comps1.
 
 if_not_nil([],_,Xs,Xs):- !.
 if_not_nil(_,X,[X|Xs],Xs).

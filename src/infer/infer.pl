@@ -22,7 +22,7 @@
 	[abs_sort/3,asub_to_info/5,call_to_entry/9,
 	 compute_lub/3, %do_compute_lub/3,
 	 obtain_info/5,
-	 asub_to_native/5]).
+	 asub_to_native/6]).
 :- use_module(ciaopp(plai/plai_db)).
 :- use_module(ciaopp(pool)).
 :- use_module(ciaopp(p_unit), [type_of_goal/2]).
@@ -116,7 +116,7 @@ get_info(res_plai_stprf,pred,Key,Goal,Info):-
 	%current_fact(inferred(Prop,Goal0,Abs)),
 	variant(Goal,Goal0),
 	varset(Goal,Gv),
-	asub_to_native(res_plai_stprf,Abs,Gv,Succ,Comps),
+	asub_to_native(res_plai_stprf,Abs,Gv,no,Succ,Comps),
 	Info = [Succ,Comps].
 %	asub_to_props(res_plai_stprf,Goal,Abs,Info).
 	%_Info = [complete(GoalInf,MCall,[MSuccess],Key,lub)],

@@ -7,7 +7,7 @@
 	  shfrson_input_user_interface/3, 
 	  shfrson_input_interface/4, 
 	  shfrson_less_or_equal/2,  
-	  shfrson_asub_to_native/3,
+	  shfrson_asub_to_native/5,
 	  shfrson_project/3,  
 	  shfrson_sort/2,     
 	  shfrson_unknown_call/3,
@@ -172,11 +172,11 @@ compose_kind(_Kind0,_Kind1,perfect).
 
 %--------------------------------------------------------------------------
 
-shfrson_asub_to_native(((_Gr,SSon),ShFr),Qv,ASub_user):-
+shfrson_asub_to_native(((_Gr,SSon),ShFr),Qv,OutFlag,ASub_user,Comps):-
 	collect_singletons(SSon,Singletons),
 	varset(Singletons,NonLinearVars),
 	ord_subtract(Qv,NonLinearVars,LinearVars),
-	shfr_asub_to_native(ShFr,Qv,ASub_user0),
+	shfr_asub_to_native(ShFr,Qv,OutFlag,ASub_user0,Comps),
 	if_not_nil(LinearVars,linear(LinearVars),ASub_user,ASub_user0).
 
 if_not_nil([],_,Xs,Xs):- !.

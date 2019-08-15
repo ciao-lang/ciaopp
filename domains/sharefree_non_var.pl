@@ -611,14 +611,14 @@ shfrnv_input_interface(not_free(X),perfect,(Sh,Fr,Nv0),(Sh,Fr,Nv)):-
 %% 	shfrnv_output_interface0(LSucc,LOutSucc).
 
 %------------------------------------------------------------------------%
-% shfrnv_asub_to_native(+,+,-)                                           %
-% shfrnv_asub_to_native(ASub,Qv,ASub_user)                               %
+% shfrnv_asub_to_native(+,+,+,-,-)                                       %
+% shfrnv_asub_to_native(ASub,Qv,OutFlag,ASub_user,Comps)                 %
 % The user friendly format consists in extracting the nonfree variables  %
 % plus ground and free                                                   %
 %------------------------------------------------------------------------%
 
-shfrnv_asub_to_native((Sh,Fr),Qv,ASub_user):-
-	shfr_asub_to_native((Sh,Fr),Qv,ASub_user0),
+shfrnv_asub_to_native((Sh,Fr),Qv,OutFlag,ASub_user,Comps):-
+	shfr_asub_to_native((Sh,Fr),Qv,OutFlag,ASub_user0,Comps),
 	member_value_freeness(Fr,Nv,nv),
 	if_not_nil(Nv,not_free(Nv),ASub_user,ASub_user0).
 

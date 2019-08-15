@@ -8,7 +8,7 @@
 	  path_input_user_interface/3,
 	  path_input_interface/4,
 	  path_less_or_equal/2,
-	  path_asub_to_native/3,  
+	  path_asub_to_native/5,  
 	  path_project/3,     
 	  path_sort/2,        
 	  path_special_builtin/4,
@@ -353,14 +353,14 @@ myinsert(Fr0,X,Fr):-
 may_be_var(X):- ( X=[] ; true ), !.
 
 %------------------------------------------------------------------------%
-% path_asub_to_native(+,+,-)                                             %
-% path_asub_to_native(ASub,Qv,ASub_user)                                 %
+% path_asub_to_native(+,+,+,-,-)                                         %
+% path_asub_to_native(ASub,Qv,OutFlag,ASub_user,Comps)                   %
 %------------------------------------------------------------------------%
 
-%% path_asub_to_native('$bottom',_Qv,[]):- !.
-%% path_asub_to_native(ASub,_Qv,ASub).
+%% path_asub_to_native('$bottom',_Qv,_OutFlag,[],[]):- !.
+%% path_asub_to_native(ASub,_Qv,_OutFlag,ASub,[]).
 
-path_asub_to_native(ASub,Qv,ASub_user):-
+path_asub_to_native(ASub,Qv,_OutFlag,ASub_user,[]):-
 	path_vars(ASub,NonGv,[]),
 	subtract(Qv,NonGv,Gv),
 	member_value_path(ASub,Fv,[]),

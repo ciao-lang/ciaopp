@@ -554,28 +554,28 @@ full_info_to_asub_([I|Info],AbsInt,Acc0,Acc) :-
     domain @var{AbsInt} to a list of state properties @var{OutputUser} and
     computation properties @var{CompProps}, such that properties are
     visible in the preprocessing unit. It fails if @var{ASub} represents
-    bottom. It works by calling @tt{asub_to_native/4}.").
+    bottom. It works by calling @tt{asub_to_native/6}.").
 
 asub_to_info(AbsInt,ASub,Qv,OutputUser,CompProps) :-
-	asub_to_native(AbsInt,ASub,Qv,Info,Comp),
+	asub_to_native(AbsInt,ASub,Qv,no,Info,Comp),
 	native_props(Info,OutputUser),
 	native_props(Comp,CompProps).
 
 :- doc(hide,asub_to_out/5).
 :- export(asub_to_out/5).
 asub_to_out(AbsInt,ASub,Qv,OutputUser,CompProps) :-
-	asub_to_native_out(AbsInt,ASub,Qv,Info,Comp),
+	asub_to_native(AbsInt,ASub,Qv,yes,Info,Comp),
 	native_props(Info,OutputUser0),
 	native_props(Comp,CompProps0),
 	decide_low_level_format(OutputUser0,CompProps0,OutputUser,CompProps).
 	
-:- export(asub_to_native/5).
-:- doc(asub_to_native(AbsInt,ASub,Qv,NativeStat,NativeComp),
+:- export(asub_to_native/6).
+:- doc(asub_to_native(AbsInt,ASub,Qv,OutFlag,NativeStat,NativeComp),
    "@var{NativeStat} and @var{NativeComp} are the list of native (state and
     computational, resp.) properties that are the concretization
     of abstract substitution @var{ASub} on variables @var{Qv} for domain
     @var{AbsInt}. These are later translated to the properties which are
-    visible in the preprocessing unit.").
+    visible in the preprocessing unit."). % TODO: document OutFlag=yes for output
 
 :- export(concrete/4).
 % concrete(+,+,+,-)

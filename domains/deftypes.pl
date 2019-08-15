@@ -20,7 +20,7 @@
 %	deftypes_success_builtin/5,
 	deftypes_call_to_success_builtin/6,
 	deftypes_input_interface/4,
-	deftypes_asub_to_native/3,
+	deftypes_asub_to_native/5,
 	deftypes_output_interface/2,
 	deftypes_input_user_interface/3,
 	deftypes_collect_abstypes/3,
@@ -686,12 +686,11 @@ reduce_same_var__(Y,TY,X,TX,ASub,[X:TX|NewASub]):-
 
 
 %------------------------------------------------------------------------%
-% deftypes_asub_to_native(+ASub,+Flag,-OutputUser)                          %
+% deftypes_asub_to_native(+ASub,+Qv,+Flag,-OutputUser,-Comps)            %
 % Transforms abstract substitution ASub to user friendly format.         %
 %------------------------------------------------------------------------%
 
-
-deftypes_asub_to_native(ASub,Flag,OutputUser):-
+deftypes_asub_to_native(ASub,_Qv,Flag,OutputUser,[]):-
 	deftypes_asub_to_native0(ASub,OutputUser1),
 	equiv_types(OutputUser1,OutputUser2),
 	revert_types(OutputUser2,OutputUser,Symbols,[]),

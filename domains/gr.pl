@@ -15,7 +15,7 @@
 	gr_call_to_success_builtin/6,
 	gr_input_interface/4,
 	gr_input_user_interface/3,
-	gr_asub_to_native/3,
+	gr_asub_to_native/5,
 	%gr_output_interface/2,
 	gr_unknown_call/3,
 	gr_unknown_entry/2,
@@ -965,17 +965,18 @@ myappend(Vs,V0,V):-
 may_be_var(X,X):- ( X=[] ; true ), !.
 
 %------------------------------------------------------------------------%
-% gr_asub_to_native(+,+,-)                                               %
-% gr_asub_to_native(ASub,Qv,ASub_user)                                   %
+% gr_asub_to_native(+,+,+,-,-)                                           %
+% gr_asub_to_native(ASub,Qv,OutFlag,ASub_user,Comps)                     %
 % The user friendly format consists in extracting the ground variables   %
 % and the nonground variables                                            %
 %------------------------------------------------------------------------%
 
-:- pred gr_asub_to_native(+ASub,+Qv,-ASub_user): absu * list * term # 
+:- pred gr_asub_to_native(+ASub,+Qv,+OutFlag,-ASub_user,-Comps)
+   : absu * list * term * term * term # 
 "The user friendly format consists in extracting the ground variables   
  and the nonground variables".
 
-gr_asub_to_native(Abs,_Qv,ASub_user):-
+gr_asub_to_native(Abs,_Qv,_OutFlag,ASub_user,[]):-
 	member_value_gr(Abs,Gv,g),
 	member_value_gr(Abs,NGv,ng),
 	( Gv=[] -> ASub_user=ASub_user0 ; ASub_user=[ground(Gv)|ASub_user0] ),

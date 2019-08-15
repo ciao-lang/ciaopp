@@ -178,19 +178,20 @@ share_clique_def_input_user_interface((Gv,Sh,Cl,I),Qv,Call):-
 	Call = (SH_Call,Def_Call).
 
 %------------------------------------------------------------------------%
-% share_clique_def_asub_to_native(+,+,-)                                 |
-% share_clique_def_asub_to_native(ASub,Qv,ASub_user)                     |
+% share_clique_def_asub_to_native(+,+,+,-,-)                             |
+% share_clique_def_asub_to_native(ASub,Qv,OutFlag,ASub_user,Comps)       |
 %------------------------------------------------------------------------%
 
-share_clique_def_asub_to_native('$bottom',_Qv,_ASub_user):- !, fail.
-share_clique_def_asub_to_native(((Cl,Sh),a(G,_SS)),Qv,Info):-
+share_clique_def_asub_to_native('$bottom',_Qv,_OutFlag,_ASub_user,_Comps):- !, fail.
+share_clique_def_asub_to_native(((Cl,Sh),a(G,_SS)),Qv,_OutFlag,Info,[]):-
  	ord_union(Sh,Cl,All),
 	projected_gvars(All,Qv,Gv),	
 	if_not_nil(Cl,clique(Cl),Info,Info0),
 	if_not_nil(Sh,sharing(Sh),Info0,Info1),
 	if_not_nil(Gv,ground(Gv),Info1,[]),
         ( Gv == G -> true
-        ; warning_message("The set of ground variables are different")).
+        ; warning_message("The set of ground variables are different")
+	).
 	
 %------------------------------------------------------------------------%
 % share_clique_def_unknown_call(+,+,-)                                   |

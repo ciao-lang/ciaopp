@@ -10,7 +10,7 @@
 	  depthk_input_user_interface/3,
 	  depthk_input_interface/4,
 	  depthk_less_or_equal/2,  
-	  depthk_asub_to_native/2, 
+	  depthk_asub_to_native/5, 
 	  depthk_project/3,   
 	  depthk_sort/2,      
 	  depthk_special_builtin/4,  
@@ -315,14 +315,17 @@ myappend(Vs,V,[V|Vs]).
 may_be_var(X):- ( X=[] ; true ), !.
 
 %-------------------------------------------------------------------------
-% depthk_asub_to_native(+,-)
-% depthk_asub_to_native(ASub,Info)
+% depthk_asub_to_native(+,+,+,-,-)
+% depthk_asub_to_native(ASub,Qv,OutFlag,Info,Comps)
 %-------------------------------------------------------------------------
 
-depthk_asub_to_native([],[]).
-depthk_asub_to_native([X=T|ASub],Info):-
+depthk_asub_to_native(ASub,_Qv,_OutFlag,OutputUser,[]) :-
+	depthk_asub_to_native_(ASub,OutputUser).
+
+depthk_asub_to_native_([],[]).
+depthk_asub_to_native_([X=T|ASub],Info):-
 	accumulate(X,T,Info0,Info),
-	depthk_asub_to_native(ASub,Info0).
+	depthk_asub_to_native_(ASub,Info0).
 
 accumulate(_,T,Info0,Info):-
 	var(T), !,

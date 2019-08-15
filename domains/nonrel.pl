@@ -20,7 +20,7 @@
    @begin{alert} 
    @bf{Warning}: when using the output predicates provided with
      CiaoPP, no analysis result will be shown if predicate
-     @pred{nonrel_asub_to_native/2} does not translate to properties
+     @pred{nonrel_asub_to_native/6} does not translate to properties
      that CiaoPP can express natively. This is the case of the current
      implementation.
 
@@ -60,7 +60,7 @@
    @pred{nonrel_input_interface/5} and
    @pred{nonrel_input_user_interface/4} are used to translate native
    properties, typically present in assertions, to abstract
-   substitutions. Predicate @pred{nonrel_asub_to_native/3} translates
+   substitutions. Predicate @pred{nonrel_asub_to_native/6} translates
    abstract substitutions to properties that CiaoPP can express
    natively.
    @begin{alert}
@@ -450,11 +450,13 @@ nonrel_input_user_interface(AbsInt,_,Qv,ASub) :-
 % implemented by the user).
 nonrel_input_interface(_AbsInt,_Prop,_Kind,_Struct0,_Struct1). % TODO: not finished
 
-:- export(nonrel_asub_to_native/3).
-:- pred nonrel_asub_to_native(+AbsInt,+ASub,-ASub_user) : atm * term * term
-        #"It translates an internal abstract constraint into something friendly
- for the user.".
-nonrel_asub_to_native(_AbsInt,ASub,ASub).
+:- export(nonrel_asub_to_native/6).
+:- pred nonrel_asub_to_native(+AbsInt,+ASub,+Qv,+OutFlag,-ASub_user,-Comps) : 
+   atm * term * term * term * term * term
+   #"It translates an internal abstract constraint into something
+     friendly for the user.".
+
+nonrel_asub_to_native(_AbsInt,_Qv,_,ASub,ASub,[]).
 % [IG] for now we output the raw internal representation. This predicate could
 % be "overwritten by the developer of the domain."
 

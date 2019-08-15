@@ -14,7 +14,7 @@
 	  shfret_split_combined_domain/3,
 	  shfret_input_interface/4,
 	  shfret_input_user_interface/3,
-	  shfret_asub_to_native/4,
+	  shfret_asub_to_native/5,
 	  shfret_unknown_call/3,
 	  shfret_unknown_entry/2,
 	  shfret_empty_entry/2
@@ -217,14 +217,15 @@ shfret_input_user_interface(Struct,Qv,ASub):-
 	asub(ASub,ATypes,AModes).
 
 %------------------------------------------------------------------------%
-% shfret_asub_to_native(+,+,+,-)                                         %
-% shfret_asub_to_native(ASub,Qv,Flag,Comp)                               %
+% shfret_asub_to_native(+,+,+,-,-)                                       %
+% shfret_asub_to_native(ASub,Qv,Flag,Props,Comps)                        %
 %------------------------------------------------------------------------%
-shfret_asub_to_native(ASub,Qv,Flag,Props):-
+shfret_asub_to_native(ASub,Qv,Flag,Props,Comps):-
 	asub(ASub,ATypes,AModes),
-	shfr_asub_to_native(AModes,Qv,Props1),
-	eterms_asub_to_native(ATypes,Flag,Props2),
-	append(Props1,Props2,Props).
+	shfr_asub_to_native(AModes,Qv,Flag,Props1,Comps1),
+	eterms_asub_to_native(ATypes,Qv,Flag,Props2,Comps2),
+	append(Props1,Props2,Props),
+	append(Comps1,Comps2,Comps).
 
 %------------------------------------------------------------------------%
 % shfret_unknown_call(+,+,-)                                                 %

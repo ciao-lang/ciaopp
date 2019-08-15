@@ -550,13 +550,13 @@ myappend(Vs,V0,V):-
 	merge(Vs,V0,V).
 
 %------------------------------------------------------------------------%
-% share_clique_asub_to_native(+,+,-)                                     |
-% share_clique_asub_to_native(ASub,Qv,ASub_user)                         |
+% share_clique_asub_to_native(+,+,+,-,-)                                 |
+% share_clique_asub_to_native(ASub,Qv,OutFlag,ASub_user,Comps)           |
 % The user friendly format consists in extracting the ground variables   |
 %------------------------------------------------------------------------%
 
-share_clique_asub_to_native('$bottom',_Qv,_ASub_user):- !, fail.
-share_clique_asub_to_native((Cl,Sh),Qv,Info):-
+share_clique_asub_to_native('$bottom',_Qv,_OutFlag,_ASub_user,_Comps):- !, fail.
+share_clique_asub_to_native((Cl,Sh),Qv,_OutFlag,Info,[]):-
 	ord_union(Sh,Cl,All),
 	projected_gvars(All,Qv,Gv),
 	if_not_nil(Cl,clique(Cl),Info,Info0),

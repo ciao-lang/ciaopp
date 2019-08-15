@@ -12,7 +12,7 @@
 	  son_input_interface/4, 
 	  son_less_or_equal/2,
 	  son_lub/3,        
-	  son_asub_to_native/3,
+	  son_asub_to_native/5,
 	  son_project/3,      
 	  son_sort/2,         
 	  son_special_builtin/4,
@@ -362,15 +362,15 @@ son_unknown_entry(Qv,([],Sh)):-
 son_empty_entry(_Qv,([],[])).
 
 %------------------------------------------------------------------------%
-% son_asub_to_native(+,+,-)                                              %
-% son_asub_to_native(ASub,Qv,ASub_user)                                  %
+% son_asub_to_native(+,+,+,-,-)                                          %
+% son_asub_to_native(ASub,Qv,OutFlag,ASub_user,Comps)                    %
 % The user friendly format consists in extracting the ground variables   %
 % (Gr) the linear variables (those which do not appear as singletons in  %
 % Sh. The rest is the way in which pair sharing is transformed into set  %
 % sharing                                                                %
 %------------------------------------------------------------------------%
 
-son_asub_to_native((Gr,SSon),Qv,ASub_user):-
+son_asub_to_native((Gr,SSon),Qv,_OutFlag,ASub_user,[]):-
 	son_to_share((Gr,SSon),Qv,SetSh,LinearVars0),
 	ord_subtract(LinearVars0,Gr,LinearVars),
 	if_not_nil(Gr,ground(Gr),ASub_user,ASub_user0),

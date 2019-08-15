@@ -1,7 +1,7 @@
 /*             Copyright (C)1990-94 UPM-CLIP				*/
 
 :- module(def,
-	[ def_asub_to_native/2, 
+	[ def_asub_to_native/5, 
 	  def_call_to_entry/6,
 	  def_call_to_success_fact/8,
 	  def_compute_lub/2,
@@ -583,20 +583,23 @@ myappend(Vs,V0,V):-
 may_be_var(X,X):- ( X=[] ; true ), !.
 
 %-------------------------------------------------------------------------
-% def_asub_to_native(+,-)
+% def_asub_to_native(+,+,+,-,-)
 % It translates an internal abstract constraint into something friendly
 % for the user. 
 %-------------------------------------------------------------------------
 
-def_asub_to_native(a(Ground,Set),Succ):-
+def_asub_to_native(ASub,_Qv,_OutFlag,Succ,[]) :-
+	def_asub_to_native_(ASub,Succ).
+
+def_asub_to_native_(a(Ground,Set),Succ):-
 	sort(Ground,G),
 	def_sort_set(Set,S),
 	( G=[] -> Succ=Succ0 ; Succ=[ground(G)|Succ0] ),
 	( S=[] -> Succ0=[] ; defdeps2covered(S,Succ0) ).
-def_asub_to_native(d(Def,Del),[delay(Del)|Succ]):-
-	def_asub_to_native(Def,Succ).
-def_asub_to_native(ac(ASub,Flag),[flag(Flag)|Succ]):-
- 	def_asub_to_native(ASub,Succ).	
+def_asub_to_native_(d(Def,Del),[delay(Del)|Succ]):-
+	def_asub_to_native_(Def,Succ).
+def_asub_to_native_(ac(ASub,Flag),[flag(Flag)|Succ]):-
+ 	def_asub_to_native_(ASub,Succ).	
 
 defdeps2covered([],[]).
 defdeps2covered([(V,List)|S],Native):-

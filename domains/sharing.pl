@@ -650,13 +650,13 @@ share_empty_entry(Vars,Entry):-
 % share_output_interface(Succ,Succ).
 
 %------------------------------------------------------------------------%
-% share_asub_to_native(+,+,-)                                     %
-% share_asub_to_native(ASub,Qv,ASub_user)                         %
+% share_asub_to_native(+,+,+,-,-)                                        %
+% share_asub_to_native(ASub,Qv,OutFlag,ASub_user,Comps)                  %
 % The user friendly format consists in extracting the ground variables   %
 %------------------------------------------------------------------------%
 
-share_asub_to_native('$bottom',_Qv,_ASub_user):- !, fail.
-share_asub_to_native(Succ,Qv,Info):-
+share_asub_to_native('$bottom',_Qv,_OutFlag,_ASub_user,_Comps):- !, fail.
+share_asub_to_native(Succ,Qv,_OutFlag,Info,[]):-
 	if_not_nil(Succ,sharing(Succ),Info,Info0),
 	projected_gvars(Succ,Qv,Gv),
 	if_not_nil(Gv,ground(Gv),Info0,[]).

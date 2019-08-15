@@ -11,7 +11,7 @@
 	  aeq_input_user_interface/3, 
 	  aeq_input_interface/4,
 	  aeq_less_or_equal/2,
-	  aeq_asub_to_native/2,
+	  aeq_asub_to_native/5,
 	  aeq_project/3,      
 	  aeq_sort/2,         
 	  aeq_special_builtin/4,
@@ -556,10 +556,13 @@ myappend(Vs,V,[V|Vs]).
 
 %------------------------------------------------------------------------------
 
-%% :- mode aeq_asub_to_native(+,-).
-aeq_asub_to_native(ASub,OutputUser):-
-	 aeq_intern_to_extern(ASub,Extern),
-	 aeq_extern_to_output(Extern,OutputUser).
+%% :- mode aeq_asub_to_native(+,+,+,-,-).
+aeq_asub_to_native(ASub,_Qv,_OutFlag,OutputUser,[]) :-
+	aeq_asub_to_native_(ASub,OutputUser).
+
+aeq_asub_to_native_(ASub,OutputUser):-
+	aeq_intern_to_extern(ASub,Extern),
+	aeq_extern_to_output(Extern,OutputUser).
 
 %------------------------------------------------------------------------------
 

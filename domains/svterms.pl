@@ -18,7 +18,7 @@
 	svterms_input_interface/4,
 	svterms_input_user_interface/3,
 	svterms_output_interface/2,
-	svterms_asub_to_native/3,
+	svterms_asub_to_native/5,
 	svterms_asub_to_native1/3,
 	svterms_collect_abstypes/3,
 	svterms_rename_abs/4,
@@ -62,7 +62,7 @@
 	    eterms_call_to_success_builtin/6,
 	    eterms_input_interface/4,
 	    eterms_input_user_interface/3,
-	    eterms_asub_to_native/3,
+	    eterms_asub_to_native/5,
 	    eterms_asub_to_native1/3,
 	    eterms_identical_abstract/2,
 	    eterms_widen/3,
@@ -649,9 +649,9 @@ svterms_input_interface(InputUser,Kind,Struct0,Struct1):-
 	eterms_input_interface(InputUser,Kind,Struct0,Struct1).
 
 %--------------------------------------------------------------%	
-svterms_asub_to_native(ASub,Flag,OutputUser):-
+svterms_asub_to_native(ASub,Qv,Flag,OutputUser,Comps):-
 	abssubst(ASub,TASub,_SV1),	
-	eterms_asub_to_native(TASub,Flag,OutputUser).
+	eterms_asub_to_native(TASub,Qv,Flag,OutputUser,Comps).
 
 svterms_asub_to_native1(OutputUser1,Flag,OutputUser):-
 	eterms_asub_to_native1(OutputUser1,Flag,OutputUser).
