@@ -78,30 +78,42 @@
 % PD domain
 :- use_module(domain(pd)).
 aidomain(pd).
-call_to_entry(pd,_Sv,_Sg,_Hv,_Head,_K,_Fv,Proj,Proj,_ExtraInfo) :- !.
-exit_to_prime(pd,_Sg,_Hv,_Head,_Sv,Exit,_ExtraInfo,Exit) :- !.
-project(pd,_,_Vars,_,ASub,ASub) :- !.
-compute_lub(pd,_ListAsub,top) :- !.
+call_to_entry(pd,Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo) :- !, pd_call_to_entry(Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo).
+exit_to_prime(pd,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime) :- !, pd_exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime).
+project(pd,Sg,Vars,HvFv,ASub,Proj) :- !, pd_project(Sg,Vars,HvFv,ASub,Proj).
+compute_lub(pd,ListAsub,LubASub) :- !, pd_compute_lub(ListAsub,LubASub).
 identical_abstract(pd,ASub1,ASub2) :- !, ASub1 == ASub2.
 abs_sort(pd,ASub,ASub) :- !.
-extend(pd,_Sg,Prime,_Sv,_Call,Prime) :- !.
-less_or_equal(pd,_,_) :- !.
+extend(pd,Sg,Prime,Sv,Call,Succ) :- !, pd_extend(Sg,Prime,Sv,Call,Succ).
+less_or_equal(pd,ASub0,ASub1) :- !, pd_less_or_equal(ASub0,ASub1).
 glb(pd,ASub0,ASub1,ASub) :- !, pd_glb(ASub0,ASub1,ASub).
 eliminate_equivalent(pd,TmpLSucc,LSucc) :- !, sort(TmpLSucc,LSucc).
-call_to_success_fact(pd,_Sg,_Hv,_Head,_Sv,Call,_Proj,Call,Call) :- !.
+call_to_success_fact(pd,Sg,Hv,Head,Sv,Call,Proj,Prime,Succ) :- !, pd_call_to_success_fact(Sg,Hv,Head,Sv,Call,Proj,Prime,Succ).
 special_builtin(pd,SgKey,Sg,_,Type,Condvars) :- !, pd_special_builtin(SgKey,Sg,Type,Condvars).
 success_builtin(pd,Type,Sv_uns,Condvars,_,Call,Succ) :- !, pd_success_builtin(Type,Sv_uns,Condvars,Call,Succ).
-call_to_success_builtin(pd,_SgKey,_Sg,_Sv,Call,_Proj,Call) :- !.
-input_user_interface(pd,_InputUser,_Qv,top) :- !.
+call_to_success_builtin(pd,SgKey,Sg,Sv,Call,Proj,Succ) :- !, pd_call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,Succ).
+input_user_interface(pd,InputUser,Qv,ASub) :- !, pd_input_user_interface(InputUser,Qv,ASub).
 asub_to_native(pd,ASub,Qv,OutFlag,OutputUser,Comps) :- !, pd_asub_to_native(ASub,Qv,OutFlag,OutputUser,Comps).
-unknown_call(pd,_Vars,Call,Call) :- !.
-unknown_entry(pd,_Qv,'top') :- !.
-empty_entry(pd,_Qv,'top') :- !.
+unknown_call(pd,Vars,Call,Succ) :- !, pd_unknown_call(Vars,Call,Succ).
+unknown_entry(pd,Qv,Call) :- !, pd_unknown_entry(Qv,Call).
+empty_entry(pd,Qv,Call) :- !, pd_empty_entry(Qv,Call).
 %
+pd_call_to_entry(_Sv,_Sg,_Hv,_Head,_K,_Fv,Proj,Proj,_ExtraInfo).
+pd_exit_to_prime(_Sg,_Hv,_Head,_Sv,Exit,_ExtraInfo,Exit).
+pd_project(_,_Vars,_,ASub,ASub).
+pd_compute_lub(_ListAsub,top).
+pd_extend(_Sg,Prime,_Sv,_Call,Prime).
+pd_less_or_equal(_,_).
 pd_glb('$bottom',_ASub1,ASub) :- !, ASub = '$bottom'.
 pd_glb(_ASub0,'$bottom',ASub) :- !, ASub = '$bottom'.
 pd_glb(_,_,top).
+pd_call_to_success_fact(_Sg,_Hv,_Head,_Sv,Call,_Proj,Call,Call).
+pd_call_to_success_builtin(_SgKey,_Sg,_Sv,Call,_Proj,Call).
+pd_input_user_interface(_InputUser,_Qv,top).
 pd_asub_to_native(_ASub,_Qv,_OutFlag,[true],[]).
+pd_unknown_call(_Vars,Call,Call).
+pd_unknown_entry(_Qv,'top').
+pd_empty_entry(_Qv,'top').
 % ---------------------------------------------------------------------------
 % PD domain with bottom
 :- use_module(domain(pdb)).
