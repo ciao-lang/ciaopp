@@ -1553,7 +1553,7 @@ aidomain(res_plai).
 init_abstract_domain(res_plai,PushedFlags) :- !, res_plai_init_abstract_domain(PushedFlags).
 call_to_entry(res_plai,Sv,Sg,Hv,Head,ClauseKey,Fv,Proj,Entry,ExtraInfo) :- !, % TODO: moved cut (JF)
 	res_plai_call_to_entry(Sv,Sg,Hv,Head,ClauseKey,Fv,Proj,Entry,ExtraInfo).
-call_to_entry(res_plai,Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo) :- !, res_plai_call_to_entry(Sv,Sg,Hv,Head,no_provided,Fv,Proj,Entry,ExtraInfo). % TODO:[new-resources] 'no_provided' is strange
+call_to_entry(res_plai,Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo) :- !, res_plai_call_to_entry(Sv,Sg,Hv,Head,not_provided,Fv,Proj,Entry,ExtraInfo). % TODO:[new-resources] 'not_provided' is strange
 exit_to_prime(res_plai,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime) :- !, res_plai_exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime).
 project(res_plai,Sg,Vars,_HvFv,ASub,Proj) :- !, res_plai_project(ASub,Sg,Vars,Proj).
 %widencall(res_plai,Prime0,Prime1,NewPrime) :- !, res_plai_widencall(Prime0,Prime1,NewPrime).
@@ -1568,7 +1568,7 @@ less_or_equal(res_plai,ASub0,ASub1) :- !, res_plai_less_or_equal(ASub0,ASub1).
 glb(res_plai,ASub0,ASub1,ASub) :- !, res_plai_glb(ASub0,ASub1,ASub).
 eliminate_equivalent(res_plai,LSucc,LSucc) :- !.
 call_to_success_fact(res_plai,Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ) :- !, res_plai_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ).
-call_to_success_fact(res_plai,Sg,Hv,Head,Sv,Call,Proj,Prime,Succ) :- !, res_plai_call_to_success_fact(Sg,Hv,Head,no_provided,Sv,Call,Proj,Prime,Succ).
+call_to_success_fact(res_plai,Sg,Hv,Head,Sv,Call,Proj,Prime,Succ) :- !, res_plai_call_to_success_fact(Sg,Hv,Head,not_provided,Sv,Call,Proj,Prime,Succ).
 special_builtin(res_plai,SgKey,Sg,_Subgoal,Type,Condvars) :- !, res_plai_special_builtin(SgKey,Sg,Type,Condvars).
 combined_special_builtin(res_plai,SgKey,Domains) :- !, res_plai_combined_special_builtin(SgKey,Domains).
 split_combined_domain(res_plai,ASub,ASubs,Doms) :- !, res_plai_split_combined_domain(ASub,ASubs,Doms).
@@ -1605,7 +1605,7 @@ aidomain(res_plai_stprf).
 init_abstract_domain(res_plai_stprf,PushedFlags) :- !, res_plai_stprf_init_abstract_domain(PushedFlags).
 call_to_entry(res_plai_stprf,Sv,Sg,Hv,Head,ClauseKey,Fv,Proj,Entry,ExtraInfo) :- !, % TODO: moved cut (JF)
 	res_plai_stprf_call_to_entry(Sv,Sg,Hv,Head,ClauseKey,Fv,Proj,Entry,ExtraInfo).
-call_to_entry(res_plai_stprf,Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo) :- !, res_plai_stprf_call_to_entry(Sv,Sg,Hv,Head,no_provided,Fv,Proj,Entry,ExtraInfo). % TODO:[new-resources] 'no_provided' is strange
+call_to_entry(res_plai_stprf,Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo) :- !, res_plai_stprf_call_to_entry(Sv,Sg,Hv,Head,not_provided,Fv,Proj,Entry,ExtraInfo). % TODO:[new-resources] 'not_provided' is strange
 exit_to_prime(res_plai_stprf,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime) :- !, res_plai_stprf_exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime).
 project(res_plai_stprf,Sg,Vars,_HvFv,ASub,Proj) :- !, res_plai_stprf_project(ASub,Sg,Vars,Proj).
 widen(res_plai_stprf,Prime0,Prime1,NewPrime) :- !, res_plai_stprf_widen(Prime0,Prime1,NewPrime).
@@ -1618,7 +1618,7 @@ less_or_equal(res_plai_stprf,ASub0,ASub1) :- !, res_plai_stprf_less_or_equal(ASu
 glb(res_plai_stprf,ASub0,ASub1,ASub) :- !, res_plai_stprf_glb(ASub0,ASub1,ASub).
 eliminate_equivalent(res_plai_stprf,LSucc,LSucc) :- !.
 call_to_success_fact(res_plai_stprf,Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ) :- !, res_plai_stprf_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ).
-call_to_success_fact(res_plai_stprf,Sg,Hv,Head,Sv,Call,Proj,Prime,Succ) :- !, res_plai_stprf_call_to_success_fact(Sg,Hv,Head,no_provided,Sv,Call,Proj,Prime,Succ).
+call_to_success_fact(res_plai_stprf,Sg,Hv,Head,Sv,Call,Proj,Prime,Succ) :- !, res_plai_stprf_call_to_success_fact(Sg,Hv,Head,not_provided,Sv,Call,Proj,Prime,Succ).
 special_builtin(res_plai_stprf,SgKey,Sg,_Subgoal,Type,Condvars) :- !, res_plai_stprf_special_builtin(SgKey,Sg,Type,Condvars).
 combined_special_builtin(res_plai_stprf,SgKey,Domains) :- !, res_plai_stprf_combined_special_builtin(SgKey,Domains).
 split_combined_domain(res_plai_stprf,ASub,ASubs,Doms) :- !, res_plai_stprf_split_combined_domain(ASub,ASubs,Doms).
@@ -1654,7 +1654,7 @@ aidomain(sized_types).
 init_abstract_domain(sized_types,PushedFlags) :- !, sized_types_init_abstract_domain(PushedFlags).
 call_to_entry(sized_types,Sv,Sg,Hv,Head,ClauseKey,Fv,Proj,Entry,ExtraInfo) :- !, % TODO: moved cut (JF)
 	sized_types_call_to_entry(Sv,Sg,Hv,Head,ClauseKey,Fv,Proj,Entry,ExtraInfo).
-call_to_entry(sized_types,Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo) :- !, sized_types_call_to_entry(Sv,Sg,Hv,Head,no_provided,Fv,Proj,Entry,ExtraInfo). % TODO:[new-resources] 'no_provided' is strange
+call_to_entry(sized_types,Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo) :- !, sized_types_call_to_entry(Sv,Sg,Hv,Head,not_provided,Fv,Proj,Entry,ExtraInfo). % TODO:[new-resources] 'not_provided' is strange
 exit_to_prime(sized_types,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime) :- !, sized_types_exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime).
 project(sized_types,Sg,Vars,_HvFv,ASub,Proj) :- !, sized_types_project(ASub,Sg,Vars,Proj).
 widen(sized_types,Prime0,Prime1,NewPrime) :- !, sized_types_widen(Prime0,Prime1,NewPrime).
@@ -1667,7 +1667,7 @@ less_or_equal(sized_types,ASub0,ASub1) :- !, sized_types_less_or_equal(ASub0,ASu
 glb(sized_types,ASub0,ASub1,ASub) :- !, sized_types_glb(ASub0,ASub1,ASub).
 eliminate_equivalent(sized_types,LSucc,LSucc) :- !.
 call_to_success_fact(sized_types,Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ) :- !, sized_types_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ).
-call_to_success_fact(sized_types,Sg,Hv,Head,Sv,Call,Proj,Prime,Succ) :- !, sized_types_call_to_success_fact(Sg,Hv,Head,no_provided,Sv,Call,Proj,Prime,Succ).
+call_to_success_fact(sized_types,Sg,Hv,Head,Sv,Call,Proj,Prime,Succ) :- !, sized_types_call_to_success_fact(Sg,Hv,Head,not_provided,Sv,Call,Proj,Prime,Succ).
 special_builtin(sized_types,SgKey,Sg,_Subgoal,Type,Condvars) :- !, sized_types_special_builtin(SgKey,Sg,Type,Condvars).
 combined_special_builtin(sized_types,SgKey,Domains) :- !, sized_types_combined_special_builtin(SgKey,Domains).
 split_combined_domain(sized_types,ASub,ASubs,Doms) :- !, sized_types_split_combined_domain(ASub,ASubs,Doms).
