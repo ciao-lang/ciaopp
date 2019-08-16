@@ -223,7 +223,7 @@ abs_sort(lsign,ASub,ASub_s) :- !, lsign_sort(ASub,ASub_s).
 extend(lsign,_,Prime,_Sv,Call,Succ) :- !, lsign_extend(Prime,Call,Succ).
 less_or_equal(lsign,ASub0,ASub1) :- !, lsign_less_or_equal(ASub0,ASub1).
 glb(lsign,ASub0,ASub1,ASub) :- !, lsign_glb(ASub0,ASub1,ASub).
-eliminate_equivalent(lsign,TmpLSucc_u,LSucc) :- !, sort(TmpLSucc_u,TmpLSucc), lsign_eliminate_equivalent(TmpLSucc,LSucc).
+eliminate_equivalent(lsign,TmpLSucc,LSucc) :- !, lsign_eliminate_equivalent(TmpLSucc,LSucc).
 abs_subset(lsign,LASub1,LASub2) :- !, lsign_is_subset(LASub1,LASub2).
 call_to_success_fact(lsign,Sg,_Hv,Head,_Sv,Call,Proj,Prime,Succ) :- !, lsign_call_to_success_fact(Sg,Head,Call,Proj,Prime,Succ).
 special_builtin(lsign,SgKey,Sg,_,Type,Condvars) :- !, lsign_special_builtin(SgKey,Sg,Type,Condvars).

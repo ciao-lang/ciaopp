@@ -1240,7 +1240,7 @@ lsign_less_or_equal(_ACons0,_ACons1):-
 lsign_is_subset(_LASub1,_LASub2):-
 	throw(not_implemented(lsign_is_subset)).
 
-lsign_eliminate_equivalent(_LSucc,_LSucc):- !.
+lsign_eliminate_equivalent(LSucc0,LSucc):- !, sort(LSucc0,LSucc).
 lsign_eliminate_equivalent(_LSucc0,_LSucc):-
 	throw(not_implemented(lsign_eliminate_equivalent)).
 
