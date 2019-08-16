@@ -231,14 +231,14 @@ process_body(Body,K,AbsInt,Sg,Hv,_Fv,_,Head,Sv,Call,Proj,LPrime,Id):-
 	call_to_success_fact(AbsInt,Sg,Hv,Head,Sv,Call,Proj,Prime,_Succ),
   get_singleton(Prime,LPrime),
 	( current_pp_flag(fact_info,on) ->
-	    call_to_entry(AbsInt,Sv,Sg,Hv,Head,[],Prime,Exit,_),
+	    call_to_entry(AbsInt,Sv,Sg,Hv,Head,not_provided,[],Prime,Exit,_),
 	    decide_memo(AbsInt,K,Id,no,Hv,[Exit])
 	;
 	    true
 	),
 	fixpoint_trace('exit fact',Id,_N,K,Head,Prime,Help).
 process_body(Body,K,AbsInt,Sg,Hv,Fv,Vars_u,Head,Sv,_,Proj,Prime,Id):-
-	call_to_entry(AbsInt,Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo),
+	call_to_entry(AbsInt,Sv,Sg,Hv,Head,not_provided,Fv,Proj,Entry,ExtraInfo),
 	fixpoint_trace('visit clause',Id,_N,K,Head,Entry,Body),
 	get_singleton(Entry,LEntry),
 	entry_to_exit(Body,K,LEntry,Exit,Vars_u,AbsInt,Id),
@@ -298,7 +298,7 @@ do_r_cl(Clause,SgKey,Sg,Sv,Proj,AbsInt,Id,TempPrime,Prime):-
 	varset(Head,Hv),
 	sort(Vars_u,Vars),
 	ord_subtract(Vars,Hv,Fv),
-	call_to_entry(AbsInt,Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo),
+	call_to_entry(AbsInt,Sv,Sg,Hv,Head,not_provided,Fv,Proj,Entry,ExtraInfo),
 %	erase_previous_memo_tables_and_parents(Body,AbsInt,K,Id),
 	fixpoint_trace('visit clause',Id,_N,ClKey,Head,Entry,Body),
 	get_singleton(Entry,LEntry),
@@ -480,7 +480,7 @@ compute_change([(_,N/A/C/0)|Rest],SgKey,Sg,Sv,Proj,AbsInt,TempPrime,Prime,Id) :-
 	    varset(Head,Hv),
 	    sort(Vars_u,Vars),
 	    ord_subtract(Vars,Hv,Fv),
-	    call_to_entry(AbsInt,Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo),
+	    call_to_entry(AbsInt,Sv,Sg,Hv,Head,not_provided,Fv,Proj,Entry,ExtraInfo),
 %	    erase_previous_memo_tables_and_parents(Body,AbsInt,ClKey,Id),
 %  not needed as it is the first time we analyze this clause
 	    get_singleton(Entry,LEntry),
@@ -502,7 +502,7 @@ compute_change([(Ch_Key,N/A/C/_)|Rest],SgKey,Sg,Sv,Proj,AbsInt,TempPrime,Prime,I
 	varset(Head,Hv),
 	sort(Vars_u,Vars),
  	ord_subtract(Vars,Hv,Fv),
-	call_to_entry(AbsInt,Sv,Sg,Hv,Head,Fv,Proj,_,ExtraInfo), % only for the ExtraInfo?
+	call_to_entry(AbsInt,Sv,Sg,Hv,Head,not_provided,Fv,Proj,_,ExtraInfo), % only for the ExtraInfo?
 	erase_previous_memo_tables_and_parents(NewBody,AbsInt,ClKey,Id),
 	entry_to_exit(NewBody,ClKey,S_Entry,Exit,Vars_u,AbsInt,Id),
 	each_exit_to_prime(Exit,AbsInt,Sg,Hv,Head,Sv,ExtraInfo,Prime1),

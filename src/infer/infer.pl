@@ -19,7 +19,7 @@
 :- use_module(typeslib(typeslib), 
 	[dz_type_included/2, get_type_rule/2, insert_rule/2, new_type_symbol/1]).
 :- use_module(ciaopp(plai/domains), 
-	[abs_sort/3,asub_to_info/5,call_to_entry/9,
+	[abs_sort/3,asub_to_info/5,call_to_entry/10,
 	 compute_lub/3, %do_compute_lub/3,
 	 obtain_info/5,
 	 asub_to_native/6]).
@@ -328,6 +328,7 @@ most_general_goal(Goal1,Call1,Succ1,res_plai_stprf,Goal,Gov,Call,Succ_s):- !, % 
 % 	decide_call_to_entry(Call_s,sized_types,Go1v,Goal1,Gov,Goal,[],Call).
 	%decide_call_to_entry(Succ_s,AbsInt,Go1v,Goal1,Gov,Goal,[],Succ).
 %
+% TODO: duplicated
 most_general_goal(Goal1,Call1,Succ1,AbsInt,Goal,Gov,Call,Succ):-
 	abs_sort(AbsInt,Call1,Call_s),
 	abs_sort(AbsInt,Succ1,Succ_s),
@@ -335,9 +336,10 @@ most_general_goal(Goal1,Call1,Succ1,AbsInt,Goal,Gov,Call,Succ):-
 	decide_call_to_entry(Call_s,AbsInt,Go1v,Goal1,Gov,Goal,[],Call),
 	decide_call_to_entry(Succ_s,AbsInt,Go1v,Goal1,Gov,Goal,[],Succ).
 
+% TODO: duplicated
 decide_call_to_entry('$bottom',_AbsInt,_Go1v,_Goal1,_Gov,_Goal,_,'$bottom'):-!.
 decide_call_to_entry(Call_s,AbsInt,Go1v,Goal1,Gov,Goal,[],Call):-
-	call_to_entry(AbsInt,Go1v,Goal1,Gov,Goal,[],Call_s,Call,_).
+	call_to_entry(AbsInt,Go1v,Goal1,Gov,Goal,not_provided,[],Call_s,Call,_).
 
 %------------------------------------------------------------------------%
 % does the typing TypeList hold for Goal at point K?

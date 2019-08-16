@@ -17,7 +17,7 @@
 :- use_module(library(lists), [member/2]).
 :- use_module(ciaopp(preprocess_flags), [current_pp_flag/2]).
 :- use_module(library(terms_vars), [varset/2]).
-:- use_module(ciaopp(plai/domains), [call_to_entry/9]).
+:- use_module(ciaopp(plai/domains), [call_to_entry/10]).
 :- use_module(ciaopp(plai/fixpo_ops), [bottom/1]).
 
 decide_remove_useless_pre(Clauses,AbsInt,Sg,Sv,Proj,NClauses):-
@@ -47,7 +47,7 @@ useless_clause(fact(C),AbsInt,Sg,Sv,Proj):-!,
 	useless_clause(C,AbsInt,Sg,Sv,Proj).
 useless_clause(clause(Head,_),AbsInt,Sg,Sv,Proj):-
 	varset(Head,Hv),
-	call_to_entry(AbsInt,Sv,Sg,Hv,Head,[],Proj,Entry,_),
+	call_to_entry(AbsInt,Sv,Sg,Hv,Head,not_provided,[],Proj,Entry,_),
 	bottom([Entry]).
 
 

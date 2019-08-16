@@ -104,7 +104,7 @@ a native property. Then we could use it for rtchecks in this module.").
 	[apply_trusted0/7, apply_trusted_modular/6]).
 :- use_module(ciaopp(plai/domains), [info_to_asub/6, info_to_asub/7,
 	extend/6, project/6, exit_to_prime/8, compute_lub/3,
-	identical_abstract/3, call_to_entry/9, glb/4,
+	identical_abstract/3, call_to_entry/10, glb/4,
 	less_or_equal/3, unknown_call/4]).
 
 :- use_module(ciaopp(plai/plai_errors), [invalid_trust_message/4]).
@@ -339,7 +339,7 @@ abs_normalize(AbsInt,Sg,Sv,ASub0,Head,Hv,ASub,ExtraInfo) :-
 	functor(Head,F,A),
   varset(Head, Hv),
   % variant case already optimized in call_to_entry (using copy_term)
-  call_to_entry(AbsInt,Sv,Sg,Hv,Head,[],ASub0,TmpCall,ExtraInfo),
+  call_to_entry(AbsInt,Sv,Sg,Hv,Head,not_provided,[],ASub0,TmpCall,ExtraInfo),
   project(AbsInt,Head,Hv,Hv,TmpCall,ASub), !. % TODO: Is this necessary?
 
 :- export(get_applicable_status/3).

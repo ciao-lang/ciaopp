@@ -761,14 +761,14 @@ process_body(Body,K,AbsInt,Sg,Hv,Fv,_,Head,Sv,Call,Proj,LPrime,Id):-
 	call_to_success_fact(AbsInt,Sg,Hv,Head,Sv,Call,Proj,Prime,_Succ),
 	fixpoint_trace('exit fact',Id,_N,K,Head,Prime,Help),
 	( current_pp_flag(fact_info,on) -> 
- 	  call_to_entry(AbsInt,Sv,Sg,Hv,Head,[],Prime,Exit,_),
+ 	  call_to_entry(AbsInt,Sv,Sg,Hv,Head,not_provided,[],Prime,Exit,_),
 	  decide_memo(AbsInt,K,Id,no,Hv,[Exit])
 	;
 	  true
 	),
 	true.
 process_body(Body,K,AbsInt,Sg,Hv,Fv,Vars_u,Head,Sv,_,Proj,Prime,Id):-
-	call_to_entry(AbsInt,Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo),
+	call_to_entry(AbsInt,Sv,Sg,Hv,Head,not_provided,Fv,Proj,Entry,ExtraInfo),
 	fixpoint_trace('visit clause',Id,_N,K,Head,Entry,Body),
 	singleton(Entry,LEntry),
 	entry_to_exit(Body,K,LEntry,Exit,[],_,Vars_u,AbsInt,Id),
@@ -894,7 +894,7 @@ reuse_entry(EntryInf,Vars_u,AbsInt,Sv,Sg,Hv,Head,Proj,Entry,ExtraInfo):-
 	var(EntryInf), !,
 	sort(Vars_u,Vars),
 	ord_subtract(Vars,Hv,Fv),
-	call_to_entry(AbsInt,Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo),
+	call_to_entry(AbsInt,Sv,Sg,Hv,Head,not_provided,Fv,Proj,Entry,ExtraInfo),
 	EntryInf = (Entry,ExtraInfo).
 reuse_entry(EntryInf,_Vars_u,_AbsInt,_Sv,_Sg,_Hv,_Head,_Proj,Entry,ExtraInfo):-
 	EntryInf = (Entry,ExtraInfo).

@@ -10,7 +10,6 @@
 :- discontiguous(augment_asub/4).
 :- discontiguous(augment_two_asub/4).
 :- discontiguous(call_to_entry/10).
-:- discontiguous(call_to_entry/9).
 :- discontiguous(exit_to_prime/8).
 :- discontiguous(project/6).
 :- discontiguous(widencall/4).
@@ -79,7 +78,7 @@
 % PD domain
 :- use_module(domain(pd)).
 aidomain(pd).
-call_to_entry(pd,_Sv,_Sg,_Hv,_Head,_Fv,Proj,Proj,_ExtraInfo) :- !.
+call_to_entry(pd,_Sv,_Sg,_Hv,_Head,_K,_Fv,Proj,Proj,_ExtraInfo) :- !.
 exit_to_prime(pd,_Sg,_Hv,_Head,_Sv,Exit,_ExtraInfo,Exit) :- !.
 project(pd,_,_Vars,_,ASub,ASub) :- !.
 compute_lub(pd,_ListAsub,top) :- !.
@@ -107,7 +106,7 @@ pd_asub_to_native(_ASub,_Qv,_OutFlag,[true],[]).
 % PD domain with bottom
 :- use_module(domain(pdb)).
 aidomain(pdb).
-call_to_entry(pdb,_Sv,_Sg,_Hv,_Head,_Fv,Proj,Proj,_ExtraInfo) :- !.
+call_to_entry(pdb,_Sv,_Sg,_Hv,_Head,_K,_Fv,Proj,Proj,_ExtraInfo) :- !.
 exit_to_prime(pdb,_Sg,_Hv,_Head,_Sv,Exit,_ExtraInfo,Exit) :- !.
 project(pdb,_,_Vars,_,ASub,ASub) :- !.
 compute_lub(pdb,ListAsub,LubASub) :- !, pdb_compute_lub(ListAsub,LubASub).
@@ -135,7 +134,7 @@ pdb_glb(_,_,top).
 % ---------------------------------------------------------------------------
 :- use_module(domain(fr_top)).
 aidomain(fr).
-call_to_entry(fr,_Sv,Sg,Hv,Head,_Fv,Proj,Entry,_ExtraInfo) :- !, fr_call_to_entry(Sg,Hv,Head,Proj,Entry).
+call_to_entry(fr,_Sv,Sg,Hv,Head,_K,_Fv,Proj,Entry,_ExtraInfo) :- !, fr_call_to_entry(Sg,Hv,Head,Proj,Entry).
 exit_to_prime(fr,Sg,Hv,Head,Sv,Exit,_ExtraInfo,Prime) :- !, fr_exit_to_prime(Exit,Sg,Hv,Head,Sv,Prime).
 project(fr,_,Vars,_,ASub,Proj) :- !, fr_project(ASub,Vars,Proj).
 %% VD specific version of lub used at procedure exit
@@ -164,7 +163,7 @@ fr_asub_to_native(ASub,Qv,_OutFlag,OutputUser,[]) :- fr_output_interface(ASub,Qv
 % ---------------------------------------------------------------------------
 :- use_module(domain(fd)).
 aidomain(frdef).
-call_to_entry(frdef,_Sv,Sg,Hv,Head,_Fv,Proj,Entry,ExtraInfo) :- !, fd_call_to_entry(Sg,Hv,Head,Proj,Entry,ExtraInfo).
+call_to_entry(frdef,_Sv,Sg,Hv,Head,_K,_Fv,Proj,Entry,ExtraInfo) :- !, fd_call_to_entry(Sg,Hv,Head,Proj,Entry,ExtraInfo).
 exit_to_prime(frdef,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime) :- !, fd_exit_to_prime(Exit,Sg,Hv,Head,Sv,ExtraInfo,Prime).
 project(frdef,_,Vars,_,ASub,Proj) :- !, fd_project(ASub,Vars,Proj).
 compute_lub(frdef,ListASub,LubASub) :- !, fd_compute_lub(ListASub,LubASub).
@@ -203,7 +202,7 @@ fd_glb(_ASub0,_ASub1,_ASub) :- compiler_error(op_not_implemented(glb)), fail.
 :- use_module(domain(lsign)).
 aidomain(lsign).
 init_abstract_domain(lsign,PushedFlags) :- !, lsign_init_abstract_domain(PushedFlags).
-call_to_entry(lsign,_Sv,Sg,_Hv,Head,Fv,Proj,Entry,ExtraInfo) :- !, lsign_call_to_entry(Sg,Head,Fv,Proj,Entry,ExtraInfo).
+call_to_entry(lsign,_Sv,Sg,_Hv,Head,_K,Fv,Proj,Entry,ExtraInfo) :- !, lsign_call_to_entry(Sg,Head,Fv,Proj,Entry,ExtraInfo).
 exit_to_prime(lsign,Sg,Hv,Head,_Sv,Exit,ExtraInfo,Prime) :- !, lsign_exit_to_prime(Sg,Hv,Head,Exit,ExtraInfo,Prime).
 project(lsign,_,Vars,HvFv,ASub,Proj) :- !, lsign_project(ASub,Vars,HvFv,Proj).
 compute_lub(lsign,ListASub,LubASub) :- !, lsign_compute_lub(ListASub,LubASub).
@@ -233,7 +232,7 @@ lsign_glb(_ASub0,_ASub1,_ASub) :- compiler_error(op_not_implemented(glb)), fail.
 lsign_asub_to_native(ASub,_Qv,_OutFlag,OutputUser,[]) :- lsign_output_interface(ASub,OutputUser).
 % ----------
 aidomain(difflsign).
-call_to_entry(difflsign,_Sv,Sg,_Hv,Head,Fv,Proj,Entry,ExtraInfo) :- !, simple_lsign_call_to_entry(Sg,Head,Fv,Proj,Entry,ExtraInfo).
+call_to_entry(difflsign,_Sv,Sg,_Hv,Head,_K,Fv,Proj,Entry,ExtraInfo) :- !, simple_lsign_call_to_entry(Sg,Head,Fv,Proj,Entry,ExtraInfo).
 exit_to_prime(difflsign,Sg,Hv,Head,_Sv,Exit,ExtraInfo,Prime) :- !, simple_lsign_exit_to_prime(Sg,Hv,Head,Exit,ExtraInfo,Prime).
 project(difflsign,_,Vars,HvFv,ASub,Proj) :- !, simple_lsign_project(ASub,Vars,HvFv,Proj).
 compute_lub(difflsign,ListASub,LubASub) :- !, lsign_compute_lub(ListASub,LubASub).
@@ -258,7 +257,7 @@ simple_lsign_glb(_ASub0,_ASub1,_ASub) :- compiler_error(op_not_implemented(glb))
 simple_lsign_asub_to_native(ASub,_Qv,_OutFlag,OutputUser,[]) :- simple_lsign_output_interface(ASub,OutputUser).
 % ----------
 % aidomain(lsigndef). % TODO: empty, why?
-call_to_entry(lsigndef,_Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo) :- !, lsigndef_call_to_entry(Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo).
+call_to_entry(lsigndef,_Sv,Sg,Hv,Head,_K,Fv,Proj,Entry,ExtraInfo) :- !, lsigndef_call_to_entry(Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo).
 exit_to_prime(lsigndef,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime) :- !, lsigndef_exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime).
 project(lsigndef,_,Vars,HvFv,ASub,Proj) :- !, lsigndef_project(ASub,Vars,HvFv,Proj). % TODO: check that HvFv is sorted!
 compute_lub(lsigndef,ListASub,LubASub) :- !, lsigndef_compute_lub(ListASub,LubASub).
@@ -294,7 +293,7 @@ lsigndef_empty_entry(_,_).
 lsigndef_glb(_ASub0,_ASub1,_ASub) :- compiler_error(op_not_implemented(glb)), fail.
 % ----------
 % aidomain(lsignshfr). % TODO: empty, why?
-call_to_entry(lsignshfr,Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo) :- !, lsignshfr_call_to_entry(Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo).
+call_to_entry(lsignshfr,Sv,Sg,Hv,Head,_K,Fv,Proj,Entry,ExtraInfo) :- !, lsignshfr_call_to_entry(Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo).
 exit_to_prime(lsignshfr,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime) :- !, lsignshfr_exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime).
 project(lsignshfr,_,Vars,HvFv,ASub,Proj) :- !, lsignshfr_project(ASub,Vars,HvFv,Proj).
 compute_lub(lsignshfr,ListASub,LubASub) :- !, lsignshfr_compute_lub(ListASub,LubASub).
@@ -330,7 +329,7 @@ lsignshfr_empty_entry(_,_).
 lsignshfr_glb(_ASub0,_ASub1,_ASub) :- compiler_error(op_not_implemented(glb)), fail.
 % ----------
 % aidomain(sha). % TODO: empty, why?
-call_to_entry(sha,_Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo) :- !, sha_call_to_entry(Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo).
+call_to_entry(sha,_Sv,Sg,Hv,Head,_K,Fv,Proj,Entry,ExtraInfo) :- !, sha_call_to_entry(Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo).
 exit_to_prime(sha,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime) :- !, sha_exit_to_prime(Exit,Hv,Head,Sv,Sg,Prime,ExtraInfo).
 project(sha,_,Vars,_HvFv,ASub,Proj) :- !, sha_project(ASub,Vars,Proj).
 compute_lub(sha,ListASub,LubASub) :- !, sha_compute_lub(ListASub,LubASub).
@@ -378,7 +377,7 @@ sha_empty_entry(_,_).
 sha_glb(_ASub0,_ASub1,_ASub) :- compiler_error(op_not_implemented(glb)), fail.
 % ----------
 % aidomain(typeshfr). % TODO: empty, why?
-call_to_entry(typeshfr,Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo) :- !, shfr_call_to_entry(Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo). % AADEBUG
+call_to_entry(typeshfr,Sv,Sg,Hv,Head,_K,Fv,Proj,Entry,ExtraInfo) :- !, shfr_call_to_entry(Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo). % AADEBUG
 compute_lub(typeshfr,ListASub,LubASub) :- !, shfr_compute_lub(ListASub,LubASub). %% AADEBUG added
 identical_abstract(typeshfr,ASub1,ASub2) :- !, identical_abstract(shfr,ASub1,ASub2). %% AADEBUG
 abs_sort(typeshfr,ASub,ASub_s) :- !, abs_sort(shfr,ASub,ASub_s). %% AADEBUG
@@ -391,7 +390,7 @@ glb(typeshfr,ASub0,ASub1,ASub) :- !, glb(shfr,ASub0,ASub1,ASub).
 % Example groundness domain
 :- use_module(domain(gr)).
 aidomain(gr).
-call_to_entry(gr,Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo) :- !, gr_call_to_entry(Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo).
+call_to_entry(gr,Sv,Sg,Hv,Head,_K,Fv,Proj,Entry,ExtraInfo) :- !, gr_call_to_entry(Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo).
 exit_to_prime(gr,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime) :- !, gr_exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime).
 project(gr,_,Vars,_,ASub,Proj) :- !, gr_project(ASub,Vars,Proj).
 compute_lub(gr,ListAsub,LubASub) :- !, gr_compute_lub(ListAsub,LubASub).
@@ -416,7 +415,7 @@ empty_entry(gr,Qv,Call) :- !, gr_empty_entry(Qv,Call).
 % ---------------------------------------------------------------------------
 :- use_module(domain(def)).
 aidomain(def).
-call_to_entry(def,_Sv,Sg,Hv,Head,_Fv,Proj,Entry,ExtraInfo) :- !, def_call_to_entry(Sg,Hv,Head,Proj,Entry,ExtraInfo).
+call_to_entry(def,_Sv,Sg,Hv,Head,_K,_Fv,Proj,Entry,ExtraInfo) :- !, def_call_to_entry(Sg,Hv,Head,Proj,Entry,ExtraInfo).
 exit_to_prime(def,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime) :- !, def_exit_to_prime(Exit,ExtraInfo,Hv,Sv,Head,Sg,Prime).
 project(def,_,Vars,_,ASub,Proj) :- !, def_project(ASub,Vars,Proj).
 compute_lub(def,ListASub,LubASub) :- !, def_compute_lub(ListASub,LubASub).
@@ -457,7 +456,7 @@ aidomain(share).
 amgu(share,Sg,Head,ASub,NewASub) :- !, share_amgu(Sg,Head,ASub,NewASub).
 augment_asub(share,ASub,Vars,ASub0) :- !, share_amgu_extend_asub(ASub,Vars,ASub0).
 augment_two_asub(share,ASub0,ASub1,ASub) :- !, share_amgu_extend_two_asub(ASub0,ASub1,ASub).
-call_to_entry(share,Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo) :- !, share_call_to_entry(Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo).
+call_to_entry(share,Sv,Sg,Hv,Head,_K,Fv,Proj,Entry,ExtraInfo) :- !, share_call_to_entry(Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo).
 exit_to_prime(share,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime) :- !, share_exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime).
 project(share,_,Vars,_,ASub,Proj) :- !, share_project(Vars,ASub,Proj).
 compute_lub(share,ListAsub,LubASub) :- !, share_compute_lub(ListAsub,LubASub).
@@ -482,7 +481,7 @@ empty_entry(share,Qv,Call) :- !, share_empty_entry(Qv,Call).
 aidomain(shfr).
 amgu(shfr,Sg,Head,ASub,NewASub) :- !, sharefree_amgu(Sg,Head,ASub,NewASub).
 augment_asub(shfr,ASub,Vars,ASub0) :- !, sharefree_amgu_extend_asub(ASub,Vars,ASub0).
-call_to_entry(shfr,Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo) :- !, shfr_call_to_entry(Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo).
+call_to_entry(shfr,Sv,Sg,Hv,Head,_K,Fv,Proj,Entry,ExtraInfo) :- !, shfr_call_to_entry(Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo).
 exit_to_prime(shfr,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime) :- !, shfr_exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime).
 project(shfr,_,Vars,_,ASub,Proj) :- !, shfr_project(ASub,Vars,Proj).
 compute_lub(shfr,ListAsub,LubASub) :- !, shfr_compute_lub(ListAsub,LubASub).
@@ -524,7 +523,7 @@ empty_entry(shfr,Qv,Call) :- !, shfr_empty_entry(Qv,Call).
 %% shfr_real_conjoin(_,_,_).
 % ----------
 aidomain(shfrnv).
-call_to_entry(shfrnv,Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo) :- !, shfrnv_call_to_entry(Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo).
+call_to_entry(shfrnv,Sv,Sg,Hv,Head,_K,Fv,Proj,Entry,ExtraInfo) :- !, shfrnv_call_to_entry(Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo).
 exit_to_prime(shfrnv,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime) :- !, shfrnv_exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime).
 project(shfrnv,_,Vars,_,ASub,Proj) :- !, shfr_project(ASub,Vars,Proj).
 compute_lub(shfrnv,ListAsub,LubASub) :- !, shfrnv_compute_lub(ListAsub,LubASub).
@@ -569,7 +568,7 @@ shfrnv_glb(_ASub0,_ASub1,_ASub) :- compiler_error(op_not_implemented(glb)), fail
 :- use_module(domain(shfret)).
 %aidomain(shfret). % TODO: it was missing, disabled?
 init_abstract_domain(shfret,PushedFlags) :- !, shfret_init_abstract_domain(PushedFlags).
-call_to_entry(shfret,Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo) :- !, shfret_call_to_entry(Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo).
+call_to_entry(shfret,Sv,Sg,Hv,Head,_K,Fv,Proj,Entry,ExtraInfo) :- !, shfret_call_to_entry(Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo).
 exit_to_prime(shfret,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime) :- !, shfret_exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime).
 project(shfret,_,Vars,_,ASub,Proj) :- !, shfret_project(ASub,Vars,Proj).
 widencall(shfret,Prime0,Prime1,NewPrime) :- !, shfret_widencall(Prime0,Prime1,NewPrime).
@@ -606,7 +605,7 @@ shfret_combined_special_builtin(SgKey,Domains) :-
 % ---------------------------------------------------------------------------
 :- use_module(domain(shareson)).
 aidomain(shareson).
-call_to_entry(shareson,Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo) :- !, shareson_call_to_entry(Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo).
+call_to_entry(shareson,Sv,Sg,Hv,Head,_K,Fv,Proj,Entry,ExtraInfo) :- !, shareson_call_to_entry(Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo).
 exit_to_prime(shareson,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime) :- !, shareson_exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime).
 project(shareson,_,Vars,_,ASub,Proj) :- !, shareson_project(Vars,ASub,Proj).
 compute_lub(shareson,ListAsub,LubASub) :- !, shareson_compute_lub(ListAsub,LubASub).
@@ -639,7 +638,7 @@ shareson_glb(_ASub0,_ASub1,_ASub) :- compiler_error(op_not_implemented(glb)), fa
 % ---------------------------------------------------------------------------
 :- use_module(domain(shfrson)).
 aidomain(shfrson).
-call_to_entry(shfrson,Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo) :- !, shfrson_call_to_entry(Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo).
+call_to_entry(shfrson,Sv,Sg,Hv,Head,_K,Fv,Proj,Entry,ExtraInfo) :- !, shfrson_call_to_entry(Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo).
 exit_to_prime(shfrson,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime) :- !, shfrson_exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime).
 project(shfrson,_,Vars,_,ASub,Proj) :- !, shfrson_project(Vars,ASub,Proj).
 compute_lub(shfrson,ListAsub,LubASub) :- !, shfrson_compute_lub(ListAsub,LubASub).
@@ -672,7 +671,7 @@ shfrson_glb(_ASub0,_ASub1,_ASub) :- compiler_error(op_not_implemented(glb)), fai
 % ---------------------------------------------------------------------------
 :- use_module(domain(sondergaard)).
 aidomain(son).
-call_to_entry(son,_,Sg,Hv,Head,_,Proj,Entry,ExtraInfo) :- !, son_call_to_entry(Hv,Sg,Head,Proj,Entry,ExtraInfo).
+call_to_entry(son,_,Sg,Hv,Head,_K,_,Proj,Entry,ExtraInfo) :- !, son_call_to_entry(Hv,Sg,Head,Proj,Entry,ExtraInfo).
 exit_to_prime(son,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime) :- !, son_exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime).
 project(son,_,Vars,_,ASub,Proj) :- !, son_project(Vars,ASub,Proj).
 compute_lub(son,ListAsub,LubASub) :- !, son_compute_lub(ListAsub,LubASub).
@@ -699,7 +698,7 @@ aidomain(share_amgu).
 amgu(share_amgu,Sg,Head,ASub,NewASub) :- !, share_amgu(Sg,Head,ASub,NewASub).
 augment_asub(share_amgu,ASub,Vars,ASub0) :- !, share_amgu_extend_asub(ASub,Vars,ASub0).
 augment_two_asub(share_amgu,ASub0,ASub1,ASub) :- !, share_amgu_extend_two_asub(ASub0,ASub1,ASub).
-call_to_entry(share_amgu,Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo) :- !, share_amgu_call_to_entry(Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo).
+call_to_entry(share_amgu,Sv,Sg,Hv,Head,_K,Fv,Proj,Entry,ExtraInfo) :- !, share_amgu_call_to_entry(Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo).
 exit_to_prime(share_amgu,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime) :- !, share_amgu_exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime).
 project(share_amgu,_,Vars,_,ASub,Proj) :- !, share_project(Vars,ASub,Proj).
 compute_lub(share_amgu,ListAsub,LubASub) :- !, share_compute_lub(ListAsub,LubASub).
@@ -724,7 +723,7 @@ empty_entry(share_amgu,Qv,Call) :- !, share_empty_entry(Qv,Call).
 aidomain(sharefree_amgu).
 amgu(sharefree_amgu,Sg,Head,ASub,NewASub) :- !, sharefree_amgu(Sg,Head,ASub,NewASub).
 augment_asub(sharefree_amgu,ASub,Vars,ASub0) :- !, sharefree_amgu_extend_asub(ASub,Vars,ASub0).
-call_to_entry(sharefree_amgu,Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo) :- !, sharefree_amgu_call_to_entry(Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo).
+call_to_entry(sharefree_amgu,Sv,Sg,Hv,Head,_K,Fv,Proj,Entry,ExtraInfo) :- !, sharefree_amgu_call_to_entry(Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo).
 exit_to_prime(sharefree_amgu,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime) :- !, sharefree_amgu_exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime).
 project(sharefree_amgu,_,Vars,_,ASub,Proj) :- !, shfr_project(ASub,Vars,Proj).
 compute_lub(sharefree_amgu,ListAsub,LubASub) :- !, shfr_compute_lub(ListAsub,LubASub).
@@ -749,7 +748,7 @@ empty_entry(sharefree_amgu,Qv,Call) :- !, shfr_empty_entry(Qv,Call).
 aidomain(shfrlin_amgu).
 amgu(shfrlin_amgu,Sg,Head,ASub,NewASub) :- !, shfrlin_amgu(Sg,Head,ASub,NewASub).
 augment_asub(shfrlin_amgu,ASub,Vars,ASub0) :- !, shfrlin_extend_asub(ASub,Vars,ASub0).
-call_to_entry(shfrlin_amgu,Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo) :- !, shfrlin_call_to_entry(Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo).
+call_to_entry(shfrlin_amgu,Sv,Sg,Hv,Head,_K,Fv,Proj,Entry,ExtraInfo) :- !, shfrlin_call_to_entry(Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo).
 exit_to_prime(shfrlin_amgu,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime) :- !, shfrlin_exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime).
 project(shfrlin_amgu,_,Vars,_,ASub,Proj) :- !, shfrlin_project(ASub,Vars,Proj).
 compute_lub(shfrlin_amgu,ListAsub,LubASub) :- !, shfrlin_compute_lub(ListAsub,LubASub).
@@ -775,7 +774,7 @@ empty_entry(shfrlin_amgu,Qv,Call) :- !, shfrlin_empty_entry(Qv,Call).
 aidomain(share_clique).
 amgu(share_clique,Sg,Head,ASub,NewASub) :- !, share_clique_amgu(Sg,Head,ASub,NewASub).
 augment_asub(share_clique,ASub,Vars,ASub0) :- !, share_clique_extend_asub(ASub,Vars,ASub0).
-call_to_entry(share_clique,Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo) :- !, share_clique_call_to_entry(Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo).
+call_to_entry(share_clique,Sv,Sg,Hv,Head,_K,Fv,Proj,Entry,ExtraInfo) :- !, share_clique_call_to_entry(Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo).
 exit_to_prime(share_clique,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime) :- !, share_clique_exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime).
 project(share_clique,_,Vars,_,ASub,Proj) :- !, share_clique_project(Vars,ASub,Proj).
 compute_lub(share_clique,ListAsub,LubASub) :- !, share_clique_compute_lub(ListAsub,LubASub).
@@ -798,7 +797,7 @@ empty_entry(share_clique,Qv,Call) :- !, share_clique_empty_entry(Qv,Call).
 %% compute_lub_el(share_clique,ASub1,ASub2,ASub) :- !, share_clique_lub_cl(ASub1,ASub2,ASub).
 % ----------
 aidomain(share_clique_1).
-call_to_entry(share_clique_1,Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo) :- !, share_clique_1_call_to_entry(Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo).
+call_to_entry(share_clique_1,Sv,Sg,Hv,Head,_K,Fv,Proj,Entry,ExtraInfo) :- !, share_clique_1_call_to_entry(Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo).
 exit_to_prime(share_clique_1,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime) :- !, share_clique_1_exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime).
 project(share_clique_1,_,Vars,_,ASub,Proj) :- !, share_clique_1_project(Vars,ASub,Proj).
 compute_lub(share_clique_1,ListAsub,LubASub) :- !, share_clique_1_compute_lub(ListAsub,LubASub).
@@ -823,7 +822,7 @@ empty_entry(share_clique_1,Qv,Call) :- !, share_clique_empty_entry(Qv,Call).
 aidomain(sharefree_clique).
 amgu(sharefree_clique,Sg,Head,ASub,NewASub) :- !, sharefree_clique_amgu(Sg,Head,ASub,NewASub).
 augment_asub(sharefree_clique,ASub,Vars,ASub0) :- !, sharefree_clique_extend_asub(ASub,Vars,ASub0).
-call_to_entry(sharefree_clique,Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo) :- !, sharefree_clique_call_to_entry(Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo).
+call_to_entry(sharefree_clique,Sv,Sg,Hv,Head,_K,Fv,Proj,Entry,ExtraInfo) :- !, sharefree_clique_call_to_entry(Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo).
 exit_to_prime(sharefree_clique,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime) :- !, sharefree_clique_exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime).
 project(sharefree_clique,_,Vars,_,ASub,Proj) :- !, sharefree_clique_project(ASub,Vars,Proj).
 compute_lub(sharefree_clique,ListAsub,LubASub) :- !, sharefree_clique_compute_lub(ListAsub,LubASub).
@@ -847,7 +846,7 @@ empty_entry(sharefree_clique,Qv,Call) :- !, sharefree_clique_empty_entry(Qv,Call
 %% compute_lub_el(sharefree_clique,ASub1,ASub2,ASub) :- !, sharefree_clique_compute_lub_el(ASub1,ASub2,ASub).
 % ----------
 aidomain(share_clique_def).
-call_to_entry(share_clique_def,Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo) :- !, share_clique_def_call_to_entry(Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo).
+call_to_entry(share_clique_def,Sv,Sg,Hv,Head,_K,Fv,Proj,Entry,ExtraInfo) :- !, share_clique_def_call_to_entry(Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo).
 exit_to_prime(share_clique_def,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime) :- !, share_clique_def_exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime).
 project(share_clique_def,_,Vars,_,ASub,Proj) :- !, share_clique_def_project(Vars,ASub,Proj).
 compute_lub(share_clique_def,ListAsub,LubASub) :- !, share_clique_def_compute_lub(ListAsub,LubASub).
@@ -885,7 +884,7 @@ share_clique_def_body_succ_builtin(Type,Sg,Condvs,Sv,HvFv_u,Call,Proj,Succ) :- %
 	body_builtin(share_clique_def,Type,Sg,Condvs,Sv,HvFv_u,Call,Proj,Succ).
 % ----------
 aidomain(sharefree_clique_def).
-call_to_entry(sharefree_clique_def,Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo) :- !, sharefree_clique_def_call_to_entry(Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo).
+call_to_entry(sharefree_clique_def,Sv,Sg,Hv,Head,_K,Fv,Proj,Entry,ExtraInfo) :- !, sharefree_clique_def_call_to_entry(Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo).
 exit_to_prime(sharefree_clique_def,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime) :- !, sharefree_clique_def_exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime).
 project(sharefree_clique_def,_,Vars,_,ASub,Proj) :- !, sharefree_clique_def_project(Vars,ASub,Proj).
 compute_lub(sharefree_clique_def,ListAsub,LubASub) :- !, sharefree_clique_def_compute_lub(ListAsub,LubASub).
@@ -928,7 +927,7 @@ aidomain(bshare).
 amgu(bshare,Sg,Head,ASub,NewASub) :- !, bshare_amgu(Sg,Head,ASub,NewASub).
 augment_asub(bshare,ASub,Vars,ASub0) :- !, bshare_extend_asub(ASub,Vars,ASub0).
 augment_two_asub(bshare,ASub0,ASub1,ASub) :- !, bshare_augment_two_asub(ASub0,ASub1,ASub).
-call_to_entry(bshare,Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo) :- !, bshare_call_to_entry(Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo).
+call_to_entry(bshare,Sv,Sg,Hv,Head,_K,Fv,Proj,Entry,ExtraInfo) :- !, bshare_call_to_entry(Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo).
 project(bshare,_,Vars,_,ASub,Proj) :- !, bshare_project(Vars,ASub,Proj).
 compute_lub(bshare,ListAsub,LubASub) :- !, bshare_compute_lub(ListAsub,LubASub).
 identical_abstract(bshare,ASub1,ASub2) :- !, bshare_identical_abstract(ASub1,ASub2).
@@ -947,7 +946,7 @@ empty_entry(bshare,Qv,Call) :- !, bshare_empty_entry(Qv,Call).
 % ---------------------------------------------------------------------------
 :- use_module(domain(aeq_top)).
 aidomain(aeq).
-call_to_entry(aeq,Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo) :- !, aeq_call_to_entry(Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo).
+call_to_entry(aeq,Sv,Sg,Hv,Head,_K,Fv,Proj,Entry,ExtraInfo) :- !, aeq_call_to_entry(Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo).
 exit_to_prime(aeq,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime) :- !, aeq_exit_to_prime(Exit,Sg,Hv,Head,Sv,ExtraInfo,Prime).
 project(aeq,_,Vars,_,ASub,Proj) :- !, aeq_project(ASub,Vars,Proj).
 compute_lub(aeq,ListASub,LubASub) :- !, aeq_compute_lub(ListASub,LubASub).
@@ -992,7 +991,7 @@ aeq_glb(_ASub0,_ASub1,_ASub) :- compiler_error(op_not_implemented(glb)), fail.
 % ---------------------------------------------------------------------------
 :- use_module(domain(depthk)).
 aidomain(depth).
-call_to_entry(depth,_Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo) :- !, depthk_call_to_entry(Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo).
+call_to_entry(depth,_Sv,Sg,Hv,Head,_K,Fv,Proj,Entry,ExtraInfo) :- !, depthk_call_to_entry(Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo).
 exit_to_prime(depth,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime) :- !, depthk_exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime).
 project(depth,_,Vars,_,ASub,Proj) :- !, depthk_project(Vars,ASub,Proj).
 compute_lub(depth,ListASub,LubASub) :- !, depthk_compute_lub(ListASub,LubASub).
@@ -1017,7 +1016,7 @@ empty_entry(depth,Qv,Call) :- !, depthk_empty_entry(Qv,Call).
 :- use_module(domain(top_path_sharing)).
 aidomain(path).
 init_abstract_domain(path,PushedFlags) :- !, path_init_abstract_domain(PushedFlags).
-call_to_entry(path,_Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo) :- !, path_call_to_entry(Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo).
+call_to_entry(path,_Sv,Sg,Hv,Head,_K,Fv,Proj,Entry,ExtraInfo) :- !, path_call_to_entry(Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo).
 exit_to_prime(path,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime) :- !, path_exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime).
 project(path,_,Vars,_,ASub,Proj) :- !, path_project(Vars,ASub,Proj).
 compute_lub(path,ListAsub,LubASub) :- !, path_compute_lub(ListAsub,LubASub).
@@ -1049,7 +1048,7 @@ path_glb(_ASub0,_ASub1,_ASub) :- compiler_error(op_not_implemented(glb)), fail.
 :- use_module(domain(termsd)).
 aidomain(terms).
 init_abstract_domain(terms,PushedFlags) :- !, terms_init_abstract_domain(PushedFlags).
-call_to_entry(terms,_Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo) :- !, terms_call_to_entry(Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo).
+call_to_entry(terms,_Sv,Sg,Hv,Head,_K,Fv,Proj,Entry,ExtraInfo) :- !, terms_call_to_entry(Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo).
 exit_to_prime(terms,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime) :- !, terms_exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime).
 project(terms,_,Vars,_,ASub,Proj) :- !, terms_project(Vars,ASub,Proj).
 widencall(terms,Prime0,Prime1,NewPrime) :- !, terms_widencall(Prime0,Prime1,NewPrime).
@@ -1082,7 +1081,7 @@ terms_init_abstract_domain([widen]) :-
 :- use_module(domain(ptypes)).
 aidomain(ptypes).
 init_abstract_domain(ptypes,PushedFlags) :- !, ptypes_init_abstract_domain(PushedFlags).
-call_to_entry(ptypes,_Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo) :- !, terms_call_to_entry(Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo).
+call_to_entry(ptypes,_Sv,Sg,Hv,Head,_K,Fv,Proj,Entry,ExtraInfo) :- !, terms_call_to_entry(Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo).
 exit_to_prime(ptypes,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime) :- !, terms_exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime).
 widencall(ptypes,Prime0,Prime1,NewPrime) :- !, ptypes_widencall(Prime0,Prime1,NewPrime).
 widen(ptypes,Prime0,Prime1,NewPrime) :- !, ptypes_widen(Prime0,Prime1,NewPrime).
@@ -1114,7 +1113,7 @@ ptypes_init_abstract_domain([widen]) :-
 :- use_module(domain(eterms)).
 aidomain(eterms).
 init_abstract_domain(eterms,PushedFlags) :- !, eterms_init_abstract_domain(PushedFlags).
-call_to_entry(eterms,_Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo) :- !, eterms_call_to_entry(Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo).
+call_to_entry(eterms,_Sv,Sg,Hv,Head,_K,Fv,Proj,Entry,ExtraInfo) :- !, eterms_call_to_entry(Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo).
 exit_to_prime(eterms,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime) :- !, eterms_exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime).
 project(eterms,_,Vars,_,ASub,Proj) :- !, eterms_project(Vars,ASub,Proj).
 widencall(eterms,Prime0,Prime1,NewPrime) :- !, eterms_widencall(Prime0,Prime1,NewPrime).
@@ -1150,7 +1149,7 @@ eterms_init_abstract_domain([widen]) :-
 :- use_module(domain(etermsvar)).
 aidomain(etermsvar).
 init_abstract_domain(etermsvar,PushedFlags) :- !, etermsvar_init_abstract_domain(PushedFlags).
-call_to_entry(etermsvar,_Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo) :- !, etermsvar_call_to_entry(Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo).
+call_to_entry(etermsvar,_Sv,Sg,Hv,Head,_K,Fv,Proj,Entry,ExtraInfo) :- !, etermsvar_call_to_entry(Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo).
 exit_to_prime(etermsvar,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime) :- !, etermsvar_exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime).
 project(etermsvar,_,Vars,_,ASub,Proj) :- !, etermsvar_project(Vars,ASub,Proj).
 widencall(etermsvar,Prime0,Prime1,NewPrime) :- !, etermsvar_widencall(Prime0,Prime1,NewPrime).
@@ -1187,7 +1186,7 @@ etermsvar_init_abstract_domain([type_eval,widen]) :-
 :- use_module(domain(svterms)).
 aidomain(svterms).
 init_abstract_domain(svterms,PushedFlags) :- !, svterms_init_abstract_domain(PushedFlags).
-call_to_entry(svterms,_Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo) :- !, svterms_call_to_entry(Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo).
+call_to_entry(svterms,_Sv,Sg,Hv,Head,_K,Fv,Proj,Entry,ExtraInfo) :- !, svterms_call_to_entry(Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo).
 exit_to_prime(svterms,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime) :- !, svterms_exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime).
 project(svterms,_,Vars,_,ASub,Proj) :- !, svterms_project(Vars,ASub,Proj).
 widencall(svterms,Prime0,Prime1,NewPrime) :- !, svterms_widencall(Prime0,Prime1,NewPrime).
@@ -1220,7 +1219,7 @@ svterms_init_abstract_domain([widen]) :-
 :- use_module(domain(deftypes)).
 aidomain(deftypes).
 init_abstract_domain(deftypes,PushedFlags) :- !, deftypes_init_abstract_domain(PushedFlags).
-call_to_entry(deftypes,_Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo) :- !, deftypes_call_to_entry(Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo).
+call_to_entry(deftypes,_Sv,Sg,Hv,Head,_K,Fv,Proj,Entry,ExtraInfo) :- !, deftypes_call_to_entry(Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo).
 exit_to_prime(deftypes,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime) :- !, deftypes_exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime).
 project(deftypes,_,Vars,_,ASub,Proj) :- !, deftypes_project(Vars,ASub,Proj).
 widencall(deftypes,Prime0,Prime1,NewPrime) :- !, deftypes_widencall(Prime0,Prime1,NewPrime).
@@ -1262,7 +1261,7 @@ is_nonrel_domain(nonrel_intervals).
 % Based on nonrel_domain ([IG] new)
 init_abstract_domain(AbsInt,PushedFlags) :- is_nonrel_domain(AbsInt), !, nonrel_init_abstract_domain(AbsInt, PushedFlags).
 amgu(AbsInt,Sg,Head,ASub,NewASub) :- is_nonrel_domain(AbsInt), !, nonrel_amgu(AbsInt,Sg,Head,ASub,NewASub).
-call_to_entry(AbsInt,Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo) :- is_nonrel_domain(AbsInt), !, nonrel_call_to_entry(AbsInt,Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo).
+call_to_entry(AbsInt,Sv,Sg,Hv,Head,_K,Fv,Proj,Entry,ExtraInfo) :- is_nonrel_domain(AbsInt), !, nonrel_call_to_entry(AbsInt,Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo).
 exit_to_prime(AbsInt,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime) :- is_nonrel_domain(AbsInt), !, nonrel_exit_to_prime(AbsInt,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime).
 project(AbsInt,_,Vars,_,ASub,Proj) :- is_nonrel_domain(AbsInt), !, nonrel_project(ASub,Vars,Proj).
 widencall(AbsInt,Prime0,Prime1,NewPrime) :- is_nonrel_domain(AbsInt), !, nonrel_widencall(AbsInt,Prime0,Prime1,NewPrime).
@@ -1289,7 +1288,7 @@ empty_entry(AbsInt,Qv,Call) :- is_nonrel_domain(AbsInt), !, nonrel_unknown_entry
 :- use_module(domain(polyhedra)).
 aidomain(polyhedra).
 init_abstract_domain(polyhedra,PushedFlags) :- !,  polyhedra_init_abstract_domain(PushedFlags).
-call_to_entry(polyhedra,Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo) :- !, polyhedra_call_to_entry(Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo).
+call_to_entry(polyhedra,Sv,Sg,Hv,Head,_K,Fv,Proj,Entry,ExtraInfo) :- !, polyhedra_call_to_entry(Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo).
 exit_to_prime(polyhedra,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime) :- !, polyhedra_exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime).
 project(polyhedra,_,Vars,_,ASub,Proj) :- !, polyhedra_project(ASub,Vars,Proj).
 widencall(polyhedra,Prime0,Prime1,NewPrime) :- !, polyhedra_widencall(Prime0,Prime1,NewPrime). 
@@ -1322,7 +1321,7 @@ polyhedra_init_abstract_domain([widen]) :-
 :- if(defined(has_ciaopp_extra)).
 :- use_module(domain(java_nullity)). % for java programs
 aidomain(java_nullity).
-call_to_entry(java_nullity,Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo) :- !, java_nullity_call_to_entry(Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo).
+call_to_entry(java_nullity,Sv,Sg,Hv,Head,_K,Fv,Proj,Entry,ExtraInfo) :- !, java_nullity_call_to_entry(Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo).
 exit_to_prime(java_nullity,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime) :- !, java_nullity_exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime).
 project(java_nullity,_,Vars,_,ASub,Proj) :- !, java_nullity_project(ASub,Vars,Proj).
 compute_lub(java_nullity,ListAsub,LubASub) :- !, java_nullity_compute_lub(ListAsub,LubASub).
@@ -1345,7 +1344,7 @@ unknown_entry(java_nullity,Sg,Qv,Call) :- !, java_nullity_unknown_entry(Sg,Qv,Ca
 :- if(defined(has_ciaopp_extra)).
 :- use_module(domain(oo_son)).
 aidomain(oo_son).
-call_to_entry(oo_son,Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo) :- !, oo_son_call_to_entry(Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo).
+call_to_entry(oo_son,Sv,Sg,Hv,Head,_K,Fv,Proj,Entry,ExtraInfo) :- !, oo_son_call_to_entry(Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo).
 exit_to_prime(oo_son,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime) :- !, oo_son_exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime).
 project(oo_son,_,Vars,_,ASub,Proj) :- !, oo_son_project(ASub,Vars,Proj).
 compute_lub(oo_son,ListAsub,LubASub) :- !, oo_son_compute_lub(ListAsub,LubASub).
@@ -1372,7 +1371,7 @@ empty_entry(oo_son,Qv,Call) :- !, oo_son_empty_entry(Qv,Call).
 :- use_module(domain(oo_shnltau)).
 aidomain(oo_shnltau).
 % init_abstract_domain(oo_shnltau,PushedFlags) :- !, oo_shnltau_init_abstract_domain(PushedFlags).
-call_to_entry(oo_shnltau,Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo) :- !, oo_shnltau_call_to_entry(Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo).
+call_to_entry(oo_shnltau,Sv,Sg,Hv,Head,_K,Fv,Proj,Entry,ExtraInfo) :- !, oo_shnltau_call_to_entry(Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo).
 exit_to_prime(oo_shnltau,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime) :- !, oo_shnltau_exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime).
 project(oo_shnltau,_,Vars,_,ASub,Proj) :- !, oo_shnltau_project(ASub,Vars,Proj).
 compute_lub(oo_shnltau,ListAsub,LubASub) :- !, oo_shnltau_compute_lub(ListAsub,LubASub).
@@ -1399,7 +1398,7 @@ empty_entry(oo_shnltau,Qv,Call) :- !, oo_shnltau_empty_entry(Qv,Call).
 :- use_module(domain(oo_types)).
 aidomain(oo_types).
 % init_abstract_domain(oo_types,PushedFlags) :- !, oo_types_init_abstract_domain(PushedFlags).
-call_to_entry(oo_types,Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo) :- !, oo_types_call_to_entry(Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo).
+call_to_entry(oo_types,Sv,Sg,Hv,Head,_K,Fv,Proj,Entry,ExtraInfo) :- !, oo_types_call_to_entry(Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo).
 exit_to_prime(oo_types,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime) :- !, oo_types_exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime).
 project(oo_types,_,Vars,_,ASub,Proj) :- !, oo_types_project(ASub,Vars,Proj).
 compute_lub(oo_types,ListAsub,LubASub) :- !, oo_types_compute_lub(ListAsub,LubASub).
@@ -1424,7 +1423,7 @@ empty_entry(oo_types,Qv,Call) :- !, oo_types_empty_entry(Qv,Call).
 :- if(defined(has_ciaopp_extra)).
 :- use_module(domain(java_cha)).
 aidomain(java_cha).
-call_to_entry(java_cha,Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo) :- !, java_cha_call_to_entry(Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo).
+call_to_entry(java_cha,Sv,Sg,Hv,Head,_K,Fv,Proj,Entry,ExtraInfo) :- !, java_cha_call_to_entry(Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo).
 exit_to_prime(java_cha,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime) :- !, java_cha_exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime).
 project(java_cha,_,Vars,_,ASub,Proj) :- !, java_cha_project(ASub,Vars,Proj).
 compute_lub(java_cha,ListAsub,LubASub) :- !, java_cha_compute_lub(ListAsub,LubASub).
@@ -1451,7 +1450,7 @@ unknown_entry(java_cha,Sg,Qv,Call) :- !, java_cha_unknown_entry(Sg,Qv,Call).
 :- use_module(domain(nfplai)).
 aidomain(nf).
 init_abstract_domain(nf,PushedFlags) :- !, nf_init_abstract_domain(PushedFlags).
-call_to_entry(nf,Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo) :- !, nf_call_to_entry(Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo).
+call_to_entry(nf,Sv,Sg,Hv,Head,_K,Fv,Proj,Entry,ExtraInfo) :- !, nf_call_to_entry(Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo).
 exit_to_prime(nf,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime) :- !, nf_exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime).
 project(nf,_,Vars,_HvFv,ASub,Proj) :- !, nf_project(ASub,Vars,Proj).
 widencall(nf,Prime0,Prime1,NewPrime) :- !, nf_widencall(Prime0,Prime1,NewPrime).
@@ -1499,7 +1498,7 @@ nf_combined_special_builtin(SgKey,Domains) :-
 :- use_module(domain(detplai)).
 aidomain(det).
 init_abstract_domain(det,PushedFlags) :- !, det_init_abstract_domain(PushedFlags).
-call_to_entry(det,Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo) :- !, det_call_to_entry(Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo).
+call_to_entry(det,Sv,Sg,Hv,Head,_K,Fv,Proj,Entry,ExtraInfo) :- !, det_call_to_entry(Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo).
 exit_to_prime(det,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime) :- !, det_exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime).
 project(det,_,Vars,_HvFv,ASub,Proj) :- !, det_project(ASub,Vars,Proj).
 widencall(det,Prime0,Prime1,NewPrime) :- !, det_widencall(Prime0,Prime1,NewPrime).
@@ -1553,7 +1552,6 @@ aidomain(res_plai).
 init_abstract_domain(res_plai,PushedFlags) :- !, res_plai_init_abstract_domain(PushedFlags).
 call_to_entry(res_plai,Sv,Sg,Hv,Head,ClauseKey,Fv,Proj,Entry,ExtraInfo) :- !, % TODO: moved cut (JF)
 	res_plai_call_to_entry(Sv,Sg,Hv,Head,ClauseKey,Fv,Proj,Entry,ExtraInfo).
-call_to_entry(res_plai,Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo) :- !, res_plai_call_to_entry(Sv,Sg,Hv,Head,not_provided,Fv,Proj,Entry,ExtraInfo). % TODO:[new-resources] 'not_provided' is strange
 exit_to_prime(res_plai,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime) :- !, res_plai_exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime).
 project(res_plai,Sg,Vars,_HvFv,ASub,Proj) :- !, res_plai_project(ASub,Sg,Vars,Proj).
 %widencall(res_plai,Prime0,Prime1,NewPrime) :- !, res_plai_widencall(Prime0,Prime1,NewPrime).
@@ -1605,7 +1603,6 @@ aidomain(res_plai_stprf).
 init_abstract_domain(res_plai_stprf,PushedFlags) :- !, res_plai_stprf_init_abstract_domain(PushedFlags).
 call_to_entry(res_plai_stprf,Sv,Sg,Hv,Head,ClauseKey,Fv,Proj,Entry,ExtraInfo) :- !, % TODO: moved cut (JF)
 	res_plai_stprf_call_to_entry(Sv,Sg,Hv,Head,ClauseKey,Fv,Proj,Entry,ExtraInfo).
-call_to_entry(res_plai_stprf,Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo) :- !, res_plai_stprf_call_to_entry(Sv,Sg,Hv,Head,not_provided,Fv,Proj,Entry,ExtraInfo). % TODO:[new-resources] 'not_provided' is strange
 exit_to_prime(res_plai_stprf,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime) :- !, res_plai_stprf_exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime).
 project(res_plai_stprf,Sg,Vars,_HvFv,ASub,Proj) :- !, res_plai_stprf_project(ASub,Sg,Vars,Proj).
 widen(res_plai_stprf,Prime0,Prime1,NewPrime) :- !, res_plai_stprf_widen(Prime0,Prime1,NewPrime).
@@ -1654,7 +1651,6 @@ aidomain(sized_types).
 init_abstract_domain(sized_types,PushedFlags) :- !, sized_types_init_abstract_domain(PushedFlags).
 call_to_entry(sized_types,Sv,Sg,Hv,Head,ClauseKey,Fv,Proj,Entry,ExtraInfo) :- !, % TODO: moved cut (JF)
 	sized_types_call_to_entry(Sv,Sg,Hv,Head,ClauseKey,Fv,Proj,Entry,ExtraInfo).
-call_to_entry(sized_types,Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo) :- !, sized_types_call_to_entry(Sv,Sg,Hv,Head,not_provided,Fv,Proj,Entry,ExtraInfo). % TODO:[new-resources] 'not_provided' is strange
 exit_to_prime(sized_types,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime) :- !, sized_types_exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime).
 project(sized_types,Sg,Vars,_HvFv,ASub,Proj) :- !, sized_types_project(ASub,Sg,Vars,Proj).
 widen(sized_types,Prime0,Prime1,NewPrime) :- !, sized_types_widen(Prime0,Prime1,NewPrime).
@@ -1744,8 +1740,6 @@ init_abstract_domain(_AbsInt,[variants]) :-
 %amgu(_AbsInt,_T0,_T1,_ASub,_NewASub):- throw(not_implemented(amgu)).
 %augment_asub(_AbsInt,_ASub,_Vars,_ASub0) :- throw(not_implemented(extend_asub)).
 %augment_two_asub(_AbsInt,_ASub0,_ASub1,_ASub) :- throw(not_implemented(extend_two_asub)).
-call_to_entry(AbsInt,Sv,Sg,Hv,Head,_ClauseKey,Fv,Proj,Entry,ExtraInfo) :-
-	call_to_entry(AbsInt,Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo). 
 %% widencall(AbsInt,Prime0,Prime1,NewPrime) :- % TODO: [IG] why is this commented?
 %% 	compute_lub(AbsInt,[Prime0,Prime1],NewPrime).
 widen(AbsInt,Prime0,Prime1,NewPrime) :- % TODO: [IG] define in domain?

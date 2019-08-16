@@ -11,7 +11,7 @@
 %% CiaoPP library:
 
 :- use_module(ciaopp(plai/domains), 
-   [glb/4, info_to_asub/6, unknown_call/4, call_to_entry/9, identical_abstract/3]).
+   [glb/4, info_to_asub/6, unknown_call/4, call_to_entry/10, identical_abstract/3]).
 
 :- use_module(ciaopp(p_unit),
         [predicate_names/1, entry_assertion/3,	assertion_set_status/3,
@@ -244,7 +244,7 @@ abs_exec_each_succ(Goal, Call, Succ, AbsInt, AGoal, [ASucc|ASuccs], NCall, NSucc
  	varset(ASucc, ASv),
  	info_to_asub(AbsInt, _, Call, Gv, Cond, Goal), 
  	unknown_call(AbsInt, Gv, Cond, Cond0),
-	call_to_entry(AbsInt, Gv, Goal, ASv, AGoal, [], Cond0, Cond1, _ExtraInfo),
+	call_to_entry(AbsInt, Gv, Goal, ASv, AGoal, not_provided, [], Cond0, Cond1, _ExtraInfo),
  	glb(AbsInt, Cond1, ASucc, CondASucc),
   	(   CondASucc = '$bottom' ->  % no success possible with current Pre, thus this
                                       % complete should be "neutral" for the whole assertion

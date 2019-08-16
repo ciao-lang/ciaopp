@@ -18,7 +18,7 @@
 :- use_module(ciaopp(p_unit/clause_db), [source_clause/3, maybe_clause_locator/2]).
 :- use_module(ciaopp(plai/domains), [project/5,
 	project/6,
-	call_to_entry/9, 
+	call_to_entry/10, 
 	exit_to_prime/8,
 	unknown_entry/3,
 	identical_abstract/3,
@@ -197,7 +197,7 @@ how_lit(Abs,SgKey,Goal,UpVars,Call,Node,trace(IInfo,IProp,IVar,Ss),VDown,VUp,S,W
 
 	unknown_entry(Abs,Gv,EmptyProj),
 	project(Abs,Goal,Gv,_,Call,CallG),
-	call_to_entry(Abs,Gv,Goal,Hv,Head,[],CallG,Entry,_),
+	call_to_entry(Abs,Gv,Goal,Hv,Head,not_provided,[],CallG,Entry,_),
 	once(exit_to_prime(Abs,Goal,Hv,Head,Gv,Entry,(no,EmptyProj),_Prime)),
 	NTrace = trace(IInfo,IProp,IVar,[exit(Head,Goal,ClVars,UpVars)|Ss]),
 	\+ check_trace_deadend(Abs,HInfo,NTrace),
@@ -242,7 +242,7 @@ reduce0_dead(Abs,entry(Goal,Head,Vars),InfoG,InfoOut,[InfoCl]) :-
 	varset(Goal,Gv),
 	varset(Head,Hv),
 	ord_subtract(Vars,Hv,Fv),	
-	call_to_entry(Abs,Gv,Goal,Hv,Head,Fv,InfoG,InfoOut,_),
+	call_to_entry(Abs,Gv,Goal,Hv,Head,not_provided,Fv,InfoG,InfoOut,_),
 	unknown_entry(Abs,Vars,EmptyCl),
 	extend(Abs,Head,InfoOut,Hv,EmptyCl,InfoCl).
 reduce0_dead(Abs,exit(Head,Goal,_HCVs,GCVs),InfoH,InfoOut,[InfoCl]) :-
@@ -258,7 +258,7 @@ reduce0(Abs,entry(Goal,Head,Vars),_InfoG,InfoOut,[InfoCl]) :-
 	unknown_entry(Abs,Gv,EmptyInfo),
 	varset(Head,Hv),
 	ord_subtract(Vars,Hv,Fv),	
-	call_to_entry(Abs,Gv,Goal,Hv,Head,Fv,EmptyInfo,InfoOut,_),
+	call_to_entry(Abs,Gv,Goal,Hv,Head,not_provided,Fv,EmptyInfo,InfoOut,_),
 	unknown_entry(Abs,Vars,EmptyCl),
 	extend(Abs,Head,InfoOut,Hv,EmptyCl,InfoCl).
 reduce0(Abs,exit(Head,Goal,_HCVs,GCVs),_InfoH,InfoOut,[InfoCl]) :-
@@ -291,7 +291,7 @@ reduce(Abs,entry(Goal,Head,Vars),InfoG,InfoOut,S,[InfoCl|S]) :-
 	extend(Abs,Goal,InfoG,IGv,EmptyGoal,NewInfoG_x),
 	project(Abs,Goal,Gv,_,NewInfoG_x,NewInfoG),
 	ord_subtract(Vars,Hv,Fv),		
-        call_to_entry(Abs,Gv,Goal,Hv,Head,Fv,NewInfoG,InfoOut,_),
+        call_to_entry(Abs,Gv,Goal,Hv,Head,not_provided,Fv,NewInfoG,InfoOut,_),
 	unknown_entry(Abs,Vars,EmptyCl),
 	extend(Abs,Head,InfoOut,Hv,EmptyCl,InfoCl),!.
 reduce(Abs,exit(Head,Goal,HCVs,GCVs),InfoH,InfoOut,[InfoCl|S],S1) :-	

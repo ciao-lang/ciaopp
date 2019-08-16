@@ -38,7 +38,7 @@
 :- use_module(spec(spec), [versions/2]).
 :- use_module(ciaopp(plai/plai_db), [memo_lub/5, complete/7, memo_table/6, del_parent/4, get_memo_table/7]).
 :- use_module(ciaopp(plai/fixpo_ops), [fixpoint_id/1]).
-:- use_module(ciaopp(plai/domains), [call_to_entry/9]).
+:- use_module(ciaopp(plai/domains), [call_to_entry/10]).
 :- use_module(ciaopp(plai/plai_db), [complete_parent/2]).
 
 :- use_module(library(lists), [member/2]).
@@ -68,7 +68,7 @@ renaming(G0,ClKey,G1:PoKey):-
 	memo_table_new_child(AbsInt,Id,New),
 	% obtain Call and Succ of the clause
 	varset(Sg0,Sv0),
-	call_to_entry(AbsInt,Sv0,Sg0,Vars,G0,[],Proj,Call,_),
+	call_to_entry(AbsInt,Sv0,Sg0,Vars,G0,not_provided,[],Proj,Call,_),
 	each_call_to_entry(Prime,AbsInt,Sv0,Sg0,Vars,G0,[],Succs),
 	% memo table for the new clause
 	assertz_fact( memo_table(PoKey,AbsInt,New,Id,Vars,[Call]) ),
@@ -86,7 +86,7 @@ memo_table_new_child(_AbsInt,_Id,_New).
 
 each_call_to_entry([],_AbsInt,_Sv0,_Sg0,_Vars,_G0,_Fv,[]).
 each_call_to_entry([Prime|Primes],AbsInt,Sv0,Sg0,Vars,G0,Fv,[Succ|Succs]):-
-	call_to_entry(AbsInt,Sv0,Sg0,Vars,G0,Fv,Prime,Succ,_),
+	call_to_entry(AbsInt,Sv0,Sg0,Vars,G0,not_provided,Fv,Prime,Succ,_),
 	each_call_to_entry(Primes,AbsInt,Sv0,Sg0,Vars,G0,Fv,Succs).
 
 %-------------------------------------------------------------------------

@@ -37,7 +37,7 @@
 	    unpack_abs_info/5
 	]).
 
-:- use_module(ciaopp(plai/domains), [call_to_entry/9]).
+:- use_module(ciaopp(plai/domains), [call_to_entry/10]).
 :- use_module(ciaopp(preprocess_flags)).
 :- use_module(engine(hiord_rt), ['$meta_call'/1]).
 :- use_module(library(terms_check), [instance/2]).
@@ -164,7 +164,7 @@ abs_check_property(L,Property,PPFlag,AbsInt,Sg,OldSg,OldSv,OldProj):-
 	varset(Sg,Sv),
 	varset(L,BodyVars),
 	ord_subtract(BodyVars,Sv,Fv),
-	call_to_entry(AbsInt,OldSv,OldSg,Sv,Sg,Fv,OldProj,Entry,_),
+	call_to_entry(AbsInt,OldSv,OldSg,Sv,Sg,not_provided,Fv,OldProj,Entry,_),
 	adapt_info_to_assrt_head(AbsInt,L,BodyVars,Entry,NGoal,NewInfo),
 	abs_exec_conj_props(Call,AbsInt,NewInfo),!.
 

@@ -17,7 +17,7 @@
 :- use_module(ciaopp(plai/domains), 
 	[ abs_sort/3,
 	  asub_to_out/5,  % IG: asub_to_out/6 also!!!!
-	  call_to_entry/9,
+	  call_to_entry/10,
 	  compute_lub/3
 	]).
 :- use_module(ciaopp(plai/plai_db)).
@@ -268,6 +268,7 @@ lub_of_calls([(Goal1,Call1,Succs)|Calls],AbsInt,Goal,Gov,
 	compute_lub(AbsInt,[Succ,TmpSucc],Succ2),
 	lub_of_calls(Calls,AbsInt,Goal,Gov,Call2,Succ2,NCall,NSucc).
 
+% TODO: duplicated
 most_general_goal(Goal1,Call1,Succ1,AbsInt,Goal,Gov,Call,Succ):-
 	abs_sort(AbsInt,Call1,Call_s),
 	abs_sort(AbsInt,Succ1,Succ_s),
@@ -275,9 +276,10 @@ most_general_goal(Goal1,Call1,Succ1,AbsInt,Goal,Gov,Call,Succ):-
 	decide_call_to_entry(Call_s,AbsInt,Go1v,Goal1,Gov,Goal,[],Call),
 	decide_call_to_entry(Succ_s,AbsInt,Go1v,Goal1,Gov,Goal,[],Succ).
 
+% TODO: duplicated
 decide_call_to_entry('$bottom',_AbsInt,_Go1v,_Goal1,_Gov,_Goal,_,'$bottom'):-!.
 decide_call_to_entry(Call_s,AbsInt,Go1v,Goal1,Gov,Goal,[],Call):-
-	call_to_entry(AbsInt,Go1v,Goal1,Gov,Goal,[],Call_s,Call,_).
+	call_to_entry(AbsInt,Go1v,Goal1,Gov,Goal,not_provided,[],Call_s,Call,_).
 
 %% Get memo_table records and recorda info to be printed
 %% (when no lub required)

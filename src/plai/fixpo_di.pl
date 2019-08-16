@@ -303,7 +303,7 @@ do_cl_no_lub(_,_,_,_,_,_,_).
 
 call_to_entry_fact_each(_,_,_,_,_,[],[]).
 call_to_entry_fact_each(AbsInt,Sv,Sg,Hv,Head,[P|Ps],[E|Ex]):-
-	call_to_entry(AbsInt,Sv,Sg,Hv,Head,[],P,E,_),
+	call_to_entry(AbsInt,Sv,Sg,Hv,Head,not_provided,[],P,E,_),
 	call_to_entry_fact_each(AbsInt,Sv,Sg,Hv,Head,Ps,Ex).
 
 %process_body(true,
@@ -325,7 +325,7 @@ process_body(Body,Key,AbsInt,Sg,SgKey,Hv,Fv,_Vars_u,Head,Sv,Call,Proj,TempPrime,
 	    true
 	).
 process_body(Body,K,AbsInt,Sg,SgKey,Hv,Fv,Vars_u,Head,Sv,_Call,Proj,TempPrime,Prime,Id):-
-	call_to_entry(AbsInt,Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo),
+	call_to_entry(AbsInt,Sv,Sg,Hv,Head,not_provided,Fv,Proj,Entry,ExtraInfo),
 %	erase_previous_memo_tables_and_parents(Body,K,Id),
 % not needed as it is the first time this clause is analysed (?)
 	fixpoint_trace('visit clause',Id,_N,K,Head,Entry,Body),
@@ -349,7 +349,7 @@ process_body_no_lub(Body,_K,_AbsInt,_Sg,_Hv,_Fv,_Vars_u,_Head,_Sv,_Call,_Proj,_I
 %% 	widen_succ(AbsInt,TempPrime,Prime2,NewPrime),
 %% 	decide_re_analyse(AbsInt,TempPrime,NewPrime,Prime,SgKey,Sg,Id,Proj).
 process_body_no_lub(Body,K,AbsInt,Sg,Hv,Fv,Vars_u,Head,Sv,_Call,Proj,Id):-
-	call_to_entry(AbsInt,Sv,Sg,Hv,Head,Fv,Proj,Entry,_ExtraInfo),
+	call_to_entry(AbsInt,Sv,Sg,Hv,Head,not_provided,Fv,Proj,Entry,_ExtraInfo),
 	fixpoint_trace('visit clause',Id,_N,K,Head,Entry,Body),
 	singleton(Entry,LEntry),
 	entry_to_exit(Body,K,LEntry,_Exit,Vars_u,AbsInt,Id).
@@ -466,7 +466,7 @@ compute_each_change([(Literal,Id)|Changes],AbsInt):-
 	ord_subtract(Vars,Hv,Fv),
 	functor(Orig_Head,Old_N,A),
 	copy_args(A,Head,Orig_Head),
-	call_to_entry(AbsInt,Sv,Sg,Hv,Orig_Head,Fv,Proj,_,ExtraInfo),
+	call_to_entry(AbsInt,Sv,Sg,Hv,Orig_Head,not_provided,Fv,Proj,_,ExtraInfo),
 	erase_previous_memo_tables_and_parents(NewBody,AbsInt,Clid,Id),
 	entry_to_exit(NewBody,Clid,S_Entry,Exit,Vars_u,AbsInt,Id),
 	each_exit_to_prime(Exit,AbsInt,Sg,Hv,Orig_Head,Sv,ExtraInfo,Prime1),

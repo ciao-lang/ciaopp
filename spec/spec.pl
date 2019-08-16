@@ -52,7 +52,7 @@
 :- use_module(ciaopp(preprocess_flags), [current_pp_flag/2]).
 
 :- use_module(ciaopp(plai/fixpo_ops), [bottom/1]).
-:- use_module(ciaopp(plai/domains), [call_to_entry/9, abs_sort/3, concrete/4]).
+:- use_module(ciaopp(plai/domains), [call_to_entry/10, abs_sort/3, concrete/4]).
 :- use_module(ciaopp(plai/plai_db), [complete/7, memo_table/6]).
 
 :- use_module(ciaopp(p_unit), [predicate_names/1]).
@@ -354,7 +354,7 @@ neck_substitution(true:_,Abs,H,_Id,Sg,Proj_u,NeckSubs):-
 	varset(Sg,Sv),
 	varset(H,Hv),
 	abs_sort(Abs,Proj_u,Proj),
-	call_to_entry(Abs,Sv,Sg,Hv,H,[],Proj,Entry,_Info),
+	call_to_entry(Abs,Sv,Sg,Hv,H,not_provided,[],Proj,Entry,_Info),
 	NeckSubs = [Entry].
 neck_substitution(_:K,Abs,_H,Id,_Sg,_Proj_u,NeckSubs):-
 	!,

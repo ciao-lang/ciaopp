@@ -135,13 +135,8 @@
            substitutions: @var{ASub0} and @var{ASub1} whose domains are
            disjoint.").
 
-:- export(call_to_entry/10). % TODO:[new-resources] (extra)
+:- export(call_to_entry/10).
 :- pred call_to_entry(+AbsInt,+Sv,+Sg,+Hv,+Head,+ClauseKey,+Fv,+Proj,-Entry,-ExtraInfo)
-        : atm(AbsInt) + not_fails.
-% TODO:[new-resources] version with ClauseKey, really needed?
-
-:- export(call_to_entry/9).
-:- pred call_to_entry(+AbsInt,+Sv,+Sg,+Hv,+Head,+Fv,+Proj,-Entry,-ExtraInfo)
         : (atm(AbsInt), list(Sv), list(Hv), list(Fv)) + not_fails
   #"Obtains the abstract substitution @var{Entry} which results from
    adding the abstraction of the unification @var{Sg} = @var{Head} to
@@ -151,6 +146,8 @@
    @var{Head}) plus @var{Fv} (the free variables of the relevant
    clause). @var{ExtraInfo} is information which may be reused later
    in other abstract operations.".
+% TODO: Document ClauseKey (required by res_plai)
+% TODO: Document ClauseKey=not_provided
 
 :- export(exit_to_prime/8).
 :- pred exit_to_prime(+AbsInt,+Sg,+Hv,+Head,+Sv,+Exit,?ExtraInfo,-Prime)
@@ -277,7 +274,7 @@ compute_glb(AbsInt,[A,B],Glb) :-
 %% 
 %% call_to_entry0('$bottom',_AbsInt,_Sv,_Goal0,_Hv,_Goal,_Fv,'$bottom',_E) :- !.
 %% call_to_entry0(Proj_s,AbsInt,Sv,Goal0,Hv,Goal,Fv,Proj,E) :-
-%% 	call_to_entry(AbsInt,Sv,Goal0,Hv,Goal,Fv,Proj_s,Proj,E).
+%% 	call_to_entry(AbsInt,Sv,Goal0,Hv,Goal,not_provided,Fv,Proj_s,Proj,E).
 
 :- export(identical_proj/5).
 :- pred identical_proj(+AbsInt,+Sg,+Proj,+Sg1,+Proj1) : atm(AbsInt)
@@ -307,16 +304,16 @@ identical_proj_1(AbsInt,Sg,Proj,Sg1,Proj1,Prime1,Prime2) :-
 	functor(Norm,F,A),
 	varset(Norm,Hvnorm),
 	%
-	call_to_entry(AbsInt,_Sv,Sg,Hvnorm,Norm,[],Proj,Entry,_),
-	call_to_entry(AbsInt,_Sv,Sg1,Hvnorm,Norm,[],Proj1,Entry1,_),
+	call_to_entry(AbsInt,_Sv,Sg,Hvnorm,Norm,not_provided,[],Proj,Entry,_),
+	call_to_entry(AbsInt,_Sv,Sg1,Hvnorm,Norm,not_provided,[],Proj1,Entry1,_),
 	identical_abstract(AbsInt,Entry,Entry1),
 	%
-	% call_to_entry(AbsInt,_Sv,Sg,Hv,Sg1,[],Proj,Entry,_),
+	% call_to_entry(AbsInt,_Sv,Sg,Hv,Sg1,not_provided,[],Proj,Entry,_),
         % abs_sort(AbsInt,Entry,Entry_s),
         % abs_sort(AbsInt,Proj1,Proj1_s),
 	% identical_abstract(AbsInt,Proj1_s,Entry_s),
 	%
-	% call_to_entry(AbsInt,_Sv,Sg1,Hvv,Sg,[],Proj1,Entry1,_),
+	% call_to_entry(AbsInt,_Sv,Sg1,Hvv,Sg,not_provided,[],Proj1,Entry1,_),
         % abs_sort(AbsInt,Entry1,Entry1_s),
         % abs_sort(AbsInt,Proj,Proj_s),
 	% identical_abstract(AbsInt,Proj_s,Entry1_s),
@@ -724,7 +721,7 @@ abstract_instance(AbsInt,Sg1,Proj1,Sg2,Proj2) :-
 	instance(Sg1C,Sg2C),
 	varset(Sg2C,S2Cv),
 	varset(Sg1C,S1Cv),
-	call_to_entry(AbsInt,S2Cv,Sg2C,S1Cv,Sg1C,[],Proj2C,Entry,_ExtraInfo),
+	call_to_entry(AbsInt,S2Cv,Sg2C,S1Cv,Sg1C,not_provided,[],Proj2C,Entry,_ExtraInfo),
 	Entry \== '$bottom',
 	less_or_equal(AbsInt,Proj1C,Entry).
 

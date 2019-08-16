@@ -38,7 +38,7 @@
 
 :- use_module(ciaopp(preprocess_flags), [current_pp_flag/2]).
 :- use_module(ciaopp(plai/transform), [trans_clause/3]).
-:- use_module(ciaopp(plai/domains), [part_conc/5, call_to_entry/9, 
+:- use_module(ciaopp(plai/domains), [part_conc/5, call_to_entry/10, 
 	                identical_proj/5,abstract_instance/5]).
 :- use_module(ciaopp(p_unit/program_keys), [get_predkey/3, predkey_from_sg/2]).
 
@@ -303,18 +303,18 @@ reuse_def_emb(Key,AbsInt,Id,Sg,Sv,Proj,Num,NSg,NSv,NProj,Flag,Id_wrt):-
 %% 	ord_subtract(NSv,Sv,NewVars),
 %% 	copy_term(Sg,CSg),
 %% 	varset(CSg,CSv),
-%%  	call_to_entry(AbsInt,Sv,Sg,CSv,CSg,NewVars,Proj,Proj0,_),
+%%  	call_to_entry(AbsInt,Sv,Sg,CSv,CSg,not_provided,NewVars,Proj,Proj0,_),
 %% 	unknown_call(AbsInt,Proj0,NewVars,Proj1),
 %% 	append(CSv,NewVars,HvFv_u),
 %% 	project(AbsInt,NSv,HvFv_u,Proj1,NProj),
 %%%%%%%%%%%%%%%%%%%%%
-%% 	call_to_entry(AbsInt,Sv,Sg,NSv,NSg,[],Proj,NProj1,_ExtraInfo1),
-%% 	call_to_entry(AbsInt,OldSv,OldSg,NSv,NSg,[],OldProj,NProj2,_ExtraInfo2),
+%% 	call_to_entry(AbsInt,Sv,Sg,NSv,NSg,not_provided,[],Proj,NProj1,_ExtraInfo1),
+%% 	call_to_entry(AbsInt,OldSv,OldSg,NSv,NSg,not_provided,[],OldProj,NProj2,_ExtraInfo2),
 %% 	widen(AbsInt,NProj1,NProj2,NProj),
 %%%%%%%%%%%%%%%%%%%%%
 %%	unknown_entry(AbsInt,NSv,NProj),
 %%%%%%%%%%%%%%%%%%%%%
- 	call_to_entry(AbsInt,Sv,Sg,NSv,NSg,[],Proj,NProj,_ExtraInfo1),
+ 	call_to_entry(AbsInt,Sv,Sg,NSv,NSg,not_provided,[],Proj,NProj,_ExtraInfo1),
 	(current_fact(spec_def_for(Key,OtherSg,_OtherSv,OtherProj,AbsInt,OtherId,_,_)),
 	 decide_identical(AbsInt,NSg,NProj,OtherSg,OtherProj) ->
 	    Flag = done,

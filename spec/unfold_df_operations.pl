@@ -46,7 +46,7 @@
 :- use_module(spec(generalize_emb_atoms), [add_gen_memo_hint/1]).
 
 :- use_module(typeslib(regtype_basic_lattice), [translate_lattice_types/4]).
-:- use_module(ciaopp(plai/domains), [call_to_entry/9]).
+:- use_module(ciaopp(plai/domains), [call_to_entry/10]).
 :- use_module(ciaopp(plai/transform), [trans_clause/3]).
 
 :- use_module(ciaopp(p_unit), [type_of_goal/2, native_prop/2]).
@@ -78,7 +78,7 @@ can_continue(r(AbsInt,OldSg,OldSv,OldProj),L,Lit,Sg,Case):-!,
 	varset(Sg,Sv),
 	varset(L,BodyVars),
 	ord_subtract(BodyVars,Sv,Fv),
-	call_to_entry(AbsInt,OldSv,OldSg,Sv,Sg,Fv,OldProj,Entry,_),
+	call_to_entry(AbsInt,OldSv,OldSg,Sv,Sg,not_provided,Fv,OldProj,Entry,_),
 	(Entry == '$bottom' ->
 	    debug('useless clause'),
 	    Case = 'basiccontrol:fail'
@@ -92,7 +92,7 @@ can_continue(e(AbsInt,OldSg,OldSv,OldProj),L,_Lit,Sg,Case):-
 	varset(Sg,Sv),
 	varset(L,BodyVars),
 	ord_subtract(BodyVars,Sv,Fv),
-	call_to_entry(AbsInt,OldSv,OldSg,Sv,Sg,Fv,OldProj,Entry,_),
+	call_to_entry(AbsInt,OldSv,OldSg,Sv,Sg,not_provided,Fv,OldProj,Entry,_),
 	adapt_info_to_assrt_head(AbsInt,L,BodyVars,Entry,NGoal,NewInfo),
 	abs_exec_conj_props(Cond,AbsInt,NewInfo),!,
 	NGoal = L, 
@@ -108,7 +108,7 @@ can_continue(e(AbsInt,OldSg,OldSv,OldProj),L,_Lit,Sg,Case):-
 	varset(Sg,Sv),
 	varset(L,BodyVars),
 	ord_subtract(BodyVars,Sv,Fv),
-	call_to_entry(AbsInt,OldSv,OldSg,Sv,Sg,Fv,OldProj,Entry,_),
+	call_to_entry(AbsInt,OldSv,OldSg,Sv,Sg,not_provided,Fv,OldProj,Entry,_),
 
 	abs_exec_regtype_in_clause(AbsInt,SPred,F,A,L,BodyVars,Entry,Sense),!,
 
@@ -121,7 +121,7 @@ can_continue(a(AbsInt,OldSg,OldSv,OldProj),L,Lit,Sg,Case):-
 	varset(Sg,Sv),
 	varset(L,BodyVars),
 	ord_subtract(BodyVars,Sv,Fv),
-	call_to_entry(AbsInt,OldSv,OldSg,Sv,Sg,Fv,OldProj,Entry,_),
+	call_to_entry(AbsInt,OldSv,OldSg,Sv,Sg,not_provided,Fv,OldProj,Entry,_),
 	(Entry == '$bottom' ->
 	    debug('useless clause'),
 	    Case = 'basiccontrol:fail'
@@ -143,7 +143,7 @@ can_continue(a(AbsInt,OldSg,OldSv,OldProj),L,Lit,Sg,Case):-
 %% 		  varset(Sg,Sv),
 %% 		  varset(L,BodyVars),
 %% 		  ord_subtract(BodyVars,Sv,Fv),
-%% 		  call_to_entry(AbsInt,OldSv,OldSg,Sv,Sg,Fv,OldProj,Entry,_),
+%% 		  call_to_entry(AbsInt,OldSv,OldSg,Sv,Sg,not_provided,Fv,OldProj,Entry,_),
 %% 
 		  abs_exec_regtype_in_clause(AbsInt,SPred,F,A,L,BodyVars,Entry,Sense)) ->
 		     Case = Sense,

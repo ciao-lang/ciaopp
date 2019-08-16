@@ -18,7 +18,7 @@
 :- use_module(ciaopp(preprocess_flags), [current_pp_flag/2]).
 :- use_module(ciaopp(plai/domains), 
 	[abs_sort/3, compute_lub/3, glb/4, less_or_equal/3, unknown_call/4,
-	  call_to_entry/9]).
+	  call_to_entry/10]).
 :- use_module(ciaopp(plai/fixpo_ops), [clause_applies/2]).
 :- use_module(ciaopp(p_unit/itf_db), [current_itf/3]).
 :- use_module(ciaopp(p_unit/program_keys), [predkey_from_sg/2]).
@@ -180,12 +180,12 @@ sub_is_applicable(SuccessPolicy,_SgKey,SgCall,Sv,Call0,AbsInt,SgProj,Proj0,Succ,
 	varset(SgProj,Pv),
   \+ Proj0 = '$bottom', \+ Succ = '$bottom',
   % call_to_entry cannot be called with bottom (and it is obviously not applicable)
-	call_to_entry(AbsInt,Pv,SgProj,Sv,SgCall,[],Proj0,Entry0,_),
+	call_to_entry(AbsInt,Pv,SgProj,Sv,SgCall,not_provided,[],Proj0,Entry0,_),
 	abs_sort(AbsInt,Entry0,Entry),
 	abs_sort(AbsInt,Call0,Call),
 	less_or_equal_(SuccessPolicy,AbsInt,Call,Entry), 
   %	exit_to_prime(AbsInt,SgCall,Pv,SgProj,Sv,Succ,_,Prime),
-  call_to_entry(AbsInt,Pv,SgProj,Sv,SgCall,[],Succ,Prime,_).
+  call_to_entry(AbsInt,Pv,SgProj,Sv,SgCall,not_provided,[],Succ,Prime,_).
 
 %%	functor(Sg,F,A),
 %%	functor(SgCopy,F,A),
@@ -201,9 +201,9 @@ sub_is_applicable(SuccessPolicy,_SgKey,SgCall,Sv,Call0,AbsInt,SgProj,Proj0,Succ,
 %%        abs_sort(AbsInt,Succ,Prime).
 %%sub_is_applicable_(AbsInt,SuccessPolicy,SgCopy,Call,Succ,Sg,Sv,Proj,Exit):-
 %%	varset(SgCopy,Gv),
-%%	call_to_entry(AbsInt,Gv,SgCopy,Sv,Sg,[],Call,Entry,_),
+%%	call_to_entry(AbsInt,Gv,SgCopy,Sv,Sg,not_provided,[],Call,Entry,_),
 %%	less_or_equal_(SuccessPolicy,AbsInt,Proj,Entry), 
-%%	call_to_entry(AbsInt,Gv,SgCopy,Sv,Sg,[],Succ,Exit,_).
+%%	call_to_entry(AbsInt,Gv,SgCopy,Sv,Sg,not_provided,[],Succ,Exit,_).
 
 %-----------------------------------------------------------------------------
 

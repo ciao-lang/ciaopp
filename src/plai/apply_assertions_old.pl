@@ -14,7 +14,7 @@
 :- use_module(ciaopp(plai/domains), 
 	[ abs_sort/3, asub_to_native/6,
 	  compute_lub/3, glb/4, less_or_equal/3, unknown_call/4,
-	  call_to_entry/9, full_info_to_asub/5, info_to_asub/6, info_to_asub/7,
+	  call_to_entry/10, full_info_to_asub/5, info_to_asub/6, info_to_asub/7,
 	  contains_parameters/2, unknown_entry/3,
 	  extend/6, project/6, exit_to_prime/8, identical_abstract/3]).
 :- use_module(typeslib(typeslib), [set_param_matching_mode/1]).
@@ -369,7 +369,7 @@ do_trust_(AbsInt,Step,SgCopy,Call,Succ,Sg,Sv,Proj,Exit):-
 	  fail
 	),
 	set_param_matching_mode(off),
-	call_to_entry(AbsInt,Gv,SgCopy,Sv,Sg,[],Succ,Exit,_).
+	call_to_entry(AbsInt,Gv,SgCopy,Sv,Sg,not_provided,[],Succ,Exit,_).
 
 one_trust(SgKey,SgCopy,Call,AbsInt,Succ,Loc):-
 	current_fact(trust(SgKey,SgCopy,Call,AbsInt,Succ,Loc)),
@@ -439,4 +439,4 @@ less_or_equal_(top,_AbsInt,_Proj,_Entry).
 
 call_to_entry_(top,_AbsInt,_Gv,_SgCopy,_Sv,_Sg,_Vs,_Call,_Entry):- !.
 call_to_entry_(_ny,AbsInt,Gv,SgCopy,Sv,Sg,Vs,Call,Entry):-
-	call_to_entry(AbsInt,Gv,SgCopy,Sv,Sg,Vs,Call,Entry,_).
+	call_to_entry(AbsInt,Gv,SgCopy,Sv,Sg,not_provided,Vs,Call,Entry,_).

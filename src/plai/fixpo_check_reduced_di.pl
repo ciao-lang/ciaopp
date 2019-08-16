@@ -192,7 +192,7 @@ process_body(Body,_K,AbsInt,Sg,SgKey,Hv,Fv,_Vars_u,Head,Sv,Call,Proj,TempPrime,P
 	widen_succ(AbsInt,TempPrime,Prime2,NewPrime),
 	decide_re_analyse(AbsInt,TempPrime,NewPrime,Prime,SgKey,Sg,Id,Proj).
 process_body(Body,K,AbsInt,Sg,SgKey,Hv,Fv,Vars_u,Head,Sv,_Call,Proj,TempPrime,Prime,Id):-
-	call_to_entry(AbsInt,Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo),
+	call_to_entry(AbsInt,Sv,Sg,Hv,Head,not_provided,Fv,Proj,Entry,ExtraInfo),
 %	erase_previous_memo_tables_and_parents(Body,K,Id),
 % not needed as it is the first time this clause is analysed (?)
 	fixpoint_trace('visit clause',Id,_N,K,Head,Entry,Body),
@@ -289,7 +289,7 @@ decide_re_analyse(AbsInt,_TempPrime,NewPrime,Prime,SgKey,Sg,Id,Proj):-
 %% check 	varset(Head,Hv),
 %% check 	sort(Vars_u,Vars),
 %% check 	ord_subtract(Vars,Hv,Fv),
-%% check 	call_to_entry(AbsInt,Sv,Sg,Hv,Head,Fv,Proj,_,ExtraInfo),
+%% check 	call_to_entry(AbsInt,Sv,Sg,Hv,Head,not_provided,Fv,Proj,_,ExtraInfo),
 %% check 	erase_previous_memo_tables_and_parents(NewBody,AbsInt,Clid,Id),
 %% check 	entry_to_exit(NewBody,Clid,S_Entry,Exit,Vars_u,AbsInt,Id),
 %% check 	each_exit_to_prime(Exit,AbsInt,Sg,Hv,Head,Sv,ExtraInfo,Prime1),

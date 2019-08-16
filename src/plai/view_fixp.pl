@@ -17,7 +17,7 @@
 :- use_module(library(write), [numbervars/3]).
 
 :- use_module(ciaopp(p_unit/program_keys), [predkey_from_sg/2]).
-:- use_module(ciaopp(plai/domains), [call_to_entry/9, project/6]).
+:- use_module(ciaopp(plai/domains), [call_to_entry/10, project/6]).
 :- use_module(ciaopp(plai/trace_fixp), [trace_fixp/1]).
 
 :- doc(title, "Visualization of CiaoPP traces using daVinci").
@@ -218,7 +218,7 @@ view_fixpoint('exit clause',Id,_,ClKey,Head,Exit,_):- !,
 	color_node(Node,white).
 view_fixpoint('visit fact',Id,_,ClKey,Head,Proj,Help):- !,
 	Help=(Sv,Sg,Hv,Fv,AbsInt),
-	call_to_entry(AbsInt,Sv,Sg,Hv,Head,Fv,Proj,Entry,_),
+	call_to_entry(AbsInt,Sv,Sg,Hv,Head,not_provided,Fv,Proj,Entry,_),
 	retract_fact(node(Id,ClKey,Head,Proj,ASubs,ASubs1,T,Node)),
 	ASubs1=([Entry|Entries],Exits),
 	asserta_fact(node(Id,ClKey,Head,Proj,ASubs,(Entries,Exits),T,Node)),
@@ -229,7 +229,7 @@ view_fixpoint('visit fact',Id,_,ClKey,Head,Proj,Help):- !,
 	synchro.
 view_fixpoint('exit fact',Id,_,ClKey,Head,Prime,Help):- !,
 	Help=(Sv,Sg,Hv,Fv,AbsInt),
-	call_to_entry(AbsInt,Sv,Sg,Hv,Head,Fv,Prime,Exit,_),
+	call_to_entry(AbsInt,Sv,Sg,Hv,Head,not_provided,Fv,Prime,Exit,_),
 	retract_fact(node(Id,ClKey,Head,Proj,ASubs,ASubs1,T,Node)),
 	ASubs1=(Entries,[Exit|Exits]),
 	asserta_fact(node(Id,ClKey,Head,Proj,ASubs,(Entries,Exits),T,Node)),

@@ -22,7 +22,7 @@
 :- use_module(spec(abs_exec_cond), [cond/4]).
  
 :- use_module(ciaopp(plai/domains), [
-	                           call_to_entry/9, 
+	                           call_to_entry/10, 
 				   project/6
 				] ).
 
@@ -61,7 +61,7 @@ adapt_info_to_assrt_head(Abs,Goal,Vars,Info,Head,NewInfo):-
 	varset(Goal,Sv),
 	varset(Head,Hv),
 	project(Abs,Goal,Sv,Vars,Info,InfoProj),   
-	call_to_entry(Abs,Sv,Goal,Hv,Head,[],InfoProj,NewInfo,_Info).
+	call_to_entry(Abs,Sv,Goal,Hv,Head,not_provided,[],InfoProj,NewInfo,_Info).
 
 
 :- pred abs_exec_regtype(TypeSymbol,Sense,Cond) # "Calls to regular
