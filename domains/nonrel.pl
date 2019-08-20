@@ -370,15 +370,15 @@ nonrel_extend_([X1/V1|ASub1], [X2/V2|ASub2], AbsInt, Succ) :-  % generic
             Succ = [X2/V2|RSucc]
         ).
 
-:- export(nonrel_call_to_success_fact/9).
-:- pred nonrel_call_to_success_fact(+AbsInt,+Sg,+Hv,+Head,+Sv,+Call,+Proj,-Prime,-Succ)
-        : atm * callable * list * callable * list * term * term * term * term 
+:- export(nonrel_call_to_success_fact/10).
+:- pred nonrel_call_to_success_fact(+AbsInt,+Sg,+Hv,+Head,+K,+Sv,+Call,+Proj,-Prime,-Succ)
+        : atm * callable * list * callable * list * term * term * term * term * term 
         #"Specialized version of @pred{call_to_entry/8} + @pred{exit_to_prime/7}
         + @pred{extend/4} for facts".
-nonrel_call_to_success_fact(AbsInt,_,_,_,_,Call,Proj,Bot,Bot) :-
+nonrel_call_to_success_fact(AbsInt,_,_,_,_,_,Call,Proj,Bot,Bot) :-
         nonrel_bot(AbsInt,Bot),
         ( Proj = Bot ; Call = Bot ), !.
-nonrel_call_to_success_fact(AbsInt,Sg,Hv,Head,Sv,Call,Proj,Prime,Succ) :-
+nonrel_call_to_success_fact(AbsInt,Sg,Hv,Head,_K,Sv,Call,Proj,Prime,Succ) :-
         nonrel_top(AbsInt,Top),
         insert_values_asub(Hv,Proj,Top,Call0),
         nonrel_amgu(AbsInt,Sg,Head,Call0,Tmp),

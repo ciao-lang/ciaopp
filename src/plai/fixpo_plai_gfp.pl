@@ -758,7 +758,7 @@ process_body(Body,K,AbsInt,Sg,Hv,Fv,_,Head,Sv,Call,Proj,LPrime,Id):-
 	Help=(Sv,Sg,Hv,Fv,AbsInt),
 	singleton(Prime,LPrime),
 	fixpoint_trace('visit fact',Id,_N,K,Head,Proj,Help),
-	call_to_success_fact(AbsInt,Sg,Hv,Head,Sv,Call,Proj,Prime,_Succ),
+	call_to_success_fact(AbsInt,Sg,Hv,Head,K,Sv,Call,Proj,Prime,_Succ),
 	fixpoint_trace('exit fact',Id,_N,K,Head,Prime,Help),
 	( current_pp_flag(fact_info,on) -> 
  	  call_to_entry(AbsInt,Sv,Sg,Hv,Head,not_provided,[],Prime,Exit,_),

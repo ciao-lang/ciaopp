@@ -307,12 +307,12 @@ call_to_entry_fact_each(AbsInt,Sv,Sg,Hv,Head,[P|Ps],[E|Ex]):-
 	call_to_entry_fact_each(AbsInt,Sv,Sg,Hv,Head,Ps,Ex).
 
 %process_body(true,
-process_body(Body,Key,AbsInt,Sg,SgKey,Hv,Fv,_Vars_u,Head,Sv,Call,Proj,TempPrime,Prime,Id):-
+process_body(Body,K,AbsInt,Sg,SgKey,Hv,Fv,_Vars_u,Head,Sv,Call,Proj,TempPrime,Prime,Id):-
 	Body = g(_,[],'$built'(_,true,_),'true/0',true),!,
 	Help=(Sv,Sg,Hv,Fv,AbsInt),
 	fixpoint_trace('visit fact',Id,_N,K,Head,Proj,Help),
 	update_mem_usage,
-	call_to_success_fact(AbsInt,Sg,Hv,Head,Sv,Call,Proj,One_Prime,_Succ),
+	call_to_success_fact(AbsInt,Sg,Hv,Head,K,Sv,Call,Proj,One_Prime,_Succ),
 	singleton(One_Prime,Prime1),
 	fixpoint_trace('exit fact',Id,_N,K,Head,Prime,Help),
 	each_apply_trusted(Proj,SgKey,Sg,Sv,AbsInt,Prime1,Prime2),
@@ -320,7 +320,7 @@ process_body(Body,Key,AbsInt,Sg,SgKey,Hv,Fv,_Vars_u,Head,Sv,Call,Proj,TempPrime,
 	decide_re_analyse(AbsInt,TempPrime,NewPrime,Prime,SgKey,Sg,Id,Proj),
 	( current_pp_flag(fact_info,on) ->
 	    call_to_entry_fact_each(AbsInt,Sv,Sg,Hv,Head,Prime,Exit),
-	    decide_memo(AbsInt,Key,Id,no,Hv,Exit)
+	    decide_memo(AbsInt,K,Id,no,Hv,Exit)
 	;
 	    true
 	).
@@ -342,7 +342,7 @@ process_body_no_lub(Body,_K,_AbsInt,_Sg,_Hv,_Fv,_Vars_u,_Head,_Sv,_Call,_Proj,_I
 %% 	Help=(Sv,Sg,Hv,Fv,AbsInt),
 %% 	fixpoint_trace('visit fact',Id,_N,K,Head,Proj,Help),
 %% 	update_mem_usage,
-%% 	call_to_success_fact(AbsInt,Sg,Hv,Head,Sv,Call,Proj,One_Prime,_Succ),
+%% 	call_to_success_fact(AbsInt,Sg,Hv,Head,K,Sv,Call,Proj,One_Prime,_Succ),
 %% 	singleton(One_Prime,Prime1),
 %% 	fixpoint_trace('exit fact',Id,_N,K,Head,Prime,Help),
 %% 	each_apply_trusted(Proj,SgKey,Sg,Sv,AbsInt,Prime1,Prime2),

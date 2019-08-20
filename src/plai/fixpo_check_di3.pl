@@ -174,11 +174,11 @@ do_cl(Clause,SgKey,Sg,Sv,Call,Proj,AbsInt,Id,TempPrime,Prime):-
 
 do_cl(_,_,_,_,_,_,_,_,Primes,Primes).
 
-process_body(Body,_K,AbsInt,Sg,SgKey,Hv,Fv,_Vars_u,Head,Sv,Call,Proj,TempPrime,Prime,Id):-
+process_body(Body,K,AbsInt,Sg,SgKey,Hv,Fv,_Vars_u,Head,Sv,Call,Proj,TempPrime,Prime,Id):-
 	Body = g(_,[],'$built'(_,true,_),'true/0',true),!,
 	Help=(Sv,Sg,Hv,Fv,AbsInt),
 	fixpoint_trace('visit fact',Id,_N,K,Head,Proj,Help),
-	call_to_success_fact(AbsInt,Sg,Hv,Head,Sv,Call,Proj,One_Prime,_Succ),
+	call_to_success_fact(AbsInt,Sg,Hv,Head,K,Sv,Call,Proj,One_Prime,_Succ),
 	singleton(One_Prime,Prime1),
 	fixpoint_trace('exit fact',Id,_N,K,Head,Prime,Help),
 	each_apply_trusted(Proj,SgKey,Sg,Sv,AbsInt,Prime1,Prime2),

@@ -250,7 +250,7 @@ filter_out_bottoms([Succ|LSucc],LSucc_nb):-
 
 each_unknown_call([],_AbsInt,_Sg,[]).
 each_unknown_call([Call|Calls],AbsInt,Sg,[Succ|Succs]):-
-	unknown_call(AbsInt,Sg,Call,Succ),
+	unknown_call(AbsInt,Sg,Call,Succ), % TODO: wrong? Sg vs Sv?
 	each_unknown_call(Calls,AbsInt,Sg,Succs).
 
 each_body_succ_builtin([],_,_T,_Tg,_,_,_Sg,_Sv,_HvFv_u,_F,_N,[]).

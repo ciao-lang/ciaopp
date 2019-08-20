@@ -228,8 +228,8 @@ process_body(Body,K,AbsInt,Sg,Hv,_Fv,_,Head,Sv,Call,Proj,LPrime,Id):-
 	Body = g(_,[],'$built'(_,true,_),'true/0',true),!,
 	Help=(Sv,Sg,Hv,_Fv,AbsInt),
 	fixpoint_trace('visit fact',Id,_N,K,Head,Proj,Help),
-	call_to_success_fact(AbsInt,Sg,Hv,Head,Sv,Call,Proj,Prime,_Succ),
-  get_singleton(Prime,LPrime),
+	call_to_success_fact(AbsInt,Sg,Hv,Head,K,Sv,Call,Proj,Prime,_Succ),
+	get_singleton(Prime,LPrime),
 	( current_pp_flag(fact_info,on) ->
 	    call_to_entry(AbsInt,Sv,Sg,Hv,Head,not_provided,[],Prime,Exit,_),
 	    decide_memo(AbsInt,K,Id,no,Hv,[Exit])

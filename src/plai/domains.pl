@@ -399,14 +399,8 @@ less_or_equal_proj(AbsInt,Sg,Proj,Sg1,Proj1) :-
    "Succeeds if each abstract substitution in list @var{LASub1} is equivalent
     to some abstract substitution in list @var{LASub2}.").
 
-% TODO:[new-resources] version with K, really needed?
-% TODO: Changed the cut before calling the domain operation, check that it is OK (JF)
 :- export(call_to_success_fact/10). % TODO:[new-resources] (extra)
 :- pred call_to_success_fact(+AbsInt,+Sg,+Hv,+Head,+K,+Sv,+Call,+Proj,-Prime,-Succ)
-        : atm(AbsInt) + not_fails.
-
-:- export(call_to_success_fact/9).
-:- pred call_to_success_fact(+AbsInt,+Sg,+Hv,+Head,+Sv,+Call,+Proj,-Prime,-Succ)
         : atm(AbsInt) + not_fails
         #"Specialized version of call_to_entry + entry_to_exit + exit_to_prime
           for a fact @var{Head}.".
