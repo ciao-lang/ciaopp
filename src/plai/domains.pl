@@ -459,10 +459,11 @@ less_or_equal_proj(AbsInt,Sg,Proj,Sg1,Proj1) :-
 % ===========================================================================
 :- doc(section, "Properties to domain and viceversa").
 
-:- export(info_to_asub/5).
-info_to_asub(AbsInt,Kind,InputUser,Qv,ASub) :-
-	info_to_asub_(InputUser,AbsInt,Kind,_,Input),
-	input_user_interface(AbsInt,Input,Qv,ASub).
+% TODO: remove (JF)
+% :- export(info_to_asub/5).
+% info_to_asub(AbsInt,Kind,InputUser,Qv,ASub) :-
+% 	info_to_asub_(InputUser,AbsInt,Kind,_,Input),
+% 	input_user_interface(AbsInt,Input,Qv,ASub).
 
 :- export(info_to_asub/7). % TODO:[new-resources] (extra)
 % info_to_asub(+,+,+,+,-,+,+)
