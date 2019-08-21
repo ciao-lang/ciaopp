@@ -18,7 +18,7 @@
 :- use_module(ciaopp(plai/apply_assertions)).
 :- use_module(ciaopp(plai/plai_db)).
 :- use_module(ciaopp(plai/fixpo_dd), [add_change/5, add_external_complete_change/6]).
-:- use_module(ciaopp(plai/domains), [info_to_asub/6, info_to_asub/7,
+:- use_module(ciaopp(plai/domains), [info_to_asub/7,
         extend/6, project/5, exit_to_prime/8,	identical_abstract/3, identical_proj/5,
         glb/4, less_or_equal/3, compute_lub/3, unknown_entry/3]).
 :- use_module(ciaopp(plai/fixpo_ops), [get_singleton/2, fixpoint_get_new_id/5]).

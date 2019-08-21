@@ -41,7 +41,7 @@
 % Plai library
 :- use_module(ciaopp(plai/domains), 
 	[ init_abstract_domain/2, empty_entry/3, unknown_entry/3, 
-	  unknown_entry/4, info_to_asub/6,dom_statistics/2]).
+	  unknown_entry/4, info_to_asub/7,dom_statistics/2]).
 :- use_module(ciaopp(plai/normalize_args), [normalize_args/4]).
 :- use_module(ciaopp(plai/plai_errors), [undo_errors/0]).
 :- use_module(ciaopp(plai/fixpo_plai), [query/8, init_fixpoint/0, cleanup_fixpoint/1]).
@@ -356,7 +356,7 @@ entry_point(AbsInt,Goal,Qv,Call,Name):-
 %	get_unify(CInfo,CInfo0,Unif),
 	varset(Goal,Qv),
 %	varset((Goal,Unif),Qa),
-	info_to_asub(AbsInt,_approx,CInfo,Qv,Call,Goal).
+	info_to_asub(AbsInt,_approx,CInfo,Qv,Call,Goal,no).
 %	analyze_unify(Unif,AbsInt,Call0,Call).
 % TODO: Add here clauses for get_entry_info to merge with mod_topdown_analysis
 

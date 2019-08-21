@@ -464,27 +464,19 @@ info_to_asub(AbsInt,Kind,InputUser,Qv,ASub) :-
 	info_to_asub_(InputUser,AbsInt,Kind,_,Input),
 	input_user_interface(AbsInt,Input,Qv,ASub).
 
-:- export(info_to_asub/6). % TODO:[new-resources] (extra)
-% info_to_asub(+,+,+,+,-,+)
-:- doc(info_to_asub(AbsInt,Kind,InputUser,Qv,ASub,Sg),
+:- export(info_to_asub/7). % TODO:[new-resources] (extra)
+% info_to_asub(+,+,+,+,-,+,+)
+:- doc(info_to_asub(AbsInt,Kind,InputUser,Qv,ASub,Sg,MaybeCallASub),
    "Obtains the abstract substitution @var{ASub} on variables @var{Qv} for
     domain @var{AbsInt} from the user supplied information @var{InputUser}
     refering to properties on @var{Qv}. It works by calling
     @tt{input_interface/5} on each property of @var{InputUser} which is a
     native property, so that they are accumulated, and then calls
-    @tt{input_user_interface/4}.").
-info_to_asub(AbsInt,Kind,InputUser,Qv,ASub,Sg) :-
-	info_to_asub_(InputUser,AbsInt,Kind,_,Input),
-	( input_user_interface(AbsInt,Input,Qv,ASub) %-> true
-	; input_user_interface5(AbsInt,Input,Qv,ASub,Sg)
-	),
-	!. % TODO:[new-resources] cut before; or better: do not maintain 2 versions of the domain interface!
-
-:- export(info_to_asub/7). % TODO:[new-resources] (extra)
-info_to_asub(AbsInt,Kind,InputUser,Qv,ASub,Sg,CallInfo) :-
+    @tt{input_user_interface/4}."). % TODO: Document MaybeCallASub
+info_to_asub(AbsInt,Kind,InputUser,Qv,ASub,Sg,MaybeCallASub) :-
 	info_to_asub_(InputUser,AbsInt,Kind,_,Input),
 	( input_user_interface(AbsInt,Input,Qv,ASub)
-	; ( input_user_interface6(AbsInt,Input,Qv,ASub,Sg,CallInfo) -> true
+	; ( MaybeCallASub = yes(CallASub), input_user_interface6(AbsInt,Input,Qv,ASub,Sg,CallASub) -> true
 	  ; input_user_interface5(AbsInt,Input,Qv,ASub,Sg)
 	  )
 	), !. % TODO:[new-resources] cut before; or better: do not maintain 3 versions of the domain interface!

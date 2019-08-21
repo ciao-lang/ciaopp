@@ -102,7 +102,7 @@ a native property. Then we could use it for rtchecks in this module.").
 :- use_module(ciaopp(plai/trace_fixp), [fixpoint_trace/7]).
 :- use_module(ciaopp(plai/apply_assertions_old),
 	[apply_trusted0/7, apply_trusted_modular/6]).
-:- use_module(ciaopp(plai/domains), [info_to_asub/6, info_to_asub/7,
+:- use_module(ciaopp(plai/domains), [info_to_asub/7,
 	extend/6, project/6, exit_to_prime/8, compute_lub/3,
 	identical_abstract/3, call_to_entry/10, glb/4,
 	less_or_equal/3, unknown_call/4]).
@@ -275,7 +275,7 @@ gather_calls_assertions([B|Bs],SgKey,Head,Sts,AbsInt,[AsrProj|APs]) :-
 abstract_calls_assertion(Body,SgKey,Head,Sts,AbsInt,AsrProj) :-
         assertion_body(Head,_Compat,InfoCall,_Succ,_Comp,_Comm,Body),
         varset(Head, Hv),
-        info_to_asub(AbsInt,_Kind,InfoCall,Hv,AsrProj,Head),
+        info_to_asub(AbsInt,_Kind,InfoCall,Hv,AsrProj,Head,no),
         assertz_fact(call_asr(SgKey, Head, Sts, AbsInt, AsrProj)).
 
 glb_successes(SgKey,Status,Proj,Head,Hv,AbsInt,Prime0,NewPrime,yes) :-
@@ -298,9 +298,9 @@ get_succ_assertion_asubs(SgKey,Head,Hv,Sts,AbsInt,Proj,AsrPrime) :-
     assertion_read(Head,_M,St,success,Body,_Dict,_Src,_LB,_LE),
       member(St, Sts),
       assertion_body(Head,_Compat,InfoCall,InfoSucc,_Comp,_Comm,Body),
-	    info_to_asub(AbsInt,_Kind,InfoCall,Hv,AsrProj,Head),
+	    info_to_asub(AbsInt,_Kind,InfoCall,Hv,AsrProj,Head,no),
 	    less_or_equal(AbsInt, Proj, AsrProj),
-	    info_to_asub(AbsInt,_Kind,InfoSucc,Hv,Prime,Head),
+	    info_to_asub(AbsInt,_Kind,InfoSucc,Hv,Prime,Head,no),
 	    predkey_from_sg(Head, SgKey),
 	    add_success_asr(SgKey, Head, Sts, AbsInt, Proj, Prime),
 	    fail

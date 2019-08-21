@@ -23,7 +23,7 @@
 	unknown_entry/3,
 	identical_abstract/3,
 	glb/4,
-	info_to_asub/6,
+	info_to_asub/7,
 	extend/6,
 	less_or_equal/3]).
 :- use_module(ciaopp(p_unit/p_unit_basic), [type_of_goal/2]).
@@ -81,7 +81,7 @@ how(Abs,SgKey,Mode,Lit,AssProps,Where) :-
 	get_init_vars(Lit0,Lit,Vars,Vars0),
 	rename_props(AssProps,Vars0,AssProps1),
 	project(Abs,Lit0,Vars0,_,Info,InfoV),
-	info_to_asub(Abs,_,AssProps1,Vars0,Props,Lit),
+	info_to_asub(Abs,_,AssProps1,Vars0,Props,Lit,no),
 	unknown_entry(Abs,Vars0,EmptyV),
 	( identical_abstract(Abs,InfoV,EmptyV) ->
 	  warning_message("Variables ~w have value top. Diagnosis aborted.",[Vars0]),

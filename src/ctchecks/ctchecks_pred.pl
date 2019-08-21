@@ -11,7 +11,7 @@
 %% CiaoPP library:
 
 :- use_module(ciaopp(plai/domains), 
-   [glb/4, info_to_asub/6, unknown_call/4, call_to_entry/10, identical_abstract/3]).
+   [glb/4, info_to_asub/7, unknown_call/4, call_to_entry/10, identical_abstract/3]).
 
 :- use_module(ciaopp(p_unit),
         [predicate_names/1, entry_assertion/3,	assertion_set_status/3,
@@ -225,7 +225,7 @@ abs_exec_complete_cs(Goal,Call,Succ,AbsInt,
 is_perfect_match(Abs,Call,ACall) :- 
 	entry_assertion(Call,Entry,_),
 	varset(Call,Vs),
-	info_to_asub(Abs,_,Entry,Vs,EntryASub,_),
+	info_to_asub(Abs,_,Entry,Vs,EntryASub,_,no),
 	identical_abstract(Abs,ACall,EntryASub).
 
 compose_cs_goals(dont_know,OrigL,G1,G2,Orig) :-
@@ -242,7 +242,7 @@ abs_exec_each_succ(Goal, Call, Succ, AbsInt, AGoal, [ASucc|ASuccs], NCall, NSucc
 	!,
  	varset(Goal, Gv),
  	varset(ASucc, ASv),
- 	info_to_asub(AbsInt, _, Call, Gv, Cond, Goal), 
+ 	info_to_asub(AbsInt, _, Call, Gv, Cond, Goal, no), 
  	unknown_call(AbsInt, Gv, Cond, Cond0),
 	call_to_entry(AbsInt, Gv, Goal, ASv, AGoal, not_provided, [], Cond0, Cond1, _ExtraInfo),
  	glb(AbsInt, Cond1, ASucc, CondASucc),

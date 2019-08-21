@@ -14,7 +14,7 @@
 :- use_module(ciaopp(plai/domains), 
 	[ abs_sort/3, asub_to_native/6,
 	  compute_lub/3, glb/4, less_or_equal/3, unknown_call/4,
-	  call_to_entry/10, full_info_to_asub/5, info_to_asub/6, info_to_asub/7,
+	  call_to_entry/10, full_info_to_asub/5, info_to_asub/7,
 	  contains_parameters/2, unknown_entry/3,
 	  extend/6, project/6, exit_to_prime/8, identical_abstract/3]).
 :- use_module(typeslib(typeslib), [set_param_matching_mode/1]).
@@ -291,8 +291,8 @@ trusted(SgKey,_Proj,Sg0,_Sv,AbsInt,_Loc,_Prime):-
          ),
 	 assertion_body(Sg,_Compat,InfoCall,InfoSucc,_Comp,_Comm,Body),
          % approx default trust
-         info_to_asub(AbsInt,_approx1,InfoCall,Sv,Appr,Sg),
-         info_to_asub(AbsInt,_approx2,InfoSucc,Sv,Succ0,Sg,Appr),
+         info_to_asub(AbsInt,_approx1,InfoCall,Sv,Appr,Sg,no),
+         info_to_asub(AbsInt,_approx2,InfoSucc,Sv,Succ0,Sg,yes(Appr)),
          unknown_call(AbsInt,Sv,Appr,Appr0),
          glb(AbsInt,Appr0,Succ0,Trust0),
          ( retract_fact(approx(SgKey,Sg,AbsInt,Trust1)) ->
