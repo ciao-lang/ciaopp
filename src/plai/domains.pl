@@ -470,9 +470,8 @@ less_or_equal_proj(AbsInt,Sg,Proj,Sg1,Proj1) :-
     @tt{input_user_interface/6}."). % TODO: Document MaybeCallASub
 info_to_asub(AbsInt,Kind,InputUser,Qv,ASub,Sg,MaybeCallASub) :-
 	info_to_asub_(InputUser,AbsInt,Kind,_,Input),
-	( input_user_interface(AbsInt,Input,Qv,ASub)
-	; input_user_interface6(AbsInt,Input,Qv,ASub,Sg,MaybeCallASub)
-	), !. % TODO:[new-resources] cut before; or better: do not maintain 3 versions of the domain interface!
+	input_user_interface(AbsInt,Input,Qv,ASub,Sg,MaybeCallASub),
+	!. % TODO: make sure that cut is not needed
 
 info_to_asub_([],_AbsInt,_Kind,Acc,Acc).
 info_to_asub_([I|Info],AbsInt,_Kind,Acc0,Acc) :-
@@ -497,10 +496,8 @@ info_to_asub_([I|Info],AbsInt,_Kind,Acc0,Acc) :-
 
 full_info_to_asub(AbsInt,InputUser,Qv,ASub,Sg) :-
 	full_info_to_asub_(InputUser,AbsInt,_,Input),
-	( input_user_interface(AbsInt,Input,Qv,ASub) %-> true
-	; input_user_interface6(AbsInt,Input,Qv,ASub,Sg,no)
-	),
-	!. % TODO:[new-resources] cut before; or better: do not maintain 2 versions of the domain interface!
+	input_user_interface(AbsInt,Input,Qv,ASub,Sg,no),
+	!. % TODO: make sure that cut is not needed
 
 full_info_to_asub_([],_AbsInt,Acc,Acc).
 full_info_to_asub_([I|Info],AbsInt,Acc0,Acc) :-
@@ -518,8 +515,8 @@ full_info_to_asub_([I|Info],AbsInt,Acc0,Acc) :-
     information conveyed by @var{Prop} to structure @var{Struct0}. This way,
     the properties relevant to a domain are being accumulated.").
 
-:- doc(doinclude,input_user_interface/4).
-:- doc(input_user_interface(AbsInt,Struct,Qv,ASub),
+:- doc(doinclude,input_user_interface/6).
+:- doc(input_user_interface(AbsInt,Struct,Qv,ASub,Sg,MaybeCallASub),
    "@var{ASub} is the abstraction in @var{AbsInt} of the information collected
     in @var{Struct} (a domain defined structure) on variables @var{Qv}.").
 
