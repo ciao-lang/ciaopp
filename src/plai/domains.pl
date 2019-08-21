@@ -459,13 +459,7 @@ less_or_equal_proj(AbsInt,Sg,Proj,Sg1,Proj1) :-
 % ===========================================================================
 :- doc(section, "Properties to domain and viceversa").
 
-% TODO: remove (JF)
-% :- export(info_to_asub/5).
-% info_to_asub(AbsInt,Kind,InputUser,Qv,ASub) :-
-% 	info_to_asub_(InputUser,AbsInt,Kind,_,Input),
-% 	input_user_interface(AbsInt,Input,Qv,ASub).
-
-:- export(info_to_asub/7). % TODO:[new-resources] (extra)
+:- export(info_to_asub/7).
 % info_to_asub(+,+,+,+,-,+,+)
 :- doc(info_to_asub(AbsInt,Kind,InputUser,Qv,ASub,Sg,MaybeCallASub),
    "Obtains the abstract substitution @var{ASub} on variables @var{Qv} for
@@ -473,13 +467,11 @@ less_or_equal_proj(AbsInt,Sg,Proj,Sg1,Proj1) :-
     refering to properties on @var{Qv}. It works by calling
     @tt{input_interface/5} on each property of @var{InputUser} which is a
     native property, so that they are accumulated, and then calls
-    @tt{input_user_interface/4}."). % TODO: Document MaybeCallASub
+    @tt{input_user_interface/6}."). % TODO: Document MaybeCallASub
 info_to_asub(AbsInt,Kind,InputUser,Qv,ASub,Sg,MaybeCallASub) :-
 	info_to_asub_(InputUser,AbsInt,Kind,_,Input),
 	( input_user_interface(AbsInt,Input,Qv,ASub)
-	; ( MaybeCallASub = yes(CallASub), input_user_interface6(AbsInt,Input,Qv,ASub,Sg,CallASub) -> true
-	  ; input_user_interface5(AbsInt,Input,Qv,ASub,Sg)
-	  )
+	; input_user_interface6(AbsInt,Input,Qv,ASub,Sg,MaybeCallASub)
 	), !. % TODO:[new-resources] cut before; or better: do not maintain 3 versions of the domain interface!
 
 info_to_asub_([],_AbsInt,_Kind,Acc,Acc).
@@ -497,7 +489,7 @@ info_to_asub_([I|Info],AbsInt,_Kind,Acc0,Acc) :-
 %% 	; Acc1=Acc0 ),
 %% 	info_to_asub_(Info,AbsInt,Kind,Acc1,Acc).
 
-:- export(full_info_to_asub/5). % TODO:[new-resources] (extra arg)
+:- export(full_info_to_asub/5).
 :- doc(full_info_to_asub(AbsInt,InputUser,Qv,ASub,Sg),
    "Same as @tt{info_to_asub(AbsInt,InputUser,Qv,ASub)} except that it fails
     if some property in @var{InputUser} is not native or not relevant to the
@@ -506,7 +498,7 @@ info_to_asub_([I|Info],AbsInt,_Kind,Acc0,Acc) :-
 full_info_to_asub(AbsInt,InputUser,Qv,ASub,Sg) :-
 	full_info_to_asub_(InputUser,AbsInt,_,Input),
 	( input_user_interface(AbsInt,Input,Qv,ASub) %-> true
-	; input_user_interface5(AbsInt,Input,Qv,ASub,Sg)
+	; input_user_interface6(AbsInt,Input,Qv,ASub,Sg,no)
 	),
 	!. % TODO:[new-resources] cut before; or better: do not maintain 2 versions of the domain interface!
 

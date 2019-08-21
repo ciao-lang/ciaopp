@@ -42,10 +42,7 @@
 :- discontiguous(obtain_info/5).
 :- discontiguous(input_interface/5).
 :- discontiguous(input_user_interface/4). % TODO: merge with input_user_interface6/6
-% TODO:[new-resources] version with Sg, really needed?
-:- discontiguous(input_user_interface5/5). % TODO: merge with input_user_interface6/6
-% TODO:[new-resources] version with Sg and CallInfo, really needed?
-:- discontiguous(input_user_interface6/6).
+:- discontiguous(input_user_interface6/6). % TODO: Document use of Sg and MaybeCallASub
 :- discontiguous(asub_to_native/6).
 :- discontiguous(concrete/4).
 :- discontiguous(unknown_call/4). % TODO: merge with unknown_call/5
@@ -1533,8 +1530,7 @@ split_combined_domain(res_plai,ASub,ASubs,Doms) :- !, res_plai_split_combined_do
 call_to_success_builtin(res_plai,SgKey,Sg,Sv,Call,Proj,Succ) :- !, res_plai_call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,Succ).
 obtain_info(res_plai,_Prop,Vars,ASub,Info) :- !, asub_to_info(res_plai,ASub,Vars,_Info,Info).
 input_interface(res_plai,InputUser,Kind,Struct0,Struct1) :- !, res_plai_input_interface(InputUser,Kind,Struct0,Struct1).
-input_user_interface5(res_plai,InputUser,Qv,ASub,Sg) :- !, res_plai_input_user_interface(InputUser,Qv,ASub,Sg).
-input_user_interface6(res_plai,InputUser,Qv,ASub,Sg,CallInfo) :- !, res_plai_input_user_interface(InputUser,Qv,ASub,Sg,CallInfo).
+input_user_interface6(res_plai,InputUser,Qv,ASub,Sg,MaybeCallASub) :- !, res_plai_input_user_interface(InputUser,Qv,ASub,Sg,MaybeCallASub).
 asub_to_native(res_plai,ASub,Qv,OutFlag,OutputUser,Comp) :- !, res_plai_asub_to_native(ASub,Qv,OutFlag,OutputUser,Comp).
 unknown_call(res_plai,Vars,Call,Succ) :- !, res_plai_unknown_call(Vars,Call,Succ).
 unknown_entry(res_plai,Qv,Call) :- !, res_plai_unknown_entry(Qv,Call).
@@ -1580,8 +1576,7 @@ split_combined_domain(res_plai_stprf,ASub,ASubs,Doms) :- !, res_plai_stprf_split
 call_to_success_builtin(res_plai_stprf,SgKey,Sg,Sv,Call,Proj,Succ) :- !, res_plai_stprf_call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,Succ).
 obtain_info(res_plai_stprf,_Prop,Vars,ASub,Info) :- !, asub_to_info(res_plai_stprf,ASub,Vars,_Info,Info).
 input_interface(res_plai_stprf,InputUser,Kind,Struct0,Struct1) :- !, res_plai_stprf_input_interface(InputUser,Kind,Struct0,Struct1).
-input_user_interface5(res_plai_stprf,InputUser,Qv,ASub,Sg) :- !, res_plai_stprf_input_user_interface(InputUser,Qv,ASub,Sg).
-input_user_interface6(res_plai_stprf,InputUser,Qv,ASub,Sg,CallInfo) :- !, res_plai_stprf_input_user_interface(InputUser,Qv,ASub,Sg,CallInfo).
+input_user_interface6(res_plai_stprf,InputUser,Qv,ASub,Sg,MaybeCallASub) :- !, res_plai_stprf_input_user_interface(InputUser,Qv,ASub,Sg,MaybeCallASub).
 asub_to_native(res_plai_stprf,ASub,Qv,OutFlag,OutputUser,Comp) :- !, res_plai_stprf_asub_to_native(ASub,Qv,OutFlag,OutputUser,Comp).
 unknown_call(res_plai_stprf,Vars,Call,Succ) :- !, res_plai_stprf_unknown_call(Vars,Call,Succ).
 unknown_entry(res_plai_stprf,Qv,Call) :- !, res_plai_stprf_unknown_entry(Qv,Call).
@@ -1627,8 +1622,7 @@ split_combined_domain(sized_types,ASub,ASubs,Doms) :- !, sized_types_split_combi
 call_to_success_builtin(sized_types,SgKey,Sg,Sv,Call,Proj,Succ) :- !, sized_types_call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,Succ).
 obtain_info(sized_types,_Prop,Vars,ASub,Info) :- !, asub_to_info(sized_types,ASub,Vars,_Info,Info).
 input_interface(sized_types,InputUser,Kind,Struct0,Struct1) :- !, sized_types_input_interface(InputUser,Kind,Struct0,Struct1).
-input_user_interface5(sized_types,InputUser,Qv,ASub,Sg) :- !, sized_types_input_user_interface(InputUser,Qv,ASub,Sg).
-input_user_interface6(sized_types,InputUser,Qv,ASub,Sg,CallInfo) :- !, sized_types_input_user_interface(InputUser,Qv,ASub,Sg,CallInfo).
+input_user_interface6(sized_types,InputUser,Qv,ASub,Sg,MaybeCallASub) :- !, sized_types_input_user_interface(InputUser,Qv,ASub,Sg,MaybeCallASub).
 asub_to_native(sized_types,ASub,Qv,OutFlag,OutputUser,Comp) :- !, sized_types_asub_to_native(ASub,Qv,OutFlag,OutputUser,Comp).
 unknown_call(sized_types,Vars,Call,Succ) :- !, sized_types_unknown_call(Vars,Call,Succ).
 unknown_entry(sized_types,Qv,Call) :- !, sized_types_unknown_entry(Qv,Call).
@@ -1731,7 +1725,6 @@ body_succ_builtin(AbsInt,Type,Sg,Condvs,Sv,HvFv_u,Call,Proj,Succ) :-
 call_to_success_builtin(AbsInt,SgKey,_Sg,_Sv,_Call,_Proj,'$bottom') :- !,
         warning_message("call_to_success_builtin: the builtin key ~q is not defined in domain ~w",
 	                [special(SgKey),AbsInt]).
-input_user_interface5(_,_,_,_,_) :- fail. % (default)
 input_user_interface6(_,_,_,_,_,_) :- fail. % (default)
 unknown_call(_AbsInt,_Sg,_Vars,_Call,_Succ) :-
 	throw(error(op_not_implemented, unknown_call/6)).
