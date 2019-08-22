@@ -312,7 +312,7 @@ reuse_def_emb(Key,AbsInt,Id,Sg,Sv,Proj,Num,NSg,NSv,NProj,Flag,Id_wrt):-
 %% 	call_to_entry(AbsInt,OldSv,OldSg,NSv,NSg,not_provided,[],OldProj,NProj2,_ExtraInfo2),
 %% 	widen(AbsInt,NProj1,NProj2,NProj),
 %%%%%%%%%%%%%%%%%%%%%
-%%	unknown_entry(AbsInt,NSv,NProj),
+%%	unknown_entry(AbsInt,NSg,NSv,NProj),
 %%%%%%%%%%%%%%%%%%%%%
  	call_to_entry(AbsInt,Sv,Sg,NSv,NSg,not_provided,[],Proj,NProj,_ExtraInfo1),
 	(current_fact(spec_def_for(Key,OtherSg,_OtherSv,OtherProj,AbsInt,OtherId,_,_)),

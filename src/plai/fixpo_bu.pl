@@ -79,7 +79,7 @@ one_iteration(SgKey,ClKey,Head,Vars_u,Body,AbsInt):-
 	varset(Head,Hv),
 	sort(Vars_u,Vars),
 	ord_subtract(Vars,Hv,Fv),
-	unknown_entry(AbsInt,Hv,Call0),
+	unknown_entry(AbsInt,Head,Hv,Call0),
         augment_asub(AbsInt,Call0,Fv,Call_u),
 	abs_sort(AbsInt,Call_u,Call),
 	show_if_debug(Call,'unknown_entry + add body vars',SgKey,AbsInt),

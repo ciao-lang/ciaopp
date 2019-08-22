@@ -40,8 +40,8 @@
 
 % Plai library
 :- use_module(ciaopp(plai/domains), 
-	[ init_abstract_domain/2, empty_entry/3, unknown_entry/3, 
-	  unknown_entry/4, info_to_asub/7,dom_statistics/2]).
+	[ init_abstract_domain/2, empty_entry/3, unknown_entry/4, 
+	  info_to_asub/7,dom_statistics/2]).
 :- use_module(ciaopp(plai/normalize_args), [normalize_args/4]).
 :- use_module(ciaopp(plai/plai_errors), [undo_errors/0]).
 :- use_module(ciaopp(plai/fixpo_plai), [query/8, init_fixpoint/0, cleanup_fixpoint/1]).
@@ -331,11 +331,7 @@ entry_point(AbsInt,Goal,Qv,Call,Name):-
 	\+ entry_assertion(G,_Call,_Name),
 	get_predkey(F,A,Name), % Name the unique topmost version of F/A
 	varset(Goal,Qv),  
-	( current_pp_flag(prog_lang,java) ->
-	  unknown_entry(AbsInt,Goal,Qv,Call)
-	;
-	  unknown_entry(AbsInt,Qv,Call)
-        ).
+	unknown_entry(AbsInt,Goal,Qv,Call).
 entry_point(AbsInt,Name,[],Call,Name):-
 	setcounter(0,0),
 	( type_of_directive(initialization,Body)

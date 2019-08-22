@@ -567,11 +567,6 @@ asub_to_out(AbsInt,ASub,Qv,OutputUser,CompProps) :-
           preprocessing unit. I.e., it is like the conjunction of the
           information in @var{Call} with the top for a subset of its variables.".
 
-:- export(unknown_entry/3).
-:- pred unknown_entry(+AbsInt,+Vars,-Entry) : atm * list * term + not_fails
-        #"@var{Entry} is the ""topmost"" abstraction in domain @var{AbsInt} of 
-    variables @var{Vars}.".
-
 :- export(unknown_entry/4).
 :- pred unknown_entry(+AbsInt,+Sg,+Vars,-Entry) : (atm(AbsInt), list(Vars)) + not_fails
    #"@var{Entry} is the ""topmost"" abstraction in domain @var{AbsInt} of 

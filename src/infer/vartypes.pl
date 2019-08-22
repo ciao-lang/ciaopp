@@ -8,7 +8,7 @@
 :- use_module(ciaopp(p_unit/program_keys), [get_predkey/3]).
 
 :- use_module(typeslib(typeslib), [set_top_type/1]).
-:- use_module(ciaopp(plai/domains), [asub_to_info/5, unknown_entry/3]).
+:- use_module(ciaopp(plai/domains), [asub_to_info/5, unknown_entry/4]).
 
 :- use_module(library(idlists), [memberchk/2]).
 :- use_module(library(messages)).
@@ -57,7 +57,7 @@ get_regtype_info(Key,Goal,ASub,ASub):-
 	warning_message("There is no type information for: ~w",[Key]),
 	varset(Goal,Qv),
 	knows_of(regtypes,AbsInt),
-	unknown_entry(AbsInt,Qv,ASub0),
+	unknown_entry(AbsInt,Goal,Qv,ASub0),
 	asub_to_info(AbsInt,ASub0,Qv,ASub,_).
 
 join_info(CallT,CallF,CallG,Call):-

@@ -20,7 +20,8 @@
 	project/6,
 	call_to_entry/10, 
 	exit_to_prime/8,
-	unknown_entry/3,
+	unknown_entry/4,
+	empty_entry/3,
 	identical_abstract/3,
 	glb/4,
 	info_to_asub/7,
@@ -82,7 +83,7 @@ how(Abs,SgKey,Mode,Lit,AssProps,Where) :-
 	rename_props(AssProps,Vars0,AssProps1),
 	project(Abs,Lit0,Vars0,_,Info,InfoV),
 	info_to_asub(Abs,_,AssProps1,Vars0,Props,Lit,no),
-	unknown_entry(Abs,Vars0,EmptyV),
+	unknown_entry(Abs,Lit0,Vars0,EmptyV),
 	( identical_abstract(Abs,InfoV,EmptyV) ->
 	  warning_message("Variables ~w have value top. Diagnosis aborted.",[Vars0]),
 	  fail
@@ -195,7 +196,7 @@ how_lit(Abs,SgKey,Goal,UpVars,Call,Node,trace(IInfo,IProp,IVar,Ss),VDown,VUp,S,W
 	varset(Head,Hv),
 	project(Abs,Head,Hv,_,ClInfo,HInfo),
 
-	unknown_entry(Abs,Gv,EmptyProj),
+	unknown_entry(Abs,Goal,Gv,EmptyProj),
 	project(Abs,Goal,Gv,_,Call,CallG),
 	call_to_entry(Abs,Gv,Goal,Hv,Head,not_provided,[],CallG,Entry,_),
 	once(exit_to_prime(Abs,Goal,Hv,Head,Gv,Entry,(no,EmptyProj),_Prime)),
@@ -243,30 +244,30 @@ reduce0_dead(Abs,entry(Goal,Head,Vars),InfoG,InfoOut,[InfoCl]) :-
 	varset(Head,Hv),
 	ord_subtract(Vars,Hv,Fv),	
 	call_to_entry(Abs,Gv,Goal,Hv,Head,not_provided,Fv,InfoG,InfoOut,_),
-	unknown_entry(Abs,Vars,EmptyCl),
+	empty_entry(Abs,Vars,EmptyCl), % TODO: it was unknown_entry/3, add some Sg or keep empty_entry/3?
 	extend(Abs,Head,InfoOut,Hv,EmptyCl,InfoCl).
 reduce0_dead(Abs,exit(Head,Goal,_HCVs,GCVs),InfoH,InfoOut,[InfoCl]) :-
 	varset(Head,Hv),
 	varset(Goal,Gv),
-	unknown_entry(Abs,Gv,EmptyInfoG),
-	unknown_entry(Abs,GCVs,EmptyCl),
+	unknown_entry(Abs,Goal,Gv,EmptyInfoG),
+	empty_entry(Abs,GCVs,EmptyCl),
  	once(exit_to_prime(Abs,Goal,Hv,Head,Gv,InfoH,(no,EmptyInfoG),InfoOut)),
 	extend(Abs,Goal,InfoOut,Gv,EmptyCl,InfoCl).
 
 reduce0(Abs,entry(Goal,Head,Vars),_InfoG,InfoOut,[InfoCl]) :-
 	varset(Goal,Gv),
-	unknown_entry(Abs,Gv,EmptyInfo),
+	unknown_entry(Abs,Goal,Gv,EmptyInfo),
 	varset(Head,Hv),
 	ord_subtract(Vars,Hv,Fv),	
 	call_to_entry(Abs,Gv,Goal,Hv,Head,not_provided,Fv,EmptyInfo,InfoOut,_),
-	unknown_entry(Abs,Vars,EmptyCl),
+	empty_entry(Abs,Vars,EmptyCl), % TODO: it was unknown_entry/3, add some Sg or keep empty_entry/3?
 	extend(Abs,Head,InfoOut,Hv,EmptyCl,InfoCl).
 reduce0(Abs,exit(Head,Goal,_HCVs,GCVs),_InfoH,InfoOut,[InfoCl]) :-
 	varset(Head,Hv),
 	varset(Goal,Gv),
-	unknown_entry(Abs,Hv,EmptyInfo),
-	unknown_entry(Abs,Gv,EmptyInfoG),
-	unknown_entry(Abs,GCVs,EmptyCl),
+	unknown_entry(Abs,Head,Hv,EmptyInfo),
+	unknown_entry(Abs,Goal,Gv,EmptyInfoG),
+	empty_entry(Abs,GCVs,EmptyCl), % TODO: it was unknown_entry/3, add some Sg or keep empty_entry/3?
  	once(exit_to_prime(Abs,Goal,Hv,Head,Gv,EmptyInfo,(no,EmptyInfoG),InfoOut)),
 	extend(Abs,Goal,InfoOut,Gv,EmptyCl,InfoCl).
 
@@ -287,12 +288,12 @@ reduce(Abs,entry(Goal,Head,Vars),InfoG,InfoOut,S,[InfoCl|S]) :-
 	varset(Goal,Gv),
 	varset(Head,Hv),
 	range(InfoG,IGv),
-	unknown_entry(Abs,Gv,EmptyGoal),
+	unknown_entry(Abs,Goal,Gv,EmptyGoal),
 	extend(Abs,Goal,InfoG,IGv,EmptyGoal,NewInfoG_x),
 	project(Abs,Goal,Gv,_,NewInfoG_x,NewInfoG),
 	ord_subtract(Vars,Hv,Fv),		
         call_to_entry(Abs,Gv,Goal,Hv,Head,not_provided,Fv,NewInfoG,InfoOut,_),
-	unknown_entry(Abs,Vars,EmptyCl),
+	empty_entry(Abs,Vars,EmptyCl), % TODO: it was unknown_entry/3, add some Sg or keep empty_entry/3?
 	extend(Abs,Head,InfoOut,Hv,EmptyCl,InfoCl),!.
 reduce(Abs,exit(Head,Goal,HCVs,GCVs),InfoH,InfoOut,[InfoCl|S],S1) :-	
 	varset(Goal,Gv),
@@ -302,18 +303,18 @@ reduce(Abs,exit(Head,Goal,HCVs,GCVs),InfoH,InfoOut,[InfoCl|S],S1) :-
 	HCVs = Range,
 	extend(Abs,Head,InfoH,IHv,InfoCl,NewInfoCl),
 	project(Abs,Head,Hv,_,NewInfoCl,NewInfoH),
-	unknown_entry(Abs,Gv,EmptyInfo),
+	unknown_entry(Abs,Goal,Gv,EmptyInfo),
 	once(exit_to_prime(Abs,Goal,Hv,Head,Gv,NewInfoH,(no,EmptyInfo),InfoOut)),
-	add_or_replace(Abs,GCVs,InfoOut,S,S1),!.
+	add_or_replace(Abs,Goal,GCVs,InfoOut,S,S1),!.
 
-add_or_replace(Abs,Vs,I0,[],[I]):-
-	unknown_entry(Abs,Vs,Empty),
-	range(I0,Vs0),
-	extend(Abs,_,I0,Vs0,Empty,I). % TODO:[new-resources] unbound Sg!
-add_or_replace(Abs,Vs,I0,[I1|Is],[I|Is]):-
-	range(I1,Vs),
-	range(I0,Vs0),
-	extend(Abs,_,I0,Vs0,I1,I). % TODO:[new-resources] unbound Sg!
+add_or_replace(Abs,Goal,GCVs,I0,[],[I]):-
+	empty_entry(Abs,GCVs,Empty), % TODO: it was unknown_entry/3, add some Sg or keep empty_entry/3?
+	range(I0,Vs0), % varset/2
+	extend(Abs,Goal,I0,Vs0,Empty,I). % TODO: Sg was unbound, added Goal (JF)
+add_or_replace(Abs,Goal,GCVs,I0,[I1|Is],[I|Is]):-
+	range(I1,GCVs), % varset/2
+	range(I0,Vs0), % varset/2
+	extend(Abs,Goal,I0,Vs0,I1,I). % TODO: Sg was unbound, added Goal (JF)
 
 % get_first_lit(entry(L,_,_),L).
 % get_first_lit(exit(L,_,_,_),L).

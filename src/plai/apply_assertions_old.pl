@@ -15,7 +15,7 @@
 	[ abs_sort/3, asub_to_native/6,
 	  compute_lub/3, glb/4, less_or_equal/3, unknown_call/5,
 	  call_to_entry/10, full_info_to_asub/5, info_to_asub/7,
-	  contains_parameters/2, unknown_entry/3,
+	  contains_parameters/2, unknown_entry/4,
 	  extend/6, project/6, exit_to_prime/8, identical_abstract/3]).
 :- use_module(typeslib(typeslib), [set_param_matching_mode/1]).
 
@@ -325,7 +325,7 @@ look_trust(AbsInt,SgKey,Sg,Sv,Proj,Loc,Prime):-
 % 	do_trust(AbsInt,gt,SgKey,Sg,Sv,Proj,Loc,Prime), !.
 look_trust(AbsInt,SgKey,Sg,Sv,Proj,loc(nofile,0,0),Prime):-
 	current_fact(approx(SgKey,SgCopy,AbsInt,Prime0)),
-  unknown_entry(AbsInt,Sv,Top),
+	unknown_entry(AbsInt,Sg,Sv,Top),
 	do_trust_(AbsInt,top,SgCopy,Top,Prime0,Sg,Sv,Proj,Prime).
 
 do_trust(AbsInt,Step,SgKey,Sg,Sv,Proj,_Loc,_Prime):-

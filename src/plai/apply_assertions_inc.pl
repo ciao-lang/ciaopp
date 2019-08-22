@@ -20,7 +20,7 @@
 :- use_module(ciaopp(plai/fixpo_dd), [add_change/5, add_external_complete_change/6]).
 :- use_module(ciaopp(plai/domains), [info_to_asub/7,
         extend/6, project/5, exit_to_prime/8,	identical_abstract/3, identical_proj/5,
-        glb/4, less_or_equal/3, compute_lub/3, unknown_entry/3]).
+        glb/4, less_or_equal/3, compute_lub/3, unknown_entry/4]).
 :- use_module(ciaopp(plai/fixpo_ops), [get_singleton/2, fixpoint_get_new_id/5]).
 :- use_module(ciaopp(plai/transform), [trans_clause/3]).
 :- use_module(ciaopp(plai/fixpo_dx_check_basic), [advance_in_body/3]).
@@ -160,7 +160,7 @@ get_old_call_assertions_proj(SgKey,Head,AbsInt,AProj) :-
         get_call_assertions_asub(Head,SgKey,Sts,AbsInt,AProj).
 get_old_call_assertions_proj(_SgKey,Head,AbsInt,AProj) :-
         varset(Head,Hv),
-        unknown_entry(AbsInt,Hv,AProj).
+        unknown_entry(AbsInt,Head,Hv,AProj).
 
 :- pred get_new_call_abstraction(SgKey,Head,AbsInt,-AsrProj)
         : (atm(SgKey), atm(AbsInt)) + (not_fails, is_det).
@@ -169,7 +169,7 @@ get_new_call_abstraction(SgKey,Head,AbsInt,AsrProj) :-
         get_call_assertions_asub(Head,SgKey,Sts,AbsInt,AsrProj), !.
 get_new_call_abstraction(_SgKey,Head,AbsInt,AsrProj) :-
         varset(Head,Hv),
-        unknown_entry(AbsInt,Hv,AsrProj).
+        unknown_entry(AbsInt,Head,Hv,AsrProj).
 
 get_existing_call(AbsInt,SgKey,Sg,AProj,Id) :-
         complete(SgKey,AbsInt,Sg0,Proj,_,Id,_),
@@ -225,14 +225,14 @@ store_current_success_asr(SgKey,AbsInt) :-
 get_old_assertions_succ(SgKey,Head,_Hv,AbsInt,Proj,OldAPrime) :-
         get_applicable_status(Head,success,Sts),
         old_success_asr(SgKey,Head,Proj,AbsInt,Sts,OldAPrime), !.
-get_old_assertions_succ(_SgKey,_Head,Hv,AbsInt,_Proj,OldAPrime) :-
-        unknown_entry(AbsInt,Hv,OldAPrime).
+get_old_assertions_succ(_SgKey,Head,Hv,AbsInt,_Proj,OldAPrime) :-
+        unknown_entry(AbsInt,Head,Hv,OldAPrime).
 
 get_new_succ_abstraction(SgKey,Head,Hv,AbsInt,Proj,NewAPrime) :-
         get_applicable_status(Head,success,Sts),
         get_succ_assertion_asubs(SgKey,Head,Hv,Sts,AbsInt,Proj,NewAPrime), !.
-get_new_succ_abstraction(_SgKey,_Head,Hv,AbsInt,_Proj,NewAPrime) :-
-        unknown_entry(AbsInt,Hv,NewAPrime).
+get_new_succ_abstraction(_SgKey,Head,Hv,AbsInt,_Proj,NewAPrime) :-
+        unknown_entry(AbsInt,Head,Hv,NewAPrime).
 
 old_success_asr(SgKey,Head,Proj,AbsInt,Sts,Prime0) :-
         old_success_asr_(SgKey,Head,Sts,AbsInt,Proj0,Prime0), % backtracking here
