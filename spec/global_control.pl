@@ -304,7 +304,7 @@ reuse_def_emb(Key,AbsInt,Id,Sg,Sv,Proj,Num,NSg,NSv,NProj,Flag,Id_wrt):-
 %% 	copy_term(Sg,CSg),
 %% 	varset(CSg,CSv),
 %%  	call_to_entry(AbsInt,Sv,Sg,CSv,CSg,not_provided,NewVars,Proj,Proj0,_),
-%% 	unknown_call(AbsInt,Proj0,NewVars,Proj1),
+%% 	unknown_call(AbsInt,Sg,Proj0,NewVars,Proj1),
 %% 	append(CSv,NewVars,HvFv_u),
 %% 	project(AbsInt,NSv,HvFv_u,Proj1,NProj),
 %%%%%%%%%%%%%%%%%%%%%

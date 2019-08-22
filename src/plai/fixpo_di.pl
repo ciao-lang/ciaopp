@@ -32,7 +32,7 @@
 :- use_module(ciaopp(p_unit/program_keys), [decode_litkey/5]).
 :- use_module(ciaopp(p_unit), [type_of_goal/2]).
 :- use_module(ciaopp(plai/intermod_success), [apply_success_policy/9]).
-:- use_module(ciaopp(plai/domains), [unknown_call/4]).
+:- use_module(ciaopp(plai/domains), [unknown_call/5]).
 :- use_module(library(aggregates), [findall/3]).
 :- use_module(library(lists), [member/2, dlist/3]).
 :- use_module(library(messages)).
@@ -232,7 +232,7 @@ initial_guess(SgKey,AbsInt,Sg,Sv,Proj,[InitialPrime],Id):-
 	; type_of_goal(dynamic,Sg) 
 	; type_of_goal(impl_defines,Sg) ), 
 	!,
-	unknown_call(AbsInt,Sv,Proj,Prime0),
+	unknown_call(AbsInt,Sg,Sv,Proj,Prime0),
 	( apply_trusted(Proj,SgKey,Sg,Sv,AbsInt,Prime0,InitialPrime) ->
 	  true
 	; InitialPrime = Prime0

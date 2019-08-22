@@ -22,7 +22,7 @@
 :- use_module(library(pathnames), [path_splitext/3]).
 :- use_module(ciaopp(preprocess_flags), [current_pp_flag/2]).
 :- use_module(ciaopp(p_unit), 	[entry_assertion/3, type_of_goal/2, type_of_directive/2]).
-:- use_module(ciaopp(plai/domains), [unknown_entry/3, unknown_call/4, info_to_asub/7, empty_entry/3]).
+:- use_module(ciaopp(plai/domains), [unknown_entry/3, unknown_call/5, info_to_asub/7, empty_entry/3]).
 :- use_module(library(terms_vars), [varset/2]).
 :- use_module(library(counters), [setcounter/2, inccounter/2]).
 :- use_module(library(vndict), [vars_names_dict/3]).
@@ -185,14 +185,14 @@ entry_point(Policy,AbsInt,Goal,Qv,Call,Prime,Module):-
         %%
         varset(Goal,Qv),
         unknown_entry(AbsInt,Qv,Call),
-        unknown_call(AbsInt,Qv,Call,Prime).
+        unknown_call(AbsInt,Goal,Qv,Call,Prime).
 entry_point(_Policy,AbsInt,Goal,Qv,Call,Prime,Module) :-
         current_itf(multifile,Goal,Module),
         type_of_goal(multifile,Goal),        %% multifiles must be analyzed in any case.
         entry_assertion(Goal,CInfo,_Name), % IG analyze multifiles only if they have an entry assertion
         varset(Goal,Qv),
         info_to_asub(AbsInt,_,CInfo,Qv,Call,Goal,no),
-        unknown_call(AbsInt,Qv,Call,Prime).
+        unknown_call(AbsInt,Goal,Qv,Call,Prime).
 entry_point(_Policy,AbsInt,Name,[],Call,Prime,_Module):- %% init and on_abort must be analyzed always.
 	setcounter(0,0),
 	( type_of_directive(initialization,Body)
@@ -202,10 +202,10 @@ entry_point(_Policy,AbsInt,Name,[],Call,Prime,_Module):- %% init and on_abort mu
 	vars_names_dict(Ds,Bv,_Ns),
 	transform_clauses([(clause(Name,Body),Name)],Ds,[nr],[],AbsInt),
 	empty_entry(AbsInt,[],Call),
-	unknown_call(AbsInt,[],Call,Prime).
+	unknown_call(AbsInt,Name,[],Call,Prime). % TODO: make sure that Name is right here
 entry_point(_Policy,AbsInt,Goal,Qv,Call,Prime,Module):- %% entries must be analyzed always (if dynamic preds!)
 	entry_assertion(Goal,CInfo,_Name),
 	get_module_from_sg(Goal,Module),
 	varset(Goal,Qv),
 	info_to_asub(AbsInt,_approx,CInfo,Qv,Call,Goal,no),
-	unknown_call(AbsInt,Qv,Call,Prime).
+	unknown_call(AbsInt,Goal,Qv,Call,Prime).

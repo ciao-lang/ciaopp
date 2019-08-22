@@ -557,14 +557,7 @@ asub_to_out(AbsInt,ASub,Qv,OutputUser,CompProps) :-
     concretization of @var{ASub}, if they are a finite number of finite
     terms. Otherwise, the predicate fails.").
 
-:- export(unknown_call/4).
-:- pred unknown_call(+AbsInt,+Vars,+Call,-Succ) : (atm(AbsInt), list(Vars)) + not_fails
-   #"@var{Succ} is the result of adding to @var{Call} the ``topmost''
-    abstraction in domain @var{AbsInt} of the variables @var{Vars} involved in
-    a literal whose definition is not present in the preprocessing unit.
-    I.e., it is like the conjunction of the information in @var{Call} with the
-    top for a subset of its variables.".
-
+% TODO: body_succ0('$var',...) passes unbound Sg (due to metacall), use call(Sg) (or similar) instead? (JF)
 :- export(unknown_call/5).
 :- pred unknown_call(+AbsInt,+Sg,+Vars,+Call,-Succ)
         : (atm(AbsInt), list(Vars)) + not_fails

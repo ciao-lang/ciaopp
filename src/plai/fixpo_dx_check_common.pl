@@ -30,7 +30,7 @@
 	reduce_equivalent/3,
 	widen_succ/4,
 	decide_memo/6,
-	each_unknown_call/4,
+	each_unknown_call/5,
 	clause_applies/2,
 	abs_subset_/3
  ]).
@@ -126,7 +126,7 @@ body_succ0('$var',SgKey,Sg,_Sv_u,HvFv_u,Calls,Succs,AbsInt,ClId,F,_,Id):-
 	   assertz_fact(memo_call(F,Id,AbsInt,Concretes,Ids))
 	 ; Id=no,
 	   variable(F,ClId),
-	   each_unknown_call(Calls,AbsInt,[Sg],Succs) % Sg is a variable
+	   each_unknown_call(Calls,AbsInt,Sg,[Sg],Succs) % Sg is a variable % TODO: use call(Sg) or similar? (JF)
 	).
 % TODO: Add apply trust calls assertions
 body_succ0('$meta'(T,B,_),SgKey,Sg,Sv_u,HvFv_u,Call,Succ,AbsInt,ClId,F,N,Id):-

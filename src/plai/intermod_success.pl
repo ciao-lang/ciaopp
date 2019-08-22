@@ -17,7 +17,7 @@
 	    open_mode/3, get_module_from_sg/2,may_be_improved_mark/2]).
 :- use_module(ciaopp(preprocess_flags), [current_pp_flag/2]).
 :- use_module(ciaopp(plai/domains), 
-	[abs_sort/3, compute_lub/3, glb/4, less_or_equal/3, unknown_call/4,
+	[abs_sort/3, compute_lub/3, glb/4, less_or_equal/3, unknown_call/5,
 	  call_to_entry/10]).
 :- use_module(ciaopp(plai/fixpo_ops), [clause_applies/2]).
 :- use_module(ciaopp(p_unit/itf_db), [current_itf/3]).
@@ -61,11 +61,11 @@ apply_success_policy(over_first,AbsInt,SgKey,SgCall,Sv,Call,Patterns,Prime,yes) 
 %	succ_pattern(AbsInt,SgCopy,Proj,Succ),
 	member((SgProj,Proj,Succ),Patterns),
 	sub_is_applicable(over_first,SgKey,SgCall,Sv,Call,AbsInt,SgProj,Proj,Succ,Prime0), !,
-	unknown_call(AbsInt,Sv,Call,Prime1),
+	unknown_call(AbsInt,SgCall,Sv,Call,Prime1),
 	glb(AbsInt,Prime0,Prime1,Prime).
-apply_success_policy(over_first,AbsInt,_SgKey,_Sg,Sv,Call,_Patterns,Prime,no) :-
+apply_success_policy(over_first,AbsInt,_SgKey,Sg,Sv,Call,_Patterns,Prime,no) :-
 	%% If there are no applicable succ patterns, unknown_call is used.
-	unknown_call(AbsInt,Sv,Call,Prime).
+	unknown_call(AbsInt,Sg,Sv,Call,Prime).
 apply_success_policy(over_best,AbsInt,SgKey,SgCall,Sv,Call,Patterns,_Prime,_PatternsApplied) :-
 	%% 'best' policy select those success patterns which are applicable 
         %% and minimal (there is no other pattern which is applicable and has 
@@ -84,13 +84,13 @@ apply_success_policy(over_best,AbsInt,SgKey,SgCall,Sv,Call,Patterns,_Prime,_Patt
 	; asserta_fact(tmp_success(Sv,[Proj],[Prime]))
 	),
 	fail.
-apply_success_policy(over_best,AbsInt,_SgKey,_Sg,Sv,Call,_Patterns,Prime,yes) :-
+apply_success_policy(over_best,AbsInt,_SgKey,Sg,Sv,Call,_Patterns,Prime,yes) :-
 	retract_fact(tmp_success(Sv,_,[Prime0])),
-	unknown_call(AbsInt,Sv,Call,Prime1),
+	unknown_call(AbsInt,Sg,Sv,Call,Prime1),
 	glb(AbsInt,Prime0,Prime1,Prime).
-apply_success_policy(over_best,AbsInt,_SgKey,_Sg,Sv,Call,_Patterns,Prime,no) :-
+apply_success_policy(over_best,AbsInt,_SgKey,Sg,Sv,Call,_Patterns,Prime,no) :-
 	%% If there are no applicable succ patterns, unknown_call is used.
-	unknown_call(AbsInt,Sv,Call,Prime).
+	unknown_call(AbsInt,Sg,Sv,Call,Prime).
 apply_success_policy(over_all,AbsInt,SgKey,SgCall,Sv,Call,Patterns,_Prime,_PatternsApplied) :-
 	retractall_fact(tmp_success(_,_,_)),
 	member((SgProj,Proj,Succ),Patterns),
@@ -102,20 +102,20 @@ apply_success_policy(over_all,AbsInt,SgKey,SgCall,Sv,Call,Patterns,_Prime,_Patte
 	; asserta_fact(tmp_success(Sv,[Call],[Prime]))
 	),
 	fail.
-apply_success_policy(over_all,AbsInt,_SgKey,_Sg,Sv,Call,_Patterns,Prime,yes) :-
+apply_success_policy(over_all,AbsInt,_SgKey,Sg,Sv,Call,_Patterns,Prime,yes) :-
 	retract_fact(tmp_success(Sv,_,[Prime0])),
-	unknown_call(AbsInt,Sv,Call,Prime1),
+	unknown_call(AbsInt,Sg,Sv,Call,Prime1),
 	glb(AbsInt,Prime0,Prime1,Prime).
-apply_success_policy(over_all,AbsInt,_SgKey,_Sg,Sv,Call,_Patterns,Prime,no) :-
+apply_success_policy(over_all,AbsInt,_SgKey,Sg,Sv,Call,_Patterns,Prime,no) :-
 	%% If there are no applicable succ patterns, unknown_call is used.
-	unknown_call(AbsInt,Sv,Call,Prime).
-apply_success_policy(top,AbsInt,_SgKey,_Sg,Sv,Call,_Patterns,Prime,no) :-
+	unknown_call(AbsInt,Sg,Sv,Call,Prime).
+apply_success_policy(top,AbsInt,_SgKey,Sg,Sv,Call,_Patterns,Prime,no) :-
 	%% top success policy does not need patterns, PatternsApplied is set to no.
-	unknown_call(AbsInt,Sv,Call,Prime).
+	unknown_call(AbsInt,Sg,Sv,Call,Prime).
 apply_success_policy(under_first,AbsInt,SgKey,SgCall,Sv,Call,Patterns,Prime,yes) :-
 	member((SgProj,Proj,Succ),Patterns),
 	sub_is_applicable(under_first,SgKey,SgCall,Sv,Call,AbsInt,SgProj,Proj,Succ,Prime0), !,
-% 	unknown_call(AbsInt,Sv,Call,Prime1),
+% 	unknown_call(AbsInt,SgCall,Sv,Call,Prime1),
 % 	compute_lub(AbsInt,[Prime0,Prime1],Prime).
 	Prime0 = Prime.
 apply_success_policy(under_first,_AbsInt,_SgKey,_Sg,_Sv,_Proj,_Patterns,'$bottom',no).

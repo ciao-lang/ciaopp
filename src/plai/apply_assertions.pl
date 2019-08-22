@@ -105,7 +105,7 @@ a native property. Then we could use it for rtchecks in this module.").
 :- use_module(ciaopp(plai/domains), [info_to_asub/7,
 	extend/6, project/6, exit_to_prime/8, compute_lub/3,
 	identical_abstract/3, call_to_entry/10, glb/4,
-	less_or_equal/3, unknown_call/4]).
+	less_or_equal/3, unknown_call/5]).
 
 :- use_module(ciaopp(plai/plai_errors), [invalid_trust_message/4]).
 
@@ -230,7 +230,7 @@ apply_assrt_no_source(SgKey,AbsInt,Sg,Sv,Proj,Prime) :-
         ( get_succ_assertion_asubs(SgKey,Head,Hv,Sts,AbsInt,NProj,TExit) ->
 	          true
         ;   % do topmost abstraction if no assertions are available
-            unknown_call(AbsInt,Hv,NProj,TExit)
+            unknown_call(AbsInt,Head,Hv,NProj,TExit)
         ),
         exit_to_prime(AbsInt,Sg,Hv,Head,Sv,TExit,ExtraInfo,Prime)
 	).

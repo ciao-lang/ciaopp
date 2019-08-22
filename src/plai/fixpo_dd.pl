@@ -179,9 +179,9 @@ proj_to_prime_nr(_SgKey,Sg,Sv,Call,_Proj,AbsInt,_ClId,LSucc,_Id) :-
 	% In Java programs, mode and type information is known for any method.
 	% Therefore, in case of a method with unavailable code we can still
 	% infer useful information.
-  current_pp_flag(prog_lang,java), !,
-  unknown_call(AbsInt,Sg,Sv,Call,Succ),
-  get_singleton(Succ,LSucc).
+	current_pp_flag(prog_lang,java), !,
+	unknown_call(AbsInt,Sg,Sv,Call,Succ),
+	get_singleton(Succ,LSucc).
 proj_to_prime_nr(SgKey,_Sg,_Sv,_Call,_Proj,_AbsInt,ClId,Bot,_Id) :-
 	bottom(Bot), !, % TODO: fix, it should not leave choice points
 	inexistent(SgKey,ClId).

@@ -15,7 +15,7 @@
 	    each_project/6,
 	    each_extend/6,
 	    each_exit_to_prime/8,
-	    each_unknown_call/4,
+	    each_unknown_call/5,
 	    each_body_succ_builtin/12,
 	    body_succ_meta/7,
 	    applicable/3,
@@ -67,7 +67,7 @@
 	compute_lub/3,
 	glb/4,
 	widen/4,
-	unknown_call/4,
+	unknown_call/5,
 	project/6,
 	body_succ_builtin/9,
 	special_builtin/6,
@@ -248,10 +248,10 @@ filter_out_bottoms([Succ|LSucc],LSucc_nb):-
 	LSucc_nb = [Succ|MoreSucc],
 	filter_out_bottoms(LSucc,MoreSucc).
 
-each_unknown_call([],_AbsInt,_Sg,[]).
-each_unknown_call([Call|Calls],AbsInt,Sg,[Succ|Succs]):-
-	unknown_call(AbsInt,Sg,Call,Succ), % TODO: wrong? Sg vs Sv?
-	each_unknown_call(Calls,AbsInt,Sg,Succs).
+each_unknown_call([],_AbsInt,_Sg,_Sv,[]).
+each_unknown_call([Call|Calls],AbsInt,Sg,Sv,[Succ|Succs]):-
+	unknown_call(AbsInt,Sg,Sv,Call,Succ),
+	each_unknown_call(Calls,AbsInt,Sg,Sv,Succs).
 
 each_body_succ_builtin([],_,_T,_Tg,_,_,_Sg,_Sv,_HvFv_u,_F,_N,[]).
 each_body_succ_builtin([Call|Calls],AbsInt,T,Tg,Vs,SgKey,Sg,Sv,HvFv_u,

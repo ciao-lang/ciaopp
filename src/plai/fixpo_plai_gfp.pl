@@ -37,7 +37,7 @@
 	each_extend/6,
 	each_project/6,
 	each_exit_to_prime/8,
-	each_unknown_call/4,
+	each_unknown_call/5,
 	each_body_succ_builtin/12,
 	body_succ_meta/7,
 	reduce_equivalent/3,
@@ -709,13 +709,10 @@ proj_to_prime_nr(_SgKey,Sg,Sv,Call,_Proj,AbsInt,_ClId,LSucc,_Id) :-
 	% In Java programs, mode and type information is known for any method.
 	% Therefore, in case of a method with unavailable code we can still
 	% infer useful information.
-	( current_pp_flag(prog_lang,java) ->
-	  unknown_call(AbsInt,Sg,Sv,Call,Succ),
-	  singleton(Succ,LSucc)
-	  %fixpoint_trace('external call completed',_Id,_N,SgKey,Sg,LSucc,_).
-	;
-	  fail
-	).
+	current_pp_flag(prog_lang,java), !,
+	unknown_call(AbsInt,Sg,Sv,Call,Succ),
+	singleton(Succ,LSucc).
+        %fixpoint_trace('external call completed',_Id,_N,SgKey,Sg,LSucc,_).
 proj_to_prime_nr(SgKey,_Sg,_Sv,_Call,_Proj,_AbsInt,ClId,Bot,_Id) :-
 	top(Bot),
 	inexistent(SgKey,ClId).
@@ -1008,7 +1005,7 @@ body_succ0('$var',SgKey,Sg,_Sv_u,HvFv_u,Calls,Succs,List0,List,AbsInt,
 	 ; Id=no,
 	   List=List0,
 	   variable(F,ClId),
-	   each_unknown_call(Calls,AbsInt,[Sg],Succs) % Sg is a variable
+	   each_unknown_call(Calls,AbsInt,Sg,[Sg],Succs) % Sg is a variable % TODO: use call(Sg) or similar? (JF)
 	).
 body_succ0('$meta'(T,B,_),SgKey,Sg,Sv_u,HvFv_u,Call,Succ,List0,List,AbsInt,
 	    ClId,F,N,Id):-

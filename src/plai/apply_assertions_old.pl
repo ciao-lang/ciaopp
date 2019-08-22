@@ -13,7 +13,7 @@
 	                       get_call_from_call_assrt/7]).
 :- use_module(ciaopp(plai/domains), 
 	[ abs_sort/3, asub_to_native/6,
-	  compute_lub/3, glb/4, less_or_equal/3, unknown_call/4,
+	  compute_lub/3, glb/4, less_or_equal/3, unknown_call/5,
 	  call_to_entry/10, full_info_to_asub/5, info_to_asub/7,
 	  contains_parameters/2, unknown_entry/3,
 	  extend/6, project/6, exit_to_prime/8, identical_abstract/3]).
@@ -94,7 +94,7 @@ apply_trusted0(Proj,SgKey,Sg,Sv,AbsInt,_ClId,Prime):-
 % 	; type_of_goal(multifile,Sg) 
 % 	; type_of_goal(dynamic,Sg) ), 
 % 	!,
-% 	unknown_call(AbsInt,Sv,Proj,Prime0),
+% 	unknown_call(AbsInt,Sg,Sv,Proj,Prime0),
 % 	%% Applying trust info if there is any.
 % 	( 
 % 	    apply_trusted(Proj,SgKey,Sg,Sv,AbsInt,Prime0,Prime) ->
@@ -105,7 +105,7 @@ apply_trusted0(Proj,SgKey,Sg,Sv,AbsInt,_ClId,Prime):-
 %%jcf-07.04.2005-end
 apply_trusted0(Proj,SgKey,Sg,Sv,AbsInt,_ClId,Prime):-
 	trusted(SgKey,Proj,Sg,Sv,AbsInt,Loc,Prime1), !,
-	unknown_call(AbsInt,Sv,Proj,Prime0),
+	unknown_call(AbsInt,Sg,Sv,Proj,Prime0),
 	apply_glb_inferred(AbsInt,Sg,Sv,Loc,Prime0,unk,Prime1,Prime).
 apply_trusted0(Proj,_SgKey,Sg,Sv,AbsInt,ClId,Prime):-
   dynamic_or_unknown_predicate(Sg),
@@ -120,7 +120,7 @@ apply_trusted0(Proj,_SgKey,Sg,Sv,AbsInt,ClId,Prime):-
 	    ;
 		true
 	    ),
-	    unknown_call(AbsInt,Sv,Proj,Prime)
+	    unknown_call(AbsInt,Sg,Sv,Proj,Prime)
 	).
 
 :- export(apply_trusted_modular/6).
@@ -135,7 +135,7 @@ apply_trusted_modular(Proj,SgKey,Sg,Sv,AbsInt,Prime) :-
 	( get_success_info(Proj,SgKey,Sg,Sv,AbsInt,Prime0,PatternsApplied) ->
 	    true
 	;
-	    unknown_call(AbsInt,Sv,Proj,Prime0),
+	    unknown_call(AbsInt,Sg,Sv,Proj,Prime0),
 	    PatternsApplied = no
 	),
 	%% Applying trust info if there is any.
@@ -293,7 +293,7 @@ trusted(SgKey,_Proj,Sg0,_Sv,AbsInt,_Loc,_Prime):-
          % approx default trust
          info_to_asub(AbsInt,_approx1,InfoCall,Sv,Appr,Sg,no),
          info_to_asub(AbsInt,_approx2,InfoSucc,Sv,Succ0,Sg,yes(Appr)),
-         unknown_call(AbsInt,Sv,Appr,Appr0),
+         unknown_call(AbsInt,Sg,Sv,Appr,Appr0),
          glb(AbsInt,Appr0,Succ0,Trust0),
          ( retract_fact(approx(SgKey,Sg,AbsInt,Trust1)) ->
 	     compute_lub(AbsInt,[Trust0,Trust1],Trust)
@@ -305,7 +305,7 @@ trusted(SgKey,_Proj,Sg0,_Sv,AbsInt,_Loc,_Prime):-
 	 ),
          % applicable trust
          ( full_info_to_asub(AbsInt,InfoCall,Sv,Call,Sg) ->
-	     unknown_call(AbsInt,Sv,Call,Call0),
+	     unknown_call(AbsInt,Sg,Sv,Call,Call0),
 	     glb(AbsInt,Call0,Succ0,Succ),
 	     % ???
 	     Succ \== '$bottom',
