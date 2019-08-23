@@ -75,7 +75,7 @@ call_to_entry(pd,Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo) :- !, pd_call_to_entry
 exit_to_prime(pd,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime) :- !, pd_exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime).
 project(pd,Sg,Vars,HvFv,ASub,Proj) :- !, pd_project(Sg,Vars,HvFv,ASub,Proj).
 compute_lub(pd,ListAsub,LubASub) :- !, pd_compute_lub(ListAsub,LubASub).
-abs_sort(pd,ASub,ASub) :- !.
+abs_sort(pd,ASub,ASub_s) :- !, pd_sort(ASub,ASub_s).
 extend(pd,Sg,Prime,Sv,Call,Succ) :- !, pd_extend(Sg,Prime,Sv,Call,Succ).
 less_or_equal(pd,ASub0,ASub1) :- !, pd_less_or_equal(ASub0,ASub1).
 glb(pd,ASub0,ASub1,ASub) :- !, pd_glb(ASub0,ASub1,ASub).
@@ -93,6 +93,7 @@ pd_call_to_entry(_Sv,_Sg,_Hv,_Head,_K,_Fv,Proj,Proj,_ExtraInfo).
 pd_exit_to_prime(_Sg,_Hv,_Head,_Sv,Exit,_ExtraInfo,Exit).
 pd_project(_,_Vars,_,ASub,ASub).
 pd_compute_lub(_ListAsub,top).
+pd_sort(ASub,ASub).
 pd_extend(_Sg,Prime,_Sv,_Call,Prime).
 pd_less_or_equal(_,_).
 pd_glb('$bottom',_ASub1,ASub) :- !, ASub = '$bottom'.
@@ -109,27 +110,37 @@ pd_empty_entry(_Qv,'top').
 % PD domain with bottom
 :- use_module(domain(pdb)).
 aidomain(pdb).
-call_to_entry(pdb,_Sv,_Sg,_Hv,_Head,_K,_Fv,Proj,Proj,_ExtraInfo) :- !.
-exit_to_prime(pdb,_Sg,_Hv,_Head,_Sv,Exit,_ExtraInfo,Exit) :- !.
-project(pdb,_,_Vars,_,ASub,ASub) :- !.
+call_to_entry(pdb,Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo) :- !, pdb_call_to_entry(Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo).
+exit_to_prime(pdb,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime) :- !, pdb_exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime).
+project(pdb,Sg,Vars,HvFv,ASub,Proj) :- !, pdb_project(Sg,Vars,HvFv,ASub,Proj).
 compute_lub(pdb,ListAsub,LubASub) :- !, pdb_compute_lub(ListAsub,LubASub).
-abs_sort(pdb,ASub,ASub) :- !.
+abs_sort(pdb,ASub,ASub_s) :- !, pdb_sort(ASub,ASub_s).
 extend(pdb,_,Prime,Sv,Call,Succ) :- !, pdb_extend(Prime,Sv,Call,Succ).
 less_or_equal(pdb,ASub0,ASub1) :- !, pdb_less_or_equal(ASub0,ASub1).
 glb(pdb,ASub0,ASub1,ASub) :- !, pdb_glb(ASub0,ASub1,ASub).
-call_to_success_fact(pdb,_Sg,_Hv,_Head,_K,_Sv,Call,_Proj,Call,Call) :- !.
+call_to_success_fact(pdb,Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ) :- !, pdb_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ).
 special_builtin(pdb,SgKey,Sg,_,Type,Condvars) :- !, pdb_special_builtin(SgKey,Sg,Type,Condvars).
 success_builtin(pdb,Type,Sv_uns,Condvars,_,Call,Succ) :- !, pdb_success_builtin(Type,Sv_uns,Condvars,Call,Succ).
-call_to_success_builtin(pdb,_SgKey,_Sg,_Sv,Call,_Proj,Call) :- !.
-input_user_interface(pdb,_InputUser,_Qv,top,_Sg,_MaybeCallASub) :- !.
+call_to_success_builtin(pdb,SgKey,Sg,Sv,Call,Proj,Succ) :- !, pdb_call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,Succ).
+input_user_interface(pdb,InputUser,Qv,ASub,Sg,MaybeCallASub) :- !, pdb_input_user_interface(InputUser,Qv,ASub,Sg,MaybeCallASub).
 asub_to_native(pdb,ASub,Qv,OutFlag,OutputUser,Comps) :- !, pdb_asub_to_native(ASub,Qv,OutFlag,OutputUser,Comps).
-unknown_call(pdb,_Sg,_Vars,Call,Call) :- !.
-unknown_entry(pdb,_Sg,_Qv,'top') :- !.
-empty_entry(pdb,_Qv,'top') :- !.
+unknown_call(pdb,Sg,Vars,Call,Succ) :- !, pdb_unknown_call(Sg,Vars,Call,Succ).
+unknown_entry(pdb,Sg,Qv,Call) :- !, pdb_unknown_entry(Sg,Qv,Call).
+empty_entry(pdb,Qv,Call) :- !, pdb_empty_entry(Qv,Call).
 %
+pdb_call_to_entry(_Sv,_Sg,_Hv,_Head,_K,_Fv,Proj,Proj,_ExtraInfo).
+pdb_exit_to_prime(_Sg,_Hv,_Head,_Sv,Exit,_ExtraInfo,Exit).
+pdb_project(_,_Vars,_,ASub,ASub).
+pdb_sort(ASub,ASub).
 pdb_glb('$bottom',_ASub1,ASub) :- !, ASub = '$bottom'.
 pdb_glb(_ASub0,'$bottom',ASub) :- !, ASub = '$bottom'.
 pdb_glb(_,_,top).
+pdb_call_to_success_fact(_Sg,_Hv,_Head,_K,_Sv,Call,_Proj,Call,Call).
+pdb_call_to_success_builtin(_SgKey,_Sg,_Sv,Call,_Proj,Call).
+pdb_input_user_interface(_InputUser,_Qv,top,_Sg,_MaybeCallASub).
+pdb_unknown_call(_Sg,_Vars,Call,Call).
+pdb_unknown_entry(_Sg,_Qv,'top').
+pdb_empty_entry(_Qv,'top').
 % ===========================================================================
 :- doc(section, "Constraint domains").
 % ---------------------------------------------------------------------------
@@ -563,7 +574,7 @@ abs_sort(shfret,ASub,ASub_s) :- !, shfret_sort(ASub,ASub_s).
 extend(shfret,_,Prime,Sv,Call,Succ) :- !, shfret_extend(Prime,Sv,Call,Succ).
 less_or_equal(shfret,ASub0,ASub1) :- !, shfret_less_or_equal(ASub0,ASub1).
 glb(shfret,ASub0,ASub1,ASub) :- !, shfret_glb(ASub0,ASub1,ASub).
-eliminate_equivalent(shfret,LSucc,LSucc) :- !. % TODO: wrong or not needed? (JF)
+eliminate_equivalent(shfret,TmpLSucc,LSucc) :- !, shfret_eliminate_equivalent(TmpLSucc,LSucc).
 call_to_success_fact(shfret,Sg,Hv,Head,_K,Sv,Call,Proj,Prime,Succ) :- !, shfret_call_to_success_fact(Sg,Hv,Head,Sv,Call,Proj,Prime,Succ).
 combined_special_builtin(shfret,SgKey,Domains) :- !, shfret_combined_special_builtin(SgKey,Domains).
 split_combined_domain(shfret,ASub,ASubs,Doms) :- !, shfret_split_combined_domain(ASub,ASubs,Doms).
@@ -578,6 +589,7 @@ empty_entry(shfret,Qv,Call) :- !, shfret_empty_entry(Qv,Call).
 shfret_init_abstract_domain([variants,widen]) :-
 	push_pp_flag(variants,off),
 	push_pp_flag(widen,on).
+shfret_eliminate_equivalent(LSucc,LSucc). % TODO: wrong or not needed? (JF)
 shfret_combined_special_builtin(SgKey,Domains) :-
 	% TODO: refactor (define a nondet pred with combined domains instead)
 	( special_builtin(eterms,SgKey,_Sg,SgKey,_Type,_Condvars) ->
@@ -1417,7 +1429,7 @@ abs_sort(nf,ASub,ASub_s) :- !, nf_sort(ASub,ASub_s).
 extend(nf,_,Prime,Sv,Call,Succ) :- !, nf_extend(Prime,Sv,Call,Succ).
 less_or_equal(nf,ASub0,ASub1) :- !, nf_less_or_equal(ASub0,ASub1).
 glb(nf,ASub0,ASub1,ASub) :- !, nf_glb(ASub0,ASub1,ASub).
-eliminate_equivalent(nf,LSucc,LSucc) :- !. % TODO: wrong or not needed? (JF)
+eliminate_equivalent(nf,TmpLSucc,LSucc) :- !, nf_eliminate_equivalent(TmpLSucc,LSucc).
 call_to_success_fact(nf,Sg,Hv,Head,_K,Sv,Call,Proj,Prime,Succ) :- !, nf_call_to_success_fact(Sg,Hv,Head,Sv,Call,Proj,Prime,Succ).
 special_builtin(nf,SgKey,Sg,_,Type,Condvars) :- !, nf_special_builtin(SgKey,Sg,Type,Condvars).
 combined_special_builtin(nf,SgKey,Domains) :- !, nf_combined_special_builtin(SgKey,Domains).
@@ -1435,6 +1447,7 @@ dom_statistics(nf, Info) :- !, nf_statistics(Info).
 nf_init_abstract_domain([variants,widen]) :-
 	push_pp_flag(variants,off),
 	push_pp_flag(widen,on).
+nf_eliminate_equivalent(LSucc,LSucc). % TODO: wrong or not needed? (JF)
 nf_combined_special_builtin(SgKey,Domains) :-
 	% TODO: refactor (define a nondet pred with combined domains instead)
 	( special_builtin(eterms,SgKey,_Sg,SgKey,_Type,_Condvars) ->
@@ -1465,7 +1478,7 @@ abs_sort(det,ASub,ASub_s) :- !, det_sort(ASub,ASub_s).
 extend(det,_,Prime,Sv,Call,Succ) :- !, det_extend(Prime,Sv,Call,Succ).
 less_or_equal(det,ASub0,ASub1) :- !, det_less_or_equal(ASub0,ASub1).
 glb(det,ASub0,ASub1,ASub) :- !, det_glb(ASub0,ASub1,ASub).
-eliminate_equivalent(det,LSucc,LSucc) :- !. % TODO: wrong or not needed? (JF)
+eliminate_equivalent(det,TmpLSucc,LSucc) :- !, det_eliminate_equivalent(TmpLSucc,LSucc).
 call_to_success_fact(det,Sg,Hv,Head,_K,Sv,Call,Proj,Prime,Succ) :- !, det_call_to_success_fact(Sg,Hv,Head,Sv,Call,Proj,Prime,Succ).
 special_builtin(det,SgKey,Sg,_,Type,Condvars) :- !, det_special_builtin(SgKey,Sg,Type,Condvars).
 combined_special_builtin(det,SgKey,Domains) :- !, det_combined_special_builtin(SgKey,Domains).
@@ -1487,6 +1500,7 @@ dom_statistics(det, Info) :- !, det_statistics(Info).
 det_init_abstract_domain([variants,widen]) :-
 	push_pp_flag(variants,off),
 	push_pp_flag(widen,on).
+det_eliminate_equivalent(LSucc,LSucc). % TODO: wrong or not needed? (JF)
 det_combined_special_builtin(SgKey,Domains) :-
 	% TODO: refactor (define a nondet pred with combined domains instead)
 	( special_builtin(eterms,SgKey,_Sg,SgKey,_Type,_Condvars) ->
@@ -1518,7 +1532,7 @@ abs_sort(res_plai,ASub,ASub_s) :- !, res_plai_sort(ASub,ASub_s).
 extend(res_plai,Sg,Prime,Sv,Call,Succ) :- !, res_plai_extend(Sg,Prime,Sv,Call,Succ).
 less_or_equal(res_plai,ASub0,ASub1) :- !, res_plai_less_or_equal(ASub0,ASub1).
 glb(res_plai,ASub0,ASub1,ASub) :- !, res_plai_glb(ASub0,ASub1,ASub).
-eliminate_equivalent(res_plai,LSucc,LSucc) :- !. % TODO: wrong or not needed? (JF)
+eliminate_equivalent(res_plai,TmpLSucc,LSucc) :- !, res_plai_eliminate_equivalent(TmpLSucc,LSucc).
 call_to_success_fact(res_plai,Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ) :- !, res_plai_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ).
 special_builtin(res_plai,SgKey,Sg,_Subgoal,Type,Condvars) :- !, res_plai_special_builtin(SgKey,Sg,Type,Condvars).
 combined_special_builtin(res_plai,SgKey,Domains) :- !, res_plai_combined_special_builtin(SgKey,Domains).
@@ -1540,6 +1554,7 @@ res_plai_init_abstract_domain([widen]) :-
 	push_pp_flag(widen,on),
 %	res_plai:load_resources_modules.
 	res_plai:init_abstract_domain.
+res_plai_eliminate_equivalent(LSucc,LSucc). % TODO: wrong or not needed? (JF)
 res_plai_combined_special_builtin(SgKey,Domains) :-
 	% TODO: missing check for special_builtin(res_plai, ...)? (see nf_combined_special_builtin)
 	% TODO: (if the TODO above works) refactor (define a nondet pred with combined domains instead)
@@ -1565,7 +1580,7 @@ abs_sort(res_plai_stprf,ASub,ASub_s) :- !, res_plai_stprf_sort(ASub,ASub_s).
 extend(res_plai_stprf,Sg,Prime,Sv,Call,Succ) :- !, res_plai_stprf_extend(Sg,Prime,Sv,Call,Succ).
 less_or_equal(res_plai_stprf,ASub0,ASub1) :- !, res_plai_stprf_less_or_equal(ASub0,ASub1).
 glb(res_plai_stprf,ASub0,ASub1,ASub) :- !, res_plai_stprf_glb(ASub0,ASub1,ASub).
-eliminate_equivalent(res_plai_stprf,LSucc,LSucc) :- !. % TODO: wrong or not needed? (JF)
+eliminate_equivalent(res_plai_stprf,TmpLSucc,LSucc) :- !, res_plai_stprf_eliminate_equivalent(TmpLSucc,LSucc).
 call_to_success_fact(res_plai_stprf,Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ) :- !, res_plai_stprf_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ).
 special_builtin(res_plai_stprf,SgKey,Sg,_Subgoal,Type,Condvars) :- !, res_plai_stprf_special_builtin(SgKey,Sg,Type,Condvars).
 combined_special_builtin(res_plai_stprf,SgKey,Domains) :- !, res_plai_stprf_combined_special_builtin(SgKey,Domains).
@@ -1586,6 +1601,7 @@ res_plai_stprf_init_abstract_domain([widen]) :-
 	push_pp_flag(widen,on),
 %	res_plai:load_resources_modules.
 	res_plai_stprf:init_abstract_domain.
+res_plai_stprf_eliminate_equivalent(LSucc,LSucc). % TODO: wrong or not needed? (JF)
 res_plai_stprf_combined_special_builtin(SgKey,Domains) :-
 	% TODO: missing check for special_builtin(res_plai, ...)? (see nf_combined_special_builtin)
 	% TODO: (if the TODO above works) refactor (define a nondet pred with combined domains instead)
@@ -1611,7 +1627,7 @@ abs_sort(sized_types,ASub,ASub_s) :- !, sized_types_sort(ASub,ASub_s).
 extend(sized_types,Sg,Prime,Sv,Call,Succ) :- !, sized_types_extend(Sg,Prime,Sv,Call,Succ).
 less_or_equal(sized_types,ASub0,ASub1) :- !, sized_types_less_or_equal(ASub0,ASub1).
 glb(sized_types,ASub0,ASub1,ASub) :- !, sized_types_glb(ASub0,ASub1,ASub).
-eliminate_equivalent(sized_types,LSucc,LSucc) :- !. % TODO: wrong or not needed? (JF)
+eliminate_equivalent(sized_types,TmpLSucc,LSucc) :- !, sized_types_eliminate_equivalent(TmpLSucc,LSucc).
 call_to_success_fact(sized_types,Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ) :- !, sized_types_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ).
 special_builtin(sized_types,SgKey,Sg,_Subgoal,Type,Condvars) :- !, sized_types_special_builtin(SgKey,Sg,Type,Condvars).
 combined_special_builtin(sized_types,SgKey,Domains) :- !, sized_types_combined_special_builtin(SgKey,Domains).
@@ -1632,6 +1648,7 @@ sized_types_init_abstract_domain([widen]) :-
 	push_pp_flag(widen,on),
 %	sized_types:load_resources_modules.
 	sized_types:init_abstract_domain.
+sized_types_eliminate_equivalent(LSucc,LSucc). % TODO: wrong or not needed? (JF)
 sized_types_combined_special_builtin(SgKey,Domains) :-
 	% TODO: missing check for special_builtin(sized_types, ...)? (see nf_combined_special_builtin)
 	% TODO: (if the TODO above works) refactor (define a nondet pred with combined domains instead)
