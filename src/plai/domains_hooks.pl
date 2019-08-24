@@ -344,8 +344,8 @@ abs_sort(sha,ASub,ASub_s) :- !, sha_abs_sort(ASub,ASub_s).
 extend(sha,_,Prime,Sv,Call,Succ) :- !, sha_extend(Prime,Sv,Call,_Proj,Succ).
 less_or_equal(sha,ASub0,ASub1) :- !, sha_less_or_equal(ASub0,ASub1).
 glb(sha,ASub0,ASub1,ASub) :- !, sha_glb(ASub0,ASub1,ASub).
-eliminate_equivalent(AbsInt,TmpLSucc,LSucc) :- AbsInt=sha, !, absub_eliminate_equivalent(TmpLSucc,AbsInt,LSucc).
-abs_subset(AbsInt,LASub1,LASub2) :- AbsInt=sha, !, absub_is_subset(LASub1,AbsInt,LASub2).
+eliminate_equivalent(sha,TmpLSucc,LSucc) :- !, sha_eliminate_equivalent(TmpLSucc,LSucc).
+abs_subset(sha,LASub1,LASub2) :- !, sha_abs_subset(LASub1,LASub2).
 call_to_success_fact(sha,Sg,Hv,Head,_K,Sv,_Call,Proj,Prime,Succ) :- !, sha_call_to_success_fact(Hv,Head,Sv,Sg,Proj,Prime,Succ).
 special_builtin(sha,SgKey,Sg,_,Type,Condvars) :- !, sha_special_builtin(SgKey,Sg,Type,Condvars).
 success_builtin(sha,Type,Sv_uns,Condvars,_,Call,Succ) :- !, sha_success_builtin(Type,Sv_uns,Condvars,Call,Succ).
@@ -359,14 +359,16 @@ empty_entry(sha,Qv,Call) :- !, sha_empty_entry(Qv,Call).
 %% compute_lub_el(sha,ASub1,ASub2,ASub) :- !, sha_lub(ASub1,ASub2,ASub).
 %
 :- use_module(ciaopp(plai/plai_errors), [compiler_error/1]).
-sha_abs_sort(_,_).     
-% sha_body_succ_builtin(_,_,_,_,_,_).
 sha_call_to_entry(_,_,_,_,_,_,_).
 sha_call_to_success_builtin(_,_,_,_,_,_). 
 sha_call_to_success_fact(_,_,_,_,_,_,_). 
 sha_compute_lub(_,_).  
+sha_abs_sort(_,_).     
+% sha_body_succ_builtin(_,_,_,_,_,_).
 sha_exit_to_prime(_,_,_,_,_,_,_).
 sha_extend(_,_,_,_,_).       
+sha_eliminate_equivalent(TmpLSucc,LSucc) :- absub_eliminate_equivalent(TmpLSucc,sha,LSucc).
+sha_abs_subset(LASub1,LASub2) :- absub_is_subset(LASub1,sha,LASub2).
 sha_input_user_interface(_,_,_). 
 sha_input_interface(_,_,_,_). 
 sha_less_or_equal(_,_).
@@ -940,7 +942,7 @@ abs_sort(aeq,ASub,ASub_s) :- !, aeq_sort(ASub,ASub_s).
 extend(aeq,_,Prime,_Sv,Call,Succ) :- !, aeq_extend(Prime,Call,Succ).
 less_or_equal(aeq,ASub0,ASub1) :- !, aeq_less_or_equal(ASub0,ASub1).
 glb(aeq,ASub0,ASub1,ASub) :- !, aeq_glb(ASub0,ASub1,ASub).
-eliminate_equivalent(AbsInt,TmpLSucc,LSucc) :- AbsInt=aeq, !, absub_eliminate_equivalent(TmpLSucc,AbsInt,LSucc).
+eliminate_equivalent(aeq,TmpLSucc,LSucc) :- !, aeq_eliminate_equivalent(TmpLSucc,LSucc).
 call_to_success_fact(aeq,Sg,Hv,Head,_K,Sv,Call,Proj,Prime,Succ) :- !, aeq_call_to_success_fact(Proj,Sg,Hv,Head,Sv,Call,Prime,Succ).
 special_builtin(aeq,Sg_key,Sg,_,Type,Info_sg) :- !, aeq_special_builtin(Sg_key,Sg,Type,Info_sg).
 success_builtin(aeq,Type,Sv_uns,Info_sg,_,Call,Succ) :- !, aeq_success_builtin(Type,Sv_uns,Info_sg,Call,Succ).
@@ -972,6 +974,7 @@ empty_entry(aeq,Qv,Call) :- !, aeq_empty_entry(Qv,Call).
 %% aeq_more_instantiate(_,_). 
 %% aeq_real_conjoin(_,_,_).
 aeq_glb(_ASub0,_ASub1,_ASub) :- compiler_error(op_not_implemented(glb)), fail.
+aeq_eliminate_equivalent(TmpLSucc,LSucc) :- absub_eliminate_equivalent(TmpLSucc,aeq,LSucc).
 % ---------------------------------------------------------------------------
 :- use_module(domain(depthk)).
 aidomain(depth).
@@ -984,8 +987,8 @@ abs_sort(depth,ASub,ASub_s) :- !, depthk_sort(ASub,ASub_s).
 extend(depth,_,Prime,Sv,Call,Succ) :- !, depthk_extend(Prime,Sv,Call,Succ).
 less_or_equal(depth,ASub0,ASub1) :- !, depthk_less_or_equal(ASub0,ASub1).
 glb(depth,ASub0,ASub1,ASub) :- !, depthk_glb(ASub0,ASub1,ASub).
-eliminate_equivalent(AbsInt,TmpLSucc,LSucc) :- AbsInt=depth, !, absub_eliminate_equivalent(TmpLSucc,AbsInt,LSucc).
-abs_subset(AbsInt,LASub1,LASub2) :- AbsInt=depth, !, absub_is_subset(LASub1,AbsInt,LASub2).
+eliminate_equivalent(depth,TmpLSucc,LSucc) :- !, depthk_eliminate_equivalent(TmpLSucc,LSucc).
+abs_subset(depth,LASub1,LASub2) :- !, depthk_abs_subset(LASub1,LASub2).
 call_to_success_fact(depth,Sg,Hv,Head,_K,Sv,Call,Proj,Prime,Succ) :- !, depthk_call_to_success_fact(Sg,Hv,Head,Sv,Call,Proj,Prime,Succ).
 special_builtin(depth,SgKey,Sg,_,Type,Condvars) :- !, depthk_special_builtin(SgKey,Sg,Type,Condvars).
 success_builtin(depth,Type,Sv_uns,Condvars,_,Call,Succ) :- !, depthk_success_builtin(Type,Sv_uns,Condvars,Call,Succ).
@@ -996,6 +999,9 @@ asub_to_native(depth,ASub,Qv,OutFlag,OutputUser,Comps) :- !, depthk_asub_to_nati
 unknown_call(depth,_Sg,Vars,Call,Succ) :- !, depthk_unknown_call(Call,Vars,Succ).
 unknown_entry(depth,_Sg,Qv,Call) :- !, depthk_unknown_entry(Qv,Call).
 empty_entry(depth,Qv,Call) :- !, depthk_empty_entry(Qv,Call).
+%
+depthk_eliminate_equivalent(TmpLSucc,LSucc) :- absub_eliminate_equivalent(TmpLSucc,depth,LSucc).
+depthk_abs_subset(LASub1,LASub2) :- absub_is_subset(LASub1,depth,LASub2).
 % ---------------------------------------------------------------------------
 :- use_module(domain(top_path_sharing)).
 aidomain(path).
