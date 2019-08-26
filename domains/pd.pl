@@ -1,36 +1,59 @@
-:- module(pd,[
-%% 	pd_call_to_entry/8,
-%% 	pd_exit_to_prime/7,
-%% 	pd_project/3,
-%% 	pd_extend/4,
-%% 	pd_compute_lub/2,
-%% 	pd_glb/3,
-%% 	pd_less_or_equal/2,
-%% 	%pd_compute_lub_el/3,
-%% 	%pd_extend_free/3,
-%% 	pd_sort/2,
-	%% 	pd_call_to_success_fact/8,
-	pd_special_builtin/4,
- 	pd_success_builtin/5
-%% 	pd_call_to_success_builtin/6,
-%% 	pd_input_interface/4,
-%% 	pd_input_user_interface/3,
-%% 	pd_asub_to_native/3,
-%% 	%pd_output_interface/2,
-%% 	pd_unknown_call/3,
-%% 	pd_unknown_entry/2,
-%% 	pd_empty_entry/2
-	     ],
-	     [assertions,regtypes,basicmodes
-	     ]).
+:- module(pd, [], [assertions,regtypes,basicmodes]).
 
-:- use_module(domain(share), 
-	[ shfr_special_builtin/4 ]).
+:- use_module(domain(share), [shfr_special_builtin/4]).
+
+:- export(pd_call_to_entry/9).
+pd_call_to_entry(_Sv,_Sg,_Hv,_Head,_K,_Fv,Proj,Proj,_ExtraInfo).
+
+:- export(pd_exit_to_prime/7).
+pd_exit_to_prime(_Sg,_Hv,_Head,_Sv,Exit,_ExtraInfo,Exit).
+
+:- export(pd_project/5).
+pd_project(_,_Vars,_,ASub,ASub).
+
+:- export(pd_compute_lub/2).
+pd_compute_lub(_ListAsub,top).
+
+:- export(pd_sort/2).
+pd_sort(ASub,ASub).
+
+:- export(pd_extend/5).
+pd_extend(_Sg,Prime,_Sv,_Call,Prime).
 
 %% pd_extend('$bottom',_Hv,_Call,Succ):- !,
 %% 	Succ = '$bottom'.
 %% pd_extend(_Prime,_Hv,_Call,Succ):- !,
 %% 	Succ = top.
+
+:- export(pd_less_or_equal/2).
+pd_less_or_equal(_,_).
+
+:- export(pd_glb/3).
+pd_glb('$bottom',_ASub1,ASub) :- !, ASub = '$bottom'.
+pd_glb(_ASub0,'$bottom',ASub) :- !, ASub = '$bottom'.
+pd_glb(_,_,top).
+
+:- export(pd_call_to_success_fact/9).
+pd_call_to_success_fact(_Sg,_Hv,_Head,_K,_Sv,Call,_Proj,Call,Call).
+
+:- export(pd_call_to_success_builtin/6).
+pd_call_to_success_builtin(_SgKey,_Sg,_Sv,Call,_Proj,Call).
+
+:- export(pd_input_user_interface/5).
+pd_input_user_interface(_InputUser,_Qv,top,_Sg,_MaybeCallASub).
+
+:- export(pd_asub_to_native/5).
+pd_asub_to_native(_ASub,_Qv,_OutFlag,[true],[]).
+
+:- export(pd_unknown_call/4).
+pd_unknown_call(_Sg,_Vars,Call,Call).
+
+:- export(pd_unknown_entry/3).
+pd_unknown_entry(_Sg,_Qv,'top').
+
+:- export(pd_empty_entry/2).
+pd_empty_entry(_Qv,'top').
+
 %% 
 %% pd_compute_lub([ASub1,ASub2|Rest],Lub) :-
 %% 	pd_lub(ASub1,ASub2,ASub3),
@@ -41,13 +64,14 @@
 %% 	ALub = '$bottom'.
 %% pd_lub(_ASub1,_ASub2,top).
 
-pd_special_builtin(A,B,C,D):-
-	shfr_special_builtin(A,B,C,D).
-
-pd_special_builtin(Key,_Sg,special(Key),[]):-
+:- export(pd_special_builtin/5).
+pd_special_builtin(SgKey,Sg,_Subgoal,Type,Condvars) :-
+	shfr_special_builtin(SgKey,Sg,Type,Condvars), !. % TODO: why?
+pd_special_builtin(Key,_Sg,_Subgoal,special(Key),[]):-
 	pd_very_special_builtin(Key).
 
 pd_very_special_builtin('=/2').
 pd_very_special_builtin('\==/2').
 
-pd_success_builtin(_unchanged,_,_,Lda,Lda).
+:- export(pd_success_builtin/6).
+pd_success_builtin(_unchanged,_,_,_,Lda,Lda).
