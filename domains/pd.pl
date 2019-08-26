@@ -1,5 +1,8 @@
 :- module(pd, [], [assertions,regtypes,basicmodes]).
 
+:- doc(module, "This abstract domain is the domain with one value,
+   top. PD stands for Partial Deduction.").
+
 :- use_module(domain(share), [shfr_special_builtin/4]).
 
 :- export(pd_call_to_entry/9).

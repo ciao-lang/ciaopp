@@ -96,32 +96,18 @@ exit_to_prime(pdb,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime) :- !, pdb_exit_to_prime(Sg
 project(pdb,Sg,Vars,HvFv,ASub,Proj) :- !, pdb_project(Sg,Vars,HvFv,ASub,Proj).
 compute_lub(pdb,ListAsub,LubASub) :- !, pdb_compute_lub(ListAsub,LubASub).
 abs_sort(pdb,ASub,ASub_s) :- !, pdb_sort(ASub,ASub_s).
-extend(pdb,_,Prime,Sv,Call,Succ) :- !, pdb_extend(Prime,Sv,Call,Succ).
+extend(pdb,Sg,Prime,Sv,Call,Succ) :- !, pdb_extend(Sg,Prime,Sv,Call,Succ).
 less_or_equal(pdb,ASub0,ASub1) :- !, pdb_less_or_equal(ASub0,ASub1).
 glb(pdb,ASub0,ASub1,ASub) :- !, pdb_glb(ASub0,ASub1,ASub).
 call_to_success_fact(pdb,Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ) :- !, pdb_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ).
-special_builtin(pdb,SgKey,Sg,_,Type,Condvars) :- !, pdb_special_builtin(SgKey,Sg,Type,Condvars).
-success_builtin(pdb,Type,Sv_uns,Condvars,_,Call,Succ) :- !, pdb_success_builtin(Type,Sv_uns,Condvars,Call,Succ).
+special_builtin(pdb,SgKey,Sg,Subgoal,Type,Condvars) :- !, pdb_special_builtin(SgKey,Sg,Subgoal,Type,Condvars).
+success_builtin(pdb,Type,Sv_uns,Condvars,HvFv_u,Call,Succ) :- !, pdb_success_builtin(Type,Sv_uns,Condvars,HvFv_u,Call,Succ).
 call_to_success_builtin(pdb,SgKey,Sg,Sv,Call,Proj,Succ) :- !, pdb_call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,Succ).
 input_user_interface(pdb,InputUser,Qv,ASub,Sg,MaybeCallASub) :- !, pdb_input_user_interface(InputUser,Qv,ASub,Sg,MaybeCallASub).
 asub_to_native(pdb,ASub,Qv,OutFlag,OutputUser,Comps) :- !, pdb_asub_to_native(ASub,Qv,OutFlag,OutputUser,Comps).
 unknown_call(pdb,Sg,Vars,Call,Succ) :- !, pdb_unknown_call(Sg,Vars,Call,Succ).
 unknown_entry(pdb,Sg,Qv,Call) :- !, pdb_unknown_entry(Sg,Qv,Call).
 empty_entry(pdb,Qv,Call) :- !, pdb_empty_entry(Qv,Call).
-%
-pdb_call_to_entry(_Sv,_Sg,_Hv,_Head,_K,_Fv,Proj,Proj,_ExtraInfo).
-pdb_exit_to_prime(_Sg,_Hv,_Head,_Sv,Exit,_ExtraInfo,Exit).
-pdb_project(_,_Vars,_,ASub,ASub).
-pdb_sort(ASub,ASub).
-pdb_glb('$bottom',_ASub1,ASub) :- !, ASub = '$bottom'.
-pdb_glb(_ASub0,'$bottom',ASub) :- !, ASub = '$bottom'.
-pdb_glb(_,_,top).
-pdb_call_to_success_fact(_Sg,_Hv,_Head,_K,_Sv,Call,_Proj,Call,Call).
-pdb_call_to_success_builtin(_SgKey,_Sg,_Sv,Call,_Proj,Call).
-pdb_input_user_interface(_InputUser,_Qv,top,_Sg,_MaybeCallASub).
-pdb_unknown_call(_Sg,_Vars,Call,Call).
-pdb_unknown_entry(_Sg,_Qv,'top').
-pdb_empty_entry(_Qv,'top').
 % ===========================================================================
 :- doc(section, "Constraint domains").
 % ---------------------------------------------------------------------------
