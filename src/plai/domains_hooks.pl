@@ -4,7 +4,6 @@
 % TODO: See analysis.lpdoc for documentation
 
 :- discontiguous(aidomain/1).
-:- discontiguous(is_nonrel_domain/1).
 :- discontiguous(init_abstract_domain/2).
 :- discontiguous(amgu/5).
 :- discontiguous(augment_asub/4).
@@ -1238,32 +1237,54 @@ deftypes_init_abstract_domain([widen]) :-
 :- use_module(domain(nonrel)).
 % (simpler domain interface, only for non-relational domains)
 aidomain(nonrel_intervals).
-% implementations of domains using the non relational interface
-is_nonrel_domain(nonrel_intervals).
+init_abstract_domain(nonrel_intervals,PushedFlags) :- !, nonrel_intervals_init_abstract_domain(PushedFlags).
+amgu(nonrel_intervals,Sg,Head,ASub,NewASub) :- !, nonrel_intervals_amgu(Sg,Head,ASub,NewASub).
+call_to_entry(nonrel_intervals,Sv,Sg,Hv,Head,_K,Fv,Proj,Entry,ExtraInfo) :- !, nonrel_intervals_call_to_entry(Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo).
+exit_to_prime(nonrel_intervals,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime) :- !, nonrel_intervals_exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime).
+project(nonrel_intervals,_,Vars,_,ASub,Proj) :- !, nonrel_intervals_project(ASub,Vars,Proj).
+widencall(nonrel_intervals,Prime0,Prime1,NewPrime) :- !, nonrel_intervals_widencall(Prime0,Prime1,NewPrime).
+widen(nonrel_intervals, Prime0, Prime1, NewPrime) :- !, nonrel_intervals_widen(Prime0,Prime1,NewPrime).
+compute_lub(nonrel_intervals,ListASub,LubASub) :- !, nonrel_intervals_compute_lub(ListASub,LubASub).
+identical_abstract(nonrel_intervals, ASub1, ASub2) :- !, nonrel_intervals_identical_abstract(ASub1, ASub2).
+abs_sort(nonrel_intervals,ASub,ASub_s) :- !, nonrel_intervals_abs_sort(ASub,ASub_s).
+extend(nonrel_intervals,_,Prime,Sv,Call,Succ) :- !, nonrel_intervals_extend(Prime,Sv,Call,Succ).
+less_or_equal(nonrel_intervals,ASub0,ASub1) :- !, nonrel_intervals_less_or_equal(ASub0,ASub1).
+glb(nonrel_intervals,ASub0,ASub1,ASub) :- !, nonrel_intervals_glb(ASub0,ASub1,ASub).
+call_to_success_fact(nonrel_intervals,Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ) :- !, nonrel_intervals_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ).
+special_builtin(nonrel_intervals,SgKey,Sg,_,Type,Condvars) :- !, nonrel_intervals_special_builtin(SgKey,Sg,Type,Condvars).
+success_builtin(nonrel_intervals,Type,_Sv_uns,Condvars,_,Call,Succ) :- !, nonrel_intervals_success_builtin(Type,Condvars,Call,Succ).
+call_to_success_builtin(nonrel_intervals,SgKey,Sg,Sv,Call,Proj,Succ) :- !, nonrel_intervals_call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,Succ).
+input_interface(nonrel_intervals,InputUser,Kind,Struct0,Struct1) :- !, nonrel_intervals_input_interface(InputUser,Kind,Struct0,Struct1).
+input_user_interface(nonrel_intervals,InputUser,Qv,ASub,_Sg,_MaybeCallASub) :- !, nonrel_intervals_input_user_interface(InputUser,Qv,ASub).
+asub_to_native(nonrel_intervals,ASub,Qv,OutFlag,OutputUser,Comps) :- !, nonrel_intervals_asub_to_native(ASub,Qv,OutFlag,OutputUser,Comps).
+unknown_call(nonrel_intervals,_Sg,Vars,Call,Succ) :- !, nonrel_intervals_unknown_call(Call,Vars,Succ).
+unknown_entry(nonrel_intervals,_Sg,Qv,Call) :- !, nonrel_intervals_unknown_entry(Qv,Call).
+empty_entry(nonrel_intervals,Qv,Call) :- !, nonrel_intervals_empty_entry(Qv,Call).
+% (simpler domain interface, only for non-relational domains)
 % Based on nonrel_domain ([IG] new)
-init_abstract_domain(AbsInt,PushedFlags) :- is_nonrel_domain(AbsInt), !, nonrel_init_abstract_domain(AbsInt, PushedFlags).
-amgu(AbsInt,Sg,Head,ASub,NewASub) :- is_nonrel_domain(AbsInt), !, nonrel_amgu(AbsInt,Sg,Head,ASub,NewASub).
-call_to_entry(AbsInt,Sv,Sg,Hv,Head,_K,Fv,Proj,Entry,ExtraInfo) :- is_nonrel_domain(AbsInt), !, nonrel_call_to_entry(AbsInt,Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo).
-exit_to_prime(AbsInt,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime) :- is_nonrel_domain(AbsInt), !, nonrel_exit_to_prime(AbsInt,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime).
-project(AbsInt,_,Vars,_,ASub,Proj) :- is_nonrel_domain(AbsInt), !, nonrel_project(ASub,Vars,Proj).
-widencall(AbsInt,Prime0,Prime1,NewPrime) :- is_nonrel_domain(AbsInt), !, nonrel_widencall(AbsInt,Prime0,Prime1,NewPrime).
-widen(AbsInt, Prime0, Prime1, NewPrime) :- is_nonrel_domain(AbsInt), !, nonrel_widen(AbsInt,Prime0,Prime1,NewPrime).
-compute_lub(AbsInt,ListASub,LubASub) :- is_nonrel_domain(AbsInt), !, nonrel_compute_lub(AbsInt,ListASub,LubASub).
-identical_abstract(AbsInt, ASub1, ASub2) :- is_nonrel_domain(AbsInt), !, nonrel_identical_abstract(ASub1, ASub2).
-abs_sort(AbsInt,ASub,ASub_s) :- is_nonrel_domain(AbsInt), !, nonrel_abs_sort(ASub,ASub_s).
-extend(AbsInt,_,Prime,Sv,Call,Succ) :- is_nonrel_domain(AbsInt), !, nonrel_extend(AbsInt,Prime,Sv,Call,Succ).
-less_or_equal(AbsInt,ASub0,ASub1) :- is_nonrel_domain(AbsInt), !, nonrel_less_or_equal(AbsInt,ASub0,ASub1).
-glb(AbsInt,ASub0,ASub1,ASub) :- is_nonrel_domain(AbsInt), !, nonrel_glb(AbsInt,ASub0,ASub1,ASub).
-call_to_success_fact(AbsInt,Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ) :- is_nonrel_domain(AbsInt), !, nonrel_call_to_success_fact(AbsInt,Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ).
-special_builtin(AbsInt,SgKey,Sg,_,Type,Condvars) :- is_nonrel_domain(AbsInt), !, nonrel_special_builtin(AbsInt,SgKey,Sg,Type,Condvars).
-success_builtin(AbsInt,Type,_Sv_uns,Condvars,_,Call,Succ) :- is_nonrel_domain(AbsInt), !, nonrel_success_builtin(AbsInt,Type,Condvars,Call,Succ).
-call_to_success_builtin(AbsInt,SgKey,Sg,Sv,Call,Proj,Succ) :- is_nonrel_domain(AbsInt), !, nonrel_call_to_success_builtin(AbsInt,SgKey,Sg,Sv,Call,Proj,Succ).
-input_interface(AbsInt,InputUser,Kind,Struct0,Struct1) :- is_nonrel_domain(AbsInt), !, nonrel_input_interface(AbsInt,InputUser,Kind,Struct0,Struct1).
-input_user_interface(AbsInt,InputUser,Qv,ASub,_Sg,_MaybeCallASub) :- is_nonrel_domain(AbsInt), !, nonrel_input_user_interface(AbsInt,InputUser,Qv,ASub).
-asub_to_native(AbsInt,ASub,Qv,OutFlag,OutputUser,Comps) :- is_nonrel_domain(AbsInt), !, nonrel_asub_to_native(AbsInt,ASub,Qv,OutFlag,OutputUser,Comps).
-unknown_call(AbsInt,_Sg,Vars,Call,Succ) :- is_nonrel_domain(AbsInt), !, nonrel_unknown_call(AbsInt,Call,Vars,Succ).
-unknown_entry(AbsInt,_Sg,Qv,Call) :- is_nonrel_domain(AbsInt), !, nonrel_unknown_entry(AbsInt,Qv,Call).
-empty_entry(AbsInt,Qv,Call) :- is_nonrel_domain(AbsInt), !, nonrel_unknown_entry(AbsInt,Qv,Call).
+nonrel_intervals_init_abstract_domain(PushedFlags) :- nonrel_init_abstract_domain(nonrel_intervals, PushedFlags).
+nonrel_intervals_amgu(Sg,Head,ASub,NewASub) :- nonrel_amgu(nonrel_intervals,Sg,Head,ASub,NewASub).
+nonrel_intervals_call_to_entry(Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo) :- nonrel_call_to_entry(nonrel_intervals,Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo).
+nonrel_intervals_exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime) :- nonrel_exit_to_prime(nonrel_intervals,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime).
+nonrel_intervals_project(ASub,Vars,Proj) :- nonrel_project(ASub,Vars,Proj).
+nonrel_intervals_widencall(Prime0,Prime1,NewPrime) :- nonrel_widencall(nonrel_intervals,Prime0,Prime1,NewPrime).
+nonrel_intervals_widen(Prime0,Prime1,NewPrime) :- nonrel_widen(nonrel_intervals,Prime0,Prime1,NewPrime).
+nonrel_intervals_compute_lub(ListASub,LubASub) :- nonrel_compute_lub(nonrel_intervals,ListASub,LubASub).
+nonrel_intervals_identical_abstract(ASub1, ASub2) :- nonrel_identical_abstract(ASub1, ASub2).
+nonrel_intervals_abs_sort(ASub,ASub_s) :- nonrel_abs_sort(ASub,ASub_s).
+nonrel_intervals_extend(Prime,Sv,Call,Succ) :- nonrel_extend(nonrel_intervals,Prime,Sv,Call,Succ).
+nonrel_intervals_less_or_equal(ASub0,ASub1) :- nonrel_less_or_equal(nonrel_intervals,ASub0,ASub1).
+nonrel_intervals_glb(ASub0,ASub1,ASub) :- nonrel_glb(nonrel_intervals,ASub0,ASub1,ASub).
+nonrel_intervals_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ) :- nonrel_call_to_success_fact(nonrel_intervals,Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ).
+nonrel_intervals_special_builtin(SgKey,Sg,Type,Condvars) :- nonrel_special_builtin(nonrel_intervals,SgKey,Sg,Type,Condvars).
+nonrel_intervals_success_builtin(Type,Condvars,Call,Succ) :- nonrel_success_builtin(nonrel_intervals,Type,Condvars,Call,Succ).
+nonrel_intervals_call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,Succ) :- nonrel_call_to_success_builtin(nonrel_intervals,SgKey,Sg,Sv,Call,Proj,Succ).
+nonrel_intervals_input_interface(InputUser,Kind,Struct0,Struct1) :- nonrel_input_interface(nonrel_intervals,InputUser,Kind,Struct0,Struct1).
+nonrel_intervals_input_user_interface(InputUser,Qv,ASub) :- nonrel_input_user_interface(nonrel_intervals,InputUser,Qv,ASub).
+nonrel_intervals_asub_to_native(ASub,Qv,OutFlag,OutputUser,Comps) :- nonrel_asub_to_native(nonrel_intervals,ASub,Qv,OutFlag,OutputUser,Comps).
+nonrel_intervals_unknown_call(Call,Vars,Succ) :- nonrel_unknown_call(nonrel_intervals,Call,Vars,Succ).
+nonrel_intervals_unknown_entry(Qv,Call) :- nonrel_unknown_entry(nonrel_intervals,Qv,Call).
+nonrel_intervals_empty_entry(Qv,Call) :- nonrel_unknown_entry(nonrel_intervals,Qv,Call).
 % ---------------------------------------------------------------------------
 :- if(defined(has_ciaopp_extra)).
 :- use_module(domain(polyhedra)).
