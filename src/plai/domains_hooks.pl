@@ -1716,6 +1716,26 @@ absub_is_subset([Sub1|Subs1],AbsInt,LASub2) :-
 %	fixpoint_covered(AbsInt,Sub1,ASub2),
 	absub_is_subset(Subs1,AbsInt,LASub2).
 
+absub_fixpoint_covered(AbsInt,Prime0,Prime1) :-
+	( current_pp_flag(multi_call,on) ->
+	    identical_abstract(AbsInt,Prime0,Prime1)
+	; current_pp_flag(multi_call,off) ->
+	    less_or_equal(AbsInt,Prime0,Prime1)
+	; fail % TODO: anything else?
+	).
+
+body_builtin(AbsInt,special(SgKey),Sg,_Condvs,Sv,_HvFv_u,Call,Proj,Succ) :- !,
+	call_to_success_builtin(AbsInt,SgKey,Sg,Sv,Call,Proj,Succ).
+body_builtin(AbsInt,Type,_Sg,Condvs,Sv,HvFv_u,Call,_Proj,Succ) :-
+	success_builtin(AbsInt,Type,Sv,Condvs,HvFv_u,Call,Succ), !.
+body_builtin(AbsInt,Type,_Sg,_Condvs,_Sv,_HvFv_u,_Call,_Proj,'$bottom') :-
+	warning_message("body_builtin: the builtin key ~q is not defined in domain ~w",
+	                [Type,AbsInt]).
+
+undef_call_to_success_builtin(AbsInt,SgKey) :-
+        warning_message("call_to_success_builtin: the builtin key ~q is not defined in domain ~w",
+	                [special(SgKey),AbsInt]).
+
 % ===========================================================================
 :- doc(section, "(Default domain definitions)").
 
@@ -1738,45 +1758,27 @@ widen(AbsInt,Prime0,Prime1,NewPrime) :- % TODO: [IG] define in domain?
 	compute_lub(AbsInt,[Prime0,Prime1],NewPrime).
 compute_clauses_lub(_AbsInt,_Proj,Lub,Lub).
 compute_clauses_glb(_AbsInt,_Proj,Lub,Lub).
-identical_abstract(_AbsInt,ASub1,ASub2) :- !, ASub1==ASub2.
+identical_abstract(_AbsInt,ASub1,ASub2) :- ASub1==ASub2.
 fixpoint_covered(AbsInt,Prime0,Prime1) :-
-	( current_pp_flag(multi_call,on) ->
-	    identical_abstract(AbsInt,Prime0,Prime1)
-	; current_pp_flag(multi_call,off) ->
-	    less_or_equal(AbsInt,Prime0,Prime1)
-	; fail % TODO: anything else?
-	).
+	absub_fixpoint_covered(AbsInt,Prime0,Prime1).
 fixpoint_covered_gfp(AbsInt,Prime0,Prime1) :-
-	( current_pp_flag(multi_call,on) ->
-	    identical_abstract(AbsInt,Prime0,Prime1)
-	; current_pp_flag(multi_call,off) ->
-	    less_or_equal(AbsInt,Prime0,Prime1)
-	; fail % TODO: anything else?
-	).
+	absub_fixpoint_covered(AbsInt,Prime0,Prime1).
 %% %% do_compute_lub(AbsInt,SubstList,Subst) :-
 %% %% 	there_is_delay, !,
 %% %% 	del_compute_lub(SubstList,AbsInt,Subst).
 %% do_compute_lub(AbsInt,SubstList,Subst) :-
 %% 	compute_lub(AbsInt,SubstList,Subst).
-eliminate_equivalent(_AbsInt,TmpLSucc,LSucc) :- !, sort(TmpLSucc,LSucc). % TODO: valid if ASub1==ASub2 means equivalent
+eliminate_equivalent(_AbsInt,TmpLSucc,LSucc) :- sort(TmpLSucc,LSucc). % TODO: valid if ASub1==ASub2 means equivalent
 abs_subset(_AbsInt,LASub1,LASub2) :-
 	ord_subset(LASub1,LASub2).
 body_succ_builtin(AbsInt,Type,Sg,Condvs,Sv,HvFv_u,Call,Proj,Succ) :-
 	body_builtin(AbsInt,Type,Sg,Condvs,Sv,HvFv_u,Call,Proj,Succ).
-call_to_success_builtin(AbsInt,SgKey,_Sg,_Sv,_Call,_Proj,'$bottom') :- !,
-        warning_message("call_to_success_builtin: the builtin key ~q is not defined in domain ~w",
-	                [special(SgKey),AbsInt]).
+call_to_success_builtin(AbsInt,SgKey,_Sg,_Sv,_Call,_Proj,'$bottom') :-
+	undef_call_to_success_builtin(AbsInt,SgKey).
 part_conc(_AbsInt,Sg,Subs,Sg,Subs).
 multi_part_conc(_AbsInt,Sg,Subs,[(Sg,Subs)]).
 rename_abstypes_abs(_,ASub,_Rens,ASub).
 dom_statistics(_AbsInt, []).
 % contains_parameters(_AbsInt,_) :- fail.
 
-body_builtin(AbsInt,special(SgKey),Sg,_Condvs,Sv,_HvFv_u,Call,Proj,Succ) :- !,
-	call_to_success_builtin(AbsInt,SgKey,Sg,Sv,Call,Proj,Succ).
-body_builtin(AbsInt,Type,_Sg,Condvs,Sv,HvFv_u,Call,_Proj,Succ) :-
-	success_builtin(AbsInt,Type,Sv,Condvs,HvFv_u,Call,Succ), !.
-body_builtin(AbsInt,Type,_Sg,_Condvs,_Sv,_HvFv_u,_Call,_Proj,'$bottom') :-
-	warning_message("body_builtin: the builtin key ~q is not defined in domain ~w",
-	                [Type,AbsInt]).
 
