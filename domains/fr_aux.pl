@@ -5,8 +5,8 @@
 % Based on the code of the non-Minimal Freeness Domain by G. Janssens
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Auxiliary predicates for coupling the Fm abstraction with PLAI
-% uses set_* predicates from fros.pl
-% uses ss_* predicates from fross23.pl
+% uses set_* predicates from fr_os.pl
+% uses ss_* predicates from fr_oss23.pl
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % abstract state <as> ::= as(<ac>o , <ac>n) | "'$bottom'"
 % <ac> ::= ordered set of <sets_of_variables>

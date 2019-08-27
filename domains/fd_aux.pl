@@ -5,8 +5,8 @@
 %	 and Katholieke Universiteit Leuven.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % auxiliary predicates for coupling the DFm abstraction with PLAI
-% uses set_* predicates from fros.pl
-% uses ss_* predicates from fross23.pl
+% uses set_* predicates from fr_os.pl
+% uses ss_* predicates from fr_oss23.pl
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % abstract state <as> ::= as(<def>o, <free>o, <def>n, <free>n) | "'$bottom'"
 %			(o = old, n = new)

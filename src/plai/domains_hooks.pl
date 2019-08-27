@@ -151,16 +151,6 @@ empty_entry(frdef,Qv,Call) :- !, fd_empty_entry(Qv,Call).
 fd_glb(_ASub0,_ASub1,_ASub) :- compiler_error(op_not_implemented(glb)), fail.
 % TODO: body_succ_builtin/9: (old comment) these do not have special(_), so ok: AbsInt \== def, AbsInt \== fr, AbsInt \== frdef
 % ---------------------------------------------------------------------------
-% TODO: why?
-%% :- include(ciaopp(plai/fros)).
-%% :- include(ciaopp(plai/fross23)).
-%% :- include(ciaopp(plai/kulordsets)).
-%% :- include(ciaopp(plai/kulordsetsext)).
-%% :- include(ciaopp(plai/min_df_aux)).
-%% :- include(ciaopp(plai/min_df_top)).
-%% :- include(ciaopp(plai/min_fr_aux)).
-%% :- include(ciaopp(plai/min_shared)).
-% ---------------------------------------------------------------------------
 % lsign
 :- use_module(domain(lsign)).
 aidomain(lsign).
@@ -343,8 +333,6 @@ abs_sort(typeshfr,ASub,ASub_s) :- !, abs_sort(shfr,ASub,ASub_s). %% AADEBUG
 glb(typeshfr,ASub0,ASub1,ASub) :- !, glb(shfr,ASub0,ASub1,ASub).
 % ===========================================================================
 :- doc(section, "Groundness and sharing").
-% ---------------------------------------------------------------------------
-%% :- include(ciaopp(plai/shabsub)).
 % ---------------------------------------------------------------------------
 % Example groundness domain
 :- use_module(domain(gr)).

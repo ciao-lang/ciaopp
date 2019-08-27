@@ -44,8 +44,8 @@
 % other predicates are defined in         
 %	min_fr_aux.pl : auxiliary predicates for Fm	(fr_*)
 %	shared.pl : predicates shared between Fm and DFm
-%	fros.pl : ordered sets of variables		(set_*)
-%	fross23.pl: ordered set of sets			(ss_*)
+%	fr_os.pl : ordered sets of variables		(set_*)
+%	fr_oss23.pl: ordered set of sets			(ss_*)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % abstract state <as> ::= as(<ac>o , <ac>n) | "'$bottom'"
 %			(o = old, n = new)
