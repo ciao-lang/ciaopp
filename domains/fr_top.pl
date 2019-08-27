@@ -1,27 +1,30 @@
 :- module(fr_top,
-	[ fr_call_to_entry/5, 
-	  fr_call_to_success_fact/8,
+	[ fr_call_to_entry/9, 
+	  fr_call_to_success_fact/9,
 	  fr_compute_lub/2,   
 	%  fr_compute_lub_general/2,
-	  fr_exit_to_prime/6,
-	  fr_extend/4,        
+	  fr_exit_to_prime/7,
+	  fr_extend/5,        
 	  fr_identical_abstract/2, 
-	  fr_input_user_interface/3,  
+	  fr_input_user_interface/5,  
 	  fr_input_interface/4,  
 	  fr_less_or_equal/2,
+	  fr_glb/3,
 	  fr_output_interface/3,
-	  fr_project/3,       
+	  fr_project/5,       
 	  fr_sort/2,          
-	  fr_special_builtin/4,
-	  fr_success_builtin/5,
-	  fr_unknown_call/3,
-	  fr_unknown_entry/2,
+	  fr_special_builtin/5,
+	  fr_success_builtin/6,
+	  fr_asub_to_native/5,
+	  fr_unknown_call/4,
+	  fr_unknown_entry/3,
 	  fr_empty_entry/2,
 	% humm...
 	  get_free_vars/3
 	], [datafacts]).
 
 :- use_module(ciaopp(p_unit), [language/1]).
+:- use_module(ciaopp(plai/plai_errors), [compiler_error/1]).
 
 :- use_module(domain(fr_sets)).
 :- use_module(domain(fr_shared)).
@@ -71,7 +74,7 @@
 % added builtins and replaced fr_nonfree_arg by fr_ground_arg  25/01/95
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% fr_call_to_entry(Sg, Hv, Head, Proj, Entry)	(S)
+% fr_call_to_entry(_Sv,Sg,Hv,Head,_K,_Fv,Proj,Entry,_ExtraInfo) (S)
 % renames Proj in terms of the call variables of Sg into Entry
 % in terms of the variables of Head and initialises the local clause vars.
 % Hv: ordered set of variables in Head
@@ -79,30 +82,30 @@
 % ProjSH = Proj \Aconj alpha(Sargs = Hargs)
 %
 % :- mode fr_call_to_entry(?,?,?,o).
-fr_call_to_entry(_Sg, _Hv, _Head, Entry, Entry):-
+fr_call_to_entry(_Sv,_Sg,_Hv,_Head,_K,_Fv,Entry,Entry,_ExtraInfo):-
 	bottomelement(Entry), !.
-fr_call_to_entry(Sg, Hv, Head, Proj, Entry):-
+fr_call_to_entry(_Sv,Sg,Hv,Head,_K,_Fv,Proj,Entry,_ExtraInfo):-
 	Sg =.. [_ | Sargs], Head =.. [_ | Hargs],
 	fr_call_head_unif(Sargs, Hargs, Proj, ProjSH),
-	fr_project(ProjSH, Hv, Entry).
+	fr_project_(ProjSH, Hv, Entry).
         %% no initialisation necessary for the local variables
                                                                              
 %----------------------------------------------------------------------------
 
-% fr_exit_to_prime(Exit, Sg, Hv, Head, Sv, Prime)  (S)                     
+% fr_exit_to_prime(Sg, Hv, Head, Sv, Exit, _ExtraInfo, Prime)  (S)                     
 % maps Exit (in terms of vars of clause with head H) into           
 % Prime (in terms of vars of Sg)
 % Note : - no lub is taken (computed separately!!!)
 %	 - also the extension wrt variables in the clause of the call S
 %	   is not yet done (no call of
-%	   fr_extend(Prime,_Sv,Call,Succ)).
+%	   fr_extend(Sg, Prime,_Sv,Call,Succ)).
 % Hv, Sv: ordered set of variables in Head (resp. Sg)
 % Hargs, Sargs: list of arguments of Head (resp. Sg)
 %
 % :- mode fr_exit_to_prime(?,?,?,o).
-fr_exit_to_prime(Exit, _Sg, _Hv, _Head, _Sv, Exit) :-
+fr_exit_to_prime(_Sg, _Hv, _Head, _Sv, Exit, _ExtraInfo, Exit) :-
 	bottomelement(Exit), !.
-fr_exit_to_prime(Exit, Sg, Hv, Head, Sv, Prime) :-
+fr_exit_to_prime(Sg, Hv, Head, Sv, Exit, _ExtraInfo, Prime) :-
 	fr_restriction(Hv, Exit, Beta_prime),
 		% above line not needed ?! BUT will be more efficient:
 		% subsequent computation with smaller state Beta_prime
@@ -112,15 +115,19 @@ fr_exit_to_prime(Exit, Sg, Hv, Head, Sv, Prime) :-
 
 %----------------------------------------------------------------------------
 
-% fr_project(Call, Vars, Proj)	(S)
+
+% fr_project(_Sg, Vars, _HvFv, Call, Proj) (S)
 % projects Call in terms of all variables of the call environment into
 % Lamda_p in terms of just the call variables Vars
 % Vars : ordered set of variables
 %
-% :- mode fr_project(?,?,o).
-fr_project(Proj, _Vars, Proj):-
+% :- mode fr_project_(?,?,?,?,o).
+fr_project(_Sg,Vars,_HvFv,ASub,Proj) :-
+	fr_project_(ASub,Vars,Proj).
+
+fr_project_(Proj, _Vars, Proj):-
 	bottomelement(Proj), !.
-fr_project(Call, Vars, Proj):-
+fr_project_(Call, Vars, Proj):-
 	fr_restriction_entry(Vars, Call, Proj).
 
 %----------------------------------------------------------------------------
@@ -181,7 +188,7 @@ fr_sort(as(ACo,ACn), as(ACo_sort, ACn_sort)):-
 
 %----------------------------------------------------------------------------
 
-% fr_extend(Prime, Sv, Call, Succ)
+% fr_extend(_Sg, Prime, Sv, Call, Succ)
 % Prime, Call,Succ : <as>;
 % Sv : sorted list of var. iden. occurring in the call of the predicate
 % Let Prime be the abstract success state of the call
@@ -191,23 +198,27 @@ fr_sort(as(ACo,ACn), as(ACo_sort, ACn_sort)):-
 % Then Succ is the abstract success state of the call
 %	(in terms of all the variables in the call environment)
 %
-% :- mode fr_extend(?,?,?,o).
-fr_extend(Prime, _Sv, _Call, Prime):-
+% :- mode fr_extend(?,?,?,?,o).
+fr_extend(_Sg, Prime, _Sv, _Call, Prime):-
 	% bottomelement(Call) will not occur, is checked previously
 	bottomelement(Prime), !.
-fr_extend(as(_ACoprime,ACnprime), Sv, Call, Succ) :- 
+fr_extend(_Sg, as(_ACoprime,ACnprime), Sv, Call, Succ) :- 
 	fr_join(Call, ACnprime, Sv, Succ).
 
 %----------------------------------------------------------------------------
 
-% fr_call_to_success_fact(Proj,Hv,Head,Sv,Sg,Call,Prime,Succ)         
+fr_glb(_ASub0,_ASub1,_ASub) :- compiler_error(op_not_implemented(glb)), fail.
+
+%----------------------------------------------------------------------------
+
+% fr_call_to_success_fact(Proj,Hv,Head,K,Sv,Sg,Call,Prime,Succ)         
 % Proj,Call,Prime,Succ : <as>;
 % Prime = (Proj \Aconj (Sg=Head)) projected onto Sv
 % Succ = Call \Aconj Primen
 %
-fr_call_to_success_fact(Proj,_Hv,_Head,_Sv,_Sg,_Call,Prime,Succ) :-
+fr_call_to_success_fact(Proj,_Hv,_Head,_K,_Sv,_Sg,_Call,Prime,Succ) :-
 	bottomelement(Proj), !, Prime = Proj, Succ = Proj.
-fr_call_to_success_fact(Proj,_Hv,Head,Sv,Sg,Call,Prime,Succ):-
+fr_call_to_success_fact(Proj,_Hv,Head,_K,Sv,Sg,Call,Prime,Succ):-
 	Sg =.. [_|Sargs], Head =.. [_|Hargs],
 	fr_call_head_unif(Sargs, Hargs, Proj, PrimeSvHv),
 	( bottomelement(PrimeSvHv) ->
@@ -220,178 +231,178 @@ fr_call_to_success_fact(Proj,_Hv,Head,Sv,Sg,Call,Prime,Succ):-
 
 %----------------------------------------------------------------------------
 
-% fr_special_builtin(Sg_key, Sg, Type, Condvars)
+% fr_special_builtin(Sg_key, Sg, _Subgoal, Type, Condvars)
 % Determines Type and Condvars based on BuiltinFunctor and Sg
 % note: Condvars : if this is a set of variables, then it is ordered
 %
-% :- mode fr_special_builtin(i,?,o,o).
-fr_special_builtin('=/2',Sg,Type,Condvars):-
+% :- mode fr_special_builtin(i,?,?,o,o).
+fr_special_builtin('=/2',Sg,_Subgoal,Type,Condvars):-
 	Type= '$fd_=', Condvars = Sg .
-fr_special_builtin('</2',Sg,Type,Condvars):- 
+fr_special_builtin('</2',Sg,_Subgoal,Type,Condvars):- 
 	language(clp),!,
 	Type = '$fd_comp', Condvars = Sg . 
-fr_special_builtin('</2',Sg,Type,Condvars):- 
+fr_special_builtin('</2',Sg,_Subgoal,Type,Condvars):- 
 	language(lp),!,
 	Type = '$fd_ground', Condvars = Sg . 
-%% fr_special_builtin('<=/2',Sg,Type,Condvars):- 
+%% fr_special_builtin('<=/2',Sg,_Subgoal,Type,Condvars):- 
 %% 	language(clp),!,
 %% 	Type = '$fd_comp', Condvars = Sg . 
-fr_special_builtin('=</2',Sg,Type,Condvars):- 
+fr_special_builtin('=</2',Sg,_Subgoal,Type,Condvars):- 
 	language(clp),!,
 	Type = '$fd_comp', Condvars = Sg . 
-fr_special_builtin('=</2',Sg,Type,Condvars):- 
+fr_special_builtin('=</2',Sg,_Subgoal,Type,Condvars):- 
 	language(lp),!,
 	Type = '$fd_ground', Condvars = Sg . 
-fr_special_builtin('>/2',Sg,Type,Condvars):- 
+fr_special_builtin('>/2',Sg,_Subgoal,Type,Condvars):- 
 	language(clp),!,
 	Type = '$fd_comp', Condvars = Sg . 
-fr_special_builtin('>/2',Sg,Type,Condvars):- 
+fr_special_builtin('>/2',Sg,_Subgoal,Type,Condvars):- 
 	language(lp),!,
 	Type = '$fd_ground', Condvars = Sg . 
-fr_special_builtin('>=/2',Sg,Type,Condvars):-  
+fr_special_builtin('>=/2',Sg,_Subgoal,Type,Condvars):-  
 	language(clp),!,
 	Type = '$fd_comp', Condvars = Sg .
-fr_special_builtin('>=/2',Sg,Type,Condvars):-  
+fr_special_builtin('>=/2',Sg,_Subgoal,Type,Condvars):-  
 	language(lp),!,
 	Type = '$fd_ground', Condvars = Sg .
-fr_special_builtin('.<./2',Sg,Type,Condvars):- 
+fr_special_builtin('.<./2',Sg,_Subgoal,Type,Condvars):- 
 	Type = '$fd_comp', Condvars = Sg . 
-fr_special_builtin('.=<./2',Sg,Type,Condvars):- 
+fr_special_builtin('.=<./2',Sg,_Subgoal,Type,Condvars):- 
 	Type = '$fd_comp', Condvars = Sg . 
-fr_special_builtin('.>./2',Sg,Type,Condvars):- 
+fr_special_builtin('.>./2',Sg,_Subgoal,Type,Condvars):- 
 	Type = '$fd_comp', Condvars = Sg . 
-fr_special_builtin('.>=./2',Sg,Type,Condvars):-  
+fr_special_builtin('.>=./2',Sg,_Subgoal,Type,Condvars):-  
 	Type = '$fd_comp', Condvars = Sg .
-fr_special_builtin('#/2',Sg,Type,Condvars):-
+fr_special_builtin('#/2',Sg,_Subgoal,Type,Condvars):-
 	Type= '$fd_#', Condvars = Sg .	
-fr_special_builtin('fail/0',_Sg,Type,_Condvars):-   
+fr_special_builtin('fail/0',_Sg,_Subgoal,Type,_Condvars):-   
 	Type = '$fd_fail' .
-fr_special_builtin('true/0',_Sg,'$fd_unchanged',_Condvars).   
-fr_special_builtin('!/0',_Sg,'$fd_unchanged',_Condvars).   
-fr_special_builtin('nl/0',_Sg,'$fd_unchanged',_Condvars).   
-fr_special_builtin('write/1',_Sg,'$fd_unchanged',_Condvars).   
-fr_special_builtin('display/1',_Sg,'$fd_unchanged',_Condvars).
+fr_special_builtin('true/0',_Sg,_Subgoal,'$fd_unchanged',_Condvars).   
+fr_special_builtin('!/0',_Sg,_Subgoal,'$fd_unchanged',_Condvars).   
+fr_special_builtin('nl/0',_Sg,_Subgoal,'$fd_unchanged',_Condvars).   
+fr_special_builtin('write/1',_Sg,_Subgoal,'$fd_unchanged',_Condvars).   
+fr_special_builtin('display/1',_Sg,_Subgoal,'$fd_unchanged',_Condvars).
 %%% PrologIII
-fr_special_builtin('assign/2',Sg,Type,Condvars):-
+fr_special_builtin('assign/2',Sg,_Subgoal,Type,Condvars):-
 	Type = '$fd_ground', Condvars = Sg.
-fr_special_builtin('bound_mult/3',Sg,Type,Condvars):-
+fr_special_builtin('bound_mult/3',Sg,_Subgoal,Type,Condvars):-
 	Type = '$fd_bound_mult', Condvars = Sg.
-fr_special_builtin('cpu_time/1',Sg,Type,Condvars):-
+fr_special_builtin('cpu_time/1',Sg,_Subgoal,Type,Condvars):-
 	Type = '$fd_ground', Condvars = Sg.
-fr_special_builtin('enum/1',Sg,Type,Condvars):-
+fr_special_builtin('enum/1',Sg,_Subgoal,Type,Condvars):-
 	Type = '$fd_ground', Condvars = Sg.
-fr_special_builtin('erase/1',Sg,Type,Condvars):-
+fr_special_builtin('erase/1',Sg,_Subgoal,Type,Condvars):-
 	Type = '$fd_ground', Condvars = Sg.
-fr_special_builtin('line/0',_Sg,'$fd_unchanged',_Condvars).
-fr_special_builtin('min_value/2',Sg,Type,Condvars):-
+fr_special_builtin('line/0',_Sg,_Subgoal,'$fd_unchanged',_Condvars).
+fr_special_builtin('min_value/2',Sg,_Subgoal,Type,Condvars):-
 	Type = '$fd_ground', Condvars = Sg.
-fr_special_builtin('out/1',_Sg,'$fd_unchanged',_Condvars).
-fr_special_builtin('outc/1',_Sg,'$fd_unchanged',_Condvars).
-fr_special_builtin('outl/1',_Sg,'$fd_unchanged',_Condvars).
-fr_special_builtin('outm/1',Sg,Type,Condvars):-
+fr_special_builtin('out/1',_Sg,_Subgoal,'$fd_unchanged',_Condvars).
+fr_special_builtin('outc/1',_Sg,_Subgoal,'$fd_unchanged',_Condvars).
+fr_special_builtin('outl/1',_Sg,_Subgoal,'$fd_unchanged',_Condvars).
+fr_special_builtin('outm/1',Sg,_Subgoal,Type,Condvars):-
 	Type = '$fd_ground', Condvars = Sg.
-fr_special_builtin('outml/1',Sg,Type,Condvars):-
+fr_special_builtin('outml/1',Sg,_Subgoal,Type,Condvars):-
 	Type = '$fd_ground', Condvars = Sg.
-fr_special_builtin('recorda/3',Sg,Type,Condvars):-
+fr_special_builtin('recorda/3',Sg,_Subgoal,Type,Condvars):-
 	Type = '$fd_ground', Condvars = Sg.
 	% VD : recorda can be improved :
 	% error (-> bottom) if X is free in call AC
-fr_special_builtin('recorded/3',Sg,Type,Condvars):-
+fr_special_builtin('recorded/3',Sg,_Subgoal,Type,Condvars):-
 	Type = '$fd_ground', Condvars = Sg.
-fr_special_builtin('reset_cpu_time/0',_Sg,'$fd_unchanged',_Condvars).
-fr_special_builtin('val/2',Sg,Type,Condvars):-
+fr_special_builtin('reset_cpu_time/0',_Sg,_Subgoal,'$fd_unchanged',_Condvars).
+fr_special_builtin('val/2',Sg,_Subgoal,Type,Condvars):-
 	Type = '$fd_ground', Condvars = Sg.
-fr_special_builtin('$::/2',Sg,Type,Condvars):-
+fr_special_builtin('$::/2',Sg,_Subgoal,Type,Condvars):-
 	Type = '$fd_$::', Condvars = Sg.
 %%% CLP(R)
-fr_special_builtin('ctime/1',Sg,Type,Condvars):-
+fr_special_builtin('ctime/1',Sg,_Subgoal,Type,Condvars):-
 	Type = '$fd_ground', Condvars = Sg.
-fr_special_builtin('dump/1',_Sg,'$fd_unchanged',_Condvars).
-fr_special_builtin('inf/2',Sg,'$fd_ground',Sg).
-fr_special_builtin('floor/2',Sg,'$fd_ground',Sg).
-fr_special_builtin('printf/2',_Sg,'$fd_unchanged',_Condvars).
-fr_special_builtin('ztime/0',_Sg,'$fd_unchanged',_Condvars).
+fr_special_builtin('dump/1',_Sg,_Subgoal,'$fd_unchanged',_Condvars).
+fr_special_builtin('inf/2',Sg,_Subgoal,'$fd_ground',Sg).
+fr_special_builtin('floor/2',Sg,_Subgoal,'$fd_ground',Sg).
+fr_special_builtin('printf/2',_Sg,_Subgoal,'$fd_unchanged',_Condvars).
+fr_special_builtin('ztime/0',_Sg,_Subgoal,'$fd_unchanged',_Condvars).
 %%% VD added 25/01/95
 % general
-fr_special_builtin('listing/0',_Sg,'$fd_unchanged',_Condvars).
-fr_special_builtin('listing/1',_Sg,'$fd_unchanged',_Condvars).
-fr_special_builtin('repeat/0',_Sg,'$fd_unchanged',_Condvars).
-fr_special_builtin('seen/0',_Sg,'$fd_unchanged',_Condvars).
-fr_special_builtin('told/0',_Sg,'$fd_unchanged',_Condvars).
-fr_special_builtin('read/1',Sg,'$fd_ground',Sg).
-fr_special_builtin('write/1',_Sg,'$fd_unchanged',_Condvars).
+fr_special_builtin('listing/0',_Sg,_Subgoal,'$fd_unchanged',_Condvars).
+fr_special_builtin('listing/1',_Sg,_Subgoal,'$fd_unchanged',_Condvars).
+fr_special_builtin('repeat/0',_Sg,_Subgoal,'$fd_unchanged',_Condvars).
+fr_special_builtin('seen/0',_Sg,_Subgoal,'$fd_unchanged',_Condvars).
+fr_special_builtin('told/0',_Sg,_Subgoal,'$fd_unchanged',_Condvars).
+fr_special_builtin('read/1',Sg,_Subgoal,'$fd_ground',Sg).
+fr_special_builtin('write/1',_Sg,_Subgoal,'$fd_unchanged',_Condvars).
 % in SICStus and PrologIII
-fr_special_builtin('atom/1',Sg,'$fd_ground',Sg).
-fr_special_builtin('atomic/1',Sg,'$fd_ground',Sg).
-fr_special_builtin('assert/1',_Sg,'$fd_unchanged',_Condvars).
-fr_special_builtin('asserta/1',_Sg,'$fd_unchanged',_Condvars).
-fr_special_builtin('assertz/1',_Sg,'$fd_unchanged',_Condvars).
-fr_special_builtin('false/0',_Sg,'$fd_fail',_Condvars).
-fr_special_builtin('ground/1',Sg,'$fd_ground',Sg).
-fr_special_builtin('current_op/3',Sg,'$fd_ground',Sg).
-fr_special_builtin('integer/1',Sg,'$fd_ground',Sg).
-fr_special_builtin('length/2',Sg,'$fd_ground',Sg).
-fr_special_builtin('=../2',Sg,'$fd_ground',Sg).
-fr_special_builtin('functor/3',Sg,'$fd_ground',Sg).
-fr_special_builtin('debug/0',_Sg,'$fd_unchanged',_Condvars).
-fr_special_builtin('$metachoice/1',Sg,'$fd_ground',Sg).
-fr_special_builtin('$metacut/1',Sg,'$fd_ground',Sg).
-fr_special_builtin('var/1',_Sg,'$fd_unchanged',_Condvars).
-fr_special_builtin('nonvar/1',Sg,'$fd_nonvar',Sg).
-fr_special_builtin('writeq/1',_Sg,'$fd_unchanged',_Condvars).
-fr_special_builtin('name/2',Sg,'$fd_ground',Sg).
-fr_special_builtin('numbervars/3',Sg,'$fd_ground',Sg).
+fr_special_builtin('atom/1',Sg,_Subgoal,'$fd_ground',Sg).
+fr_special_builtin('atomic/1',Sg,_Subgoal,'$fd_ground',Sg).
+fr_special_builtin('assert/1',_Sg,_Subgoal,'$fd_unchanged',_Condvars).
+fr_special_builtin('asserta/1',_Sg,_Subgoal,'$fd_unchanged',_Condvars).
+fr_special_builtin('assertz/1',_Sg,_Subgoal,'$fd_unchanged',_Condvars).
+fr_special_builtin('false/0',_Sg,_Subgoal,'$fd_fail',_Condvars).
+fr_special_builtin('ground/1',Sg,_Subgoal,'$fd_ground',Sg).
+fr_special_builtin('current_op/3',Sg,_Subgoal,'$fd_ground',Sg).
+fr_special_builtin('integer/1',Sg,_Subgoal,'$fd_ground',Sg).
+fr_special_builtin('length/2',Sg,_Subgoal,'$fd_ground',Sg).
+fr_special_builtin('=../2',Sg,_Subgoal,'$fd_ground',Sg).
+fr_special_builtin('functor/3',Sg,_Subgoal,'$fd_ground',Sg).
+fr_special_builtin('debug/0',_Sg,_Subgoal,'$fd_unchanged',_Condvars).
+fr_special_builtin('$metachoice/1',Sg,_Subgoal,'$fd_ground',Sg).
+fr_special_builtin('$metacut/1',Sg,_Subgoal,'$fd_ground',Sg).
+fr_special_builtin('var/1',_Sg,_Subgoal,'$fd_unchanged',_Condvars).
+fr_special_builtin('nonvar/1',Sg,_Subgoal,'$fd_nonvar',Sg).
+fr_special_builtin('writeq/1',_Sg,_Subgoal,'$fd_unchanged',_Condvars).
+fr_special_builtin('name/2',Sg,_Subgoal,'$fd_ground',Sg).
+fr_special_builtin('numbervars/3',Sg,_Subgoal,'$fd_ground',Sg).
 % SICStus3 (ISO)
-fr_special_builtin('=\\=/2',Sg,'$fd_ground',Sg).
+fr_special_builtin('=\\=/2',Sg,_Subgoal,'$fd_ground',Sg).
 % SICStus2.x
-% fr_special_builtin('=\=/2',Sg,'$fd_ground',Sg).
-fr_special_builtin('is/2',Sg,'$fd_ground',Sg).
-fr_special_builtin('statistics/2',Sg,'$fd_ground',Sg).
-fr_special_builtin('tab/2',Sg,'$fd_ground',Sg).
-fr_special_builtin('tab/1',Sg,'$fd_ground',Sg).
-fr_special_builtin('ttynl/0',_Sg,'$fd_unchanged',_Condvars).
-fr_special_builtin('ttyput/1',Sg,'$fd_ground',Sg).
-fr_special_builtin('get_code/1',Sg,'$fd_ground',Sg).
-fr_special_builtin('sort/2',sort(X,Y),'$fd_=','='(X,Y)).
-fr_special_builtin('keysort/2',keysort(X,Y),'$fd_=','='(X,Y)).
-fr_special_builtin('@</2',_Sg,'$fd_unchanged',_Condvars).
-fr_special_builtin('@>/2',_Sg,'$fd_unchanged',_Condvars).
-fr_special_builtin('@=</2',_Sg,'$fd_unchanged',_Condvars).
-fr_special_builtin('@>=/2',_Sg,'$fd_unchanged',_Condvars).
+% fr_special_builtin('=\=/2',Sg,_Subgoal,'$fd_ground',Sg).
+fr_special_builtin('is/2',Sg,_Subgoal,'$fd_ground',Sg).
+fr_special_builtin('statistics/2',Sg,_Subgoal,'$fd_ground',Sg).
+fr_special_builtin('tab/2',Sg,_Subgoal,'$fd_ground',Sg).
+fr_special_builtin('tab/1',Sg,_Subgoal,'$fd_ground',Sg).
+fr_special_builtin('ttynl/0',_Sg,_Subgoal,'$fd_unchanged',_Condvars).
+fr_special_builtin('ttyput/1',Sg,_Subgoal,'$fd_ground',Sg).
+fr_special_builtin('get_code/1',Sg,_Subgoal,'$fd_ground',Sg).
+fr_special_builtin('sort/2',sort(X,Y),_Subgoal,'$fd_=','='(X,Y)).
+fr_special_builtin('keysort/2',keysort(X,Y),_Subgoal,'$fd_=','='(X,Y)).
+fr_special_builtin('@</2',_Sg,_Subgoal,'$fd_unchanged',_Condvars).
+fr_special_builtin('@>/2',_Sg,_Subgoal,'$fd_unchanged',_Condvars).
+fr_special_builtin('@=</2',_Sg,_Subgoal,'$fd_unchanged',_Condvars).
+fr_special_builtin('@>=/2',_Sg,_Subgoal,'$fd_unchanged',_Condvars).
 % SICStus3 (ISO)
-fr_special_builtin('\\==/2',_Sg,'$fd_unchanged',_Condvars).
+fr_special_builtin('\\==/2',_Sg,_Subgoal,'$fd_unchanged',_Condvars).
 % SICStus2.x
-% fr_special_builtin('\==/2',_Sg,'$fd_unchanged',_Condvars).
-fr_special_builtin('==/2',_Sg,'$fd_unchanged',_Condvars).
-fr_special_builtin('=:=/2',Sg,'$fd_ground',Sg).
-fr_special_builtin('arg/3',Sg,'$fd_arg',Sg).	% in SICStus and PrologIII
+% fr_special_builtin('\==/2',_Sg,_Subgoal,'$fd_unchanged',_Condvars).
+fr_special_builtin('==/2',_Sg,_Subgoal,'$fd_unchanged',_Condvars).
+fr_special_builtin('=:=/2',Sg,_Subgoal,'$fd_ground',Sg).
+fr_special_builtin('arg/3',Sg,_Subgoal,'$fd_arg',Sg).	% in SICStus and PrologIII
 						% but different functionality
 % in SICStus and CLP(R)
-fr_special_builtin('abort/0',_Sg,'$fd_fail',_Condvars).
-fr_special_builtin('halt/0',_Sg,'$fd_fail',_Condvars).
-fr_special_builtin('assert/1',_Sg,'$fd_unchanged',_Condvars).
-fr_special_builtin('asserta/1',_Sg,'$fd_unchanged',_Condvars).
-fr_special_builtin('assertz/1',_Sg,'$fd_unchanged',_Condvars).
-fr_special_builtin('print/1',_Sg,'$fd_unchanged',_Condvars).
+fr_special_builtin('abort/0',_Sg,_Subgoal,'$fd_fail',_Condvars).
+fr_special_builtin('halt/0',_Sg,_Subgoal,'$fd_fail',_Condvars).
+fr_special_builtin('assert/1',_Sg,_Subgoal,'$fd_unchanged',_Condvars).
+fr_special_builtin('asserta/1',_Sg,_Subgoal,'$fd_unchanged',_Condvars).
+fr_special_builtin('assertz/1',_Sg,_Subgoal,'$fd_unchanged',_Condvars).
+fr_special_builtin('print/1',_Sg,_Subgoal,'$fd_unchanged',_Condvars).
 % in PrologIII
-fr_special_builtin('sys_command/1',Sg,'$fd_ground',Sg).
+fr_special_builtin('sys_command/1',Sg,_Subgoal,'$fd_ground',Sg).
 % in SICStus
-fr_special_builtin('debugging/0',_Sg,'$fd_unchanged',_Condvars).
-fr_special_builtin('garbage_collect/0',_Sg,'$fd_unchanged',_Condvars).
-fr_special_builtin('gc/0',_Sg,'$fd_unchanged',_Condvars).
-fr_special_builtin('nonzero/1',_Sg,'$fd_unchanged',_Condvars).
-fr_special_builtin('$metacut/1',Sg,'$fd_ground',Sg).   
-fr_special_builtin('format/2',format(X,_),'$fd_ground',f(X)).   
-fr_special_builtin('nogc/0',_Sg,'$fd_unchanged',_Condvars).
-fr_special_builtin('otherwise/0',_Sg,'$fd_unchanged',_Condvars).
-fr_special_builtin('start_event_trace/0',_Sg,'$fd_unchanged',_Condvars).
-fr_special_builtin('stop_event_trace/0',_Sg,'$fd_unchanged',_Condvars).
-fr_special_builtin('ttyflush/0',_Sg,'$fd_unchanged',_Condvars).
-fr_special_builtin('ttynl/0',_Sg,'$fd_unchanged',_Condvars).
+fr_special_builtin('debugging/0',_Sg,_Subgoal,'$fd_unchanged',_Condvars).
+fr_special_builtin('garbage_collect/0',_Sg,_Subgoal,'$fd_unchanged',_Condvars).
+fr_special_builtin('gc/0',_Sg,_Subgoal,'$fd_unchanged',_Condvars).
+fr_special_builtin('nonzero/1',_Sg,_Subgoal,'$fd_unchanged',_Condvars).
+fr_special_builtin('$metacut/1',Sg,_Subgoal,'$fd_ground',Sg).   
+fr_special_builtin('format/2',format(X,_),_Subgoal,'$fd_ground',f(X)).   
+fr_special_builtin('nogc/0',_Sg,_Subgoal,'$fd_unchanged',_Condvars).
+fr_special_builtin('otherwise/0',_Sg,_Subgoal,'$fd_unchanged',_Condvars).
+fr_special_builtin('start_event_trace/0',_Sg,_Subgoal,'$fd_unchanged',_Condvars).
+fr_special_builtin('stop_event_trace/0',_Sg,_Subgoal,'$fd_unchanged',_Condvars).
+fr_special_builtin('ttyflush/0',_Sg,_Subgoal,'$fd_unchanged',_Condvars).
+fr_special_builtin('ttynl/0',_Sg,_Subgoal,'$fd_unchanged',_Condvars).
 
 %----------------------------------------------------------------------------
 
-% fr_success_builtin(Type, Sv_uns,Condvars,Call,Succ).
+% fr_success_builtin(Type, Sv_uns,Condvars,_HvFv_u,Call,Succ).
 % Abstract interpretation of builtins
 % (note: direct computation, not via projection and extension)
 % Type : indicates which kind of special builtin has to be treated
@@ -401,29 +412,29 @@ fr_special_builtin('ttynl/0',_Sg,'$fd_unchanged',_Condvars).
 % Sv_uns : vars in call of builtin
 % Call,Succ :<as>
 %
-% :- mode fr_success_builtin(i,?,?,?,o).
+% :- mode fr_success_builtin(i,?,?,?,?,o).
 
-fr_success_builtin(_Type, _Sv_uns, _Condvars, Call, Succ) :-
+fr_success_builtin(_Type,_Sv_uns,_Condvars,_HvFv_u,Call,Succ) :-
 	bottomelement(Call), !, Succ=Call.
 
-fr_success_builtin('$fd_unchanged',_Sv_uns,_Condvars,Call,Call).
+fr_success_builtin('$fd_unchanged',_Sv_uns,_Condvars,_HvFv_u,Call,Call).
 
-fr_success_builtin('$fd_fail',_Sv_uns,_Condvars,_Call,Bottom):-
+fr_success_builtin('$fd_fail',_Sv_uns,_Condvars,_HvFv_u,_Call,Bottom):-
 	bottomelement(Bottom).
 
-fr_success_builtin('$fd_=',_Sv_uns,Sg,Call,Succ):-
+fr_success_builtin('$fd_=',_Sv_uns,Sg,_HvFv_u,Call,Succ):-
 	Sg = '='(L,R),
 	fr_success_builtin_eq_noteq(L, R, Call, Succ).
 
-fr_success_builtin('$fd_#',_Sv_uns,Sg,Call,Succ):-
+fr_success_builtin('$fd_#',_Sv_uns,Sg,_HvFv_u,Call,Succ):-
 	Sg = '#'(L,R),
 	fr_success_builtin_eq_noteq(L, R, Call, Succ).
 
-fr_success_builtin('$fd_comp',_Sv_uns,Sg,Call,Succ):-
+fr_success_builtin('$fd_comp',_Sv_uns,Sg,_HvFv_u,Call,Succ):-
 	Sg =.. [Comp,L,R],
 	fr_success_builtin_compare(Comp, L, R, Call, Succ).
 
-fr_success_builtin('$fd_$::',_Sv_uns,Sg,Call,Succ):-
+fr_success_builtin('$fd_$::',_Sv_uns,Sg,_HvFv_u,Call,Succ):-
 	Sg = '$::'(L,N),
 	( var(L), var(N) ->
 		ss_empty(SS1),
@@ -435,12 +446,12 @@ fr_success_builtin('$fd_$::',_Sv_uns,Sg,Call,Succ):-
 		bottomelement(Succ) 
 	).
 
-fr_success_builtin('$fd_ground',Sv_uns,Sg,Call,Succ):-
+fr_success_builtin('$fd_ground',Sv_uns,Sg,_HvFv_u,Call,Succ):-
 	Sg =.. [P | Args],
 	fr_success_builtin_ground(P,Args,Sv_uns,Call,
 					Succ).
                                                                       
-fr_success_builtin('$fd_bound_mult',_Sv_uns,Sg,Call,Succ):-
+fr_success_builtin('$fd_bound_mult',_Sv_uns,Sg,_HvFv_u,Call,Succ):-
 	Sg =.. [_ | Args],
 	Args = [A1, A2, A3],
 	( numerical(A1), numerical(A2), numerical(A3),
@@ -450,14 +461,14 @@ fr_success_builtin('$fd_bound_mult',_Sv_uns,Sg,Call,Succ):-
 		bottomelement(Succ)
 	).                   
 
-fr_success_builtin('$fd_nonvar',_Sv_uns,nonvar(X),Call,Succ):-
+fr_success_builtin('$fd_nonvar',_Sv_uns,nonvar(X),_HvFv_u,Call,Succ):-
 	fr_nonfree_arg(X,Call),!,
 	Succ = Call.
-fr_success_builtin('$fd_nonvar',_Sv_uns,_Sg,_Call,Succ):-
+fr_success_builtin('$fd_nonvar',_Sv_uns,_Sg,_HvFv_u,_Call,Succ):-
 	bottomelement(Succ).
 
 
-fr_success_builtin('$fd_arg',_Sv_uns,Sg,Call,Succ):-
+fr_success_builtin('$fd_arg',_Sv_uns,Sg,_HvFv_u,Call,Succ):-
 	Sg =.. [_,A1,A2,A3],
 	( numerical(A1), fr_ground_arg(A1, Call) ->
 	  ( language(lp) -> % In SICStus A2 must be a compound ter
@@ -523,27 +534,31 @@ if_not_nil(_,X,[X|Xs],Xs).
 
 %----------------------------------------------------------------------------
 
-% fr_unknown_call(Vars,Call,Succ)
+fr_asub_to_native(ASub,Qv,_OutFlag,OutputUser,[]) :- fr_output_interface(ASub,Qv,OutputUser).
+
+%----------------------------------------------------------------------------
+
+% fr_unknown_call(_Sg,Vars,Call,Succ)
 % Gives the "top" value (mode any) for the variables Vars involved in
 % a literal whose definition is not present, and joins this top abstraction
 % with Call yielding Succ
 % Is used for metacalls
 % req: Vars is ordered 
 %
-fr_unknown_call(_Vars,Call,Call):-
+fr_unknown_call(_Sg,_Vars,Call,Call):-
 	bottomelement(Call), !.
-fr_unknown_call(Vars,Call,Succ) :-
+fr_unknown_call(_Sg,Vars,Call,Succ) :-
 	ss_make_singl(Vars, AlfaC),
 	fr_join(Call, AlfaC, Vars, Succ).
 
 %----------------------------------------------------------------------------
 
-% fr_unknown_entry(Vars,Call)
+% fr_unknown_entry(_Sg,Vars,Call)
 % Gives the "top" value (mode any) for the variables Vars,
 % resulting in the abstract constraint Call
 % req: Vars is ordered 
 %
-fr_unknown_entry(Vars, as(ACo,ACn)) :-
+fr_unknown_entry(_Sg, Vars, as(ACo,ACn)) :-
 %	ss_make_singl(Vars, ACo), ss_empty(ACn). replaced by  16/01/95
 %	what is used for query is Call-info, not projected info !
 	ss_empty(ACo), ss_make_singl(Vars, ACn).
@@ -591,7 +606,7 @@ fr_less_or_equal(as(ACo1,ACn1), as(ACo2,ACn2)) :-
 % Similar to the one above but with Info with the form free(ListFreeVars)
 % instead of [mode(X,f),mode(Y,g),..] etc
 
-fr_input_user_interface(FreeVars,Vars,Call):-
+fr_input_user_interface(FreeVars,Vars,Call,_Sg,_MaybeCallASub):-
 	may_be_var(FreeVars),
 	ord_subtract(Vars,FreeVars,NonFreeVars),
 	ss_empty(ACo), 

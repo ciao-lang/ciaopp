@@ -1,7 +1,6 @@
 
 :- module(fr_shared,
 	[ bottomelement/1,
-	  compiler_error/1,
 	  get_type/2,
 	  get_useful_AS/2,
 	  get_var_groups/3,
@@ -272,12 +271,5 @@ piii_restricted_length2([_|_]). % List contains a real element
 %% 	ss_add_el(U,Ci,Cinew),
 %% 	union_and_add(T,S2,Cinew,C).
 
-compiler_error(piii_lists):-
-	warning_message("error in translation of piii-lists").
-compiler_error(cons_lists):-
-	warning_message("normalisation problem: L and N in L::N are not variables").
-compiler_error(arg_not_normal):-
-	warning_message("normalisation problem: A2 in arg(A1,A2,A3) should be a variable").
-compiler_error(not_implemented(AbsInt,SgKey)):-
-	error_message("builtin not yet implemented in ~w: ~w",
-		[AbsInt,SgKey]).
+
+

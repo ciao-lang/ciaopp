@@ -113,32 +113,27 @@ empty_entry(pdb,Qv,Call) :- !, pdb_empty_entry(Qv,Call).
 % ---------------------------------------------------------------------------
 :- use_module(domain(fr_top)).
 aidomain(fr).
-call_to_entry(fr,_Sv,Sg,Hv,Head,_K,_Fv,Proj,Entry,_ExtraInfo) :- !, fr_call_to_entry(Sg,Hv,Head,Proj,Entry).
-exit_to_prime(fr,Sg,Hv,Head,Sv,Exit,_ExtraInfo,Prime) :- !, fr_exit_to_prime(Exit,Sg,Hv,Head,Sv,Prime).
-project(fr,_Sg,Vars,_HvFv,ASub,Proj) :- !, fr_project(ASub,Vars,Proj).
+call_to_entry(fr,Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo) :- !, fr_call_to_entry(Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo).
+exit_to_prime(fr,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime) :- !, fr_exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime).
+project(fr,Sg,Vars,HvFv,ASub,Proj) :- !, fr_project(Sg,Vars,HvFv,ASub,Proj).
 %% VD specific version of lub used at procedure exit
 compute_lub(fr,ListASub,LubASub) :- !, fr_compute_lub(ListASub,LubASub).
 identical_abstract(fr,ASub1,ASub2) :- !, fr_identical_abstract(ASub1,ASub2).
 %% compute_lub_general(fr,ListASub,LubASub) :- !, fr_compute_lub_general(ListASub,LubASub).
 %% do_compute_lub(AbsInt,SubstList,Subst) :- AbsInt = fr, !, compute_lub_general(AbsInt,SubstList,Subst).
 abs_sort(fr,ASub,ASub_s) :- !, fr_sort(ASub,ASub_s).
-extend(fr,_Sg,Prime,Sv,Call,Succ) :- !, fr_extend(Prime,Sv,Call,Succ).
+extend(fr,Sg,Prime,Sv,Call,Succ) :- !, fr_extend(Sg,Prime,Sv,Call,Succ).
 less_or_equal(fr,ASub0,ASub1) :- !, fr_less_or_equal(ASub0,ASub1).
 glb(fr,ASub0,ASub1,ASub) :- !, fr_glb(ASub0,ASub1,ASub).
-call_to_success_fact(fr,Sg,Hv,Head,_K,Sv,Call,Proj,Prime,Succ) :- !, fr_call_to_success_fact(Proj,Hv,Head,Sv,Sg,Call,Prime,Succ).
-special_builtin(fr,SgKey,Sg,_Subgoal,Type,Condvars) :- !, fr_special_builtin(SgKey,Sg,Type,Condvars).
-success_builtin(fr,Type,Sv_uns,Condvars,_HvFv_u,Call,Succ) :- !, fr_success_builtin(Type,Sv_uns,Condvars,Call,Succ).
+call_to_success_fact(fr,Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ) :- !, fr_call_to_success_fact(Proj,Hv,Head,K,Sv,Sg,Call,Prime,Succ).
+special_builtin(fr,SgKey,Sg,Subgoal,Type,Condvars) :- !, fr_special_builtin(SgKey,Sg,Subgoal,Type,Condvars).
+success_builtin(fr,Type,Sv_uns,Condvars,HvFv_u,Call,Succ) :- !, fr_success_builtin(Type,Sv_uns,Condvars,HvFv_u,Call,Succ).
 input_interface(fr,InputUser,Kind,Struct0,Struct1) :- !, fr_input_interface(InputUser,Kind,Struct0,Struct1).
-input_user_interface(fr,InputUser,Qv,ASub,_Sg,_MaybeCallASub) :- !, fr_input_user_interface(InputUser,Qv,ASub).
+input_user_interface(fr,InputUser,Qv,ASub,Sg,MaybeCallASub) :- !, fr_input_user_interface(InputUser,Qv,ASub,Sg,MaybeCallASub).
 asub_to_native(fr,ASub,Qv,OutFlag,OutputUser,Comps) :- !, fr_asub_to_native(ASub,Qv,OutFlag,OutputUser,Comps).
-unknown_call(fr,_Sg,Vars,Call,Succ) :- !, fr_unknown_call(Vars,Call,Succ).
-unknown_entry(fr,_Sg,Qv,Call) :- !, fr_unknown_entry(Qv,Call).
+unknown_call(fr,Sg,Vars,Call,Succ) :- !, fr_unknown_call(Sg,Vars,Call,Succ).
+unknown_entry(fr,Sg,Qv,Call) :- !, fr_unknown_entry(Sg,Qv,Call).
 empty_entry(fr,Qv,Call) :- !, fr_empty_entry(Qv,Call).
-%
-:- use_module(ciaopp(plai/plai_errors), [compiler_error/1]).
-fr_glb(_ASub0,_ASub1,_ASub) :- compiler_error(op_not_implemented(glb)), fail.
-%% fr_compute_lub_general(ListASub,ListASub).
-fr_asub_to_native(ASub,Qv,_OutFlag,OutputUser,[]) :- fr_output_interface(ASub,Qv,OutputUser).
 % ---------------------------------------------------------------------------
 :- use_module(domain(fd)).
 aidomain(frdef).
@@ -154,7 +149,7 @@ extend(frdef,_Sg,Prime,Sv,Call,Succ) :- !, fd_extend(Prime,Sv,Call,Succ).
 less_or_equal(frdef,ASub0,ASub1) :- !, fd_less_or_equal(ASub0,ASub1).
 glb(frdef,ASub0,ASub1,ASub) :- !, fd_glb(ASub0,ASub1,ASub).
 call_to_success_fact(frdef,Sg,Hv,Head,_K,Sv,Call,Proj,Prime,Succ) :- !, fd_call_to_success_fact(Proj,Sg,Hv,Head,Sv,Call,Prime,Succ).
-special_builtin(frdef,SgKey,Sg,_Subgoal,(TypeF,TypeD),(CondF,CondD)) :- !, def_special_builtin(SgKey,Sg,TypeD,CondD), fr_special_builtin(SgKey,Sg,TypeF,CondF).
+special_builtin(frdef,SgKey,Sg,Subgoal,(TypeF,TypeD),(CondF,CondD)) :- !, def_special_builtin(SgKey,Sg,TypeD,CondD), fr_special_builtin(SgKey,Sg,Subgoal,TypeF,CondF).
 success_builtin(frdef,Type,Sv_uns,Condvars,_HvFv_u,Call,Succ) :- !, fd_success_builtin(Type,Sv_uns,Condvars,Call,Succ).
 input_interface(frdef,InputUser,Kind,Struct0,Struct1) :- !, fd_input_interface(InputUser,Kind,Struct0,Struct1).
 input_user_interface(frdef,InputUser,Qv,ASub,_Sg,_MaybeCallASub) :- !, fd_input_user_interface(InputUser,Qv,ASub).

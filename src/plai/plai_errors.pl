@@ -59,7 +59,7 @@ compiler_error_(del_no_conds):-
 	warning_message("delay conditions non-normalized").
 compiler_error_(del_var_conds):-
 	warning_message("variable in delay condition").
-% min_*
+% fr, min_*
 compiler_error_(piii_lists):-
 	warning_message("error in translation of piii-lists").
 compiler_error_(cons_lists):-

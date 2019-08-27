@@ -31,6 +31,8 @@
 :- use_module(library(sort), [sort/2]).
 :- use_module(library(terms_vars), [varset/2]).
 
+:- use_module(ciaopp(plai/plai_errors), [compiler_error/1]).
+
 :- include(domain(fd_top)).
 :- include(domain(fd_aux)).
 
