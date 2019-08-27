@@ -248,6 +248,7 @@ sort_all_substs_lub(yes,SubstList_uns,AbsInt,Vars,Subst):- !,
 sort_all_substs_lub(no,SubstList_uns,AbsInt,Vars,Substs):-
 	sort_flatten_all_substs(SubstList_uns,AbsInt,Vars,Substs,[]).
 
+% TODO: different definition at domain_dep.pl
 %% May not be correct!!!
 do_compute_lub([],_AbsInt,'$bottom'):- !.
 do_compute_lub(SubstList,AbsInt,Subst):-

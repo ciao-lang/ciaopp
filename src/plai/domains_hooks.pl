@@ -14,11 +14,9 @@
 :- discontiguous(widencall/4).
 :- discontiguous(widen/4).
 :- discontiguous(compute_lub/3).
-%:- discontiguous(compute_lub_general/3).
 :- discontiguous(compute_clauses_lub/4).
 :- discontiguous(fixpoint_covered/3).
 :- discontiguous(fixpoint_covered_gfp/3).
-%:- discontiguous(do_compute_lub/3).
 :- discontiguous(identical_abstract/3).
 :- discontiguous(abs_sort/3).
 :- discontiguous(extend/6).
@@ -30,11 +28,6 @@
 :- discontiguous(special_builtin/6).
 :- discontiguous(combined_special_builtin/3).
 :- discontiguous(body_succ_builtin/9).
-% TODO: body_succ_builtin/9: (old comment) careful with: sha lsignshfr lsigndef 
-%
-% These do not have special(_), so ok:
-% 	AbsInt \== def, AbsInt \== fr, AbsInt \== frdef,
-% These do, special care: shareson shfrson
 :- discontiguous(split_combined_domain/4).
 :- discontiguous(success_builtin/7).
 :- discontiguous(call_to_success_builtin/7).
@@ -116,11 +109,8 @@ aidomain(fr).
 call_to_entry(fr,Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo) :- !, fr_call_to_entry(Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo).
 exit_to_prime(fr,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime) :- !, fr_exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime).
 project(fr,Sg,Vars,HvFv,ASub,Proj) :- !, fr_project(Sg,Vars,HvFv,ASub,Proj).
-%% VD specific version of lub used at procedure exit
 compute_lub(fr,ListASub,LubASub) :- !, fr_compute_lub(ListASub,LubASub).
 identical_abstract(fr,ASub1,ASub2) :- !, fr_identical_abstract(ASub1,ASub2).
-%% compute_lub_general(fr,ListASub,LubASub) :- !, fr_compute_lub_general(ListASub,LubASub).
-%% do_compute_lub(AbsInt,SubstList,Subst) :- AbsInt = fr, !, compute_lub_general(AbsInt,SubstList,Subst).
 abs_sort(fr,ASub,ASub_s) :- !, fr_sort(ASub,ASub_s).
 extend(fr,Sg,Prime,Sv,Call,Succ) :- !, fr_extend(Sg,Prime,Sv,Call,Succ).
 less_or_equal(fr,ASub0,ASub1) :- !, fr_less_or_equal(ASub0,ASub1).
@@ -134,6 +124,7 @@ asub_to_native(fr,ASub,Qv,OutFlag,OutputUser,Comps) :- !, fr_asub_to_native(ASub
 unknown_call(fr,Sg,Vars,Call,Succ) :- !, fr_unknown_call(Sg,Vars,Call,Succ).
 unknown_entry(fr,Sg,Qv,Call) :- !, fr_unknown_entry(Sg,Qv,Call).
 empty_entry(fr,Qv,Call) :- !, fr_empty_entry(Qv,Call).
+% TODO: body_succ_builtin/9: (old comment) these do not have special(_), so ok: AbsInt \== def, AbsInt \== fr, AbsInt \== frdef
 % ---------------------------------------------------------------------------
 :- use_module(domain(fd)).
 aidomain(frdef).
@@ -142,10 +133,8 @@ exit_to_prime(frdef,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime) :- !, fd_exit_to_prime(E
 project(frdef,_Sg,Vars,_HvFv,ASub,Proj) :- !, fd_project(ASub,Vars,Proj).
 compute_lub(frdef,ListASub,LubASub) :- !, fd_compute_lub(ListASub,LubASub).
 identical_abstract(frdef,ASub1,ASub2) :- !, fd_identical_abstract(ASub1,ASub2).
-%% compute_lub_general(frdef,ListASub,LubASub) :- !, fd_compute_lub_general(ListASub,LubASub).
-%% do_compute_lub(AbsInt,SubstList,Subst) :- AbsInt = frdef, !, compute_lub_general(AbsInt,SubstList,Subst).
 abs_sort(frdef,ASub,ASub_s) :- !, fd_sort(ASub,ASub_s).
-extend(frdef,_Sg,Prime,Sv,Call,Succ) :- !, fd_extend(Prime,Sv,Call,Succ).
+extend(frdef,Sg,Prime,Sv,Call,Succ) :- !, fd_extend(Sg,Prime,Sv,Call,Succ).
 less_or_equal(frdef,ASub0,ASub1) :- !, fd_less_or_equal(ASub0,ASub1).
 glb(frdef,ASub0,ASub1,ASub) :- !, fd_glb(ASub0,ASub1,ASub).
 call_to_success_fact(frdef,Sg,Hv,Head,_K,Sv,Call,Proj,Prime,Succ) :- !, fd_call_to_success_fact(Proj,Sg,Hv,Head,Sv,Call,Prime,Succ).
@@ -160,7 +149,7 @@ empty_entry(frdef,Qv,Call) :- !, fd_empty_entry(Qv,Call).
 %
 :- use_module(ciaopp(plai/plai_errors), [compiler_error/1]).
 fd_glb(_ASub0,_ASub1,_ASub) :- compiler_error(op_not_implemented(glb)), fail.
-%% fd_compute_lub_general(ListASub,ListASub).
+% TODO: body_succ_builtin/9: (old comment) these do not have special(_), so ok: AbsInt \== def, AbsInt \== fr, AbsInt \== frdef
 % ---------------------------------------------------------------------------
 % TODO: why?
 %% :- include(ciaopp(plai/fros)).
@@ -245,6 +234,7 @@ unknown_entry(lsigndef,_Sg,Qv,Call) :- !, lsigndef_unknown_entry(Qv,Call).
 empty_entry(lsigndef,Qv,Call) :- !, lsigndef_empty_entry(Qv,Call).
 %
 :- use_module(ciaopp(plai/plai_errors), [compiler_error/1]).
+% lsigndef_body_succ_builtin(_,_,_,_,_,_). % TODO: be careful (old comment)
 lsigndef_call_to_entry(_,_,_,_,_,_,_). 
 lsigndef_call_to_success_fact(_,_,_,_,_,_).
 lsigndef_compute_lub(_,_).
@@ -280,7 +270,7 @@ unknown_entry(lsignshfr,_Sg,Qv,Call) :- !, lsignshfr_unknown_entry(Qv,Call).
 empty_entry(lsignshfr,Qv,Call) :- !, lsignshfr_empty_entry(Qv,Call).
 %
 :- use_module(ciaopp(plai/plai_errors), [compiler_error/1]).
-% lsignshfr_body_succ_builtin(_,_,_,_,_,_).
+% lsignshfr_body_succ_builtin(_,_,_,_,_,_). % TODO: be careful (old comment)
 lsignshfr_call_to_entry(_,_,_,_,_,_,_,_).  
 lsignshfr_call_to_success_fact(_,_,_,_,_,_).
 lsignshfr_compute_lub(_,_).
@@ -326,7 +316,7 @@ sha_call_to_success_builtin(_,_,_,_,_,_).
 sha_call_to_success_fact(_,_,_,_,_,_,_). 
 sha_compute_lub(_,_).  
 sha_abs_sort(_,_).     
-% sha_body_succ_builtin(_,_,_,_,_,_).
+% sha_body_succ_builtin(_,_,_,_,_,_). % TODO: be careful (old comment)
 sha_exit_to_prime(_,_,_,_,_,_,_).
 sha_extend(_,_,_,_,_).       
 sha_eliminate_equivalent(TmpLSucc,LSucc) :- absub_eliminate_equivalent(TmpLSucc,sha,LSucc).
@@ -386,7 +376,6 @@ call_to_entry(def,_Sv,Sg,Hv,Head,_K,_Fv,Proj,Entry,ExtraInfo) :- !, def_call_to_
 exit_to_prime(def,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime) :- !, def_exit_to_prime(Exit,ExtraInfo,Hv,Sv,Head,Sg,Prime).
 project(def,_Sg,Vars,_HvFv,ASub,Proj) :- !, def_project(ASub,Vars,Proj).
 compute_lub(def,ListASub,LubASub) :- !, def_compute_lub(ListASub,LubASub).
-%% compute_lub_general(def,ListASub,LubASub) :- !, def_compute_lub(ListASub,LubASub).
 abs_sort(def,ASub,ASub_s) :- !, def_sort(ASub,ASub_s).
 extend(def,_Sg,Prime,_Sv,Call,Succ) :- !, def_extend(Prime,Call,Succ).
 less_or_equal(def,ASub0,ASub1) :- !, def_less_or_equal(ASub0,ASub1).
@@ -415,6 +404,7 @@ empty_entry(def,Qv,Call) :- !, def_unknown_entry(Qv,Call).
 %% def_hash(_,_,_).
 %% def_impose_cond(_,_,_,_).
 %% def_real_conjoin(_,_,_).
+% TODO: body_succ_builtin/9: (old comment) these do not have special(_), so ok: AbsInt \== def, AbsInt \== fr, AbsInt \== frdef
 % ---------------------------------------------------------------------------
 :- use_module(domain(share)).
 aidomain(share).
@@ -584,6 +574,7 @@ unknown_entry(shareson,_Sg,Qv,Call) :- !, shareson_unknown_entry(Qv,Call).
 empty_entry(shareson,Qv,Call) :- !, shareson_empty_entry(Qv,Call).
 %
 :- use_module(ciaopp(plai/plai_errors), [compiler_error/1]).
+% TODO: These do have special(_), special care (old comment)
 shareson_body_succ_builtin((TSon,TSh),Sg,(CSon,CSh),Sv,HvFv,Call,Proj,Succ) :- !,
 	Call=(Call_son,Call_sh),
 	Proj=(Proj_son,Proj_sh),
@@ -615,6 +606,7 @@ unknown_entry(shfrson,_Sg,Qv,Call) :- !, shfrson_unknown_entry(Qv,Call).
 empty_entry(shfrson,Qv,Call) :- !, shfrson_empty_entry(Qv,Call).
 %
 :- use_module(ciaopp(plai/plai_errors), [compiler_error/1]).
+% TODO: These do have special(_), special care (old comment)
 shfrson_body_succ_builtin((TSon,TSh),Sg,(CSon,CSh),Sv,HvFv,Call,Proj,Succ) :- !,
 	Call=(Call_son,Call_sh),
 	Proj=(Proj_son,Proj_sh),
@@ -899,7 +891,6 @@ exit_to_prime(aeq,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime) :- !, aeq_exit_to_prime(Ex
 project(aeq,_Sg,Vars,_HvFv,ASub,Proj) :- !, aeq_project(ASub,Vars,Proj).
 compute_lub(aeq,ListASub,LubASub) :- !, aeq_compute_lub(ListASub,LubASub).
 identical_abstract(aeq,ASub1,ASub2) :- !, aeq_identical_abstract(ASub1,ASub2).
-%% compute_lub_general(aeq,ListASub,LubASub) :- !, aeq_compute_lub(ListASub,LubASub).
 abs_sort(aeq,ASub,ASub_s) :- !, aeq_sort(ASub,ASub_s).
 extend(aeq,_Sg,Prime,_Sv,Call,Succ) :- !, aeq_extend(Prime,Call,Succ).
 less_or_equal(aeq,ASub0,ASub1) :- !, aeq_less_or_equal(ASub0,ASub1).
@@ -1701,11 +1692,6 @@ fixpoint_covered(AbsInt,Prime0,Prime1) :-
 	absub_fixpoint_covered(AbsInt,Prime0,Prime1).
 fixpoint_covered_gfp(AbsInt,Prime0,Prime1) :-
 	absub_fixpoint_covered(AbsInt,Prime0,Prime1).
-%% %% do_compute_lub(AbsInt,SubstList,Subst) :-
-%% %% 	there_is_delay, !,
-%% %% 	del_compute_lub(SubstList,AbsInt,Subst).
-%% do_compute_lub(AbsInt,SubstList,Subst) :-
-%% 	compute_lub(AbsInt,SubstList,Subst).
 eliminate_equivalent(_AbsInt,TmpLSucc,LSucc) :- sort(TmpLSucc,LSucc). % TODO: valid if ASub1==ASub2 means equivalent
 abs_subset(_AbsInt,LASub1,LASub2) :-
 	ord_subset(LASub1,LASub2).

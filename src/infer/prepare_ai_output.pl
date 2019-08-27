@@ -37,7 +37,6 @@
 
 :- include(domain_dep).
 
-
 % -------------------------------------------------------------------------
 
 :- doc(bug,"1. The information gathered here could have been already
@@ -58,7 +57,7 @@
 	equivalent types.").
 %% :- doc(bug,"6. Calling asub_to_info from any other place asserts
 %% 	required types which are not so, and go out...").
-:- doc(bug,"7. prepare_succ_list_info/7 is wrong: we cannot accumulate
+:- doc(bug,"7. prepare_succ_list_info/8 is wrong: we cannot accumulate
         SuccInfo and CompInfo in parallel, it results in wrong assertions.
 	E.g., :- true pred r(A) : rt0(A) => rt0(A) + fails.
         for r(a). r(b). with rt(0):==^a").
@@ -167,7 +166,7 @@ get_del_completes(_AbsInt,_Modes).
 assert_complete_info(AbsInt,Output,_Key,Goal,Call,Succ):-
 	varset(Goal,Vars),
 	prepare_call_info(Output,AbsInt,Vars,Call,Call_s,CallInfo),
-	prepare_succ_info(Output,AbsInt,Vars,Call_s,Succ,SuccInfo,CompInfo),
+	prepare_succ_info(Output,AbsInt,Goal,Vars,Call_s,Succ,SuccInfo,CompInfo),
 	assert_pred_info(Goal,CallInfo,[SuccInfo],[CompInfo]),
 	!.
 
@@ -183,7 +182,7 @@ get_completes(_AbsInt,_Modes).
 assert_complete_list_info(AbsInt,O,_Key,Goal,Call,Succs):-
 	varset(Goal,Vars),
 	prepare_call_info(O,AbsInt,Vars,Call,Call_s,CallInfo),
-	prepare_succ_list_info(Succs,AbsInt,O,Vars,Call_s,SuccInfos,CompInfos),
+	prepare_succ_list_info(Succs,AbsInt,O,Goal,Vars,Call_s,SuccInfos,CompInfos),
 	assert_pred_info(Goal,CallInfo,SuccInfos,CompInfos),
 	!.
 
@@ -340,9 +339,9 @@ prepare_call_info(Output,AbsInt,Vars,Call,Call_s,CallInfo):-
 	abs_sort(AbsInt,Call,Call_s),
 	call_info_format(Output,AbsInt,Call_s,Vars,CallInfo).
 
-prepare_succ_info(Output,AbsInt,Vars,Call_s,Succ,SuccInfo,CompInfo):-
+prepare_succ_info(Output,AbsInt,Goal,Vars,Call_s,Succ,SuccInfo,CompInfo):-
 	abs_sort(AbsInt,Succ,Succ_s),
-	join_if_needed(AbsInt,Call_s,Succ_s,Vars,Succ_ok),
+	join_if_needed(AbsInt,Call_s,Succ_s,Goal,Vars,Succ_ok),
 	succ_info_format(Output,AbsInt,Succ_ok,Vars,SuccInfo,CompInfo).
 
 prepare_point_info(Output,AbsInt,Vars,Call,CallInfo):-
@@ -354,12 +353,12 @@ prepare_point_info(Output,AbsInt,Vars,Call,CallInfo):-
 %% 	prepare_call_list_info(Calls,AbsInt,Output,Vars,CallInfo).
 %% prepare_call_list_info([],_AbsInt,_Output,_Vars,[]).
 
-prepare_succ_list_info([Succ|Succs],AbsInt,O,Vars,Call_s,SuccInfo,CompInfo):-
-	prepare_succ_info(O,AbsInt,Vars,Call_s,Succ,Succ0,Comp0),
+prepare_succ_list_info([Succ|Succs],AbsInt,O,Goal,Vars,Call_s,SuccInfo,CompInfo):-
+	prepare_succ_info(O,AbsInt,Goal,Vars,Call_s,Succ,Succ0,Comp0),
 	accumulate(Succ0,SuccInfo0,SuccInfo),
 	accumulate(Comp0,CompInfo0,CompInfo),
-	prepare_succ_list_info(Succs,AbsInt,O,Vars,Call_s,SuccInfo0,CompInfo0).
-prepare_succ_list_info([],_AbsInt,_Output,_Vars,_Call_s,[],[]).
+	prepare_succ_list_info(Succs,AbsInt,O,Goal,Vars,Call_s,SuccInfo0,CompInfo0).
+prepare_succ_list_info([],_AbsInt,_Output,_Goal,_Vars,_Call_s,[],[]).
 
 accumulate([],SuccInfo0,SuccInfo):- !, SuccInfo=SuccInfo0.
 accumulate(Succ,SuccInfo,[Succ|SuccInfo]).

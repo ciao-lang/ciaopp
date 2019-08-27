@@ -236,11 +236,6 @@ normalize_asub(_AbsInt,Prime,Prime).
 compute_glb(AbsInt,[A,B],Glb) :-
         glb(AbsInt,A,B,Glb). % For backwards compatibility
 
-%% %% VD general version of lub used for printing the output
-%% :- export(compute_lub_general/3).
-%%
-%% :- export(do_compute_lub/3).
-
 :- doc(hide,compute_clauses_lub/4).
 :- export(compute_clauses_lub/4).
 

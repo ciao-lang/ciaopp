@@ -25,10 +25,7 @@ group_calls(_,_,_,_,_,_,_,_).
 type_assignments_included(_,_,_,_).
 type_assignments_incompatible(_,_,_,_).
 
-compute_lub_general(_,_,_).
 del_compute_lub(_,_,_).
-fd_extend(_,_,_,_).
-fr_extend(_,_,_,_).
 output_interface(_,_,_,_,_).
 
 % GPS

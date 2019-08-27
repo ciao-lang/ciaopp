@@ -2,7 +2,6 @@
 	[ fr_call_to_entry/9, 
 	  fr_call_to_success_fact/9,
 	  fr_compute_lub/2,   
-	%  fr_compute_lub_general/2,
 	  fr_exit_to_prime/7,
 	  fr_extend/5,        
 	  fr_identical_abstract/2, 
@@ -151,6 +150,7 @@ fr_compute_lub(LAsub, Lub) :-
 %
 % :- mode fr_compute_lub_general(?,o).
 
+%% :- export(fr_compute_lub_general/2).
 %% fr_compute_lub_general(LAsub, Lub) :-
 %% 	get_useful_AS(LAsub, UsefulAS),
 %% 	( UsefulAS = [] ->

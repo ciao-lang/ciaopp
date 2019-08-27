@@ -119,6 +119,7 @@ vero_compute_lub(LAsub, G_lub, F_lub):-
 %
 % :- mode vero_compute_lub_general(?,?,o).
 %%
+%% :- export(vero_compute_lub_general/3).
 %% vero_compute_lub_general(LAsub, G_lub, F_lub):-
 %% 	get_useful_AS(LAsub, UsefulAsub),
 %% 	( UsefulAsub = [] ->

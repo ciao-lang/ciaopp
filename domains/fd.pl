@@ -5,9 +5,8 @@
 	[ fd_call_to_entry/6,
 	  fd_call_to_success_fact/8,
 	  fd_compute_lub/2,   
-	%  fd_compute_lub_general/2,
 	  fd_exit_to_prime/7,
-	  fd_extend/4,        
+	  fd_extend/5,        
 	  fd_identical_abstract/2, 
 	  fd_input_user_interface/3,  
 	  fd_input_interface/4,  
@@ -98,6 +97,7 @@ fd_decide_bottom_lub(F,D,(F_lub,D_lub)):-
         D_lub = a(G_lub,_),
         vero_compute_lub(F,G_lub,F_lub).
 
+%% :- export(fd_compute_lub_general/2).
 %% fd_compute_lub_general(ListASub,LubASub):-
 %%         fd_split_information(ListASub,F,D),
 %%         fd_decide_bottom_general(F,D,LubASub).
@@ -131,8 +131,8 @@ fd_sort((F,D),(F_s,D_s)):-
 
 %------------------------------------------------------------------------------
 
-fd_extend('$bottom',_,_Call,'$bottom').
-fd_extend((F_prime,D_prime),Sv,(F_call,D_call),Succ):-
+fd_extend(_Sg,'$bottom',_,_Call,'$bottom') :- !.
+fd_extend(_Sg,(F_prime,D_prime),Sv,(F_call,D_call),Succ):-
         def_extend(D_prime,D_call,D_succ),
         fd_decide_continue_extend(D_succ,F_prime,F_call,Sv,F_succ),
         fd_decide_bottom(F_succ,D_succ,Succ).
