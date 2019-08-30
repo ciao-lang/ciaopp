@@ -1,9 +1,9 @@
 /*             Copyright (C)1990-2002 UPM-CLIP				*/
 % TODO: Split this module in share and shfr
 :- module(share,
-	[ share_call_to_entry/8,
+	[ share_call_to_entry/9,
 	  share_call_to_success_builtin/6,
-	  share_call_to_success_fact/8,
+	  share_call_to_success_fact/9,
 	  share_call_to_prime_fact/6,
 	  share_compute_lub/2,
 	  share_exit_to_prime/7,
@@ -23,9 +23,9 @@
 	  share_empty_entry/2,
 	  share_unknown_entry/2,
 	% sharing+freeness
-	  shfr_call_to_entry/8,
+	  shfr_call_to_entry/9,
 	  shfr_call_to_success_builtin/6, 
-	  shfr_call_to_success_fact/8,
+	  shfr_call_to_success_fact/9,
 	  shfr_call_to_prime_fact/6,
 	  %shfr_check_cond/5,
 	  shfr_compute_lub/2, 
@@ -56,9 +56,9 @@
 	  shfr_unknown_entry/2,
 	% sharing+freeness+nonvar
 	  shfrnv_asub_to_native/5, 
-	  shfrnv_call_to_entry/8,
+	  shfrnv_call_to_entry/9,
 	  shfrnv_call_to_success_builtin/6, 
-	  shfrnv_call_to_success_fact/8, 
+	  shfrnv_call_to_success_fact/9, 
 	  %shfrnv_check_cond/5,
 	  shfrnv_compute_lub/2,
 	  %shfrnv_compute_lub_el/3,  

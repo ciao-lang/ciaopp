@@ -354,7 +354,7 @@ neck_substitution(true:_,Abs,H,_Id,Sg,Proj_u,NeckSubs):-
 	varset(Sg,Sv),
 	varset(H,Hv),
 	abs_sort(Abs,Proj_u,Proj),
-	call_to_entry(Abs,Sv,Sg,Hv,H,not_provided,[],Proj,Entry,_Info),
+	call_to_entry(Abs,Sv,Sg,Hv,H,not_provided,[],Proj,Entry,_Info), % TODO: add some ClauseKey? (JF)
 	NeckSubs = [Entry].
 neck_substitution(_:K,Abs,_H,Id,_Sg,_Proj_u,NeckSubs):-
 	!,

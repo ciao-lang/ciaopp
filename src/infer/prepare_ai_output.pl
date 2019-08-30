@@ -278,7 +278,7 @@ most_general_goal(Goal1,Call1,Succ1,AbsInt,Goal,Gov,Call,Succ):-
 % TODO: duplicated
 decide_call_to_entry('$bottom',_AbsInt,_Go1v,_Goal1,_Gov,_Goal,_,'$bottom'):-!.
 decide_call_to_entry(Call_s,AbsInt,Go1v,Goal1,Gov,Goal,[],Call):-
-	call_to_entry(AbsInt,Go1v,Goal1,Gov,Goal,not_provided,[],Call_s,Call,_).
+	call_to_entry(AbsInt,Go1v,Goal1,Gov,Goal,not_provided,[],Call_s,Call,_). % TODO: add ClauseKey? (JF)
 
 %% Get memo_table records and recorda info to be printed
 %% (when no lub required)

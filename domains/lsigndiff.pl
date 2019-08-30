@@ -14,12 +14,12 @@ simple_lsign_project(p(_,_,Tot),Vars,HvFv_u,Proj):-
 	lsign_project(Tot,Vars,HvFv_u,Proj).
 
 %------------------------------------------------------------------------%
-% simple_lsign_call_to_entry(+,+,+,+,-,-)                                %
-% simple_lsign_call_to_entry(Hv,Sg,Head,Proj,Entry,ExtraInfo)            %
+% simple_lsign_call_to_entry(+,+,+,+,+,+,+,-,-)                          %
+% simple_lsign_call_to_entry(Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo)    %
 %------------------------------------------------------------------------%
 
-simple_lsign_call_to_entry(Sg,Head,Fv,Proj,Entry,ExtraInfo):-
-	lsign_call_to_entry(Sg,Head,Fv,Proj,Entry1,ExtraInfo),
+simple_lsign_call_to_entry(Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo):-
+	lsign_call_to_entry(Sv,Sg,Hv,Head,K,Fv,Proj,Entry1,ExtraInfo),
 	Entry1 = a(G,_,_),
 	Entry = p(Entry1,a(G,[],[]),Entry1).
 

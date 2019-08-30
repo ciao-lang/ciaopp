@@ -68,8 +68,9 @@ renaming(G0,ClKey,G1:PoKey):-
 	memo_table_new_child(AbsInt,Id,New),
 	% obtain Call and Succ of the clause
 	varset(Sg0,Sv0),
-	call_to_entry(AbsInt,Sv0,Sg0,Vars,G0,not_provided,[],Proj,Call,_),
-	each_call_to_entry(Prime,AbsInt,Sv0,Sg0,Vars,G0,[],Succs),
+	ClauseKey = not_provided, % TODO: fix it, add clause key? (JF)
+	call_to_entry(AbsInt,Sv0,Sg0,Vars,G0,ClauseKey,[],Proj,Call,_),
+	each_call_to_entry(Prime,AbsInt,Sv0,Sg0,Vars,G0,ClauseKey,[],Succs),
 	% memo table for the new clause
 	assertz_fact( memo_table(PoKey,AbsInt,New,Id,Vars,[Call]) ),
 	assertz_fact( memo_table(ClKey,AbsInt,New,no,Vars,Succs) ),
@@ -84,10 +85,10 @@ memo_table_new_child(AbsInt,Id,New):-
 	fail.
 memo_table_new_child(_AbsInt,_Id,_New).
 
-each_call_to_entry([],_AbsInt,_Sv0,_Sg0,_Vars,_G0,_Fv,[]).
-each_call_to_entry([Prime|Primes],AbsInt,Sv0,Sg0,Vars,G0,Fv,[Succ|Succs]):-
-	call_to_entry(AbsInt,Sv0,Sg0,Vars,G0,not_provided,Fv,Prime,Succ,_),
-	each_call_to_entry(Primes,AbsInt,Sv0,Sg0,Vars,G0,Fv,Succs).
+each_call_to_entry([],_AbsInt,_Sv0,_Sg0,_Vars,_G0,_K,_Fv,[]).
+each_call_to_entry([Prime|Primes],AbsInt,Sv0,Sg0,Vars,G0,K,Fv,[Succ|Succs]):-
+	call_to_entry(AbsInt,Sv0,Sg0,Vars,G0,K,Fv,Prime,Succ,_),
+	each_call_to_entry(Primes,AbsInt,Sv0,Sg0,Vars,G0,K,Fv,Succs).
 
 %-------------------------------------------------------------------------
 % The way the information is updated after specialization is different when

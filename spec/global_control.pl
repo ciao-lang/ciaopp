@@ -314,7 +314,7 @@ reuse_def_emb(Key,AbsInt,Id,Sg,Sv,Proj,Num,NSg,NSv,NProj,Flag,Id_wrt):-
 %%%%%%%%%%%%%%%%%%%%%
 %%	unknown_entry(AbsInt,NSg,NSv,NProj),
 %%%%%%%%%%%%%%%%%%%%%
- 	call_to_entry(AbsInt,Sv,Sg,NSv,NSg,not_provided,[],Proj,NProj,_ExtraInfo1),
+ 	call_to_entry(AbsInt,Sv,Sg,NSv,NSg,not_provided,[],Proj,NProj,_ExtraInfo1), % TODO: add some ClauseKey? (JF)
 	(current_fact(spec_def_for(Key,OtherSg,_OtherSv,OtherProj,AbsInt,OtherId,_,_)),
 	 decide_identical(AbsInt,NSg,NProj,OtherSg,OtherProj) ->
 	    Flag = done,

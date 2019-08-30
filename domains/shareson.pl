@@ -1,7 +1,7 @@
 
 :- module(shareson,
-	[ shareson_call_to_entry/8,
-	  shareson_call_to_success_fact/8, 
+	[ shareson_call_to_entry/9,
+	  shareson_call_to_success_fact/9, 
 	  shareson_compute_lub/2,
 	  shareson_exit_to_prime/7,  
 	  shareson_extend/4,  
@@ -55,9 +55,9 @@
 % See compose function.                                                  %
 %-------------------------------------------------------------------------
 
-shareson_call_to_entry(Sv,Sg,Hv,Head,Fv,(Proj_son,Proj_sh),Entry,ExtraInfo):-
-	son_call_to_entry(Hv,Sg,Head,Proj_son,Entry_son,ExtraInfo_son),
-	share_call_to_entry(Sv,Sg,Hv,Head,Fv,Proj_sh,Entry_sh,ExtraInfo_sh),
+shareson_call_to_entry(Sv,Sg,Hv,Head,K,Fv,(Proj_son,Proj_sh),Entry,ExtraInfo):-
+	son_call_to_entry(Sv,Sg,Hv,Head,K,Fv,Proj_son,Entry_son,ExtraInfo_son),
+	share_call_to_entry(Sv,Sg,Hv,Head,K,Fv,Proj_sh,Entry_sh,ExtraInfo_sh),
 	compose(Entry_son,Entry_sh,Hv,Entry),
 	ExtraInfo = (ExtraInfo_son,ExtraInfo_sh).
 
@@ -83,7 +83,7 @@ shareson_extend((Prime_son,Prime_sh),Sv,(Call_son,Call_sh),Succ):-
 
 %-------------------------------------------------------------------------
 
-shareson_call_to_success_fact(Sg,Hv,Head,Sv,Call,Proj,Prime,Succ):-
+shareson_call_to_success_fact(Sg,Hv,Head,_K,Sv,Call,Proj,Prime,Succ):-
 	Proj = (Proj_son,Proj_sh),
 	son_call_to_prime_fact(Sg,Hv,Head,Sv,Proj_son,Prime_son),
 	share_call_to_prime_fact(Sg,Hv,Head,Sv,Proj_sh,Prime_sh),

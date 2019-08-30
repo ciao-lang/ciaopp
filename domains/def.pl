@@ -2,8 +2,8 @@
 
 :- module(def,
 	[ def_asub_to_native/5, 
-	  def_call_to_entry/6,
-	  def_call_to_success_fact/8,
+	  def_call_to_entry/9,
+	  def_call_to_success_fact/9,
 	  def_compute_lub/2,
 	  def_compute_lub_el/3,
 	  def_exit_to_prime/7,
@@ -90,8 +90,8 @@
 :- use_module(domain(deftools)).
 
 %-------------------------------------------------------------------------
-% def_call_to_entry(+,+,+,+,-,-)                                         %
-% def_call_to_entry(Sg,Hv,Head,Proj,Entry,BothEntry)                     %
+% def_call_to_entry(+,+,+,+,+,+,+,-,-)                                   %
+% def_call_to_entry(Sv,Sg,Hv,Head,K,Fv,Proj,Entry,BothEntry)             %
 % It obtains the abstract constraint (Entry) which results from adding   %
 % the abstraction of the constraint Sg = Head to Proj, later projecting  %
 % the resulting constraint onto Hv.                                      %
@@ -105,13 +105,13 @@
 %   projected constraint, obtaining Entry.                               %
 %-------------------------------------------------------------------------
 
-def_call_to_entry(Sg,_,Head,Proj,Entry,BothEntry):-
+def_call_to_entry(_Sv,Sg,_Hv,Head,_K,_Fv,Proj,Entry,BothEntry):-
 	variant(Sg,Head),!,
 	copy_term((Sg,Proj),(NewTerm,NewProj)),
 	Head = NewTerm,
 	def_sort(NewProj,Entry),
 	BothEntry = yes.
-def_call_to_entry(Sg,Hv,Head,Proj,Entry,BothEntry):-
+def_call_to_entry(_Sv,Sg,Hv,Head,_K,_Fv,Proj,Entry,BothEntry):-
 	def_herbrand_equation(Sg,Head,Proj,NewProj),
 	def_handle_bottom_project(NewProj,Hv,Entry),
 	BothEntry = NewProj.
@@ -346,18 +346,18 @@ def_extend(Prime,Call,Succ):-
 	def_conjunct_constr(Prime,Call,Succ).
 
 %-------------------------------------------------------------------------
-% def_call_to_success_fact(+,+,+,+,+,+,-,-).                             %
-% def_call_to_success_fact(Proj,Hv,Head,Sv,Sg,Call,Prime,Succ)           %
+% def_call_to_success_fact(+,+,+,+,+,+,+,-,-).                           %
+% def_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ)         %
 % It obtains the prime and success constraint for a fact. However, since %
 % the program are assumed to be normilised, a fact should have all their %
 % arguments as voids, and therefore Prime = Proj, and                    %
 % Succ = Call                                                            %
 %-------------------------------------------------------------------------
 
-def_call_to_success_fact('$bottom',_Hv,_Head,_Sv,_Sg,_Call,Prime,Succ):- !,
+def_call_to_success_fact(_Sg,_Hv,_Head,_K,_Sv,_Call,'$bottom',Prime,Succ):- !,
 	Prime = '$bottom',
 	Succ = '$bottom'.
-def_call_to_success_fact(_Proj,_Hv,Head,Sv,Sg,Call,Prime,Succ):-
+def_call_to_success_fact(Sg,_Hv,Head,_K,Sv,Call,_Proj,Prime,Succ):-
 	def_herbrand_equation(Sg,Head,Call,Succ),
 	def_handle_bottom_project(Succ,Sv,Prime).
 

@@ -339,7 +339,7 @@ abs_normalize(AbsInt,Sg,Sv,ASub0,Head,Hv,ASub,ExtraInfo) :-
 	functor(Head,F,A),
   varset(Head, Hv),
   % variant case already optimized in call_to_entry (using copy_term)
-  call_to_entry(AbsInt,Sv,Sg,Hv,Head,not_provided,[],ASub0,TmpCall,ExtraInfo),
+  call_to_entry(AbsInt,Sv,Sg,Hv,Head,not_provided,[],ASub0,TmpCall,ExtraInfo), % TODO: add some ClauseKey? (JF)
   project(AbsInt,Head,Hv,Hv,TmpCall,ASub), !. % TODO: Is this necessary?
 
 :- export(get_applicable_status/3).

@@ -78,7 +78,7 @@ can_continue(r(AbsInt,OldSg,OldSv,OldProj),L,Lit,Sg,Case):-!,
 	varset(Sg,Sv),
 	varset(L,BodyVars),
 	ord_subtract(BodyVars,Sv,Fv),
-	call_to_entry(AbsInt,OldSv,OldSg,Sv,Sg,not_provided,Fv,OldProj,Entry,_),
+	call_to_entry(AbsInt,OldSv,OldSg,Sv,Sg,not_provided,Fv,OldProj,Entry,_), % TODO: add some ClauseKey? (JF)
 	(Entry == '$bottom' ->
 	    debug('useless clause'),
 	    Case = 'basiccontrol:fail'

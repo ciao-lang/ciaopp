@@ -299,8 +299,8 @@ identical_proj_1(AbsInt,Sg,Proj,Sg1,Proj1,Prime1,Prime2) :-
 	functor(Norm,F,A),
 	varset(Norm,Hvnorm),
 	%
-	call_to_entry(AbsInt,_Sv,Sg,Hvnorm,Norm,not_provided,[],Proj,Entry,_),
-	call_to_entry(AbsInt,_Sv,Sg1,Hvnorm,Norm,not_provided,[],Proj1,Entry1,_),
+	call_to_entry(AbsInt,_Sv,Sg,Hvnorm,Norm,not_provided,[],Proj,Entry,_), % TODO: add some ClauseKey? (JF)
+	call_to_entry(AbsInt,_Sv,Sg1,Hvnorm,Norm,not_provided,[],Proj1,Entry1,_), % TODO: add some ClauseKey? (JF)
 	identical_abstract(AbsInt,Entry,Entry1),
 	%
 	% call_to_entry(AbsInt,_Sv,Sg,Hv,Sg1,not_provided,[],Proj,Entry,_),
@@ -680,7 +680,7 @@ abstract_instance(AbsInt,Sg1,Proj1,Sg2,Proj2) :-
 	instance(Sg1C,Sg2C),
 	varset(Sg2C,S2Cv),
 	varset(Sg1C,S1Cv),
-	call_to_entry(AbsInt,S2Cv,Sg2C,S1Cv,Sg1C,not_provided,[],Proj2C,Entry,_ExtraInfo),
+	call_to_entry(AbsInt,S2Cv,Sg2C,S1Cv,Sg1C,not_provided,[],Proj2C,Entry,_ExtraInfo), % TODO: add some ClauseKey? (JF)
 	Entry \== '$bottom',
 	less_or_equal(AbsInt,Proj1C,Entry).
 

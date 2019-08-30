@@ -35,9 +35,9 @@
 %                      ABSTRACT Call To Entry                            %
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% share_call_to_entry(+,+,+,+,+,+,-,?)                                   %
+% share_call_to_entry(+,+,+,+,+,+,+,-,?)                                 %
 %-------------------------------------------------------------------------
-share_amgu_call_to_entry(_Sv,Sg,_Hv,Head,Fv,Proj,Entry,ExtraInfo) :-
+share_amgu_call_to_entry(_Sv,Sg,_Hv,Head,_K,Fv,Proj,Entry,ExtraInfo) :-
      variant(Sg,Head),!,
      ExtraInfo = yes,
      copy_term((Sg,Proj),(NewSg,NewProj)),
@@ -45,10 +45,10 @@ share_amgu_call_to_entry(_Sv,Sg,_Hv,Head,Fv,Proj,Entry,ExtraInfo) :-
      share_sort(NewProj,Temp),
      list_to_list_of_lists(Fv,Temp1),
      merge(Temp1,Temp,Entry).
-share_amgu_call_to_entry(_,_,[],_,Fv,_,Entry,ExtraInfo):- !,
+share_amgu_call_to_entry(_Sv,_Sg,[],_Head,_K,Fv,_Proj,Entry,ExtraInfo):- !,
      ExtraInfo = no,
      list_to_list_of_lists(Fv,Entry).
-share_amgu_call_to_entry(Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo):-
+share_amgu_call_to_entry(Sv,Sg,Hv,Head,_K,Fv,Proj,Entry,ExtraInfo):-
      projected_gvars(Proj,Sv,Gv_Call),
      share_amgu_extend_asub(Proj,Hv,ASub),     
      peel_equations(Sg,Head,Eqs),
@@ -56,7 +56,7 @@ share_amgu_call_to_entry(Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo):-
      share_project(Hv,Result,Entry0),
      share_amgu_extend_asub(Entry0,Fv,Entry),
      ExtraInfo = (Eqs,Gv_Call),!.
-share_amgu_call_to_entry(_Sv,_Sg,_Hv,_Head,_Fv,_Proj,'$bottom',_).
+share_amgu_call_to_entry(_Sv,_Sg,_Hv,_Head,_K,_Fv,_Proj,'$bottom',_).
 
 
 %------------------------------------------------------------------------%
@@ -146,7 +146,7 @@ share_amgu_exit_to_prime(_Sg,_Hv,_Head,Sv,Exit,ExtraInfo,Prime):-
 % Specialized version of call_to_entry + exit_to_prime + extend for facts%
 %------------------------------------------------------------------------%
 
-share_amgu_call_to_success_fact(Sg,Hv,Head,Sv,Call,_Proj,Prime,Succ) :-
+share_amgu_call_to_success_fact(Sg,Hv,Head,_K,Sv,Call,_Proj,Prime,Succ) :-
 % exit_to_prime
 	share_amgu_extend_asub(Call,Hv,ASub),
 	peel_equations(Sg, Head,Equations),
@@ -155,7 +155,7 @@ share_amgu_call_to_success_fact(Sg,Hv,Head,Sv,Call,_Proj,Prime,Succ) :-
 % extend
 	delete_vars_from_list_of_lists(Hv,ASub1,Succ0),
 	sort_list_of_lists(Succ0,Succ),!.	
-share_amgu_call_to_success_fact(_Sg,_Hv,_Head,_Sv,_Call,_Proj, '$bottom','$bottom').	
+share_amgu_call_to_success_fact(_Sg,_Hv,_Head,_K,_Sv,_Call,_Proj, '$bottom','$bottom').	
 
 %-------------------------------------------------------------------------
 % Specialised version of share_call_to_success_fact in order to allow    |
@@ -270,12 +270,10 @@ share_amgu_call_to_success_builtin('=/2','='(X,Y),Sv,Call,Proj,Succ):-
 	copy_term(Y,Yterm),
 	Xterm = Yterm,!,
 	varset(Xterm,Vars),
-	share_amgu_call_to_success_fact('='(X,Y),Vars,'='(Xterm,Xterm),Sv,
-	        Call,Proj,_Prime,Succ).
+	share_amgu_call_to_success_fact('='(X,Y),Vars,'='(Xterm,Xterm),not_provided,Sv,Call,Proj,_Prime,Succ). % TODO: add some ClauseKey?
 share_amgu_call_to_success_builtin('=/2',_Sg,_Sv,_Call,_Proj,'$bottom').
 share_amgu_call_to_success_builtin('C/3','C'(X,Y,Z),Sv,Call,Proj,Succ):-
-	share_amgu_call_to_success_fact('='(X,[Y|Z]),[W],'='(W,W),Sv,
-	        Call,Proj,_Prime,Succ).
+	share_amgu_call_to_success_fact('='(X,[Y|Z]),[W],'='(W,W),not_provided,Sv,Call,Proj,_Prime,Succ). % TODO: add some ClauseKey?
 share_amgu_call_to_success_builtin('sort/2',sort(X,Y),Sv,Call,Proj,Succ):- 
 	share_amgu_call_to_success_builtin('=/2','='(X,Y),Sv,Call,Proj,Succ).
 share_amgu_call_to_success_builtin('expand_term/2',expand_term(X,Y),Sv,Call,Proj,Succ):- 
@@ -290,7 +288,7 @@ share_amgu_call_to_success_builtin('arg/3',arg(X,Y,Z),_,Call,Proj,Succ):-
 	varset(Sg,Sv),
 	varset(Head,Hv),
 	share_project(Sv,TempCall,Proj),
-	share_amgu_call_to_success_fact(Sg,Hv,Head,Sv,TempCall,Proj,_Prime,Succ).
+	share_amgu_call_to_success_fact(Sg,Hv,Head,not_provided,Sv,TempCall,Proj,_Prime,Succ). % TODO: add some ClauseKey?
 
 %------------------------------------------------------------------------%
 %            Intermediate Functions                                      |

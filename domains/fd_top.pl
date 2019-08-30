@@ -43,17 +43,17 @@
 % added builtins and replaced vero_nonfree_arg by vero_ground_arg  25/01/95
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% vero_call_to_entry(Sg, Hv, Head, G_proj, F_proj, G_entry, F_entry)	(S)
+% vero_call_to_entry(Sv, Sg, Hv, Head, K, G_proj, F_proj, G_entry, F_entry)	(S)
 % renames F_proj in terms of the call variables of Sg into F_entry
 % in terms of the variables of Head and initialises the local clause vars.
 % Hv: ordered set of variables in Head
 % Sargs, Hargs: list of arguments of Sg (resp. Head)
 % F_projSH = F_proj \Aconj alpha(Sargs = Hargs)
 %
-% :- mode vero_call_to_entry(?,?,?,?,?,?,o).
-vero_call_to_entry(_Sg, _Hv, _Head, _G_proj, F_proj, _G_entry, F_proj):-
+% :- mode vero_call_to_entry(?,?,?,?,?,?,?,?,o).
+vero_call_to_entry(_Sv, _Sg, _Hv, _Head, _K, _G_proj, F_proj, _G_entry, F_proj):-
 	bottomelement(F_proj), !.
-vero_call_to_entry(Sg, Hv, Head, G_proj, F_proj, G_entry, F_entry) :- 
+vero_call_to_entry(_Sv, Sg, Hv, Head, _K, G_proj, F_proj, G_entry, F_entry) :- 
 	Sg =.. [_|Sargs], Head =.. [_|Hargs],
 	set_union(G_proj, G_entry, G_callhead),
 	vero_call_head_unif(Sargs, Hargs, F_proj, G_callhead, F_projSH),
@@ -181,17 +181,15 @@ vero_extend(as(_Do,_Po,_Dn,Pn),G_succ,Sv,F_call,F_succ) :-
 
 %----------------------------------------------------------------------------
 
-% vero_call_to_success_fact(F_Proj,G_proj,G_succ,Hv,Head,Sv,Sg,F_Call,
+% vero_call_to_success_fact(F_Proj,G_proj,G_succ,Hv,Head,K,Sv,Sg,F_Call,
 %		F_Prime,F_Succ)
 % F_Proj,F_Call,F_Prime,F_Succ : <as>;
 % F_Prime = (F_Proj \Aconj (Sg=Head)) projected onto Sv
 % F_Succ = F_Call \Aconj F_Primen
 %
-vero_call_to_success_fact(F_Proj,_G_proj,_G_succ,_Hv,_Head,_Sv,_Sg,
-		_F_Call,F_Prime,F_Succ) :-
+vero_call_to_success_fact(F_Proj,_G_proj,_G_succ,_Hv,_Head,_K,_Sv,_Sg,_F_Call,F_Prime,F_Succ) :-
 	bottomelement(F_Proj), !, F_Prime = F_Proj, F_Succ = F_Proj.
-vero_call_to_success_fact(F_Proj,G_proj,G_succ,_Hv,Head,Sv,Sg,F_Call,
-		F_Prime,F_Succ):-
+vero_call_to_success_fact(F_Proj,G_proj,G_succ,_Hv,Head,_K,Sv,Sg,F_Call,F_Prime,F_Succ):-
 	Sg =.. [_|Sargs], Head =.. [_|Hargs],
 	vero_call_head_unif(Sargs, Hargs, F_Proj, G_proj, F_PrimeSvHv),
 	( bottomelement(F_PrimeSvHv) ->

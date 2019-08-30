@@ -1,5 +1,5 @@
 :- module(gr,[
-	gr_call_to_entry/8,
+	gr_call_to_entry/9,
 	gr_exit_to_prime/7,
 	gr_project/3,
 	gr_extend/4,
@@ -9,7 +9,7 @@
 	%gr_compute_lub_el/3,
 	%gr_extend_free/3,
 	gr_sort/2,
-	gr_call_to_success_fact/8,
+	gr_call_to_success_fact/9,
 	gr_special_builtin/4,
 	gr_success_builtin/5,
 	gr_call_to_success_builtin/6,
@@ -234,8 +234,8 @@ project_aux_(>,Head1,Tail1,_,[Head2/Val|Tail2],Proj) :-
 % ABSTRACT Call To Entry
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% gr_call_to_entry(+,+,+,+,+,+,-,-)                                      %
-% gr_call_to_entry(Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo)                %
+% gr_call_to_entry(+,+,+,+,+,+,+,-,-)                                    %
+% gr_call_to_entry(Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo)              %
 % It obtains the abstract substitution (Entry) which results from adding % 
 % the abstraction of the Sg = Head to Proj, later projecting the         %
 % resulting substitution onto Hv. This is done as follows:               %
@@ -250,8 +250,8 @@ project_aux_(>,Head1,Tail1,_,[Head2/Val|Tail2],Proj) :-
 % - projects Temp3 onto Hv + Fv obtaining Entry                          %
 %------------------------------------------------------------------------%
 
-:- pred gr_call_to_entry(+Sv,+Sg,+Hv,+Head,+Fv,+Proj,-Entry,-ExtraInfo): list
-* callable * list * callable * list * absu * absu * extrainfo # 
+:- pred gr_call_to_entry(+Sv,+Sg,+Hv,+Head,+K,+Fv,+Proj,-Entry,-ExtraInfo): list
+* callable * list * callable * term * list * absu * absu * extrainfo # 
 "
 It obtains the abstract substitution @var{Entry} which results from
 adding the abstraction of the @var{Sg} = @var{Head} to @var{Proj},
@@ -283,16 +283,16 @@ The meaning of the variables is
 @end{itemize}
 ".
 
-gr_call_to_entry(_Sv,Sg,_Hv,Head,Fv,Proj,Entry,Flag):-
+gr_call_to_entry(_Sv,Sg,_Hv,Head,_K,Fv,Proj,Entry,Flag):-
 	variant(Sg,Head),!,
 	Flag = yes,
 	copy_term((Sg,Proj),(NewTerm,NewProj)),
 	Head = NewTerm,
 	gr_sort(NewProj,Projsorted),
 	gr_change_values_insert(Fv,Projsorted,Entry,any).	
-gr_call_to_entry(_,_,[],_Head,Fv,_Proj,Entry,no):- !,
+gr_call_to_entry(_,_,[],_Head,_K,Fv,_Proj,Entry,no):- !,
 	gr_change_values_insert(Fv,[],Entry,any). % (*)
-gr_call_to_entry(Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo):-
+gr_call_to_entry(Sv,Sg,Hv,Head,_K,Fv,Proj,Entry,ExtraInfo):-
 	gr_simplify_equations(Sg,Head,Binds),
 	gr_change_values_insert(Hv,Proj,Temp1,any),
 	abs_gunify(Temp1,Binds,Temp2,NewBinds),
@@ -459,19 +459,19 @@ update_Call_(<,ElemC,Call,ElemP,Prime,[ElemC|Succ]):-
 % Specialized version of call_to_entry + exit_to_prime + extend for facts%
 %-------------------------------------------------------------------------
 
-:- pred gr_call_to_success_fact(+Sg,+Hv,+Head,+Sv,+Call,+Proj,-Prime,-Succ): callable * list * callable * list * absu * absu * absu * absu # 
+:- pred gr_call_to_success_fact(+Sg,+Hv,+Head,+K,+Sv,+Call,+Proj,-Prime,-Succ): callable * list * callable * term * list * absu * absu * absu * absu # 
 "Specialized version of call_to_entry + exit_to_prime + extend for facts".
 
-gr_call_to_success_fact(_Sg,[],_Head,Sv,Call,_Proj,Prime,Succ) :- !,
+gr_call_to_success_fact(_Sg,[],_Head,_K,Sv,Call,_Proj,Prime,Succ) :- !,
 	gr_create_values(Sv,Prime,g),
 	gr_extend(Prime,Sv,Call,Succ).	
-gr_call_to_success_fact(Sg,Hv,Head,Sv,Call,Proj,Prime,Succ):-
+gr_call_to_success_fact(Sg,Hv,Head,_K,Sv,Call,Proj,Prime,Succ):-
 	gr_simplify_equations(Sg,Head,Binds),!,
 	gr_change_values_insert(Hv,Proj,Temp1,any),
 	abs_gunify(Temp1,Binds,Temp2,_NewBinds),
 	gr_project(Temp2,Sv,Prime),
 	gr_extend(Prime,Sv,Call,Succ).
-gr_call_to_success_fact(_Sg,_Hv,_Head,_Sv,_Call,_Proj,'$bottom','$bottom').
+gr_call_to_success_fact(_Sg,_Hv,_Head,_K,_Sv,_Call,_Proj,'$bottom','$bottom').
 
 %------------------------------------------------------------------------%
 %                         HANDLING BUILTINS                              %
@@ -774,7 +774,7 @@ gr_success_builtin(arg,_,p(X,Y,Z),Call,Succ):-
 	varset(Sg,Sv),
 	varset(Head,Hv),
 	gr_project(NCall,Sv,Proj),
-	gr_call_to_success_fact(Sg,Hv,Head,Sv,NCall,Proj,_,Succ).
+	gr_call_to_success_fact(Sg,Hv,Head,not_provided,Sv,NCall,Proj,_,Succ). % TODO: add some ClauseKey?
 gr_success_builtin(arg,_,_,_,'$bottom').
 %
 gr_success_builtin(exp,_,Sg,Call,Succ):-
@@ -782,7 +782,7 @@ gr_success_builtin(exp,_,Sg,Call,Succ):-
 	varset(Sg,Sv),
 	varset(Head,Hv),
 	gr_project(Call,Sv,Proj),
-	gr_call_to_success_fact(Sg,Hv,Head,Sv,Call,Proj,_,Succ).
+	gr_call_to_success_fact(Sg,Hv,Head,not_provided,Sv,Call,Proj,_,Succ). % TODO: add some ClauseKey?
 gr_success_builtin(exp,_,_,_,'$bottom').
 %
 gr_success_builtin('=../2',_,p(X,Y),Call,Succ):-
@@ -910,8 +910,7 @@ gr_call_to_success_builtin('=/2','='(X,Y),Sv,Call,Proj,Succ):-
 	copy_term(Y,Yterm),
 	Xterm = Yterm,!,
 	varset(Xterm,Vars),
-	gr_call_to_success_fact('='(X,Y),Vars,'='(Xterm,Xterm),Sv,
-	                                            Call,Proj,_Prime,Succ).
+	gr_call_to_success_fact('='(X,Y),Vars,'='(Xterm,Xterm),not_provided,Sv,Call,Proj,_Prime,Succ). % TODO: add some ClauseKey?
 gr_call_to_success_builtin('=/2',_,_,_call,_,'$bottom').
 %
 gr_call_to_success_builtin('C/3','C'(X,Y,Z),Sv,Call,Proj,Succ):- !,

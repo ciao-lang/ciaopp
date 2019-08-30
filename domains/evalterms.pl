@@ -10,10 +10,10 @@
 	    eterms_less_or_equal/2,
 	    eterms_compute_lub_el/3,
 	    eterms_identical_abstract/2,
-	    eterms_call_to_success_fact/8,
+	    eterms_call_to_success_fact/9,
 	    eterms_project/3,
 	    eterms_exit_to_prime/7,
-	    eterms_call_to_entry/7,
+	    eterms_call_to_entry/9,
 	    eterms_glb/3,
 	    eterms_extend/4,
 	    resetunion/0,
@@ -517,11 +517,10 @@ replacetype(Z,[X:(N,_T)|Entry],TZ,[X:(N,TZ)|Entry]):-
 replacetype(Z,[X:(N,T)|Entry],TZ,[X:(N,T)|Prime]):-
 	replacetype(Z,Entry,TZ,Prime).
 	
-
 evalterms_call_to_success_builtin('arg/3',Sg,Sv,Call,Proj,Succ):-
 	sort([X,Y,Z],Hv),
 	Head = arg(X,Y,Z),
-	eterms_call_to_entry(Sg,Hv,Head,[],Proj,Entry,ExtraInfo),
+	eterms_call_to_entry(Sv,Sg,Hv,Head,not_provided,[],Proj,Entry,ExtraInfo), % TODO: add some ClauseKey? (JF)
        	get_type(X,Entry,TypeX),
 	get_type(Y,Entry,TypeY),
 	new_type_name(NX),
@@ -552,11 +551,10 @@ evalterms_call_to_success_builtin('arg/3',Sg,Sv,Call,Proj,Succ):-
 	eterms_exit_to_prime(Sg,Hv,Head,Sv,Prime3,ExtraInfo,Prime),
 	eterms_extend(Prime,Sv,Call,Succ).
 
-
 evalterms_call_to_success_builtin('functor/3',Sg,Sv,Call,Proj,Succ):-
 	sort([X,Y,Z],Hv),
 	Head = functor(X,Y,Z),
-	eterms_call_to_entry(Sg,Hv,Head,[],Proj,Entry,ExtraInfo),
+	eterms_call_to_entry(Sv,Sg,Hv,Head,not_provided,[],Proj,Entry,ExtraInfo), % TODO: add some ClauseKey?
 	get_type(X,Entry,TypeX),
 	get_type(Y,Entry,TypeY),
 	get_type(Z,Entry,TypeZ),
@@ -598,7 +596,7 @@ evalterms_call_to_success_builtin('functor/3',Sg,Sv,Call,Proj,Succ):-
 
 	    
 evalterms_call_to_success_builtin('=/2',X=Y,Sv,Call,Proj,Succ):-
-	eterms_call_to_success_fact(p(X,Y),[W],p(W,W),Sv,Call,Proj,_Prime,Succ).
+	eterms_call_to_success_fact(p(X,Y),[W],p(W,W),not_provided,Sv,Call,Proj,_Prime,Succ). % TODO: add some ClauseKey?
 
 evalterms_call_to_success_builtin('is/2',(X is Y),Sv,Call,Proj,Succ):-
 	(

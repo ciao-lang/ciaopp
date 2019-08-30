@@ -32,16 +32,15 @@
 :- doc(bug,"2. The following builtins: ==../2, ==/2 and copy_term/2 
 	   are not defined for the domain def").
 %------------------------------------------------------------------------%
-% share_clique_def_call_to_entry(+,+,+,+,+,+,-,?)                        |
+% share_clique_def_call_to_entry(+,+,+,+,+,+,+,-,?)                      |
 %------------------------------------------------------------------------%
-share_clique_def_call_to_entry(Sv,Sg,Hv,Head,Fv,Proj,Entry,(BothEntry,ExtraInfo)):-
+share_clique_def_call_to_entry(Sv,Sg,Hv,Head,K,Fv,Proj,Entry,(BothEntry,ExtraInfo)):-
 	Proj = (SH_Proj,Def_Proj),
-	def_call_to_entry(Sg,Hv,Head,Def_Proj,Def_Entry,BothEntry),
+	def_call_to_entry(Sv,Sg,Hv,Head,K,Fv,Def_Proj,Def_Entry,BothEntry),
 	share_clique_def_compose((SH_Proj,Def_Entry),NewSH_Proj),
-	share_clique_call_to_entry(Sv,Sg,Hv,Head,Fv,NewSH_Proj,(Cl_Entry,Sh_Entry),
-	                           ExtraInfo),
+	share_clique_call_to_entry(Sv,Sg,Hv,Head,K,Fv,NewSH_Proj,(Cl_Entry,Sh_Entry),ExtraInfo),
 	Entry = ((Cl_Entry,Sh_Entry),Def_Entry),!.
-share_clique_def_call_to_entry(_,_,_,_,_,_,'$bottom',_).
+share_clique_def_call_to_entry(_,_,_,_,_,_,_,'$bottom',_).
 
 %------------------------------------------------------------------------%
 % share_clique_def_exit_to_prime(+,+,+,+,+,-,-)                          |
@@ -135,17 +134,15 @@ share_clique_def_less_or_equal((SH0,_),(SH1,_)):-!,
 % Specialized version of call_to_entry + exit_to_prime + extend for facts%
 %------------------------------------------------------------------------%
 
-share_clique_def_call_to_success_fact(Sg,Hv,Head,Sv,Call,Proj,Prime,Succ):-
+share_clique_def_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ):-
 	Call = (SH_Call,Def_Call),
 	Proj = (_,Def_Proj),
-	def_call_to_success_fact(Def_Proj,Hv,Head,Sv,Sg,Def_Call,Def_Prime,
-	                         Def_Succ),
+	def_call_to_success_fact(Sg,Hv,Head,K,Sv,Def_Call,Def_Proj,Def_Prime,Def_Succ),
 	share_clique_def_compose((SH_Call,Def_Succ),NewSH_Call),
-	share_clique_call_to_success_fact(Sg,Hv,Head,Sv,NewSH_Call,_Proj,
-                                          (Cl_Prime,Sh_Prime),(Cl_Succ,Sh_Succ)),
+	share_clique_call_to_success_fact(Sg,Hv,Head,K,Sv,NewSH_Call,_Proj,(Cl_Prime,Sh_Prime),(Cl_Succ,Sh_Succ)),
 	Prime = ((Cl_Prime,Sh_Prime),Def_Prime),
 	Succ = ((Cl_Succ,Sh_Succ),Def_Succ),!.
-share_clique_def_call_to_success_fact(_Sg,_Hv,_Head,_Sv,_Call,_Proj,'$bottom','$bottom').
+share_clique_def_call_to_success_fact(_Sg,_Hv,_Head,_K,_Sv,_Call,_Proj,'$bottom','$bottom').
 
 
 %------------------------------------------------------------------------%

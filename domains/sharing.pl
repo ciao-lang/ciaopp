@@ -91,8 +91,8 @@ project_share1(yes,Proj1,NewVars,Ls,[Proj1|Proj]):-
 %                      ABSTRACT Call To Entry                            %
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% share_call_to_entry(+,+,+,+,+,+,-,-)                                   %
-% share_call_to_entry(Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo)             %
+% share_call_to_entry(+,+,+,+,+,+,+,-,-)                                 %
+% share_call_to_entry(Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo)           %
 % It obtains the abstract substitution (Entry) which results from adding %
 % the abstraction of the Sg = Head to Proj, later projecting the         %
 % resulting substitution onto Hv. This is done as follows:               %
@@ -123,7 +123,7 @@ project_share1(yes,Proj1,NewVars,Ls,[Proj1|Proj]):-
 %         among those arguments in ShareArgsStar)
 %-------------------------------------------------------------------------
 
-share_call_to_entry(_Sv,Sg,_Hv,Head,Fv,Proj,Entry,ExtraInfo) :-
+share_call_to_entry(_Sv,Sg,_Hv,Head,_K,Fv,Proj,Entry,ExtraInfo) :-
 	variant(Sg,Head),!,
 	ExtraInfo = yes,
 	copy_term((Sg,Proj),(NewSg,NewProj)),
@@ -131,10 +131,10 @@ share_call_to_entry(_Sv,Sg,_Hv,Head,Fv,Proj,Entry,ExtraInfo) :-
 	share_sort(NewProj,Temp),
 	list_to_list_of_lists(Fv,Temp1),
 	merge(Temp1,Temp,Entry).
-share_call_to_entry(_,_,[],_,Fv,_,Entry,ExtraInfo):- !,
+share_call_to_entry(_,_,[],_,_K,Fv,_,Entry,ExtraInfo):- !,
 	ExtraInfo = no,
 	list_to_list_of_lists(Fv,Entry).
-share_call_to_entry(Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo) :-
+share_call_to_entry(Sv,Sg,Hv,Head,_K,Fv,Proj,Entry,ExtraInfo) :-
 	projected_gvars(Proj,Sv,Gv1),
 	abs_unify(Sg,Head,Binds,Gv2),
 	groundness_propagate(Binds,Sv,Gv1,Gv2,Proj,
@@ -292,9 +292,9 @@ share_extend(Prime,Sv,Call,Succ) :-
 % Specialized version of call_to_entry + exit_to_prime + extend for facts%
 %------------------------------------------------------------------------%
 
-share_call_to_success_fact(_,[],_,Sv,Call,_,[],Succ) :- !,
+share_call_to_success_fact(_Sg,[],_Head,_K,Sv,Call,_,[],Succ) :- !,
 	ord_split_lists_from_list(Sv,Call,_Intersect,Succ).
-share_call_to_success_fact(Sg,Hv,Head,Sv,Call,Proj,Prime,Succ) :-
+share_call_to_success_fact(Sg,Hv,Head,_K,Sv,Call,Proj,Prime,Succ) :-
 	projected_gvars(Proj,Sv,Gv1),
 	abs_unify(Sg,Head,Binds,Gv2),!,
 	groundness_propagate(Binds,Sv,Gv1,Gv2,Proj,
@@ -311,7 +311,7 @@ share_call_to_success_fact(Sg,Hv,Head,Sv,Call,Proj,Prime,Succ) :-
 	compute_success_proj(S_partition,Sg_args,ShareArgsHead,ProjStar,[],
                                                                     Prime),
 	share_extend(Prime,Sv,Call,Succ).
-share_call_to_success_fact(_Sg,_Hv,_Head,_Sv,_Call,_Proj, '$bottom','$bottom').
+share_call_to_success_fact(_Sg,_Hv,_Head,_K,_Sv,_Call,_Proj, '$bottom','$bottom').
 
 %-------------------------------------------------------------------------
 % Specialised version of share_call_to_success_fact in order to allow    |
@@ -1024,12 +1024,10 @@ share_call_to_success_builtin('=/2','='(X,Y),Sv,Call,Proj,Succ):-
 	copy_term(Y,Yterm),
 	Xterm = Yterm,!,
 	varset(Xterm,Vars),
-	share_call_to_success_fact('='(X,Y),Vars,'='(Xterm,Xterm),Sv,
-	        Call,Proj,_Prime,Succ).
+	share_call_to_success_fact('='(X,Y),Vars,'='(Xterm,Xterm),not_provided,Sv,Call,Proj,_Prime,Succ). % TODO: add some ClauseKey?
 share_call_to_success_builtin('=/2',_Sg,_Sv,_Call,_Proj,'$bottom').
 share_call_to_success_builtin('C/3','C'(X,Y,Z),Sv,Call,Proj,Succ):-
-	share_call_to_success_fact('='(X,[Y|Z]),[W],'='(W,W),Sv,
-	        Call,Proj,_Prime,Succ).
+	share_call_to_success_fact('='(X,[Y|Z]),[W],'='(W,W),not_provided,Sv,Call,Proj,_Prime,Succ). % TODO: add some ClauseKey?
 share_call_to_success_builtin('sort/2',sort(X,Y),Sv,Call,Proj,Succ):- 
 	share_call_to_success_builtin('=/2','='(X,Y),Sv,Call,Proj,Succ).
 share_call_to_success_builtin('expand_term/2',expand_term(X,Y),Sv,Call,Proj,Succ):- 
@@ -1054,7 +1052,7 @@ share_call_to_success_builtin('arg/3',arg(X,Y,Z),_,Call,Proj,Succ):-
 sh_any_arg_var(Sg,Sv,TempCall,Proj,Succ):-
 	Head = p(f(A,_B),A),
 	varset(Head,Hv),
-	share_call_to_success_fact(Sg,Hv,Head,Sv,TempCall,Proj,_Prime,Succ).
+	share_call_to_success_fact(Sg,Hv,Head,not_provided,Sv,TempCall,Proj,_Prime,Succ). % TODO: add some ClauseKey?
 
 sh_any_arg_all_args(0,_,_,_Call,_Proj,Succs):- !, Succs=[].
 sh_any_arg_all_args(N,Y,Z,Call,Proj0,[Succ|Succs]):-

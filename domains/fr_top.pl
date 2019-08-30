@@ -211,14 +211,14 @@ fr_glb(_ASub0,_ASub1,_ASub) :- compiler_error(op_not_implemented(glb)), fail.
 
 %----------------------------------------------------------------------------
 
-% fr_call_to_success_fact(Proj,Hv,Head,K,Sv,Sg,Call,Prime,Succ)         
+% fr_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ)         
 % Proj,Call,Prime,Succ : <as>;
 % Prime = (Proj \Aconj (Sg=Head)) projected onto Sv
 % Succ = Call \Aconj Primen
 %
-fr_call_to_success_fact(Proj,_Hv,_Head,_K,_Sv,_Sg,_Call,Prime,Succ) :-
+fr_call_to_success_fact(_Sg,_Hv,_Head,_K,_Sv,_Call,Proj,Prime,Succ) :-
 	bottomelement(Proj), !, Prime = Proj, Succ = Proj.
-fr_call_to_success_fact(Proj,_Hv,Head,_K,Sv,Sg,Call,Prime,Succ):-
+fr_call_to_success_fact(Sg,_Hv,Head,_K,Sv,Call,Proj,Prime,Succ):-
 	Sg =.. [_|Sargs], Head =.. [_|Hargs],
 	fr_call_head_unif(Sargs, Hargs, Proj, PrimeSvHv),
 	( bottomelement(PrimeSvHv) ->

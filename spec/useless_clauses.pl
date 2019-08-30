@@ -47,7 +47,7 @@ useless_clause(fact(C),AbsInt,Sg,Sv,Proj):-!,
 	useless_clause(C,AbsInt,Sg,Sv,Proj).
 useless_clause(clause(Head,_),AbsInt,Sg,Sv,Proj):-
 	varset(Head,Hv),
-	call_to_entry(AbsInt,Sv,Sg,Hv,Head,not_provided,[],Proj,Entry,_),
+	call_to_entry(AbsInt,Sv,Sg,Hv,Head,not_provided,[],Proj,Entry,_), % TODO: add some ClauseKey? (JF)
 	bottom([Entry]).
 
 

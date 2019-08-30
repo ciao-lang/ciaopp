@@ -218,7 +218,7 @@ view_fixpoint('exit clause',Id,_,ClKey,Head,Exit,_):- !,
 	color_node(Node,white).
 view_fixpoint('visit fact',Id,_,ClKey,Head,Proj,Help):- !,
 	Help=(Sv,Sg,Hv,Fv,AbsInt),
-	call_to_entry(AbsInt,Sv,Sg,Hv,Head,not_provided,Fv,Proj,Entry,_),
+	call_to_entry(AbsInt,Sv,Sg,Hv,Head,not_provided,Fv,Proj,Entry,_), % TODO: add some ClauseKey? (JF)
 	retract_fact(node(Id,ClKey,Head,Proj,ASubs,ASubs1,T,Node)),
 	ASubs1=([Entry|Entries],Exits),
 	asserta_fact(node(Id,ClKey,Head,Proj,ASubs,(Entries,Exits),T,Node)),
@@ -229,7 +229,7 @@ view_fixpoint('visit fact',Id,_,ClKey,Head,Proj,Help):- !,
 	synchro.
 view_fixpoint('exit fact',Id,_,ClKey,Head,Prime,Help):- !,
 	Help=(Sv,Sg,Hv,Fv,AbsInt),
-	call_to_entry(AbsInt,Sv,Sg,Hv,Head,not_provided,Fv,Prime,Exit,_),
+	call_to_entry(AbsInt,Sv,Sg,Hv,Head,not_provided,Fv,Prime,Exit,_), % TODO: add some ClauseKey? (JF)
 	retract_fact(node(Id,ClKey,Head,Proj,ASubs,ASubs1,T,Node)),
 	ASubs1=(Entries,[Exit|Exits]),
 	asserta_fact(node(Id,ClKey,Head,Proj,ASubs,(Entries,Exits),T,Node)),

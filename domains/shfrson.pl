@@ -1,6 +1,6 @@
 :- module(shfrson,
-	[ shfrson_call_to_entry/8,
-	  shfrson_call_to_success_fact/8, 
+	[ shfrson_call_to_entry/9,
+	  shfrson_call_to_success_fact/9, 
 	  shfrson_compute_lub/2,
 	  shfrson_exit_to_prime/7,
 	  shfrson_extend/4,   
@@ -56,9 +56,9 @@
 % and then compose the information of both, eliminating redundancies.    %
 % See compose function.                                                  %
 %-------------------------------------------------------------------------
-shfrson_call_to_entry(Sv,Sg,Hv,Head,Fv,(Proj_son,Proj_shfr),Entry,Extra):-
-	son_call_to_entry(Hv,Sg,Head,Proj_son,Entry_son,Extra_son),
-	shfr_call_to_entry(Sv,Sg,Hv,Head,Fv,Proj_shfr,Entry_shfr,Extra_shfr),
+shfrson_call_to_entry(Sv,Sg,Hv,Head,K,Fv,(Proj_son,Proj_shfr),Entry,Extra):-
+	son_call_to_entry(Sv,Sg,Hv,Head,K,Fv,Proj_son,Entry_son,Extra_son),
+	shfr_call_to_entry(Sv,Sg,Hv,Head,K,Fv,Proj_shfr,Entry_shfr,Extra_shfr),
 	compose(Entry_son,Entry_shfr,Hv,Entry),
 	Extra = (Extra_son,Extra_shfr).
 
@@ -85,7 +85,7 @@ shfrson_extend((Prime_son,Prime_shfr),Sv,(Call_son,Call_shfr),Succ):-
 
 %-------------------------------------------------------------------------
 
-shfrson_call_to_success_fact(Sg,Hv,Head,Sv,Call,Proj,Prime,Succ):-
+shfrson_call_to_success_fact(Sg,Hv,Head,_K,Sv,Call,Proj,Prime,Succ):-
 	Proj = (Proj_son,Proj_shfr),
 	son_call_to_prime_fact(Sg,Hv,Head,Sv,Proj_son,Prime_son),
 	shfr_call_to_prime_fact(Sg,Hv,Head,Sv,Proj_shfr,Prime_shfr),

@@ -1,8 +1,8 @@
 
 :- module(sondergaard,
-	[ son_call_to_entry/6,
+	[ son_call_to_entry/9,
 	  son_call_to_success_builtin/6, 
-	  son_call_to_success_fact/8, 
+	  son_call_to_success_fact/9, 
 	  son_call_to_prime_fact/6, 
 	  son_compute_lub/2,  
 	  son_exit_to_prime/7,
@@ -119,8 +119,8 @@ son_project_subst([_|Xss],Vars,Proj_sh):-
 %                      ABSTRACT Call To Entry                            %
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% son_call_to_entry(+,+,+,+,-,-)                                         %
-% son_call_to_entry(Hv,Sg,Head,Proj,Entry,ExtraInfo)                     %
+% son_call_to_entry(+,+,+,+,+,+,+,-,-)                                   %
+% son_call_to_entry(Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo)             %
 % It obtains the abstract substitution (Entry) which results from adding %
 % the abstraction of the Sg = Head to Proj, later projecting the         %
 % resulting substitution onto Hv. This is done as follows:               %
@@ -145,13 +145,13 @@ son_project_subst([_|Xss],Vars,Proj_sh):-
 %    - Entry_sh will be the result of projeecting NewSh onto Hv          %
 %------------------------------------------------------------------------%
 
-son_call_to_entry(_,Sg,Head,Proj,Entry,yes):-
+son_call_to_entry(_Sv,Sg,_Hv,Head,_K,_Fv,Proj,Entry,yes):-
 	variant(Sg,Head),!,
 	copy_term((Sg,Proj),(NewTerm,NewEntry)),
 	Head = NewTerm,
 	son_sort(NewEntry,Entry).
-son_call_to_entry([],_,_,_,([],[]),no):- !.
-son_call_to_entry(Hv,Sg,Head,(Proj_gr,Proj_sh),Entry,(NewBinds,GvAll)):-
+son_call_to_entry(_Sv,_Sg,[],_Head,_K,_Fv,_Proj,([],[]),no):- !.
+son_call_to_entry(_Sv,Sg,Hv,Head,_K,_Fv,(Proj_gr,Proj_sh),Entry,(NewBinds,GvAll)):-
 	son_abs_unify(Sg,Head,Binds,Gv1),
 	son_groundness_propagate(Binds,Proj_gr,Gv1,Proj_sh,NewBinds,TempSh,
                                                                       GvAll),
@@ -296,12 +296,12 @@ son_extend((Prime_gr,Prime_sh),Sv,(Call_gr,Call_sh),(Succ_gr,Succ_sh)):-
 % Specialized version of call_to_entry + exit_to_prime + extend for facts%
 %-------------------------------------------------------------------------
 
-son_call_to_success_fact(_,[],_,Sv,(Call_gr,Call_sh),_,Prime,Succ):- !,
+son_call_to_success_fact(_,[],_Head,_K,Sv,(Call_gr,Call_sh),_,Prime,Succ):- !,
 	Prime = (Sv,[]),
 	merge(Call_gr,Sv,Succ_gr),
 	ord_split_lists_from_list(Sv,Call_sh,_Intersect,Succ_sh),
 	Succ = (Succ_gr,Succ_sh). 
-son_call_to_success_fact(Sg,_,Head,Sv,Call,(Gv,Sh),(Prime_gr,Prime_sh),Succ):-
+son_call_to_success_fact(Sg,_,Head,_K,Sv,Call,(Gv,Sh),(Prime_gr,Prime_sh),Succ):-
 	son_abs_unify(Sg,Head,Binds,Gv_1),
 	son_groundness_propagate(Binds,Gv,Gv_1,Sh,NewBinds,TempSh,GvAll),
 	collect_singletons(TempSh,NonLinear),
@@ -692,7 +692,7 @@ son_success_builtin(copy_term,Sv_u,p(X,Y),Call,Succ):-
 	varset(NewY,Hv),
 	varset(X,Xv),
 	son_project(Xv,Call,Proj),
-	son_call_to_entry(Hv,X,NewY,Proj,(Entry_gr,Entry_sh),_),
+	son_call_to_entry(Xv,X,Hv,NewY,not_provided,[],Proj,(Entry_gr,Entry_sh),_), % TODO: add some ClauseKey?
 	Call = (Call_gr,Call_sh),
 	merge(Call_gr,Entry_gr,TempCall_gr),
 	merge(Call_sh,Entry_sh,TempCall_sh),

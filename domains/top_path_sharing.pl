@@ -1,7 +1,7 @@
 /*             Copyright (C)1990-94 UPM-CLIP				*/
 :- module(top_path_sharing,
-	[ path_call_to_entry/7,
-	  path_call_to_success_fact/8,
+	[ path_call_to_entry/9,
+	  path_call_to_success_fact/9,
 	  path_compute_lub/2, 
 	  path_exit_to_prime/7,
 	  path_extend/4,      
@@ -66,10 +66,10 @@ depth_k(K):- current_pp_flag(depth,K).
 %                      ABSTRACT Call To Entry
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% path_call_to_entry(+,+,+,+,+,-,-)                                      %
-% path_call_to_entry(Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo)                 %
+% path_call_to_entry(+,+,+,+,+,+,+,-,-)                                  %
+% path_call_to_entry(Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo)            %
 %------------------------------------------------------------------------%
-path_call_to_entry(Sg,_,Head,Fv,Proj,Entry,Flag):- 
+path_call_to_entry(_Sv,Sg,_Hv,Head,_K,Fv,Proj,Entry,Flag):- 
 	variant(Sg,Head),!,
 	Flag = yes,
 	copy_term((Sg,Proj),(NewTerm,NewProj_u)),
@@ -77,9 +77,9 @@ path_call_to_entry(Sg,_,Head,Fv,Proj,Entry,Flag):-
 	sort_list_of_lists(NewProj_u,NewProj),
 	list_to_free_abstraction(Fv,Free),
 	merge(Free,NewProj,Entry).
-path_call_to_entry(_,[],_,Fv,_,Entry,no):- !,
+path_call_to_entry(_Sv,_Sg,[],_Head,_K,Fv,_Proj,Entry,no):- !,
 	list_to_free_abstraction(Fv,Entry).
-path_call_to_entry(Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo):-
+path_call_to_entry(_Sv,Sg,Hv,Head,_K,Fv,Proj,Entry,ExtraInfo):-
 	simplify_equations(Sg,Head,Binds),
 	list_to_free_abstraction(Hv,TmpASub),
 	merge(TmpASub,Proj,NewProj),
@@ -281,11 +281,11 @@ compute_lub(ASub,[ASub|Lub],Lub).
 %------------------------------------------------------------------------%
 % Specialized version of call_to_entry + exit_to_prime + extend for facts%
 %-------------------------------------------------------------------------
-path_call_to_success_fact(_Sg,_Hv,_Head,_Sv,_Call,_Proj,'$bottom','$bottom') :- !.
-path_call_to_success_fact(_Sg,[],_Head,Sv,Call,_Proj,Prime,Succ) :- !,
+path_call_to_success_fact(_Sg,_Hv,_Head,_K,_Sv,_Call,_Proj,'$bottom','$bottom') :- !.
+path_call_to_success_fact(_Sg,[],_Head,_K,Sv,Call,_Proj,Prime,Succ) :- !,
 	ord_split_paths_from_list(Sv,Call,_,Succ),
 	Prime = [].
-path_call_to_success_fact(Sg,Hv,Head,Sv,Call,Proj,Prime,Succ) :-
+path_call_to_success_fact(Sg,Hv,Head,_K,Sv,Call,Proj,Prime,Succ) :-
 	simplify_equations(Sg,Head,Binds),
 	list_to_free_abstraction(Hv,TmpASub),
 	merge(TmpASub,Proj,NewProj),

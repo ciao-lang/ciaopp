@@ -2,8 +2,8 @@
 /*                          1993 Katholieke Universiteit Leuven.        */
 
 :- module(fd,
-	[ fd_call_to_entry/6,
-	  fd_call_to_success_fact/8,
+	[ fd_call_to_entry/9,
+	  fd_call_to_success_fact/9,
 	  fd_compute_lub/2,   
 	  fd_exit_to_prime/7,
 	  fd_extend/5,        
@@ -54,14 +54,14 @@
 
 %------------------------------------------------------------------------------
 
-fd_call_to_entry(Sg,Hv,Head,(F,D),Entry,ExtraInfo):-
-        def_call_to_entry(Sg,Hv,Head,D,D_entry,ExtraInfo),
-        fd_decide_continue_entry(D_entry,F,D,Sg,Hv,Head,F_entry),
+fd_call_to_entry(Sv,Sg,Hv,Head,K,Fv,(F,D),Entry,ExtraInfo):-
+        def_call_to_entry(Sv,Sg,Hv,Head,Fv,K,D,D_entry,ExtraInfo),
+        fd_decide_continue_entry(D_entry,F,D,Sv,Sg,Hv,Head,K,F_entry),
         fd_decide_bottom(F_entry,D_entry,Entry).
 
-fd_decide_continue_entry('$bottom',_F,_D,_Sg,_Hv,_Head,'$bottom').
-fd_decide_continue_entry(a(G_entry,_R),F,a(G,_),Sg,Hv,Head,F_entry):-
-        vero_call_to_entry(Sg,Hv,Head,G,F,G_entry,F_entry).
+fd_decide_continue_entry('$bottom',_F,_D,_Sv,_Sg,_Hv,_Head,_K,'$bottom').
+fd_decide_continue_entry(a(G_entry,_R),F,a(G,_),Sv,Sg,Hv,Head,K,F_entry):-
+        vero_call_to_entry(Sv,Sg,Hv,Head,K,G,F,G_entry,F_entry).
 
 fd_decide_bottom('$bottom',_D_entry,'$bottom'):- !.
 fd_decide_bottom(F_entry,D_entry,(F_entry,D_entry)).
@@ -143,21 +143,16 @@ fd_decide_continue_extend(a(G_succ,_R),F_prime,F_call,Sv,F_succ):-
 
 %------------------------------------------------------------------------------
 
-fd_call_to_success_fact('$bottom',_Sg,_Hv,_Head,_Sv,_Call,'$bottom','$bottom').
-fd_call_to_success_fact((F_proj,D_proj),Sg,Hv,Head,Sv,(F_call,D_call),
-                                                               Prime,Succ):-
-        def_call_to_success_fact(D_proj,Hv,Head,Sv,Sg,D_call,D_prime,D_succ),
-        fd_decide_continue_fact(D_succ,F_call,F_proj,D_proj,Hv,Head,Sv,Sg,
-                                                             F_prime,F_succ),
+fd_call_to_success_fact(_Sg,_Hv,_Head,_K,_Sv,_Call,'$bottom','$bottom','$bottom') :- !.
+fd_call_to_success_fact(Sg,Hv,Head,K,Sv,(F_proj,D_proj),(F_call,D_call),Prime,Succ):-
+        def_call_to_success_fact(Sg,Hv,Head,K,Sv,D_call,D_proj,D_prime,D_succ),
+        fd_decide_continue_fact(D_succ,F_call,F_proj,D_proj,Hv,Head,K,Sv,Sg,F_prime,F_succ),
         fd_decide_bottom(F_prime,D_prime,Prime),
         fd_decide_bottom(F_succ,D_succ,Succ).
 
-fd_decide_continue_fact('$bottom',_F_call,_F_proj,_D_proj,
-                                     _Hv,_Head,_Sv,_Sg,'$bottom','$bottom').
-fd_decide_continue_fact(a(G_succ,_),F_call,F_proj,a(G_proj,_),
-                                      Hv,Head,Sv,Sg,F_prime,F_succ):-
-        vero_call_to_success_fact(F_proj,G_proj,G_succ,Hv,Head,Sv,Sg,
-                                                F_call,F_prime,F_succ).
+fd_decide_continue_fact('$bottom',_F_call,_F_proj,_D_proj,_Hv,_Head,_K,_Sv,_Sg,'$bottom','$bottom').
+fd_decide_continue_fact(a(G_succ,_),F_call,F_proj,a(G_proj,_),Hv,Head,K,Sv,Sg,F_prime,F_succ):-
+        vero_call_to_success_fact(F_proj,G_proj,G_succ,Hv,Head,K,Sv,Sg,F_call,F_prime,F_succ).
 
 %------------------------------------------------------------------------------
 

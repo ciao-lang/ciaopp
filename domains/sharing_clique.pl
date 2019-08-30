@@ -50,9 +50,9 @@
 %                      ABSTRACT Call To Entry                            |
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% share_clique_call_to_entry(+,+,+,+,+,+,-,?)                            |
+% share_clique_call_to_entry(+,+,+,+,+,+,+,-,?)                          |
 %------------------------------------------------------------------------%
-share_clique_call_to_entry(_Sv,Sg,_Hv,Head,Fv,Proj,Entry,ExtraInfo) :-
+share_clique_call_to_entry(_Sv,Sg,_Hv,Head,_K,Fv,Proj,Entry,ExtraInfo) :-
      variant(Sg,Head),!,
      ExtraInfo = yes,
      copy_term((Sg,Proj),(NewSg,NewProj)),
@@ -62,12 +62,12 @@ share_clique_call_to_entry(_Sv,Sg,_Hv,Head,Fv,Proj,Entry,ExtraInfo) :-
      merge(Temp1,Temp,Sh),
      %Entry = (Cl,Sh).
      share_clique_normalize((Cl,Sh),Entry).
-share_clique_call_to_entry(_,_,[],_,Fv,_,Entry,ExtraInfo):- !,
+share_clique_call_to_entry(_Sv,_Sg,[],_Head,_K,Fv,_Proj,Entry,ExtraInfo):- !,
      ExtraInfo = no,
      list_to_list_of_lists(Fv,Sh_Entry),
      %Entry = ([],Sh_Entry).
      share_clique_normalize(([],Sh_Entry),Entry).
-share_clique_call_to_entry(Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo):-
+share_clique_call_to_entry(Sv,Sg,Hv,Head,_K,Fv,Proj,Entry,ExtraInfo):-
      % groundness propagation to exit_to_prime
      projected_gvars_clique(Proj,Sv,Gv_Call),
      peel_equations( Sg,Head, Equations),
@@ -79,7 +79,7 @@ share_clique_call_to_entry(Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo):-
      %Entry1 = Entry,
      share_clique_normalize(Entry1,Entry),
      ExtraInfo = (Equations,Gv_Call),!.
-share_clique_call_to_entry(_Sv,_Sg,_Hv,_Head,_Fv,_Proj,'$bottom',_).
+share_clique_call_to_entry(_Sv,_Sg,_Hv,_Head,_K,_Fv,_Proj,'$bottom',_).
 
 %------------------------------------------------------------------------%
 %                      ABSTRACT Exit to Prime                            |
@@ -444,11 +444,11 @@ sharing_part_less_or_equal_([Sh|Shs],Sh1,Cl1):-
 % extend, so we can loose information.                                   |
 %------------------------------------------------------------------------%
 
-share_clique_call_to_success_fact(_,[],_,Sv,(Cl,Sh),_,([],[]),Succ):-!,
+share_clique_call_to_success_fact(_,[],_Head,_K,Sv,(Cl,Sh),_,([],[]),Succ):-!,
 	ord_split_lists_from_list(Sv,Sh,_,Succ_Sh),
 	delete_vars_from_list_of_lists(Sv,Cl,Succ_Cl),
 	Succ = (Succ_Cl,Succ_Sh).
-share_clique_call_to_success_fact(Sg,Hv,Head,Sv,Call,_Proj,Prime,Succ):-
+share_clique_call_to_success_fact(Sg,Hv,Head,_K,Sv,Call,_Proj,Prime,Succ):-
 % exit_to_prime
 	share_clique_extend_asub(Call,Hv,ASub),	
 	peel_equations(Sg, Head,Equations),
@@ -459,7 +459,7 @@ share_clique_call_to_success_fact(Sg,Hv,Head,Sv,Call,_Proj,Prime,Succ):-
 	delete_vars_from_list_of_lists(Hv,Cl,Succ_Cl),
 	delete_vars_from_list_of_lists(Hv,Sh,Succ_Sh),
 	share_clique_sort((Succ_Cl,Succ_Sh),Succ),!.
-share_clique_call_to_success_fact(_Sg,_Hv,_Head,_Sv,_Call,_Proj,'$bottom','$bottom').
+share_clique_call_to_success_fact(_Sg,_Hv,_Head,_K,_Sv,_Call,_Proj,'$bottom','$bottom').
 
 %------------------------------------------------------------------------%
 % Specialised version of share_call_to_success_fact in order to allow    |
@@ -981,12 +981,10 @@ share_clique_call_to_success_builtin('=/2','='(X,Y),Sv,Call,Proj,Succ):-
 	copy_term(Y,Yterm),
 	Xterm = Yterm,!,
 	varset(Xterm,Vars),
-	share_clique_call_to_success_fact('='(X,Y),Vars,'='(Xterm,Xterm),Sv,
-	        Call,Proj,_Prime,Succ).  
+	share_clique_call_to_success_fact('='(X,Y),Vars,'='(Xterm,Xterm),not_provided,Sv,Call,Proj,_Prime,Succ). % TODO: add some ClauseKey?
 share_clique_call_to_success_builtin('=/2',_Sg,_Sv,_Call,_Proj,'$bottom').
 share_clique_call_to_success_builtin('C/3','C'(X,Y,Z),Sv,Call,Proj,Succ):-
-	share_clique_call_to_success_fact('='(X,[Y|Z]),[W],'='(W,W),Sv,
-	        Call,Proj,_Prime,Succ).
+	share_clique_call_to_success_fact('='(X,[Y|Z]),[W],'='(W,W),not_provided,Sv,Call,Proj,_Prime,Succ). % TODO: add some ClauseKey?
 share_clique_call_to_success_builtin('sort/2',sort(X,Y),Sv,Call,Proj,Succ):- 
 	share_clique_call_to_success_builtin('=/2','='(X,Y),Sv,Call,Proj,Succ).
 share_clique_call_to_success_builtin('expand_term/2',expand_term(X,Y),Sv,Call,
@@ -1002,8 +1000,7 @@ share_clique_call_to_success_builtin('arg/3',arg(X,Y,Z),_,Call,Proj,Succ):-
 	varset(Sg,Sv),
 	varset(Head,Hv),
 	share_clique_project(Sv,TempCall,Proj),
-        share_clique_call_to_success_fact(Sg,Hv,Head,Sv,TempCall,Proj,_Prime,
-	                                  Succ).
+        share_clique_call_to_success_fact(Sg,Hv,Head,not_provided,Sv,TempCall,Proj,_Prime,Succ). % TODO: add some ClauseKey?
 
 %------------------------------------------------------------------------%
 %                      Intermediate operations                           |

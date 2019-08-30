@@ -25,9 +25,9 @@
 %                      ABSTRACT Call To Entry                            %
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% shfrlin_call_to_entry(+,+,+,+,+,+,-,?)                                 |
+% shfrlin_call_to_entry(+,+,+,+,+,+,+,-,?)                               |
 %------------------------------------------------------------------------%
-shfrlin_call_to_entry(_,Sg,_Hv,Head,Fv,Proj,Entry,Flag):-
+shfrlin_call_to_entry(_Sv,Sg,_Hv,Head,_K,Fv,Proj,Entry,Flag):-
      variant(Sg,Head),!,
      Flag = yes,
      copy_term((Sg,Proj),(NewTerm,NewProj)),
@@ -38,12 +38,12 @@ shfrlin_call_to_entry(_,Sg,_Hv,Head,Fv,Proj,Entry,Flag):-
      merge(Temp1,Temp_sh,Entry_sh),
      merge(Temp_lin,Fv,Entry_lin),
      Entry = (Entry_sh,Entry_fr,Entry_lin).
-shfrlin_call_to_entry(_,_Sv,[],_Head,Fv,_Proj,Entry,no):- !,
+shfrlin_call_to_entry(_Sv,_Sg,[],_Head,_K,Fv,_Proj,Entry,no):- !,
      list_to_list_of_lists(Fv,Entry_sh),
      change_values_insert(Fv,[],Entry_fr,f),
      member_value_freeness(Entry_fr,Entry_lin,f),
      Entry = (Entry_sh,Entry_fr,Entry_lin).
-shfrlin_call_to_entry(_Sv,Sg,Hv,Head,Fv,Project,Entry,ExtraInfo):-
+shfrlin_call_to_entry(_Sv,Sg,Hv,Head,_K,Fv,Project,Entry,ExtraInfo):-
      Project = (_,F2,_),
      peel_equations_frl(Sg, Head,Equations),
      shfrlin_extend_asub(Project,Hv,ASub),     
@@ -52,7 +52,7 @@ shfrlin_call_to_entry(_Sv,Sg,Hv,Head,Fv,Project,Entry,ExtraInfo):-
      shfrlin_project(ASub1,Hv,Entry0),
      shfrlin_extend_asub(Entry0,Fv,Entry),
      ExtraInfo = (Equations,F2),!.
-shfrlin_call_to_entry(_Sv,_Sg,_Hv,_Head,_Fv,_Proj,'$bottom',_).
+shfrlin_call_to_entry(_Sv,_Sg,_Hv,_Head,_K,_Fv,_Proj,'$bottom',_).
      
 %------------------------------------------------------------------------%
 %                      ABSTRACT Exit to Prime                            |
@@ -168,7 +168,7 @@ shfrlin_glb((Sh1,Fr1,Lin1),(Sh2,Fr2,Lin2),Glb):-
 %------------------------------------------------------------------------%
 % Specialized version of call_to_entry + exit_to_prime + extend for facts%
 %------------------------------------------------------------------------%
-shfrlin_call_to_success_fact(Sg,Hv,Head,Sv,Call,_Proj,Prime,Succ) :-
+shfrlin_call_to_success_fact(Sg,Hv,Head,_K,Sv,Call,_Proj,Prime,Succ) :-
 % exit_to_prime   -------------------------------------------------------
 	shfrlin_extend_asub(Call,Hv,ASub),  
 	peel_equations_frl(Sg, Head,Equations),
@@ -179,7 +179,7 @@ shfrlin_call_to_success_fact(Sg,Hv,Head,Sv,Call,_Proj,Prime,Succ) :-
 	shfrlin_project(ASub1,Sv,Prime),
 % extend    --------------------------------------------------------------
 	shfrlin_delete_variables(Hv,ASub1,Succ),!.
-shfrlin_call_to_success_fact(_Sg,_Hv,_Head,_Sv,_Call,_Proj, '$bottom','$bottom').
+shfrlin_call_to_success_fact(_Sg,_Hv,_Head,_K,_Sv,_Call,_Proj, '$bottom','$bottom').
 
 shfrlin_delete_variables(Vars,(Sh,Fr,L),(New_Sh,New_Fr,NewL)):-
 	sharefree_delete_variables(Vars,(Sh,Fr),(New_Sh,New_Fr)),
@@ -233,14 +233,14 @@ shfrlin_special_builtin(SgKey,Sg,Type,Condvars):-
 % 	varset(Head,Hv),
 % 	TempASub = (Temp_sh,Temp_fr),
 % 	shfr_project(TempASub,Sv,Proj),
-%  	shfrlin_call_to_success_fact(Sg,Hv,Head,Sv,TempASub,Proj,_,Succ).
+%  	shfrlin_call_to_success_fact(Sg,Hv,Head,not_provided,Sv,TempASub,Proj,_,Succ). % TODO: add some ClauseKey?
 % shfrlin_success_builtin(arg,_,_,_,'$bottom').
 shfrlin_success_builtin(exp,_,Sg,Call,Succ):- !,
 	Head = p(A,f(A,_B)),
 	varset(Sg,Sv),
 	varset(Head,Hv),
 	shfrlin_project(Call,Sv,Proj),
-	shfrlin_call_to_success_fact(Sg,Hv,Head,Sv,Call,Proj,_,Succ).
+	shfrlin_call_to_success_fact(Sg,Hv,Head,not_provided,Sv,Call,Proj,_,Succ). % TODO: add some ClauseKey?
 shfrlin_success_builtin(exp,_,_,_,'$bottom') :- !.
 % shfrlin_success_builtin(copy_term,_,p(X,Y),Call,Succ):-
 % 	varset(X,VarsX),
@@ -322,12 +322,10 @@ shfrlin_call_to_success_builtin('=/2','='(X,Y),Sv,Call,Proj,Succ):-
 	copy_term(Y,Yterm),
 	Xterm = Yterm,!,
 	varset(Xterm,Vars),
-	shfrlin_call_to_success_fact('='(X,Y),Vars,'='(Xterm,Xterm),Sv,
-	                             Call,Proj,_Prime,Succ).
+	shfrlin_call_to_success_fact('='(X,Y),Vars,'='(Xterm,Xterm),not_provided,Sv,Call,Proj,_Prime,Succ). % TODO: add some ClauseKey?
 shfrlin_call_to_success_builtin('=/2',_Sg,_Sv,_Call,_Proj,'$bottom').
 shfrlin_call_to_success_builtin('C/3','C'(X,Y,Z),Sv,Call,Proj,Succ):-
-	shfrlin_call_to_success_fact('='(X,[Y|Z]),[W],'='(W,W),Sv,
-	                              Call,Proj,_Prime,Succ).
+	shfrlin_call_to_success_fact('='(X,[Y|Z]),[W],'='(W,W),not_provided,Sv,Call,Proj,_Prime,Succ). % TODO: add some ClauseKey?
 shfrlin_call_to_success_builtin('keysort/2',keysort(X,Y),Sv,Call,Proj,Succ):- 
 	shfrlin_call_to_success_builtin('=/2','='(X,Y),Sv,Call,Proj,Succ).
 shfrlin_call_to_success_builtin('sort/2',sort(X,Y),Sv,Call,Proj,Succ):- 
@@ -339,8 +337,7 @@ shfrlin_call_to_success_builtin('sort/2',sort(X,Y),Sv,Call,Proj,Succ):-
 	; varset([X,Y],Sv),
 	  copy_term(Y,Yterm),
 	  varset(Yterm,Vars),
-	  shfrlin_call_to_success_fact('='(X,Y),Vars,'='(Yterm,Yterm),Sv,
-	                               Call,Proj,_Prime,Succ)
+	  shfrlin_call_to_success_fact('='(X,Y),Vars,'='(Yterm,Yterm),not_provided,Sv,Call,Proj,_Prime,Succ) % TODO: add some ClauseKey?
 	).
 shfrlin_call_to_success_builtin('sort/2',sort(X,Y),Sv,Call,Proj,Succ):- 
 	functor(X,'.',_), !,
@@ -356,8 +353,7 @@ shfrlin_call_to_success_builtin('sort/2',sort(X,Y),Sv,Call,Proj,Succ):-
 	change_values_if_f([Z],Fr,TFr,nf),
 	member_value_freeness(Temp_fr,Temp_lin,f),
 	member_value_freeness(TFr,Lin,f),
-	shfrlin_call_to_success_fact('='(X,Y),Vars,'='(Xterm,Xterm),Sv,
-	        (Call_Sh,Temp_fr,Temp_lin),(Sh,TFr,Lin),_Prime,Succ). 
+	shfrlin_call_to_success_fact('='(X,Y),Vars,'='(Xterm,Xterm),not_provided,Sv,(Call_Sh,Temp_fr,Temp_lin),(Sh,TFr,Lin),_Prime,Succ). % TODO: add some ClauseKey? 
 shfrlin_call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,(Succ_sh,Succ_fr,Succ_lin)):- 
 	Call = (Call_sh,Call_fr,Call_lin),
 	ord_subtract(Call_lin,Sv,Call_lin_not_rel),

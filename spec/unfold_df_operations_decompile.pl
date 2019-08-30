@@ -67,7 +67,7 @@ can_continue(r(AbsInt,OldSg,OldSv,OldProj),L,Lit,Sg,Case):-!,
 	varset(Sg,Sv),
 	varset(L,BodyVars),
 	ord_subtract(BodyVars,Sv,Fv),
-	call_to_entry(AbsInt,OldSv,OldSg,Sv,Sg,not_provided,Fv,OldProj,Entry,_),
+	call_to_entry(AbsInt,OldSv,OldSg,Sv,Sg,not_provided,Fv,OldProj,Entry,_), % TODO: add some ClauseKey? (JF)
 	(Entry == '$bottom' ->
 	    debug('useless clause'),
 	    Case = 'basiccontrol:fail'
@@ -81,7 +81,7 @@ can_continue(e(AbsInt,OldSg,OldSv,OldProj),L,_Lit,Sg,Case):-
 	varset(Sg,Sv),
 	varset(L,BodyVars),
 	ord_subtract(BodyVars,Sv,Fv),
-	call_to_entry(AbsInt,OldSv,OldSg,Sv,Sg,not_provided,Fv,OldProj,Entry,_),
+	call_to_entry(AbsInt,OldSv,OldSg,Sv,Sg,not_provided,Fv,OldProj,Entry,_), % TODO: add some ClauseKey? (JF)
 	adapt_info_to_assrt_head(AbsInt,L,BodyVars,Entry,NGoal,NewInfo),
 	abs_exec_conj_props(Cond,AbsInt,NewInfo),!,
 	NGoal = L, 
@@ -97,7 +97,7 @@ can_continue(e(AbsInt,OldSg,OldSv,OldProj),L,_Lit,Sg,Case):-
 	varset(Sg,Sv),
 	varset(L,BodyVars),
 	ord_subtract(BodyVars,Sv,Fv),
-	call_to_entry(AbsInt,OldSv,OldSg,Sv,Sg,not_provided,Fv,OldProj,Entry,_),
+	call_to_entry(AbsInt,OldSv,OldSg,Sv,Sg,not_provided,Fv,OldProj,Entry,_), % TODO: add some ClauseKey? (JF)
 
 	abs_exec_regtype_in_clause(AbsInt,SPred,F,A,L,BodyVars,Entry,Sense),!,
 
@@ -110,7 +110,7 @@ can_continue(a(AbsInt,OldSg,OldSv,OldProj),L,Lit,Sg,Case):-
 	varset(Sg,Sv),
 	varset(L,BodyVars),
 	ord_subtract(BodyVars,Sv,Fv),
-	call_to_entry(AbsInt,OldSv,OldSg,Sv,Sg,not_provided,Fv,OldProj,Entry,_),
+	call_to_entry(AbsInt,OldSv,OldSg,Sv,Sg,not_provided,Fv,OldProj,Entry,_), % TODO: add some ClauseKey? (JF)
 	(Entry == '$bottom' ->
 	    debug('useless clause'),
 	    Case = 'basiccontrol:fail'

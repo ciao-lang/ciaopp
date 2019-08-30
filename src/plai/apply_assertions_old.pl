@@ -369,7 +369,7 @@ do_trust_(AbsInt,Step,SgCopy,Call,Succ,Sg,Sv,Proj,Exit):-
 	  fail
 	),
 	set_param_matching_mode(off),
-	call_to_entry(AbsInt,Gv,SgCopy,Sv,Sg,not_provided,[],Succ,Exit,_).
+	call_to_entry(AbsInt,Gv,SgCopy,Sv,Sg,not_provided,[],Succ,Exit,_). % TODO: add some ClauseKey? (JF)
 
 one_trust(SgKey,SgCopy,Call,AbsInt,Succ,Loc):-
 	current_fact(trust(SgKey,SgCopy,Call,AbsInt,Succ,Loc)),
@@ -439,4 +439,4 @@ less_or_equal_(top,_AbsInt,_Proj,_Entry).
 
 call_to_entry_(top,_AbsInt,_Gv,_SgCopy,_Sv,_Sg,_Vs,_Call,_Entry):- !.
 call_to_entry_(_ny,AbsInt,Gv,SgCopy,Sv,Sg,Vs,Call,Entry):-
-	call_to_entry(AbsInt,Gv,SgCopy,Sv,Sg,not_provided,Vs,Call,Entry,_).
+	call_to_entry(AbsInt,Gv,SgCopy,Sv,Sg,not_provided,Vs,Call,Entry,_). % TODO: add some ClauseKey? (JF)

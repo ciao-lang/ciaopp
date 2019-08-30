@@ -2,9 +2,9 @@
 :- module(share_clique,
   	[ 	 
 %clique+sharing
-	  share_clique_call_to_entry/8,            
+	  share_clique_call_to_entry/9,
 	  share_clique_call_to_success_builtin/6,
-	  share_clique_call_to_success_fact/8,
+	  share_clique_call_to_success_fact/9,
 	  share_clique_call_to_prime_fact/6,
 	  share_clique_exit_to_prime/7,            
 	  share_clique_extend/4,                   
@@ -29,9 +29,9 @@
 	  share_clique_amgu/4,
 	  compute_upper_amgu/2, % JN needed by sharedef.pl
 %clique+sharing+freeness
-	  sharefree_clique_call_to_entry/8,            
+	  sharefree_clique_call_to_entry/9,
 	  sharefree_clique_call_to_success_builtin/6,
-	  sharefree_clique_call_to_success_fact/8,
+	  sharefree_clique_call_to_success_fact/9,
 	  sharefree_clique_call_to_prime_fact/6,
 	  sharefree_clique_exit_to_prime/7,            
 	  sharefree_clique_extend/4,                   
@@ -54,9 +54,9 @@
 	  sharefree_clique_extend_asub/3,
 	  sharefree_clique_amgu/4,
 %1-clique+sharing
-	  share_clique_1_call_to_entry/8,            
+	  share_clique_1_call_to_entry/9,
 	  share_clique_1_call_to_success_builtin/6,
-	  share_clique_1_call_to_success_fact/8,
+	  share_clique_1_call_to_success_fact/9,
 	  share_clique_1_exit_to_prime/7,            
 	  share_clique_1_extend/4,                   
 	  share_clique_1_glb/3,
@@ -72,7 +72,7 @@
 	  share_clique_1_compute_lub/2,
 	  share_clique_1_lub_cl/3,
 %clique-sharing+def
-	  share_clique_def_call_to_entry/8,
+	  share_clique_def_call_to_entry/9,
 	  share_clique_def_exit_to_prime/7,
 	  share_clique_def_extend/4,
 	  share_clique_def_project/3,
@@ -81,7 +81,7 @@
 	  share_clique_def_identical_abstract/2,
 	  share_clique_def_eliminate_equivalent/2,
 	  share_clique_def_less_or_equal/2,
-	  share_clique_def_call_to_success_fact/8,
+	  share_clique_def_call_to_success_fact/9,
 	  share_clique_def_compute_lub/2,
 	  share_clique_def_lub_cl/3,
 	  share_clique_def_input_user_interface/3,
@@ -92,7 +92,7 @@
 	  share_clique_def_special_builtin/4,
 	  share_clique_def_compose/2,
 %clique-sharing+freeness+def
-	  sharefree_clique_def_call_to_entry/8,
+	  sharefree_clique_def_call_to_entry/9,
 	  sharefree_clique_def_exit_to_prime/7,
 	  sharefree_clique_def_extend/4,
 	  sharefree_clique_def_project/3,
@@ -101,7 +101,7 @@
 	  sharefree_clique_def_identical_abstract/2,
 	  sharefree_clique_def_eliminate_equivalent/2,
 	  sharefree_clique_def_less_or_equal/2,
-	  sharefree_clique_def_call_to_success_fact/8,
+	  sharefree_clique_def_call_to_success_fact/9,
 	  sharefree_clique_def_compute_lub/2,
 	  sharefree_clique_def_lub_cl/3,
 	  sharefree_clique_def_input_user_interface/3,

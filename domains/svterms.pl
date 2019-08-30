@@ -1,5 +1,5 @@
 :- module(svterms,[                             
-	svterms_call_to_entry/7,
+	svterms_call_to_entry/9,
 	svterms_exit_to_prime/7,
 	svterms_project/3,
 	svterms_compute_lub/2,
@@ -11,7 +11,7 @@
 	svterms_unknown_call/3,
 	svterms_unknown_entry/2,
 	svterms_empty_entry/2,
-	svterms_call_to_success_fact/8,
+	svterms_call_to_success_fact/9,
 	svterms_special_builtin/5,
 	svterms_success_builtin/5,
 	svterms_call_to_success_builtin/6,
@@ -47,7 +47,7 @@
 
 :- use_module(domain(eterms), 
 	[                             
-	    eterms_call_to_entry/7,
+	    eterms_call_to_entry/9,
 	    eterms_exit_to_prime/7,
 	    eterms_project/3,
 	    eterms_compute_lub_el/3,
@@ -258,24 +258,24 @@ svterms_widen(Prime0,Prime1,NewPrime):-
 
 
 %------------------------------------------------------------------%
-svterms_call_to_entry(Sg,Hv,Head,Fv,Proj,Entry,i(ExtraInfoSV,ExtraInfoType)):- 
+svterms_call_to_entry(Sv,Sg,Hv,Head,K,Fv,Proj,Entry,i(ExtraInfoSV,ExtraInfoType)):- 
 	abssubst(Proj,TypesProj,SV_Proj),
-	eterms_call_to_entry(Sg,Hv,Head,Fv,TypesProj,TypesEntry,ExtraInfoType),
-	sv_call_to_entry(Sg,Hv,Head,Fv,SV_Proj,SV_Entry,ExtraInfoSV),
+	eterms_call_to_entry(Sv,Sg,Hv,Head,K,Fv,TypesProj,TypesEntry,ExtraInfoType),
+	sv_call_to_entry(Sv,Sg,Hv,Head,K,Fv,SV_Proj,SV_Entry,ExtraInfoSV),
 	%% ojo normalizar TypesEntry !!??
 	determinate(SV_Entry,TypesEntry,SV_Entry2),
 	abssubst_b(Entry,TypesEntry,SV_Entry2).
 
 % :- export(sv_call_to_entry/7).
 
-sv_call_to_entry(Sg,_Hv,Head,_Fv,SV_Proj,SV_Entry,yes(SV)):-
+sv_call_to_entry(_Sv,Sg,_Hv,Head,_K,_Fv,SV_Proj,SV_Entry,yes(SV)):-
 	variant(Sg,Head),!,
 	varsbag(Sg,VSg,[]),
 	varsbag(Head,VHead,[]),
 	samevaluelistempty(VHead,VSg,SV),
 	sort(SV,SV_s),
 	samevalueequiv(SV_s,SV_Proj,SV_Entry).
-sv_call_to_entry(Sg,_Hv,Head,_Fv,SV_Proj,SV_Entry,no(SV_s)):-
+sv_call_to_entry(_Sv,Sg,_Hv,Head,_K,_Fv,SV_Proj,SV_Entry,no(SV_s)):-
 	varset(Head,Vars),
 	get_positions_of_vars(Vars,Head,Pos),
 	varset(Sg,SgVars),	
@@ -566,8 +566,8 @@ svterms_unknown_call(Call,Vars,Succ):-
 	abssubst_b(Succ,TSucc,[]).
 
 %--------------------------------------------------------------%	
-svterms_call_to_success_fact(Sg,Hv,Head,Sv,Call,Proj,Prime,Succ):-
-	svterms_call_to_entry(Sg,Hv,Head,[],Proj,Entry,ExtraInfo),
+svterms_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ):-
+	svterms_call_to_entry(Sv,Sg,Hv,Head,K,[],Proj,Entry,ExtraInfo),
 	svterms_exit_to_prime(Sg,Hv,Head,Sv,Entry,ExtraInfo,Prime),
 	svterms_extend(Prime,Sv,Call,Succ).
 
@@ -586,7 +586,7 @@ svterms_success_builtin(type(T),_Sv_uns,Condvars,Call,Succ):-
 
 %--------------------------------------------------------------%	
 svterms_call_to_success_builtin('=/2',X=Y,Sv,Call,Proj,Succ):-
-	svterms_call_to_success_fact(p(X,Y),[W],p(W,W),Sv,Call,Proj,_Prime,Succ).
+	svterms_call_to_success_fact(p(X,Y),[W],p(W,W),not_provided,Sv,Call,Proj,_Prime,Succ). % TODO: add some ClauseKey?
 
 svterms_call_to_success_builtin('is/2',(X is Y),Sv,Call,Proj,Succ):-
 	abssubst(Call,TCall,SVCall),
@@ -607,7 +607,7 @@ svterms_call_to_success_builtin('arg/3',Sg,Sv,Call,Proj,Succ):-
 	abssubst(Proj,TProj,SVProj),
 	sort([X,Y,Z],Hv),
 	eterms_arg_call_to_success(Sg,Hv,arg(X,Y,Z),Sv,TCall,TProj,TSucc1,TypeX,TypeY),
-	sv_call_to_entry(Sg,Hv,arg(X,Y,Z),[],SVProj,_SVEntry,ExtraInfo),
+	sv_call_to_entry(Sv,Sg,Hv,arg(X,Y,Z),not_provided,[],SVProj,_SVEntry,ExtraInfo), % TODO: add some ClauseKey? (JF)
 	(
     	    concret(TypeX,ValuesX,[],[]) -> 
 	    (

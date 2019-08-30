@@ -180,12 +180,12 @@ sub_is_applicable(SuccessPolicy,_SgKey,SgCall,Sv,Call0,AbsInt,SgProj,Proj0,Succ,
 	varset(SgProj,Pv),
   \+ Proj0 = '$bottom', \+ Succ = '$bottom',
   % call_to_entry cannot be called with bottom (and it is obviously not applicable)
-	call_to_entry(AbsInt,Pv,SgProj,Sv,SgCall,not_provided,[],Proj0,Entry0,_),
+	call_to_entry(AbsInt,Pv,SgProj,Sv,SgCall,not_provided,[],Proj0,Entry0,_), % TODO: add some ClauseKey? (JF)
 	abs_sort(AbsInt,Entry0,Entry),
 	abs_sort(AbsInt,Call0,Call),
 	less_or_equal_(SuccessPolicy,AbsInt,Call,Entry), 
   %	exit_to_prime(AbsInt,SgCall,Pv,SgProj,Sv,Succ,_,Prime),
-  call_to_entry(AbsInt,Pv,SgProj,Sv,SgCall,not_provided,[],Succ,Prime,_).
+  call_to_entry(AbsInt,Pv,SgProj,Sv,SgCall,not_provided,[],Succ,Prime,_). % TODO: add some ClauseKey? (JF)
 
 %%	functor(Sg,F,A),
 %%	functor(SgCopy,F,A),

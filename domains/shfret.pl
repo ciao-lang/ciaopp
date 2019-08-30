@@ -1,5 +1,5 @@
 :- module(shfret,
-	[ shfret_call_to_entry/8,
+	[ shfret_call_to_entry/9,
 	  shfret_exit_to_prime/7,
 	  shfret_project/3,
 	  shfret_extend/4,
@@ -10,7 +10,7 @@
 	  shfret_less_or_equal/2,
 	  shfret_identical_abstract/2,
 	  shfret_sort/2,
-	  shfret_call_to_success_fact/8,
+	  shfret_call_to_success_fact/9,
 	  shfret_split_combined_domain/3,
 	  shfret_input_interface/4,
 	  shfret_input_user_interface/3,
@@ -33,13 +33,13 @@
 asub(comb(Types,Modes),Types,Modes).
 
 %------------------------------------------------------------------------%
-% shfret_call_to_entry(+,+,+,+,+,+,-,-)                                      %
-% shfret_call_to_entry(Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo)                %
+% shfret_call_to_entry(+,+,+,+,+,+,+,-,-)                                %
+% shfret_call_to_entry(Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo)          %
 %------------------------------------------------------------------------%
-shfret_call_to_entry(Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo):-
+shfret_call_to_entry(Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo):-
 	asub(Proj,PTypes,PModes),
-	shfr_call_to_entry(Sv,Sg,Hv,Head,Fv,PModes,EModes,ExtraInfoModes),
-	eterms_call_to_entry(Sg,Hv,Head,Fv,PTypes,ETypes,ExtraInfoTypes),
+	shfr_call_to_entry(Sv,Sg,Hv,Head,K,Fv,PModes,EModes,ExtraInfoModes),
+	eterms_call_to_entry(Sv,Sg,Hv,Head,K,Fv,PTypes,ETypes,ExtraInfoTypes),
 	( ETypes = '$bottom'
 	-> Entry = '$bottom'
 	 ; asub(Entry,ETypes,EModes)
@@ -174,14 +174,14 @@ shfret_sort(ASub0,ASub1):-
 	asub(ASub1,ATypes1,AModes1).
 
 %------------------------------------------------------------------------%
-% shfret_call_to_success_fact(+,+,+,+,+,+,-,-)                               %
-% shfret_call_to_success_fact(Sg,Hv,Head,Sv,Call,Proj,Prime,Succ)            %
-%-------------------------------------------------------------------------
-shfret_call_to_success_fact(Sg,Hv,Head,Sv,Call,Proj,Prime,Succ):-
+% shfret_call_to_success_fact(+,+,+,+,+,+,+,-,-)                         %
+% shfret_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ)      %
+%------------------------------------------------------------------------%
+shfret_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ):-
 	asub(Call,CTypes,CModes),
 	asub(Proj,PTypes,PModes),
-	shfr_call_to_success_fact(Sg,Hv,Head,Sv,CModes,PModes,RModes,SModes),
-	eterms_call_to_success_fact(Sg,Hv,Head,Sv,CTypes,PTypes,RTypes,STypes),
+	shfr_call_to_success_fact(Sg,Hv,Head,K,Sv,CModes,PModes,RModes,SModes),
+	eterms_call_to_success_fact(Sg,Hv,Head,K,Sv,CTypes,PTypes,RTypes,STypes),
 	asub(Prime,RTypes,RModes),
 	asub(Succ,STypes,SModes).
 

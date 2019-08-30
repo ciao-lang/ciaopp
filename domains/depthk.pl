@@ -1,7 +1,7 @@
 :- module(depthk,
-	[ depthk_call_to_entry/7, 
+	[ depthk_call_to_entry/9, 
 	  depthk_call_to_success_builtin/4, 
-	  depthk_call_to_success_fact/8,
+	  depthk_call_to_success_fact/9,
 	  depthk_compute_lub/2,
 	  depthk_glb/3,
 	  depthk_exit_to_prime/7,
@@ -61,11 +61,11 @@ depth_k(K):- current_pp_flag(depth,K).
 %                      ABSTRACT Call To Entry
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% depthk_call_to_entry(+,+,+,+,+,-,-)                                    %
-% depthk_call_to_entry(Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo)               %
+% depthk_call_to_entry(+,+,+,+,+,+,+,-,-)                                %
+% depthk_call_to_entry(Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo)          %
 %------------------------------------------------------------------------%
 
-depthk_call_to_entry(Sg,_,Head,Fv,Proj,Entry,Flag):- 
+depthk_call_to_entry(_Sv,Sg,_Hv,Head,_K,Fv,Proj,Entry,Flag):- 
 	variant(Sg,Head),!,
 	Flag = yes,
 	copy_term((Sg,Proj),(NewTerm,NewProj_u)),
@@ -73,16 +73,16 @@ depthk_call_to_entry(Sg,_,Head,Fv,Proj,Entry,Flag):-
 	depthk_sort(NewProj_u,NewProj),
 	variables_are_variables(Fv,Free),
 	merge(Free,NewProj,Entry).
-depthk_call_to_entry(_,[],_,Fv,_,Entry,no):- !,
+depthk_call_to_entry(_Sv,_Sg,[],_Head,_K,Fv,_Proj,Entry,no):- !,
 	variables_are_variables(Fv,Entry).
-depthk_call_to_entry(Sg,Hv,Head,Fv,Proj,Entry,Unifiers):-
+depthk_call_to_entry(_Sv,Sg,Hv,Head,_K,Fv,Proj,Entry,Unifiers):-
 	peel(Head,Sg,Unifiers,[]),
 	depthk_unify(Unifiers,Proj,Entry0), !,
 	depthk_bu_project(Entry0,Hv,Entry1),
 	depthk_sort(Entry1,Entry2),
 	variables_are_variables(Fv,Tmp),
 	merge(Tmp,Entry2,Entry).
-depthk_call_to_entry(_Sg,_Hv,_Head,_Fv,_Proj,'$bottom',no).
+depthk_call_to_entry(_Sv,_Sg,_Hv,_Head,_K,_Fv,_Proj,'$bottom',no).
 
 variables_are_variables([V|Fv],[V=_|ASub]):-
 	variables_are_variables(Fv,ASub).
@@ -222,13 +222,13 @@ glb_each_eq([X=T1|ASub1],[X=T2|ASub2],[X=T|Lub]):-
 % Specialized version of call_to_entry + exit_to_prime + extend for facts%
 %-------------------------------------------------------------------------
 
-depthk_call_to_success_fact(Sg,_Hv,Head,Sv,Call,Proj,Prime,Succ):-
+depthk_call_to_success_fact(Sg,_Hv,Head,_K,Sv,Call,Proj,Prime,Succ):-
 	peel(Head,Sg,Unifiers,[]),
 	depthk_unify(Unifiers,Proj,Entry0), !,
 	depthk_bu_project(Entry0,Sv,Prime1),
 	depthk_sort(Prime1,Prime),
 	depthk_extend(Prime,Sv,Call,Succ).
-depthk_call_to_success_fact(_Sg,_Hv,_Head,_Sv,_Call,_Proj,'$bottom','$bottom').
+depthk_call_to_success_fact(_Sg,_Hv,_Head,_K,_Sv,_Call,_Proj,'$bottom','$bottom').
 
 %------------------------------------------------------------------------%
 % depthk_identical_abstract(+,+)                                         %

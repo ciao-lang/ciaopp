@@ -19,8 +19,7 @@
 %   Related domains: svterms, optim_comp's domains
 
 :- module(etermsvar,[                          
-
-	etermsvar_call_to_entry/7,
+	etermsvar_call_to_entry/9,
 	etermsvar_exit_to_prime/7,
 	etermsvar_project/3,
 	etermsvar_compute_lub/2,
@@ -32,7 +31,7 @@
 	etermsvar_unknown_call/3,
 	etermsvar_unknown_entry/2,
 	etermsvar_empty_entry/2,
-	etermsvar_call_to_success_fact/8,
+	etermsvar_call_to_success_fact/9,
 	etermsvar_special_builtin/5,
 	etermsvar_success_builtin/5,
 	etermsvar_call_to_success_builtin/6,
@@ -677,8 +676,8 @@ normalize_wide_rules_ow([_|Rules],W):-
 
 
 %------------------------------------------------------------------%
-:- pred etermsvar_call_to_entry(+Sg,+Hv,+Head,+Fv,+Proj,-Entry,-ExtraInfo):  callable * list * 
-callable * list * absu * absu * extrainfo # 
+:- pred etermsvar_call_to_entry(+Sv,+Sg,+Hv,+Head,+K,+Fv,+Proj,-Entry,-ExtraInfo) :
+   term * callable * list * callable * term * list * absu * absu * extrainfo # 
 "
 It obtains the abstract substitution @var{Entry} which results from
 adding the abstraction of the @var{Sg} = @var{Head} to @var{Proj},
@@ -707,7 +706,7 @@ Entry=Proj upto names of vars. and ignoring Fv. It is ``no''
 @end{itemize}
 ".
 
-etermsvar_call_to_entry(Sg,Hv,Head,Fv,Proj,Entry,(yes,Proj)):- 
+etermsvar_call_to_entry(_Sv,Sg,Hv,Head,_K,Fv,Proj,Entry,(yes,Proj)):- 
 	variant(Sg,Head), !,
 	copy_term((Sg,Proj),(NewTerm,NewProj_u)),
 	Head = NewTerm,
@@ -715,11 +714,11 @@ etermsvar_call_to_entry(Sg,Hv,Head,Fv,Proj,Entry,(yes,Proj)):-
 	etermsvar_project(Hv,NewProj,NewProj1),
 	variables_are_variable_type(Fv,Free),
 	merge(Free,NewProj1,Entry).
-etermsvar_call_to_entry(Sg,Hv,Head,Fv,Proj,Entry,(no,Proj)):-
+etermsvar_call_to_entry(_Sv,Sg,Hv,Head,_K,Fv,Proj,Entry,(no,Proj)):-
 	unify_term_and_type_term(Head,Hv,Sg,Proj,TmpEntry), !,
 	variables_are_variable_type(Fv,Tmp),
 	merge(Tmp,TmpEntry,Entry).
-etermsvar_call_to_entry(_Sg,_Hv,_Head,_Fv,_Proj,'$bottom',no).
+etermsvar_call_to_entry(_Sv,_Sg,_Hv,_Head,_K,_Fv,_Proj,'$bottom',no).
 
 %% %% Commented out by ASM
 %%
@@ -1379,17 +1378,14 @@ variables_are_top_type([],[]).
 
 
 %------------------------------------------------------------------%
-:- pred etermsvar_call_to_success_fact(+Sg,+Hv,+Head,+Sv,+Call,+Proj,-Prime,-Succ): callable * 
-list * callable * list * absu * absu * absu * absu # 
+:- pred etermsvar_call_to_success_fact(+Sg,+Hv,+Head,+K,+Sv,+Call,+Proj,-Prime,-Succ): callable * 
+list * callable * term * list * absu * absu * absu * absu # 
 "Specialized version of call_to_entry + exit_to_prime + extend for facts".
 
-etermsvar_call_to_success_fact(Sg,Hv,Head,Sv,Call,Proj,Prime,Succ):-
-	etermsvar_call_to_entry(Sg,Hv,Head,[],Proj,Entry,ExtraInfo),
+etermsvar_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ):-
+	etermsvar_call_to_entry(Sv,Sg,Hv,Head,K,[],Proj,Entry,ExtraInfo),
 	etermsvar_exit_to_prime(Sg,Hv,Head,Sv,Entry,ExtraInfo,Prime),
 	etermsvar_extend(Prime,Sv,Call,Succ).
-
-
-
 
 %------------------------------------------------------------------------%
 %			       BUILTINS
@@ -1729,7 +1725,7 @@ postcondition_builtin('name/2',name(X1,Y1),Vars,Exit):-
 
 
 etermsvar_arg_call_to_success(Sg,Hv,arg(X,Y,Z),Sv,Call,Proj,Succ,TypeX,TypeY):-
-	etermsvar_call_to_entry(Sg,Hv,arg(X,Y,Z),[],Proj,Entry,ExtraInfo),
+	etermsvar_call_to_entry(Sv,Sg,Hv,arg(X,Y,Z),not_provided,[],Proj,Entry,ExtraInfo), % TODO: add some ClauseKey? (JF)
        	get_type(X,Entry,TypeX),
 	get_type(Y,Entry,TypeY),
 	new_type_name(NX),
@@ -1761,12 +1757,10 @@ etermsvar_call_to_success_builtin('arg/3',Sg,Sv,Call,Proj,Succ):-
 	sort([X,Y,Z],Hv),
 	etermsvar_arg_call_to_success(Sg,Hv,arg(X,Y,Z),Sv,Call,Proj,Succ,_,_).
 
-
-
 etermsvar_call_to_success_builtin('functor/3',Sg,Sv,Call,Proj,Succ):-
 	sort([X,Y,Z],Hv),
 	Head = functor(X,Y,Z),
-	etermsvar_call_to_entry(Sg,Hv,Head,[],Proj,Entry,ExtraInfo),
+	etermsvar_call_to_entry(Sv,Sg,Hv,Head,not_provided,[],Proj,Entry,ExtraInfo), % TODO: add some ClauseKey?
 	get_type(X,Entry,TypeX),
 	get_type(Y,Entry,TypeY),
 	get_type(Z,Entry,TypeZ),
@@ -1808,7 +1802,7 @@ etermsvar_call_to_success_builtin('functor/3',Sg,Sv,Call,Proj,Succ):-
 
 
 etermsvar_call_to_success_builtin('=/2',X=Y,Sv,Call,Proj,Succ):-
-	etermsvar_call_to_success_fact(p(X,Y),[W],p(W,W),Sv,Call,Proj,_Prime,Succ).
+	etermsvar_call_to_success_fact(p(X,Y),[W],p(W,W),not_provided,Sv,Call,Proj,_Prime,Succ). % TODO: add some ClauseKey?
 
 
 etermsvar_call_to_success_builtin(Key,Sg,Sv,Call,Proj,Succ):-

@@ -49,8 +49,8 @@
 %                      ABSTRACT Call To Entry
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% shfrnv_call_to_entry(+,+,+,+,+,+,-,-)                                  %
-% shfrnv_call_to_entry(Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo)            %
+% shfrnv_call_to_entry(+,+,+,+,+,+,+,-,-)                                %
+% shfrnv_call_to_entry(Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo)          %
 %------------------------------------------------------------------------%
 % The sharing component is computed as for the shfr domain. The freeness %
 % component is also computed as in the shfr except for abs_unify_entry/6 %
@@ -58,7 +58,7 @@
 % transformed into nv rather than into nf).                              %
 %------------------------------------------------------------------------%
 
-shfrnv_call_to_entry(_,Sg,_Hv,Head,Fv,Proj,Entry,Flag):-
+shfrnv_call_to_entry(_Sv,Sg,_Hv,Head,_K,Fv,Proj,Entry,Flag):-
 	variant(Sg,Head),!,
 	Flag = yes,
 	copy_term((Sg,Proj),(NewTerm,NewProj)),
@@ -68,11 +68,11 @@ shfrnv_call_to_entry(_,Sg,_Hv,Head,Fv,Proj,Entry,Flag):-
 	list_to_list_of_lists(Fv,Temp1),
 	merge(Temp1,Temp_sh,Entry_sh),
 	Entry = (Entry_sh,Entry_fr).
-shfrnv_call_to_entry(_,_Sv,[],_Head,Fv,_Proj,Entry,no):- !,
+shfrnv_call_to_entry(_Sv,_Sg,[],_Head,_K,Fv,_Proj,Entry,no):- !,
 	list_to_list_of_lists(Fv,Entry_sh),
 	change_values_insert(Fv,[],Entry_fr,f),
 	Entry = (Entry_sh,Entry_fr).
-shfrnv_call_to_entry(_,Sg,Hv,Head,Fv,(Proj_sh,Proj_fr),Entry,ExtraInfo):-
+shfrnv_call_to_entry(_Sv,Sg,Hv,Head,_K,Fv,(Proj_sh,Proj_fr),Entry,ExtraInfo):-
 %%%% freeness and initial sharing
 	simplify_equations(Sg,Head,Binds),
 	change_values_insert(Hv,Proj_fr,Temp1_fr,f),
@@ -524,13 +524,13 @@ shfrnv_var_value_rest_(>,_,More,X,Rest,Value):-
 % extend.
 %-------------------------------------------------------------------------
 
-shfrnv_call_to_success_fact(_Sg,[],_Head,Sv,Call,_Proj,Prime,Succ) :- 
+shfrnv_call_to_success_fact(_Sg,[],_Head,_K,Sv,Call,_Proj,Prime,Succ) :- 
 	Call = (Call_sh,Call_fr),!,
 	update_lambda_sf(Sv,Call_fr,Call_sh,Succ_fr,Succ_sh),
 	list_ground(Sv,Prime_fr),
 	Prime = ([],Prime_fr),
 	Succ = (Succ_sh,Succ_fr).
-shfrnv_call_to_success_fact(Sg,Hv,Head,Sv,Call,(Sg_sh,Lda_fr),Prime,Succ) :-
+shfrnv_call_to_success_fact(Sg,Hv,Head,_K,Sv,Call,(Sg_sh,Lda_fr),Prime,Succ) :-
 % call_to_entry      -------------------------------------------------
 	simplify_equations(Sg,Head,Binds), !,
 	change_values_insert(Hv,Lda_fr,Lda_fr_all,f),
@@ -555,8 +555,8 @@ shfrnv_call_to_success_fact(Sg,Hv,Head,Sv,Call,(Sg_sh,Lda_fr),Prime,Succ) :-
 	prune(Lda_sh_temp,Sg_args,ShareArgs,Prime_sh),
 	Prime = (Prime_sh,Prime_fr),
 	shfrnv_extend(Prime,Sv,Call,Succ).
-
-shfrnv_call_to_success_fact(_Sg,_Hv,_Head,_Sv,_Call,_Proj,'$bottom','$bottom').
+%
+shfrnv_call_to_success_fact(_Sg,_Hv,_Head,_K,_Sv,_Call,_Proj,'$bottom','$bottom').
 
 %-------------------------------------------------------------------------
 % shfrnv_unknown_entry(+,-)                                              |
@@ -728,14 +728,14 @@ shfrnv_success_builtin(arg,_,p(X,Y,Z),Call,Succ):-
 	varset(Head,Hv),
 	TempASub = (Temp_sh,Temp_fr),
 	shfr_project(TempASub,Sv,Proj),
-	shfrnv_call_to_success_fact(Sg,Hv,Head,Sv,TempASub,Proj,_,Succ).
+	shfrnv_call_to_success_fact(Sg,Hv,Head,not_provided,Sv,TempASub,Proj,_,Succ). % TODO: add some ClauseKey?
 shfrnv_success_builtin(arg,_,_,_,'$bottom').
 shfrnv_success_builtin(exp,_,Sg,Call,Succ):-
 	Head = p(A,f(A,_B)),
 	varset(Sg,Sv),
 	varset(Head,Hv),
 	shfr_project(Call,Sv,Proj),
-	shfrnv_call_to_success_fact(Sg,Hv,Head,Sv,Call,Proj,_,Succ).
+	shfrnv_call_to_success_fact(Sg,Hv,Head,not_provided,Sv,Call,Proj,_,Succ). % TODO: add some ClauseKey?
 shfrnv_success_builtin(exp,_,_,_,'$bottom').
 shfrnv_success_builtin('=../2',_,p(X,Y),(Call_sh,Call_fr),Succ):-
 	varset(X,Varsx),
@@ -1001,8 +1001,7 @@ shfrnv_call_to_success_builtin('=/2','='(X,Y),Sv,Call,Proj,Succ):-
 	copy_term(Y,Yterm),
 	Xterm = Yterm,!,
 	varset(Xterm,Vars),
-	shfrnv_call_to_success_fact('='(X,Y),Vars,'='(Xterm,Xterm),Sv,
-	                                            Call,Proj,_Prime,Succ).
+	shfrnv_call_to_success_fact('='(X,Y),Vars,'='(Xterm,Xterm),not_provided,Sv,Call,Proj,_Prime,Succ). % TODO: add some ClauseKey?
 shfrnv_call_to_success_builtin('=/2',_,_,_call,_,'$bottom').
 shfrnv_call_to_success_builtin('C/3','C'(X,Y,Z),Sv,Call,Proj,Succ):- !,
 	shfrnv_call_to_success_builtin('=/2','='(X,[Y|Z]),Sv,Call,Proj,Succ).
@@ -1017,8 +1016,7 @@ shfrnv_call_to_success_builtin('sort/2',sort(X,Y),Sv,Call,Proj,Succ):-
 	; varset([X,Y],Sv),
 	  copy_term(Y,Yterm),
 	  varset(Yterm,Vars),
-	  shfrnv_call_to_success_fact('='(X,Y),Vars,'='(Yterm,Yterm),Sv,
-	               Call,Proj,_Prime,Succ)
+	  shfrnv_call_to_success_fact('='(X,Y),Vars,'='(Yterm,Yterm),not_provided,Sv,Call,Proj,_Prime,Succ) % TODO: add some ClauseKey?
 	).
 shfrnv_call_to_success_builtin('sort/2',sort(X,Y),Sv,Call,Proj,Succ):- 
 	functor(X,'.',_), !,
@@ -1032,8 +1030,7 @@ shfrnv_call_to_success_builtin('sort/2',sort(X,Y),Sv,Call,Proj,Succ):-
 	varset(Xterm,Vars),
 	Proj = (Sh,Fr),
 	change_values_if_not_g([Z],Fr,TFr,nv),
-	shfrnv_call_to_success_fact('='(X,Y),Vars,'='(Xterm,Xterm),Sv,
-	        (Call_sh,Temp_fr),(Sh,TFr),_Prime,Succ). 
+	shfrnv_call_to_success_fact('='(X,Y),Vars,'='(Xterm,Xterm),not_provided,Sv,(Call_sh,Temp_fr),(Sh,TFr),_Prime,Succ). % TODO: add some ClauseKey?
 shfrnv_call_to_success_builtin('sort/2',_,_,_,_,'$bottom').
 
 %-------------------------------------------------------------------------

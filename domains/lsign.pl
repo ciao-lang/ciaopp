@@ -1,7 +1,7 @@
 
 :- module(lsign,
-	[ lsign_call_to_entry/6,
-	  lsign_call_to_success_fact/6,  
+	[ lsign_call_to_entry/9,
+	  lsign_call_to_success_fact/9,  
 	  lsign_compute_lub/2,
 	  lsign_extend/3,   
 	  lsign_eliminate_equivalent/2,
@@ -20,7 +20,7 @@
 	  lsign_unknown_entry/2,
 	  lsign_empty_entry/2,
 	%
-	  simple_lsign_call_to_entry/6,  
+	  simple_lsign_call_to_entry/9,  
 	  simple_lsign_exit_to_prime/6,  
 	  simple_lsign_extend/3,
 	  simple_lsign_input_user_interface/3,
@@ -406,21 +406,21 @@ lsign_abstract_herbrand_eq(VarsY,X,AEqIn,Tail):-
 %                      ABSTRACT Call To Entry                            %
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% lsign_call_to_entry(+,+,+,+,-,-)
-% lsign_call_to_entry(Sg,Head,Fv,Proj,Entry,ExtraInfo) 
+% lsign_call_to_entry(+,+,+,+,+,+,+,-,-)
+% lsign_call_to_entry(Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo) 
 %------------------------------------------------------------------------%
 % Assumptions made:
 %   * the program is normalized
 %   * Fv and Proj are sorted
 %------------------------------------------------------------------------%
 
-lsign_call_to_entry(Sg,Head,Fv,Proj,Entry,ExtraInfo):-
+lsign_call_to_entry(_Sv,Sg,_Hv,Head,_K,Fv,Proj,Entry,ExtraInfo):-
 	variant(Sg,Head),!,
 	ExtraInfo = (yes,Fv),
 	copy_term((Sg,Proj),(NewTerm,NewEntry)),
 	Head = NewTerm,
 	lsign_sort(NewEntry,Entry).
-lsign_call_to_entry(Sg,Head,_,_,_,_):-
+lsign_call_to_entry(_Sv,Sg,_Hv,Head,_K,_,_,_,_):-
 	compiler_error(not_normalized(Sg,Head)).
 
 %------------------------------------------------------------------------%
@@ -449,18 +449,18 @@ lsign_exit_to_prime(Sg,Hv,Head,Exit,(yes,Fv),Prime):-
 %                      ABSTRACT Call To Success Fact                     %
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% lsign_call_to_success_fact(+,+,+,+,-,-)
-% lsign_call_to_success_fact(Sg,Head,Call,Porj,Prime,Succ) 
+% lsign_call_to_success_fact(+,+,+,+,+,+,+,-,-)
+% lsign_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ) 
 %------------------------------------------------------------------------%
 % Assumptions made:
 %   * the program is normalized
 %------------------------------------------------------------------------%
 
-lsign_call_to_success_fact(Sg,Head,Call,Proj,Prime,Succ):-
+lsign_call_to_success_fact(Sg,_Hv,Head,_K,_Sv,Call,Proj,Prime,Succ):-
 	variant(Sg,Head),!,
 	Prime = Proj,
 	Succ = Call.
-lsign_call_to_success_fact(Sg,Head,_,_,_,_):-
+lsign_call_to_success_fact(Sg,_Hv,Head,_K,_Sv,_Call,_Proj,_Prime,_Succ):-
 	compiler_error(not_normalized(Sg,Head)).
 
 %------------------------------------------------------------------------%

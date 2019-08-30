@@ -2,8 +2,8 @@
 /*                          1994-1995 Katholieke Universiteit Leuven.   */
 
 :- module(aeq_top,
-	[ aeq_call_to_entry/8,
-	  aeq_call_to_success_fact/8,
+	[ aeq_call_to_entry/9,
+	  aeq_call_to_success_fact/9,
 	  aeq_compute_lub/2,  
 	  aeq_exit_to_prime/7,
 	  aeq_extend/3,       
@@ -97,9 +97,9 @@
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
 
-%% :- mode aeq_call_to_entry(+,+,+,+,+,+,-,-) .
-aeq_call_to_entry(_Sv,_Sg,_Hv,_Head,_Fv,'$bottom','$bottom',_ExtraInfo) :- !.
-aeq_call_to_entry(_Sv,Sg,_,Head,Fv,Proj,Entry,Flag) :- 
+%% :- mode aeq_call_to_entry(+,+,+,+,+,+,+,-,-) .
+aeq_call_to_entry(_Sv,_Sg,_Hv,_Head,_K,_Fv,'$bottom','$bottom',_ExtraInfo) :- !.
+aeq_call_to_entry(_Sv,Sg,_Hv,Head,_K,Fv,Proj,Entry,Flag) :- 
      	variant(Sg,Head),!,
 	Flag = yes,
 	copy_term((Sg,Proj),(NewTerm,NewProj)),
@@ -108,7 +108,7 @@ aeq_call_to_entry(_Sv,Sg,_,Head,Fv,Proj,Entry,Flag) :-
 	  aeq_init_new_varsPS(Fv,0,NewProj,Entry_u)
 	; aeq_init_new_vars(Fv,0,NewProj,Entry_u)),
 	aeq_sort(Entry_u,Entry).
-aeq_call_to_entry(_Sv,Sgoal,Hv,Head,Fvars,Proj,Entry,no):-
+aeq_call_to_entry(_Sv,Sgoal,Hv,Head,_K,Fvars,Proj,Entry,no):-
 	union_idlists( Hv, Fvars, Vars ),
 	aeq_parameter_passing_proj( Sgoal = Head,Vars,Proj,Init_aeqs),
 	aeq_solve( Init_aeqs, Entry ).
@@ -217,10 +217,10 @@ aeq_extend( Prime, Call, Succ) :-
 
 %%  REMARK %% : never used in local version of the PLAI system !!!
 
-%% :- mode aeq_call_to_success_fact(+,+,+,+,+,+,-,-) .
-aeq_call_to_success_fact('$bottom',_Sg,_Hv,_Head,_Sv,_Call,'$bottom','$bottom')
+%% :- mode aeq_call_to_success_fact(+,+,+,+,+,+,+,-,-) .
+aeq_call_to_success_fact(_Sg,_Hv,_Head,_K,_Sv,_Call,'$bottom','$bottom','$bottom')
 	:- !.
-aeq_call_to_success_fact(Proj_aeqs,Sgoal,Hv,Head,_Sv,_Call,Prime_aeqs,_Succ) :-
+aeq_call_to_success_fact(Sgoal,Hv,Head,_K,_Sv,_Call,Proj_aeqs,Prime_aeqs,_Succ) :-
 	aeq_parameter_passing_rem( Sgoal = Head, Hv, Proj_aeqs, Init_aeqs),
 	aeq_solve( Init_aeqs, Prime_aeqs ) .
 

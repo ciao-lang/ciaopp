@@ -3,7 +3,7 @@
 	build_defined_types_lattice/0,
 	pre_build_defined_types_lattice/1,
 	load_lib_deftypes/1,
-	deftypes_call_to_entry/7,
+	deftypes_call_to_entry/9,
 	deftypes_exit_to_prime/7,
 	deftypes_project/3,
 	deftypes_compute_lub/2,
@@ -15,7 +15,7 @@
 	deftypes_unknown_call/3,
 	deftypes_unknown_entry/2,
 	deftypes_empty_entry/2,
-	deftypes_call_to_success_fact/8,
+	deftypes_call_to_success_fact/9,
 %	deftypes_special_builtin/4,
 %	deftypes_success_builtin/5,
 	deftypes_call_to_success_builtin/6,
@@ -234,8 +234,8 @@ deftypes_widen(Prime0,Prime1,NewPrime):-
  	deftypes_compute_lub_el(Prime0,Prime1,NewPrime).
 
 %------------------------------------------------------------------%
-:- pred deftypes_call_to_entry(+Sg,+Hv,+Head,+Fv,+Proj,-Entry,-ExtraInfo):  callable * list * 
-callable * list * absu * absu * extrainfo # 
+:- pred deftypes_call_to_entry(+Sv,+Sg,+Hv,+Head,+K,+Fv,+Proj,-Entry,-ExtraInfo): 
+   term * callable * list * callable * term * list * absu * absu * extrainfo # 
 "
 It obtains the abstract substitution @var{Entry} which results from
 adding the abstraction of the @var{Sg} = @var{Head} to @var{Proj},
@@ -264,7 +264,7 @@ Entry=Proj upto names of vars. and ignoring Fv. It is ``no''
 @end{itemize}
 ".
 
-deftypes_call_to_entry(Sg,_,Head,Fv,Proj,Entry,Flag):- 
+deftypes_call_to_entry(_Sv,Sg,_Hv,Head,_K,Fv,Proj,Entry,Flag):- 
 	variant(Sg,Head), !,
 	Flag = yes,
 	copy_term((Sg,Proj),(NewTerm,NewProj_u)),
@@ -272,11 +272,11 @@ deftypes_call_to_entry(Sg,_,Head,Fv,Proj,Entry,Flag):-
 	terms_sort(NewProj_u,NewProj),
 	variables_are_variable_type(Fv,Free),
 	merge(Free,NewProj,Entry).
-deftypes_call_to_entry(Sg,Hv,Head,Fv,Proj,Entry,dummy):-
+deftypes_call_to_entry(_Sv,Sg,Hv,Head,_K,Fv,Proj,Entry,dummy):-
 	unify_term_and_type_term(Head,Hv,Sg,Proj,TmpEntry), !,
 	variables_are_variable_type(Fv,Tmp),
 	merge(Tmp,TmpEntry,Entry).
-deftypes_call_to_entry(_Sg,_Hv,_Head,_Fv,_Proj,'$bottom',no).
+deftypes_call_to_entry(_Sv,_Sg,_Hv,_Head,_K,_Fv,_Proj,'$bottom',no).
 
 :- regtype extrainfo/1.
 
@@ -622,20 +622,15 @@ variables_are_top_type([V|Fv],[V:Type|ASub]):-
 	variables_are_top_type(Fv,ASub).
 variables_are_top_type([],[]).
 
-
-
 %------------------------------------------------------------------%
-:- pred deftypes_call_to_success_fact(+Sg,+Hv,+Head,+Sv,+Call,+Proj,-Prime,-Succ): callable * 
-list * callable * list * absu * absu * absu * absu # 
+:- pred deftypes_call_to_success_fact(+Sg,+Hv,+Head,+K,+Sv,+Call,+Proj,-Prime,-Succ): callable * 
+list * callable * term * list * absu * absu * absu * absu # 
 "Specialized version of call_to_entry + exit_to_prime + extend for facts".
 
-deftypes_call_to_success_fact(Sg,Hv,Head,Sv,Call,Proj,Prime,Succ):-
-	deftypes_call_to_entry(Sg,Hv,Head,[],Proj,Entry,ExtraInfo),
+deftypes_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ):-
+	deftypes_call_to_entry(Sv,Sg,Hv,Head,K,[],Proj,Entry,ExtraInfo),
 	deftypes_exit_to_prime(Sg,Hv,Head,Sv,Entry,ExtraInfo,Prime),
 	deftypes_extend(Prime,Sv,Call,Succ).
-
-
-
 
 %------------------------------------------------------------------------%
 %			    USER INTERFACE
@@ -809,7 +804,7 @@ def_equivalent_types(T0,T1) :-
 %% ---------------------------------------------------------------------------
 
 deftypes_call_to_success_builtin('=/2',X=Y,Sv,Call,Proj,Succ):-
-	deftypes_call_to_success_fact(p(X,Y),[W],p(W,W),Sv,Call,Proj,_Prime,Succ).
+	deftypes_call_to_success_fact(p(X,Y),[W],p(W,W),not_provided,Sv,Call,Proj,_Prime,Succ). % TODO: add some ClauseKey?
 
 deftypes_call_to_success_builtin(Key,Sg,Sv,Call,Proj,Succ):-
 	(
