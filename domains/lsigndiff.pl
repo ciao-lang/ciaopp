@@ -6,11 +6,11 @@
 %------------------------------------------------------------------------%
 
 %------------------------------------------------------------------------%
-% simple_lsign_project(+,+,+,-)                                          |
-% simple_lsign_project(ACons,Vars,HvFv_u,Proj)                            |
+% simple_lsign_project(+,+,+,+,-)                                        |
+% simple_lsign_project(Sg,Vars,HvFv_u,ACons,Proj)                        |
 %-------------------------------------------------------------------------
 
-simple_lsign_project(p(_,_,Tot),Vars,HvFv_u,Proj):-
+simple_lsign_project(_Sg,Vars,HvFv_u,p(_,_,Tot),Proj):-
 	lsign_project(Tot,Vars,HvFv_u,Proj).
 
 %------------------------------------------------------------------------%
@@ -33,14 +33,14 @@ simple_lsign_exit_to_prime(Sg,Hv,Head,p(_,Exit,_),ExtraInfo,Prime):-
 	lsign_exit_to_prime(Sg,Hv,Head,Exit,ExtraInfo,Prime).
 
 %-------------------------------------------------------------------------
-% simple_lsign_extend(+,+,-)                                             %
-% simple_lsign_extend(Prime,Call,Succ)                                   %
+% simple_lsign_extend(+,+,+,+,-)                                         %
+% simple_lsign_extend(Sg,Prime,Sv,Call,Succ)                             %
 %------------------------------------------------------------------------%
 
-simple_lsign_extend('$bottom',_,'$bottom'):- !.
-simple_lsign_extend([],Call,Succ):- !,
-	    Succ = Call.
-simple_lsign_extend(Prime,p(In,DACons,TACons),Succ):- 
+simple_lsign_extend(_Sg,'$bottom',_Sv,_Call,'$bottom'):- !.
+simple_lsign_extend(_Sg,[],_Sv,Call,Succ):- !,
+	Succ = Call.
+simple_lsign_extend(_Sg,Prime,_Sv,p(In,DACons,TACons),Succ):- 
 	lsign_sum(Prime,TACons,STACons),
 	lsign_sum(Prime,DACons,SDACons),
 	STACons = a(G,_,_),

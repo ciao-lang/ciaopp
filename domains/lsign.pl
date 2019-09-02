@@ -3,7 +3,7 @@
 	[ lsign_call_to_entry/9,
 	  lsign_call_to_success_fact/9,  
 	  lsign_compute_lub/2,
-	  lsign_extend/3,   
+	  lsign_extend/5,   
 	  lsign_eliminate_equivalent/2,
 	  lsign_exit_to_prime/6,
 	  lsign_global_info/5,
@@ -22,11 +22,11 @@
 	%
 	  simple_lsign_call_to_entry/9,  
 	  simple_lsign_exit_to_prime/6,  
-	  simple_lsign_extend/3,
+	  simple_lsign_extend/5,
 	  simple_lsign_input_user_interface/3,
 	  simple_lsign_output_interface/2,  
 	  simple_lsign_less_or_equal/2, 
-	  simple_lsign_project/4,
+	  simple_lsign_project/5,
 	  simple_lsign_sort/2,
 	  simple_lsign_success_builtin/6, 
 	  simple_lsign_unknown_call/3, 
@@ -574,14 +574,14 @@ lub_unique(less,less).
 %                      ABSTRACT Extend
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% lsign_extend(+,+,-)
-% lsign_extend(Prime,Call,Succ)
+% lsign_extend(+,+,+,+,-)
+% lsign_extend(Sg,Prime,Sv,Call,Succ)
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
 
-lsign_extend('$bottom',_,Succ):- !,
+lsign_extend(_Sg,'$bottom',_Sv,_Call,Succ):- !,
 	Succ = '$bottom'.
-lsign_extend(Prime,Call,Succ):-
+lsign_extend(_Sg,Prime,_Sv,Call,Succ):-
 	lsign_sum(Prime,Call,Succ).
 
 %------------------------------------------------------------------------%

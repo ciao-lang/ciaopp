@@ -169,6 +169,7 @@ project(AbsInt,Vars,HvFv,ASub,Proj) :-
 	project(AbsInt,sg_not_provided,Vars,HvFv,ASub,Proj). % TODO: Unbound Sg is a problem! (IG) Using sg_not_provided instead (JF)
 
 % TODO:[new-resources] version with Sg, really needed?
+% TODO: check that HvFv is sorted?
 :- export(project/6). % TODO:[new-resources] (extra)
 :- pred project(+AbsInt,+Sg,+Vars,+HvFv_u,+ASub,-Proj)
         : atm * term * list * list * term * term + not_fails

@@ -160,7 +160,7 @@ exit_to_prime(lsign,Sg,Hv,Head,_Sv,Exit,ExtraInfo,Prime) :- !, lsign_exit_to_pri
 project(lsign,_Sg,Vars,HvFv,ASub,Proj) :- !, lsign_project(ASub,Vars,HvFv,Proj).
 compute_lub(lsign,ListASub,LubASub) :- !, lsign_compute_lub(ListASub,LubASub).
 abs_sort(lsign,ASub,ASub_s) :- !, lsign_sort(ASub,ASub_s).
-extend(lsign,_Sg,Prime,_Sv,Call,Succ) :- !, lsign_extend(Prime,Call,Succ).
+extend(lsign,Sg,Prime,Sv,Call,Succ) :- !, lsign_extend(Sg,Prime,Sv,Call,Succ).
 less_or_equal(lsign,ASub0,ASub1) :- !, lsign_less_or_equal(ASub0,ASub1).
 glb(lsign,ASub0,ASub1,ASub) :- !, lsign_glb(ASub0,ASub1,ASub).
 eliminate_equivalent(lsign,TmpLSucc,LSucc) :- !, lsign_eliminate_equivalent(TmpLSucc,LSucc).
@@ -186,10 +186,10 @@ lsign_asub_to_native(ASub,_Qv,_OutFlag,OutputUser,[]) :- lsign_output_interface(
 aidomain(difflsign).
 call_to_entry(difflsign,Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo) :- !, simple_lsign_call_to_entry(Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo).
 exit_to_prime(difflsign,Sg,Hv,Head,_Sv,Exit,ExtraInfo,Prime) :- !, simple_lsign_exit_to_prime(Sg,Hv,Head,Exit,ExtraInfo,Prime).
-project(difflsign,_Sg,Vars,HvFv,ASub,Proj) :- !, simple_lsign_project(ASub,Vars,HvFv,Proj).
+project(difflsign,Sg,Vars,HvFv,ASub,Proj) :- !, simple_lsign_project(Sg,Vars,HvFv,ASub,Proj).
 compute_lub(difflsign,ListASub,LubASub) :- !, lsign_compute_lub(ListASub,LubASub).
 abs_sort(difflsign,ASub,ASub_s) :- !, simple_lsign_sort(ASub,ASub_s).
-extend(difflsign,_Sg,Prime,_Sv,Call,Succ) :- !, simple_lsign_extend(Prime,Call,Succ).
+extend(difflsign,Sg,Prime,Sv,Call,Succ) :- !, simple_lsign_extend(Sg,Prime,Sv,Call,Succ).
 less_or_equal(difflsign,ASub0,ASub1) :- !, simple_lsign_less_or_equal(ASub0,ASub1).
 glb(difflsign,ASub0,ASub1,ASub) :- !, simple_lsign_glb(ASub0,ASub1,ASub).
 call_to_success_fact(difflsign,Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ) :- !, lsign_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ).
@@ -209,10 +209,10 @@ simple_lsign_asub_to_native(ASub,_Qv,_OutFlag,OutputUser,[]) :- simple_lsign_out
 % aidomain(lsigndef). % TODO: empty, why?
 call_to_entry(lsigndef,Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo) :- !, lsigndef_call_to_entry(Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo).
 exit_to_prime(lsigndef,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime) :- !, lsigndef_exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime).
-project(lsigndef,_Sg,Vars,HvFv,ASub,Proj) :- !, lsigndef_project(ASub,Vars,HvFv,Proj). % TODO: check that HvFv is sorted!
+project(lsigndef,Sg,Vars,HvFv,ASub,Proj) :- !, lsigndef_project(Sg,Vars,HvFv,ASub,Proj).
 compute_lub(lsigndef,ListASub,LubASub) :- !, lsigndef_compute_lub(ListASub,LubASub).
 abs_sort(lsigndef,ASub,ASub_s) :- !, lsigndef_sort(ASub,ASub_s).
-extend(lsigndef,_Sg,Prime,Sv,Call,Succ) :- !, lsigndef_extend(Prime,Sv,Call,Succ).
+extend(lsigndef,Sg,Prime,Sv,Call,Succ) :- !, lsigndef_extend(Sg,Prime,Sv,Call,Succ).
 less_or_equal(lsigndef,ASub0,ASub1) :- !, lsigndef_less_or_equal(ASub0,ASub1).
 glb(lsigndef,ASub0,ASub1,ASub) :- !, lsigndef_glb(ASub0,ASub1,ASub).
 call_to_success_fact(lsigndef,Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ) :- !, lsigndef_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ).
@@ -229,12 +229,12 @@ lsigndef_call_to_entry(_,_,_,_,_,_,_,_,_).
 lsigndef_call_to_success_fact(_,_,_,_,_,_,_,_,_).
 lsigndef_compute_lub(_,_).
 lsigndef_exit_to_prime(_,_,_,_,_,_,_).
-lsigndef_extend(_,_,_,_).  
+lsigndef_extend(_,_,_,_,_).  
 lsigndef_input_user_interface(_,_).
 lsigndef_input_interface(_,_,_).
 lsigndef_less_or_equal(_,_). 
 lsigndef_asub_to_native(_,_,_,[],[]).
-lsigndef_project(_,_,_,_). 
+lsigndef_project(_,_,_,_,_). 
 lsigndef_sort(_,_).    
 % lsigndef_success_builtin(_,_,_,_,_,_).
 lsigndef_unknown_call(_,_,_).  
@@ -245,10 +245,10 @@ lsigndef_glb(_ASub0,_ASub1,_ASub) :- compiler_error(op_not_implemented(glb)), fa
 % aidomain(lsignshfr). % TODO: empty, why?
 call_to_entry(lsignshfr,Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo) :- !, lsignshfr_call_to_entry(Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo).
 exit_to_prime(lsignshfr,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime) :- !, lsignshfr_exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime).
-project(lsignshfr,_Sg,Vars,HvFv,ASub,Proj) :- !, lsignshfr_project(ASub,Vars,HvFv,Proj).
+project(lsignshfr,Sg,Vars,HvFv,ASub,Proj) :- !, lsignshfr_project(Sg,Vars,HvFv,ASub,Proj).
 compute_lub(lsignshfr,ListASub,LubASub) :- !, lsignshfr_compute_lub(ListASub,LubASub).
 abs_sort(lsignshfr,ASub,ASub_s) :- !, lsignshfr_sort(ASub,ASub_s).
-extend(lsignshfr,_Sg,Prime,Sv,Call,Succ) :- !, lsignshfr_extend(Prime,Sv,Call,Succ).
+extend(lsignshfr,Sg,Prime,Sv,Call,Succ) :- !, lsignshfr_extend(Sg,Prime,Sv,Call,Succ).
 less_or_equal(lsignshfr,ASub0,ASub1) :- !, lsignshfr_less_or_equal(ASub0,ASub1).
 glb(lsignshfr,ASub0,ASub1,ASub) :- !, lsignshfr_glb(ASub0,ASub1,ASub).
 call_to_success_fact(lsignshfr,Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ) :- !, lsignshfr_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ).
@@ -265,12 +265,12 @@ lsignshfr_call_to_entry(_,_,_,_,_,_,_,_,_).
 lsignshfr_call_to_success_fact(_,_,_,_,_,_,_,_,_).
 lsignshfr_compute_lub(_,_).
 lsignshfr_exit_to_prime(_,_,_,_,_,_,_).  
-lsignshfr_extend(_,_,_,_). 
+lsignshfr_extend(_,_,_,_,_). 
 lsignshfr_input_user_interface(_,_,_). 
 lsignshfr_input_interface(_,_,_,_). 
 lsignshfr_less_or_equal(_,_). 
 lsignshfr_asub_to_native(_,_,_,[],[]).
-lsignshfr_project(_,_,_,_).
+lsignshfr_project(_,_,_,_,_).
 lsignshfr_sort(_,_).   
 lsignshfr_unknown_call(_,_,_). 
 lsignshfr_unknown_entry(_,_). 
@@ -280,10 +280,10 @@ lsignshfr_glb(_ASub0,_ASub1,_ASub) :- compiler_error(op_not_implemented(glb)), f
 % aidomain(sha). % TODO: empty, why?
 call_to_entry(sha,Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo) :- !, sha_call_to_entry(Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo).
 exit_to_prime(sha,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime) :- !, sha_exit_to_prime(Exit,Hv,Head,Sv,Sg,Prime,ExtraInfo).
-project(sha,_Sg,Vars,_HvFv,ASub,Proj) :- !, sha_project(ASub,Vars,Proj).
+project(sha,Sg,Vars,HvFv,ASub,Proj) :- !, sha_project(Sg,Vars,HvFv,ASub,Proj).
 compute_lub(sha,ListASub,LubASub) :- !, sha_compute_lub(ListASub,LubASub).
 abs_sort(sha,ASub,ASub_s) :- !, sha_abs_sort(ASub,ASub_s).
-extend(sha,_Sg,Prime,Sv,Call,Succ) :- !, sha_extend(Prime,Sv,Call,_Proj,Succ).
+extend(sha,Sg,Prime,Sv,Call,Succ) :- !, sha_extend(Sg,Prime,Sv,Call,Succ).
 less_or_equal(sha,ASub0,ASub1) :- !, sha_less_or_equal(ASub0,ASub1).
 glb(sha,ASub0,ASub1,ASub) :- !, sha_glb(ASub0,ASub1,ASub).
 eliminate_equivalent(sha,TmpLSucc,LSucc) :- !, sha_eliminate_equivalent(TmpLSucc,LSucc).
@@ -317,7 +317,7 @@ sha_less_or_equal(_,_).
 % sha_lub(_,_,_).        
 % sha_output_interface(_,_).
 sha_asub_to_native(_,_,_,[],[]).
-sha_project(_,_,_).      
+sha_project(_,_,_,_,_).      
 sha_special_builtin(_,_,_,_).
 sha_success_builtin(_,_,_,_,_).
 sha_unknown_call(_,_,_).
