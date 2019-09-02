@@ -159,7 +159,7 @@ trace_fixpoint('builtin completed').
 trace_fixpoint('external call completed').
 trace_fixpoint('trust').
 trace_fixpoint('applied trust').
-trace_fixpoint('[incanal] add change').
+trace_fixpoint('[incanal] change').
 
 :- pop_prolog_flag(multi_arity_warnings).
 

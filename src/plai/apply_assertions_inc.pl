@@ -9,7 +9,7 @@
 :- doc(bug, "Assuming that the analysis is monotonic!!!").
 :- doc(bug, "Potential errors in parents of meta_calls").
 
-%:- use_package(.(notrace)). % inhibits the tracing
+:- use_package(.(notrace)). % inhibits the tracing
 
 :- use_module(library(terms_vars), [varset/2]).
 :- use_module(library(aggregates), [(^)/2, bagof/3, findall/3]).
@@ -18,8 +18,7 @@
 :- use_module(ciaopp(plai/apply_assertions)).
 :- use_module(ciaopp(plai/plai_db)).
 :- use_module(ciaopp(plai/fixpo_dd), [add_change/5, add_external_complete_change/6]).
-:- use_module(ciaopp(plai/domains), [info_to_asub/7,
-        extend/6, project/5, exit_to_prime/8,	identical_abstract/3, identical_proj/5,
+:- use_module(ciaopp(plai/domains), [project/6, exit_to_prime/8, identical_abstract/3,
         glb/4, less_or_equal/3, compute_lub/3, unknown_entry/4]).
 :- use_module(ciaopp(plai/fixpo_ops), [get_singleton/2, fixpoint_get_new_id/5]).
 :- use_module(ciaopp(plai/transform), [trans_clause/3]).
@@ -34,17 +33,23 @@
 :- use_module(ciaopp(plai/incanal/incanal_driver), [td_rec_delete_complete/3]).
 
 :- export(cleanup_applied_assertions_inc/1).
+:- pred cleanup_applied_assertions_inc/1 + not_fails.
 cleanup_applied_assertions_inc(AbsInt) :-
         cleanup_applied_assertions(AbsInt).
 
 :- export(update_assertions_pred/3).
+:- pred update_assertions_pred(+Pred, +AbsInt, +Assrts) + not_fails.
 update_assertions_pred(F/A, AbsInt, Assrts) :-  % This predicate splits in call an success
         get_predkey(F,A,SgKey),
         % split in call and success assertions
         split_assrts_by_type(Assrts,CallAs,SuccAs),
-        update_assertions_pred_calls(CallAs,SgKey,F/A,AbsInt),
+        ( CallAs = [_|_] ->
+          update_assertions_pred_calls(SgKey,F/A,AbsInt)
+        ; true ),
         % calls are processed before success because they may invalidate success
-        update_assertions_pred_success(SuccAs,SgKey,AbsInt).
+        ( SuccAs = [_|_] ->
+            update_assertions_pred_success(SgKey,AbsInt)
+        ; true ).
 
 split_assrts_by_type([],[],[]).
 split_assrts_by_type([DA|As],[DA|CallAs],SuccAs) :-
@@ -64,8 +69,7 @@ extract_assertion(del(_,A), A).
 % ----------------------------------------------------------------------
 :- doc(section, "Update calls").
 
-update_assertions_pred_calls(CallAsDiff,SgKey,F/A,AbsInt) :-
-    \+ CallAsDiff = [],
+update_assertions_pred_calls(SgKey,F/A,AbsInt) :-
     functor(Head,F,A),
     get_old_call_assertions_proj(SgKey,Head,AbsInt,OldAProj), % using cached abstraction
     retractall_fact(call_asr(SgKey,_,_,AbsInt,_)), % force reabstrating
@@ -80,28 +84,29 @@ update_assertions_pred_calls(CallAsDiff,SgKey,F/A,AbsInt) :-
             apply_abstraction(AbsInt,LitSg,LitProj,Head,OldAProj,OldALitProj)
         ; true),
         % check if reapplying the assertions produces the same result
-          \+ identical_abstract(AbsInt,NewALitProj,OldALitProj),
+        \+ identical_abstract(AbsInt,NewALitProj,OldALitProj),
         % assert that something needs to be reanalyzed
+        fixpoint_trace('[incanal] change', OldId,_,LitKey,LitSg,NewALitProj,_),
         update_literal_call_in_completes(AbsInt,SgKey,LitKey,CId,OldId,LitSg,OldALitProj,NewALitProj),
         fail
     ; true
     ).
-update_assertions_pred_calls(_CallAs,_SgKey,_,_AbsInt).
+update_assertions_pred_calls(_SgKey,_,_AbsInt).
 
 :- pred enum_calls_pred(+AbsInt,+SgKey,-LitKey,-CId,LitSg,-LitProj,-OldId,?OldALitProj). %+ non_det.
 enum_calls_pred(AbsInt,SgKey,LitKey,CId,LitSg,LitProj,OldId,_OldALitProj) :-
         complete(SgKey,AbsInt,_,_,_,OldId,Ps),
         member((LitKey,CId),Ps),
         get_memo_table(LitKey,AbsInt,CId,OldId,ClauseVars_u,ListCall,_),
-        get_literal(LitKey,ClauseVars_u,LitSg,LitVars_u,LitVars),
+        get_literal(LitKey,ClauseVars_u,LitSg,LitVars),
         get_singleton(Call,ListCall),
-        project(AbsInt,LitVars,LitVars_u,Call,LitProj).
+        project(AbsInt,LitSg,LitVars,ClauseVars_u,Call,LitProj).
 enum_calls_pred(AbsInt,SgKey,LitKey,CId,LitSg,LitProj,_OldId,'$bottom') :-
         invalid_call(SgKey,AbsInt,LitKey,CId,LitSg,LitProj).
 
 update_literal_call_in_completes(AbsInt,SgKey,LitKey,CId,OldId,LitSg,OldALitProj,NewALitProj) :-
         ( NewALitProj = '$bottom' ->
-            true % remove old memo_tables should be done when deleting the parent from the complete?
+            NId = OldId % remove old memo_tables when deleting the complete
             % invalid_call will be annotated during fixpoint
         ; get_existing_call(AbsInt,SgKey,LitSg,NewALitProj,Id1) ->
             % change Id in memo_table
@@ -119,30 +124,34 @@ update_literal_call_in_completes(AbsInt,SgKey,LitKey,CId,OldId,LitSg,OldALitProj
             assertz_fact(complete(SgKey,AbsInt,LitSg,NewALitProj,['$bottom'],NId,ParentsChange))
             % this complete may not be necessary
         ),
-        ( nonvar(OldId) ->
-          del_parent_complete(SgKey,AbsInt,OldId,CId,LitKey,_NFs)
-        ; true),
-        % Assuming monotonicity (no widening)!!, otherwise we should remove in bothe cases
+        % Assuming monotonicity (no widening)!!, otherwise we should remove in both cases
         ( less_or_equal(AbsInt,OldALitProj,NewALitProj) ->
             td_add_complete_call_change(SgKey,AbsInt,NId,ParentsChange)
         ;
             td_rec_delete_complete(NId,SgKey,AbsInt)
-        ).
+        ),
+        ( nonvar(OldId) ->
+          % this has to be done after deleting the complete or the case of the
+          % new literal being bot will not work
+          del_parent_complete(SgKey,AbsInt,OldId,CId,LitKey,_NFs)
+        ; true).
 
-% NProj0 in term of the variables of Sg0
+
+:- pred apply_abstraction(+AbsInt,+Sg0,+Proj0,+Sg1,+Proj1,-NProj0)
+        #" Perform the abstract unification of terms @var{Sg0} and @var{Sg1}
+        with abstract substitutions @var{Proj0} and @var{Proj1}. @var{NProj0} in
+        term of the variables of @var{Sg0}. Assuming that @var{Sg1}:@var{Proj1} is
+        normalized.".
 % using the same number when they refer to the same variables
-% Assuming that Sg1:Proj1 is normalized
-:- export(apply_abstraction/6).
 apply_abstraction(AbsInt,Sg0,Proj0,Sg1,Proj1,NProj0) :-
-        % Sg0 may not be normalized
         varset(Sg0,Sv0),
         abs_normalize(AbsInt,Sg0,Sv0,Proj0,Head1,Hv1,NProj1,ExtraInfo),
         Head1 = Sg1, % unification to be able to perform the domain operation
         glb(AbsInt,NProj1,Proj1,AProj1),
         exit_to_prime(AbsInt,Sg0,Hv1,Head1,Sv0,AProj1,ExtraInfo,NProj0).
 
-:- pred get_literal(+LitKey,+ClauseVars_u,-Sg,-LitVars,-LitVars) + is_det.
-get_literal(LitKey,ClauseVars_u,Sg,LitVars,LitVars) :-
+:- pred get_literal(+LitKey,+ClauseVars_u,-Sg,-LitVars) + is_det.
+get_literal(LitKey,ClauseVars_u,Sg,LitVars) :-
         decode_litkey(LitKey,F,A,N,_),
         get_predkey(F,A,SgKey),
         get_clkey(F,A,N,ClKey),
@@ -178,8 +187,7 @@ get_existing_call(AbsInt,SgKey,Sg,AProj,Id) :-
 % ----------------------------------------------------------------------
 :- doc(section, "Update successes").
 
-update_assertions_pred_success(SuccAsDiff,SgKey,AbsInt) :-
-    \+ SuccAsDiff = [],
+update_assertions_pred_success(SgKey,AbsInt) :-
     store_current_success_asr(SgKey,AbsInt),
     ( % failure-driven loop
       complete(SgKey,AbsInt,Sg,Proj,_OldPredPrime,Id,Parents),
@@ -211,7 +219,7 @@ update_assertions_pred_success(SuccAsDiff,SgKey,AbsInt) :-
         fail
     ; true
     ).
-update_assertions_pred_success(_,_,_).
+update_assertions_pred_success(_,_).
 
 :- data old_success_asr_/6.
 store_current_success_asr(SgKey,AbsInt) :-
@@ -246,6 +254,8 @@ td_add_complete_call_change(SgKey,AbsInt,Id,Parents) :-
 mark_clauses([],_,_,_).
 mark_clauses([clause(_Head,_Vars_u,Clid,_Body)|Cls],AbsInt,Id,Parents) :-
         decode_clkey(Clid, P, A, C), !,
-        get_litkey(P,A,C,0,LitKey), % 0 or 1??
+        get_litkey(P,A,C,0,LitKey),
         add_change(Id,LitKey,P/A/C/0,Parents,AbsInt),
+        % It's 0 because it is a new call, 1 assumes that there are already
+        % memo_table entries
         mark_clauses(Cls,AbsInt,Id,Parents).

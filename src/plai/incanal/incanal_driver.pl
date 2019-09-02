@@ -40,7 +40,7 @@ according to the strategy defined.
         fixpoint_compute_change/9, proj_to_prime_r/8, proj_to_prime_nr/9]). % TODO: fix me
 :- use_module(ciaopp(plai/transform), [trans_clause/3, cleanup_trans_clauses/0]).
 :- import(transform, [determine_r_flag/3]). % TODO: fix me
-:- use_module(ciaopp(plai/domains), [identical_proj/5, init_abstract_domain/2, project/5, abs_sort/3, compute_lub/3, extend/5, identical_abstract/3]).
+:- use_module(ciaopp(plai/domains), [identical_proj/5, init_abstract_domain/2, abs_sort/3, identical_abstract/3]).
 :- use_module(ciaopp(plai/tarjan), [recursive_class/2]).
 :- import(tarjan, [get_recursivity_class/3]). % TODO: fix me
 :- use_module(ciaopp(p_unit/program_keys),

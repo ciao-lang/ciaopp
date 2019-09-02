@@ -294,7 +294,7 @@ get_succ_assertion_asubs(SgKey,Head,_Hv,Sts,AbsInt,Proj,AsrPrime) :-
         success_asr(SgKey, Head, Sts, AbsInt, AsrProj, AsrPrime),
         identical_abstract(AbsInt, Proj, AsrProj), !.
 get_succ_assertion_asubs(SgKey,Head,Hv,Sts,AbsInt,Proj,AsrPrime) :-
-	( % enumerate all read assrt and gather conditions
+	( % enumerate all read assrts and gather conditions
     assertion_read(Head,_M,St,success,Body,_Dict,_Src,_LB,_LE),
       member(St, Sts),
       assertion_body(Head,_Compat,InfoCall,InfoSucc,_Comp,_Comm,Body),
