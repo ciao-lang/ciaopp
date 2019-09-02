@@ -166,7 +166,7 @@
          list @var{Vars} resulting in the projected abstract substitution
          @var{Proj}.".
 project(AbsInt,Vars,HvFv,ASub,Proj) :-
-	project(AbsInt,_,Vars,HvFv,ASub,Proj). % TODO: Unbound Sg is a problem! (IG)
+	project(AbsInt,sg_not_provided,Vars,HvFv,ASub,Proj). % TODO: Unbound Sg is a problem! (IG) Using sg_not_provided instead (JF)
 
 % TODO:[new-resources] version with Sg, really needed?
 :- export(project/6). % TODO:[new-resources] (extra)
