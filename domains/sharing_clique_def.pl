@@ -191,14 +191,14 @@ share_clique_def_asub_to_native(((Cl,Sh),a(G,_SS)),Qv,_OutFlag,Info,[]):-
 	).
 	
 %------------------------------------------------------------------------%
-% share_clique_def_unknown_call(+,+,-)                                   |
-% share_clique_def_unknown_call(Call,Vars,Succ)                          |
+% share_clique_def_unknown_call(+,+,+,-)                                 |
+% share_clique_def_unknown_call(Sg,Vars,Call,Succ)                       |
 % Note that def does not define this operation.                          |
 %------------------------------------------------------------------------%
 
-share_clique_def_unknown_call('$bottom',_Vars,'$bottom').
-share_clique_def_unknown_call((SH_Call,Def_Call),Vars,Succ):-	
-	share_clique_unknown_call(SH_Call,Vars,SH_Succ),
+share_clique_def_unknown_call(_Sg,_Vars,'$bottom','$bottom').
+share_clique_def_unknown_call(Sg,Vars,(SH_Call,Def_Call),Succ):-	
+	share_clique_unknown_call(Sg,Vars,SH_Call,SH_Succ),
 	Succ = (SH_Succ,Def_Call).
 
 %------------------------------------------------------------------------%

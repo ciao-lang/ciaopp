@@ -8,7 +8,7 @@
 	svterms_extend/4,
 	svterms_less_or_equal/2,
 	svterms_glb/3,
-	svterms_unknown_call/3,
+	svterms_unknown_call/4,
 	svterms_unknown_entry/2,
 	svterms_empty_entry/2,
 	svterms_call_to_success_fact/9,
@@ -55,7 +55,7 @@
 	    eterms_extend/4,
 	    eterms_less_or_equal/2,
 	    eterms_glb/3,
-	    eterms_unknown_call/3,
+	    eterms_unknown_call/4,
 	    eterms_unknown_entry/2,
 	    eterms_empty_entry/2,
 	    eterms_special_builtin/5,
@@ -560,9 +560,9 @@ svterms_empty_entry(Vars,ASub):-
 	abssubst_b(ASub,TASub,[]).
 
 %-----------------------TO DO ----- TO DO ----------------------------------%	
-svterms_unknown_call(Call,Vars,Succ):-
+svterms_unknown_call(Sg,Vars,Call,Succ):-
 	abssubst(Call,TCall,_SV),
-	eterms_unknown_call(TCall,Vars,TSucc),
+	eterms_unknown_call(Sg,Vars,TCall,TSucc),
 	abssubst_b(Succ,TSucc,[]).
 
 %--------------------------------------------------------------%	

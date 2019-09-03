@@ -564,16 +564,16 @@ share_clique_asub_to_native((Cl,Sh),Qv,_OutFlag,Info,[]):-
 	if_not_nil(Gv,ground(Gv),Info1,[]).
 
 %------------------------------------------------------------------------%
-% share_clique_unknown_call(+,+,-)                                       |
-% share_clique_unknown_call(Call,Vars,Succ)                              |
+% share_clique_unknown_call(+,+,+,-)                                     |
+% share_clique_unknown_call(Sg,Vars,Call,Succ)                           |
 % Gives the ``top'' value for the variables involved in a                |
 % literal whose definition is not present, and adds this top value to    |
 % Call.                                                                  |
 %------------------------------------------------------------------------%
 
-share_clique_unknown_call('$bottom',_Vars,'$bottom').
-share_clique_unknown_call(([],[]),_Vars,([],[])) :- !.
-share_clique_unknown_call((Cl,Sh),Vars,Succ):-
+share_clique_unknown_call(_Sg,_Vars,'$bottom','$bottom') :- !.
+share_clique_unknown_call(_Sg,_Vars,([],[]),([],[])) :- !.
+share_clique_unknown_call(_Sg,Vars,(Cl,Sh),Succ):-
 	split_list_of_lists(Vars,Cl,Cl_vars,_),
 	split_list_of_lists(Vars,Sh,Sh_vars,Irrel_Sh_vars),
 	delete_vars_from_list_of_lists(Vars,Cl,Irrel_Cl_vars),

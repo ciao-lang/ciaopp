@@ -450,8 +450,8 @@ shfrlin_asub_to_native((Sh,Fr,L),_Qv,_OutFlag,Info,[]):-
 % 	if_not_nil(Gv,ground(Gv),Info1,[]).
 
 %------------------------------------------------------------------------%
-% shfrlin_unknown_call(+,+,-)                                            |
-% shfrlin_unknown_call(Call,Vars,Succ)                                   |  
+% shfrlin_unknown_call(+,+,+,-)                                          |
+% shfrlin_unknown_call(Sg,Vars,Call,Succ)                                |  
 % Obtained by selecting those sets in Call for which at least a variable |
 % in Vars appears, making the star of those sets, and adding the sets    |
 % with empty intersection with Vars. In freeness, all variables related  |
@@ -459,9 +459,9 @@ shfrlin_asub_to_native((Sh,Fr,L),_Qv,_OutFlag,Info,[]):-
 % not related to Vars and make the union between the related Call_lin    |
 % with free variables returned by freeness.                              |
 %------------------------------------------------------------------------%
-shfrlin_unknown_call('$bottom',_Vars,'$bottom').
-shfrlin_unknown_call((Call_sh,Call_fr,Call_lin),Vars,Succ):-
-	shfr_unknown_call((Call_sh,Call_fr),Vars,(Succ_sh,Succ_fr)),
+shfrlin_unknown_call(_Sg,_Vars,'$bottom','$bottom') :- !.
+shfrlin_unknown_call(Sg,Vars,(Call_sh,Call_fr,Call_lin),Succ):-
+	shfr_unknown_call(Sg,Vars,(Call_sh,Call_fr),(Succ_sh,Succ_fr)),
 	ord_subtract(Call_lin,Vars,Call_lin_not_rel),
 	member_value_freeness(Succ_fr,Succ_lin0,f),
 	ord_intersection(Succ_lin0,Vars,Succ_lin1),

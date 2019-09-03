@@ -17,7 +17,7 @@
 	  def_sort/2,       
 	  def_special_builtin/4,
 	  def_success_builtin/4,
-	  def_unknown_call/3,
+	  def_unknown_call/4,
 	  def_unknown_entry/2
 	],
 	[assertions, datafacts]).
@@ -639,8 +639,8 @@ defdeps2covered_([L|List],V,[covered(V,L)|Native],Native0):-
 %% def_output_interface0([],_Vars,[]).
 
 %-------------------------------------------------------------------------
-% def_unknown_call(+,+,-)                                                %
-% def_unknown_call(Vars,Call,Succ)                                       %
+% def_unknown_call(+,+,+,-)                                              %
+% def_unknown_call(Sg,Vars,Call,Succ)                                    %
 % Gives the "top" value for the variables Vars involved in a literal     %
 % whose definition is not present, and adds this top value to            %
 % Call (it is like conjunting the information in Call with the top for   %
@@ -648,7 +648,7 @@ defdeps2covered_([L|List],V,[covered(V,L)|Native],Native0):-
 % In the definiteness analyser, nothing needs to be done.                %
 %-------------------------------------------------------------------------
 
-def_unknown_call(_Vars,Call,Call).
+def_unknown_call(_Sg,_Vars,Call,Call).
 
 %------------------------------------------------------------------------%
 % def_unknown_entry(+,-)                                                 %

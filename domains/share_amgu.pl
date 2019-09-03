@@ -43,7 +43,7 @@
 		shfrlin_input_user_interface/3,
 		shfrlin_input_interface/4,
 		shfrlin_asub_to_native/5,
-		shfrlin_unknown_call/3,
+		shfrlin_unknown_call/4,
 		shfrlin_unknown_entry/2,
 		shfrlin_empty_entry/2,
 		shfrlin_amgu/4

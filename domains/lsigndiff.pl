@@ -67,7 +67,7 @@ simple_lsign_sort(ACons_u,ACons):-
 simple_lsign_unknown_entry(Qv,p(Call,a([],[],[]),Call)):-
 	lsign_unknown_entry(Qv,Call).
 
-simple_lsign_unknown_call(_Call,_Qv,_Succ):-
+simple_lsign_unknown_call(_Sg,_Qv,_Call,_Succ):-
 	throw(not_implemented(simple_lsign_unknown_call)).
 
 simple_lsign_empty_entry(_Qv,_Call):-

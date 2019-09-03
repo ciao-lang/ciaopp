@@ -13,7 +13,7 @@
 	  path_sort/2,        
 	  path_special_builtin/4,
 	  path_success_builtin/5,
-	  path_unknown_call/3,
+	  path_unknown_call/4,
 	  path_unknown_entry/2,
 	  path_empty_entry/2,
 	%
@@ -297,12 +297,12 @@ path_call_to_success_fact(Sg,Hv,Head,_K,Sv,Call,Proj,Prime,Succ) :-
 	path_project(Sv,Succ,Prime).
 
 %-------------------------------------------------------------------------
-% path_unknown_call(+,+,-)                                               |
-% path_unknown_call(Call,Qv,Succ)                                        |
+% path_unknown_call(+,+,+,-)                                               |
+% path_unknown_call(Sg,Qv,Call,Succ)                                        |
 %-------------------------------------------------------------------------
 % This is clearly wrong!!!!
 
-path_unknown_call(Call,_Qv,Call).
+path_unknown_call(_Sg,_Qv,Call,Call).
 
 %-------------------------------------------------------------------------
 % path_unknown_entry(+,-)                                                |

@@ -556,7 +556,7 @@ asub_to_out(AbsInt,ASub,Qv,OutputUser,CompProps) :-
 % TODO: body_succ0('$var',...) passes unbound Sg (due to metacall), use call(Sg) (or similar) instead? (JF)
 :- export(unknown_call/5).
 :- pred unknown_call(+AbsInt,+Sg,+Vars,+Call,-Succ)
-        : (atm(AbsInt), list(Vars)) + not_fails
+        : (atm(AbsInt), callable(Sg), list(Vars)) + not_fails
         #"@var{Succ} is the result of adding to @var{Call} the ``topmost''
           abstraction in domain @var{AbsInt} of the variables @var{Vars}
           involved in a literal @var{Sg} whose definition is not present in the

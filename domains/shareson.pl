@@ -11,7 +11,7 @@
 	  shareson_asub_to_native/5,
 	  shareson_project/3, 
 	  shareson_sort/2,    
-	  shareson_unknown_call/3,  
+	  shareson_unknown_call/4,  
 	  shareson_unknown_entry/2, 
 	  shareson_empty_entry/2,
 	%
@@ -98,10 +98,10 @@ shareson_compose((_,Call_sh),Succ_sh,Succ_son,Succ):-
 
 %-------------------------------------------------------------------------
 
-shareson_unknown_call('$bottom',_Vars,'$bottom').
-shareson_unknown_call((Call_son,Call_sh),Vars,Succ):-
-	share_unknown_call(Call_sh,Vars,Succ_sh),
-	son_unknown_call(Call_son,Vars,Succ_son),
+shareson_unknown_call(_Sg,_Vars,'$bottom','$bottom') :- !.
+shareson_unknown_call(Sg,Vars,(Call_son,Call_sh),Succ):-
+	share_unknown_call(Sg,Vars,Call_sh,Succ_sh),
+	son_unknown_call(Sg,Vars,Call_son,Succ_son),
 	merge_list_of_lists(Call_sh,AllVars),
 	compose(Succ_son,Succ_sh,AllVars,Succ).
 

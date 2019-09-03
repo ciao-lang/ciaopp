@@ -8,7 +8,7 @@
 	eterms_extend/4,
 	eterms_less_or_equal/2,
 	eterms_glb/3,
-	eterms_unknown_call/3,
+	eterms_unknown_call/4,
 	eterms_unknown_entry/2,
 	eterms_empty_entry/2,
 	eterms_call_to_success_fact/9,
@@ -1277,12 +1277,12 @@ eterms_empty_entry(Vars,ASub):-
 
 
 %------------------------------------------------------------------%
-:- pred eterms_unknown_call(+Call,+Vars,-Succ): absu * list * absu # 
+:- pred eterms_unknown_call(+Sg,+Vars,+Call,-Succ): callable * list * absu * absu # 
 "Gives the ``top'' value for the variables involved in a 
  literal whose definition is not present, and adds this top value to
  @var{Call}".
 
-eterms_unknown_call(Call,Vars,Succ):-
+eterms_unknown_call(_Sg,Vars,Call,Succ):-
 	substitution(Call,CallVars,_),
 	ord_subtract(Vars,CallVars,TopVars),
 	variables_are_top_type(TopVars,ASub),

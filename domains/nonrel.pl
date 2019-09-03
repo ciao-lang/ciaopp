@@ -460,12 +460,12 @@ nonrel_asub_to_native(_AbsInt,_Qv,_,ASub,ASub,[]).
 % [IG] for now we output the raw internal representation. This predicate could
 % be "overwritten by the developer of the domain."
 
-:- export(nonrel_unknown_call/4).
-:- pred nonrel_unknown_call(+AbsInt,+Call,+Vars,-Succ)
-        : atm * term * list * term
+:- export(nonrel_unknown_call/5).
+:- pred nonrel_unknown_call(+AbsInt,+Sg,+Vars,+Call,-Succ)
+        : atm * callable * list * term * term
         #"Gives the ``top'' value for the variables involved in a literal whose
         definition is not present, and adds this top value to @var{Call}".
-nonrel_unknown_call(AbsInt,Call,Vars,Succ):-
+nonrel_unknown_call(AbsInt,_Sg,Vars,Call,Succ):-
         nonrel_top(AbsInt,Top),
         insert_values_asub(Vars,Call,Top,Succ).
 
@@ -612,7 +612,7 @@ nonrel_intervals_input_user_interface(InputUser,Qv,ASub,_Sg,_MaybeCallASub) :- n
 :- export(nonrel_intervals_asub_to_native/5).
 nonrel_intervals_asub_to_native(ASub,Qv,OutFlag,OutputUser,Comps) :- nonrel_asub_to_native(nonrel_intervals,ASub,Qv,OutFlag,OutputUser,Comps).
 :- export(nonrel_intervals_unknown_call/4).
-nonrel_intervals_unknown_call(_Sg,Vars,Call,Succ) :- nonrel_unknown_call(nonrel_intervals,Call,Vars,Succ).
+nonrel_intervals_unknown_call(Sg,Vars,Call,Succ) :- nonrel_unknown_call(nonrel_intervals,Sg,Vars,Call,Succ).
 :- export(nonrel_intervals_unknown_entry/3).
 nonrel_intervals_unknown_entry(_Sg,Qv,Call) :- nonrel_unknown_entry(nonrel_intervals,Qv,Call).
 :- export(nonrel_intervals_empty_entry/2).

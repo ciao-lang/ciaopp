@@ -17,7 +17,7 @@
 	gr_input_user_interface/3,
 	gr_asub_to_native/5,
 	%gr_output_interface/2,
-	gr_unknown_call/3,
+	gr_unknown_call/4,
 	gr_unknown_entry/2,
 	gr_empty_entry/2,
 	extrainfo/1
@@ -1005,18 +1005,18 @@ member_value_gr([_|Rest],RestV,Value):-
 
 %------------------------------------------------------------------------%
 % gr_unknown_call(+,+,+,-)                                               %
-% gr_unknown_call(AbsInt,Vars,Succ)                                 %
+% gr_unknown_call(Sg,Vars,Call,Succ)                                     %
 % Gives the "top" value for the variables involved in a                  %
 % literal whose definition is not present, and adds this top value to    %
 % Call                                                                   %
 %------------------------------------------------------------------------%
 
-:- pred gr_unknown_call(+Call,+Vars,-Succ): absu * list * absu # 
+:- pred gr_unknown_call(+Sg,+Vars,+Call,-Succ): callable * list * absu * absu # 
 "Gives the ``top'' value for the variables involved in a 
  literal whose definition is not present, and adds this top value to
  @var{Call}".
 
-gr_unknown_call(Call,Vars,Succ):-
+gr_unknown_call(_Sg,Vars,Call,Succ):-
 	gr_change_values_insert(Vars,Call,Succ,any).
 
 %------------------------------------------------------------------------%

@@ -10,7 +10,7 @@
 	  shfrson_asub_to_native/5,
 	  shfrson_project/3,  
 	  shfrson_sort/2,     
-	  shfrson_unknown_call/3,
+	  shfrson_unknown_call/4,
 	  shfrson_unknown_entry/2,  
 	  shfrson_empty_entry/2,
 	%
@@ -100,10 +100,10 @@ shfrson_compose((_Son,(_Sh,Fr)),Succ_shfr,Succ_son,Succ):-
 
 %-------------------------------------------------------------------------
 
-shfrson_unknown_call('$bottom',_Vars,'$bottom').
-shfrson_unknown_call((Call_son,Call_shfr),Vars,Succ):-
-	shfr_unknown_call(Call_shfr,Vars,Succ_shfr),
-	son_unknown_call(Call_son,Vars,Succ_son),
+shfrson_unknown_call(_Sg,_Vars,'$bottom','$bottom') :- !.
+shfrson_unknown_call(Sg,Vars,(Call_son,Call_shfr),Succ):-
+	shfr_unknown_call(Sg,Vars,Call_shfr,Succ_shfr),
+	son_unknown_call(Sg,Vars,Call_son,Succ_son),
 	Call_shfr = (_,Fr),
 	collect_vars_freeness(Fr,AllVars),
 	compose(Succ_son,Succ_shfr,AllVars,Succ).

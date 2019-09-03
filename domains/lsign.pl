@@ -16,7 +16,7 @@
 	  lsign_sort/2,       
 	  lsign_special_builtin/4,
 	  lsign_success_builtin/6,
-	  lsign_unknown_call/3,
+	  lsign_unknown_call/4,
 	  lsign_unknown_entry/2,
 	  lsign_empty_entry/2,
 	%
@@ -29,7 +29,7 @@
 	  simple_lsign_project/5,
 	  simple_lsign_sort/2,
 	  simple_lsign_success_builtin/6, 
-	  simple_lsign_unknown_call/3, 
+	  simple_lsign_unknown_call/4, 
 	  simple_lsign_unknown_entry/2, 
 	  simple_lsign_empty_entry/2
 	], [assertions, datafacts]).
@@ -1100,11 +1100,11 @@ acombine_expr(>,X/SignX,Tail1,Y0,SignY0,[Y/SignY|Tail2],Var,[Y0/SignY0|Union],Si
 %------------------------------------------------------------------------%
 
 %------------------------------------------------------------------------%
-% lsign_unknown_call(+,+,-) 
-% lsign_unknown_call(Vars,Call,Succ) 
+% lsign_unknown_call(+,+,+,-) 
+% lsign_unknown_call(Sg,Vars,Call,Succ) 
 %------------------------------------------------------------------------%
 
-lsign_unknown_call(Vars,Call,Succ):-
+lsign_unknown_call(_Sg,Vars,Call,Succ):-
 	lsign_unknown_entry0(Vars,AEqIn,[]),
 	Call = a(S,_,_),
 	lsign_propagate_fixpoint(S,AEqIn,[],TmpEqIn,_,S,_,F),

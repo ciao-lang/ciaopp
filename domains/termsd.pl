@@ -10,7 +10,7 @@
 	terms_extend/4,
 	terms_less_or_equal/2,
 	terms_glb/3,
-	terms_unknown_call/3,
+	terms_unknown_call/4,
 	terms_unknown_entry/2,
 	terms_empty_entry/2,
 	terms_call_to_success_fact/9,
@@ -1166,12 +1166,12 @@ terms_empty_entry(Vars,ASub):-
 
 
 %------------------------------------------------------------------%
-:- pred terms_unknown_call(+Call,+Vars,-Succ): absu * list * absu # 
+:- pred terms_unknown_call(+Sg,+Vars,+Call,-Succ): callable * list * absu * absu # 
 "Gives the ``top'' value for the variables involved in a 
  literal whose definition is not present, and adds this top value to
  @var{Call}".
 
-terms_unknown_call(Call,Vars,Succ):-
+terms_unknown_call(_Sg,Vars,Call,Succ):-
 	substitution(Call,CallVars,_),
 	ord_subtract(Vars,CallVars,TopVars),
 	variables_are_top_type(TopVars,ASub),

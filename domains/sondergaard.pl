@@ -17,7 +17,7 @@
 	  son_sort/2,         
 	  son_special_builtin/4,
 	  son_success_builtin/5,
-	  son_unknown_call/3,
+	  son_unknown_call/4,
 	  son_unknown_entry/2,
 	  son_empty_entry/2,
 	%
@@ -327,16 +327,15 @@ son_call_to_prime_fact(Sg,_,Head,Sv,(Gv,Sh),(Prime_gr,Prime_sh)):-
 	son_project_subst(New_Sh,Sv,Prime_sh).
 
 %-------------------------------------------------------------------------
-% son_unknown_call(+,+,-)                                                |
-% son_unknown_call(Call,Vars,Succ)                                       |
+% son_unknown_call(+,+,+,-)                                                |
+% son_unknown_call(Sg,Vars,Call,Succ)                                       |
 % Succ_gr is identical to Call_gr. Succ_sh is obtained by selecting the  |
 % non ground variables in Vars, and obtaining all possible couples and   |
 % singletons.                                                            |
 %-------------------------------------------------------------------------
 
-
-son_unknown_call('$bottom',_Vars,'$bottom').
-son_unknown_call((Call_gr,_Call_sh),Vars,Succ):-
+son_unknown_call(_Sg,_Vars,'$bottom','$bottom') :- !.
+son_unknown_call(_Sg,Vars,(Call_gr,_Call_sh),Succ):-
 	ord_subtract(Vars,Call_gr,TopVars),
 	couples_and_singletons(TopVars,Succ_sh,[]),
 	Succ = (Call_gr,Succ_sh).

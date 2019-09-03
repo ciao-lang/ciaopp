@@ -187,14 +187,14 @@ sharefree_clique_def_asub_to_native(((SH,Fr),a(_G,_SS)),_Qv,_OutFlag,Info,[]):-!
 %         ; warning_message("The set of ground variables are different")).
 	
 %------------------------------------------------------------------------%
-% sharefree_clique_def_unknown_call(+,+,-)                               |
-% sharefree_clique_def_unknown_call(Call,Vars,Succ)                      |
+% sharefree_clique_def_unknown_call(+,+,+,-)                             |
+% sharefree_clique_def_unknown_call(Sg,Vars,Call,Succ)                   |
 % Note that def does not define this operation.                          |
 %------------------------------------------------------------------------%
 
-sharefree_clique_def_unknown_call('$bottom',_Vars,'$bottom').
-sharefree_clique_def_unknown_call((SHF_Call,Def_Call),Vars,Succ):-	
-	sharefree_clique_unknown_call(SHF_Call,Vars,SHF_Succ),
+sharefree_clique_def_unknown_call(_Sg,_Vars,'$bottom','$bottom') :- !.
+sharefree_clique_def_unknown_call(Sg,Vars,(SHF_Call,Def_Call),Succ):-	
+	sharefree_clique_unknown_call(Sg,Vars,SHF_Call,SHF_Succ),
 	Succ = (SHF_Succ,Def_Call).
 
 %------------------------------------------------------------------------%

@@ -19,7 +19,7 @@
 	  share_sort/2,       
 	  share_special_builtin/4,
 	  share_success_builtin/5,
-	  share_unknown_call/3,
+	  share_unknown_call/4,
 	  share_empty_entry/2,
 	  share_unknown_entry/2,
 	% sharing+freeness
@@ -52,7 +52,7 @@
 	  shfr_special_builtin/4,
 	  shfr_success_builtin/5,
 	  shfr_empty_entry/2,
-	  shfr_unknown_call/3,
+	  shfr_unknown_call/4,
 	  shfr_unknown_entry/2,
 	% sharing+freeness+nonvar
 	  shfrnv_asub_to_native/5, 

@@ -15,7 +15,7 @@
 	  depthk_sort/2,      
 	  depthk_special_builtin/4,  
 	  depthk_success_builtin/5,
-	  depthk_unknown_call/3, 
+	  depthk_unknown_call/4, 
 	  depthk_unknown_entry/2,  
 	  depthk_empty_entry/2
         ],
@@ -264,11 +264,11 @@ less_or_equal([X=T1|ASub1],[X=T2|ASub2]):-
 	less_or_equal(ASub1,ASub2).
 
 %-------------------------------------------------------------------------
-% depthk_unknown_call(+,+,-)                                             |
-% depthk_unknown_call(Call,Qv,Succ)                                      |
+% depthk_unknown_call(+,+,+,-)                                           |
+% depthk_unknown_call(Sg,Qv,Call,Succ)                                   |
 %-------------------------------------------------------------------------
 
-depthk_unknown_call(Call,Qv,Succ):-
+depthk_unknown_call(_Sg,Qv,Call,Succ):-
 	subtract_keys(Call,Qv,Succ0),
 	variables_are_variables(Qv,Succ1),
 	merge(Succ0,Succ1,Succ).

@@ -1050,7 +1050,7 @@ shfr_success_builtin(findall,_,p(X,Z),(Call_sh,Call_fr),(Succ_sh,Succ_fr)):-
 	update_lambda_sf(Zs,Call_fr,Call_sh,Succ_fr,Succ_sh).
 shfr_success_builtin(findall,_,p(_,Z),Call,Succ):-
 	varset(Z,Zs),
-	shfr_unknown_call(Call,Zs,Succ).
+	shfr_unknown_call(sg_not_provided,Zs,Call,Succ).
 shfr_success_builtin('functor/3',_,p(X,Y,Z),Call,Succ):-
 	var(X),
 	Call = (Call_sh,Call_fr),
@@ -2046,8 +2046,8 @@ update_freeness([X/Val|Xs],Temp_sh,[X/g|Temp_fr]):-
 %-------------------------------------------------------------------------
 %           ABSTRACT meta_call
 %-------------------------------------------------------------------------
-shfr_unknown_call('$bottom',_Vars,'$bottom').
-shfr_unknown_call((Call_sh,Call_fr),Vars,(Succ_sh,Succ_fr)):-
+shfr_unknown_call(_Sg,_Vars,'$bottom','$bottom') :- !.
+shfr_unknown_call(_Sg,Vars,(Call_sh,Call_fr),(Succ_sh,Succ_fr)):-
 	ord_split_lists_from_list(Vars,Call_sh,Intersect,Rest),
 	closure_under_union(Intersect,Star),
 	merge(Star,Rest,Succ_sh),

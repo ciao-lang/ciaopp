@@ -12,7 +12,7 @@
 	deftypes_extend/4,
 	deftypes_less_or_equal/2,
 	deftypes_glb/3,
-	deftypes_unknown_call/3,
+	deftypes_unknown_call/4,
 	deftypes_unknown_entry/2,
 	deftypes_empty_entry/2,
 	deftypes_call_to_success_fact/9,
@@ -598,12 +598,12 @@ deftypes_empty_entry(Vars,ASub):-
 
 
 %------------------------------------------------------------------%
-:- pred deftypes_unknown_call(+Call,+Vars,-Succ): absu * list * absu # 
+:- pred deftypes_unknown_call(+Sg,+Vars,+Call,-Succ): callable * list * absu * absu # 
 "Gives the ``top'' value for the variables involved in a 
  literal whose definition is not present, and adds this top value to
  @var{Call}".
 
-deftypes_unknown_call(Call,Vars,Succ):-
+deftypes_unknown_call(_Sg,Vars,Call,Succ):-
 	substitution(Call,CallVars,_),
 	ord_subtract(Vars,CallVars,TopVars),
 	variables_are_top_type(TopVars,ASub),

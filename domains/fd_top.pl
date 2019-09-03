@@ -316,16 +316,16 @@ vero_output_interface(Asub,Asub).
 
 %----------------------------------------------------------------------------
 
-% vero_unknown_call(Vars,Call,Succ)
+% vero_unknown_call(Sg,Vars,Call,Succ)
 % Gives the "top" value (mode any) for the variables Vars involved in
 % a literal whose definition is not present, and joins this top abstraction
 % with Call yielding Succ
 % Is used for metacalls
 % req: Vars is ordered
 %
-vero_unknown_call(_Vars,Call,Call):-
+vero_unknown_call(_Sg,_Vars,Call,Call):-
         bottomelement(Call), !.
-vero_unknown_call(Vars,Call,Succ) :-
+vero_unknown_call(_Sg,Vars,Call,Succ) :-
         ss_make_singl(Vars, AlfaC),
         vero_join(Call, AlfaC, Vars, [], Succ).
 

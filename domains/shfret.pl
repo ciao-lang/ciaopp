@@ -15,7 +15,7 @@
 	  shfret_input_interface/4,
 	  shfret_input_user_interface/3,
 	  shfret_asub_to_native/5,
-	  shfret_unknown_call/3,
+	  shfret_unknown_call/4,
 	  shfret_unknown_entry/2,
 	  shfret_empty_entry/2
 	],
@@ -228,13 +228,13 @@ shfret_asub_to_native(ASub,Qv,Flag,Props,Comps):-
 	append(Comps1,Comps2,Comps).
 
 %------------------------------------------------------------------------%
-% shfret_unknown_call(+,+,-)                                                 %
-% shfret_unknown_call(Call,Vars,Succ)                                        %
+% shfret_unknown_call(+,+,+,-)                                           %
+% shfret_unknown_call(Sg,Vars,Call,Succ)                                 %
 %------------------------------------------------------------------------%
-shfret_unknown_call(Call,Vars,Succ):-
+shfret_unknown_call(Sg,Vars,Call,Succ):-
 	asub(Call,CTypes,CModes),
-	shfr_unknown_call(CModes,Vars,SModes),
-	eterms_unknown_call(CTypes,Vars,STypes),
+	shfr_unknown_call(Sg,Vars,CModes,SModes),
+	eterms_unknown_call(Sg,Vars,CTypes,STypes),
 	asub(Succ,STypes,SModes).
 
 %------------------------------------------------------------------------%

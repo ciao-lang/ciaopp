@@ -15,7 +15,7 @@
 	  fd_project/3,       
 	  fd_sort/2,          
 	  fd_success_builtin/5,
-	  fd_unknown_call/3,
+	  fd_unknown_call/4,
 	  fd_unknown_entry/2,
 	  fd_empty_entry/2
 	],
@@ -200,9 +200,9 @@ if_not_nil(_,X,[X|Xs],Xs).
 
 %------------------------------------------------------------------------------
 
-fd_unknown_call((CallF,CallD),Vars,(F,D)):-
-        def_unknown_call(CallD,Vars,D),
-        vero_unknown_call(CallF,Vars,F).
+fd_unknown_call(Sg,Vars,(CallF,CallD),(F,D)):-
+        def_unknown_call(Sg,Vars,CallD,D),
+        vero_unknown_call(Sg,Vars,CallF,F).
 
 %------------------------------------------------------------------------------
 

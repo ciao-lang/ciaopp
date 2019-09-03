@@ -16,7 +16,7 @@
 	  aeq_sort/2,         
 	  aeq_special_builtin/4,
 	  aeq_success_builtin/5,
-	  aeq_unknown_call/3,
+	  aeq_unknown_call/4,
 	  aeq_unknown_entry/2,
 	  aeq_empty_entry/2
 	], [datafacts]).
@@ -466,7 +466,7 @@ aeq_success_builtin( aeq_cond_ground,	_Sv_uns, Sg - Varlist, Call, Succ) :-
 	  avariables_ic_subst( Sg, Eqs_sf, AVars_ic ),
 	  aeq_make_ground( AVars_ic, Call, Succ)
 	) .
-aeq_success_builtin( aeq_arg,	Sv_uns, arg(Nb,Term,Arg), Call, Succ) :-
+aeq_success_builtin( aeq_arg,	Sv_uns, Sg, Call, Succ) :- Sg = arg(Nb,Term,Arg),
 	get_Eqs_aeqs( Call, Eqs_sf),
 	aeq_substitute( arg(Nb,Term,Arg), Eqs_sf, arg(A_Nb,A_Term,A_Arg) ),
 	( free_aeqs( Call, A_Term ), !, Succ = '$bottom'
@@ -485,7 +485,7 @@ aeq_success_builtin( aeq_arg,	Sv_uns, arg(Nb,Term,Arg), Call, Succ) :-
 	  ; A_Arg = '@'(_), aeq_pair_sharing, !,
 	    aeq_jacobs_langen_variant( A_Arg, A_Term, 'arg', Succ_Sofar, Succ)
 	  ; aeq_warning( builtin_undef, aeq_arg ),
-	    aeq_unknown_call(Sv_uns,Succ_Sofar,Succ)
+	    aeq_unknown_call(Sg,Sv_uns,Succ_Sofar,Succ)
 	  )
 	; Succ = '$bottom'
 	) .
@@ -509,7 +509,7 @@ aeq_success_builtin( aeq_sort,	Sv_uns,    Sg, Call, Succ) :-
 	  aeq_jacobs_langen_variant( A_R, A_L, '=..', Call, Succ)
 	  %% REMARK : switched arguments because A_R will often be free
 	; aeq_warning( builtin_undef, aeq_sort ),
-	  aeq_unknown_call(Sv_uns,Call,Succ)
+	  aeq_unknown_call(Sg,Sv_uns,Call,Succ)
 	) .
 aeq_success_builtin( 'aeq_functor_=/2',	_Sv_uns, ( Eq, Vars ), Call, Succ) :- 
 	aeq_parameter_passing_rem( Eq, Vars, Call, Init_aeqs),
@@ -520,8 +520,8 @@ aeq_success_builtin( aeq_functor,	_Sv_uns, functor(T,F,A), Call, Succ) :-
 	( aeq_functor_succ(A_T, A_F, A_A, Call, Succ), !
 	; Succ = '$bottom'
 	) .
-aeq_success_builtin( aeq_top,	        Sv_uns, 	_Sg, Call, Succ) :-
-	aeq_unknown_call(Sv_uns,Call,Succ) .
+aeq_success_builtin( aeq_top,	        Sv_uns, 	Sg, Call, Succ) :-
+	aeq_unknown_call(Sg,Sv_uns,Call,Succ) .
 
 %------------------------------------------------------------------------------
 
@@ -566,9 +566,9 @@ aeq_asub_to_native_(ASub,OutputUser):-
 
 %------------------------------------------------------------------------------
 
-%% :- mode aeq_unknown_call(+,+,-).
-aeq_unknown_call(_Vars_uns,'$bottom','$bottom') :- ! .
-aeq_unknown_call(Vars_uns,Call,Succ) :-
+%% :- mode aeq_unknown_call(+,+,+,-).
+aeq_unknown_call(_Sg,_Vars_uns,'$bottom','$bottom') :- ! .
+aeq_unknown_call(_Sg,Vars_uns,Call,Succ) :-
 	sort( Vars_uns, Vars),
 	aeq_top( Vars, Top_aeqs ),
 	aeq_extend( Top_aeqs, Call, Succ ) .

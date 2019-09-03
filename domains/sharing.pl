@@ -711,16 +711,16 @@ myappend(Vs,V0,V):-
 may_be_var(X,X):- ( X=[] ; true ), !.
 
 %-------------------------------------------------------------------------
-% share_unknown_call(+,+,-)                                              |
-% share_unknown_call(Call,Vars,Succ)                                     |
+% share_unknown_call(+,+,+,-)                                            |
+% share_unknown_call(Sg,Vars,Call,Succ)                                  |
 % Obtained by selecting those sets in Call for which at least a variable |
 % in Vars appears, making the star of those sets, and adding the sets    |
 % with empty intersection with Vars                                      |
 %-------------------------------------------------------------------------
 
-share_unknown_call('$bottom',_Vars,'$bottom').
-share_unknown_call([],_Vars,[]).
-share_unknown_call([C|Call],Vars,Succ):-
+share_unknown_call(_Sg,_Vars,'$bottom','$bottom') :- !.
+share_unknown_call(_Sg,_Vars,[],[]) :- !.
+share_unknown_call(_Sg,Vars,[C|Call],Succ) :-
 	ord_split_lists_from_list(Vars,[C|Call],Intersect,Rest),
 	closure_under_union(Intersect,Star),
 	merge(Star,Rest,Succ).

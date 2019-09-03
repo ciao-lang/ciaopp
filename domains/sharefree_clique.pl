@@ -460,11 +460,11 @@ sharefree_clique_asub_to_native((SH,Fr),_Qv,_OutFlag,Info,[]):-
 	if_not_nil(Gv,ground(Gv),Info2,[]).
 
 %------------------------------------------------------------------------%
-% sharefree_clique_unknown_call(+,+,-)                                   |
-% sharefree_clique_unknown_call(Call,Vars,Succ)                          |
+% sharefree_clique_unknown_call(+,+,+,-)                                 |
+% sharefree_clique_unknown_call(Sg,Vars,Call,Succ)                       |
 %------------------------------------------------------------------------%
-sharefree_clique_unknown_call('$bottom',_Vars,'$bottom').
-sharefree_clique_unknown_call((Call_SH,Call_fr),Vars,(Succ_SH,Succ_fr)):-
+sharefree_clique_unknown_call(_Sg,_Vars,'$bottom','$bottom') :- !.
+sharefree_clique_unknown_call(_Sg,Vars,(Call_SH,Call_fr),(Succ_SH,Succ_fr)):-
         rel_w(Vars,Call_SH,Intersect),
 	irrel_w(Vars,Call_SH,Rest),
 	star_w(Intersect,Star),
