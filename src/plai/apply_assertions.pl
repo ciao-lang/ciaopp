@@ -15,7 +15,7 @@ This module reads the values of the following flags:
 
          For a module:
          @begin{verbatim}
-:- module(_,_,[assertions]).
+:- module(_,[p/1],[assertions]).
 
 :- pred p(X) => atm(X).
 p(X) :- X = a.
@@ -23,7 +23,7 @@ p(X) :- X = a.
 
  If @code{fixp_stick_to_success} is set to @tt{on}, the analysis result will be:
          @begin{verbatim}
-:- module(_,_,[assertions]).
+:- module(_,[p/1],[assertions]).
 
 :- true pred p(X) => atm(X).
 p(X) :- X = a.
@@ -32,7 +32,7 @@ p(X) :- X = a.
  Because the value of the assertion is used as it is.
 If it is set to @tt{off}, it will use the assertion only when it allows to gain precision (useless in this case).
           @begin{verbatim}
-:- module(_,_,[assertions,regtypes]).
+:- module(_,[p/1],[assertions,regtypes]).
 
 :- true pred p(X) => rta(X).
 p(X) :- X = a.
@@ -48,7 +48,7 @@ rta(a).
 
 For example in the following module:
                  @begin{verbatim}
-:- module(_,_,[assertions]).
+:- module(_,[main/0,p/1],[assertions]).
 
 main :-
         p(a).

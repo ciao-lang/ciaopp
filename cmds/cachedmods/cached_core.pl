@@ -1,4 +1,4 @@
-:- module(_,_,[]).
+:- module(_,[main/0],[]).
 
 :- use_module(library(terms)).
 %:- use_module(library(vndict)).                                               % it has wrong assertions and regtypes.

@@ -1,13 +1,13 @@
-:- module(share_clique_1_aux,_,
-% 	[amgu_clique_1/4,
-% 	 star_clique_1/2,
-% 	 nrel_clique_1/3,
-% 	 split_list_of_lists_singleton/3,
-% 	 share_clique_1_normalize/2,
-% 	 share_clique_1_normalize/4,
-% % for running benchmarks
-% 	 card_cliques_1/2
-%        ],
+:- module(share_clique_1_aux,
+	[amgu_clique_1/4,
+	 star_clique_1/2,
+	 nrel_clique_1/3,
+ 	 split_list_of_lists_singleton/3,
+ 	 share_clique_1_normalize/2,
+ 	 share_clique_1_normalize/4,
+ % for running benchmarks
+ 	 card_cliques_1/2
+        ],
        [assertions, isomodes]).
 
 :- use_module(library(sets), [ord_union/3, ord_subset/2, ord_delete/3]).

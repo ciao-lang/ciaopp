@@ -1,7 +1,8 @@
-:- module(_, _, [assertions]).
+:- module(_, [], [assertions]).
 
 :- use_module(engine(messages_basic), [message/2]).
 
+:- export(get_metric/2).
 get_metric(int,      int) :- !.
 get_metric(void,     void) :- !.
 get_metric(length,   length) :- !.
@@ -11,11 +12,13 @@ get_metric(depth(_), depth) :- !.
 get_metric(M,        null) :-
 	message(warning, ['The measure ', ~~(M), ' is unknown.']).
 
+:- export(translate_to_modes/2).
 translate_to_modes([],[]).
 translate_to_modes([I|Is],[M|Ms]):-
 	translate_to_mode(I,M),
 	translate_to_modes(Is,Ms).
 
+:- export(translate_to_mode/2).
 translate_to_mode(y/y,'+') :- !.
 translate_to_mode(y/n,'+') :- !. % bug?
 translate_to_mode(n/y,'-') :- !.
@@ -26,4 +29,3 @@ translate_to_mode(n/y,'-') :- !.
 translate_to_mode(n/n,'+'). % Changed (Oct, 14, 2004) -PLG
 % translate_to_mode(n/n,'-'). % -PLG
 
-%--------------------------------------------------------------------------
