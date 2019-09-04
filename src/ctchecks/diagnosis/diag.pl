@@ -21,7 +21,7 @@
 	call_to_entry/10, 
 	exit_to_prime/8,
 	unknown_entry/4,
-	empty_entry/3,
+	% empty_entry/3,
 	identical_abstract/3,
 	glb/4,
 	info_to_asub/7,
@@ -244,13 +244,13 @@ reduce0_dead(Abs,entry(Goal,Head,Vars),InfoG,InfoOut,[InfoCl]) :-
 	varset(Head,Hv),
 	ord_subtract(Vars,Hv,Fv),	
 	call_to_entry(Abs,Gv,Goal,Hv,Head,not_provided,Fv,InfoG,InfoOut,_), % TODO: add some ClauseKey? (JF)
-	empty_entry(Abs,Vars,EmptyCl), % TODO: it was unknown_entry/3, add some Sg or keep empty_entry/3?
+	unknown_entry(Abs,sg_not_provided,Vars,EmptyCl), % TODO: use empty_entry/3? fill missing Sg? (JF)
 	extend(Abs,Head,InfoOut,Hv,EmptyCl,InfoCl).
 reduce0_dead(Abs,exit(Head,Goal,_HCVs,GCVs),InfoH,InfoOut,[InfoCl]) :-
 	varset(Head,Hv),
 	varset(Goal,Gv),
 	unknown_entry(Abs,Goal,Gv,EmptyInfoG),
-	empty_entry(Abs,GCVs,EmptyCl),
+	unknown_entry(Abs,sg_not_provided,GCVs,EmptyCl), % TODO: use empty_entry/3? fill missing Sg? (JF)
  	once(exit_to_prime(Abs,Goal,Hv,Head,Gv,InfoH,(no,EmptyInfoG),InfoOut)),
 	extend(Abs,Goal,InfoOut,Gv,EmptyCl,InfoCl).
 
@@ -260,14 +260,14 @@ reduce0(Abs,entry(Goal,Head,Vars),_InfoG,InfoOut,[InfoCl]) :-
 	varset(Head,Hv),
 	ord_subtract(Vars,Hv,Fv),	
 	call_to_entry(Abs,Gv,Goal,Hv,Head,not_provided,Fv,EmptyInfo,InfoOut,_), % TODO: add some ClauseKey? (JF)
-	empty_entry(Abs,Vars,EmptyCl), % TODO: it was unknown_entry/3, add some Sg or keep empty_entry/3?
+	unknown_entry(Abs,sg_not_provided,Vars,EmptyCl), % TODO: use empty_entry/3? fill missing Sg? (JF)
 	extend(Abs,Head,InfoOut,Hv,EmptyCl,InfoCl).
 reduce0(Abs,exit(Head,Goal,_HCVs,GCVs),_InfoH,InfoOut,[InfoCl]) :-
 	varset(Head,Hv),
 	varset(Goal,Gv),
 	unknown_entry(Abs,Head,Hv,EmptyInfo),
 	unknown_entry(Abs,Goal,Gv,EmptyInfoG),
-	empty_entry(Abs,GCVs,EmptyCl), % TODO: it was unknown_entry/3, add some Sg or keep empty_entry/3?
+	unknown_entry(Abs,sg_not_provided,GCVs,EmptyCl), % TODO: use empty_entry/3? fill missing Sg? (JF)
  	once(exit_to_prime(Abs,Goal,Hv,Head,Gv,EmptyInfo,(no,EmptyInfoG),InfoOut)),
 	extend(Abs,Goal,InfoOut,Gv,EmptyCl,InfoCl).
 
@@ -293,7 +293,7 @@ reduce(Abs,entry(Goal,Head,Vars),InfoG,InfoOut,S,[InfoCl|S]) :-
 	project(Abs,Goal,Gv,_,NewInfoG_x,NewInfoG),
 	ord_subtract(Vars,Hv,Fv),		
         call_to_entry(Abs,Gv,Goal,Hv,Head,not_provided,Fv,NewInfoG,InfoOut,_), % TODO: add some ClauseKey? (JF)
-	empty_entry(Abs,Vars,EmptyCl), % TODO: it was unknown_entry/3, add some Sg or keep empty_entry/3?
+	unknown_entry(Abs,sg_not_provided,Vars,EmptyCl), % TODO: use empty_entry/3? fill missing Sg? (JF)
 	extend(Abs,Head,InfoOut,Hv,EmptyCl,InfoCl),!.
 reduce(Abs,exit(Head,Goal,HCVs,GCVs),InfoH,InfoOut,[InfoCl|S],S1) :-	
 	varset(Goal,Gv),
@@ -308,7 +308,7 @@ reduce(Abs,exit(Head,Goal,HCVs,GCVs),InfoH,InfoOut,[InfoCl|S],S1) :-
 	add_or_replace(Abs,Goal,GCVs,InfoOut,S,S1),!.
 
 add_or_replace(Abs,Goal,GCVs,I0,[],[I]):-
-	empty_entry(Abs,GCVs,Empty), % TODO: it was unknown_entry/3, add some Sg or keep empty_entry/3?
+	unknown_entry(Abs,sg_not_provided,GCVs,Empty), % TODO: use empty_entry/3? fill missing Sg? (JF)
 	range(I0,Vs0), % varset/2
 	extend(Abs,Goal,I0,Vs0,Empty,I). % TODO: Sg was unbound, added Goal (JF)
 add_or_replace(Abs,Goal,GCVs,I0,[I1|Is],[I|Is]):-
