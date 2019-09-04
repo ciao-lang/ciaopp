@@ -11,7 +11,7 @@
 	  shfrson_project/3,  
 	  shfrson_sort/2,     
 	  shfrson_unknown_call/4,
-	  shfrson_unknown_entry/2,  
+	  shfrson_unknown_entry/3,  
 	  shfrson_empty_entry/2,
 	%
 	  shfrson_compose/4
@@ -110,9 +110,9 @@ shfrson_unknown_call(Sg,Vars,(Call_son,Call_shfr),Succ):-
 
 %-------------------------------------------------------------------------
 
-shfrson_unknown_entry(Qv,Call):-
-	shfr_unknown_entry(Qv,Call_shfr),
-	son_unknown_entry(Qv,Call_son),
+shfrson_unknown_entry(Sg,Qv,Call):-
+	shfr_unknown_entry(Sg,Qv,Call_shfr),
+	son_unknown_entry(Sg,Qv,Call_son),
 	compose(Call_son,Call_shfr,Qv,Call).
 
 %-------------------------------------------------------------------------

@@ -17,7 +17,7 @@
 	  lsign_special_builtin/4,
 	  lsign_success_builtin/6,
 	  lsign_unknown_call/4,
-	  lsign_unknown_entry/2,
+	  lsign_unknown_entry/3,
 	  lsign_empty_entry/2,
 	%
 	  simple_lsign_call_to_entry/9,  
@@ -30,7 +30,7 @@
 	  simple_lsign_sort/2,
 	  simple_lsign_success_builtin/6, 
 	  simple_lsign_unknown_call/4, 
-	  simple_lsign_unknown_entry/2, 
+	  simple_lsign_unknown_entry/3, 
 	  simple_lsign_empty_entry/2
 	], [assertions, datafacts]).
 
@@ -1115,11 +1115,11 @@ lsign_unknown_call(_Sg,Vars,Call,Succ):-
         ).
 
 %------------------------------------------------------------------------%
-% lsign_unknown_entry(+,-) 
-% lsign_unknown_entry(Qv,Call) 
+% lsign_unknown_entry(+,+,-) 
+% lsign_unknown_entry(Sg,Qv,Call) 
 %------------------------------------------------------------------------%
 
-lsign_unknown_entry(Vars,a([],AEqIn,[])):-
+lsign_unknown_entry(_Sg,Vars,a([],AEqIn,[])):-
 	lsign_unknown_entry0(Vars,AEqIn,[]).
 
 lsign_unknown_entry0([],X,X):- !.

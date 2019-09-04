@@ -29,7 +29,7 @@
 	etermsvar_less_or_equal/2,
 	etermsvar_glb/3,
 	etermsvar_unknown_call/4,
-	etermsvar_unknown_entry/2,
+	etermsvar_unknown_entry/3,
 	etermsvar_empty_entry/2,
 	etermsvar_call_to_success_fact/9,
 	etermsvar_special_builtin/5,
@@ -1327,12 +1327,12 @@ etermsvar_glbnames([],[],[]):- !.
 
 
 %------------------------------------------------------------------%
-:- pred etermsvar_unknown_entry(+Qv,-Call): list * absu # 
+:- pred etermsvar_unknown_entry(+Sg,+Qv,-Call): callable * list * absu # 
 "Gives the ``top'' value for the variables involved in a 
  literal whose definition is not present, and adds this top value to   
  Call. In this domain the top value is X:term forall X in the set of variables".
 
-etermsvar_unknown_entry(Vars,ASub):-
+etermsvar_unknown_entry(_Sg,Vars,ASub):-
 	variables_are_top_type(Vars,ASub).
 
 

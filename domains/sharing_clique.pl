@@ -596,13 +596,13 @@ share_clique_empty_entry(Vars,Entry):-
 	Entry = ([],EntryVars).
 
 %------------------------------------------------------------------------%
-% share_clique_unknown_entry(+,-)                                        |
-% share_clique_unknown_entry(Qv,Call)                                    |
+% share_clique_unknown_entry(+,+,-)                                      |
+% share_clique_unknown_entry(Sg,Qv,Call)                                 |
 % The top value in Clique for a set of variables is the powerset. It     |
 % consits of putting Qv directly in the clique part.                     |
 %------------------------------------------------------------------------%
          
-share_clique_unknown_entry(Qv,Call):-	
+share_clique_unknown_entry(_Sg,Qv,Call):-
 	sort(Qv,QvS),	
 	Call = (QvS,[]).
 

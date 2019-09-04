@@ -485,11 +485,11 @@ share_clique_1_unknown_call(_Sg,Vars,(Cl,Sh),Succ):-
 	ord_union_w(Star,Rest,Succ).
 
 %------------------------------------------------------------------------%
-% share_clique_1_unknown_entry(+,-)                                      |
-% share_clique_1_unknown_entry(Qv,Call)                                  |
+% share_clique_1_unknown_entry(+,+,-)                                    |
+% share_clique_1_unknown_entry(Sg,Qv,Call)                               |
 %------------------------------------------------------------------------%
 
-share_clique_1_unknown_entry(Qv,Call):-
+share_clique_1_unknown_entry(_Sg,Qv,Call):-
 	sort(Qv,QvS),	
 	share_clique_extend_asub((QvS,[]),QvS,Call).
 

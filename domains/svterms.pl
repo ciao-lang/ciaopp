@@ -9,7 +9,7 @@
 	svterms_less_or_equal/2,
 	svterms_glb/3,
 	svterms_unknown_call/4,
-	svterms_unknown_entry/2,
+	svterms_unknown_entry/3,
 	svterms_empty_entry/2,
 	svterms_call_to_success_fact/9,
 	svterms_special_builtin/5,
@@ -56,7 +56,7 @@
 	    eterms_less_or_equal/2,
 	    eterms_glb/3,
 	    eterms_unknown_call/4,
-	    eterms_unknown_entry/2,
+	    eterms_unknown_entry/3,
 	    eterms_empty_entry/2,
 	    eterms_special_builtin/5,
 	    eterms_call_to_success_builtin/6,
@@ -550,8 +550,8 @@ sv_glb(SV0,SV1,SV):-
 	merge(SV0,SV1,SV).
 
 %--------------------------------------------------------------%	
-svterms_unknown_entry(Vars,ASub):-
-	eterms_unknown_entry(Vars,TASub),
+svterms_unknown_entry(Sg,Vars,ASub):-
+	eterms_unknown_entry(Sg,Vars,TASub),
 	abssubst_b(ASub,TASub,[]).
 
 %--------------------------------------------------------------%	

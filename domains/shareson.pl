@@ -12,7 +12,7 @@
 	  shareson_project/3, 
 	  shareson_sort/2,    
 	  shareson_unknown_call/4,  
-	  shareson_unknown_entry/2, 
+	  shareson_unknown_entry/3, 
 	  shareson_empty_entry/2,
 	%
 	  shareson_compose/4
@@ -107,9 +107,9 @@ shareson_unknown_call(Sg,Vars,(Call_son,Call_sh),Succ):-
 
 %-------------------------------------------------------------------------
 
-shareson_unknown_entry(Qv,Call):-
-	share_unknown_entry(Qv,Call_sh),
-	son_unknown_entry(Qv,Call_son),
+shareson_unknown_entry(Sg,Qv,Call):-
+	share_unknown_entry(Sg,Qv,Call_sh),
+	son_unknown_entry(Sg,Qv,Call_son),
 	compose(Call_son,Call_sh,Qv,Call).
 
 %-------------------------------------------------------------------------

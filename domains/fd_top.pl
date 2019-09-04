@@ -331,12 +331,12 @@ vero_unknown_call(_Sg,Vars,Call,Succ) :-
 
 %----------------------------------------------------------------------------
 
-% vero_unknown_entry(Vars,Call)
+% vero_unknown_entry(Sg,Vars,Call)
 % Gives the "top" value (mode any) for the variables Vars,
 % resulting in the abstract constraint Call
 % req: Vars is ordered
 %
-vero_unknown_entry(Vars, as([],ACo,[],ACn)) :-
+vero_unknown_entry(_Sg, Vars, as([],ACo,[],ACn)) :-
 %        ss_make_singl(Vars, ACo), ss_empty(ACn). replaced by  16/01/95
 %	(reason : what is used for query is Call info, not projected info)
         ss_empty(ACo), ss_make_singl(Vars, ACn).

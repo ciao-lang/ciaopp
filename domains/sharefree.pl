@@ -450,12 +450,12 @@ shfr_call_to_prime_fact(Sg,Hv,Head,Sv,(Proj_sh,Proj_fr),Prime) :-
 shfr_call_to_prime_fact(_Sg,_Hv,_Head,_Sv,'$bottom','$bottom').
 
 %-------------------------------------------------------------------------
-% shfr_unknown_entry(+,-)                                                |
-% shfr_unknown_entry(Qv,Call)                                            |
+% shfr_unknown_entry(+,+,-)                                              |
+% shfr_unknown_entry(Sg,Qv,Call)                                         |
 % The top value in Sh for a set of variables is the powerset, in Fr is   |
 % X/nf forall X in the set of variables                                  |
 %-------------------------------------------------------------------------
-shfr_unknown_entry(Qv,Call):-
+shfr_unknown_entry(_Sg,Qv,Call):-
 	powerset(Qv,Sh),
 	sort_list_of_lists(Sh,Call_sh),
 	create_values(Qv,Call_fr,nf),

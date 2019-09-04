@@ -620,12 +620,12 @@ prune_success([Xs|Xss],Prime,Sv,Call,Succ) :-
 	prune_success(Xss,Prime,Sv,Temp,Succ).
 
 %-------------------------------------------------------------------------
-% share_unknown_entry(+,-)                                               |
-% share_unknown_entry(Qv,Call)                                           |
+% share_unknown_entry(+,+,-)                                             |
+% share_unknown_entry(Sg,Qv,Call)                                        |
 % The top value in Sharing for a set of variables is the powerset        |
 %-------------------------------------------------------------------------
 
-share_unknown_entry(Qv,Call):-
+share_unknown_entry(_Sg,Qv,Call):-
 	powerset(Qv,Call_u),
 	sort_list_of_lists(Call_u,Call).
 
@@ -678,7 +678,7 @@ share_input_user_interface((Gv0,Sh0,Indep0),Qv,Call):-
 	ord_subtract(Qv,Gv,NGv0),
 	merge_list_of_lists(ASub1,Vars),
 	ord_subtract(NGv0,Vars,NGv),
-	share_unknown_entry(NGv,ASub2),
+	share_unknown_entry(sg_not_provided,NGv,ASub2),
 	merge(ASub1,ASub2,ASub),
 	handle_each_indep(Indep,share,ASub,Call).
 

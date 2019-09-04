@@ -13,7 +13,7 @@
 	deftypes_less_or_equal/2,
 	deftypes_glb/3,
 	deftypes_unknown_call/4,
-	deftypes_unknown_entry/2,
+	deftypes_unknown_entry/3,
 	deftypes_empty_entry/2,
 	deftypes_call_to_success_fact/9,
 %	deftypes_special_builtin/4,
@@ -578,12 +578,12 @@ deftypes_glb0([X:T1|ASub1],[Y:T2|ASub2],[X:T3|ASub3]):-
 deftypes_glb0([],[],[]).
 
 %------------------------------------------------------------------%
-:- pred deftypes_unknown_entry(+Qv,-Call): list * absu # 
+:- pred deftypes_unknown_entry(+Sg,+Qv,-Call): callable * list * absu # 
 "Gives the ``top'' value for the variables involved in a 
  literal whose definition is not present, and adds this top value to   
  Call. In this domain the top value is X:term forall X in the set of variables".
 
-deftypes_unknown_entry(Vars,ASub):-
+deftypes_unknown_entry(_Sg,Vars,ASub):-
 	variables_are_top_type(Vars,ASub).
 
 :- pred deftypes_empty_entry(+Vars,-Entry): list * absu # "Gives the

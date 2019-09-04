@@ -207,16 +207,16 @@ share_clique_def_unknown_call(Sg,Vars,(SH_Call,Def_Call),Succ):-
 %------------------------------------------------------------------------%
 
 share_clique_def_empty_entry(Vars,Entry):-
-	def_unknown_entry(Vars,Def_Entry),
+	def_unknown_entry(sg_not_provided,Vars,Def_Entry), % TODO: why not def_empty_entry/2?
 	share_clique_empty_entry(Vars,SH_Entry),
 	Entry = (SH_Entry,Def_Entry).
 
 %------------------------------------------------------------------------%
-% share_clique_def_unknown_entry(+,-)                                    |
-% share_clique_def_unknown_entry(Qv,Call)                                |
+% share_clique_def_unknown_entry(+,+,-)                                  |
+% share_clique_def_unknown_entry(Sg,Qv,Call)                             |
 %------------------------------------------------------------------------%
 
-share_clique_def_unknown_entry(Qv,((Qv,[]),a([],[]))).
+share_clique_def_unknown_entry(_Sg,Qv,((Qv,[]),a([],[]))).
 
 %------------------------------------------------------------------------%
 %                         HANDLING BUILTINS                              |

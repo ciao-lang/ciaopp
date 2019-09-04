@@ -18,7 +18,7 @@
 	  son_special_builtin/4,
 	  son_success_builtin/5,
 	  son_unknown_call/4,
-	  son_unknown_entry/2,
+	  son_unknown_entry/3,
 	  son_empty_entry/2,
 	%
 	  propagate_to_sh/4,
@@ -341,13 +341,13 @@ son_unknown_call(_Sg,Vars,(Call_gr,_Call_sh),Succ):-
 	Succ = (Call_gr,Succ_sh).
 	
 %-------------------------------------------------------------------------
-% son_unknown_entry(+,-)                                                 |
-% son_unknown_entry(Qv,Call)                                             |
+% son_unknown_entry(+,+,-)                                               |
+% son_unknown_entry(Sg,Qv,Call)                                          |
 % The top value in Sh for a set of variables is the powerset, in Fr is   |
 % X/nf forall X in the set of variables                                  |
 %-------------------------------------------------------------------------
 
-son_unknown_entry(Qv,([],Sh)):-
+son_unknown_entry(_Sg,Qv,([],Sh)):-
 	couples_and_singletons(Qv,Sh1,[]),
 	sort_list_of_lists(Sh1,Sh).
 

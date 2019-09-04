@@ -16,7 +16,7 @@
 	  fd_sort/2,          
 	  fd_success_builtin/5,
 	  fd_unknown_call/4,
-	  fd_unknown_entry/2,
+	  fd_unknown_entry/3,
 	  fd_empty_entry/2
 	],
 	[ ] ).
@@ -206,9 +206,9 @@ fd_unknown_call(Sg,Vars,(CallF,CallD),(F,D)):-
 
 %------------------------------------------------------------------------------
 
-fd_unknown_entry(Vars,(F,D)):-
-        def_unknown_entry(Vars,D),
-        vero_unknown_entry(Vars,F).
+fd_unknown_entry(Sg,Vars,(F,D)):-
+        def_unknown_entry(Sg,Vars,D),
+        vero_unknown_entry(Sg,Vars,F).
 
 fd_empty_entry(_, _):-
 	throw(not_implemented(fd_empty_entry)).

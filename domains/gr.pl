@@ -18,7 +18,7 @@
 	gr_asub_to_native/5,
 	%gr_output_interface/2,
 	gr_unknown_call/4,
-	gr_unknown_entry/2,
+	gr_unknown_entry/3,
 	gr_empty_entry/2,
 	extrainfo/1
    ], [assertions,regtypes,basicmodes,datafacts]).
@@ -136,17 +136,17 @@ binding((X,Term,Vars)):-
 	term(Term),
 	list(Vars).
 
-:- pred gr_unknown_entry(+Qv,-Call): list * absu # 
+%-----------------------------------------------------------------------
+% gr_unknown_entry(+,+,-)                                              |
+% gr_unknown_entry(Sg,Qv,Call)                                         |
+% The top value is  X/any forall X in the set of variables             |
+%-----------------------------------------------------------------------
+:- pred gr_unknown_entry(+Sg,+Qv,-Call): callable * list * absu # 
 "Gives the ``top'' value for the variables involved in a 
  literal whose definition is not present, and adds this top value to   
  Call. In this domain the top value is X/any forall X in the set of variables".
 
-%-----------------------------------------------------------------------
-% gr_unknown_entry(+,-)                                                |
-% gr_unknown_entry(Qv,Call)                                            |
-% The top value is  X/any forall X in the set of variables             |
-%-----------------------------------------------------------------------
-gr_unknown_entry(Qv,Call):-
+gr_unknown_entry(_Sg,Qv,Call):-
 	gr_create_values(Qv,Call,any).
 
 %-----------------------------------------------------------------------
@@ -169,7 +169,7 @@ obtains the abstraction of a substitution in which all variables
 value is equivalent to the unknown value".
 
 gr_empty_entry(Vars,Entry):- 
-	gr_unknown_entry(Vars,Entry).
+	gr_unknown_entry(sg_not_provided,Vars,Entry).
 
 %-------------------------------------------------------------------------
 %-------------------------------------------------------------------------

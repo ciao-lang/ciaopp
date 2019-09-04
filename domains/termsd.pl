@@ -11,7 +11,7 @@
 	terms_less_or_equal/2,
 	terms_glb/3,
 	terms_unknown_call/4,
-	terms_unknown_entry/2,
+	terms_unknown_entry/3,
 	terms_empty_entry/2,
 	terms_call_to_success_fact/9,
 	terms_special_builtin/4,
@@ -1146,12 +1146,12 @@ terms_glb0([X:T1|ASub1],[Y:T2|ASub2],[X:T3|ASub3]):-
 terms_glb0([],[],[]).
 
 %------------------------------------------------------------------%
-:- pred terms_unknown_entry(+Qv,-Call): list * absu # 
+:- pred terms_unknown_entry(+Sg,+Qv,-Call): callable * list * absu # 
 "Gives the ``top'' value for the variables involved in a 
  literal whose definition is not present, and adds this top value to   
  Call. In this domain the top value is X:term forall X in the set of variables".
 
-terms_unknown_entry(Vars,ASub):-
+terms_unknown_entry(_Sg,Vars,ASub):-
 	variables_are_top_type(Vars,ASub).
 
 :- pred terms_empty_entry(+Vars,-Entry): list * absu # "Gives the

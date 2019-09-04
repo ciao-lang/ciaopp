@@ -469,13 +469,13 @@ shfrlin_unknown_call(Sg,Vars,(Call_sh,Call_fr,Call_lin),Succ):-
 	Succ = (Succ_sh,Succ_fr,Succ_lin).
 
 %------------------------------------------------------------------------%
-% shfrlin_unknown_entry(+,-)                                             |
-% shfrlin_unknown_entry(Qv,Call)                                         |
+% shfrlin_unknown_entry(+,+,-)                                           |
+% shfrlin_unknown_entry(Sg,Qv,Call)                                      |
 % The top value in Sh for a set of variables is the powerset, in Fr is   |
 % X/nf forall X in the set of variables, and in no variable is linear.   |
 %------------------------------------------------------------------------%
-shfrlin_unknown_entry(Qv,(Call_sh,Call_fr,[])):-
-	shfr_unknown_entry(Qv,(Call_sh,Call_fr)).
+shfrlin_unknown_entry(Sg,Qv,(Call_sh,Call_fr,[])):-
+	shfr_unknown_entry(Sg,Qv,(Call_sh,Call_fr)).
 
 %------------------------------------------------------------------------%
 % shfrlin_empty_entry(+,-)                                               |

@@ -203,15 +203,15 @@ sharefree_clique_def_unknown_call(Sg,Vars,(SHF_Call,Def_Call),Succ):-
 %------------------------------------------------------------------------%
 
 sharefree_clique_def_empty_entry(Vars,Entry):-
-	def_unknown_entry(Vars,Def_Entry),
+	def_unknown_entry(sg_not_provided,Vars,Def_Entry),
 	sharefree_clique_empty_entry(Vars,SHF_Entry),
 	Entry = (SHF_Entry,Def_Entry).
 
 %------------------------------------------------------------------------%
-% sharefree_clique_def_unknown_entry(+,-)                                |
-% sharefree_clique_def_unknown_entry(Qv,Call)                            |
+% sharefree_clique_def_unknown_entry(+,+,-)                              |
+% sharefree_clique_def_unknown_entry(Sg,Qv,Call)                         |
 %------------------------------------------------------------------------%
-sharefree_clique_def_unknown_entry(Qv,(SHF_Call,a([],[]))):-
+sharefree_clique_def_unknown_entry(_Sg,Qv,(SHF_Call,a([],[]))):-
 	sort(Qv,QvS),
 	create_values(Qv,Call_fr,nf),
 	SHF_Call = (([QvS],[]),Call_fr).

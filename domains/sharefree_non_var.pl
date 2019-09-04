@@ -559,10 +559,10 @@ shfrnv_call_to_success_fact(Sg,Hv,Head,_K,Sv,Call,(Sg_sh,Lda_fr),Prime,Succ) :-
 shfrnv_call_to_success_fact(_Sg,_Hv,_Head,_K,_Sv,_Call,_Proj,'$bottom','$bottom').
 
 %-------------------------------------------------------------------------
-% shfrnv_unknown_entry(+,-)                                              |
-% shfrnv_unknown_entry(Qv,Call)                                          |
+% shfrnv_unknown_entry(+,+,-)                                            |
+% shfrnv_unknown_entry(Sg,Qv,Call)                                       |
 %-------------------------------------------------------------------------
-% Identical to shfr_unknown_entry/2, called from domain_dependent.pl     %
+% Identical to shfr_unknown_entry/3, called from domain_dependent.pl     %
 %-------------------------------------------------------------------------
 
 %------------------------------------------------------------------------%

@@ -18,7 +18,7 @@
 	  def_special_builtin/4,
 	  def_success_builtin/4,
 	  def_unknown_call/4,
-	  def_unknown_entry/2
+	  def_unknown_entry/3
 	],
 	[assertions, datafacts]).
 
@@ -651,14 +651,14 @@ defdeps2covered_([L|List],V,[covered(V,L)|Native],Native0):-
 def_unknown_call(_Sg,_Vars,Call,Call).
 
 %------------------------------------------------------------------------%
-% def_unknown_entry(+,-)                                                 %
-% def_unknown_entry(Vars,Call)                                           %
+% def_unknown_entry(+,+,-)                                               %
+% def_unknown_entry(Sg,Vars,Call)                                        %
 % Gives the "top" value for a given set of variables, resulting in the   %
 % abstract constraint Call. In the definiteeness domain the top          %
 % abstraction for a set of variables Vars is T = a({},{}).               %
 %------------------------------------------------------------------------%
 
-def_unknown_entry(_Vars,a([],[])).
+def_unknown_entry(_Sg,_Vars,a([],[])).
 
 %------------------------------------------------------------------------%
 % def_less_or_equal(+,+)                                                 %

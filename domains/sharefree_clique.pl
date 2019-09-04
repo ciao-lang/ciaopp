@@ -486,12 +486,12 @@ sharefree_clique_empty_entry(Qv,Entry):-
 	Entry=(([],Entry_sh),Entry_fr).
 
 %------------------------------------------------------------------------%
-% sharecli_unknown_entry(+,-)                                            |
-% sharecli_unknown_entry(Qv,Call)                                        |
+% sharefree_clique_unknown_entry(+,+,-)                                          |
+% sharefree_clique_unknown_entry(Sg,Qv,Call)                                     |
 % The top value in Sharing for a set of variables is the powerset, in Fr |
 % X/nf forall X in the set of variables.                                 |    
 %------------------------------------------------------------------------%
-sharefree_clique_unknown_entry(Qv,Call):-
+sharefree_clique_unknown_entry(_Sg,Qv,Call):-
 	sort(Qv,QvS),
 	create_values(Qv,Call_fr,nf),
 	Call = (([QvS],[]),Call_fr).

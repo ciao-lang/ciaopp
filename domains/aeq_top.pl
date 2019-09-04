@@ -17,7 +17,7 @@
 	  aeq_special_builtin/4,
 	  aeq_success_builtin/5,
 	  aeq_unknown_call/4,
-	  aeq_unknown_entry/2,
+	  aeq_unknown_entry/3,
 	  aeq_empty_entry/2
 	], [datafacts]).
 
@@ -575,12 +575,12 @@ aeq_unknown_call(_Sg,Vars_uns,Call,Succ) :-
 
 %------------------------------------------------------------------------------
 
-%% :- mode aeq_unknown_entry(+,-).
-aeq_unknown_entry( QVars, Top_aeqs ) :-
-	aeq_top( QVars, Top_aeqs ) .
+%% :- mode aeq_unknown_entry(+,+,-).
+aeq_unknown_entry(_Sg, QVars, Top_aeqs) :-
+	aeq_top(QVars, Top_aeqs).
 
 %% :- mode aeq_empty_entry(+,-).
-aeq_empty_entry( QVars, ASub ) :-
+aeq_empty_entry(QVars, ASub) :-
 	list_to_list_of_lists(QVars,Sh),
 	share_input_interface(sharing(Sh),_Kind,_Sh0,ShInfo),
 	aeq_input_user_interface((ShInfo,[],[],QVars),QVars,ASub).
