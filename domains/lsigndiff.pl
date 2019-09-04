@@ -70,7 +70,7 @@ simple_lsign_unknown_entry(Sg,Qv,p(Call,a([],[],[]),Call)):-
 simple_lsign_unknown_call(_Sg,_Qv,_Call,_Succ):-
 	throw(not_implemented(simple_lsign_unknown_call)).
 
-simple_lsign_empty_entry(_Qv,_Call):-
+simple_lsign_empty_entry(_Sg,_Qv,_Call):-
 	throw(not_implemented(simple_lsign_empty_entry)).
 
 simple_lsign_less_or_equal(_ACons0,_ACons1):-

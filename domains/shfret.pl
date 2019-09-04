@@ -17,7 +17,7 @@
 	  shfret_asub_to_native/5,
 	  shfret_unknown_call/4,
 	  shfret_unknown_entry/3,
-	  shfret_empty_entry/2
+	  shfret_empty_entry/3
 	],
 	[ assertions,regtypes,basicmodes
 	]).
@@ -247,10 +247,10 @@ shfret_unknown_entry(Sg,Vars,Entry):-
 	asub(Entry,ETypes,EModes).
 
 %------------------------------------------------------------------------%
-% shfret_empty_entry(+,-)                                                    %
-% shfret_empty_entry(Vars,Entry)                                             %
+% shfret_empty_entry(+,+,-)                                              %
+% shfret_empty_entry(Sg,Vars,Entry)                                      %
 %------------------------------------------------------------------------%
-shfret_empty_entry(Vars,Entry):-
-	shfr_empty_entry(Vars,EModes),
-	eterms_empty_entry(Vars,ETypes),
+shfret_empty_entry(Sg,Vars,Entry):-
+	shfr_empty_entry(Sg,Vars,EModes),
+	eterms_empty_entry(Sg,Vars,ETypes),
 	asub(Entry,ETypes,EModes).

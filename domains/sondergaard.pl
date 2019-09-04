@@ -19,7 +19,7 @@
 	  son_success_builtin/5,
 	  son_unknown_call/4,
 	  son_unknown_entry/3,
-	  son_empty_entry/2,
+	  son_empty_entry/3,
 	%
 	  propagate_to_sh/4,
 	  propagate_to_son/4,
@@ -352,13 +352,13 @@ son_unknown_entry(_Sg,Qv,([],Sh)):-
 	sort_list_of_lists(Sh1,Sh).
 
 %-------------------------------------------------------------------------
-% son_empty_entry(+,-)                                                   |
+% son_empty_entry(+,+,-)                                                   |
 % The empty value in Sh for a set of variables is the list of singletons,
 % in Fr is X/f forall X in the set of variables.                         |
 % So, here, all linear and independent: i.e., [].                        |
 %-------------------------------------------------------------------------
 
-son_empty_entry(_Qv,([],[])).
+son_empty_entry(_Sg,_Qv,([],[])).
 
 %------------------------------------------------------------------------%
 % son_asub_to_native(+,+,+,-,-)                                          %

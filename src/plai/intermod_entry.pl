@@ -22,7 +22,7 @@
 :- use_module(library(pathnames), [path_splitext/3]).
 :- use_module(ciaopp(preprocess_flags), [current_pp_flag/2]).
 :- use_module(ciaopp(p_unit), 	[entry_assertion/3, type_of_goal/2, type_of_directive/2]).
-:- use_module(ciaopp(plai/domains), [unknown_entry/4, unknown_call/5, info_to_asub/7, empty_entry/3]).
+:- use_module(ciaopp(plai/domains), [unknown_entry/4, unknown_call/5, info_to_asub/7, empty_entry/4]).
 :- use_module(library(terms_vars), [varset/2]).
 :- use_module(library(counters), [setcounter/2, inccounter/2]).
 :- use_module(library(vndict), [vars_names_dict/3]).
@@ -201,7 +201,7 @@ entry_point(_Policy,AbsInt,Name,[],Call,Prime,_Module):- %% init and on_abort mu
 	varset(Body,Bv),
 	vars_names_dict(Ds,Bv,_Ns),
 	transform_clauses([(clause(Name,Body),Name)],Ds,[nr],[],AbsInt),
-	empty_entry(AbsInt,[],Call),
+	empty_entry(AbsInt,Name,[],Call), % TODO: make sure that Name is right here
 	unknown_call(AbsInt,Name,[],Call,Prime). % TODO: make sure that Name is right here
 entry_point(_Policy,AbsInt,Goal,Qv,Call,Prime,Module):- %% entries must be analyzed always (if dynamic preds!)
 	entry_assertion(Goal,CInfo,_Name),

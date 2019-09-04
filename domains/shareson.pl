@@ -13,7 +13,7 @@
 	  shareson_sort/2,    
 	  shareson_unknown_call/4,  
 	  shareson_unknown_entry/3, 
-	  shareson_empty_entry/2,
+	  shareson_empty_entry/3,
 	%
 	  shareson_compose/4
 	],
@@ -114,9 +114,9 @@ shareson_unknown_entry(Sg,Qv,Call):-
 
 %-------------------------------------------------------------------------
 
-shareson_empty_entry(Qv,Call):-
-	share_empty_entry(Qv,Call_sh),
-	son_empty_entry(Qv,Call_son),
+shareson_empty_entry(Sg,Qv,Call):-
+	share_empty_entry(Sg,Qv,Call_sh),
+	son_empty_entry(Sg,Qv,Call_son),
 	compose(Call_son,Call_sh,Qv,Call).
 
 %-------------------------------------------------------------------------

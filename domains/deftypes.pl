@@ -14,7 +14,7 @@
 	deftypes_glb/3,
 	deftypes_unknown_call/4,
 	deftypes_unknown_entry/3,
-	deftypes_empty_entry/2,
+	deftypes_empty_entry/3,
 	deftypes_call_to_success_fact/9,
 %	deftypes_special_builtin/4,
 %	deftypes_success_builtin/5,
@@ -586,14 +586,14 @@ deftypes_glb0([],[],[]).
 deftypes_unknown_entry(_Sg,Vars,ASub):-
 	variables_are_top_type(Vars,ASub).
 
-:- pred deftypes_empty_entry(+Vars,-Entry): list * absu # "Gives the
+:- pred deftypes_empty_entry(+Sg,+Vars,-Entry): callable * list * absu # "Gives the
 ""empty"" value in this domain for a given set of variables
 @var{Vars}, resulting in the abstract substitution @var{Entry}. I.e.,
 obtains the abstraction of a substitution in which all variables
 @var{Vars} are unbound: free and unaliased. In this domain the empty
 value is giving the variable type to each variable".
 
-deftypes_empty_entry(Vars,ASub):-
+deftypes_empty_entry(_Sg,Vars,ASub):-
 	variables_are_variable_type(Vars,ASub).
 
 

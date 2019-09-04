@@ -475,12 +475,12 @@ sharefree_clique_unknown_call(_Sg,Vars,(Call_SH,Call_fr),(Succ_SH,Succ_fr)):-
 	change_values_if_f(Nonfree_vars,Call_fr,Succ_fr,nf).
 
 %------------------------------------------------------------------------%
-% sharefree_clique_empty_entry(+,-)                                      |
-% sharefree_clique_empty_entry(Vars,Entry)                               |
+% sharefree_clique_empty_entry(+,+,-)                                    |
+% sharefree_clique_empty_entry(Sg,Vars,Entry)                            |
 % The empty value in Sh for a set of variables is the list of singletons,|
 % in Fr is X/f forall X in the set of variables                          |            
 %------------------------------------------------------------------------%
-sharefree_clique_empty_entry(Qv,Entry):-
+sharefree_clique_empty_entry(_Sg,Qv,Entry):-
 	list_to_list_of_lists(Qv,Entry_sh),	
 	create_values(Qv,Entry_fr,f),
 	Entry=(([],Entry_sh),Entry_fr).

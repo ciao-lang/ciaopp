@@ -198,13 +198,13 @@ sharefree_clique_def_unknown_call(Sg,Vars,(SHF_Call,Def_Call),Succ):-
 	Succ = (SHF_Succ,Def_Call).
 
 %------------------------------------------------------------------------%
-% sharefree_clique_def_empty_entry(+,-)                                  |
-% sharefree_clique_def_empty_entry(Vars,Entry)                           |
+% sharefree_clique_def_empty_entry(+,+,-)                                |
+% sharefree_clique_def_empty_entry(Sg,Vars,Entry)                        |
 %------------------------------------------------------------------------%
 
-sharefree_clique_def_empty_entry(Vars,Entry):-
-	def_unknown_entry(sg_not_provided,Vars,Def_Entry),
-	sharefree_clique_empty_entry(Vars,SHF_Entry),
+sharefree_clique_def_empty_entry(Sg,Vars,Entry):-
+	def_unknown_entry(Sg,Vars,Def_Entry),
+	sharefree_clique_empty_entry(Sg,Vars,SHF_Entry),
 	Entry = (SHF_Entry,Def_Entry).
 
 %------------------------------------------------------------------------%

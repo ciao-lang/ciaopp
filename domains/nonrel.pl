@@ -157,11 +157,11 @@
 :- doc(section, "Generic functionality for non-relational domains").
 %-----------------------------------------------------------------------
 
-:- export(nonrel_unknown_entry/3).
-:- pred nonrel_unknown_entry(+AbsInt,+Vars,-Call) : atm * list * term
+:- export(nonrel_unknown_entry/4).
+:- pred nonrel_unknown_entry(+AbsInt,+Sg,+Vars,-Call) : atm * callable * list * term
         #"Gives the ``top'' value for a given set of variables @var{Vars},
         resulting in abstract constraint @var{Call}.".
-nonrel_unknown_entry(AbsInt,Qv,Call):-
+nonrel_unknown_entry(AbsInt,_Sg,Qv,Call):-
         nonrel_top(AbsInt,Top),
         nonrel_create_asub(Qv,Top,Call).
 
@@ -614,6 +614,6 @@ nonrel_intervals_asub_to_native(ASub,Qv,OutFlag,OutputUser,Comps) :- nonrel_asub
 :- export(nonrel_intervals_unknown_call/4).
 nonrel_intervals_unknown_call(Sg,Vars,Call,Succ) :- nonrel_unknown_call(nonrel_intervals,Sg,Vars,Call,Succ).
 :- export(nonrel_intervals_unknown_entry/3).
-nonrel_intervals_unknown_entry(_Sg,Qv,Call) :- nonrel_unknown_entry(nonrel_intervals,Qv,Call).
-:- export(nonrel_intervals_empty_entry/2).
-nonrel_intervals_empty_entry(Qv,Call) :- nonrel_unknown_entry(nonrel_intervals,Qv,Call).
+nonrel_intervals_unknown_entry(Sg,Qv,Call) :- nonrel_unknown_entry(nonrel_intervals,Sg,Qv,Call).
+:- export(nonrel_intervals_empty_entry/3).
+nonrel_intervals_empty_entry(Sg,Qv,Call) :- nonrel_unknown_entry(nonrel_intervals,Sg,Qv,Call).

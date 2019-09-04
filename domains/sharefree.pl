@@ -462,18 +462,18 @@ shfr_unknown_entry(_Sg,Qv,Call):-
 	Call=(Call_sh,Call_fr).
 
 %-------------------------------------------------------------------------
-% shfr_empty_entry(+,-)                                                  |
+% shfr_empty_entry(+,+,-)                                                  |
 % The empty value in Sh for a set of variables is the list of singletons,
 % in Fr is X/f forall X in the set of variables                          |
 %-------------------------------------------------------------------------
-:- pred shfr_empty_entry(+Vars,-Entry): list * absu # "Gives the
+:- pred shfr_empty_entry(+Sg,+Vars,-Entry): callable * list * absu # "Gives the
 ""empty"" value in this domain for a given set of variables
 @var{Vars}, resulting in the abstract substitution @var{Entry}. I.e.,
 obtains the abstraction of a substitution in which all variables
 @var{Vars} are unbound: free and unaliased. In Sh is the list of
 singleton lists of variables and in Fr is X/f forall X in the set of
 variables".
-shfr_empty_entry(Qv,Entry):-
+shfr_empty_entry(_Sg,Qv,Entry):-
 	list_to_list_of_lists(Qv,Entry_sh),
 	create_values(Qv,Entry_fr,f),
 	Entry=(Entry_sh,Entry_fr).

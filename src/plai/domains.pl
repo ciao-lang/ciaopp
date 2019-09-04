@@ -568,8 +568,8 @@ asub_to_out(AbsInt,ASub,Qv,OutputUser,CompProps) :-
    #"@var{Entry} is the ""topmost"" abstraction in domain @var{AbsInt} of 
     variables @var{Vars} corresponding to literal @var{Sg}.".
 
-:- export(empty_entry/3).
-:- pred empty_entry(+AbsInt,+Vars,-Entry) : atm * list * term + not_fails
+:- export(empty_entry/4).
+:- pred empty_entry(+AbsInt,+Sg,+Vars,-Entry) : atm * callable * list * term + not_fails
         #"@var{Entry} is the ""empty"" abstraction in domain @var{AbsInt} of
           variables @var{Vars}. I.e., it is the abstraction of a substitution on
           @var{Vars} in which all variables are unbound: free and unaliased.".

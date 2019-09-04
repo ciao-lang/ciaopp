@@ -18,7 +18,7 @@
 	  lsign_success_builtin/6,
 	  lsign_unknown_call/4,
 	  lsign_unknown_entry/3,
-	  lsign_empty_entry/2,
+	  lsign_empty_entry/3,
 	%
 	  simple_lsign_call_to_entry/9,  
 	  simple_lsign_exit_to_prime/6,  
@@ -31,7 +31,7 @@
 	  simple_lsign_success_builtin/6, 
 	  simple_lsign_unknown_call/4, 
 	  simple_lsign_unknown_entry/3, 
-	  simple_lsign_empty_entry/2
+	  simple_lsign_empty_entry/3
 	], [assertions, datafacts]).
 
 % simple lsign domain
@@ -1128,7 +1128,7 @@ lsign_unknown_entry0(Vars,[Eq|AEqIn],Tail):-
 	Eq=eq(eq,t,Expr),
 	lsign_abstract_top(Vars,AEqIn,Tail).
 
-lsign_empty_entry(_Qv,_Call):-
+lsign_empty_entry(_Sg,_Qv,_Call):-
 	throw(not_implemented(lsign_empty_entry)).
 
 %------------------------------------------------------------------------%

@@ -45,7 +45,7 @@
 		shfrlin_asub_to_native/5,
 		shfrlin_unknown_call/4,
 		shfrlin_unknown_entry/3,
-		shfrlin_empty_entry/2,
+		shfrlin_empty_entry/3,
 		shfrlin_amgu/4
 	    ],
 	    [assertions, isomodes]).

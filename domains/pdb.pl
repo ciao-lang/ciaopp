@@ -40,8 +40,8 @@ pdb_unknown_call(_Sg,_Vars,Call,Call).
 :- export(pdb_unknown_entry/3).
 pdb_unknown_entry(_Sg,_Qv,'top').
 
-:- export(pdb_empty_entry/2).
-pdb_empty_entry(_Qv,'top').
+:- export(pdb_empty_entry/3).
+pdb_empty_entry(_Sg,_Qv,'top').
 
 :- export(pdb_extend/5).
 pdb_extend(_Sg,'$bottom',_Hv,_Call,Succ):- !,

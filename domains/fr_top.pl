@@ -17,7 +17,7 @@
 	  fr_asub_to_native/5,
 	  fr_unknown_call/4,
 	  fr_unknown_entry/3,
-	  fr_empty_entry/2,
+	  fr_empty_entry/3,
 	% humm...
 	  get_free_vars/3
 	], [datafacts]).
@@ -563,7 +563,7 @@ fr_unknown_entry(_Sg, Vars, as(ACo,ACn)) :-
 %	what is used for query is Call-info, not projected info !
 	ss_empty(ACo), ss_make_singl(Vars, ACn).
 
-fr_empty_entry(_, _):-
+fr_empty_entry(_,_,_):-
 	throw(not_implemented(fr_empty_entry)).
 
 %----------------------------------------------------------------------------

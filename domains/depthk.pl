@@ -17,7 +17,7 @@
 	  depthk_success_builtin/5,
 	  depthk_unknown_call/4, 
 	  depthk_unknown_entry/3,  
-	  depthk_empty_entry/2
+	  depthk_empty_entry/3
         ],
 	[ assertions ] ).
 
@@ -281,8 +281,8 @@ depthk_unknown_call(_Sg,Qv,Call,Succ):-
 depthk_unknown_entry(_Sg,Qv,Call):-
 	variables_are_variables(Qv,Call).
 
-depthk_empty_entry(Qv,Call):-
-	depthk_unknown_entry(sg_not_provided,Qv,Call).
+depthk_empty_entry(Sg,Qv,Call):-
+	depthk_unknown_entry(Sg,Qv,Call).
 
 %-------------------------------------------------------------------------
 %                      USER INTERFACE

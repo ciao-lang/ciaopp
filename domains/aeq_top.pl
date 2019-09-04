@@ -18,7 +18,7 @@
 	  aeq_success_builtin/5,
 	  aeq_unknown_call/4,
 	  aeq_unknown_entry/3,
-	  aeq_empty_entry/2
+	  aeq_empty_entry/3
 	], [datafacts]).
 
 :- use_package(hiord). % TODO: See aeq_success_builtin(aeq_comparison,...)! Do in other way?
@@ -579,8 +579,8 @@ aeq_unknown_call(_Sg,Vars_uns,Call,Succ) :-
 aeq_unknown_entry(_Sg, QVars, Top_aeqs) :-
 	aeq_top(QVars, Top_aeqs).
 
-%% :- mode aeq_empty_entry(+,-).
-aeq_empty_entry(QVars, ASub) :-
+%% :- mode aeq_empty_entry(+,+,-).
+aeq_empty_entry(_Sg, QVars, ASub) :-
 	list_to_list_of_lists(QVars,Sh),
 	share_input_interface(sharing(Sh),_Kind,_Sh0,ShInfo),
 	aeq_input_user_interface((ShInfo,[],[],QVars),QVars,ASub).

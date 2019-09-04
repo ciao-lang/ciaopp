@@ -40,7 +40,7 @@
 
 % Plai library
 :- use_module(ciaopp(plai/domains), 
-	[ init_abstract_domain/2, empty_entry/3, unknown_entry/4, 
+	[ init_abstract_domain/2, empty_entry/4, unknown_entry/4, 
 	  info_to_asub/7,dom_statistics/2]).
 :- use_module(ciaopp(plai/normalize_args), [normalize_args/4]).
 :- use_module(ciaopp(plai/plai_errors), [undo_errors/0]).
@@ -340,7 +340,7 @@ entry_point(AbsInt,Name,[],Call,Name):-
 	varset(Body,Bv),
 	vars_names_dict(Ds,Bv,_Ns),
 	transform_clauses([(clause(Name,Body),Name)],Ds,[nr],[],AbsInt),
-	empty_entry(AbsInt,[],Call).
+	empty_entry(AbsInt,Name,[],Call). % TODO: make sure that Name is right here
 entry_point(AbsInt,Goal,Qv,Call,Name):-
 	setcounter(1,0),
 	entry_assertion(Goal,CInfo,Name0),

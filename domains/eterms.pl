@@ -10,7 +10,7 @@
 	eterms_glb/3,
 	eterms_unknown_call/4,
 	eterms_unknown_entry/3,
-	eterms_empty_entry/2,
+	eterms_empty_entry/3,
 	eterms_call_to_success_fact/9,
 	eterms_special_builtin/5,
 	eterms_success_builtin/5,
@@ -1264,14 +1264,14 @@ eterms_unknown_entry(_Sg,Vars,ASub):-
 	variables_are_top_type(Vars,ASub).
 
 
-:- pred eterms_empty_entry(+Vars,-Entry): list * absu # "Gives the
+:- pred eterms_empty_entry(+Sg,+Vars,-Entry): callable * list * absu # "Gives the
 ""empty"" value in this domain for a given set of variables
 @var{Vars}, resulting in the abstract substitution @var{Entry}. I.e.,
 obtains the abstraction of a substitution in which all variables
 @var{Vars} are unbound: free and unaliased. In this domain the empty
 value is giving the variable type to each variable".
 
-eterms_empty_entry(Vars,ASub):-
+eterms_empty_entry(_Sg,Vars,ASub):-
 	variables_are_variable_type(Vars,ASub).
 
 

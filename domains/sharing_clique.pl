@@ -581,8 +581,8 @@ share_clique_unknown_call(_Sg,Vars,(Cl,Sh),Succ):-
 	ord_union_w(Star,(Irrel_Cl_vars,Irrel_Sh_vars),Succ).
 
 %------------------------------------------------------------------------%
-% share_clique_empty_entry(+,-)                                          |
-% share_clique_empty_entry(Vars,Entry)                                   |
+% share_clique_empty_entry(+,+,-)                                        |
+% share_clique_empty_entry(Sg,Vars,Entry)                                |
 % Gives the ""empty"" value in this domain for a given set of variables  |
 % Vars, resulting in the abstract substitution Entry. I.e.,              |
 % obtains the abstraction of a substitution in which all variables       |
@@ -591,8 +591,8 @@ share_clique_unknown_call(_Sg,Vars,(Cl,Sh),Succ):-
 % is initialized to empty list.                                          |
 %------------------------------------------------------------------------%
 
-share_clique_empty_entry(Vars,Entry):-
-	share_empty_entry(Vars,EntryVars),!,
+share_clique_empty_entry(Sg,Vars,Entry):-
+	share_empty_entry(Sg,Vars,EntryVars),!,
 	Entry = ([],EntryVars).
 
 %------------------------------------------------------------------------%

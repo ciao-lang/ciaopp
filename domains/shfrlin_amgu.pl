@@ -478,13 +478,13 @@ shfrlin_unknown_entry(Sg,Qv,(Call_sh,Call_fr,[])):-
 	shfr_unknown_entry(Sg,Qv,(Call_sh,Call_fr)).
 
 %------------------------------------------------------------------------%
-% shfrlin_empty_entry(+,-)                                               |
+% shfrlin_empty_entry(+,+,-)                                             |
 % The empty value in Sh for a set of variables is the list of singletons,|
 % in Fr is X/f forall X in the set of variables, and these variables are |
 % all linear.                                                            |
 %------------------------------------------------------------------------%
-shfrlin_empty_entry(Qv,(Call_sh,Call_fr,Qv)):-
-        shfr_empty_entry(Qv,(Call_sh,Call_fr)).
+shfrlin_empty_entry(Sg,Qv,(Call_sh,Call_fr,Qv)):-
+        shfr_empty_entry(Sg,Qv,(Call_sh,Call_fr)).
 
 % The following predicates are defined in share.pl but they're not
 % exported:

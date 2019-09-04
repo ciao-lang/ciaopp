@@ -12,7 +12,7 @@
 	  shfrson_sort/2,     
 	  shfrson_unknown_call/4,
 	  shfrson_unknown_entry/3,  
-	  shfrson_empty_entry/2,
+	  shfrson_empty_entry/3,
 	%
 	  shfrson_compose/4
 	],
@@ -117,9 +117,9 @@ shfrson_unknown_entry(Sg,Qv,Call):-
 
 %-------------------------------------------------------------------------
 
-shfrson_empty_entry(Qv,Call):-
-	shfr_empty_entry(Qv,Call_sh),
-	son_empty_entry(Qv,Call_son),
+shfrson_empty_entry(Sg,Qv,Call):-
+	shfr_empty_entry(Sg,Qv,Call_sh),
+	son_empty_entry(Sg,Qv,Call_son),
 	compose(Call_son,Call_sh,Qv,Call).
 
 %-------------------------------------------------------------------------

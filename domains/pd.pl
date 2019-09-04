@@ -54,8 +54,8 @@ pd_unknown_call(_Sg,_Vars,Call,Call).
 :- export(pd_unknown_entry/3).
 pd_unknown_entry(_Sg,_Qv,'top').
 
-:- export(pd_empty_entry/2).
-pd_empty_entry(_Qv,'top').
+:- export(pd_empty_entry/3).
+pd_empty_entry(_Sg,_Qv,'top').
 
 %% 
 %% pd_compute_lub([ASub1,ASub2|Rest],Lub) :-

@@ -15,7 +15,7 @@
 	  path_success_builtin/5,
 	  path_unknown_call/4,
 	  path_unknown_entry/3,
-	  path_empty_entry/2,
+	  path_empty_entry/3,
 	%
 	  path_to_shfr/3
 	],
@@ -310,14 +310,14 @@ path_unknown_call(_Sg,_Qv,Call,Call).
 %-------------------------------------------------------------------------
 % This is clearly wrong!!!!
 
-path_unknown_entry(_Sg,Qv,Call):-
-	path_empty_entry(Qv,Call).
+path_unknown_entry(Sg,Qv,Call):-
+	path_empty_entry(Sg,Qv,Call).
 
 %-------------------------------------------------------------------------
-% path_empty_entry(+,-)                                                  |
-% path_empty_entry(Qv,Call)                                              |
+% path_empty_entry(+,+,-)                                                |
+% path_empty_entry(Sg,Qv,Call)                                           |
 %-------------------------------------------------------------------------
-path_empty_entry(Qv,Call):-
+path_empty_entry(_Sg,Qv,Call):-
 	list_to_free_abstraction(Qv,Call).
 
 %-------------------------------------------------------------------------

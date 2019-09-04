@@ -12,7 +12,7 @@
 	terms_glb/3,
 	terms_unknown_call/4,
 	terms_unknown_entry/3,
-	terms_empty_entry/2,
+	terms_empty_entry/3,
 	terms_call_to_success_fact/9,
 	terms_special_builtin/4,
 	terms_success_builtin/5,
@@ -1154,14 +1154,14 @@ terms_glb0([],[],[]).
 terms_unknown_entry(_Sg,Vars,ASub):-
 	variables_are_top_type(Vars,ASub).
 
-:- pred terms_empty_entry(+Vars,-Entry): list * absu # "Gives the
+:- pred terms_empty_entry(+Sg,+Vars,-Entry): callable * list * absu # "Gives the
 ""empty"" value in this domain for a given set of variables
 @var{Vars}, resulting in the abstract substitution @var{Entry}. I.e.,
 obtains the abstraction of a substitution in which all variables
 @var{Vars} are unbound: free and unaliased. In this domain the empty
 value is giving the variable type to each variable".
 
-terms_empty_entry(Vars,ASub):-
+terms_empty_entry(_Sg,Vars,ASub):-
 	variables_are_variable_type(Vars,ASub).
 
 

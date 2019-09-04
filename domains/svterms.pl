@@ -10,7 +10,7 @@
 	svterms_glb/3,
 	svterms_unknown_call/4,
 	svterms_unknown_entry/3,
-	svterms_empty_entry/2,
+	svterms_empty_entry/3,
 	svterms_call_to_success_fact/9,
 	svterms_special_builtin/5,
 	svterms_success_builtin/5,
@@ -57,7 +57,7 @@
 	    eterms_glb/3,
 	    eterms_unknown_call/4,
 	    eterms_unknown_entry/3,
-	    eterms_empty_entry/2,
+	    eterms_empty_entry/3,
 	    eterms_special_builtin/5,
 	    eterms_call_to_success_builtin/6,
 	    eterms_input_interface/4,
@@ -555,8 +555,8 @@ svterms_unknown_entry(Sg,Vars,ASub):-
 	abssubst_b(ASub,TASub,[]).
 
 %--------------------------------------------------------------%	
-svterms_empty_entry(Vars,ASub):-
-	eterms_empty_entry(Vars,TASub),
+svterms_empty_entry(Sg,Vars,ASub):-
+	eterms_empty_entry(Sg,Vars,TASub),
 	abssubst_b(ASub,TASub,[]).
 
 %-----------------------TO DO ----- TO DO ----------------------------------%	

@@ -17,7 +17,7 @@
 	  fd_success_builtin/5,
 	  fd_unknown_call/4,
 	  fd_unknown_entry/3,
-	  fd_empty_entry/2
+	  fd_empty_entry/3
 	],
 	[ ] ).
 
@@ -210,7 +210,7 @@ fd_unknown_entry(Sg,Vars,(F,D)):-
         def_unknown_entry(Sg,Vars,D),
         vero_unknown_entry(Sg,Vars,F).
 
-fd_empty_entry(_, _):-
+fd_empty_entry(_,_,_):-
 	throw(not_implemented(fd_empty_entry)).
 
 %------------------------------------------------------------------------------

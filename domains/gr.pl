@@ -19,7 +19,7 @@
 	%gr_output_interface/2,
 	gr_unknown_call/4,
 	gr_unknown_entry/3,
-	gr_empty_entry/2,
+	gr_empty_entry/3,
 	extrainfo/1
    ], [assertions,regtypes,basicmodes,datafacts]).
 
@@ -161,15 +161,15 @@ gr_create_values([],[],_Value).
 gr_create_values([X|Xs],[X/Value|New],Value):-
 	gr_create_values(Xs,New,Value).
 
-:- pred gr_empty_entry(+Vars,-Entry): list * absu # "Gives the
+:- pred gr_empty_entry(+Sg,+Vars,-Entry): callable * list * absu # "Gives the
 ""empty"" value in this domain for a given set of variables
 @var{Vars}, resulting in the abstract substitution @var{Entry}. I.e.,
 obtains the abstraction of a substitution in which all variables
 @var{Vars} are unbound: free and unaliased. In this domain the empty
 value is equivalent to the unknown value".
 
-gr_empty_entry(Vars,Entry):- 
-	gr_unknown_entry(sg_not_provided,Vars,Entry).
+gr_empty_entry(Sg,Vars,Entry):- 
+	gr_unknown_entry(Sg,Vars,Entry).
 
 %-------------------------------------------------------------------------
 %-------------------------------------------------------------------------
