@@ -1,5 +1,6 @@
 /*             Copyright (C)1990-2002 UPM-CLIP				*/
 
+% :- doc(title, "sharing (abstract domain)").
 :- doc(author,"Kalyan Muthukumar").
 :- doc(author,"Maria Garcia de la Banda").
 :- doc(author,"Francisco Bueno").
@@ -63,7 +64,7 @@
 % i.e. Proj = {Ys | Xs in ASub, Ys = Xs intersect Vars }                 |
 %------------------------------------------------------------------------%
 
-
+:- export(share_project/3).    
 share_project(_,'$bottom','$bottom'):- !.
 share_project(Vars,ASub,Proj) :-
 	project_share(Vars,ASub,Proj).
@@ -123,6 +124,7 @@ project_share1(yes,Proj1,NewVars,Ls,[Proj1|Proj]):-
 %         among those arguments in ShareArgsStar)
 %-------------------------------------------------------------------------
 
+:- export(share_call_to_entry/9).
 share_call_to_entry(_Sv,Sg,_Hv,Head,_K,Fv,Proj,Entry,ExtraInfo) :-
 	variant(Sg,Head),!,
 	ExtraInfo = yes,
@@ -175,6 +177,7 @@ share_call_to_entry(Sv,Sg,Hv,Head,_K,Fv,Proj,Entry,ExtraInfo) :-
 %        opposite direction.                                             %
 %-------------------------------------------------------------------------
 
+:- export(share_exit_to_prime/7).
 share_exit_to_prime(_Sg,_Hv,_Head,_Sv,'$bottom',_Flag,'$bottom') :- !.
 share_exit_to_prime(Sg,Hv,Head,_Sv,Exit,Flag,Prime):-  
 	Flag == yes, !,
@@ -216,6 +219,7 @@ share_exit_to_prime(Sg,Hv,Head,Sv,Exit,(Gv,NewBinds,NewProj,Partition),Prime):-
 % sorts the set of set of variables ASub to obtaint the Asub_s           |
 %-------------------------------------------------------------------------
 
+:- export(share_sort/2).       
 share_sort('$bottom','$bottom'):- !.
 share_sort(ASub,ASub_s):-
 	sort_list_of_lists(ASub,ASub_s).
@@ -232,11 +236,13 @@ share_sort(ASub,ASub_s):-
 % merging the ASub1 and ASub2.                                           %
 %------------------------------------------------------------------------%
 
+:- export(share_compute_lub/2).
 share_compute_lub([ASub1,ASub2|Rest],Lub) :-
 	share_lub(ASub1,ASub2,ASub3),
 	share_compute_lub([ASub3|Rest],Lub).
 share_compute_lub([ASub],ASub).
 
+:- export(share_lub/3).      
 share_lub(ASub1,ASub2,ASub3):-
 	ASub1 == ASub2,!,
 	ASub3 = ASub2.
@@ -254,6 +260,7 @@ merge_subst(Xss,Yss,Zss) :-
 % Glb is just intersection.                                              %
 %------------------------------------------------------------------------%
 
+:- export(share_glb/3).      
 share_glb('$bottom',_ASub,ASub3) :- !, ASub3='$bottom'.
 share_glb(_ASub,'$bottom',ASub3) :- !, ASub3='$bottom'.
 share_glb(ASub0,ASub1,Glb):-
@@ -275,6 +282,7 @@ share_glb(ASub0,ASub1,Glb):-
 % with the information in Prime adding, at the end, Disjunct.            %
 %------------------------------------------------------------------------%
 
+:- export(share_extend/4).     
 share_extend('$bottom',_Hv,_Call,Succ):- !,
 	Succ = '$bottom'.
 share_extend(_Prime,[],Call,Succ):- !,
@@ -292,6 +300,7 @@ share_extend(Prime,Sv,Call,Succ) :-
 % Specialized version of call_to_entry + exit_to_prime + extend for facts%
 %------------------------------------------------------------------------%
 
+:- export(share_call_to_success_fact/9).
 share_call_to_success_fact(_Sg,[],_Head,_K,Sv,Call,_,[],Succ) :- !,
 	ord_split_lists_from_list(Sv,Call,_Intersect,Succ).
 share_call_to_success_fact(Sg,Hv,Head,_K,Sv,Call,Proj,Prime,Succ) :-
@@ -321,6 +330,7 @@ share_call_to_success_fact(_Sg,_Hv,_Head,_K,_Sv,_Call,_Proj, '$bottom','$bottom'
 % since the extension is the step in which more information is lost      |
 %-------------------------------------------------------------------------
 
+:- export(share_call_to_prime_fact/6).
 share_call_to_prime_fact(_Sg,[],_Head,_Sv,_Call,Prime) :- !,
 	Prime = [].
 share_call_to_prime_fact(Sg,Hv,Head,Sv,Call,Prime) :-
@@ -625,11 +635,12 @@ prune_success([Xs|Xss],Prime,Sv,Call,Succ) :-
 % The top value in Sharing for a set of variables is the powerset        |
 %-------------------------------------------------------------------------
 
+:- export(share_unknown_entry/3).
 share_unknown_entry(_Sg,Qv,Call):-
 	powerset(Qv,Call_u),
 	sort_list_of_lists(Call_u,Call).
 
-
+:- export(share_empty_entry/3).
 :- pred share_empty_entry(+Sg,+Vars,-Entry): callable * list * absu # "Gives the
 ""empty"" value in this domain for a given set of variables
 @var{Vars}, resulting in the abstract substitution @var{Entry}. I.e.,
@@ -647,6 +658,7 @@ share_empty_entry(_Sg,Vars,Entry):-
 % in Sharing                                                             %
 %-------------------------------------------------------------------------
 
+%:- export(share_output_interface/2). 
 % share_output_interface(Succ,Succ).
 
 %------------------------------------------------------------------------%
@@ -655,6 +667,7 @@ share_empty_entry(_Sg,Vars,Entry):-
 % The user friendly format consists in extracting the ground variables   %
 %------------------------------------------------------------------------%
 
+:- export(share_asub_to_native/5). 
 share_asub_to_native('$bottom',_Qv,_OutFlag,_ASub_user,_Comps):- !, fail.
 share_asub_to_native(Succ,Qv,_OutFlag,Info,[]):-
 	if_not_nil(Succ,sharing(Succ),Info,Info0),
@@ -670,6 +683,7 @@ share_asub_to_native(Succ,Qv,_OutFlag,Info,[]):-
 % sharing for the variables involved.                                    %
 %------------------------------------------------------------------------%
 
+:- export(share_input_user_interface/3).  
 share_input_user_interface((Gv0,Sh0,Indep0),Qv,Call):-
 	may_be_var(Gv0,Gv),
 	may_be_var(Sh0,ASub0),
@@ -682,6 +696,7 @@ share_input_user_interface((Gv0,Sh0,Indep0),Qv,Call):-
 	merge(ASub1,ASub2,ASub),
 	handle_each_indep(Indep,share,ASub,Call).
 
+:- export(share_input_interface/4).  
 share_input_interface(ground(X),perfect,(Gv0,Sh,I),(Gv,Sh,I)):-
 	varset(X,Vs),
 	myappend(Gv0,Vs,Gv).
@@ -718,6 +733,7 @@ may_be_var(X,X):- ( X=[] ; true ), !.
 % with empty intersection with Vars                                      |
 %-------------------------------------------------------------------------
 
+:- export(share_unknown_call/4).
 share_unknown_call(_Sg,_Vars,'$bottom','$bottom') :- !.
 share_unknown_call(_Sg,_Vars,[],[]) :- !.
 share_unknown_call(_Sg,Vars,[C|Call],Succ) :-
@@ -731,6 +747,7 @@ share_unknown_call(_Sg,Vars,[C|Call],Succ) :-
 % Succeeds if ASub1 is more general or equal to ASub0                    %
 %------------------------------------------------------------------------%
 
+:- export(share_less_or_equal/2).
 share_less_or_equal('$bottom',_ASub):- !.
 share_less_or_equal(ASub0,ASub1):-
 	ASub0 == ASub1, !.
@@ -759,6 +776,7 @@ share_less_or_equal(ASub0,ASub1):-
 % (5) Sgkey: special handling of some particular builtins                |
 %-------------------------------------------------------------------------
 
+:- export(share_special_builtin/4).
 %-------------------------------------------------------------------------
 % metacuts
 %% share_special_builtin('CHOICE IDIOM/1',_,ground,_).
@@ -927,6 +945,7 @@ share_not_that_special_builtin('sort/2').
 %    Succ is computed                                                    |
 %-------------------------------------------------------------------------
 
+:- export(share_success_builtin/5).
 share_success_builtin(ground,Sv_u,_,Call,Succ):-
 	sort(Sv_u,Sv),
 	ord_split_lists_from_list(Sv,Call,_Intersect,Succ).
@@ -1019,6 +1038,7 @@ share_success_builtin(var,_Sv,_Condvars,_Call,'$bottom').
 % Handles those builtins for which computing Prime is easier than Succ   %
 %-------------------------------------------------------------------------
 
+:- export(share_call_to_success_builtin/6).
 share_call_to_success_builtin('=/2','='(X,Y),Sv,Call,Proj,Succ):-
 	copy_term(X,Xterm),
 	copy_term(Y,Yterm),

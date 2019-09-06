@@ -1,3 +1,5 @@
+% :- doc(title, "sharing+freeness+nonvar (abstract domain)").
+
 /*             Copyright (C)1990-94 UPM-CLIP				*/
 
 %------------------------------------------------------------------------%
@@ -58,6 +60,7 @@
 % transformed into nv rather than into nf).                              %
 %------------------------------------------------------------------------%
 
+:- export(shfrnv_call_to_entry/9).
 shfrnv_call_to_entry(_Sv,Sg,_Hv,Head,_K,Fv,Proj,Entry,Flag):-
 	variant(Sg,Head),!,
 	Flag = yes,
@@ -260,6 +263,7 @@ shfrnv_table_from_term_entry(nf(_,_),X,_,Sh,Tv,Fr,NewFr) :-
 % transformed into nv rather than into nf).                              %
 %------------------------------------------------------------------------%
 
+:- export(shfrnv_exit_to_prime/7).
 shfrnv_exit_to_prime(_Sg,_Hv,_Head,_Sv,'$bottom',_Flag,Prime) :- !,
 	Prime = '$bottom'.
 shfrnv_exit_to_prime(Sg,Hv,Head,_Sv,Exit,yes,Prime):- !,
@@ -385,11 +389,13 @@ shfrnv_table_from_term_exit(_,X,_,Tv,Fr,Fr1) :- !,
 %     Value is computed from the lattice   f < nf, g < nv < nf           %
 %------------------------------------------------------------------------%
 
+:- export(shfrnv_compute_lub/2).
 shfrnv_compute_lub([X],X):- !.
 shfrnv_compute_lub([ASub1,ASub2|Xs],Lub):-
 	shfrnv_compute_lub_el(ASub1,ASub2,ASubLub),
 	shfrnv_compute_lub([ASubLub|Xs],Lub).
 
+%:- export(shfrnv_compute_lub_el/3).  
 shfrnv_compute_lub_el('$bottom',ASub,ASub):- !.
 shfrnv_compute_lub_el((Sh1,Fr1),(Sh2,Fr2),(Lub_sh,Lub_fr)):- !,
 	compute_lub_sh(Sh1,Sh2,Lub_sh),
@@ -423,6 +429,7 @@ shfrnv_lub_val(_,_,nf).
 % Identical except for non_free_vars and member_value_freeness_differ.   %
 %------------------------------------------------------------------------%
 
+:- export(shfrnv_extend/4).    
 shfrnv_extend('$bottom',_Sv,_Call,Succ):- !,
 	Succ = '$bottom'.
 shfrnv_extend(_Prime,[],Call,Succ):- !,
@@ -524,6 +531,7 @@ shfrnv_var_value_rest_(>,_,More,X,Rest,Value):-
 % extend.
 %-------------------------------------------------------------------------
 
+:- export(shfrnv_call_to_success_fact/9). 
 shfrnv_call_to_success_fact(_Sg,[],_Head,_K,Sv,Call,_Proj,Prime,Succ) :- 
 	Call = (Call_sh,Call_fr),!,
 	update_lambda_sf(Sv,Call_fr,Call_sh,Succ_fr,Succ_sh),
@@ -572,11 +580,13 @@ shfrnv_call_to_success_fact(_Sg,_Hv,_Head,_K,_Sv,_Call,_Proj,'$bottom','$bottom'
 % identical but taking non_free into account.                            %
 %------------------------------------------------------------------------%
 
+:- export(shfrnv_input_user_interface/3). 
 shfrnv_input_user_interface((Sh,Fr,Nv),Qv,(Call_sh,Call_fr)):-
 	shfr_input_user_interface((Sh,Fr),Qv,(Call_sh,Call_fr0)),
 	sort(Nv,NonVar),
 	change_values_insert(NonVar,Call_fr0,Call_fr,nv).
 
+:- export(shfrnv_input_interface/4). 
 shfrnv_input_interface(Info,Kind,(Sh0,Fr,Nv),(Sh,Fr,Nv)):-
 	shfr_input_interface(Info,Kind,Sh0,Sh), !.
 shfrnv_input_interface(not_free(X),perfect,(Sh,Fr,Nv0),(Sh,Fr,Nv)):-
@@ -591,6 +601,7 @@ shfrnv_input_interface(not_free(X),perfect,(Sh,Fr,Nv0),(Sh,Fr,Nv)):-
 %% % for the Sharing part. The output for Fr is the set of free variables   %
 %% %-------------------------------------------------------------------------
 %% 
+%:- export(shfrnv_output_interface/2).  
 %% shfrnv_output_interface(ac('$bottom',Flag),('$bottom',Flag)) :- !.
 %% shfrnv_output_interface(ac(d(ACons,Del),Flag),Output) :- 
 %% 	del_output(ac(Del,Flag),ACons,Output).
@@ -617,6 +628,7 @@ shfrnv_input_interface(not_free(X),perfect,(Sh,Fr,Nv0),(Sh,Fr,Nv)):-
 % plus ground and free                                                   %
 %------------------------------------------------------------------------%
 
+:- export(shfrnv_asub_to_native/5). 
 shfrnv_asub_to_native((Sh,Fr),Qv,OutFlag,ASub_user,Comps):-
 	shfr_asub_to_native((Sh,Fr),Qv,OutFlag,ASub_user0,Comps),
 	member_value_freeness(Fr,Nv,nv),
@@ -629,6 +641,7 @@ shfrnv_asub_to_native((Sh,Fr),Qv,OutFlag,ASub_user,Comps):-
 % Succeeds if ASub1 is more general or equal to ASub0                    %
 %------------------------------------------------------------------------%
 
+:- export(shfrnv_less_or_equal/2). 
 shfrnv_less_or_equal((Sh0,Fr0),(Sh1,Fr1)):-
 	share_less_or_equal(Sh0,Sh1),
 	member_value_freeness(Fr0,ListFr0,f),
@@ -647,6 +660,7 @@ shfrnv_less_or_equal((Sh0,Fr0),(Sh1,Fr1)):-
 %% % variables which are also free in ASub1, must appear in ASub1           %
 %% %------------------------------------------------------------------------%
 %% 
+%:- export(shfrnv_more_instantiate/2). 
 %% shfrnv_more_instantiate((Sh0,Fr0),(Sh1,Fr1)):-
 %%         member_value_freeness(Fr0,ListGr0,g),
 %%         member_value_freeness(Fr1,ListGr1,g),
@@ -687,6 +701,7 @@ shfrnv_less_or_equal((Sh0,Fr0),(Sh1,Fr1)):-
 % Identical except for when it says %% CHANGED                           %
 %-------------------------------------------------------------------------
 
+:- export(shfrnv_success_builtin/5).
 shfrnv_success_builtin(new_ground,Sv_u,_,Call,Succ):-
 	sort(Sv_u,Sv),
 	Call = (Lda_sh,Lda_fr),
@@ -956,6 +971,7 @@ shfrnv_success_builtin('var/1',_,_,_,'$bottom').
 % shfrnv_call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,Succ)               %
 %-------------------------------------------------------------------------
 
+:- export(shfrnv_call_to_success_builtin/6). 
 shfrnv_call_to_success_builtin('==/2','=='(X,Y),_Sv,Call,Proj,Succ):-
         var(X),!,
 	shfrnv_identical_one_var(X,Y,Call,Proj,Succ).
@@ -1311,6 +1327,7 @@ shfrnv_update_from_values(nf,_,_X,Y,(Call_sh,Call_fr),(Succ_sh,Succ_fr)):-
 
 %% :- push_prolog_flag(multi_arity_warnings,off).
 %% 
+%:- export(shfrnv_check_cond/5).
 %% shfrnv_check_cond(Conds,(Sh,Fr),Sv,Flag,WConds):-
 %% 	shfrnv_check_cond(Conds,(Sh,Fr),Sv,[],Flag,[],WConds).
 %% 
@@ -1387,7 +1404,7 @@ shfrnv_update_from_values(nf,_,_X,Y,(Call_sh,Call_fr),(Succ_sh,Succ_fr)):-
 %% %  properties from ACns1 to ACns2.
 %% %-------------------------------------------------------------------------
 %% 
-%% 
+%:- export(shfrnv_downwards_closed/3). 
 %% shfrnv_downwards_closed((_,Fr1),(Sh2,Fr2),(Sh,Fr)):- 
 %% 	member_value_freeness(Fr1,Gv,g),
 %% 	collect_vars_freeness(Fr2,Sv),
@@ -1413,6 +1430,7 @@ shfrnv_update_from_values(nf,_,_X,Y,(Call_sh,Call_fr),(Succ_sh,Succ_fr)):-
 %% % Returns an atom which identifies ASub
 %% %------------------------------------------------------------------------%
 %% 
+%:- export(shfrnv_hash/3).    
 %% shfrnv_hash('$bottom',_,-2).
 %% shfrnv_hash(true,_,0).
 %% shfrnv_hash((Sh,Fr),Fnv,N):-
@@ -1450,6 +1468,7 @@ shfrnv_update_from_values(nf,_,_X,Y,(Call_sh,Call_fr),(Succ_sh,Succ_fr)):-
 %% % more instantiated one New           
 %% %------------------------------------------------------------------------%
 %% 
+%:- export(shfrnv_convex_hull/3).
 %% shfrnv_convex_hull((OldSh,OldFr),(_,NewFr),(HullSh,HullFr)):- !,
 %% 	closure_under_union(OldSh,HullSh),
 %% 	shfrnv_hull(OldFr,NewFr,HullFr).
@@ -1472,6 +1491,7 @@ shfrnv_update_from_values(nf,_,_X,Y,(Call_sh,Call_fr),(Succ_sh,Succ_fr)):-
 %% % shfrnv_impose_cond(Conds,ACns,Sv,LASub)
 %% %-------------------------------------------------------------------------
 %% 
+%:- export(shfrnv_impose_cond/4).
 %% shfrnv_impose_cond([],_,_,[]).
 %% shfrnv_impose_cond([(Gr,Nv,_)|Rest],Sv,(Sh,Fr),[ASub1|LASub]):-
 %% 	update_lambda_sf(Gr,Fr,Sh,Fr1,Sh1),
@@ -1485,6 +1505,7 @@ shfrnv_update_from_values(nf,_,_X,Y,(Call_sh,Call_fr),(Succ_sh,Succ_fr)):-
 %% % shfrnv_real_conjoin(ACns1,ACns2,Conj)
 %% %-------------------------------------------------------------------------
 %% 
+%:- export(shfrnv_real_conjoin/3).
 %% shfrnv_real_conjoin(_,'$bottom','$bottom'):- !.
 %% shfrnv_real_conjoin('$bottom',_,'$bottom').
 %% shfrnv_real_conjoin((ShOld,FrOld),(ShNew,FrNew),(Sh,Fr)):-

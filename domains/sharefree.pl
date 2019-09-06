@@ -1,5 +1,6 @@
 /*             Copyright (C)1990-2002 UPM-CLIP				*/
 
+% :- doc(title, "sharing+freeness (abstract domain)").
 :- doc(author,"Maria Garcia de la Banda").
 :- doc(author,"Francisco Bueno").
 
@@ -84,6 +85,7 @@
 % eliminating from Fr all X/Value such that X not int Vars               %
 %------------------------------------------------------------------------%
 
+:- export(shfr_project/3).     
 shfr_project('$bottom',_,Proj):- 
 	Proj = '$bottom'.
 shfr_project((Sh,Fr),Vars,Proj) :- 
@@ -151,6 +153,7 @@ project_freeness(>,Head1,Tail1,_,[Head2/Val|Tail2],Proj) :-
 %      arguments in the head while there is no sharing among those       %
 %      arguments in ShareArgsStar)                                       %
 %------------------------------------------------------------------------%
+:- export(shfr_call_to_entry/9).
 shfr_call_to_entry(_Sv,Sg,_Hv,Head,_K,Fv,Proj,Entry,Flag):-
 	variant(Sg,Head),!,
 	Flag = yes,
@@ -204,6 +207,7 @@ shfr_call_to_entry(_Sv,Sg,Hv,Head,_K,Fv,(Proj_sh,Proj_fr),Entry,ExtraInfo):-
 % * If Hv = [], Prime_sh = [] and Prime_fr = {X/g| forall X in Sv}       %
 % * Otherwise:                                                           %
 %------------------------------------------------------------------------%
+:- export(shfr_exit_to_prime/7).
 shfr_exit_to_prime(_Sg,_Hv,_Head,_Sv,'$bottom',_Flag,Prime) :- !,
 	Prime = '$bottom'.
 shfr_exit_to_prime(Sg,Hv,Head,_Sv,Exit,yes,Prime):- !,
@@ -247,6 +251,7 @@ shfr_exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime):-
 % First sorts the set of set of variables Sh to obtain the Sh_s.Then it  |
 % sorts the set of X/Value in Fr obtaining Fr_s.                         |
 %-------------------------------------------------------------------------
+:- export(shfr_sort/2).        
 shfr_sort('$bottom','$bottom').
 shfr_sort(ac(Asub_u,Fg),ac(Asub,Fg)):- 
 	shfr_sort(Asub_u,Asub).
@@ -271,11 +276,13 @@ shfr_sort((Sh,Fr),(Sh_s,Fr_s)):-
 %    - if Value1 == Value2, X/Value1 in Lub_fr                           %
 %    - otherwise, X/nf in Lub_fr                                         %
 %------------------------------------------------------------------------%
+:- export(shfr_compute_lub/2). 
 shfr_compute_lub([X],X):- !.
 shfr_compute_lub([ASub1,ASub2|Xs],Lub):-
 	shfr_compute_lub_el(ASub1,ASub2,ASubLub),
 	shfr_compute_lub([ASubLub|Xs],Lub).
 
+:- export(shfr_compute_lub_el/3).  %% commented out by JNL
 shfr_compute_lub_el('$bottom',ASub,ASub):- !.
 shfr_compute_lub_el((Sh1,Fr1),(Sh2,Fr2),(Lub_sh,Lub_fr)):- !,
 	compute_lub_sh(Sh1,Sh2,Lub_sh),
@@ -301,6 +308,7 @@ compute_lub_fr([X/_|Fr1],[X/_|Fr2],[X/nf|Lub_fr]):-
 % shfr_glb(+,+,-)                                                        %
 % shfr_glb(ASub0,ASub1,Glb)                                              %
 %------------------------------------------------------------------------%
+:- export(shfr_glb/3).       
 shfr_glb('$bottom',_ASub,ASub3) :- !, ASub3='$bottom'.
 shfr_glb(_ASub,'$bottom',ASub3) :- !, ASub3='$bottom'.
 shfr_glb((Sh1,Fr1),(Sh2,Fr2),Glb):-
@@ -351,6 +359,7 @@ shfr_glb((Sh1,Fr1),(Sh2,Fr2),Glb):-
 %     for the rest of variables in BVars                                 %
 %   * If BVarsf = [],                                                    %
 %------------------------------------------------------------------------%
+:- export(shfr_extend/4).      
 shfr_extend('$bottom',_Sv,_Call,Succ):- !,
 	Succ = '$bottom'.
 shfr_extend(_Prime,[],Call,Succ):- !,
@@ -383,6 +392,7 @@ shfr_extend((Prime_sh,Prime_fr),Sv,(Call_sh,Call_fr),Succ):-
 %------------------------------------------------------------------------%
 % Specialized version of call_to_entry + exit_to_prime + extend for facts%
 %-------------------------------------------------------------------------
+:- export(shfr_call_to_success_fact/9).
 shfr_call_to_success_fact(_Sg,[],_Head,_K,Sv,Call,_Proj,Prime,Succ) :- 
 	Call = (Call_sh,Call_fr),!,
 	update_lambda_sf(Sv,Call_fr,Call_sh,Succ_fr,Succ_sh),
@@ -422,6 +432,7 @@ shfr_call_to_success_fact(_Sg,_Hv,_Head,_K,_Sv,_Call,_Proj,'$bottom','$bottom').
 % we compose the information and project it, we can loose information    |
 % since the extension is the step in which more information is lost      |
 %-------------------------------------------------------------------------
+:- export(shfr_call_to_prime_fact/6).
 shfr_call_to_prime_fact(_,[],_,Sv,_,Prime) :- !,
 	list_ground(Sv,Prime_fr),
 	Prime = ([],Prime_fr).
@@ -455,6 +466,7 @@ shfr_call_to_prime_fact(_Sg,_Hv,_Head,_Sv,'$bottom','$bottom').
 % The top value in Sh for a set of variables is the powerset, in Fr is   |
 % X/nf forall X in the set of variables                                  |
 %-------------------------------------------------------------------------
+:- export(shfr_unknown_entry/3).
 shfr_unknown_entry(_Sg,Qv,Call):-
 	powerset(Qv,Sh),
 	sort_list_of_lists(Sh,Call_sh),
@@ -466,6 +478,7 @@ shfr_unknown_entry(_Sg,Qv,Call):-
 % The empty value in Sh for a set of variables is the list of singletons,
 % in Fr is X/f forall X in the set of variables                          |
 %-------------------------------------------------------------------------
+:- export(shfr_empty_entry/3).
 :- pred shfr_empty_entry(+Sg,+Vars,-Entry): callable * list * absu # "Gives the
 ""empty"" value in this domain for a given set of variables
 @var{Vars}, resulting in the abstract substitution @var{Entry}. I.e.,
@@ -485,6 +498,7 @@ shfr_empty_entry(_Sg,Qv,Entry):-
 % information just consists in taking the Sharing first and the var(Fv)  %
 % element of InputUser, and construct from them the Freeness.            %
 %------------------------------------------------------------------------%
+:- export(shfr_input_user_interface/3).
 shfr_input_user_interface((Sh,Fv0),Qv,(Call_sh,Call_fr)):-
 	share_input_user_interface(Sh,Qv,Call_sh),
 	may_be_var(Fv0,Fv),
@@ -495,6 +509,7 @@ shfr_input_user_interface((Sh,Fv0),Qv,(Call_sh,Call_fr)):-
 	change_values_insert(NonFv,Temp1,Temp2,nf),
 	change_values_insert(Gv,Temp2,Call_fr,g).
 
+:- export(shfr_input_interface/4).
 shfr_input_interface(Info,Kind,(Sh0,Fr),(Sh,Fr)):-
 	share_input_interface(Info,Kind,Sh0,Sh), !.
 shfr_input_interface(free(X),perfect,(Sh,Fr0),(Sh,Fr)):-
@@ -514,6 +529,7 @@ myinsert(Fr0,X,Fr):-
 %% % for the Sharing part. The output for Fr is the set of free variables   %
 %% %-------------------------------------------------------------------------
 %% 
+%:- export(shfr_output_interface/2).
 %% shfr_output_interface(ac('$bottom',Flag),('$bottom',Flag)) :- !.
 %% shfr_output_interface(ac(d((Sh,Fr),Del),Flag),Output) :- 
 %% 	member_value_freeness(Fr,NewFr,f),
@@ -542,6 +558,7 @@ myinsert(Fr0,X,Fr):-
 % The user friendly format consists in extracting the ground variables   %
 % and the free variables                                                 %
 %------------------------------------------------------------------------%
+:- export(shfr_asub_to_native/5).
 shfr_asub_to_native(ASub,_Qv,_OutFlag,Succ,[]) :-
 	shfr_asub_to_native_(ASub,Succ).
 
@@ -567,6 +584,7 @@ shfr_asub_to_native_((Sh,Fr),Info):-
 % shfr_obtain(Prop,Vars,ASub,Info)                                       %
 % Prop holds for Info in ASub over Vars                                  %
 %------------------------------------------------------------------------%
+:- export(shfr_obtain/4).
 shfr_obtain(ground,Vars,(_,Fr),Info):-
 	member_value_freeness(Fr,Info0,g),
 	ord_intersection(Vars,Info0,Info).
@@ -579,6 +597,7 @@ shfr_obtain(free,Vars,(_,Fr),Info):-
 % shfr_obtain(Prop,ASub,Info)                                            %
 % Prop holds for Info in ASub                                            %
 %------------------------------------------------------------------------%
+:- export(shfr_obtain/3).
 shfr_obtain(ground,(_,Fr),Info):-
 	member_value_freeness(Fr,Info,g).
 shfr_obtain(free,(_,Fr),Info):-
@@ -589,6 +608,7 @@ shfr_obtain(free,(_,Fr),Info):-
 % shfr_less_or_equal(ASub0,ASub1)                                        %
 % Succeeds if ASub1 is more general or equal to ASub0                    %
 %------------------------------------------------------------------------%
+:- export(shfr_less_or_equal/2).
 shfr_less_or_equal('$bottom',_ASub):- !.
 shfr_less_or_equal((Sh0,Fr0),(Sh1,Fr1)):-
 	share_less_or_equal(Sh0,Sh1),
@@ -613,6 +633,7 @@ shfr_less_or_equal((Sh0,Fr0),(Sh1,Fr1)):-
 %% % variables which are also free in ASub1, must appear in ASub1           %
 %% %------------------------------------------------------------------------%
 %% 
+%:- export(shfr_more_instantiate/2).  
 %% shfr_more_instantiate((Sh0,Fr0),(Sh1,Fr1)):-
 %%         member_value_freeness(Fr0,ListGr0,g),
 %%         member_value_freeness(Fr1,ListGr1,g),
@@ -655,6 +676,7 @@ shfr_less_or_equal((Sh0,Fr0),(Sh1,Fr1)):-
 % (6) Sgkey, special handling of some particular builtins                |
 %-------------------------------------------------------------------------
 
+:- export(shfr_special_builtin/4).
 %-------------------------------------------------------------------------
 % metacuts
 %% shfr_special_builtin('CHOICE IDIOM/1',_,new_ground,_).
@@ -875,6 +897,7 @@ shfr_not_that_special_builtin('sort/2').
 %  * Otherwise Type is the SgKey of a particular builtin for each the    |
 %    Succ is computed                                                    |
 %-------------------------------------------------------------------------
+:- export(shfr_success_builtin/5).
 shfr_success_builtin(new_ground,Sv_u,_,Call,Succ):-
 	sort(Sv_u,Sv),
 	Call = (Lda_sh,Lda_fr),
@@ -1194,6 +1217,7 @@ any_arg_all_args(N,Y,Z,ASub,[Succ|Succs]):-
 % shfr_call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,Succ)               %
 % Handles those builtins for which computing Proj is easier than Succ    %
 %-------------------------------------------------------------------------
+:- export(shfr_call_to_success_builtin/6). 
 shfr_call_to_success_builtin('==/2','=='(X,Y),_Sv,Call,Proj,Succ):-
         var(X),!,
 	identical_one_var(X,Y,Call,Proj,Succ).
@@ -2046,6 +2070,7 @@ update_freeness([X/Val|Xs],Temp_sh,[X/g|Temp_fr]):-
 %-------------------------------------------------------------------------
 %           ABSTRACT meta_call
 %-------------------------------------------------------------------------
+:- export(shfr_unknown_call/4).
 shfr_unknown_call(_Sg,_Vars,'$bottom','$bottom') :- !.
 shfr_unknown_call(_Sg,Vars,(Call_sh,Call_fr),(Succ_sh,Succ_fr)):-
 	ord_split_lists_from_list(Vars,Call_sh,Intersect,Rest),
@@ -2473,6 +2498,7 @@ add_environment_vars(<,Y/Vy,Fr1,El,[X/V|Fr2],[El|NewFr]):-
 % Assumptions: programs are normalized.
 %------------------------------------------------------------------------%
 
+%:- export(shfr_check_cond/5).
 %-------------------------------------------------------------------------
 % shfr_check_cond(+,+,-)
 % shfr_check_cond(Conds,ACns,Flag)
@@ -2577,6 +2603,7 @@ add_environment_vars(<,Y/Vy,Fr1,El,[X/V|Fr2],[El|NewFr]):-
 %% % we propagate these properties from ACns1 to ACns2.
 %% %-------------------------------------------------------------------------
 %% 
+%:- export(shfr_downwards_closed/3).  
 %% shfr_downwards_closed((_,Fr1),(Sh2,Fr2),(Sh,Fr)):- 
 %% 	member_value_freeness(Fr1,Gv,g),
 %% 	collect_vars_freeness(Fr2,Sv),
@@ -2588,6 +2615,7 @@ add_environment_vars(<,Y/Vy,Fr1,El,[X/V|Fr2],[El|NewFr]):-
 %% % shfr_extend_free(ASub,Vars,NewASub)
 %% %-------------------------------------------------------------------------
 %% 
+%:- export(shfr_extend_free/3).
 %% shfr_extend_free((Sh,Fr),Vars,(NSh,NFr)):-
 %% 	change_values_insert(Vars,Fr,NFr,f),
 %% 	list_to_list_of_lists(Vars,Temp1),
@@ -2601,6 +2629,7 @@ add_environment_vars(<,Y/Vy,Fr1,El,[X/V|Fr2],[El|NewFr]):-
 %% % Returns an atom which identifies ASub
 %% %------------------------------------------------------------------------%
 %% 
+%:- export(shfr_hash/3).      
 %% shfr_hash('$bottom',_,-2).
 %% shfr_hash(true,_,0).
 %% shfr_hash((Sh,Fr),Fnv,N):-
@@ -2636,6 +2665,7 @@ add_environment_vars(<,Y/Vy,Fr1,El,[X/V|Fr2],[El|NewFr]):-
 %% % more instantiated one New           
 %% %------------------------------------------------------------------------%
 %% 
+%:- export(shfr_convex_hull/3).
 %% shfr_convex_hull((OldSh,OldFr),(_,NewFr),(HullSh,HullFr)):- !,
 %% 	closure_under_union(OldSh,HullSh),
 %% 	compute_lub_fr(OldFr,NewFr,HullFr).
@@ -2646,6 +2676,7 @@ add_environment_vars(<,Y/Vy,Fr1,El,[X/V|Fr2],[El|NewFr]):-
 %% % shfr_impose_cond(Conds,ACns,Sv,LASub)
 %% %-------------------------------------------------------------------------
 %% 
+%:- export(shfr_impos_cond/4).
 %% shfr_impose_cond([],_,_,[]).
 %% shfr_impose_cond([(Gr,_,_)|Rest],Sv,(Sh,Fr),[ASub1|LASub]):-
 %% 	update_lambda_sf(Gr,Fr,Sh,Fr1,Sh1),
@@ -2657,6 +2688,7 @@ add_environment_vars(<,Y/Vy,Fr1,El,[X/V|Fr2],[El|NewFr]):-
 %% % shfr_real_conjoin(ACns1,ACns2,Conj)
 %% %-------------------------------------------------------------------------
 %% 
+%:- export(shfr_real_conjoin/3).
 %% shfr_real_conjoin(_,'$bottom','$bottom'):- !.
 %% shfr_real_conjoin('$bottom',_,'$bottom').
 %% shfr_real_conjoin((ShOld,FrOld),(ShNew,FrNew),(Sh,Fr)):-
