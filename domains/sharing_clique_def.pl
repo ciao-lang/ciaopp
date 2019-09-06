@@ -1,5 +1,6 @@
 /*             Copyright (C)2004-2005 UNM-CLIP				*/
 
+% :- doc(title, "clique-sharing+def (abstract domain)").
 :- doc(author,"Jorge Navas").
 
 %------------------------------------------------------------------------%
@@ -34,6 +35,7 @@
 %------------------------------------------------------------------------%
 % share_clique_def_call_to_entry(+,+,+,+,+,+,+,-,?)                      |
 %------------------------------------------------------------------------%
+:- export(share_clique_def_call_to_entry/9).
 share_clique_def_call_to_entry(Sv,Sg,Hv,Head,K,Fv,Proj,Entry,(BothEntry,ExtraInfo)):-
 	Proj = (SH_Proj,Def_Proj),
 	def_call_to_entry(Sv,Sg,Hv,Head,K,Fv,Def_Proj,Def_Entry,BothEntry),
@@ -45,6 +47,7 @@ share_clique_def_call_to_entry(_,_,_,_,_,_,_,'$bottom',_).
 %------------------------------------------------------------------------%
 % share_clique_def_exit_to_prime(+,+,+,+,+,-,-)                          |
 %------------------------------------------------------------------------%
+:- export(share_clique_def_exit_to_prime/7).
 share_clique_def_exit_to_prime(_,_,_,_,'$bottom',_,'$bottom'):-!.
 share_clique_def_exit_to_prime(Sg,Hv,Head,Sv,Exit,(BothEntry,ExtraInfo),Prime):-
 	Exit = (SH_Exit,Def_Exit),
@@ -58,6 +61,7 @@ share_clique_def_exit_to_prime(_,_,_,_,_,_,'$bottom').
 % share_clique_def_extend(+,+,+,-)                                       |
 % share_clique_def_extend(Prime,Sv,Call,Succ)                            |
 %------------------------------------------------------------------------%
+:- export(share_clique_def_extend/4).
 share_clique_def_extend('$bottom',_Hv,_Call,'$bottom').
 share_clique_def_extend((SH_Prime,Def_Prime),Sv,(SH_Call,Def_Call),Succ):-
 	def_extend(Def_Prime,Def_Call,Def_Succ),
@@ -71,6 +75,7 @@ share_clique_def_extend(_Prime,_Sv,_Call,'$bottom').
 % share_clique_def_project(+,+,-)                                        |
 % share_clique_def_project(Vars,ASub,Proj)                               |
 %------------------------------------------------------------------------%
+:- export(share_clique_def_project/3).
 share_clique_def_project(_,'$bottom','$bottom'):- !.
 share_clique_def_project(Vars,(SH_ASub,Def_ASub),Proj) :-
 	def_project(Def_ASub,Vars,Def_Proj),
@@ -82,6 +87,7 @@ share_clique_def_project(Vars,(SH_ASub,Def_ASub),Proj) :-
 % share_clique_def_sort(Asub,Asub_s)                                     |
 %------------------------------------------------------------------------%
 
+:- export(share_clique_def_sort/2).
 share_clique_def_sort('$bottom','$bottom'):- !.
 share_clique_def_sort((SH_ASub,Def_ASub),ASub_s ):-
 	def_sort(Def_ASub,Def_ASub_s),
@@ -93,6 +99,7 @@ share_clique_def_sort((SH_ASub,Def_ASub),ASub_s ):-
 % share_clique_def_glb(ASub0,ASub1,Lub)                                  |
 %------------------------------------------------------------------------%
 
+:- export(share_clique_def_glb/3).
 share_clique_def_glb('$bottom',_ASub,ASub3) :- !, ASub3='$bottom'.
 share_clique_def_glb(_ASub,'$bottom',ASub3) :- !, ASub3='$bottom'.
 share_clique_def_glb((SH_ASub0,Def_ASub0),(SH_ASub1,Def_ASub1),Glb):- 
@@ -106,6 +113,7 @@ share_clique_def_glb((SH_ASub0,Def_ASub0),(SH_ASub1,Def_ASub1),Glb):-
 % share_clique_def_identical_abstract(+,+)                               |
 % share_clique_def_identical_abstract(ASub0,ASub1)                       |
 %------------------------------------------------------------------------%
+:- export(share_clique_def_identical_abstract/2).
 share_clique_def_identical_abstract('$bottom','$bottom'):-!.
 share_clique_def_identical_abstract((SH0,_),(SH1,_)):-!,
 	share_clique_identical_abstract(SH0,SH1).
@@ -115,6 +123,7 @@ share_clique_def_identical_abstract((SH0,_),(SH1,_)):-!,
 % share_clique_def_eliminate_equivalent(TmpLSucc,LSucc)                  |
 %------------------------------------------------------------------------%
 
+:- export(share_clique_def_eliminate_equivalent/2).
 share_clique_def_eliminate_equivalent(TmpLSucc,Succ):-
 	sort(TmpLSucc,Succ).
 
@@ -123,6 +132,7 @@ share_clique_def_eliminate_equivalent(TmpLSucc,Succ):-
 % share_clique_def_less_or_equal(ASub0,ASub1)                            |
 %------------------------------------------------------------------------%
 
+:- export(share_clique_def_less_or_equal/2).
 share_clique_def_less_or_equal('$bottom',_ASub):- !.
 share_clique_def_less_or_equal((SH0,_),(SH1,_)):-!,
 	share_clique_less_or_equal(SH0,SH1).
@@ -134,6 +144,7 @@ share_clique_def_less_or_equal((SH0,_),(SH1,_)):-!,
 % Specialized version of call_to_entry + exit_to_prime + extend for facts%
 %------------------------------------------------------------------------%
 
+:- export(share_clique_def_call_to_success_fact/9).
 share_clique_def_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ):-
 	Call = (SH_Call,Def_Call),
 	Proj = (_,Def_Proj),
@@ -150,11 +161,13 @@ share_clique_def_call_to_success_fact(_Sg,_Hv,_Head,_K,_Sv,_Call,_Proj,'$bottom'
 % share_clique_def_compute_lub(ListASub,Lub)                             |
 %------------------------------------------------------------------------%
 
+:- export(share_clique_def_compute_lub/2).
 share_clique_def_compute_lub([ASub1,ASub2|Rest],Lub) :-
 	share_clique_def_lub_cl(ASub1,ASub2,ASub3),
 	share_clique_def_compute_lub([ASub3|Rest],Lub).
 share_clique_def_compute_lub([ASub],ASub).
 
+:- export(share_clique_def_lub_cl/3).
 share_clique_def_lub_cl('$bottom',ASub,ASub):-!.
 share_clique_def_lub_cl(ASub,'$bottom',ASub):-!.
 share_clique_def_lub_cl((SH_ASub1,Def_ASub1),(SH_ASub2,Def_ASub2),ASub3):-
@@ -168,6 +181,7 @@ share_clique_def_lub_cl((SH_ASub1,Def_ASub1),(SH_ASub2,Def_ASub2),ASub3):-
 % share_clique_def_input_user_interface(InputUser,Qv,ASub)               |
 %------------------------------------------------------------------------%
 
+:- export(share_clique_def_input_user_interface/3).
 share_clique_def_input_user_interface((Gv,Sh,Cl,I),Qv,Call):-
 	share_clique_input_user_interface((Gv,Sh,Cl,I),Qv,SH_Call),
 	may_be_var(Gv,Gv0),
@@ -179,6 +193,7 @@ share_clique_def_input_user_interface((Gv,Sh,Cl,I),Qv,Call):-
 % share_clique_def_asub_to_native(ASub,Qv,OutFlag,ASub_user,Comps)       |
 %------------------------------------------------------------------------%
 
+:- export(share_clique_def_asub_to_native/5).
 share_clique_def_asub_to_native('$bottom',_Qv,_OutFlag,_ASub_user,_Comps):- !, fail.
 share_clique_def_asub_to_native(((Cl,Sh),a(G,_SS)),Qv,_OutFlag,Info,[]):-
  	ord_union(Sh,Cl,All),
@@ -196,6 +211,7 @@ share_clique_def_asub_to_native(((Cl,Sh),a(G,_SS)),Qv,_OutFlag,Info,[]):-
 % Note that def does not define this operation.                          |
 %------------------------------------------------------------------------%
 
+:- export(share_clique_def_unknown_call/4).
 share_clique_def_unknown_call(_Sg,_Vars,'$bottom','$bottom').
 share_clique_def_unknown_call(Sg,Vars,(SH_Call,Def_Call),Succ):-	
 	share_clique_unknown_call(Sg,Vars,SH_Call,SH_Succ),
@@ -206,6 +222,7 @@ share_clique_def_unknown_call(Sg,Vars,(SH_Call,Def_Call),Succ):-
 % share_clique_def_empty_entry(Sg,Vars,Entry)                            |
 %------------------------------------------------------------------------%
 
+:- export(share_clique_def_empty_entry/3).
 share_clique_def_empty_entry(Sg,Vars,Entry):-
 	def_unknown_entry(Sg,Vars,Def_Entry), % TODO: why not def_empty_entry/3?
 	share_clique_empty_entry(Sg,Vars,SH_Entry),
@@ -216,6 +233,7 @@ share_clique_def_empty_entry(Sg,Vars,Entry):-
 % share_clique_def_unknown_entry(Sg,Qv,Call)                             |
 %------------------------------------------------------------------------%
 
+:- export(share_clique_def_unknown_entry/3).
 share_clique_def_unknown_entry(_Sg,Qv,((Qv,[]),a([],[]))).
 
 %------------------------------------------------------------------------%
@@ -225,6 +243,7 @@ share_clique_def_unknown_entry(_Sg,Qv,((Qv,[]),a([],[]))).
 % share_clique_def_special_builtin(SgKey,Sg,Type,Condvars)               |
 %------------------------------------------------------------------------%
 
+:- export(share_clique_def_special_builtin/4).
 share_clique_def_special_builtin(SgKey,Sg,Type,Condvars):-
 	share_clique_special_builtin(SgKey,Sg,SH_Type,SH_Condvars),!,
 	( def_special_builtin(SgKey,Sg,Def_Type,Def_Condvars) ->
@@ -252,6 +271,7 @@ share_clique_def_special_builtin(SgKey,Sg,Type,Condvars):-
 % first.                                                                 |
 %------------------------------------------------------------------------%
 
+:- export(share_clique_def_compose/2).
 share_clique_def_compose(((Cl,Sh),a(G,_)),(NewCl,NewSh)):-
 	irrel_w(G,(Cl,Sh),(NewCl,NewSh)),!.
 share_clique_def_compose(_,'$bottom'):-!.

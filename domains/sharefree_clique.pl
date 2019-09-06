@@ -1,5 +1,6 @@
 /*             Copyright (C)2004-2005 UNM-CLIP				*/
 
+% :- doc(title, "clique+sharing+freeness (abstract domain)").
 :- doc(author,"Jorge Navas").
 
 :- use_module(domain(s_grshfr), 
@@ -46,7 +47,7 @@
 %------------------------------------------------------------------------%
 % sharefree_clique_call_to_entry(+,+,+,+,+,+,+,-,?)                      %
 %-------------------------------------------------------------------------
-%FIXARGS Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo
+:- export(sharefree_clique_call_to_entry/9).
 sharefree_clique_call_to_entry(_Sv,Sg,_Hv,Head,_K,Fv,Proj,Entry,Flag):-
      variant(Sg,Head),!,
      Flag = yes,
@@ -83,6 +84,7 @@ sharefree_clique_call_to_entry(_Sv,_Sg,_Hv,_Head,_K,_Fv,_Proj,'$bottom',_):-!.
 %------------------------------------------------------------------------%
 % sharefree_clique_exit_to_prime(+,+,+,+,+,+,-)                          %
 %-------------------------------------------------------------------------
+:- export(sharefree_clique_exit_to_prime/7).            
 sharefree_clique_exit_to_prime(_,_,_,_,'$bottom',_,'$bottom'):-!.
 sharefree_clique_exit_to_prime(Sg,Hv,Head,_Sv,Exit,yes,Prime):- !,
      sharefree_clique_project(Exit,Hv,(BPrime_sh,BPrime_fr)),
@@ -117,6 +119,7 @@ sharefree_clique_exit_to_prime(_Sg,_Hv,_Head,Sv,Exit,ExtraInfo,Prime):-
 % sharefree_clique_amgu(Sg,Head,ASub,AMGU)                               %
 % @var{AMGU} is the abstract unification between @var{Sg} and @var{Head}.%
 %------------------------------------------------------------------------%
+:- export(sharefree_clique_amgu/4).
 sharefree_clique_amgu(Sg,Head,ASub,AMGU):-
 	peel_equations_frl(Sg, Head,Eqs),
 	sharefree_clique_iterate(Eqs,ASub,AMGU),!.
@@ -128,6 +131,7 @@ sharefree_clique_amgu(Sg,Head,ASub,AMGU):-
 %------------------------------------------------------------------------%
 % sharefree_clique_extend_asub(+,+,-)                                    %
 %-------------------------------------------------------------------------
+:- export(sharefree_clique_extend_asub/3).
 sharefree_clique_extend_asub(ASub,[],ASub).
 sharefree_clique_extend_asub((SH,F),Vars,(SH1,F1)):-
 	share_clique_extend_asub(SH,Vars,SH1),
@@ -152,6 +156,7 @@ sharefree_clique_extend_asub((SH,F),Vars,(SH1,F1)):-
 %     for the rest of variables in BVars                                 |
 %   * If BVarsf = [],                                                    |
 %------------------------------------------------------------------------%
+:- export(sharefree_clique_extend/4).                   
 sharefree_clique_extend('$bottom',_Sv,_Call,Succ):- !,
 	Succ = '$bottom'.
 sharefree_clique_extend(_Prime,[],Call,Succ):- !,
@@ -188,6 +193,7 @@ sharefree_clique_extend((Prime_SH,Prime_fr),Sv,(Call_SH,Call_fr),(Succ_SH_N,Succ
 % sharefree_clique_project(+,+,-)                                        |
 % sharefree_clique_project(ASub,Vars,Proj)                               |
 %------------------------------------------------------------------------%
+:- export(sharefree_clique_project/3).                  
 sharefree_clique_project('$bottom',_,'$bottom'):- !.
 sharefree_clique_project((SH,F),Vars,(Proj_SH,Proj_F)) :-
 	share_clique_project(Vars,SH,Proj_SH),
@@ -227,6 +233,7 @@ project_freeness(>,Head1,Tail1,_,[Head2/Val|Tail2],Proj) :-
 % sharefree_clique_sort(Asub,Asub_s)                                     |
 % sorts the set of set of variables ASub to obtaint the Asub_s           |
 %-------------------------------------------------------------------------
+:- export(sharefree_clique_sort/2).                     
 sharefree_clique_sort('$bottom','$bottom'):- !.
 sharefree_clique_sort((SH,F),(Sorted_SH,Sorted_F) ):-
 	share_clique_sort(SH,Sorted_SH),
@@ -238,6 +245,7 @@ sharefree_clique_sort((SH,F),(Sorted_SH,Sorted_F) ):-
 % Succeeds if the two abstract substitutions are defined on the same     |
 % variables and are equivalent                                           |
 %------------------------------------------------------------------------%
+:- export(sharefree_clique_identical_abstract/2).       
 sharefree_clique_identical_abstract('$bottom','$bottom'):-!.
 sharefree_clique_identical_abstract('$bottom',_):- !,fail.
 sharefree_clique_identical_abstract(_,'$bottom'):- !,fail.
@@ -258,6 +266,7 @@ sharefree_clique_identical_abstract((SH0,Fr0),(SH1,Fr1)):-
 % The list LSucc is reduced wrt the list TmpLSucc  in that it            | 
 % does not contain abstract substitutions which are equivalent.          |
 %------------------------------------------------------------------------%
+:- export(sharefree_clique_eliminate_equivalent/2).
 sharefree_clique_eliminate_equivalent(TmpLSucc,Succ):-
 	sort(TmpLSucc,Succ).
 
@@ -276,6 +285,7 @@ sharefree_clique_eliminate_equivalent(TmpLSucc,Succ):-
 % sharefree_clique_less_or_equal(ASub0,ASub1)                            |
 % Succeeds if ASub1 is more general or equal to ASub0                    |
 %------------------------------------------------------------------------%
+:- export(sharefree_clique_less_or_equal/2).     
 sharefree_clique_less_or_equal('$bottom',_ASub):- !.
 sharefree_clique_less_or_equal((SH0,Fr0),(SH1,Fr1)):-
 	share_clique_less_or_equal(SH0,SH1),
@@ -300,6 +310,7 @@ sharefree_clique_less_or_equal((SH0,Fr0),(SH1,Fr1)):-
 %% 	Succ_SH = Succ_SH_R,
 %% 	Succ = (Succ_SH_R,Succ_fr).
 
+:- export(sharefree_clique_call_to_success_fact/9).
 sharefree_clique_call_to_success_fact(Sg,Hv,Head,_K,Sv,Call,_Proj,Prime,Succ):-
 % exit_to_prime
 	sharefree_clique_extend_asub(Call,Hv,ASub),	
@@ -339,6 +350,7 @@ delete_variables_freeness([X/V|Xs],Vars,[X/V|Res]):-
 % we compose the information and project it, we can loose information    |
 % since the extension is the step in which more information is lost      |
 %------------------------------------------------------------------------%
+:- export(sharefree_clique_call_to_prime_fact/6).
 sharefree_clique_call_to_prime_fact(Sg,Hv,Head,Sv,(_SH,Extra_Info),Prime) :-
 	sharefree_clique_extend_asub((_SH,Extra_Info),Hv,Exit),
 	sharefree_clique_exit_to_prime(Sg,Hv,Head,Sv,Exit,Extra_Info,Prime).
@@ -354,11 +366,13 @@ sharefree_clique_call_to_prime_fact(Sg,Hv,Head,Sv,(_SH,Extra_Info),Prime) :-
 % substitutions ASub1 and ASub2 in ListASub, obtaining the lub is just   |
 % merging the ASub1 and ASub2.                                           |
 %------------------------------------------------------------------------%
+:- export(sharefree_clique_compute_lub/2).       
 sharefree_clique_compute_lub([ASub1,ASub2|Rest],Lub) :- !,
 	sharefree_clique_compute_lub_el(ASub1,ASub2,ASub3),
 	sharefree_clique_compute_lub([ASub3|Rest],Lub).
 sharefree_clique_compute_lub([ASub],ASub).
 
+:- export(sharefree_clique_compute_lub_el/3).
 sharefree_clique_compute_lub_el('$bottom',ASub,ASub):- !.
 sharefree_clique_compute_lub_el(ASub,'$bottom',ASub):- !.
 sharefree_clique_compute_lub_el((Cl1,Fr1),(Cl2,Fr2),(Lub_cl,Lub_fr)):- !,
@@ -382,6 +396,7 @@ compute_lub_fr([X/_|Fr1],[X/_|Fr2],[X/nf|Lub_fr]):-
 % sharefree_clique_glb(ASub0,ASub1,Lub)                                  |
 % Glb is just intersection.                                              |
 %------------------------------------------------------------------------%
+:- export(sharefree_clique_glb/3).      
 sharefree_clique_glb('$bottom',_ASub,ASub3) :- !, ASub3='$bottom'.
 sharefree_clique_glb(_ASub,'$bottom',ASub3) :- !, ASub3='$bottom'.
 sharefree_clique_glb((SH1,Fr1),(SH2,Fr2),Glb):-
@@ -418,6 +433,7 @@ sharefree_clique_glb((SH1,Fr1),(SH2,Fr2),Glb):-
 % information just consists in taking th Cliques first and the var(Fv)   |
 % element of InputUser, and construct from them the Freeness.            |
 %------------------------------------------------------------------------%
+:- export(sharefree_clique_input_user_interface/3).  
 sharefree_clique_input_user_interface((SH,Fv0),Qv,(Call_SH,Call_fr)):-
 	share_clique_input_user_interface(SH,Qv,Call_SH),
 %% freeness  
@@ -432,6 +448,7 @@ sharefree_clique_input_user_interface((SH,Fv0),Qv,(Call_SH,Call_fr)):-
 	change_values_insert(NonFv,Temp1,Temp2,nf),
 	change_values_insert(Gv,Temp2,Call_fr,g).
 
+:- export(sharefree_clique_input_interface/4).  
 sharefree_clique_input_interface(free(X),perfect,(SH,Fr0),(SH,Fr)):-
 	var(X),
 	myinsert(Fr0,X,Fr).
@@ -450,6 +467,7 @@ myinsert(Fr0,X,Fr):-
 % The user friendly format consists in extracting the ground variables   |
 % and the free variables                                                 |
 %------------------------------------------------------------------------%
+:- export(sharefree_clique_asub_to_native/5). 
 sharefree_clique_asub_to_native((SH,Fr),_Qv,_OutFlag,Info,[]):-
 	SH = (Cl,Sh),
 	if_not_nil(Cl,clique(Cl),Info,Info0),
@@ -463,6 +481,7 @@ sharefree_clique_asub_to_native((SH,Fr),_Qv,_OutFlag,Info,[]):-
 % sharefree_clique_unknown_call(+,+,+,-)                                 |
 % sharefree_clique_unknown_call(Sg,Vars,Call,Succ)                       |
 %------------------------------------------------------------------------%
+:- export(sharefree_clique_unknown_call/4).
 sharefree_clique_unknown_call(_Sg,_Vars,'$bottom','$bottom') :- !.
 sharefree_clique_unknown_call(_Sg,Vars,(Call_SH,Call_fr),(Succ_SH,Succ_fr)):-
         rel_w(Vars,Call_SH,Intersect),
@@ -480,6 +499,7 @@ sharefree_clique_unknown_call(_Sg,Vars,(Call_SH,Call_fr),(Succ_SH,Succ_fr)):-
 % The empty value in Sh for a set of variables is the list of singletons,|
 % in Fr is X/f forall X in the set of variables                          |            
 %------------------------------------------------------------------------%
+:- export(sharefree_clique_empty_entry/3).
 sharefree_clique_empty_entry(_Sg,Qv,Entry):-
 	list_to_list_of_lists(Qv,Entry_sh),	
 	create_values(Qv,Entry_fr,f),
@@ -491,6 +511,7 @@ sharefree_clique_empty_entry(_Sg,Qv,Entry):-
 % The top value in Sharing for a set of variables is the powerset, in Fr |
 % X/nf forall X in the set of variables.                                 |    
 %------------------------------------------------------------------------%
+:- export(sharefree_clique_unknown_entry/3).
 sharefree_clique_unknown_entry(_Sg,Qv,Call):-
 	sort(Qv,QvS),
 	create_values(Qv,Call_fr,nf),
@@ -521,9 +542,9 @@ sharefree_clique_unknown_entry(_Sg,Qv,Call):-
 %------------------------------------------------------------------------%
 % list/1 is not defined
 %------------------------------------------------------------------------%
-% TODO: add cuts?
-sharefree_clique_special_builtin('read/2',read(X,Y),'recorded/3',p(Y,X)).
-sharefree_clique_special_builtin('length/2',length(_X,Y),some,[Y]).
+:- export(sharefree_clique_special_builtin/4).
+sharefree_clique_special_builtin('read/2',read(X,Y),'recorded/3',p(Y,X)) :- !.
+sharefree_clique_special_builtin('length/2',length(_X,Y),some,[Y]) :- !.
 sharefree_clique_special_builtin('==/2',_,_,_):- !, fail.
 sharefree_clique_special_builtin(SgKey,Sg,Type,Condvars):-
 	shfr_special_builtin(SgKey,Sg,Type,Condvars).
@@ -550,6 +571,7 @@ sharefree_clique_special_builtin(SgKey,Sg,Type,Condvars):-
 % NOTE: In comparison with shfr, the following builtins are not defined: |
 % - list/1                                                               |
 %------------------------------------------------------------------------%
+:- export(sharefree_clique_success_builtin/5).
 sharefree_clique_success_builtin(new_ground,Sv_u,_,Call,Succ):-
 	sort(Sv_u,Sv),
 	Call = (Lda_SH,Lda_fr),
@@ -794,6 +816,7 @@ sharefree_clique_success_builtin('free/1',[V],p(V),Call,Succ) :- !,
 % sharefree_clique_call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,Succ)   |
 % Handles those builtins for which computing Prime is easier than Succ   |
 %------------------------------------------------------------------------%
+:- export(sharefree_clique_call_to_success_builtin/6).
 sharefree_clique_call_to_success_builtin('=/2','='(X,_Y),Sv,Call,(_,Proj_fr),Succ):-
 	varset(X,VarsX), values_equal(VarsX,Proj_fr,g), !,
 	Call = (Call_SH,Call_fr),
