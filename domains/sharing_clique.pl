@@ -664,13 +664,11 @@ widening_clique_1(_,_):-!,
 % Compute the number of widening done.
 % Note that it should be removed if time measuring is required.
 
-:- dynamic widen_done/0.
-
 share_clique_widen(_,_,ASub,_,ASub):-
 	widen(off),!.
 share_clique_widen(TCond,TWid,ASub1,ExtraInfo,ASub):-!,
 	( share_clique_widening_condition(TCond,ASub1,ExtraInfo)->
-	  asserta(widen_done),  
+	  % inc_widen_done,
 	  share_clique_widening(TWid,ASub1,ASub)
           %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	  % debug
@@ -1282,9 +1280,19 @@ minimum_list_of_lists([S|Ss],X,M,R):-
 % 	  maximum_list_of_lists(Ss,X,M,R)
 %         ).
 
-number_of_widening(N):-
-	findall(widen_done,widen_done,L),
-	length(L,N),
-	retractall_fact(widen_done).
-clean_number_of_widening:-
-	retractall_fact(widen_done).
+% ===========================================================================
+% Debug - count number of widenings
+
+% :- dynamic widen_done/0.
+% 
+% inc_widen_done :- asserta(widen_done).
+%
+% :- export(number_of_widening/1).
+% number_of_widening(N):-
+% 	findall(widen_done,widen_done,L),
+% 	length(L,N),
+% 	retractall_fact(widen_done).
+% 
+% :- export(clean_number_of_widening/0).
+% clean_number_of_widening:-
+% 	retractall_fact(widen_done).

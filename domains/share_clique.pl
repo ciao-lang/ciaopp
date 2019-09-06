@@ -114,10 +114,7 @@
 	  unify_asub_if_bottom/2,
 % CiaoPP flags 
 	  widen/1,
-	  type_widening_condition/1,
-% for tests
-          number_of_widening/1,
-	  clean_number_of_widening/0
+	  type_widening_condition/1
         ],
 	[assertions, isomodes]).
 :- use_module(domain(share_amgu_sets)).
