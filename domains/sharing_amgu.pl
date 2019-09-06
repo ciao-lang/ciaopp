@@ -1,5 +1,7 @@
 /*             Copyright (C)2004-2005 UNM-CLIP				*/
 
+% :- doc(title, "share_amgu (abstract domain)").
+
 :- doc(author,"Jorge Navas").
 
 :- use_module(library(lists), [list_to_list_of_lists/2, append/3]).
@@ -35,8 +37,9 @@
 %                      ABSTRACT Call To Entry                            %
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% share_call_to_entry(+,+,+,+,+,+,+,-,?)                                 %
+% share_amgu_call_to_entry(+,+,+,+,+,+,+,-,?)                            %
 %-------------------------------------------------------------------------
+:- export(share_amgu_call_to_entry/9).
 share_amgu_call_to_entry(_Sv,Sg,_Hv,Head,_K,Fv,Proj,Entry,ExtraInfo) :-
      variant(Sg,Head),!,
      ExtraInfo = yes,
@@ -68,6 +71,7 @@ share_amgu_call_to_entry(_Sv,_Sg,_Hv,_Head,_K,_Fv,_Proj,'$bottom',_).
 % For each equation in Eqs, it performs the amgu.                        %
 %------------------------------------------------------------------------%
 
+:- export(share_amgu_iterate/4).
 share_amgu_iterate([],_,ASub, ASub).
 share_amgu_iterate([(X,Ts)|Eqs],Flag,ASub, ASub2):-
      amgu(X,Ts,Flag,ASub,ASub1),
@@ -81,6 +85,7 @@ share_amgu_iterate([(X,Ts)|Eqs],Flag,ASub, ASub2):-
 % share_amgu(Sg,Head,ASub,AMGU)                                          %
 % @var{AMGU} is the abstract unification between @var{Sg} and @var{Head}.%
 %------------------------------------------------------------------------%
+:- export(share_amgu/4).
 share_amgu(Sg,Head,ASub,AMGU):-
 	peel_equations(Sg,Head,Eqs),
 	share_amgu_iterate(Eqs,star,ASub,AMGU),!.
@@ -92,6 +97,7 @@ share_amgu(Sg,Head,ASub,AMGU):-
 % share_amgu_extend_asub(+,+,-)                                          %
 %-------------------------------------------------------------------------
 
+:- export(share_amgu_extend_asub/3).
 share_amgu_extend_asub(ASub,[],ASub).
 share_amgu_extend_asub(ASub,Vars,ASub1):-
 	share_sort(ASub,SASub),
@@ -109,6 +115,7 @@ share_amgu_extend_asub_(ASub,[H|T],[[H]|ASub0]):-
 %------------------------------------------------------------------------%
 % share_amgu_extend_two_asub(+,+,-)                                      %
 %-------------------------------------------------------------------------
+:- export(share_amgu_extend_two_asub/3).
 share_amgu_extend_two_asub([],ASub1,ASub1):-!.
 share_amgu_extend_two_asub(ASub0,[],ASub0):-!.
 share_amgu_extend_two_asub(ASub0,ASub1,ASub):-
@@ -123,6 +130,7 @@ share_amgu_extend_two_asub(ASub0,ASub1,ASub):-
 % exit_to_prime(+,+,+,-)                                                 %
 %-------------------------------------------------------------------------
 
+:- export(share_amgu_exit_to_prime/7).
 share_amgu_exit_to_prime(_,_,_,_,'$bottom',_,'$bottom'):-!.
 share_amgu_exit_to_prime(Sg,Hv,Head,_Sv,Exit,Flag,Prime):-  
 	Flag == yes, !,
@@ -146,6 +154,7 @@ share_amgu_exit_to_prime(_Sg,_Hv,_Head,Sv,Exit,ExtraInfo,Prime):-
 % Specialized version of call_to_entry + exit_to_prime + extend for facts%
 %------------------------------------------------------------------------%
 
+:- export(share_amgu_call_to_success_fact/9).
 share_amgu_call_to_success_fact(Sg,Hv,Head,_K,Sv,Call,_Proj,Prime,Succ) :-
 % exit_to_prime
 	share_amgu_extend_asub(Call,Hv,ASub),
@@ -164,6 +173,7 @@ share_amgu_call_to_success_fact(_Sg,_Hv,_Head,_K,_Sv,_Call,_Proj, '$bottom','$bo
 % we compose the information and project it, we can loose information    |
 % since the extension is the step in which more information is lost      |
 %-------------------------------------------------------------------------
+:- export(share_amgu_call_to_prime_fact/6).
 share_amgu_call_to_prime_fact(Sg,Hv,Head,Sv,Call,Prime) :-
 % exit_to_prime
 	share_amgu_extend_asub(Call,Hv,ASub),
@@ -191,6 +201,7 @@ share_amgu_call_to_prime_fact(Sg,Hv,Head,Sv,Call,Prime) :-
 % (4) some: if it makes some variables ground without imposing conditions|
 % (5) Sgkey: special handling of some particular builtins                |
 %-------------------------------------------------------------------------
+:- export(share_amgu_special_builtin/4).
 share_amgu_special_builtin('read/2',read(X,Y),'recorded/3',p(Y,X)).
 share_amgu_special_builtin('length/2',length(_X,Y),some,[Y]).
 share_amgu_special_builtin('==/2',_,_,_):- !, fail.
@@ -210,6 +221,7 @@ share_amgu_special_builtin(SgKey,Sg,Type,Condvars):-
 %    Succ is computed                                                    |
 %-------------------------------------------------------------------------
 
+:- export(share_amgu_success_builtin/5).
 share_amgu_success_builtin('=../2',_,p(X,Y),Call,Succ):-
 	varset(X,Varsx),
 	projected_gvars(Call,Varsx,Vars),Vars == Varsx,!,
@@ -234,7 +246,7 @@ share_amgu_success_builtin('=../2',Sv_u,p(X,Y),Call,Succ):-
 	sort(Sv_u,Sv),
 	share_project(Sv,Call,Proj),
 	share_amgu_call_to_success_builtin('=/2','='(Term,Y),Sv,Call,Proj,Succ).
-share_amgu_success_builtin('=../2',_Sv_u,_,_Call,'$bottom').
+share_amgu_success_builtin('=../2',_Sv_u,_,_Call,'$bottom') :- !.
 share_amgu_success_builtin(copy_term,_Sv_u,p(X,Y),Call,Succ):-
 	varset(X,VarsX),
 	share_project(VarsX,Call,ProjectedX),
@@ -249,14 +261,15 @@ share_amgu_success_builtin(copy_term,_Sv_u,p(X,Y),Call,Succ):-
 	share_amgu_call_to_success_builtin('=/2','='(NewX,Y),TempSv,
                                 TempCall,TempProjected,Temp_success),
 	merge_list_of_lists(Call,VarsCall),
-	share_project(VarsCall,Temp_success,Succ).
+	share_project(VarsCall,Temp_success,Succ),
+	!. % TODO: move cut somewhere else? (JF)
 share_amgu_success_builtin(findall,_Sv_u,p(X,Z),Call,Succ):-
 	varset(X,Varsx),
 	projected_gvars(Call,Varsx,Vars),Vars == Varsx,!,
 	varset(Z,Varsz),
 	share_amgu_success_builtin(ground,Varsz,_any,Call,Succ).
-share_amgu_success_builtin(findall,_Sv_u,_,Call,Call).
-
+share_amgu_success_builtin(findall,_Sv_u,_,Call,Call) :- !.
+%
 share_amgu_success_builtin(Type,Sv_u,Condv,Call,Succ):-
 	share_success_builtin(Type,Sv_u,Condv,Call,Succ).
 
@@ -265,6 +278,7 @@ share_amgu_success_builtin(Type,Sv_u,Condv,Call,Succ):-
 % share_amgu_call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,Succ)         %
 % Handles those builtins for which computing Prime is easier than Succ   %
 %-------------------------------------------------------------------------
+:- export(share_amgu_call_to_success_builtin/6).
 share_amgu_call_to_success_builtin('=/2','='(X,Y),Sv,Call,Proj,Succ):-
 	copy_term(X,Xterm),
 	copy_term(Y,Yterm),

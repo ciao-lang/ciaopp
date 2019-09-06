@@ -1,54 +1,5 @@
 /*             Copyright (C)2004-2006 UNM-CLIP				*/
-:- module(share_amgu,
-	    [
-%% sharing
-		share_amgu_call_to_entry/9,
-		share_amgu_call_to_success_builtin/6,
-		share_amgu_call_to_success_fact/9,
-		share_amgu_call_to_prime_fact/6,
-		share_amgu_extend_asub/3,
-		share_amgu_extend_two_asub/3,
-		share_amgu_exit_to_prime/7,
-		share_amgu_special_builtin/4,
-		share_amgu_success_builtin/5,
-		share_amgu_iterate/4,
-		share_amgu/4,
-%% sharefree
-		sharefree_amgu_call_to_entry/9,
-		sharefree_amgu_call_to_success_builtin/6,
-		sharefree_amgu_call_to_success_fact/9,
-		sharefree_amgu_call_to_prime_fact/6,
-		sharefree_amgu_exit_to_prime/7,
-		sharefree_amgu_extend_asub/3,
-		sharefree_amgu_extend_asub0/3,
-		sharefree_amgu_special_builtin/4,
-		sharefree_amgu_success_builtin/5,
-		sharefree_amgu/4,
-%% shfrlin
-		shfrlin_call_to_entry/9,
-		shfrlin_exit_to_prime/7,
-		shfrlin_extend/4,
-		shfrlin_extend_asub/3,
-		shfrlin_project/3,
-		shfrlin_sort/2,
-		shfrlin_glb/3,
-		shfrlin_call_to_success_fact/9,
-		shfrlin_call_to_prime_fact/6,
-		shfrlin_special_builtin/4,
-		shfrlin_success_builtin/5,
-		shfrlin_call_to_success_builtin/6,
-		shfrlin_compute_lub/2,
-		shfrlin_compute_lub_el/3,
-		shfrlin_less_or_equal/2,
-		shfrlin_input_user_interface/3,
-		shfrlin_input_interface/4,
-		shfrlin_asub_to_native/5,
-		shfrlin_unknown_call/4,
-		shfrlin_unknown_entry/3,
-		shfrlin_empty_entry/3,
-		shfrlin_amgu/4
-	    ],
-	    [assertions, isomodes]).
+:- module(share_amgu, [], [assertions, isomodes]).
 
 :- use_module(domain(s_grshfr),        [projected_gvars/3]).
 :- use_module(library(terms_vars),     [varset/2, varset0/2]).

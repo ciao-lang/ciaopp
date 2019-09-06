@@ -1,5 +1,6 @@
 /*             Copyright (C)2006 UNM-CLIP				*/
 
+% :- doc(title, "shfrlin_amgu (abstract domain)").
 :- doc(author,"Jorge Navas").
 
 :- use_module(domain(s_grshfr), [member_value_freeness/3]).
@@ -27,6 +28,7 @@
 %------------------------------------------------------------------------%
 % shfrlin_call_to_entry(+,+,+,+,+,+,+,-,?)                               |
 %------------------------------------------------------------------------%
+:- export(shfrlin_call_to_entry/9).
 shfrlin_call_to_entry(_Sv,Sg,_Hv,Head,_K,Fv,Proj,Entry,Flag):-
      variant(Sg,Head),!,
      Flag = yes,
@@ -60,6 +62,7 @@ shfrlin_call_to_entry(_Sv,_Sg,_Hv,_Head,_K,_Fv,_Proj,'$bottom',_).
 %------------------------------------------------------------------------%
 % shfrlin_exit_to_prime(+,+,+,+,+,-)                                     |            
 %------------------------------------------------------------------------%
+:- export(shfrlin_exit_to_prime/7).
 shfrlin_exit_to_prime(_,_,_,_,'$bottom',_,'$bottom'):-!.
 shfrlin_exit_to_prime(Sg,Hv,Head,_Sv,Exit,yes,Prime):- !,
      shfrlin_project(Exit,Hv,(BPrime_sh,BPrime_fr,BPrime_lin)),
@@ -84,6 +87,7 @@ shfrlin_exit_to_prime(_Sg,_Hv,_Head,Sv,Exit,ExtraInfo,Prime):-
 % shfrlin_extend(+,+,+,-)                                                |
 % shfrlin_extend(Prime,Sv,Call,Succ)                                     |
 %------------------------------------------------------------------------%
+:- export(shfrlin_extend/4).
 shfrlin_extend('$bottom',_Sv,_Call,Succ):- !,
 	Succ = '$bottom'.
 shfrlin_extend(_Prime,[],Call,Succ):- !,
@@ -107,6 +111,7 @@ shfrlin_extend(Prime,Sv,Call,(Succ_sh,Succ_fr,Succ_lin)):-
 % sharefree_amgu(Sg,Head,ASub,AMGU)                                      %
 % @var{AMGU} is the abstract unification between @var{Sg} and @var{Head}.%
 %------------------------------------------------------------------------%
+:- export(shfrlin_amgu/4).
 shfrlin_amgu(Sg,Head,ASub,AMGU):-
 	peel_equations_frl(Sg, Head,Eqs),
 	shfrlin_amgu_iterate(Eqs,ASub,AMGU),!.
@@ -117,6 +122,7 @@ shfrlin_amgu(Sg,Head,ASub,AMGU):-
 %------------------------------------------------------------------------%
 % shfrlin_extend_asub(+,+,-)                                             |
 %------------------------------------------------------------------------%
+:- export(shfrlin_extend_asub/3).
 shfrlin_extend_asub('$bottom',_,'$bottom'):-!.
 shfrlin_extend_asub(SHFL,[],SHFL):-!.
 shfrlin_extend_asub((Sh,F,L),Vars,(NewSh,NewF,NewL)):-
@@ -129,6 +135,7 @@ shfrlin_extend_asub((Sh,F,L),Vars,(NewSh,NewF,NewL)):-
 %------------------------------------------------------------------------%
 % shfrlin_project(+,+,-)                                                 |
 %------------------------------------------------------------------------%
+:- export(shfrlin_project/3).
 shfrlin_project('$bottom',_,'$bottom').
 shfrlin_project((Sh,F,L),Vars,(Sh_proj,F_proj,L_proj)):-
 	shfr_project((Sh,F),Vars,(Sh_proj,F_proj)),
@@ -140,6 +147,7 @@ shfrlin_project((Sh,F,L),Vars,(Sh_proj,F_proj,L_proj)):-
 %------------------------------------------------------------------------%
 % shfrlin_sort(+,-)                                                      |
 %------------------------------------------------------------------------%
+:- export(shfrlin_sort/2).
 shfrlin_sort('$bottom','$bottom').
 shfrlin_sort((Sh,F,L),(Sh_s,F_s,L_s)):-
 	shfr_sort((Sh,F),(Sh_s,F_s)),
@@ -149,6 +157,7 @@ shfrlin_sort((Sh,F,L),(Sh_s,F_s,L_s)):-
 % shfrlin_glb(+,+,-)                                                     |
 % shfrlin_glb(ASub0,ASub1,Glb)                                           |
 %------------------------------------------------------------------------%
+:- export(shfrlin_glb/3).
 shfrlin_glb('$bottom',_ASub,ASub3) :- !, ASub3='$bottom'.
 shfrlin_glb(_ASub,'$bottom',ASub3) :- !, ASub3='$bottom'.
 shfrlin_glb((Sh1,Fr1,Lin1),(Sh2,Fr2,Lin2),Glb):-
@@ -168,6 +177,7 @@ shfrlin_glb((Sh1,Fr1,Lin1),(Sh2,Fr2,Lin2),Glb):-
 %------------------------------------------------------------------------%
 % Specialized version of call_to_entry + exit_to_prime + extend for facts%
 %------------------------------------------------------------------------%
+:- export(shfrlin_call_to_success_fact/9).
 shfrlin_call_to_success_fact(Sg,Hv,Head,_K,Sv,Call,_Proj,Prime,Succ) :-
 % exit_to_prime   -------------------------------------------------------
 	shfrlin_extend_asub(Call,Hv,ASub),  
@@ -199,6 +209,7 @@ delete_variables_lin([X|Xs],Vars,[X|Res]):-
 % we compose the information and project it, we can loose information    |
 % since the extension is the step in which more information is lost      |
 %------------------------------------------------------------------------%
+:- export(shfrlin_call_to_prime_fact/6).
 shfrlin_call_to_prime_fact(Sg,Hv,Head,Sv,Call,Prime) :-
 % exit_to_prime    -------------------------------------------------------
 	shfrlin_extend_asub(Call,Hv,Exit),
@@ -214,6 +225,7 @@ shfrlin_call_to_prime_fact(_Sg,_Hv,_Head,_Sv,'$bottom','$bottom').
 % shfrlin_special_builtin(+,+,-,-)                                       |
 % shfrlin_special_builtin(SgKey,Sg,Type,Condvars)                        |
 %------------------------------------------------------------------------%
+:- export(shfrlin_special_builtin/4).
 shfrlin_special_builtin(SgKey,Sg,Type,Condvars):-
 	sharefree_amgu_special_builtin(SgKey,Sg,Type,Condvars).
 	
@@ -221,6 +233,7 @@ shfrlin_special_builtin(SgKey,Sg,Type,Condvars):-
 % shfrlin_success_builtin(+,+,+,+,-)                                     |
 % shfrlin_success_builtin(Type,Sv_u,Condv,Call,Succ)                     |
 %------------------------------------------------------------------------%
+:- export(shfrlin_success_builtin/5).
 % shfrlin_success_builtin(arg,_,p(X,Y,Z),Call,Succ):-
 % 	Call = (Call_sh,Call_fr,Call_lin),
 % 	varset(X,OldG),
@@ -281,7 +294,7 @@ shfrlin_success_builtin(Type,Sv_u,Condv,Call,Succ):-
 % shfrlin_call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,Succ)            |
 % Handles those builtins for which computing Prime is easier than Succ   |
 %------------------------------------------------------------------------%
- % TODO: missing cuts in all the following clauses?
+:- export(shfrlin_call_to_success_builtin/6).
 shfrlin_call_to_success_builtin('=/2','='(X,_Y),Sv,Call,(_,Proj_fr,_),Succ):-
 	varset(X,VarsX), values_equal(VarsX,Proj_fr,g), !,
 	Call = (Call_sh,Call_fr,Call_lin),
@@ -323,11 +336,13 @@ shfrlin_call_to_success_builtin('=/2','='(X,Y),Sv,Call,Proj,Succ):-
 	Xterm = Yterm,!,
 	varset(Xterm,Vars),
 	shfrlin_call_to_success_fact('='(X,Y),Vars,'='(Xterm,Xterm),not_provided,Sv,Call,Proj,_Prime,Succ). % TODO: add some ClauseKey?
-shfrlin_call_to_success_builtin('=/2',_Sg,_Sv,_Call,_Proj,'$bottom').
+shfrlin_call_to_success_builtin('=/2',_Sg,_Sv,_Call,_Proj,'$bottom') :- !.
 shfrlin_call_to_success_builtin('C/3','C'(X,Y,Z),Sv,Call,Proj,Succ):-
-	shfrlin_call_to_success_fact('='(X,[Y|Z]),[W],'='(W,W),not_provided,Sv,Call,Proj,_Prime,Succ). % TODO: add some ClauseKey?
+	shfrlin_call_to_success_fact('='(X,[Y|Z]),[W],'='(W,W),not_provided,Sv,Call,Proj,_Prime,Succ), % TODO: add some ClauseKey?
+	!. % TODO: move cut? (JF)
 shfrlin_call_to_success_builtin('keysort/2',keysort(X,Y),Sv,Call,Proj,Succ):- 
-	shfrlin_call_to_success_builtin('=/2','='(X,Y),Sv,Call,Proj,Succ).
+	shfrlin_call_to_success_builtin('=/2','='(X,Y),Sv,Call,Proj,Succ),
+	!. % TODO: move cut? (JF)
 shfrlin_call_to_success_builtin('sort/2',sort(X,Y),Sv,Call,Proj,Succ):- 
 	var(X), !,
 	Proj = (_Sh,Fr,_),
@@ -366,6 +381,7 @@ shfrlin_call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,(Succ_sh,Succ_fr,Succ_lin)
 %------------------------------------------------------------------------%
 % compute_lub(+,-)                                                       |
 %------------------------------------------------------------------------%
+:- export(shfrlin_compute_lub/2).
 shfrlin_compute_lub([X],X):- !.
 shfrlin_compute_lub([ASub1,ASub2|Xs],Lub):-
 	shfrlin_compute_lub_el(ASub1,ASub2,ASubLub),
@@ -374,6 +390,7 @@ shfrlin_compute_lub([ASub1,ASub2|Xs],Lub):-
 %------------------------------------------------------------------------%
 % compute_lub_el(+,-)                                                    |
 %------------------------------------------------------------------------%
+:- export(shfrlin_compute_lub_el/3).
 shfrlin_compute_lub_el('$bottom',ASub,ASub):-!.
 shfrlin_compute_lub_el(ASub,'$bottom',ASub):-!.
 shfrlin_compute_lub_el((Sh1,Fr1,Lin1),(Sh2,Fr2,Lin2),ASub):-
@@ -385,6 +402,7 @@ shfrlin_compute_lub_el((Sh1,Fr1,Lin1),(Sh2,Fr2,Lin2),ASub):-
 % less_or_equa(+,+)                                                      |
 % Succeeds if ASub1 is more general or equal to ASub0                    |
 %------------------------------------------------------------------------%
+:- export(shfrlin_less_or_equal/2).
 shfrlin_less_or_equal('$bottom',_ASub):- !.
 shfrlin_less_or_equal((Sh0,Fr0,Lin0),(Sh1,Fr1,Lin1)):-
         shfr_less_or_equal((Sh0,Fr0),(Sh1,Fr1)),!,
@@ -399,6 +417,7 @@ shfrlin_less_or_equal((Sh0,Fr0,Lin0),(Sh1,Fr1,Lin1)):-
 % var(Fv) element of InputUser, and construct from them the Freeness and |
 % the Linearity.                                                         |
 %------------------------------------------------------------------------%
+:- export(shfrlin_input_user_interface/3).
 shfrlin_input_user_interface((Sh,Vars,_),Qv,(Call_sh,Call_fr,Call_lin)):-
 	shfr_input_user_interface((Sh,Vars),Qv,(Call_sh,Call_fr)),
 	member_value_freeness(Call_fr,Call_lin,f).
@@ -407,6 +426,7 @@ shfrlin_input_user_interface((Sh,Vars,_),Qv,(Call_sh,Call_fr,Call_lin)):-
 % shfrlin_input_interface(+,+,+,-)                                       |
 % shfrlin_input_interface(InputUser,Kind,ASub0,ASub)                     |
 %------------------------------------------------------------------------%
+:- export(shfrlin_input_interface/4).
 shfrlin_input_interface(linear(X),perfect,(Sh,Fr,Lin0),(Sh,Fr,Lin)):-
 	myunion(Lin0,X,Lin).
 shfrlin_input_interface(free(X),perfect,(Sh,Fr0,Lin0),(Sh,Fr,Lin)):-
@@ -434,6 +454,7 @@ myinsert(Fr0,X,Fr):-
 % The user friendly format consists in extracting the ground variables,  |
 % free variables, and linear variables.                                  |
 %------------------------------------------------------------------------%
+:- export(shfrlin_asub_to_native/5).
 shfrlin_asub_to_native((Sh,Fr,L),_Qv,_OutFlag,Info,[]):-
 	if_not_nil(Sh,sharing(Sh),Info,Info0),
 	member_value_freeness(Fr,Fv,f),
@@ -459,6 +480,7 @@ shfrlin_asub_to_native((Sh,Fr,L),_Qv,_OutFlag,Info,[]):-
 % not related to Vars and make the union between the related Call_lin    |
 % with free variables returned by freeness.                              |
 %------------------------------------------------------------------------%
+:- export(shfrlin_unknown_call/4).
 shfrlin_unknown_call(_Sg,_Vars,'$bottom','$bottom') :- !.
 shfrlin_unknown_call(Sg,Vars,(Call_sh,Call_fr,Call_lin),Succ):-
 	shfr_unknown_call(Sg,Vars,(Call_sh,Call_fr),(Succ_sh,Succ_fr)),
@@ -474,6 +496,7 @@ shfrlin_unknown_call(Sg,Vars,(Call_sh,Call_fr,Call_lin),Succ):-
 % The top value in Sh for a set of variables is the powerset, in Fr is   |
 % X/nf forall X in the set of variables, and in no variable is linear.   |
 %------------------------------------------------------------------------%
+:- export(shfrlin_unknown_entry/3).
 shfrlin_unknown_entry(Sg,Qv,(Call_sh,Call_fr,[])):-
 	shfr_unknown_entry(Sg,Qv,(Call_sh,Call_fr)).
 
@@ -483,6 +506,7 @@ shfrlin_unknown_entry(Sg,Qv,(Call_sh,Call_fr,[])):-
 % in Fr is X/f forall X in the set of variables, and these variables are |
 % all linear.                                                            |
 %------------------------------------------------------------------------%
+:- export(shfrlin_empty_entry/3).
 shfrlin_empty_entry(Sg,Qv,(Call_sh,Call_fr,Qv)):-
         shfr_empty_entry(Sg,Qv,(Call_sh,Call_fr)).
 

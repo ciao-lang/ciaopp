@@ -1,5 +1,6 @@
 /*             Copyright (C)2004-2005 UNM-CLIP				*/
 
+% :- doc(title, "sharefree_amgu (abstract domain)").
 :- doc(author,"Jorge Navas").
 
 :- use_module(domain(s_grshfr),
@@ -36,6 +37,7 @@
 %------------------------------------------------------------------------%
 % sharefree_amgu_call_to_entry(+,+,+,+,+,+,+,-,?)                        %
 %------------------------------------------------------------------------%
+:- export(sharefree_amgu_call_to_entry/9).
 sharefree_amgu_call_to_entry(_Sv,Sg,_Hv,Head,_K,Fv,Proj,Entry,Flag):-
      variant(Sg,Head),!,
      Flag = yes,
@@ -67,6 +69,7 @@ sharefree_amgu_call_to_entry(_Sv,_Sg,_Hv,_Head,_K,_Fv,_Proj,'$bottom',_).
 %------------------------------------------------------------------------%
 % exit_to_prime(+,+,+,+,+,-)                                             %
 %-------------------------------------------------------------------------
+:- export(sharefree_amgu_exit_to_prime/7).
 sharefree_amgu_exit_to_prime(_,_,_,_,'$bottom',_,'$bottom'):-!.
 sharefree_amgu_exit_to_prime(Sg,Hv,Head,_Sv,Exit,yes,Prime):- !,
      shfr_project(Exit,Hv,(BPrime_sh,BPrime_fr)),
@@ -92,6 +95,7 @@ sharefree_amgu_exit_to_prime(_Sg,_Hv,_Head,Sv,Exit,ExtraInfo,Prime):-
 % sharefree_amgu(Sg,Head,ASub,AMGU)                                      %
 % @var{AMGU} is the abstract unification between @var{Sg} and @var{Head}.%
 %------------------------------------------------------------------------%
+:- export(sharefree_amgu/4).
 sharefree_amgu(Sg,Head,ASub,AMGU):-
 	peel_equations_frl(Sg, Head,Eqs),
 	sharefree_amgu_iterate(Eqs,ASub,AMGU),!.
@@ -102,11 +106,13 @@ sharefree_amgu(Sg,Head,ASub,AMGU):-
 %------------------------------------------------------------------------%
 % sharefree_amgu_extend_asub(+,+,-)                                      %
 %-------------------------------------------------------------------------
+:- export(sharefree_amgu_extend_asub/3).
 sharefree_amgu_extend_asub(SHF,[],SHF) :- !.
 sharefree_amgu_extend_asub((Sh,F),Vars,(Sh0,F0)):-
 	share_amgu_extend_asub(Sh,Vars,Sh0),
 	sharefree_amgu_extend_asub0(F,Vars,F0).
 
+:- export(sharefree_amgu_extend_asub0/3).
 sharefree_amgu_extend_asub0(F,[],F) :- !.
 sharefree_amgu_extend_asub0(F,Vars,F1):-
 	sort(F,SF),
@@ -124,6 +130,7 @@ sharefree_amgu_extend_asub1(F,[H|T],F1):-
 %------------------------------------------------------------------------%
 % Specialized version of call_to_entry + exit_to_prime + extend for facts%
 %------------------------------------------------------------------------%
+:- export(sharefree_amgu_call_to_success_fact/9).
 sharefree_amgu_call_to_success_fact(Sg,Hv,Head,_K,Sv,Call,_Proj,Prime,Succ) :-
 % exit_to_prime    -------------------------------------------------------
 	sharefree_amgu_extend_asub(Call,Hv,ASub),  
@@ -157,6 +164,7 @@ delete_variables_freeness([X/V|Xs],Vars,[X/V|Res]):-
 % we compose the information and project it, we can loose information    |
 % since the extension is the step in which more information is lost      |
 %------------------------------------------------------------------------%
+:- export(sharefree_amgu_call_to_prime_fact/6).
 sharefree_amgu_call_to_prime_fact(Sg,Hv,Head,Sv,Call,Prime) :-
 % exit_to_prime   --------------------------------------------------------
 	sharefree_amgu_extend_asub(Call,Hv,Exit),
@@ -171,6 +179,7 @@ sharefree_amgu_call_to_prime_fact(Sg,Hv,Head,Sv,Call,Prime) :-
 % sharefree_special_builtin(+,+,-,-)                                     |
 % sharefree_special_builtin(SgKey,Sg,Type,Condvars)                      |
 %------------------------------------------------------------------------%
+:- export(sharefree_amgu_special_builtin/4).
 sharefree_amgu_special_builtin('read/2',read(X,Y),'recorded/3',p(Y,X)).
 sharefree_amgu_special_builtin('length/2',length(_X,Y),some,[Y]).
 sharefree_amgu_special_builtin('==/2',_,_,_):- !, fail.
@@ -181,13 +190,15 @@ sharefree_amgu_special_builtin(SgKey,Sg,Type,Condvars):-
 % sharefree_amgu_success_builtin(+,+,+,+,-)                              |
 % sharefree_amgu_success_builtin(Type,Sv_u,Condv,Call,Succ)              |
 %------------------------------------------------------------------------%
- % TODO: missing cuts in all the following clauses
+
+:- export(sharefree_amgu_success_builtin/5).
 sharefree_amgu_success_builtin(arg,_,p(X,Y,Z),Call,Succ):-
 	Call = (Call_sh,Call_fr),
 	varset(X,OldG),
 	update_lambda_non_free(OldG,Call_fr,Call_sh,Temp_fr,Temp_sh),
 	var_value(Temp_fr,Y,Value),
-	Value \== f,!,
+	Value \== f,
+	!,
 	Sg = p(Y,Z),
 	Head = p(f(A,_B),A),
 	varset(Sg,Sv),
@@ -195,14 +206,15 @@ sharefree_amgu_success_builtin(arg,_,p(X,Y,Z),Call,Succ):-
 	TempASub = (Temp_sh,Temp_fr),
 	shfr_project(TempASub,Sv,Proj),
  	sharefree_amgu_call_to_success_fact(Sg,Hv,Head,not_provided,Sv,TempASub,Proj,_,Succ). % TODO: add some ClauseKey?
-sharefree_amgu_success_builtin(arg,_,_,_,'$bottom').
+sharefree_amgu_success_builtin(arg,_,_,_,'$bottom') :- !.
 sharefree_amgu_success_builtin(exp,_,Sg,Call,Succ):-
 	Head = p(A,f(A,_B)),
 	varset(Sg,Sv),
 	varset(Head,Hv),
 	shfr_project(Call,Sv,Proj),
-	sharefree_amgu_call_to_success_fact(Sg,Hv,Head,not_provided,Sv,Call,Proj,_,Succ). % TODO: add some ClauseKey?
-sharefree_amgu_success_builtin(exp,_,_,_,'$bottom').
+	sharefree_amgu_call_to_success_fact(Sg,Hv,Head,not_provided,Sv,Call,Proj,_,Succ), % TODO: add some ClauseKey?
+	!. % TODO: move cut somewhere else? (JF)
+sharefree_amgu_success_builtin(exp,_,_,_,'$bottom') :- !.
 % there is a new case (general case) in '../2' that should be implemented 
 % in this module because it calls call_to_success_builtin 
 sharefree_amgu_success_builtin(copy_term,_,p(X,Y),Call,Succ):-
@@ -224,7 +236,8 @@ sharefree_amgu_success_builtin(copy_term,_,p(X,Y),Call,Succ):-
 	sharefree_amgu_call_to_success_builtin('=/2','='(NewX,Y),TempSv,
                     (TempCallSh,TempCallFr),(TempSh,TempFr),Temp_success),
 	collect_vars_freeness(FrCall,VarsCall),
-	shfr_project(Temp_success,VarsCall,Succ).
+	shfr_project(Temp_success,VarsCall,Succ),
+	!. % TODO: move cut somewhere else? (JF)
 sharefree_amgu_success_builtin(Type,Sv_u,Condv,Call,Succ):-
 	shfr_success_builtin(Type,Sv_u,Condv,Call,Succ).
 
@@ -233,7 +246,7 @@ sharefree_amgu_success_builtin(Type,Sv_u,Condv,Call,Succ):-
 % sharefree_amgu_call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,Succ)     |
 % Handles those builtins for which computing Prime is easier than Succ   |
 %-------------------------------------------------------------------------
- % TODO: missing cuts in all the following clauses
+:- export(sharefree_amgu_call_to_success_builtin/6).
 sharefree_amgu_call_to_success_builtin('=/2','='(X,_Y),Sv,Call,(_,Proj_fr),Succ):-
 	varset(X,VarsX), values_equal(VarsX,Proj_fr,g), !,
 	Call = (Call_sh,Call_fr),
@@ -264,11 +277,13 @@ sharefree_amgu_call_to_success_builtin('=/2','='(X,Y),Sv,Call,Proj,Succ):-
 	Xterm = Yterm,!,
 	varset(Xterm,Vars),
 	sharefree_amgu_call_to_success_fact('='(X,Y),Vars,'='(Xterm,Xterm),not_provided,Sv,Call,Proj,_Prime,Succ). % TODO: add some ClauseKey?
-sharefree_amgu_call_to_success_builtin('=/2',_Sg,_Sv,_Call,_Proj,'$bottom').
+sharefree_amgu_call_to_success_builtin('=/2',_Sg,_Sv,_Call,_Proj,'$bottom') :- !.
 sharefree_amgu_call_to_success_builtin('C/3','C'(X,Y,Z),Sv,Call,Proj,Succ):-
-	sharefree_amgu_call_to_success_fact('='(X,[Y|Z]),[W],'='(W,W),not_provided,Sv,Call,Proj,_Prime,Succ). % TODO: add some ClauseKey?
+	sharefree_amgu_call_to_success_fact('='(X,[Y|Z]),[W],'='(W,W),not_provided,Sv,Call,Proj,_Prime,Succ), % TODO: add some ClauseKey?
+	!. % TODO: move cut? (JF)
 sharefree_amgu_call_to_success_builtin('keysort/2',keysort(X,Y),Sv,Call,Proj,Succ):- 
-	sharefree_amgu_call_to_success_builtin('=/2','='(X,Y),Sv,Call,Proj,Succ).
+	sharefree_amgu_call_to_success_builtin('=/2','='(X,Y),Sv,Call,Proj,Succ),
+	!. % TODO: move cut? (JF)
 sharefree_amgu_call_to_success_builtin('sort/2',sort(X,Y),Sv,Call,Proj,Succ):- 
 	var(X), !,
 	Proj = (_Sh,Fr),
