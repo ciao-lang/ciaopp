@@ -1,31 +1,13 @@
-/*             Copyright (C)1990-2002 UPM-CLIP				*/
-% TODO: Split this module in share and shfr
-:- module(share, [], [assertions, isomodes]).
+:- module(share_aux, [], [assertions, isomodes]).
 
-:- use_module(domain(s_grshfr), 
-	[ change_values_if_differ/5,
-	  change_values_insert/4,
-	  collect_vars_freeness/2,
-	  create_values/3,
-	  impossible/3,
-	  member_value_freeness/3, 
-	  new1_gvars/4,
-	  projected_gvars/3,
-	  var_value/3
+% (auxiliary definitions for sharing and other domains)
+
+:- use_module(library(sets), 
+	[ merge/3,
+	  ord_intersection/3,
+ 	  ord_member/2
 	]).
-
-:- include(domain(sharing)).
-:- include(domain(sharefree)).
-:- include(domain(sharefree_non_var)).
-
-%% :- doc(bug,"1. ?- glb(shfr,([[A,B],[A,C]],[A/nf,Z/g,B/nf,C/nf]),
-%%    ([[A]],[A/nf,Z/g,B/g,C/g]),X). X = ([],[A/nf,Z/g,B/g,C/g]) ? 
-%%    Should be A/g.").
-:- doc(bug,"2. With var(F),length([F|L],X) freenes of F is
-	unnecessarily lost.").
-%% Solved
-%% :- doc(bug,"3. shfr_success_builtin for arg(X,Y,Z) is not prepared
-%% 	for a non-variable Y.").
+:- use_module(library(lsets), [ord_split_lists_from_list/4]).
 
 %------------------------------------------------------------------------
 % eliminate_couples(+,+,+,-)                                             |
@@ -34,6 +16,7 @@
 % All arguments ordered                                                  |
 %------------------------------------------------------------------------
 
+:- export(eliminate_couples/4).
 eliminate_couples([],_,_,[]):- !.
 eliminate_couples(Sh,Xs,Ys,NewSh) :-
 	ord_split_lists_from_list(Xs,Sh,Intersect,Disjunct1),
@@ -47,6 +30,7 @@ eliminate_couples(Sh,Xs,Ys,NewSh) :-
 % has variables in common with Vars but Vars is not a subset of S
 %------------------------------------------------------------------------
 
+:- export(eliminate_if_not_possible/3).
 eliminate_if_not_possible([],_,X-X).
 eliminate_if_not_possible([Z|Rest],Vars,More):-
 	ord_intersection(Vars,Z,Term),
@@ -55,6 +39,7 @@ eliminate_if_not_possible([Z|Rest],Vars,More):-
 eliminate_if_not_possible([Z|Rest],Vars,[Z|More]-More2):-
 	eliminate_if_not_possible(Rest,Vars,More-More2).
 
+:- export(test_temp/2).
 test_temp([],_).
 test_temp([X|Xs],List):-
 	[X|Xs] == List.
@@ -67,8 +52,7 @@ test_temp([X|Xs],List):-
 % X does not appear but at least one element in Vars appears
 %------------------------------------------------------------------------
 
-:- push_prolog_flag(multi_arity_warnings,off).
-	
+:- export(eliminate_if_not_possible/4).	
 eliminate_if_not_possible([],_,_,X-X).
 eliminate_if_not_possible([Z|Rest],X,Vars,More):-
 	ord_intersection(Vars,Z,V), !,
@@ -78,8 +62,6 @@ eliminate_if_not_possible([Z|Rest],X,Vars,More):-
 	eliminate_if_not_possible(Rest,X,Vars,More).
 eliminate_if_not_possible([Z|Rest],X,Vars,[Z|More]-More1):-
 	eliminate_if_not_possible(Rest,X,Vars,More-More1).
-
-:- pop_prolog_flag(multi_arity_warnings).
 
 test_set([],X,Z,Rest,Vars,More):-
 	ord_member(X,Z),!,
@@ -96,20 +78,17 @@ test_set([_|_],X,Z,Rest,Vars,More):- !,
 
 %------------------------------------------------------------------------
 
+:- use_module(ciaopp(plai/domains), [success_builtin/7]).
+
+:- export(handle_each_indep/4).
 handle_each_indep([],_AbsInt,Call,Call).
 handle_each_indep([[X,Y]|Rest],AbsInt,Call,Succ):-
-	success_builtin(AbsInt,'indep/2',_,p(X,Y),Call,Succ1), !,
+	success_builtin(AbsInt,'indep/2',_,p(X,Y),_HvFv_u,Call,Succ1), !, % TODO: _HvFv_u unbound! (JF)
 	handle_each_indep(Rest,AbsInt,Succ1,Succ).
-
-success_builtin(share,Key,Sv,Vs,Call,Succ):-
-	share_success_builtin(Key,Sv,Vs,Call,Succ).
-success_builtin(shfr,Key,Sv,Vs,Call,Succ):-
-	shfr_success_builtin(Key,Sv,Vs,Call,Succ).
-success_builtin(shfrnv,Key,Sv,Vs,Call,Succ):-
-	shfrnv_success_builtin(Key,Sv,Vs,Call,Succ).
 
 %------------------------------------------------------------------------
 
+:- export(has_give_intersection/8).
 has_give_intersection(=,X,Xs,_Y,Ys,yes,[X|Inter],[X|Xs]):-
 	ord_intersection(Xs,Ys,Inter).
 has_give_intersection(<,_X,[],_Y,_Ys,Flag,_Inter,_NewVars):- !,
@@ -140,13 +119,18 @@ has_give_intersection_next(>,X,Xs,_,[Y|Ys],Flag,Inter):-
 
 %------------------------------------------------------------------------%
 
-append_dl(X-Y,Y-Z,X-Z).
-
-% dl_to_l(X-[],X).
-
+:- export(list_ground/2).
 list_ground([],[]).
 list_ground([X|Xs],[X/g|Rest]):-
 	list_ground(Xs,Rest).
 
+%------------------------------------------------------------------------%
+
+:- export(append_dl/3).
+append_dl(X-Y,Y-Z,X-Z).
+
+% dl_to_l(X-[],X).
+
+:- export(if_not_nil/4).
 if_not_nil([],_,Xs,Xs):- !.
 if_not_nil(_,X,[X|Xs],Xs).

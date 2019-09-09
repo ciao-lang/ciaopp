@@ -5,6 +5,8 @@
 
 :- use_module(domain(def)).
 :- use_module(library(messages), [warning_message/1, warning_message/2]).
+:- use_module(domain(share_aux), [if_not_nil/4]).
+
 %------------------------------------------------------------------------%
 %                  CLIQUE-Sharing+Freeness+Def domain                    |
 %------------------------------------------------------------------------%

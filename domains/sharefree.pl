@@ -1,10 +1,70 @@
-/*             Copyright (C)1990-2002 UPM-CLIP				*/
+:- module(sharefree, [], [assertions, isomodes, datafacts]).
 
-% :- doc(title, "sharing+freeness (abstract domain)").
-:- doc(author,"Maria Garcia de la Banda").
-:- doc(author,"Francisco Bueno").
+:- doc(title, "sharing+freeness (abstract domain)").
+% started: 4/2/91
+:- doc(author, "Maria Garcia de la Banda").
+:- doc(author, "Francisco Bueno").
 
-:- use_package(datafacts).
+%------------------------------------------------------------------------%
+%                    Meanning of the Program Variables                   %
+%                                                                        %
+% _sh      : suffix indicating the sharing component                     %
+% _fr      : suffix indicating the freeness component                    %
+% Sh and Fr: for simplicity, they will represent ASub_sh and ASub_fr     %
+%            respectively                                                %
+% BPrime   : similar to the abstract prime constraint: abstract          %
+%            subtitution obtained after the analysis of the clause being %
+%            considered still projected onto Hv (i.e. just before going  %
+%            Sv and thus, to Prime)                                      %
+% Binds    : List of primitive bindings corresponding to the unification %
+%            of Term1 = Term2.                                           %
+% Gv       : set of ground variables (can be added as a prefix of a set  %
+%            of variables, e.g. GvHv means the set of ground variables of%
+%            the head variables)                                         %
+% Tv       : set of variables in a term                                  %
+% _args    : Added as a prefix of a term, means the set of variables     %
+%            s.t. the i-th set contains the set of variables (ordered) in%
+%            the i-th argument of the Term                               %
+% Star     : a closure under union of a set of sets (can be added as a   %
+%            suffix of a set of sets)                                    %
+% ShareArgs: Set of sets of numbers in which each set represents the     %
+%            possible set sharing among the argument positions indicated %
+%            by the numbers                                              %
+% Rest are as in domain_dependent.pl                                     %
+%------------------------------------------------------------------------%
+
+%% :- doc(bug,"1. ?- glb(shfr,([[A,B],[A,C]],[A/nf,Z/g,B/nf,C/nf]),
+%%    ([[A]],[A/nf,Z/g,B/g,C/g]),X). X = ([],[A/nf,Z/g,B/g,C/g]) ? 
+%%    Should be A/g.").
+:- doc(bug,"2. With var(F),length([F|L],X) freenes of F is
+	unnecessarily lost.").
+%% Solved
+%% :- doc(bug,"3. shfr_success_builtin for arg(X,Y,Z) is not prepared
+%% 	for a non-variable Y.").
+
+:- use_module(domain(s_grshfr), 
+	[ change_values_if_differ/5,
+	  change_values_insert/4,
+	  collect_vars_freeness/2,
+	  create_values/3,
+	  impossible/3,
+	  member_value_freeness/3, 
+	  projected_gvars/3,
+	  var_value/3
+	]).
+:- use_module(domain(share_aux)).
+:- use_module(domain(sharing), [
+	share_project/3, 
+	share_less_or_equal/2,
+	share_glb/3,
+	share_input_user_interface/3,
+	share_input_interface/4,
+	% TODO: move to other shared module?
+	pos/4, 
+	project_share/3, 
+	script_p_star/3,
+	script_p/3
+	]).
 
 :- use_module(library(lists), [append/3, list_to_list_of_lists/2, powerset/2]).
 :- use_module(library(lsets), 
@@ -40,41 +100,6 @@
 :- use_module(domain(deftypes), [absu/1]).
 
 %------------------------------------------------------------------------%
-%                                                                        %
-%                          started: 4/2/91                               %
-%        programmers: F. Bueno and M. Garcia de la Banda                 %
-%                                                                        %
-%------------------------------------------------------------------------%
-
-%------------------------------------------------------------------------%
-%                    Meanning of the Program Variables                   %
-%                                                                        %
-% _sh      : suffix indicating the sharing component                     %
-% _fr      : suffix indicating the freeness component                    %
-% Sh and Fr: for simplicity, they will represent ASub_sh and ASub_fr     %
-%            respectively                                                %
-% BPrime   : similar to the abstract prime constraint: abstract          %
-%            subtitution obtained after the analysis of the clause being %
-%            considered still projected onto Hv (i.e. just before going  %
-%            Sv and thus, to Prime)                                      %
-% Binds    : List of primitive bindings corresponding to the unification %
-%            of Term1 = Term2.                                           %
-% Gv       : set of ground variables (can be added as a prefix of a set  %
-%            of variables, e.g. GvHv means the set of ground variables of%
-%            the head variables)                                         %
-% Tv       : set of variables in a term                                  %
-% _args    : Added as a prefix of a term, means the set of variables     %
-%            s.t. the i-th set contains the set of variables (ordered) in%
-%            the i-th argument of the Term                               %
-% Star     : a closure under union of a set of sets (can be added as a   %
-%            suffix of a set of sets)                                    %
-% ShareArgs: Set of sets of numbers in which each set represents the     %
-%            possible set sharing among the argument positions indicated %
-%            by the numbers                                              %
-% Rest are as in domain_dependent.pl                                     %
-%------------------------------------------------------------------------%
-
-%------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
 %                      ABSTRACT PROJECTION
 %------------------------------------------------------------------------%
@@ -102,6 +127,7 @@ shfr_project((Sh,Fr),Vars,Proj) :-
 
 :- push_prolog_flag(multi_arity_warnings,off).
 
+:- export(project_freeness/3).
 project_freeness([],_,Proj):- !,
 	Proj = [].
 project_freeness(_,[],Proj):- !,
@@ -289,6 +315,7 @@ shfr_compute_lub_el((Sh1,Fr1),(Sh2,Fr2),(Lub_sh,Lub_fr)):- !,
 	compute_lub_fr(Fr1,Fr2,Lub_fr).
 shfr_compute_lub_el(ASub,_,ASub).
 
+:- export(compute_lub_sh/3).
 compute_lub_sh(Sh1,Sh2,Sh1) :-
 	Sh1 == Sh2,!.
 compute_lub_sh(Sh1,Sh2,Lub) :-
@@ -521,6 +548,8 @@ myinsert(Fr0,X,Fr):-
 	Fr = [X].
 myinsert(Fr0,X,Fr):-
 	insert(Fr0,X,Fr).
+
+may_be_var(X,X):- ( X=[] ; true ), !.
 
 %% %------------------------------------------------------------------------%
 %% % shfr_output_interface(+,-)                                             %
@@ -1428,6 +1457,7 @@ table_from_term_entry(nf(_,_),X,_,Sh,Tv,Fr,NewFr) :-
 % Returns in Coupled the list of variables X s.t. exists at least        |
 % one list in Sh containing X and at least one element in Vars.          |
 %-------------------------------------------------------------------------
+:- export(take_coupled/3).
 take_coupled(Sh,Vars_u,Coupled):-
 	sort(Vars_u,Vars),
 	ord_split_lists_from_list(Vars,Sh,Intersect,_),
@@ -1445,6 +1475,7 @@ take_coupled(Sh,Vars_u,Coupled):-
 
 :- push_prolog_flag(multi_arity_warnings,off).
 
+:- export(split_coupled/4).
 split_coupled([],_,[],[]).
 split_coupled([X|Xs],[Y/V|Ys],Fv,Terms):-
 	compare(Order,X,Y),
@@ -1511,6 +1542,7 @@ decide_update_lambda(no,X,Xs,Fr,Sh,NewFr,NewSh):-
 
 :- pop_prolog_flag(multi_arity_warnings).
 
+:- export(all_terms_identical/2).
 all_terms_identical([],_).
 all_terms_identical([E|Es],Term) :-
 	Term == E, 
@@ -1522,6 +1554,7 @@ all_terms_identical([E|Es],Term) :-
 % Identical to decide_update_lambda but since it is not call from the    |
 % abstract unification, no test on the Hv is needed                      |
 %-------------------------------------------------------------------------
+:- export(update_lambda_sf/5).
 update_lambda_sf([],Fr,Sh,Fr,Sh):- !.
 update_lambda_sf(Gv,Fr,Sh,Fr1,Sh1):-
 	ord_split_lists_from_list(Gv,Sh,Intersect,Sh1),
@@ -1549,6 +1582,7 @@ update_lambda_sf(Gv,Fr,Sh,Fr1,Sh1):-
 % *  it does not change the freeness value of any variable from f to nf  |
 %    The same reason                                                     |
 %-------------------------------------------------------------------------
+:- export(update_lambda_non_free/5).
 update_lambda_non_free([],Fr,Sh,Fr,Sh).
 update_lambda_non_free([X|Xs],Fr,Sh,Fr1,Sh1):-
 	ord_split_lists_from_list([X|Xs],Sh,Intersect,Sh1),
@@ -1581,6 +1615,7 @@ update_lambda_non_free([X|Xs],Fr,Sh,Fr1,Sh1):-
 %          X in SS or Term \in SS                                        %
 %       -  adds P1 \cup P2 s.t. X \in P1 Y \notin P1, Y \in P2 X \notin P2%
 %-------------------------------------------------------------------------
+:- export(partition_sf/4).
 partition_sf(Binds,Fr,Sh,NewSh):-
 	partition_end_sf(Fr,Sh,TempSh),
 	sort(TempSh,TempSh_s),
@@ -1634,10 +1669,12 @@ make_partition_from_x(f,X,Y,_,TempSh,NewSh):-
 
 :- push_prolog_flag(multi_arity_warnings,off).
 
+:- export(prune/5).
 prune(Beta_sh,Head_args,Lambda_share,Temp1,Entry) :- 
 	prune(Beta_sh,Head_args,Lambda_share,Temp2),
 	merge(Temp1,Temp2,Entry).
 
+:- export(prune/4).
 prune([],_,_,[]).
 prune([Xs|Xss],Head_args,ShareArgs,Entry) :- 
 	pos(Head_args,1,Xs,ArgShare),
@@ -1726,6 +1763,7 @@ table_from_term_exit(_,X,_,Tv,Fr,Fr1) :- !,
 
 :- push_prolog_flag(multi_arity_warnings,off).
 
+:- export(covering/3).
 covering([],_Sh,[]).
 covering([D|Disjoint],Sh,AlsoPossible):-
 	covering(Sh,D,D,AlsoPossible,Tail),
@@ -1756,6 +1794,7 @@ covering(<,L,Sh,D,El,AlsoPossible,Tail):-
 %  in Sh2. All ordered.
 %-------------------------------------------------------------------------
 
+:- export(eliminate_non_element/4).
 eliminate_non_element([],_,_,[]) :- !.
 eliminate_non_element(Sv,Sh1,Sh,Extended):-
 	eliminate_non_element0(Sh1,Sv,Sh,Extended).
@@ -1794,13 +1833,15 @@ product(nf,X,VarsY,Sv,Sh,Lda_fr,Prime_sh,Prime_fr):-
 	sort(Temp2,Prime_sh),
 	take_coupled(Sh,Sv,Coupled),
 	change_values_if_f(Coupled,Lda_fr,Prime_fr,nf).
-	
+
+:- export(insert_each/3).	
 insert_each([],_,[]).
 insert_each([L|Ls],X,[[X|L]|Rest]):-
 	insert_each(Ls,X,Rest).
 
 %-------------------------------------------------------------------------
 
+:- export(obtain_freeness/2).
 obtain_freeness(f,f):- !, fail.
 obtain_freeness(_,_).
 
@@ -1910,6 +1951,7 @@ identical(f,f,X,Y,Call,Succ):- !,
 % handles the case X = Y where both X,Y are variables which freeness     |
 % value \== g                                                            |
 %-------------------------------------------------------------------------
+:- export(obtain_prime_var_var/3).
 obtain_prime_var_var([X/f,Y/f],(Call_sh,Call_fr),Succ):- !,
 	ord_split_lists(Call_sh,X,Intersect,Disjoint),
 	ord_split_lists(Disjoint,Y,OnlyY,NonXY),
@@ -1976,6 +2018,7 @@ update_from_values(nf,_,_X,Y,(Call_sh,Call_fr),(Succ_sh,Succ_fr)):-
 % (Vars) when recorded(X,Y,Z) was called, once the variables in Z have   |
 %  been made ground                                                      |
 %-------------------------------------------------------------------------
+:- export(make_dependence/5).
 make_dependence([],Y,TempPrime_fr,Prime_fr,[]):- 
 	change_values(Y,TempPrime_fr,Prime_fr,g).
 make_dependence([S|Ss],Y,TempPrime_fr,Prime_fr,Prime_sh):- 
@@ -2135,24 +2178,6 @@ shfr_unknown_call(_Sg,Vars,(Call_sh,Call_fr),(Succ_sh,Succ_fr)):-
 %   Manipulating Freeness components
 %-------------------------------------------------------------------------
 
-% MOVED TO MODULE s_grshfr.pl
-
-%-------------------------------------------------------------------------
-% collect_vars_freeness(+,-)                                             |
-% collect_vars_freeness(Fr,Vars)                                         |
-% It returns in Vars the list of variables in Fr.                        |
-%-------------------------------------------------------------------------
-
-% MOVED TO MODULE s_grshfr.pl
-
-%-------------------------------------------------------------------------
-% var_value(+,+,-)                                                       |
-% var_value(Fr,X,Value)                                                  |
-% It obtains in the third argument the freeness value of X               |
-%-------------------------------------------------------------------------
-
-% MOVED TO MODULE s_grshfr.pl
-
 %-------------------------------------------------------------------------
 % var_value_rest(+,+,+,-,-)                                              |
 % var_value_rest(Fr,X,Value,NewFr,Flag)                                  |
@@ -2189,6 +2214,7 @@ var_value_rest(>,_Elem,More,X,Value,Rest,Flag):-
 
 :- push_prolog_flag(multi_arity_warnings,off).
 
+:- export(values_equal/3).
 values_equal([],_,_).
 values_equal([X|Xs],[Y/V|Ys],Value):-
 	compare(D,X,Y),
@@ -2211,6 +2237,7 @@ values_equal(>,X,Xs,_,[Y/V|Ys],Value):-
 
 :- push_prolog_flag(multi_arity_warnings,off).
 
+:- export(values_differ/3).
 values_differ([],_,_).
 values_differ([X|Xs],[Y/V|Ys],Value):-
 	compare(D,X,Y),
@@ -2234,6 +2261,7 @@ values_differ(>,X,Xs,_,[Y/V|Ys],Value):-
 
 :- push_prolog_flag(multi_arity_warnings,off).
 
+:- export(change_values/4).
 change_values([],Ys,Ys,_).
 change_values([X|Xs],[Y/V|Ys],Z,Value):-
 	compare(D,X,Y),
@@ -2258,6 +2286,7 @@ change_values(>,X,Y/Val,Xs,[Y1/V|Ys],[Y/Val|Z],Value):-
 
 :- push_prolog_flag(multi_arity_warnings,off).
 
+:- export(change_values_if_not_g/4).
 change_values_if_not_g([],Xs,Xs,_).
 change_values_if_not_g([Y|Ys],[X/V|Xs],Z,Value):- 
 	compare(D,Y,X),
@@ -2291,6 +2320,7 @@ change_if_not_g(nf(_,_),V,V).
 
 :- push_prolog_flag(multi_arity_warnings,off).
 
+:- export(change_values_if_f/4).
 change_values_if_f([],Xs,Xs,_).
 change_values_if_f([Y|Ys],[X/V|Xs],Z,Value):- 
 	compare(D,Y,X),
@@ -2309,46 +2339,13 @@ change_values_if_f(>,Y,Ys,Elem,[X/V|Xs],[Elem|Zs],Value):-
 :- pop_prolog_flag(multi_arity_warnings).
 
 %-------------------------------------------------------------------------
-% change_values_if_differ(+,+,-,+,+)                                     |
-% change_values_if_differ(Vars,Fr,NewFr,Value1,Value2)                   |
-% Forall X in Vars there must exist X/V in Fr and V must be different    |
-% from Value2. If so, X/V is changed to X/Value1. Otherwise it fails     |
-%-------------------------------------------------------------------------
-
-% MOVED TO MODULE s_grshfr.pl
-
-%-------------------------------------------------------------------------
-% create_values(+,-,+)                                                   |
-% create_values(Vars,Fr,Value)                                           |
-% Forall X in Vars, X/Value is in Fr                                     |
-%-------------------------------------------------------------------------
-
-% MOVED TO MODULE s_grshfr.pl
-
-%-------------------------------------------------------------------------
-% change_values_insert(+,+,-,+)                                          |
-% change_values_insert(Vars,Fr,NewFr,Value)                              |
-% Forall X in Vars, if exists X/V in Fr it is changed to X/Value,        |
-% otherwise X/Value is added to Fr. Both Ordered                         |
-%-------------------------------------------------------------------------
-
-% MOVED TO MODULE s_grshfr.pl
-
-%-------------------------------------------------------------------------
-% member_value_freeness(+,-,+)                                           |
-% member_value_freeness(Fr,Vars,Value)                                   |
-% It returns in Vars the list of variables with freeness value: Value    |
-%-------------------------------------------------------------------------
-
-% MOVED TO MODULE s_grshfr.pl
-
-%-------------------------------------------------------------------------
 % member_value_freeness_differ(+,-,+)                                    |
 % member_value_freeness_differ(Fr,Vars,Value)                            |
 % It returns in Vars the list of variables with freeness value different |
 % from Value                                                             |
 %-------------------------------------------------------------------------
 
+:- export(member_value_freeness_differ/3).
 member_value_freeness_differ([],[],_).
 member_value_freeness_differ([X/Valuex|Rest],ListValue,Value):- 
 	Valuex \== Value,!,
@@ -2380,6 +2377,7 @@ collapse_non_freeness([X|Xs],[X|Ys]):-
 
 :- push_prolog_flag(multi_arity_warnings,off).
 
+:- export(project_freeness_n/3).
 project_freeness_n([],_,[]).
 project_freeness_n([X/V1|Xs],[Y/V2|Ys],Eliminated):-
 	compare(D,X,Y),
@@ -2454,6 +2452,7 @@ non_free_vars(no,X,Xs,Fr1,Fr2,[X|BVarsf],NewFr):-
 % NewFr is the result of inserting each variable in Vars with value nf,  |
 % if it appears in Sh with a nonfree variable. Otherwise it inserts X/f. |
 %-------------------------------------------------------------------------
+:- export(propagate_non_freeness/5).
 propagate_non_freeness([],_,_,Fr,Fr).
 propagate_non_freeness([X|Xs],NonFv,Sh,[Y/Value|Fr],NewFr):-
         X @> Y, !,
@@ -2477,6 +2476,7 @@ propagate_non_freeness([X|Xs],NonFv,Sh,Fr,[X/f|NewFr]):-
 
 :- push_prolog_flag(multi_arity_warnings,off).
 
+:- export(add_environment_vars/3).
 add_environment_vars([],Fr2,Fr2).
 add_environment_vars([Y/Vy|Fr1],[X/V|Fr2],NewFr):- 
 	compare(D,X,Y),
@@ -2699,5 +2699,3 @@ add_environment_vars(<,Y/Vy,Fr1,El,[X/V|Fr2],[El|NewFr]):-
 %% 	; %write(user,'WARNING: a complete conjunction needed'),
 %% 	  merge(ShNew,Sh0,Sh)).
 
-%------------------------------------------------------------------------%
-%% PLEASE, PUT THE COMMENTS IN share.pl INSTEAD

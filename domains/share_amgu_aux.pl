@@ -7,8 +7,7 @@
 	    self/2,
 	    star/2,
 	    amgu/4,
-	    amgu/5,
-	    append_dl/3
+	    amgu/5
 	    ],
          [assertions,isomodes ]).
 
@@ -17,6 +16,8 @@
 :- use_module(library(lsets), [closure_under_union/2]).
 :- use_module(library(terms_vars), [varset/2]).
 :- use_module(domain(share_amgu_sets), [split_list_of_lists/4]).
+:- use_module(domain(share_aux), [append_dl/3]).
+
 %------------------------------------------------------------------------%
 % This file implements the amgu for sharing domain defined by Jacobs and |
 % Langen and the non-redundant amgu defined by Hill,Bagnara and          |
@@ -219,5 +220,3 @@ sh_peel_args(Term1,Term2,N1,N,Binds) :-
 	sh_peel(A1,A2,Bind1),
 	sh_peel_args(Term1,Term2,N2,N,Bind2),
 	append_dl(Bind1,Bind2,Binds).
-
-append_dl(X-Y,Y-Z,X-Z).

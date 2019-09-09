@@ -21,6 +21,4 @@
 % better implementation, comment them.                                    |
 %-------------------------------------------------------------------------%
 
-list_ground([],     []).
-list_ground([X|Xs], [X/g|Rest]) :-
-	list_ground(Xs, Rest).
+:- use_module(domain(share_aux), [append_dl/3]).

@@ -6,7 +6,7 @@
    quality of the specialized program if abstract specialization is
    then performed. PDB stands for Partial Deduction + Bottom.").
 
-:- use_module(domain(share), [shfr_special_builtin/4]).
+:- use_module(domain(sharefree), [shfr_special_builtin/4]).
 
 :- export(pdb_call_to_entry/9).
 pdb_call_to_entry(_Sv,_Sg,_Hv,_Head,_K,_Fv,Proj,Proj,_ExtraInfo).

@@ -31,6 +31,8 @@
 :- use_module(library(sets), [insert/3, ord_subtract/3]).
 :- use_module(library(sort), [sort/2]).
 
+:- use_module(domain(share_aux), [if_not_nil/4]).
+
 :- include(domain(fr_aux)).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -528,9 +530,6 @@ get_free_vars([X|Xs],ACtmin,F):-
 	get_free_vars(Xs,ACtmin,F).
 get_free_vars([X|Xs],ACtmin,[X|F]):-
 	get_free_vars(Xs,ACtmin,F).
-
-if_not_nil([],_,Xs,Xs):- !.
-if_not_nil(_,X,[X|Xs],Xs).
 
 %----------------------------------------------------------------------------
 

@@ -27,7 +27,7 @@
 
 :- use_module(ciaopp(preprocess_flags), [current_pp_flag/2]).
 :- use_module(domain(s_eqs), [apply/1, keys_and_values/3]).
-:- use_module(domain(share), 
+:- use_module(domain(sharing), 
 	[ share_input_interface/4, share_input_user_interface/3,
 	  share_project/3, share_sort/2
 	]).

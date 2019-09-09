@@ -395,7 +395,7 @@ def_empty_entry(Sg,Qv,Call) :- def_unknown_entry(Sg,Qv,Call). % TODO: move to de
 %% def_real_conjoin(_,_,_).
 % TODO: body_succ_builtin/9: (old comment) these do not have special(_), so ok: AbsInt \== def, AbsInt \== fr, AbsInt \== frdef
 % ---------------------------------------------------------------------------
-:- use_module(domain(share)).
+:- use_module(domain(sharing)).
 aidomain(share).
 amgu(share,Sg,Head,ASub,NewASub) :- !, share_amgu(Sg,Head,ASub,NewASub).
 augment_asub(share,ASub,Vars,ASub0) :- !, share_amgu_extend_asub(ASub,Vars,ASub0).
@@ -420,6 +420,7 @@ unknown_entry(share,Sg,Qv,Call) :- !, share_unknown_entry(Sg,Qv,Call).
 empty_entry(share,Sg,Qv,Call) :- !, share_empty_entry(Sg,Qv,Call).
 %% compute_lub_el(share,ASub1,ASub2,ASub) :- !, share_lub(ASub1,ASub2,ASub).
 % ----------
+:- use_module(domain(sharefree)).
 aidomain(shfr).
 amgu(shfr,Sg,Head,ASub,NewASub) :- !, sharefree_amgu(Sg,Head,ASub,NewASub).
 augment_asub(shfr,ASub,Vars,ASub0) :- !, sharefree_amgu_extend_asub(ASub,Vars,ASub0).
@@ -462,6 +463,7 @@ empty_entry(shfr,Sg,Qv,Call) :- !, shfr_empty_entry(Sg,Qv,Call).
 %% shfr_more_instantiate(_,_).
 %% shfr_real_conjoin(_,_,_).
 % ----------
+:- use_module(domain(sharefree_non_var)).
 aidomain(shfrnv).
 call_to_entry(shfrnv,Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo) :- !, shfrnv_call_to_entry(Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo).
 exit_to_prime(shfrnv,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime) :- !, shfrnv_exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime).

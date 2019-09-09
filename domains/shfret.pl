@@ -23,7 +23,7 @@
 	]).
 
 :- use_module(domain(eterms)).
-:- use_module(domain(share)).
+:- use_module(domain(sharefree)).
 
 %% :- use_module(library(idlists),[memberchk/2]).
 :- use_module(library(lists), [append/3]).

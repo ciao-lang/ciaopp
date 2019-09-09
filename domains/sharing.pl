@@ -1,28 +1,9 @@
-/*             Copyright (C)1990-2002 UPM-CLIP				*/
+:- module(sharing, [], [assertions, isomodes]).
 
-% :- doc(title, "sharing (abstract domain)").
-:- doc(author,"Kalyan Muthukumar").
-:- doc(author,"Maria Garcia de la Banda").
-:- doc(author,"Francisco Bueno").
-
-:- use_module(library(lsets), 
-	[ delete_var_from_list_of_lists/4,
-	  ord_member_list_of_lists/2, 
-	  split_lists_from_list/4,
-	  transitive_closure_lists/3
-	]).
-
-% Plai lib, auxiliary
-%:- use_module(typeslib(typeslib),[ dz_type_included/2, set_ground_type/1 ]).
-:- use_module(typeslib(typeslib), [is_ground_type/1]).
-:- use_module(domain(eterms), [eterms_input_interface/4]).
-
-%------------------------------------------------------------------------%
-%                                                                        %
-%                          started: 5/2/89                               %
-%                       programmer: K. Muthukumar                        %
-%                                                                        %
-%------------------------------------------------------------------------%
+:- doc(title, "sharing (abstract domain)").
+:- doc(author, "Kalyan Muthukumar"). % started: 5/2/89
+:- doc(author, "Maria Garcia de la Banda").
+:- doc(author, "Francisco Bueno").
 
 %------------------------------------------------------------------------%
 %                    Meanning of the Program Variables                   %
@@ -51,6 +32,40 @@
 % Rest are as in domain_dependent.pl                                     %
 %------------------------------------------------------------------------%
 
+:- use_module(domain(s_grshfr), [new1_gvars/4, projected_gvars/3]).
+:- use_module(domain(deftypes), [absu/1]).
+
+:- use_module(library(sets), 
+	[ insert/3, 
+	  merge/3,
+	  ord_intersect/2,
+	  ord_intersection/3,
+	  ord_intersection_diff/4,
+ 	  ord_member/2, 
+	  ord_subset/2, 
+	  ord_subtract/3
+	]).
+:- use_module(library(lsets), 
+	[ delete_var_from_list_of_lists/4,
+	  ord_member_list_of_lists/2, 
+	  split_lists_from_list/4,
+	  transitive_closure_lists/3,
+	  closure_under_union/2,
+	  ord_split_lists_from_list/4,
+	  merge_list_of_lists/2, 
+	  sort_list_of_lists/2
+	]).
+:- use_module(library(sort)).
+:- use_module(library(terms_check), [variant/2]).
+:- use_module(library(terms_vars), [varset/2, varset_in_args/2]).
+:- use_module(library(lists), [append/3, list_to_list_of_lists/2, powerset/2]).
+
+% Plai lib, auxiliary
+%:- use_module(typeslib(typeslib),[ dz_type_included/2, set_ground_type/1 ]).
+:- use_module(typeslib(typeslib), [is_ground_type/1]).
+:- use_module(domain(eterms), [eterms_input_interface/4]).
+:- use_module(domain(share_aux)).
+
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
 %                      ABSTRACT PROJECTION
@@ -69,6 +84,7 @@ share_project(_,'$bottom','$bottom'):- !.
 share_project(Vars,ASub,Proj) :-
 	project_share(Vars,ASub,Proj).
 
+:- export(project_share/3).    
 project_share([],_,[]).
 project_share([S|Ss],Lda_sh,Proj):-
 	project_share0(Lda_sh,[S|Ss],Temp),
@@ -562,6 +578,7 @@ prune_entry([Xs|Xss],Head_args,ShareArgsStar,Temp1,Entry) :-
 % at least one variable in Xs appears                                    |
 %-------------------------------------------------------------------------
 
+:- export(pos/4).
 pos([],_,_,[]).
 pos([Ys|Yss],N,Xs,ArgShare) :-
 	ord_intersect(Xs,Ys),!,
@@ -580,10 +597,12 @@ pos([_Ys|Yss],N,Xs,ArgShare) :-
 % the closure under union.                                               |
 %-------------------------------------------------------------------------
 
+:- export(script_p_star/3).
 script_p_star(Atom,ASub,ShareArgsStar) :-
 	script_p(Atom,ASub,ShareArgs_info),
 	closure_under_union(ShareArgs_info,ShareArgsStar).
 
+:- export(script_p/3).
 script_p(Atom,ASub,ShareArgs_info) :-
 	varset_in_args(Atom,Xss_args),
 	script_p1(ASub,Xss_args,Temp),
@@ -1114,5 +1133,3 @@ share_make_reduction([(X,VarsTerm)|More],Lambda,Ground,NewGround,Eliminate):-
 	share_make_reduction(More,Lambda,Ground,NewGround,Elim2),
 	append_dl(Elim1,Elim2,Eliminate).
 
-%------------------------------------------------------------------------%
-%% PLEASE, PUT THE COMMENTS IN share.pl INSTEAD

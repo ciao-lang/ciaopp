@@ -81,6 +81,8 @@
 :- use_module(library(terms_check), [variant/2]).
 :- use_module(library(terms_vars), [varset/2]).
 
+:- use_module(domain(share_aux), [if_not_nil/4]).
+
 %------------------------------------------------------------------------%
 %                                                                        %
 %                          started: 1/5/95                               %
@@ -1143,9 +1145,6 @@ lsign_output_interface(a(S,AEqIn,Non),Info):-
 	lsign_output_user_interface0(AEqIn,NAEqIn),
 	if_not_nil(S,a(S),Info,Info0),
 	if_not_nil(Non,non(S),Info0,NAEqIn).
-
-if_not_nil([],_,Xs,Xs):- !.
-if_not_nil(_,X,[X|Xs],Xs).
 
 lsign_output_user_interface0([],[]).
 lsign_output_user_interface0([eq(Op,X,Y)|ACons],[EqIn|AConsOut]):-

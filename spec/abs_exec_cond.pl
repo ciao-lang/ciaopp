@@ -30,8 +30,7 @@
 	    identical_abstract/3
  	]).
 
-:- use_module(domain(share), 
- 	[share_project/3]).
+:- use_module(domain(sharing), [share_project/3]).
 
 :- use_module(domain(s_grshfr), 
  	[ 

@@ -3,6 +3,8 @@
 % :- doc(title, "clique-sharing+def (abstract domain)").
 :- doc(author,"Jorge Navas").
 
+:- use_module(domain(share_aux), [if_not_nil/4]).
+
 %------------------------------------------------------------------------%
 %                      CLIQUE-Sharing+Def domain                         %   
 %------------------------------------------------------------------------%

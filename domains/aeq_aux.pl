@@ -13,6 +13,7 @@
 
 :- use_package(datafacts).
 :- use_module(library(lists), [member/2]).
+:- use_module(domain(share_aux), [if_not_nil/4]).
 
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
@@ -381,11 +382,6 @@ support_user_interface([P|Props],Output):-
 	arg(1,P,L),
 	if_not_nil(L,P,Output,Output1),
 	support_user_interface(Props,Output1).
-
-if_not_nil([],_,Xs,Xs):- !.
-if_not_nil(_,X,[X|Xs],Xs).
-
-
 
 aeq_substitute_vars([],Eqs,Term,Eqs,Term).
 aeq_substitute_vars([X=ATerm|AEqs],Eqs0,Term0,Eqs,Term):-

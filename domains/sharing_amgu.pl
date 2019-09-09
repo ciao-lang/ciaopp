@@ -6,7 +6,7 @@
 
 :- use_module(library(lists), [list_to_list_of_lists/2, append/3]).
 :- use_module(library(terms_check), [variant/2]).
-:- use_module(domain(share)).
+:- use_module(domain(sharing)).
 :- use_module(domain(share_amgu_aux)).
 
 %------------------------------------------------------------------------%

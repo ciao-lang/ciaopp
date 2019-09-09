@@ -18,9 +18,10 @@
 	],
 	[ ]).
 
-:- use_module(domain(share)).
+:- use_module(domain(sharefree)).
 :- use_module(domain(sondergaard)).
 :- use_module(domain(s_grshfr), [change_values_if_differ/5, projected_gvars/3]).
+:- use_module(domain(share_aux), [if_not_nil/4]).
 
 :- use_module(library(llists), [collect_singletons/2]).
 :- use_module(library(sets), [merge/3, ord_subtract/3]).
@@ -178,9 +179,6 @@ shfrson_asub_to_native(((_Gr,SSon),ShFr),Qv,OutFlag,ASub_user,Comps):-
 	ord_subtract(Qv,NonLinearVars,LinearVars),
 	shfr_asub_to_native(ShFr,Qv,OutFlag,ASub_user0,Comps),
 	if_not_nil(LinearVars,linear(LinearVars),ASub_user,ASub_user0).
-
-if_not_nil([],_,Xs,Xs):- !.
-if_not_nil(_,X,[X|Xs],Xs).
 
 %------------------------------------------------------------------------%
 % shfrson_less_or_equal(+,+)                                             %

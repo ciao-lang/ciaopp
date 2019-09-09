@@ -19,9 +19,10 @@
 	],
 	[ ]).
 
-:- use_module(domain(share)).
+:- use_module(domain(sharing)).
 :- use_module(domain(sondergaard)).
 :- use_module(domain(s_grshfr), [projected_gvars/3]).
+:- use_module(domain(share_aux), [if_not_nil/4]).
 
 :- use_module(library(llists), [collect_singletons/2]).
 :- use_module(library(lsets), [merge_list_of_lists/2]).
@@ -171,9 +172,6 @@ shareson_asub_to_native(((Gr,SSon),Sh),Qv,_OutFlag,ASub_user,[]):-
 	if_not_nil(Gr,ground(Gr),ASub_user,ASub_user0),
 	if_not_nil(LinearVars,linear(LinearVars),ASub_user0,ASub_user1),
 	if_not_nil(Sh,sharing(Sh),ASub_user1,[]).
-
-if_not_nil([],_,Xs,Xs):- !.
-if_not_nil(_,X,[X|Xs],Xs).
 
 %------------------------------------------------------------------------%
 % shareson_less_or_equal(+,+)                                            %

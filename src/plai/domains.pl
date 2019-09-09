@@ -429,6 +429,7 @@ less_or_equal_proj(AbsInt,Sg,Proj,Sg1,Proj1) :-
     the form @tt{special(SgKey)}.".
 
 :- doc(doinclude,success_builtin/7).
+:- export(success_builtin/7).
 :- pred success_builtin(AbsInt,Type,Sv,Condvars,HvFv_u,Call,Succ)
         : atm(AbsInt) + not_fails
  #"@var{Succ} is the success substitution on domain @var{AbsInt} for a call

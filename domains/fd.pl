@@ -32,6 +32,8 @@
 
 :- use_module(ciaopp(plai/plai_errors), [compiler_error/1]).
 
+:- use_module(domain(share_aux), [if_not_nil/4]).
+
 :- include(domain(fd_top)).
 :- include(domain(fd_aux)).
 
@@ -194,9 +196,6 @@ fd_asub_to_native((F,D),Qv,OutFlag,Succ,Comps):-
 	if_not_nil(Fv,free(Fv),Succ,Succ0),
 	if_not_nil(Free_dep,posdeps(Free_dep),Succ0,Succ1),
 	Comps = Comps1.
-
-if_not_nil([],_,Xs,Xs):- !.
-if_not_nil(_,X,[X|Xs],Xs).
 
 %------------------------------------------------------------------------------
 

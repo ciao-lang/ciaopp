@@ -5,11 +5,12 @@
 
 :- use_package(dynamic). % TODO: datafacts should be enough
 
-:- use_module(domain(share)).
+:- use_module(domain(sharing)).
 :- use_module(domain(share_clique_aux)).
 :- use_module(domain(share_amgu_aux)).
-:- use_module(library(lists), 
-	[length/2]).
+:- use_module(domain(share_aux), [if_not_nil/4,handle_each_indep/4]).
+
+:- use_module(library(lists), [length/2]).
 :- use_module(library(terms_check), [variant/2]).
 :- use_module(library(aggregates), [findall/3]). % (for number_of_widening/1)
 :- use_module(library(messages), [error_message/1]).

@@ -13,17 +13,17 @@
 	    lin/2
           ],
 	  [ assertions, isomodes ]).
+
 :- use_module(library(lists), [length/2]). 
 :- use_module(library(sort), [sort/2]).
 :- use_module(domain(s_grshfr), [member_value_freeness/3]).
 :- use_module(library(sets),
 	[ord_member/2, ord_subtract/3, ord_union/3, ord_subset/2, ord_intersection/3]).
-:- use_module(library(lsets), 
-	[ merge_list_of_lists/2]).
-:- use_module(domain(share_amgu_sets), 
-	[ split_list_of_lists/4]).	
+:- use_module(library(lsets), [merge_list_of_lists/2]).
+:- use_module(domain(share_amgu_sets), [split_list_of_lists/4]).	
 :- use_module(library(terms_vars), [varset/2, varsbag/3]).
 :- use_module(domain(share_amgu_aux)).
+:- use_module(domain(share_aux), [append_dl/3]).
 
 %------------------------------------------------------------------------%
 % This file implements the amgu for sharing+Freeness domain defined by   |

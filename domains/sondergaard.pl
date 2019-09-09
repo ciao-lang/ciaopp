@@ -29,11 +29,12 @@
 	],
 	[ assertions ] ).
 
-:- use_module(domain(share), 
+:- use_module(domain(sharing), 
 	[ share_input_interface/4,
 	  share_input_user_interface/3
 	]).
 :- use_module(domain(s_grshfr), [new1_gvars/4]).
+:- use_module(domain(share_aux), [if_not_nil/4,append_dl/3,handle_each_indep/4]).
 
 % Ciao lib
 :- use_module(library(lists), [append/3, list_to_list_of_lists/2]).
@@ -60,8 +61,6 @@
 :- use_module(library(sort)).
 :- use_module(library(terms_check), [variant/2]).
 :- use_module(library(terms_vars), [varset/2]).
-
-append_dl(X-Y,Y-Z,X-Z).
 
 %------------------------------------------------------------------------%
 %                                                                        %
@@ -375,9 +374,6 @@ son_asub_to_native((Gr,SSon),Qv,_OutFlag,ASub_user,[]):-
 	if_not_nil(Gr,ground(Gr),ASub_user,ASub_user0),
 	if_not_nil(LinearVars,linear(LinearVars),ASub_user0,ASub_user1),
 	if_not_nil(SetSh,sharing(SetSh),ASub_user1,[]).
-
-if_not_nil([],_,Xs,Xs):- !.
-if_not_nil(_,X,[X|Xs],Xs).
 
 %-------------------------------------------------------------------------
 % son_input_user_interface(+,+,-)                                        %
@@ -719,7 +715,7 @@ son_success_builtin('indep/2',_,p(X,Y),(Call_gr,Call_sh),Succ):-
 	Succ = (Succ_gr,Succ_sh).
 son_success_builtin('indep/1',_,p(X),Call,Succ):- 
 	nonvar(X),
-	handle_each_indep(X,Call,Succ), !.
+	handle_each_indep(X,son,Call,Succ), !.
 son_success_builtin('indep/1',_,_,_,'$bottom').
 son_success_builtin('arg/3',_,p(X,Y,Z),(Call_gr,Call_sh),Succ):- 
 	varset(Y,Varsy),
@@ -767,11 +763,6 @@ son_success_builtin('==/2',_,p(X,Y),(Call_gr,Call_sh),Succ):-
 	ord_split_lists_from_list(Succ_gr,TempSh,_Intersect,Succ_sh),
 	Succ = (Succ_gr,Succ_sh).
 son_success_builtin('==/2',_,_,_,'$bottom').
-
-handle_each_indep([],Call,Call).
-handle_each_indep([[X,Y]|Rest],Call,Succ):-
-	son_success_builtin('indep/2',_,p(X,Y),Call,Succ1), !,
-	handle_each_indep(Rest,Succ1,Succ).
 
 %-------------------------------------------------------------------------
 % son_call_to_success_builtin(+,+,+,+,+,-)                               |

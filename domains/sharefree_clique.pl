@@ -15,8 +15,13 @@
 :- use_module(domain(s_grshfr),
         [collect_vars_freeness/2, member_value_freeness/3]).
 :- use_module(library(lsets), [ord_intersect_lists/2, ord_split_lists/4]).
+
+:- use_module(domain(sharefree)).
 :- use_module(domain(sharefree_clique_aux)).
 :- use_module(domain(sharefree_amgu_aux)).
+
+:- use_module(domain(share_aux), [
+	append_dl/3,if_not_nil/4,handle_each_indep/4,list_ground/2]).
 
 %------------------------------------------------------------------------%
 %                       CLIQUE-Sharing+Freeness domain                   % 
@@ -198,31 +203,6 @@ sharefree_clique_project('$bottom',_,'$bottom'):- !.
 sharefree_clique_project((SH,F),Vars,(Proj_SH,Proj_F)) :-
 	share_clique_project(Vars,SH,Proj_SH),
 	project_freeness(Vars,F,Proj_F).
-
-%------------------------------------------------------------------------%
-% project_freeness(+,+,-)                                                %
-% project_freeness(Vars,ListFreenessValues,Proj)                         %
-% Defined in sharefree.pl, it should be exported by share.pl             %
-%------------------------------------------------------------------------%
-
-:- push_prolog_flag(multi_arity_warnings,off).
-
-project_freeness([],_,Proj):- !,
-	Proj = [].
-project_freeness(_,[],Proj):- !,
-	Proj = [].
-project_freeness([Head1|Tail1],[Head2/Val|Tail2],Proj) :-
-	compare(Order,Head1,Head2),
-	project_freeness(Order,Head1,Tail1,Head2/Val,Tail2,Proj).
-
-project_freeness(=,_,Tail1,Head1,Tail2,[Head1|Proj]) :-
-	project_freeness(Tail1,Tail2,Proj).
-project_freeness(>,Head1,Tail1,_,[Head2/Val|Tail2],Proj) :-
-	compare(Order,Head1,Head2),
-	project_freeness(Order,Head1,Tail1,Head2/Val,Tail2,Proj).
-
-:- pop_prolog_flag(multi_arity_warnings).
-
 
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
@@ -887,20 +867,16 @@ sharefree_clique_call_to_success_builtin('keysort/2',keysort(X,Y),Sv,Call,Proj,S
 % They should be exported by share.pl (they are defined in sharefree.pl) |
 %------------------------------------------------------------------------%
 
-:- push_prolog_flag(multi_arity_warnings,off).
-
-change_values([],Ys,Ys,_).
-change_values([X|Xs],[Y/V|Ys],Z,Value):-
-	compare(D,X,Y),
-	change_values(D,X,Y/V,Xs,Ys,Z,Value).
-
-change_values(=,X,_,Xs,Ys,[X/Value|Z],Value):-
-	change_values(Xs,Ys,Z,Value).
-change_values(>,X,Y/Val,Xs,[Y1/V|Ys],[Y/Val|Z],Value):-
-	compare(D,X,Y1),
-	change_values(D,X,Y1/V,Xs,Ys,Z,Value).
-
-:- pop_prolog_flag(multi_arity_warnings).
+:- use_module(domain(sharefree), [
+	add_environment_vars/3,
+	change_values/4,
+	change_values_if_f/4,
+	member_value_freeness_differ/3,
+	obtain_freeness/2, % TODO:!! old comment, why? (JF)
+	project_freeness/3,
+	propagate_non_freeness/5,
+	values_equal/3
+   ]).
 
 %-------------------------------------------------------------------------
 % update_lambda_clique_non_free(+,+,+,-,-)                               |
@@ -954,56 +930,6 @@ update_lambda_cf(Gv,Fr,SH,Fr1,SH1):-
 	sort_list_of_lists(Cl2,Cl2_sorted),
 	ord_union(Cl2_sorted,Disj_Cl,Cl1).
 
-% TODO:!!
-obtain_freeness(f,f):- !, fail.
-obtain_freeness(_,_).
-
-%------------------------------------------------------------------------%
-% change_values_if_f(+,+,-,+)                                            |
-% change_values_if_f(Vars,Fr,NewFr,Value)                                |
-% Forall X in Vars, there must exist an X/V in Fr. If so:                |
-%    * if V is f or nf(_,_), X/V is replaced by X/Value                  |
-%    * else, X/V remains unchanged                                       |
-% Otherwise (X/V not in Fr) it fails                                     |
-%------------------------------------------------------------------------%
-:- push_prolog_flag(multi_arity_warnings,off).
-change_values_if_f([],Xs,Xs,_).
-change_values_if_f([Y|Ys],[X/V|Xs],Z,Value):- 
-	compare(D,Y,X),
-	change_values_if_f(D,Y,Ys,X/V,Xs,Z,Value).
-change_values_if_f(=,Y,Ys,_X/V,Xs,[Y/V1|Zs],Value):-
-	( (V = f; V = nf(_,_)) ->
-	    V1 = Value
-	;   V1 = V
-        ),
-	change_values_if_f(Ys,Xs,Zs,Value).
-change_values_if_f(>,Y,Ys,Elem,[X/V|Xs],[Elem|Zs],Value):- 
-	compare(D,Y,X),
-	change_values_if_f(D,Y,Ys,X/V,Xs,Zs,Value).
-:- pop_prolog_flag(multi_arity_warnings).
-
-%-------------------------------------------------------------------------
-% values_equal(+,+,+)                                                    |
-% values_equal(Vars,Fr,Value)                                            |
-% Satisfied if the freeness values of all variables in Vars is equal to  |
-% Value.                                                                 |
-%-------------------------------------------------------------------------
-
-:- push_prolog_flag(multi_arity_warnings,off).
-
-values_equal([],_,_).
-values_equal([X|Xs],[Y/V|Ys],Value):-
-	compare(D,X,Y),
-	values_equal(D,X,Xs,V,Ys,Value).
-
-values_equal(=,_X,Xs,Value,Ys,Value):-
-	values_equal(Xs,Ys,Value).
-values_equal(>,X,Xs,_,[Y/V|Ys],Value):-
-	compare(D,X,Y),
-	values_equal(D,X,Xs,V,Ys,Value).
-
-:- pop_prolog_flag(multi_arity_warnings).
-
 %% %-------------------------------------------------------------------------
 %% % mynonvar(+,+,+)                                                        |
 %% % mynonvar(Vars,Fr,Fv)                                                   |
@@ -1016,62 +942,6 @@ values_equal(>,X,Xs,_,[Y/V|Ys],Value):-
 %% 	share_project(Vars,Sh,NewSh),
 %% 	impossible(NewSh,NewSh,Vars),!,
 %% 	mynonvar(Rest,Sh,Free).
-
-%-------------------------------------------------------------------------
-% propagate_non_freeness(+,+,+,+,-)                                      |
-% propagate_non_freeness(Vars,NonFv,Sh,Fr,NewFr)                         |
-% NewFr is the result of inserting each variable in Vars with value nf,  |
-% if it appears in Sh with a nonfree variable. Otherwise it inserts X/f. |
-%-------------------------------------------------------------------------
-propagate_non_freeness([],_,_,Fr,Fr).
-propagate_non_freeness([X|Xs],NonFv,Sh,[Y/Value|Fr],NewFr):-
-        X @> Y, !,
-	NewFr = [Y/Value|RestNewFr],
-        propagate_non_freeness([X|Xs],NonFv,Sh,Fr,RestNewFr).
-propagate_non_freeness([X|Xs],NonFv,Sh,Fr,NewFr):-
-	ord_split_lists(Sh,X,Sh_Subs,_),
-	ord_intersect_lists(NonFv,Sh_Subs), !,
-	NewFr = [X/nf|RestNewFr],
-	propagate_non_freeness(Xs,NonFv,Sh,Fr,RestNewFr).
-propagate_non_freeness([X|Xs],NonFv,Sh,Fr,[X/f|NewFr]):- 
-	propagate_non_freeness(Xs,NonFv,Sh,Fr,NewFr).
-
-%-------------------------------------------------------------------------
-% add_environment_vars(+,+,-)                                            |
-% add_environment_vars(Fr1,Fr2, NewFr).                                  |
-% Fr2 contains all variables in Fr1 and possibly new ones (Fr1           |
-% corresponds to a prime while Fr2 corresponds to a call)                |
-% Then, NewFr = Fr1 + {X/V in Fr2| X/_ \notin Fr1}                       |
-%-------------------------------------------------------------------------
-
-:- push_prolog_flag(multi_arity_warnings,off).
-
-add_environment_vars([],Fr2,Fr2).
-add_environment_vars([Y/Vy|Fr1],[X/V|Fr2],NewFr):- 
-	compare(D,X,Y),
-	add_environment_vars(D,Y/Vy,Fr1,X/V,Fr2,NewFr).
-
-add_environment_vars(=,Elem,Fr1,_,Fr2,[Elem|NewFr]):-
-	add_environment_vars(Fr1,Fr2,NewFr).
-add_environment_vars(<,Y/Vy,Fr1,El,[X/V|Fr2],[El|NewFr]):-
-	compare(D,X,Y),
-	add_environment_vars(D,Y/Vy,Fr1,X/V,Fr2,NewFr).
-
-:- pop_prolog_flag(multi_arity_warnings).
-
-%-------------------------------------------------------------------------
-% member_value_freeness_differ(+,-,+)                                    |
-% member_value_freeness_differ(Fr,Vars,Value)                            |
-% It returns in Vars the list of variables with freeness value different |
-% from Value                                                             |
-%-------------------------------------------------------------------------
-member_value_freeness_differ([],[],_).
-member_value_freeness_differ([X/Valuex|Rest],ListValue,Value):- 
-	Valuex \== Value,!,
-	ListValue = [X|More],
-	member_value_freeness_differ(Rest,More,Value).
-member_value_freeness_differ([_|Rest],ListValue,Value):- 
-	member_value_freeness_differ(Rest,ListValue,Value).
 
 %-------------------------------------------------------------------------
 % non_free_vars(+,+,+,-,-)                                               %

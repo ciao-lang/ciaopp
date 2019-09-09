@@ -6,6 +6,7 @@
 :- use_module(domain(s_grshfr), [member_value_freeness/3]).
 :- use_module(domain(shfrlin_amgu_aux),
         [shfrlin_amgu_iterate/3, shfrlin_update_fr_lin/3]).
+:- use_module(domain(share_aux), [if_not_nil/4,list_ground/2]).
 
 %------------------------------------------------------------------------%
 % This file implements the domain dependent abstract functions           |
@@ -510,8 +511,3 @@ shfrlin_unknown_entry(Sg,Qv,(Call_sh,Call_fr,[])):-
 shfrlin_empty_entry(Sg,Qv,(Call_sh,Call_fr,Qv)):-
         shfr_empty_entry(Sg,Qv,(Call_sh,Call_fr)).
 
-% The following predicates are defined in share.pl but they're not
-% exported:
-
-if_not_nil([],_,Xs,Xs):- !.
-if_not_nil(_,X,[X|Xs],Xs).

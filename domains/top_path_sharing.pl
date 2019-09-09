@@ -23,6 +23,7 @@
 
 :- use_module(ciaopp(preprocess_flags), [current_pp_flag/2]).
 :- use_module(domain(s_eqs), [keys_and_values/3, simplify_equations/3]).
+:- use_module(domain(share_aux), [if_not_nil/4]).
 %
 :- use_module(library(idlists), [memberchk/2, subtract/3]).
 :- use_module(library(keys), [key_lookup/4]).
@@ -378,9 +379,6 @@ path_asub_to_native(ASub,Qv,_OutFlag,ASub_user,[]):-
 	if_not_nil(Free,free(Free),Info1,Info2),
 	if_not_nil(Gv,ground(Gv),Info2,Info3),
 	if_not_nil(Fv,free(Fv),Info3,[]).
-
-if_not_nil([],_,Xs,Xs):- !.
-if_not_nil(_,X,[X|Xs],Xs).
 
 % TODO: Missing cuts
 path_vars([P|Ps],Vars,Tail):-

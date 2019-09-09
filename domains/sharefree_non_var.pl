@@ -1,13 +1,8 @@
-% :- doc(title, "sharing+freeness+nonvar (abstract domain)").
+:- module(sharefree_non_var, [], [assertions, isomodes]).
 
-/*             Copyright (C)1990-94 UPM-CLIP				*/
-
-%------------------------------------------------------------------------%
-%                                                                        %
-%                          started: 23/7/96                              %
-%                  programmer: M. Garcia de la Banda                     %
-%                                                                        %
-%------------------------------------------------------------------------%
+:- doc(title, "sharing+freeness+nonvar (abstract domain)").
+% started: 23/7/96
+:- doc(author, "Maria Garcia de la Banda").
 
 %------------------------------------------------------------------------%
 %                    Meanning of the Program Variables                   %
@@ -36,6 +31,82 @@
 %            by the numbers                                              %
 % Rest are as in domain_dependent.pl                                     %
 %------------------------------------------------------------------------%
+
+:- use_module(library(sets), 
+	[ insert/3, 
+	  merge/3,
+	  ord_intersect/2,
+	  ord_intersection_diff/4,
+	  ord_subset/2, 
+	  ord_subtract/3,
+ 	  ord_test_member/3
+	]).
+:- use_module(library(terms_vars), [varset/2, varset0/2, varset_in_args/2]).
+:- use_module(domain(sharing),
+	[ project_share/3,
+	  share_less_or_equal/2,
+	  share_project/3,
+	  % TODO: move to other shared module?
+	  script_p_star/3,
+	  script_p/3
+	]).
+:- use_module(domain(sharefree),
+	[ shfr_asub_to_native/5,
+	  shfr_input_interface/4,
+	  shfr_input_user_interface/3,
+	  shfr_project/3,
+	  shfr_sort/2,
+	  % TODO: move to other shared module?
+	  project_freeness/3,
+	  project_freeness_n/3,
+	  propagate_non_freeness/5,
+	  make_dependence/5,
+	  add_environment_vars/3,
+	  all_terms_identical/2,
+	  change_values/4,
+	  change_values_if_f/4,
+	  change_values_if_not_g/4,
+	  values_differ/3,
+	  take_coupled/3,
+	  prune/4,
+	  prune/5,
+	  partition_sf/4,
+	  update_lambda_non_free/5,
+	  update_lambda_sf/5,
+	  split_coupled/4,
+	  values_equal/3,
+	  compute_lub_sh/3,
+	  covering/3,
+	  eliminate_non_element/4,
+	  insert_each/3,
+	  member_value_freeness_differ/3,
+	  obtain_freeness/2
+	]).
+:- use_module(domain(s_grshfr), 
+	[ change_values_if_differ/5,
+	  change_values_insert/4,
+	  collect_vars_freeness/2,
+	  member_value_freeness/3, 
+	  projected_gvars/3,
+	  var_value/3
+	]).
+:- use_module(library(lists), [list_to_list_of_lists/2]).
+:- use_module(library(lsets), 
+	[ closure_under_union/2,
+	  merge_each/3,
+	  merge_list_of_lists/2, 
+	  merge_lists/3,
+	  ord_split_lists/4,
+	  ord_split_lists_from_list/4,
+	  powerset_of_set_of_sets/2,
+	  sort_list_of_lists/2
+	]).
+:- use_module(domain(s_eqs), [simplify_equations/3]).
+	
+:- use_module(domain(share_aux)).
+
+:- use_module(library(sort)).
+:- use_module(library(terms_check), [variant/2]).
 
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
@@ -592,6 +663,12 @@ shfrnv_input_interface(Info,Kind,(Sh0,Fr,Nv),(Sh,Fr,Nv)):-
 shfrnv_input_interface(not_free(X),perfect,(Sh,Fr,Nv0),(Sh,Fr,Nv)):-
 	var(X),
 	myinsert(Nv0,X,Nv).
+
+myinsert(Fr0,X,Fr):-
+	var(Fr0), !,
+	Fr = [X].
+myinsert(Fr0,X,Fr):-
+	insert(Fr0,X,Fr).
 
 %% %------------------------------------------------------------------------%
 %% % shfrnv_output_interface(+,-)                                             %

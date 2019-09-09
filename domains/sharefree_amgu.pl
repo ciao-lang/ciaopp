@@ -8,7 +8,9 @@
 	  collect_vars_freeness/2,
 	  var_value/3,
 	  change_values_insert/4]).
+:- use_module(domain(share_aux), [list_ground/2]).
 
+:- use_module(domain(sharefree)).
 :- use_module(domain(sharefree_amgu_aux)).
 
 %------------------------------------------------------------------------%
@@ -315,155 +317,29 @@ sharefree_amgu_call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,Succ):-
 %            Intermediate Functions                                      |
 %------------------------------------------------------------------------%
 
-%------------------------------------------------------------------------%
-% change_values_if_f(+,+,-,+)                                            |
-% change_values_if_f(Vars,Fr,NewFr,Value)                                |
-% Forall X in Vars, there must exist an X/V in Fr. If so:                |
-%    * if V is f or nf(_,_), X/V is replaced by X/Value                  |
-%    * else, X/V remains unchanged                                       |
-% Otherwise (X/V not in Fr) it fails                                     |
-%------------------------------------------------------------------------%
-:- push_prolog_flag(multi_arity_warnings,off).
-change_values_if_f([],Xs,Xs,_).
-change_values_if_f([Y|Ys],[X/V|Xs],Z,Value):- 
-	compare(D,Y,X),
-	change_values_if_f(D,Y,Ys,X/V,Xs,Z,Value).
-
-change_values_if_f(=,Y,Ys,_X/V,Xs,[Y/V1|Zs],Value):-
-	( (V = f; V = nf(_,_)) ->
-	    V1 = Value
-	;   V1 = V
-        ),
-	change_values_if_f(Ys,Xs,Zs,Value).
-change_values_if_f(>,Y,Ys,Elem,[X/V|Xs],[Elem|Zs],Value):- 
-	compare(D,Y,X),
-	change_values_if_f(D,Y,Ys,X/V,Xs,Zs,Value).
-:- pop_prolog_flag(multi_arity_warnings).
-
-%-------------------------------------------------------------------------
-% update_lambda_non_free(+,+,+,-,-)                                      |
-% update_lambda_non_free(Gv,Fr,Sh,NewFr,NewSh)                           |
-% Identical to update_lambda_sf but:                                     |
-% *  it tests that the variables that become ground are not free.        |
-%    The reason is that Ground should be ground already, and therefore   |
-%    they cannot make a definitely free variable to become ground        |
-% *  it does not change the freeness value of any variable from f to nf  |
-%    The same reason                                                     |
-%-------------------------------------------------------------------------
-update_lambda_non_free([],Fr,Sh,Fr,Sh).
-update_lambda_non_free([X|Xs],Fr,Sh,Fr1,Sh1):-
-	ord_split_lists_from_list([X|Xs],Sh,Intersect,Sh1),
-	merge_list_of_lists(Intersect,Coupled),
-	merge_list_of_lists(Sh1,NotCoupled),
-	ord_subtract(Coupled,NotCoupled,NewGv),
-	change_values_if_differ(NewGv,Fr,Fr1,g,f).
-
-%-------------------------------------------------------------------------
-% values_equal(+,+,+)                                                    |
-% values_equal(Vars,Fr,Value)                                            |
-% Satisfied if the freeness values of all variables in Vars is equal to  |
-% Value.                                                                 |
-%-------------------------------------------------------------------------
-
-:- push_prolog_flag(multi_arity_warnings,off).
-
-values_equal([],_,_).
-values_equal([X|Xs],[Y/V|Ys],Value):-
-	compare(D,X,Y),
-	values_equal(D,X,Xs,V,Ys,Value).
-
-values_equal(=,_X,Xs,Value,Ys,Value):-
-	values_equal(Xs,Ys,Value).
-values_equal(>,X,Xs,_,[Y/V|Ys],Value):-
-	compare(D,X,Y),
-	values_equal(D,X,Xs,V,Ys,Value).
-
-:- pop_prolog_flag(multi_arity_warnings).
-
-%-------------------------------------------------------------------------
-% update_lambda_sf(+,+,+,-,-)                                            |
-% update_lambda_sf(Gv,Fr,Sh,NewFr,NewSh)                                 |
-% Identical to decide_update_lambda but since it is not call from the    |
-% abstract unification, no test on the Hv is needed                      |
-%-------------------------------------------------------------------------
-update_lambda_sf([],Fr,Sh,Fr,Sh):- !.
-update_lambda_sf(Gv,Fr,Sh,Fr1,Sh1):-
-	ord_split_lists_from_list(Gv,Sh,Intersect,Sh1),
-	merge_list_of_lists(Intersect,Coupled),
-	merge_list_of_lists(Sh1,NotCoupled),
-	ord_intersection_diff(Coupled,NotCoupled,NonFv,NewGv),
-	change_values(NewGv,Fr,Temp_Fr,g),
-	change_values_if_f(NonFv,Temp_Fr,Fr1,nf).
-
-%-------------------------------------------------------------------------
-% obtain_prime_var_var(+,+,-)                                            |
-% obtain_prime_var_var([X/V,Y/V],Call,Success)                           |
-% handles the case X = Y where both X,Y are variables which freeness     |
-% value \== g                                                            |
-%-------------------------------------------------------------------------
-obtain_prime_var_var([X/f,Y/f],(Call_sh,Call_fr),Succ):- !,
-	ord_split_lists(Call_sh,X,Intersect,Disjoint),
-	ord_split_lists(Disjoint,Y,OnlyY,NonXY),
-	ord_split_lists(Intersect,Y,XY,OnlyX),
-	merge_lists(OnlyY,OnlyX,BothXY),
-	merge(XY,NonXY,Succ1),
-	merge(BothXY,Succ1,Succ_sh),
-	Succ = (Succ_sh,Call_fr).
-obtain_prime_var_var([X/_,Y/_],Call,Succ):-
-	Prime = ([[X,Y]],[X/nf,Y/nf]),
-	shfr_extend(Prime,[X,Y],Call,Succ).
+:- use_module(domain(sharefree), [
+	update_lambda_non_free/5,
+	values_equal/3,
+	change_values/4,
+	change_values_if_f/4,
+	update_lambda_sf/5,
+	insert_each/3,
+	take_coupled/3,
+	obtain_prime_var_var/3
+	]).
 
 %-------------------------------------------------------------------------
 
 product(f,X,VarsY,_,Sh,Lda_fr,Prime_sh,Prime_fr):-
-	share_project(VarsY,Sh,Temp),
+	share_project(VarsY,Sh,Temp), % TODO: why not project_share/3 like in sharefree.pl?
 	insert_each(Temp,X,Temp1),
 	sort_list_of_lists(Temp1,Prime_sh),
 	take_coupled(Sh,[X],Coupled),
 	change_values_if_f(Coupled,Lda_fr,Prime_fr,nf).
 product(nf,X,VarsY,Sv,Sh,Lda_fr,Prime_sh,Prime_fr):-
-	share_project(VarsY,Sh,Temp),
+	share_project(VarsY,Sh,Temp), % TODO: why not project_share/3 like in sharefree.pl?
 	closure_under_union(Temp,Temp1),
 	merge_each([X],Temp1,Temp2),
 	sort(Temp2,Prime_sh),
 	take_coupled(Sh,Sv,Coupled),
 	change_values_if_f(Coupled,Lda_fr,Prime_fr,nf).
-	
-insert_each([],_,[]).
-insert_each([L|Ls],X,[[X|L]|Rest]):-
-	insert_each(Ls,X,Rest).
-
-%-------------------------------------------------------------------------
-% take_coupled(+,+,-)                                                    |
-% take_coupled(Sh,Vars,Coupled)                                          |
-% Sh is a list of lists of variables, Vars is a list of variables        |
-% Returns in Coupled the list of variables X s.t. exists at least        |
-% one list in Sh containing X and at least one element in Vars.          |
-%-------------------------------------------------------------------------
-take_coupled(Sh,Vars_u,Coupled):-
-	sort(Vars_u,Vars),
-	ord_split_lists_from_list(Vars,Sh,Intersect,_),
-	merge_list_of_lists(Intersect,IntVars),
-	merge(Vars,IntVars,Coupled).
-
-%-------------------------------------------------------------------------
-% change_values(+,+,-,+)                                                 %
-% change_values(Vars,Fr,NewFr,Value)                                     %
-% Forall X in Vars, there must exist an X/V in Fr. If so, it             %
-% changes V to Value. Otherwise it fails                                 %
-%-------------------------------------------------------------------------
-
-:- push_prolog_flag(multi_arity_warnings,off).
-
-change_values([],Ys,Ys,_).
-change_values([X|Xs],[Y/V|Ys],Z,Value):-
-	compare(D,X,Y),
-	change_values(D,X,Y/V,Xs,Ys,Z,Value).
-
-change_values(=,X,_,Xs,Ys,[X/Value|Z],Value):-
-	change_values(Xs,Ys,Z,Value).
-change_values(>,X,Y/Val,Xs,[Y1/V|Ys],[Y/Val|Z],Value):-
-	compare(D,X,Y1),
-	change_values(D,X,Y1/V,Xs,Ys,Z,Value).
-
-:- pop_prolog_flag(multi_arity_warnings).

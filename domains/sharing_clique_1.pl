@@ -11,6 +11,7 @@
 	 nrel_clique_1/3,
 	 split_list_of_lists_singleton/3
       ]).
+:- use_module(domain(share_aux), [if_not_nil/4,handle_each_indep/4]).
 
 %------------------------------------------------------------------------%
 %                       1-CLIQUE-Sharing domain                          % 

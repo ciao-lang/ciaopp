@@ -32,7 +32,7 @@
 :- include(sharing_clique_1).
 :- include(sharing_clique_def).
 :- include(sharefree_clique_def).
-:- use_module(ciaopp(preprocess_flags), [ current_pp_flag/2]).
+:- use_module(ciaopp(preprocess_flags), [current_pp_flag/2]).
 
 %------------------------------------------------------------------------%
 % REMARK:                                                                |
@@ -84,96 +84,11 @@ type_widening(X):- current_pp_flag(clique_widen_type,X).
 type_widening_condition(bamgu). 
 %------------------------------------------------------------------------%
 
-% The following predicates are defined in share.pl but they're not
-% exported:
+:- use_module(domain(share_aux), [
+	eliminate_couples/4,
+	handle_each_indep/4,
+	eliminate_if_not_possible/3,
+	test_temp/2,
+	eliminate_if_not_possible/4]).
 
-if_not_nil([],_,Xs,Xs):- !.
-if_not_nil(_,X,[X|Xs],Xs).
-
-list_ground([],[]).
-list_ground([X|Xs],[X/g|Rest]):-
-	list_ground(Xs,Rest).
-
-%------------------------------------------------------------------------
-% eliminate_couples(+,+,+,-)                                             |
-% eliminate_couples(Sh,Xs,Ys,NewSh)                                      |
-% Eliminates from Sh all SS s.t. both X,Y\in SS for some X\in Xs,Y\in Ys |
-% All arguments ordered                                                  |
-%------------------------------------------------------------------------
-
-eliminate_couples([],_,_,[]):- !.
-eliminate_couples(Sh,Xs,Ys,NewSh) :-
-	ord_split_lists_from_list(Xs,Sh,Intersect,Disjunct1),
-	ord_split_lists_from_list(Ys,Intersect,_,Disjunct2),
-	merge(Disjunct2,Disjunct1,NewSh).
-
-%------------------------------------------------------------------------
-
-handle_each_indep([],_AbsInt,Call,Call).
-handle_each_indep([[X,Y]|Rest],AbsInt,Call,Succ):-
-	success_builtin(AbsInt,'indep/2',_,p(X,Y),Call,Succ1), !,
-	handle_each_indep(Rest,AbsInt,Succ1,Succ).
-
-success_builtin(share,Key,Sv,Vs,Call,Succ):-
-	share_success_builtin(Key,Sv,Vs,Call,Succ).
-success_builtin(shfr,Key,Sv,Vs,Call,Succ):-
-	shfr_success_builtin(Key,Sv,Vs,Call,Succ).
-success_builtin(shfrnv,Key,Sv,Vs,Call,Succ):-
-	shfrnv_success_builtin(Key,Sv,Vs,Call,Succ).
-
-%-----------------------------------------------------------------------%
-% eliminate_if_not_possible(+,+,-)                                      |
-% eliminate_if_not_possible(ASub,Vars,More)                             |
-% It gives in the third argument each set S in the first argument which |
-% has variables in common with Vars but Vars is not a subset of S       |
-%-----------------------------------------------------------------------%
-
-eliminate_if_not_possible([],_,X-X).
-eliminate_if_not_possible([Z|Rest],Vars,More):-
-	ord_intersection(Vars,Z,Term),
-	test_temp(Term,Vars), !,
-	eliminate_if_not_possible(Rest,Vars,More).
-eliminate_if_not_possible([Z|Rest],Vars,[Z|More]-More2):-
-	eliminate_if_not_possible(Rest,Vars,More-More2).
-
-test_temp([],_).
-test_temp([X|Xs],List):-
-	[X|Xs] == List.
-
-%-----------------------------------------------------------------------%
-% eliminate_if_not_possible(+,+,+,-)                                    |
-% eliminate_if_not_possible(ASub,X,Vars,More)                           |
-% It gives as a diff list each set S in ASub s.t. either X appears in S | 
-% and no element of Vars appears in S or                                |
-% X does not appear but at least on element in Vars appears             |
-%-----------------------------------------------------------------------%
-
-:- push_prolog_flag(multi_arity_warnings,off).
-
-eliminate_if_not_possible([],_,_,X-X).
-eliminate_if_not_possible([Z|Rest],X,Vars,More):-
-	ord_intersection(Vars,Z,V), !,
-	test_set(V,X,Z,Rest,Vars,More).
-eliminate_if_not_possible([Z|Rest],X,Vars,More):-
-	ord_member(X,Z), !,
-	eliminate_if_not_possible(Rest,X,Vars,More).
-eliminate_if_not_possible([Z|Rest],X,Vars,[Z|More]-More1):-
-	eliminate_if_not_possible(Rest,X,Vars,More-More1).
-	
-:- pop_prolog_flag(multi_arity_warnings).
-
-test_set([],X,Z,Rest,Vars,More):-
-	ord_member(X,Z),!,
-	More = [Z|Rest1]-Rest2,
-	eliminate_if_not_possible(Rest,X,Vars,Rest1-Rest2).
-test_set([],X,_,Rest,Vars,More):- !,
-	eliminate_if_not_possible(Rest,X,Vars,More).
-test_set([_|_],X,Z,Rest,Vars,More):-
-	ord_member(X,Z),!,
-	eliminate_if_not_possible(Rest,X,Vars,More).
-test_set([_|_],X,Z,Rest,Vars,More):- !,
-	More = [Z|Rest1]-Rest2,
-	eliminate_if_not_possible(Rest,X,Vars,Rest1-Rest2).
-
-
-
+:- use_module(domain(share_aux), [append_dl/3]).
