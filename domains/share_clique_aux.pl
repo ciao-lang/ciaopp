@@ -24,12 +24,7 @@
 	 update_clique/4,
 	 intersect_all/2,
 	 number_of_subsets/2,
-	 list_if_not_nil/2,	 
-% for running benchmarks
-	 card_cliques/2,
-	 minimize/3,
-	 number_of_norma/1,
-	 clean_number_of_norma/0
+	 list_if_not_nil/2
         ],
 	[assertions, isomodes]).
 
@@ -68,7 +63,6 @@
 :- use_module(library(between), 
 	[between/3]).
 :- use_module(domain(share_amgu_aux)).
-:- use_module(library(aggregates), [findall/3]). % for number_of_norma/1
 
 %------------------------------------------------------------------------%
 % REMARK:                                                                |
@@ -556,8 +550,8 @@ minimize([Sh|Shs],Cl,Sh1):-
 % The complexity is NP-complete (maximal clique in an undirected graph)  |
 %------------------------------------------------------------------------%
 
-:- use_package(datafacts).
-:- data norma_done/0.
+% :- use_package(datafacts).
+% :- data norma_done/0.
 
 :- push_prolog_flag(multi_arity_warnings,off).
 	
@@ -570,7 +564,7 @@ normalize(SH,T,M,SH1):-
 normalize((Cl,Sh),Th,M,SH1,Continue):-	
 	process_candidate((Cl,Sh),Th,M,SH,Continue),!,
 	( var(Continue) ->   % It there may be more candidates	  
-	    asserta_fact(norma_done),
+%	    asserta_fact(norma_done),
 	    normalize(SH,Th,M,SH1,Continue)
         ; 
 	  Continue = not,    % there are not more candidates
@@ -731,17 +725,25 @@ minimum_cardinality(3).
 check_threshold(T,Res):-
 	between(0,100,T),
 	Res is T /100.
-	
-% This predicate is used for tests. For this, it is necessary to 
-% export it.
- 
-card_cliques(Cl,J):-
-	length(Cl,End),
-	compute_inc_exc(Cl,1,End,plus,0,J).
 
-number_of_norma(N):-
-	findall(norma_done,norma_done,L),
-	length(L,N),
-	retractall_fact(norma_done).
-clean_number_of_norma:-
-	retractall_fact(norma_done).
+% ---------------------------------------------------------------------------
+% (for running benchmarks)
+
+% :- use_module(library(aggregates), [findall/3]). % for number_of_norma/1
+% 	
+% :- export(card_cliques/2).
+% % This predicate is used for tests. For this, it is necessary to 
+% % export it. 
+% card_cliques(Cl,J):-
+% 	length(Cl,End),
+% 	compute_inc_exc(Cl,1,End,plus,0,J).
+% 
+% :- export(number_of_norma/1).
+% number_of_norma(N):-
+% 	findall(norma_done,norma_done,L),
+% 	length(L,N),
+% 	retractall_fact(norma_done).
+% 
+% :- export(clean_number_of_norma/0).
+% clean_number_of_norma:-
+% 	retractall_fact(norma_done).
