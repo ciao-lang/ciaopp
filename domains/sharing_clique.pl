@@ -983,7 +983,7 @@ share_clique_success_builtin('==/2',Sv_u,p(X,Y),Call,Succ):-
 	ord_union(Cl,Sh,All),
 	projected_gvars(All,Sv,Ground),  
 %% clique-part
-	clique_make_descomposition(Binds,Cl,Ground,NewGround,NewSH),
+	clique_make_decomposition(Binds,Cl,Ground,NewGround,NewSH),
 	sort(NewGround,NewGround1),
 	NewSH = (Succ_Cl,Sh1),
 %	share_clique_normalize(NewSH,(Succ_Cl,Sh1)),
@@ -1086,8 +1086,8 @@ share_clique_call_to_success_builtin('arg/3',arg(X,Y,Z),_,Call,Proj,Succ):- !,
 %                      Intermediate operations                           |
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% clique_make_descomposition(+,+,+,-,-):-                                |
-% clique_make_descomposition(Eqs,Cl,Ground,NewGround,NewSH):-            | 
+% clique_make_decomposition(+,+,+,-,-):-                                |
+% clique_make_decomposition(Eqs,Cl,Ground,NewGround,NewSH):-            | 
 % It gives the adecuate abstract substitution                            |
 % resulting of the unification of A and B when ==(A,B) was called.       |
 % If neither X nor Term in one binding is ground, since they have to     |
@@ -1096,36 +1096,36 @@ share_clique_call_to_success_builtin('arg/3',arg(X,Y,Z),_,Call,Proj,Succ):- !,
 % variable in Term appears also in C. Therefore, we have to decompose    |
 % the initial clique in subcliques and sharing sets such that either only| 
 % X or only variables of Term cannot appear. The difference wrt          |
-% share_make_reduction/5 is that clique_make_descomposition/5 returns    |
+% share_make_reduction/5 is that clique_make_decomposition/5 returns    |
 % the final elements and share_make_reduction/5 returns the sharing sets |
 % that have to be eliminated.                                            |
 %------------------------------------------------------------------------%
 
-:- export(clique_make_descomposition/5).
-clique_make_descomposition([],_,_,[],([],[])).
-clique_make_descomposition([(X,VarsTerm)|More],Cl,Ground,NewGround,NewSH):-
+:- export(clique_make_decomposition/5).
+clique_make_decomposition([],_,_,[],([],[])).
+clique_make_decomposition([(X,VarsTerm)|More],Cl,Ground,NewGround,NewSH):-
 	ord_member(X,Ground), !,
-	clique_make_descomposition(More,Cl,Ground,NewGround1,NewSH1),
+	clique_make_decomposition(More,Cl,Ground,NewGround1,NewSH1),
 	append(VarsTerm,NewGround1,NewGround),
         ord_difference_list_of_lists(Cl,VarsTerm,NewCl),
 	sort_list_of_lists(NewCl,NewCl1),
 	ord_union_w((NewCl1,[]),NewSH1,NewSH).
-clique_make_descomposition([(X,VarsTerm)|More],Cl,Ground,[X|NewGround],NewSH):-
+clique_make_decomposition([(X,VarsTerm)|More],Cl,Ground,[X|NewGround],NewSH):-
 	ord_subset(VarsTerm,Ground), !,
-	clique_make_descomposition(More,Cl,Ground,NewGround,NewSH1),
+	clique_make_decomposition(More,Cl,Ground,NewGround,NewSH1),
         ord_difference_list_of_lists(Cl,[X],NewCl),
 	sort_list_of_lists(NewCl,NewCl1),
 	ord_union_w((NewCl1,[]),NewSH1,NewSH).
-clique_make_descomposition([(X,[Y])|More],Cl,Ground,NewGround,NewSH):-
+clique_make_decomposition([(X,[Y])|More],Cl,Ground,NewGround,NewSH):-
 	var(Y), !,
 	sort([X,Y],Vars),
 	decompose_if_not_possible(Cl,Vars,NewSH0),  
-	clique_make_descomposition(More,Cl,Ground,NewGround,NewSH1),
+	clique_make_decomposition(More,Cl,Ground,NewGround,NewSH1),
 	ord_union_w(NewSH0,NewSH1,NewSH).
-clique_make_descomposition([(X,VarsTerm)|More],Cl,Ground,NewGround,NewSH):-
+clique_make_decomposition([(X,VarsTerm)|More],Cl,Ground,NewGround,NewSH):-
 	ord_subtract(VarsTerm,Ground,List),
 	decompose_if_not_possible(Cl,X,List,NewSH0), 
-	clique_make_descomposition(More,Cl,Ground,NewGround,NewSH1),
+	clique_make_decomposition(More,Cl,Ground,NewGround,NewSH1),
 	ord_union_w(NewSH0,NewSH1,NewSH).
 
 %-----------------------------------------------------------------------%

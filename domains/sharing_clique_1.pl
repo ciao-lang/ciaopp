@@ -75,7 +75,7 @@
 	share_make_reduction/5,
 	projected_gvars_clique/3,
 	clique_part_less_or_equal/2,
-	clique_make_descomposition/5,
+	clique_make_decomposition/5,
 	asub_gt/2,
 	prune_success/5,
 	powerset_with_empty_set/2,
@@ -649,7 +649,7 @@ share_clique_1_success_builtin('==/2',Sv_u,p(X,Y),Call,Succ):-
 	ord_union(Cl,Sh,All),
 	projected_gvars(All,Sv,Ground),  
 %% clique-part
-	clique_make_descomposition(Binds,Cl,Ground,NewGround,NewSH),
+	clique_make_decomposition(Binds,Cl,Ground,NewGround,NewSH),
 	sort(NewGround,NewGround1),
 	NewSH = (Succ_Cl,Sh1),
 %	share_clique_normalize(NewSH,(Succ_Cl,Sh1)),
