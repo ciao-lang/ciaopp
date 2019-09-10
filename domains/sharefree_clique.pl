@@ -1,30 +1,9 @@
-/*             Copyright (C)2004-2005 UNM-CLIP				*/
+:- module(sharefree_clique, [], [assertions, isomodes]).
 
-% :- doc(title, "clique+sharing+freeness (abstract domain)").
-:- doc(author,"Jorge Navas").
+:- doc(title, "CLIQUE-Sharing+Freeness domain").
+:- doc(author, "Jorge Navas").
+% Copyright (C) 2004-2019 The Ciao Development Team
 
-:- use_module(domain(s_grshfr), 
-        [change_values_insert/4,
-	 create_values/3,
-	 change_values_if_differ/5,
-	 var_value/3,
-	 projected_gvars/3]).
-:- use_module(library(lists), [list_to_list_of_lists/2]).
-:- use_module(library(terms_vars), [varset0/2,varset/2]).
-:- use_module(domain(share_amgu)).
-:- use_module(domain(s_grshfr),
-        [collect_vars_freeness/2, member_value_freeness/3]).
-:- use_module(library(lsets), [ord_intersect_lists/2, ord_split_lists/4]).
-
-:- use_module(domain(sharefree)).
-:- use_module(domain(sharefree_clique_aux)).
-:- use_module(domain(sharefree_amgu_aux)).
-
-:- use_module(domain(share_aux), [
-	append_dl/3,if_not_nil/4,handle_each_indep/4,list_ground/2]).
-
-%------------------------------------------------------------------------%
-%                       CLIQUE-Sharing+Freeness domain                   % 
 %------------------------------------------------------------------------%
 % This file contains an extension (freeness) of the domain dependent     |
 % abstract functions for the clique-sharing domain.                      |
@@ -34,10 +13,66 @@
 %------------------------------------------------------------------------%
 % The meaning of the variables are defined in sharefree.pl                 
 %------------------------------------------------------------------------%
-%                                                                        |
-%        programmer: J. Navas                                            |
-%                                                                        |
-%------------------------------------------------------------------------%
+
+:- use_module(library(sets), [
+	ord_subset/2,
+	ord_subtract/3,
+	ord_union/3,
+	ord_intersection/3,
+	ord_member/2,
+	merge/3,
+	insert/3,
+	ord_intersection_diff/4]).
+:- use_module(library(sort), [sort/2]).
+:- use_module(library(lsets), [
+	ord_intersect_lists/2,
+	ord_split_lists/4,
+	sort_list_of_lists/2,
+	merge_list_of_lists/2,
+	ord_split_lists_from_list/4]).
+:- use_module(library(terms_check), [variant/2]).
+:- use_module(library(lists), [list_to_list_of_lists/2]).
+:- use_module(library(terms_vars), [varset0/2,varset/2]).
+
+:- use_module(domain(share_amgu_sets), [delete_vars_from_list_of_lists/3]).
+:- use_module(domain(sharing_clique), [
+	share_clique_extend/4,
+	share_clique_extend_asub/3,
+	share_clique_glb/3,
+	share_clique_input_interface/4,
+	share_clique_input_user_interface/3,
+	share_clique_less_or_equal/2,
+	share_clique_lub_cl/3,
+	share_clique_project/3,
+	share_clique_sort/2,
+	share_clique_widen/4,
+	may_be_var/2,
+	eliminate_couples_clique/4]).
+:- use_module(domain(share_clique_aux), [
+	star_w/2, rel_w/3, irrel_w/3, bin_union_w/3, ord_union_w/3,
+	share_clique_normalize/2,
+	share_clique_normalize/4]).
+
+:- use_module(domain(s_grshfr), 
+        [change_values_insert/4,
+	 create_values/3,
+	 change_values_if_differ/5,
+	 var_value/3,
+	 projected_gvars/3]).
+:- use_module(domain(share_amgu)).
+:- use_module(domain(s_grshfr),
+        [collect_vars_freeness/2, member_value_freeness/3]).
+
+:- use_module(domain(sharefree)).
+:- use_module(domain(sharefree_clique_aux)).
+:- use_module(domain(sharefree_amgu_aux)).
+
+:- use_module(domain(share_aux), [
+	eliminate_couples/4,
+	append_dl/3,
+	if_not_nil/4,
+	handle_each_indep/4,
+	list_ground/2]).
 
 :- doc(bug,"1. In case of success multivariance the predicate
            eliminate_equivalent/2 must de redefined.").

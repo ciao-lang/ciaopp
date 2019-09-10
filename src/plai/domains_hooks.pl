@@ -701,7 +701,7 @@ unknown_call(shfrlin_amgu,Sg,Vars,Call,Succ) :- !, shfrlin_unknown_call(Sg,Vars,
 unknown_entry(shfrlin_amgu,Sg,Qv,Call) :- !, shfrlin_unknown_entry(Sg,Qv,Call).
 empty_entry(shfrlin_amgu,Sg,Qv,Call) :- !, shfrlin_empty_entry(Sg,Qv,Call).
 % ---------------------------------------------------------------------------
-:- use_module(domain(share_clique)).
+:- use_module(domain(sharing_clique)).
 aidomain(share_clique).
 amgu(share_clique,Sg,Head,ASub,NewASub) :- !, share_clique_amgu(Sg,Head,ASub,NewASub).
 augment_asub(share_clique,ASub,Vars,ASub0) :- !, share_clique_extend_asub(ASub,Vars,ASub0).
@@ -727,6 +727,7 @@ unknown_entry(share_clique,Sg,Qv,Call) :- !, share_clique_unknown_entry(Sg,Qv,Ca
 empty_entry(share_clique,Sg,Qv,Call) :- !, share_clique_empty_entry(Sg,Qv,Call).
 %% compute_lub_el(share_clique,ASub1,ASub2,ASub) :- !, share_clique_lub_cl(ASub1,ASub2,ASub).
 % ----------
+:- use_module(domain(sharing_clique_1)).
 aidomain(share_clique_1).
 call_to_entry(share_clique_1,Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo) :- !, share_clique_1_call_to_entry(Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo).
 exit_to_prime(share_clique_1,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime) :- !, share_clique_1_exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime).
@@ -750,6 +751,7 @@ unknown_entry(share_clique_1,Sg,Qv,Call) :- !, share_clique_1_unknown_entry(Sg,Q
 empty_entry(share_clique_1,Sg,Qv,Call) :- !, share_clique_empty_entry(Sg,Qv,Call).
 %% compute_lub_el(share_clique_1,ASub1,ASub2,ASub) :- !, share_clique_1_lub_cl(ASub1,ASub2,ASub).
 % ----------
+:- use_module(domain(sharefree_clique)).
 aidomain(sharefree_clique).
 amgu(sharefree_clique,Sg,Head,ASub,NewASub) :- !, sharefree_clique_amgu(Sg,Head,ASub,NewASub).
 augment_asub(sharefree_clique,ASub,Vars,ASub0) :- !, sharefree_clique_extend_asub(ASub,Vars,ASub0).
@@ -776,6 +778,7 @@ unknown_entry(sharefree_clique,Sg,Qv,Call) :- !, sharefree_clique_unknown_entry(
 empty_entry(sharefree_clique,Sg,Qv,Call) :- !, sharefree_clique_empty_entry(Sg,Qv,Call).
 %% compute_lub_el(sharefree_clique,ASub1,ASub2,ASub) :- !, sharefree_clique_compute_lub_el(ASub1,ASub2,ASub).
 % ----------
+:- use_module(domain(sharing_clique_def)).
 aidomain(share_clique_def).
 call_to_entry(share_clique_def,Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo) :- !, share_clique_def_call_to_entry(Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo).
 exit_to_prime(share_clique_def,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime) :- !, share_clique_def_exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime).
@@ -814,6 +817,7 @@ share_clique_def_body_succ_builtin((TSH,Tdef),Sg,(CSH,Cdef),Sv,HvFv,Call,Proj,Su
 share_clique_def_body_succ_builtin(Type,Sg,Condvs,Sv,HvFv_u,Call,Proj,Succ) :- % TODO: for \+Type=(_,_), is it OK?
 	body_builtin(share_clique_def,Type,Sg,Condvs,Sv,HvFv_u,Call,Proj,Succ).
 % ----------
+:- use_module(domain(sharefree_clique_def)).
 aidomain(sharefree_clique_def).
 call_to_entry(sharefree_clique_def,Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo) :- !, sharefree_clique_def_call_to_entry(Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo).
 exit_to_prime(sharefree_clique_def,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime) :- !, sharefree_clique_def_exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime).

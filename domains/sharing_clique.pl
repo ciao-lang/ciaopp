@@ -1,21 +1,10 @@
-/*             Copyright (C)2004-2005 UNM-CLIP				*/
-
-% :- doc(title, "clique+sharing (abstract domain)").
-:- doc(author,"Jorge Navas").
-
+:- module(sharing_clique, [], [assertions, isomodes]).
 :- use_package(dynamic). % TODO: datafacts should be enough
 
-:- use_module(domain(sharing)).
-:- use_module(domain(share_clique_aux)).
-:- use_module(domain(share_amgu_aux)).
-:- use_module(domain(share_aux), [if_not_nil/4,handle_each_indep/4]).
+:- doc(title, "CLIQUE-Sharing domain").
+:- doc(author, "Jorge Navas").
+% Copyright (C) 2004-2019 The Ciao Development Team
 
-:- use_module(library(lists), [length/2]).
-:- use_module(library(terms_check), [variant/2]).
-:- use_module(library(aggregates), [findall/3]). % (for number_of_widening/1)
-:- use_module(library(messages), [error_message/1]).
-%------------------------------------------------------------------------%
-%                        CLIQUE-Sharing domain                           % 
 %------------------------------------------------------------------------%
 % This file contains the domain dependent abstract functions for the     |
 % clique-sharing domain defined by Hill, Bagnara and Zaffanella (for     |
@@ -30,10 +19,13 @@
 %------------------------------------------------------------------------%
 % The meaning of the variables are defined in sharing.pl                 
 %------------------------------------------------------------------------%
-%                                                                        |
-%        programmer: J. Navas                                            |
-%                                                                        |
+
 %------------------------------------------------------------------------%
+% REMARK: In order to number how many widening process have been
+% performed, we assert a fact for each one. To take time measurings, we
+% recommend you to comment it.
+%------------------------------------------------------------------------%
+
 :- doc(bug,"1. In case of success multivariance the predicate
            eliminate_equivalent/2 must be redefined.").
 :- doc(bug,"2. The builtin ==/2 is defined but it is not used. For 
@@ -44,9 +36,62 @@
 :- doc(bug,"4. The non-redundant version is not working because the 
 	   semantics of the builtins has not been defined yet.").
 
-% REMARK: In order to number how many widening process have been
-% performed, we assert a fact for each one. To take time measurings, we
-% recommend you to comment it.
+:- use_module(library(lsets), 
+	       [sort_list_of_lists/2,
+		ord_split_lists_from_list/4,
+		merge_list_of_lists/2,
+		ord_member_list_of_lists/2
+		]).	  
+:- use_module(library(sets), 
+              [
+	       ord_subset/2,
+	       ord_subtract/3,
+	       ord_union/3,
+	       ord_intersection/3,
+	       ord_member/2,
+	       merge/3,
+	       insert/3,
+	       ord_intersection_diff/4
+	       ]).
+:- use_module(library(lists), 
+              [delete/3,               
+	       append/3,
+	       powerset/2,
+	       list_to_list_of_lists/2
+	       ]).
+:- use_module(library(sort), 
+	      [sort/2]).	
+:- use_module(library(terms_vars), [varset/2]).
+
+:- use_module(domain(share_amgu_sets)).
+:- use_module(domain(s_grshfr), 
+        [projected_gvars/3]).
+:- use_module(domain(share_clique_aux), [
+	widen/1,
+	type_widening/1,
+	type_widening_condition/1,
+	widen_upper_bound/1,
+	widen_lower_bound/1]).
+:- use_module(domain(share_aux), [
+	eliminate_couples/4,
+	handle_each_indep/4,
+	eliminate_if_not_possible/3,
+	test_temp/2,
+	eliminate_if_not_possible/4]).
+:- use_module(domain(share_aux), [append_dl/3]).
+:- use_module(domain(share_clique_1_aux),
+	[split_list_of_lists_singleton/3,
+ 	 share_clique_1_normalize/4]).
+
+:- use_module(domain(sharing)).
+:- use_module(domain(share_clique_aux)).
+:- use_module(domain(share_amgu_aux)).
+:- use_module(domain(share_aux), [if_not_nil/4,handle_each_indep/4]).
+
+:- use_module(library(lists), [length/2]).
+:- use_module(library(terms_check), [variant/2]).
+:- use_module(library(aggregates), [findall/3]). % (for number_of_widening/1)
+:- use_module(library(messages), [error_message/1]).
 
 %------------------------------------------------------------------------%
 %                      ABSTRACT Call To Entry                            |
@@ -197,7 +242,8 @@ normalize_if_clsh_needs((Cl2,Sh2),Cl1,(NewCl2,NewSh2)):-
         ;
 	  (NewCl2,NewSh2) = (Cl2,Sh2)
         ).
-	
+
+:- export(asub_gt/2).
 asub_gt([S|Ss],T):-
 	length(S,LS),!,
 	( LS > T ->
@@ -205,7 +251,8 @@ asub_gt([S|Ss],T):-
 	;
 	  asub_gt(Ss,T)
         ).
-	
+
+:- export(prune_success/5).	
 prune_success([],_Prime,_Sv,Succ,Succ).
 prune_success([Xs|Xss],Prime,Sv,Call,Succ) :-
      ord_intersection(Xs,Sv,Xs_proj),
@@ -261,6 +308,7 @@ clsh_more_precise([Cl|Cls],Sh2,Sv,Call,Succ) :-
         clsh_more_precise(Cls,Sh2,Sv,Temp,Succ).
 clsh_more_precise([],_,_,Succ,Succ).
 
+:- export(sharing_possible/4).
 sharing_possible([],_,_,[]).
 sharing_possible([Sh|Shs],Cl,Sv,[Sh|Shs0]):-
 	( ord_subset(Sh,Sv),  % all variables of sh are in Sv
@@ -277,6 +325,7 @@ clsh_extend_sharing([S|Ss],Pow,ExtSh):-
 	clsh_extend_sharing(Ss,Pow,Result),
         ord_union(Res,Result,ExtSh).	
 
+:- export(powerset_with_empty_set/2).
 powerset_with_empty_set(S,PS):-
 	powerset(S,PS0),!,
 	( PS0 = [] ->
@@ -425,11 +474,14 @@ share_clique_less_or_equal(ASub,ASub1):-
 	share_clique_normalize(ASub1,100,1,(Cl1,Sh1)),
 	clique_part_less_or_equal(Cl0,Cl1),
 	sharing_part_less_or_equal(Sh0,Sh1,Cl1).
+
+:- export(clique_part_less_or_equal/2).
 clique_part_less_or_equal(Cl0,Cl1):-
 	Cl0 == Cl1,!.
 clique_part_less_or_equal(Cl0,Cl1):-
 	ord_subset_list_of_lists(Cl0,Cl1),!.
 
+:- export(sharing_part_less_or_equal/3).
 sharing_part_less_or_equal(Sh0,Sh1,_Cl1):-
 	Sh0 == Sh1,!.
 sharing_part_less_or_equal(Sh0,Sh1,Cl1):-
@@ -561,7 +613,10 @@ share_clique_input_interface(clique(X),perfect,(Gv,Sh,Cl0,I),(Gv,Sh,Cl,I)):-
 share_clique_input_interface(Prop,Any,(Gv0,Sh0,Cl,I0),(Gv,Sh,Cl,I)):-
 	share_input_interface(Prop,Any,(Gv0,Sh0,I0),(Gv,Sh,I)).
 
+:- export(may_be_var/2). % TODO: duplicated
 may_be_var(X,X):- ( X=[] ; true ), !.
+
+:- export(myappend/3). % TODO: duplicated
 myappend(Vs,V0,V):-
 	var(Vs), !,
 	V=V0.
@@ -641,6 +696,7 @@ share_clique_unknown_entry(_Sg,Qv,Call):-
 % if Who = plai_op then the value of widen is plai_op                    |
 %------------------------------------------------------------------------%
 :- push_prolog_flag(multi_arity_warnings,off).
+:- export(share_clique_widen/4).
 share_clique_widen(_,ASub,_,ASub):-
 	widen(off),!.
 share_clique_widen(amgu,ASub1,ExtraInfo,ASub):-
@@ -687,7 +743,7 @@ widening_clique_1(_,_):-!,
 % Compute the number of widening done.
 % Note that it should be removed if time measuring is required.
 
-:- export(share_clique_widen/4).
+:- export(share_clique_widen/5).
 share_clique_widen(_,_,ASub,_,ASub):-
 	widen(off),!.
 share_clique_widen(TCond,TWid,ASub1,ExtraInfo,ASub):-!,
@@ -1045,6 +1101,7 @@ share_clique_call_to_success_builtin('arg/3',arg(X,Y,Z),_,Call,Proj,Succ):- !,
 % that have to be eliminated.                                            |
 %------------------------------------------------------------------------%
 
+:- export(clique_make_descomposition/5).
 clique_make_descomposition([],_,_,[],([],[])).
 clique_make_descomposition([(X,VarsTerm)|More],Cl,Ground,NewGround,NewSH):-
 	ord_member(X,Ground), !,
@@ -1152,6 +1209,7 @@ obtain_sharing([D|Disj],Term,NewSh):-
 % eliminate_couples_clique(Cl,Xv,Yv,NewCl)                               |
 % All arguments ordered                                                  |
 %------------------------------------------------------------------------
+:- export(eliminate_couples_clique/4).
 eliminate_couples_clique(Cl,Xv,Yv,NewCl1):-
 	split_list_of_lists(Xv,Cl,Int1,Disj1),
 	split_list_of_lists(Yv,Int1,Int2,Disj2),
@@ -1194,6 +1252,7 @@ partition_set([H|T],Xv,Yv,NXv,NYv,[H|Disj]):-
 % either only X or only variables of Term appear, has to be eliminated.  |
 %------------------------------------------------------------------------%
 %%% TODO: [IG] This code is duplicated from sharing.pl!!!
+:- export(share_make_reduction/5).
 share_make_reduction([],_,_,[],Y-Y).
 share_make_reduction([(X,VarsTerm)|More],Lambda,Ground,NewGround,Eliminate):-
 	ord_member(X,Ground), !,
@@ -1214,6 +1273,7 @@ share_make_reduction([(X,VarsTerm)|More],Lambda,Ground,NewGround,Eliminate):-
 	share_make_reduction(More,Lambda,Ground,NewGround,Elim2),
 	append_dl(Elim1,Elim2,Eliminate).
 
+:- export(projected_gvars_clique/3).
 projected_gvars_clique(Proj,Sv,Gv):-
      Proj = (Cl,Sh),
      merge_list_of_lists(Cl,Vars_Cl),

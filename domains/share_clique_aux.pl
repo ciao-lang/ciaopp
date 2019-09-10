@@ -1,4 +1,3 @@
-/*             Copyright (C)2004-2005 UNM-CLIP				*/
 :- module(share_clique_aux,
 	[amgu_clique/5,
 	 bin_union_w/3,
@@ -35,16 +34,26 @@
 	[ assertions, isomodes ]).
 :- use_package(dynamic). % TODO: datafacts should be enough
 
+:- doc(author, "Jorge Navas").
+% Copyright (C) 2004-2019 The Ciao Development Team
+
+%------------------------------------------------------------------------%
+% This file implements the amgu for clique-sharing domain defined by     |
+% Hill,Bagnara and  Zaffanella and other auxiliary functions.            |
+%------------------------------------------------------------------------%
+
+% REMARK: In order to number how many normalization processes have been
+% performed, we assert a fact for each one. To take time measurings, we
+% recommend you to comment it.
+
 :- use_module(library(sort), [sort/2]).
 :- use_module(library(sets), [ord_union/3, ord_subset/2, ord_intersection/3]).
 :- use_module(library(lsets),
         [merge_list_of_lists/2, ord_intersect_all/2, sort_list_of_lists/2]).
 :- use_module(library(lists), [length/2, select/3]).
-:- use_module(domain(share_clique), 
+:- use_module(domain(sharing_clique), 
  	[share_clique_sort/2,
-	 share_clique_widen/4,     % amgu&star 
-	 widen/1                   % amgu&star&normalization 
-%	 type_widening_condition/1 % amgu&star 
+	 share_clique_widen/4      % amgu&star 
         ]).               
 :- use_module(domain(share_amgu_sets), 
 	[delete_vars_from_list_of_lists/3,
@@ -63,18 +72,59 @@
 :- use_module(library(aggregates), [findall/3]). % for number_of_norma/1
 
 %------------------------------------------------------------------------%
-% This file implements the amgu for clique-sharing domain defined by     |
-% Hill,Bagnara and  Zaffanella and other auxiliary functions.            |
-%------------------------------------------------------------------------%
-%------------------------------------------------------------------------%
-%                                                                        |
-%        programmer: J. Navas                                            |
-%                                                                        |
+% REMARK:                                                                |
+% The normalization process is performed after call2entry and in the     |
+% compute_lub. Also, for correctness in identical_abstract and           |
+% less_or_equal.                                                         |
 %------------------------------------------------------------------------%
 
-% REMARK: In order to number how many normalization processes have been
-% performed, we assert a fact for each one. To take time measurings, we
-% recommend you to comment it.
+:- use_module(ciaopp(preprocess_flags), [current_pp_flag/2]).
+
+%------------------------------------------------------------------------%
+% Handle of Widening                                                     |
+%------------------------------------------------------------------------%
+% * Widening or not (off, amgu, plai_op)                                 | 
+% - off:  no widening                                                    |
+% - plai_op: widening is performed for each PLAI operation (if required) |
+% - amgu: widening is performed for each amgu                            |
+:- export(widen/1).
+widen(X):- current_pp_flag(clique_widen,X).
+
+% * Thresholds. These thresholds are used by the condition of the        |
+% widening the simpler widenings only used 'widen_upper_bound'. Some     |
+% more complex widenings also use 'widen_lower_bound'.                   |
+:- export(widen_upper_bound/1).
+widen_upper_bound(X):- current_pp_flag(clique_widen_ub,X).
+:- export(widen_lower_bound/1).
+widen_lower_bound(X):- current_pp_flag(clique_widen_lb,X).
+
+:- export(type_widening/1).
+% * Types of widenings. This clasification was defined by Zaffanella,Hill|
+% and Bagnara.                                                           |
+% - panic: They are at the top of the scale of widenings and they must be|
+% used with very strict guards, only to obey the 'never crash' motto.    |
+% - cautious: they're invariant wrt set-sharing representation.          |
+% - intermediate: tradeoff between precision and efficiency.             |
+% W(cl,sh) = (cl U {Ush},\emptyset)     panic_1                          |
+% W(cl,sh) = ({Ucl U Ush},\emptyset)    panic_2                          |
+% W(cl,sh) = (cl U sh,\emptyset)        inter_1                          |
+% W(cl,sh) = normalize((cl,sh))         cautious                         |
+% W((cl,sh),LB) =                       inter_2                          |        
+%           1) choose the candidate with the greatest number of subsets  |
+%              if not more candidates, end.                              |
+%           2) update clique                                             |
+%           3) compute (cl'+sh')                                         |
+%           4) if (cl'+sh') =< lower_bound, end.                         |
+%              otherwise goto 1.                                         |
+type_widening(X):- current_pp_flag(clique_widen_type,X).
+
+:- export(type_widening_condition/1).
+% * Type of conditions.                                                  |
+% - aamgu: the condition is verified after performing the amgu.          |
+% - bamgu: an upper bound is computed before performing the amgu in order| 
+%   to avoid to compute it. (default)                                    |
+type_widening_condition(bamgu). 
+%------------------------------------------------------------------------%
 
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%

@@ -1,7 +1,14 @@
-/*             Copyright (C)2006 UNM-CLIP				*/
 :- module(shfrlin_amgu_aux,
         [shfrlin_amgu_iterate/3, shfrlin_update_fr_lin/3],
          [assertions, isomodes]).
+
+:- doc(author, "Jorge Navas").
+% Copyright (C) 2006-2019 The Ciao Development Team
+
+%------------------------------------------------------------------------%
+% This file implements the amgu for sharing+Freeness+linearity           |
+%------------------------------------------------------------------------%
+
 :- use_module(library(sort), [sort/2]).
 :- use_module(domain(s_grshfr), [member_value_freeness/3]).
 :- use_module(library(sets),
@@ -12,14 +19,6 @@
 :- use_module(domain(sharefree_amgu_aux), 
 	[amgu_non_star/5, lin/2, update_freeness/4, map_freeness_list/3,
 	 shfr_update_freeness/4, share_with/3]).
-%------------------------------------------------------------------------%
-% This file implements the amgu for sharing+Freeness+linearity           |
-%------------------------------------------------------------------------%
-%------------------------------------------------------------------------%
-%                                                                        |
-%        programmer: J. Navas                                            |
-%                                                                        |
-%------------------------------------------------------------------------%
 
 %------------------------------------------------------------------------%
 % shfrlin_amgu_iterate(+,+,-)                                            |

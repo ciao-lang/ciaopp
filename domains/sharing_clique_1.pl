@@ -1,20 +1,9 @@
-/*             Copyright (C)2004-2005 UNM-CLIP				*/
+:- module(sharing_clique_1, [], [assertions, isomodes]).
 
-% :- doc(title, "1-clique+sharing (abstract domain)").
-:- doc(author,"Jorge Navas").
+:- doc(title, "1-CLIQUE-Sharing domain").
+:- doc(author, "Jorge Navas").
+% Copyright (C) 2004-2019 The Ciao Development Team
 
-:- use_module(domain(share_clique_1_aux), 
-	[amgu_clique_1/4,
-	 share_clique_1_normalize/2,
-	 share_clique_1_normalize/4,
-	 star_clique_1/2,
-	 nrel_clique_1/3,
-	 split_list_of_lists_singleton/3
-      ]).
-:- use_module(domain(share_aux), [if_not_nil/4,handle_each_indep/4]).
-
-%------------------------------------------------------------------------%
-%                       1-CLIQUE-Sharing domain                          % 
 %------------------------------------------------------------------------%
 % This file contains the domain dependent abstract functions for the     |
 % clique-sharing domain with an extension that allows to capture         |
@@ -24,11 +13,6 @@
 % The representation of this domain is the same that Clique-Sharing      |
 % domain but in this case, a clique C represents all the sharing groups  |
 % in the powerset of C but those with cardinality 1.                     |
-%------------------------------------------------------------------------%
-%------------------------------------------------------------------------%
-%                                                                        |
-%        programmer: J. Navas                                            |
-%                                                                        |
 %------------------------------------------------------------------------%
 % The meaning of the variables are defined in sharing.pl                 |
 %------------------------------------------------------------------------%
@@ -41,6 +25,86 @@
 :- doc(bug,"3. Only the following widenings are implemented: inter_1
 	   and cautious.").
 
+:- use_module(library(terms_check), [variant/2]).
+:- use_module(library(terms_vars), [varset/2]).
+:- use_module(library(lsets), 
+	       [sort_list_of_lists/2,
+		ord_split_lists_from_list/4,
+		merge_list_of_lists/2,
+		ord_member_list_of_lists/2
+		]).	  
+:- use_module(library(sets), 
+              [
+	       ord_subset/2,
+	       ord_subtract/3,
+	       ord_union/3,
+	       ord_intersection/3,
+	       ord_member/2,
+	       merge/3,
+	       insert/3,
+	       ord_intersection_diff/4
+	       ]).
+:- use_module(library(lists), 
+              [delete/3,               
+	       append/3,
+	       powerset/2,
+	       list_to_list_of_lists/2
+	       ]).
+:- use_module(library(sort), 
+	      [sort/2]).	
+
+:- use_module(domain(share_aux), [
+	eliminate_couples/4,
+	handle_each_indep/4,
+	eliminate_if_not_possible/3,
+	test_temp/2,
+	eliminate_if_not_possible/4,
+	if_not_nil/4,handle_each_indep/4,
+	append_dl/3]).
+
+:- use_module(domain(share_amgu_sets)).
+:- use_module(domain(share_amgu_aux), [
+	peel_equations/3,
+	sh_peel/3]).
+:- use_module(domain(s_grshfr), [
+	projected_gvars/3]).
+:- use_module(domain(sharing), [
+	share_input_interface/4,
+	share_project/3]).
+:- use_module(domain(sharing_clique), [
+	share_make_reduction/5,
+	projected_gvars_clique/3,
+	clique_part_less_or_equal/2,
+	clique_make_descomposition/5,
+	asub_gt/2,
+	prune_success/5,
+	powerset_with_empty_set/2,
+	share_clique_extend_asub/3,
+	share_clique_sort/2,
+	share_clique_success_builtin/5,
+	share_clique_widen/4,
+	share_clique_widen/5,
+	sharing_part_less_or_equal/3,
+	sharing_possible/4,
+	eliminate_couples_clique/4,
+	myappend/3]).
+
+:- use_module(domain(share_clique_aux), [
+	widen/1,
+	type_widening/1,
+	type_widening_condition/1,
+	widen_upper_bound/1,
+	widen_lower_bound/1,
+	ord_union_w/3
+   ]).
+:- use_module(domain(share_clique_1_aux), 
+	[amgu_clique_1/4,
+	 share_clique_1_normalize/2,
+	 share_clique_1_normalize/4,
+	 star_clique_1/2,
+	 nrel_clique_1/3,
+	 split_list_of_lists_singleton/3
+      ]).
 
 %------------------------------------------------------------------------%
 %                      ABSTRACT Call To Entry                            |
@@ -698,7 +762,6 @@ take_ground_out_clique_1(Gv,Cl,Cl1):-
 	split_list_of_lists_singleton(Intersect1,Intersect1_non_sing,_),
 	sort_list_of_lists(Intersect1_non_sing,Intersect1_non_sing_s),
 	ord_union(Intersect1_non_sing_s,Disjoint,Cl1).
-
 
 %------------------------------------------------------------------------%
 % eliminate_couples_clique_1(+,+,+,-)                                    |

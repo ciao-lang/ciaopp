@@ -1,26 +1,12 @@
-/*             Copyright (C)2004-2005 UNM-CLIP				*/
-
 :- module(sharefree_clique_aux,
 	[ sharefree_clique_iterate/3,
 	  amgu_clique_ff/4,   %% by obtain_prime_clique_var_var/3
 	  sharefree_clique_update_freeness/4 %% by call2entry/8
         ],
-	[ assertions, isomodes ]).
-:- use_module(library(sort), [sort/2]).
-:- use_module(library(sets), [ord_subtract/3,	ord_member/2, ord_union/3]).
-:- use_module(library(lsets), [merge_list_of_lists/2]).
-:- use_module(domain(share_amgu_sets),
-        [split_list_of_lists/4, delete_vars_from_list_of_lists/3]).
-:- use_module(domain(share_amgu_aux), [bin_union/3]).
-:- use_module(domain(share_clique), 
- 	[share_clique_widen/4,     % amgu&star 
-	 widen/1                   % amgu&star&normalization 
-% 	 type_widening_condition/1 % amgu&star 
-        ]).
-:- use_module(domain(s_grshfr), [member_value_freeness/3]).
-:- use_module(domain(share_clique_aux)).
-:- use_module(domain(sharefree_amgu_aux), 
-	[map_freeness_list/3, unmap_freeness_list/2]).
+	[assertions, isomodes]).
+
+:- doc(author, "Jorge Navas").
+% Copyright (C) 2004-2019 The Ciao Development Team
 
 %------------------------------------------------------------------------%
 % This file implements the amgu for clique-sharing+Freeness domain       |
@@ -28,14 +14,23 @@
 % inferring pair-sharing). This version (for top-down analysis and for   |
 % inferring sharing) is defined by J.Navas, F.Bueno and M.Hermenegildo.  |
 %------------------------------------------------------------------------%
-%------------------------------------------------------------------------%
-%                                                                        |
-%        programmer: J. Navas                                            |
-%                                                                        |
-%------------------------------------------------------------------------%
+
 :- doc(bug,"1. The amgu does not use linearity information").
 :- doc(bug,"2. The amgu for supporting linearity information is 
 	        implemented but it does not support widening.").
+
+:- use_module(library(sort), [sort/2]).
+:- use_module(library(sets), [ord_subtract/3,	ord_member/2, ord_union/3]).
+:- use_module(library(lsets), [merge_list_of_lists/2]).
+:- use_module(domain(share_amgu_sets),
+        [split_list_of_lists/4, delete_vars_from_list_of_lists/3]).
+:- use_module(domain(share_amgu_aux), [bin_union/3]).
+:- use_module(domain(sharing_clique), [share_clique_widen/4]). % amgu&star 
+:- use_module(domain(s_grshfr), [member_value_freeness/3]).
+:- use_module(domain(share_clique_aux)).
+:- use_module(domain(sharefree_amgu_aux), 
+	[map_freeness_list/3, unmap_freeness_list/2]).
+
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
 %                            ABSTRACT Iterate                            %

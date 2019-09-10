@@ -1,23 +1,13 @@
-/*             Copyright (C)2004-2005 UNM-CLIP				*/
+:- module(sharefree_clique_def, [], [assertions, isomodes]).
 
-% :- doc(title, "clique-sharing+freeness+def (abstract domain)").
-:- doc(author,"Jorge Navas").
+:- doc(title, "CLIQUE-Sharing+Freeness+Def domain").
+:- doc(author, "Jorge Navas").
+% Copyright (C) 2004-2019 The Ciao Development Team
 
-:- use_module(domain(def)).
-:- use_module(library(messages), [warning_message/1, warning_message/2]).
-:- use_module(domain(share_aux), [if_not_nil/4]).
-
-%------------------------------------------------------------------------%
-%                  CLIQUE-Sharing+Freeness+Def domain                    |
 %------------------------------------------------------------------------%
 % This file contains the domain dependent abstract functions for the     |
 % clique-sharing+Freeness domain combined with the definiteness abstract | 
 % domain.                                                                |
-%------------------------------------------------------------------------%
-%------------------------------------------------------------------------%
-%                                                                        |
-%        programmer: J. Navas                                            |
-%                                                                        |
 %------------------------------------------------------------------------%
 % The meaning of the variables are defined in sharing_clique.pl and      |
 % def.pl                                                                 |
@@ -37,6 +27,44 @@
            eliminate_equivalent/2 must be redefined.").
 :- doc(bug,"2. The following builtins: =../2, ==/2 and copy_term/2 
 	   are not defined for the domain def").
+
+%------------------------------------------------------------------------%
+
+:- use_module(library(sort), [sort/2]).	
+
+:- use_module(domain(s_grshfr), [
+	member_value_freeness/3,
+	change_values_insert/4,
+	create_values/3]).
+:- use_module(domain(share_clique_aux), [irrel_w/3]).
+:- use_module(domain(share_aux), [
+	eliminate_couples/4,
+	handle_each_indep/4,
+	eliminate_if_not_possible/3,
+	test_temp/2,
+	if_not_nil/4,
+	eliminate_if_not_possible/4]).
+
+:- use_module(domain(sharefree_clique), [
+	sharefree_clique_call_to_entry/9,
+	sharefree_clique_exit_to_prime/7,
+	sharefree_clique_extend/4,
+	sharefree_clique_project/3,
+	sharefree_clique_sort/2,
+	sharefree_clique_glb/3,
+	sharefree_clique_identical_abstract/2,
+	sharefree_clique_less_or_equal/2,
+	sharefree_clique_call_to_success_fact/9,
+	sharefree_clique_compute_lub_el/3,
+	sharefree_clique_input_user_interface/3,
+	sharefree_clique_unknown_call/4,
+	sharefree_clique_empty_entry/3,
+	sharefree_clique_special_builtin/4
+   ]).
+:- use_module(domain(def)).
+
+:- use_module(library(messages), [warning_message/1, warning_message/2]).
+
 %------------------------------------------------------------------------%
 % sharefree_clique_def_call_to_entry(+,+,+,+,+,+,+,-,?)                  |
 %------------------------------------------------------------------------%

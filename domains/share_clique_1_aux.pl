@@ -10,14 +10,21 @@
         ],
        [assertions, isomodes]).
 
+:- doc(author, "Jorge Navas").
+
+%------------------------------------------------------------------------%
+% This file contains the amgu and auxiliary functions for the            |
+% 1-clique-sharing domain by J.Navas, F.Bueno and M.Hermenegildo.        |
+%------------------------------------------------------------------------%
+
 :- use_module(library(sets), [ord_union/3, ord_subset/2, ord_delete/3]).
 :- use_module(library(lsets), [merge_list_of_lists/2, sort_list_of_lists/2]).
 :- use_module(library(lists), [length/2, delete/3]).
 :- use_module(library(aggregates), [bagof/3]).
-:- use_module(domain(share_clique), 
- 	[share_clique_sort/2, widen/1, share_clique_widen/4]).
+:- use_module(domain(sharing_clique), [share_clique_sort/2, share_clique_widen/4]).
 :- use_module(domain(share_clique_aux), 
-	[ amgu_rel_non_rel_info/7,
+	[ widen/1,
+	  amgu_rel_non_rel_info/7,
 	  amgu_sharing_part/4,
 	  ord_union_w/3,
 	  regularize/2,
@@ -35,15 +42,6 @@
 	 intersection_lists_with_list/3]).
 :- use_module(domain(share_amgu_aux)).
 :- use_module(library(messages), [error_message/1]).	
-%------------------------------------------------------------------------%
-% This file contains the amgu and auxiliary functions for the            |
-% 1-clique-sharing domain by J.Navas, F.Bueno and M.Hermenegildo.        |
-%------------------------------------------------------------------------%
-%------------------------------------------------------------------------%
-%                                                                        |
-%        programmer: J. Navas                                            |
-%                                                                        |
-%------------------------------------------------------------------------%
 
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%

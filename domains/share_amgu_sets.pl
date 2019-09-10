@@ -1,5 +1,3 @@
-/*             Copyright (C)2004-2005 UNM-CLIP				*/
-
 :- module(share_amgu_sets,
 	[ 
 	 delete_list_of_lists/3,
@@ -21,7 +19,15 @@
 	 ord_union_lists_with_list/3,
 	 ord_union_list_of_lists/3	 
 	],
-	[ assertions, isomodes ]).
+	[assertions, isomodes]).
+
+:- doc(author, "Jorge Navas").
+% Copyright (C) 2004-2019 The Ciao Development Team
+
+%------------------------------------------------------------------------%
+% This file implements new predicates for the libraries sets.pl and      |
+% lsets.pl                                                               |
+%------------------------------------------------------------------------%
 
 :- use_module(library(lsets),
         [delete_var_from_list_of_lists/4, sort_list_of_lists/2]).
@@ -33,16 +39,6 @@
 	 ord_intersection_diff/4
 	]).
 :- use_module(library(lists), [delete/3]).
-
-%------------------------------------------------------------------------%
-% This file implements new predicates for the libraries sets.pl and      |
-% lsets.pl                                                               |
-%------------------------------------------------------------------------%
-%------------------------------------------------------------------------%
-%                                                                        |
-%        programmer: J. Navas                                            |
-%                                                                        |
-%------------------------------------------------------------------------%
 
 %------------------------------------------------------------------------%
 % delete_list_of_lists(LL1,LL2,LL3)                                      |

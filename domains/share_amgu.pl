@@ -1,5 +1,7 @@
-/*             Copyright (C)2004-2006 UNM-CLIP				*/
 :- module(share_amgu, [], [assertions, isomodes]).
+
+:- doc(author, "Jorge Navas").
+% Copyright (C) 2004-2019 The Ciao Development Team
 
 :- use_module(domain(s_grshfr),        [projected_gvars/3]).
 :- use_module(library(terms_vars),     [varset/2, varset0/2]).

@@ -1,7 +1,6 @@
-/*             Copyright (C)2006 UNM-CLIP				*/
-
 % :- doc(title, "shfrlin_amgu (abstract domain)").
-:- doc(author,"Jorge Navas").
+:- doc(author, "Jorge Navas").
+% Copyright (C) 2006-2019 The Ciao Development Team
 
 :- use_module(domain(s_grshfr), [member_value_freeness/3]).
 :- use_module(domain(shfrlin_amgu_aux),

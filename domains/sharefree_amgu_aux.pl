@@ -1,5 +1,3 @@
-/*             Copyright (C)2004-2005 UNM-CLIP				*/
-
 :- module(sharefree_amgu_aux,
 	  [ sharefree_amgu_iterate/3,
 	    amgu_non_star/5,
@@ -12,7 +10,15 @@
 	    share_with/3,
 	    lin/2
           ],
-	  [ assertions, isomodes ]).
+	  [assertions, isomodes]).
+
+:- doc(author, "Jorge Navas").
+% Copyright (C) 2004-2019 The Ciao Development Team
+
+%------------------------------------------------------------------------%
+% This file implements the amgu for sharing+Freeness domain defined by   |
+% Jacobs&Langen and Muthukumar&Hermenegildo and other auxiliary functions|
+%------------------------------------------------------------------------%
 
 :- use_module(library(lists), [length/2]). 
 :- use_module(library(sort), [sort/2]).
@@ -25,15 +31,6 @@
 :- use_module(domain(share_amgu_aux)).
 :- use_module(domain(share_aux), [append_dl/3]).
 
-%------------------------------------------------------------------------%
-% This file implements the amgu for sharing+Freeness domain defined by   |
-% Jacobs&Langen and Muthukumar&Hermenegildo and other auxiliary functions|
-%------------------------------------------------------------------------%
-%------------------------------------------------------------------------%
-%                                                                        |
-%        programmer: J. Navas                                            |
-%                                                                        |
-%------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
 % sharefree_amgu_iterate(+,+,-)                                          %
 %------------------------------------------------------------------------%

@@ -1,13 +1,6 @@
-/*             Copyright (C)2004-2005 UNM-CLIP				*/
-
 % :- doc(title, "share_amgu (abstract domain)").
-
-:- doc(author,"Jorge Navas").
-
-:- use_module(library(lists), [list_to_list_of_lists/2, append/3]).
-:- use_module(library(terms_check), [variant/2]).
-:- use_module(domain(sharing)).
-:- use_module(domain(share_amgu_aux)).
+:- doc(author, "Jorge Navas").
+% Copyright (C) 2004-2019 The Ciao Development Team
 
 %------------------------------------------------------------------------%
 % This file implements the same functions than sharing.pl but the        |
@@ -20,10 +13,6 @@
 %------------------------------------------------------------------------
 % The meaning of the variables are defined in sharing.pl                 |
 %------------------------------------------------------------------------%
-%                                                                        |
-%        programmer: J. Navas                                            |
-%                                                                        |
-%------------------------------------------------------------------------%
 
 :- doc(bug,"1. The builtin ==/2 is defined but it is not used. For 
 	   its use, comment it out in special_builtin.").
@@ -32,6 +21,11 @@
 	   special_builtin.").
 :- doc(bug,"3. The non-redundant version is not working because the 
 	   semantics of the builtins has not been defined yet.").
+
+:- use_module(library(lists), [list_to_list_of_lists/2, append/3]).
+:- use_module(library(terms_check), [variant/2]).
+:- use_module(domain(sharing)).
+:- use_module(domain(share_amgu_aux)).
 
 %------------------------------------------------------------------------%
 %                      ABSTRACT Call To Entry                            %

@@ -1,20 +1,12 @@
-/*             Copyright (C)2004-2005 UNM-CLIP				*/
+:- module(sharing_clique_def, [], [assertions, isomodes]).
 
-% :- doc(title, "clique-sharing+def (abstract domain)").
-:- doc(author,"Jorge Navas").
+:- doc(title, "CLIQUE-Sharing+Def domain").
+:- doc(author, "Jorge Navas").
+% Copyright (C) 2004-2019 The Ciao Development Team
 
-:- use_module(domain(share_aux), [if_not_nil/4]).
-
-%------------------------------------------------------------------------%
-%                      CLIQUE-Sharing+Def domain                         %   
 %------------------------------------------------------------------------%
 % This file contains the domain dependent abstract functions for the     |
 % clique-sharing domain combined with the definiteness abstract domain.  |
-%------------------------------------------------------------------------%
-%------------------------------------------------------------------------%
-%                                                                        |
-%        programmer: J. Navas                                            |
-%                                                                        |
 %------------------------------------------------------------------------%
 % The meaning of the variables are defined in sharing_clique.pl and      |
 % def.pl                                                                 |
@@ -34,6 +26,46 @@
            eliminate_equivalent/2 must be redefined.").
 :- doc(bug,"2. The following builtins: ==../2, ==/2 and copy_term/2 
 	   are not defined for the domain def").
+
+%------------------------------------------------------------------------%
+
+:- use_module(library(messages), [warning_message/1, warning_message/2]).
+
+:- use_module(domain(def), [
+	def_call_to_entry/9,
+	def_call_to_success_fact/9,
+	def_compute_lub_el/3,
+	def_exit_to_prime/7,
+	def_extend/3,
+	def_glb/3,
+	def_project/3,
+	def_sort/2,
+	def_special_builtin/4,
+	def_unknown_entry/3]).
+:- use_module(domain(sharing_clique), [
+	share_clique_call_to_entry/9,
+	share_clique_call_to_success_fact/9,
+	share_clique_empty_entry/3,
+	share_clique_exit_to_prime/7,
+	share_clique_extend/4,
+	share_clique_glb/3,
+	share_clique_identical_abstract/2,
+	share_clique_input_user_interface/3,
+	share_clique_less_or_equal/2,
+	share_clique_lub_cl/3,
+	share_clique_project/3,
+	share_clique_sort/2,
+	share_clique_special_builtin/4,
+	share_clique_unknown_call/4]).
+
+:- use_module(domain(share_clique_aux), [irrel_w/3]).
+:- use_module(domain(s_grshfr), [projected_gvars/3]).
+:- use_module(domain(sharing_clique), [may_be_var/2]).
+:- use_module(domain(share_aux), [if_not_nil/4]).
+
+:- use_module(library(sets), [ord_union/3]).
+:- use_module(library(sort), [sort/2]).	
+
 %------------------------------------------------------------------------%
 % share_clique_def_call_to_entry(+,+,+,+,+,+,+,-,?)                      |
 %------------------------------------------------------------------------%

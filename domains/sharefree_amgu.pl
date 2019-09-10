@@ -1,7 +1,22 @@
-/*             Copyright (C)2004-2005 UNM-CLIP				*/
-
 % :- doc(title, "sharefree_amgu (abstract domain)").
-:- doc(author,"Jorge Navas").
+:- doc(author, "Jorge Navas").
+% Copyright (C) 2004-2019 The Ciao Development Team
+
+%------------------------------------------------------------------------%
+% This file implements the same domain dependent abstract functions than |
+% sharefree.pl but the functions call_to_entry and exit_to_prime are     |
+% defined based on amgu.                                                 |
+%------------------------------------------------------------------------%
+% The meaning of the variables are defined in sharefree.pl               |
+%------------------------------------------------------------------------%
+
+:- doc(bug,"1. The builtin ==/2 is defined but it is not used because
+           of benchmarks. For its use, comment it out in special_builtin.").
+:- doc(bug,"2. The builtins read/2 and length/2 are used in a simple
+	   way. In order to use more complex definitions, comment it in 
+	   special_builtin.").
+:- doc(bug,"3. The non-redundant version is not working because the 
+	   semantics of the builtins has not been defined yet.").
 
 :- use_module(domain(s_grshfr),
 	[ change_values_if_differ/5,
@@ -12,26 +27,6 @@
 
 :- use_module(domain(sharefree)).
 :- use_module(domain(sharefree_amgu_aux)).
-
-%------------------------------------------------------------------------%
-% This file implements the same domain dependent abstract functions than |
-% sharefree.pl but the functions call_to_entry and exit_to_prime are     |
-% defined based on amgu.                                                 |
-%------------------------------------------------------------------------%
-% The meaning of the variables are defined in sharefree.pl               |
-%------------------------------------------------------------------------%
-%                                                                        |
-%        programmer: J. Navas                                            |
-%                                                                        |
-%------------------------------------------------------------------------%
-
-:- doc(bug,"1. The builtin ==/2 is defined but it is not used because
-           of benchmarks. For its use, comment it out in special_builtin.").
-:- doc(bug,"2. The builtins read/2 and length/2 are used in a simple
-	   way. In order to use more complex definitions, comment it in 
-	   special_builtin.").
-:- doc(bug,"3. The non-redundant version is not working because the 
-	   semantics of the builtins has not been defined yet.").
 
 %------------------------------------------------------------------------%
 %                      ABSTRACT Call To Entry                            %
