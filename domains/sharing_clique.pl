@@ -1,5 +1,4 @@
 :- module(sharing_clique, [], [assertions, isomodes]).
-:- use_package(dynamic). % TODO: datafacts should be enough
 
 :- doc(title, "CLIQUE-Sharing domain").
 :- doc(author, "Jorge Navas").
@@ -1370,7 +1369,8 @@ minimum_list_of_lists([S|Ss],X,M,R):-
 % ===========================================================================
 % Debug - count number of widenings
 
-% :- dynamic widen_done/0.
+% :- use_package(datafacts).
+% :- data widen_done/0.
 % 
 % inc_widen_done :- asserta(widen_done).
 %

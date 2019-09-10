@@ -40,10 +40,7 @@
 	determinate_sel/3,
 	getargtypes/6,
 	eterms_arg_call_to_success/9
-	     ],
-	     [assertions,regtypes,basicmodes
-	     ]).
-:- use_package(dynamic). % TODO: datafacts should be enough
+   ], [assertions,regtypes,basicmodes,datafacts]).
 
 :- doc(title,"Types Abstract Domain").
 :- doc(author, "Claudio Vaucheret").
@@ -188,7 +185,7 @@ eterms_compute_lub([ASub],ASub).
 %------------------------------------------------------------------%
 
 resetunion:-
-	retractall(uniontriple(_,_,_)).
+	retractall_fact(uniontriple(_,_,_)).
 
 
 eterms_compute_lub_el('$bottom',ASub,ASub):- !.
@@ -222,7 +219,7 @@ eterms_lub0([],[],[]).
 %---------------------------------------------------------------------%	 
 %---------------------------------------------------------------------%	 
 
-:- dynamic(uniontriple/3).
+:- data uniontriple/3.
 
 
 :- pred type_union(+Type1,+Type2,-Type3): pure_type_term * pure_type_term * pure_type_term #
@@ -259,7 +256,7 @@ type_union(Type1,Type2,Type3):-
 	    insert_rule(Type3,Def_s),
 	    get_native_type_symbols(Def_s,Def_n,Def_nnat),
 	    union_of_native_types(Def_n,[],Def_natun),
-	    asserta(uniontriple(Type1,Type2,Type3)),
+	    asserta_fact(uniontriple(Type1,Type2,Type3)),
 	    make_deterministic(Def_nnat,Defnew), 
 	    merge(Def_natun,Defnew,Def),
 	    unfold(Type3,Def,UDef),	%  unfold test test
@@ -384,7 +381,7 @@ obtain_new_term(N,Term1,Term2,Term):-
 	type_union(Arg1,Arg2,Arg),
 	arg(N,Term,Arg),
 	N1 is N - 1,
-        asserta(uniontriple(Arg1,Arg2,Arg)),
+        asserta_fact(uniontriple(Arg1,Arg2,Arg)),
 	obtain_new_term(N1,Term1,Term2,Term).
 
 

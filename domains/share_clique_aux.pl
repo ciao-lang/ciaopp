@@ -31,8 +31,7 @@
 	 number_of_norma/1,
 	 clean_number_of_norma/0
         ],
-	[ assertions, isomodes ]).
-:- use_package(dynamic). % TODO: datafacts should be enough
+	[assertions, isomodes]).
 
 :- doc(author, "Jorge Navas").
 % Copyright (C) 2004-2019 The Ciao Development Team
@@ -557,7 +556,8 @@ minimize([Sh|Shs],Cl,Sh1):-
 % The complexity is NP-complete (maximal clique in an undirected graph)  |
 %------------------------------------------------------------------------%
 
-:- dynamic norma_done/0.
+:- use_package(datafacts).
+:- data norma_done/0.
 
 :- push_prolog_flag(multi_arity_warnings,off).
 	
@@ -570,8 +570,8 @@ normalize(SH,T,M,SH1):-
 normalize((Cl,Sh),Th,M,SH1,Continue):-	
 	process_candidate((Cl,Sh),Th,M,SH,Continue),!,
 	( var(Continue) ->   % It there may be more candidates	  
-	asserta(norma_done),
-          normalize(SH,Th,M,SH1,Continue)
+	    asserta_fact(norma_done),
+	    normalize(SH,Th,M,SH1,Continue)
         ; 
 	  Continue = not,    % there are not more candidates
           SH1 = (Cl,Sh)
