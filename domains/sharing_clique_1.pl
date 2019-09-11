@@ -112,6 +112,7 @@
 %------------------------------------------------------------------------%
 % share_clique_1_call_to_entry(+,+,+,+,+,+,+,-,?)                          |
 %------------------------------------------------------------------------%
+% TODO: almost like share_clique version
 :- export(share_clique_1_call_to_entry/9).
 share_clique_1_call_to_entry(_Sv,Sg,_Hv,Head,_K,Fv,Proj,Entry,ExtraInfo) :-
      variant(Sg,Head),!,
@@ -146,6 +147,7 @@ share_clique_1_call_to_entry(_Sv,_Sg,_Hv,_Head,_K,_Fv,_Proj,'$bottom',_).
 % share_clique_1_exit_to_prime(+,+,+,+,+,-,-)                            |
 %------------------------------------------------------------------------%
 
+% TODO: almost like share_clique version
 :- export(share_clique_1_exit_to_prime/7).            
 share_clique_1_exit_to_prime(_,_,_,_,'$bottom',_,'$bottom'):-!.
 share_clique_1_exit_to_prime(Sg,Hv,Head,_Sv,Exit,Flag,Prime):-  
@@ -173,6 +175,7 @@ share_clique_1_exit_to_prime(_Sg,_Hv,_Head,Sv,Exit,ExtraInfo,Prime):-
 % share_clique_1_iterate(Eqs,Flag,ASub0,ASub)                            |
 %------------------------------------------------------------------------%
 
+% TODO: almost like share_clique version
 share_clique_1_iterate([],ASub, ASub).
 share_clique_1_iterate([(X,Ts)|Eqs],ASub, ASub2):-
      amgu_clique_1(X,Ts,ASub,ASub1),
@@ -271,6 +274,7 @@ extend_cl_1([_|Ss],S_cl2,Vars,L1,L2):-
 % clsh_1(Cl1,Sh2,Sv,Imp,ClSh)                                            |
 %------------------------------------------------------------------------%	
 
+% TODO: almost like share_clique version (clsh_more_proceise/5)
 clsh_1([],_,_,Succ,Succ).
 clsh_1([Cl|Cls],Sh2,Sv,Call,Succ) :-
 	sharing_possible(Sh2,Cl,Sv,Sharing_Allowed),
@@ -309,6 +313,7 @@ bin_union_([S|Ss],E,BUnion ):-
 % shcl_1(sh',cl2,g) = {s| s \in sh', |(s /\ g)| > 1,                     |
 %                      (s /\ g) \subseteq c \in cl2}                     |
 %------------------------------------------------------------------------%
+% TODO: almost like share_clique version
 shcl_1(Xss,Cl,Sv,Call,Succ_sh_s):-
 	shcl_1_(Xss,Cl,Sv,Call,Succ_sh),
 	sort_list_of_lists(Succ_sh,Succ_sh_s).
@@ -360,7 +365,8 @@ share_clique_1_project(Vars,(Cl,Sh),Proj) :-
 project_clique_1(SS,Vars,Int,Disj):-
 	project_clique_1_(SS,Vars,Int0,Disj0),
 	sort_list_of_lists(Int0,Int),
-	sort_list_of_lists(Disj0,Disj).	
+	sort_list_of_lists(Disj0,Disj).
+
 project_clique_1_([],_,[],[]).
 project_clique_1_([X|Xs],Vars,Int1,Disj1):-
 	ord_intersection(X,Vars,L),!,
@@ -448,6 +454,7 @@ share_clique_1_glb((Cl1,Sh1),(Cl2,Sh2),Lub):-
 % share_clique_1_identical_abstract(+,+)                                 |
 % share_clique_1_identical_abstract(ASub0,ASub1)                         |
 %------------------------------------------------------------------------%
+% TODO: almost like share_clique version
 :- export(share_clique_1_identical_abstract/2).
 share_clique_1_identical_abstract('$bottom','$bottom'):- !.
 share_clique_1_identical_abstract('$bottom',_):- !,fail.
@@ -491,6 +498,7 @@ share_clique_1_less_or_equal(ASub,ASub1):-
 %------------------------------------------------------------------------%
 % Specialized version of call_to_entry + exit_to_prime + extend for facts|
 %------------------------------------------------------------------------%
+% TODO: almost like share_clique version
 :- export(share_clique_1_call_to_success_fact/9).
 share_clique_1_call_to_success_fact(_,[],_Head,_K,Sv,(Cl,Sh),_,([],[]),Succ):-!,
 	ord_split_lists_from_list(Sv,Sh,_,Succ_Sh),
@@ -525,6 +533,7 @@ share_clique_1_call_to_success_fact(_Sg,_Hv,_Head,_K,_Sv,_Call,_Proj,'$bottom','
 %% 	share_clique_widen(plai_op_clique_1,(Cl1,Sh1),_,(Cl,Sh)),
 %% 	share_clique_1_project(Sv,(Cl,Sh),Prime).
       	
+% TODO: almost like share_clique version
 :- export(share_clique_1_input_interface/4).  
 share_clique_1_input_interface(clique_1(X),perfect,(Gv,Sh,Cl0,I),(Gv,Sh,Cl,I)):-
 	nonvar(X),
@@ -538,6 +547,7 @@ share_clique_1_input_interface(Prop,Any,(Gv0,Sh0,Cl,I0),(Gv,Sh,Cl,I)):-
 % share_clique_1_asub_to_native(ASub,Qv,OutFlag,ASub_user,Comps)         |
 %------------------------------------------------------------------------%
 
+% TODO: almost like share_clique version
 :- export(share_clique_1_asub_to_native/5). 
 share_clique_1_asub_to_native('$bottom',_Qv,_OutFlag,_ASub_user,_Comps):- !, fail.
 share_clique_1_asub_to_native((Cl,Sh),Qv,_OutFlag,Info,[]):-
@@ -598,7 +608,7 @@ share_clique_1_success_builtin(bottom,_,_,_,'$bottom').
 share_clique_1_success_builtin(unchanged,_,_,Call,Call).
 share_clique_1_success_builtin(some,_,NewGround,Call,Succ):-
 	nrel_clique_1(NewGround,Call,Succ).
-
+% TODO: almost like share_clique version
 % SPECIAL BUILTINS
 share_clique_1_success_builtin('=../2',_,p(X,Y),(Cl,Sh),Succ):-
 % All variables of X are ground. All variables of Y will be ground
@@ -718,6 +728,7 @@ share_clique_1_success_builtin(var,_Sv,p(X),(Cl,Sh),Succ):-
 % Handles those builtins for which computing Prime is easier than Succ   |
 %------------------------------------------------------------------------%
 
+% TODO: almost like share_clique version
 :- export(share_clique_1_call_to_success_builtin/6).
 share_clique_1_call_to_success_builtin('=/2','='(X,Y),Sv,Call,Proj,Succ):-
 	copy_term(X,Xterm),

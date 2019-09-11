@@ -144,7 +144,7 @@ share_clique_exit_to_prime(Sg,Hv,Head,_Sv,Exit,Flag,Prime):-
      Sg = NewHead,
      share_clique_sort(NewPrime,Prime).
 share_clique_exit_to_prime(_,[],_,_,_,_,([],[])):- !.
-share_clique_exit_to_prime(_Sg,_Hv,_Head,Sv,Exit,ExtraInfo,Prime):-!,
+share_clique_exit_to_prime(_Sg,_Hv,_Head,Sv,Exit,ExtraInfo,Prime):-
      ExtraInfo = (Equations,Gv_Call),     	
      share_clique_extend_asub(Exit,Sv,ASub),     
      share_clique_iterate(Equations,star,ASub, Prime0),
