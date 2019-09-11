@@ -59,7 +59,7 @@
 	 change_values_if_differ/5,
 	 var_value/3,
 	 projected_gvars/3]).
-:- use_module(domain(share_amgu)).
+:- use_module(domain(sharefree_amgu), [sharefree_amgu_extend_asub0/3]).
 :- use_module(domain(s_grshfr),
         [collect_vars_freeness/2, member_value_freeness/3]).
 

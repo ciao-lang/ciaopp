@@ -630,7 +630,7 @@ unknown_entry(son,Sg,Qv,Call) :- !, son_unknown_entry(Sg,Qv,Call).
 empty_entry(son,Sg,Qv,Call) :- !, son_empty_entry(Sg,Qv,Call).
 %% compute_lub_el(son,ASub1,ASub2,ASub) :- !, son_lub(ASub1,ASub2,ASub).
 % ---------------------------------------------------------------------------
-:- use_module(domain(share_amgu)).
+:- use_module(domain(sharing_amgu)).
 aidomain(share_amgu).
 amgu(share_amgu,Sg,Head,ASub,NewASub) :- !, share_amgu(Sg,Head,ASub,NewASub).
 augment_asub(share_amgu,ASub,Vars,ASub0) :- !, share_amgu_extend_asub(ASub,Vars,ASub0).
@@ -655,6 +655,7 @@ unknown_entry(share_amgu,Sg,Qv,Call) :- !, share_unknown_entry(Sg,Qv,Call).
 empty_entry(share_amgu,Sg,Qv,Call) :- !, share_empty_entry(Sg,Qv,Call).
 %% compute_lub_el(share_amgu,ASub1,ASub2,ASub) :- !, share_lub(ASub1,ASub2,ASub).
 % ----------
+:- use_module(domain(sharefree_amgu)).
 aidomain(sharefree_amgu).
 amgu(sharefree_amgu,Sg,Head,ASub,NewASub) :- !, sharefree_amgu(Sg,Head,ASub,NewASub).
 augment_asub(sharefree_amgu,ASub,Vars,ASub0) :- !, sharefree_amgu_extend_asub(ASub,Vars,ASub0).
@@ -678,6 +679,7 @@ unknown_call(sharefree_amgu,Sg,Vars,Call,Succ) :- !, shfr_unknown_call(Sg,Vars,C
 unknown_entry(sharefree_amgu,Sg,Qv,Call) :- !, shfr_unknown_entry(Sg,Qv,Call).
 empty_entry(sharefree_amgu,Sg,Qv,Call) :- !, shfr_empty_entry(Sg,Qv,Call).
 % ----------
+:- use_module(domain(shfrlin_amgu)).
 aidomain(shfrlin_amgu).
 amgu(shfrlin_amgu,Sg,Head,ASub,NewASub) :- !, shfrlin_amgu(Sg,Head,ASub,NewASub).
 augment_asub(shfrlin_amgu,ASub,Vars,ASub0) :- !, shfrlin_extend_asub(ASub,Vars,ASub0).

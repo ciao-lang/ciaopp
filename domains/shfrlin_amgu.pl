@@ -1,11 +1,8 @@
-% :- doc(title, "shfrlin_amgu (abstract domain)").
+:- module(shfrlin_amgu, [], [assertions, isomodes]).
+
+:- doc(title, "amgu-based sharing+freeness+linearity domain").
 :- doc(author, "Jorge Navas").
 % Copyright (C) 2006-2019 The Ciao Development Team
-
-:- use_module(domain(s_grshfr), [member_value_freeness/3]).
-:- use_module(domain(shfrlin_amgu_aux),
-        [shfrlin_amgu_iterate/3, shfrlin_update_fr_lin/3]).
-:- use_module(domain(share_aux), [if_not_nil/4,list_ground/2]).
 
 %------------------------------------------------------------------------%
 % This file implements the domain dependent abstract functions           |
@@ -14,14 +11,53 @@
 %------------------------------------------------------------------------%
 % The meaning of the variables are partially defined in sharefree.pl     |
 %------------------------------------------------------------------------%
-%                                                                        |
-%        programmer: J. Navas                                            |
-%                                                                        |
-%------------------------------------------------------------------------%
 
 :- doc(bug,"1. The builtins do not use the linearity info."). 
 :- doc(bug,"2. The extend function does not use linearity info."). 
      
+:- use_module(library(terms_vars),     [varset/2, varset0/2]).
+:- use_module(library(sort),           [sort/2]).
+:- use_module(library(sets)).
+:- use_module(library(lists), [list_to_list_of_lists/2]).
+:- use_module(library(terms_check), [variant/2]).
+
+:- use_module(domain(sharefree), [
+	shfr_compute_lub_el/3,
+	shfr_empty_entry/3,
+	shfr_extend/4,
+	shfr_glb/3,
+	shfr_input_interface/4,
+	shfr_input_user_interface/3,
+	shfr_less_or_equal/2,
+	shfr_project/3,
+	shfr_sort/2,
+	shfr_unknown_call/4,
+	shfr_unknown_entry/3,
+	%
+	update_lambda_sf/5,
+	values_equal/3,
+	change_values_if_f/4,
+	obtain_prime_var_var/3,
+	product/8]).
+:- use_module(domain(sharefree_amgu), [
+	sharefree_amgu_call_to_success_builtin/6,
+	sharefree_amgu_extend_asub/3,
+	sharefree_amgu_special_builtin/4,
+	sharefree_amgu_success_builtin/5,
+	sharefree_delete_variables/3]).
+:- use_module(domain(share_aux), [if_not_nil/4,list_ground/2]).
+:- use_module(domain(sharefree_amgu_aux), [
+	filter_freeness_with_call/3,
+	peel_equations_frl/3,
+	unmap_freeness_list/2]).
+
+:- use_module(domain(s_grshfr), [
+	member_value_freeness/3,
+	change_values_insert/4,
+	var_value/3]).
+:- use_module(domain(shfrlin_amgu_aux),
+        [shfrlin_amgu_iterate/3, shfrlin_update_fr_lin/3]).
+
 %------------------------------------------------------------------------%
 %                      ABSTRACT Call To Entry                            %
 %------------------------------------------------------------------------%

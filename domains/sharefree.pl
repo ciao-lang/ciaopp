@@ -1820,6 +1820,7 @@ eliminate_non_element3(no,_L,Ls,NewVars,Sh,Extended):-
 
 %-------------------------------------------------------------------------
 
+:- export(product/8).
 product(f,X,VarsY,_,Sh,Lda_fr,Prime_sh,Prime_fr):-
 	project_share(VarsY,Sh,Temp),
 	insert_each(Temp,X,Temp1),

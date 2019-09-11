@@ -1,4 +1,6 @@
-% :- doc(title, "sharefree_amgu (abstract domain)").
+:- module(sharefree_amgu, [], [assertions, isomodes]).
+
+:- doc(title, "amgu-based sharing+freeness domain").
 :- doc(author, "Jorge Navas").
 % Copyright (C) 2004-2019 The Ciao Development Team
 
@@ -18,6 +20,20 @@
 :- doc(bug,"3. The non-redundant version is not working because the 
 	   semantics of the builtins has not been defined yet.").
 
+:- use_module(library(terms_vars),     [varset/2, varset0/2]).
+:- use_module(library(sort),           [sort/2]).
+:- use_module(library(sets)).
+:- use_module(library(lists), [
+	list_to_list_of_lists/2
+   ]).
+:- use_module(library(lsets), [
+	closure_under_union/2,
+	sort_list_of_lists/2,
+	merge_each/3
+   ]).
+:- use_module(library(terms_check), [variant/2]).
+
+:- use_module(domain(share_amgu_sets), [delete_vars_from_list_of_lists/3]).
 :- use_module(domain(s_grshfr),
 	[ change_values_if_differ/5,
 	  collect_vars_freeness/2,
@@ -25,7 +41,15 @@
 	  change_values_insert/4]).
 :- use_module(domain(share_aux), [list_ground/2]).
 
-:- use_module(domain(sharefree)).
+:- use_module(domain(sharing), [share_project/3]).
+:- use_module(domain(sharing_amgu), [share_amgu_extend_asub/3]).
+:- use_module(domain(sharefree), [
+	shfr_call_to_success_builtin/6,
+	shfr_extend/4,
+	shfr_project/3,
+	shfr_sort/2,
+	shfr_special_builtin/4,
+	shfr_success_builtin/5]).
 :- use_module(domain(sharefree_amgu_aux)).
 
 %------------------------------------------------------------------------%
@@ -142,6 +166,7 @@ sharefree_amgu_call_to_success_fact(Sg,Hv,Head,_K,Sv,Call,_Proj,Prime,Succ) :-
 	sharefree_delete_variables(Hv,ASub1,Succ),!.
 sharefree_amgu_call_to_success_fact(_Sg,_Hv,_Head,_K,_Sv,_Call,_Proj, '$bottom','$bottom').
 
+:- export(sharefree_delete_variables/3).
 sharefree_delete_variables(Vars,(Sh,Fr),(New_Sh,New_Fr)):-
 	delete_vars_from_list_of_lists(Vars,Sh,Sh0),
 	sort_list_of_lists(Sh0,New_Sh),

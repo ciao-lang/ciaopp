@@ -1,4 +1,6 @@
-% :- doc(title, "share_amgu (abstract domain)").
+:- module(sharing_amgu, [], [assertions, isomodes]).
+
+:- doc(title, "amgu-based sharing domain").
 :- doc(author, "Jorge Navas").
 % Copyright (C) 2004-2019 The Ciao Development Team
 
@@ -21,6 +23,13 @@
 	   special_builtin.").
 :- doc(bug,"3. The non-redundant version is not working because the 
 	   semantics of the builtins has not been defined yet.").
+
+:- use_module(library(terms_vars),     [varset/2]).
+:- use_module(library(sort),           [sort/2]).
+:- use_module(library(sets)).
+:- use_module(library(lsets)).
+:- use_module(domain(s_grshfr),        [projected_gvars/3]).
+:- use_module(domain(share_amgu_sets), [delete_vars_from_list_of_lists/3]).
 
 :- use_module(library(lists), [list_to_list_of_lists/2, append/3]).
 :- use_module(library(terms_check), [variant/2]).
