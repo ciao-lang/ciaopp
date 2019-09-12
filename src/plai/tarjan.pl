@@ -72,6 +72,7 @@
 %   - there is no output program, it outputs info on recursiveness
 %-------------------------------------------------------------------------
 
+:- export(recursive_classes/1).
 :- data recursive_classes/1.
 %-------------------------------------------------------------------------
 
@@ -92,6 +93,7 @@ tarjan(Program,_):-
 :- endif.
 
 %-------------------------------------------------------------------------
+:- export(program_pred/4).
 % program_pred(+,-,+,-)
 % program_pred(Clauses,Calls,[],Ps)
 % It returns in Ps the set of functor/arity of all heads in the program
@@ -167,11 +169,13 @@ strong_connected_components(Prog,Calls,Ps,Cs,Vertexes) :-
 	    step2(S0,Cs)
 	).
 
+:- export(init_cls/2).
 init_cls([],[]).
 init_cls([_|Preds],[[]|Empties]):-
 	init_cls(Preds,Empties).
 
 %-------------------------------------------------------------------------
+:- export(init_depends/3).
 % init_depends(+,-,+)
 % init_depends(Preds,Vertexes,Edges) 
 % Preds is the set of functor/arity (P/N) of all program heads. 
@@ -186,6 +190,7 @@ init_depends([P/N|Ps],[vertex(P/N,E,0,0,undef)|Vs],[Es|Edges]):-
 init_depends([],[],[]).
 
 %-------------------------------------------------------------------------
+:- export(user_clauses/5).
 % user_clauses(+,+,+,+,-)
 % user_clauses(Clauses,Calls,Preds,EsIn,EsOut) 
 %  Collects all the user predicates called by each predicate (edges)
@@ -308,6 +313,7 @@ new_vertex(vertex(U,Es,0,L,_),state(G,vertex(V,_,_,_,_),S,I),
 	update_vertex(vertex(U,Es,0,L,V),G,G1).
 
 %-----------------------------------------------------------------------------
+:- export(get_vertex/3).
 % get_vertex(+,+,-)
 % get_vertex(V,Vertexs,Vertex) 
 % Finds the vertex with key V in the set of vertex Vertexs
@@ -409,6 +415,7 @@ fake_recursive_classify([clause(_,_):_|Cs],[r|SCs]):-
 	fake_recursive_classify(Cs,SCs).
 
 %-----------------------------------------------------------------------------
+:- export(get_recursivity_class/3).
 % get_recursivity_class(+,+,-)
 % get_recursivity_class(N/A,Refs,List)
 % If N/A is in some class of recursive predicates, it returns in List the

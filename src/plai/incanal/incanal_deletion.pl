@@ -24,8 +24,7 @@ the analysis.").
 	 erase_last_memo_table/3
 	]).
 
-:- use_module(ciaopp(plai/tarjan), []).
-:- import(tarjan, [get_recursivity_class/3]). % TODO: fix me
+:- use_module(ciaopp(plai/tarjan), [get_recursivity_class/3]).
 
 :- use_module(ciaopp(p_unit/program_keys),
 	[decode_clkey/4, decode_litkey/5, get_predkey/3, decode_predkey/3]).

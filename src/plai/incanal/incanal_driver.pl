@@ -41,8 +41,7 @@ according to the strategy defined.
 :- use_module(ciaopp(plai/transform), [trans_clause/3, cleanup_trans_clauses/0]).
 :- import(transform, [determine_r_flag/3]). % TODO: fix me
 :- use_module(ciaopp(plai/domains), [identical_proj/5, init_abstract_domain/2, abs_sort/3, identical_abstract/3]).
-:- use_module(ciaopp(plai/tarjan), [recursive_class/2]).
-:- import(tarjan, [get_recursivity_class/3]). % TODO: fix me
+:- use_module(ciaopp(plai/tarjan), [recursive_class/2, get_recursivity_class/3]).
 :- use_module(ciaopp(p_unit/program_keys),
         [decode_clkey/4, decode_litkey/5, decode_predkey/3, get_predkey/3,
          predkey_from_sg/2, is_entrykey/1, get_litkey/5]).

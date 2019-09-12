@@ -50,8 +50,7 @@
         [call_asr/5, success_asr/6]). % assertions translated to some domain
 
 % incanal
-:- use_module(ciaopp(plai/tarjan), []).
-:- import(tarjan, [recursive_classes/1]). % TODO: fix me
+:- use_module(ciaopp(plai/tarjan), [recursive_classes/1]).
 :- use_module(ciaopp(plai/incanal/tarjan_inc),
         [rec/1, vertexes/1, predicates/1, rec_preds/1, tarjan_data/1]).
 :- use_module(ciaopp(plai/fixpo_dd), []).

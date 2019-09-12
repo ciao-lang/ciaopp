@@ -13,9 +13,10 @@
 :- use_module(library(sort)).
 :- use_module(library(idlists), [subtract/3]).
 
-:- use_module(ciaopp(plai/tarjan), [step2/2, tarjan/2, recursive_classify/4]).
-:- import(tarjan, [user_clauses/5, program_pred/4, init_cls/2, get_vertex/3,
-	get_recursivity_class/3, init_depends/3, recursive_classes/1]). % TODO: fix me
+:- use_module(ciaopp(plai/tarjan), [
+	step2/2, tarjan/2, recursive_classify/4,
+	user_clauses/5, program_pred/4, init_cls/2, get_vertex/3,
+	get_recursivity_class/3, init_depends/3, recursive_classes/1]).
 
 :- use_module(ciaopp(plai/transform),
 	[trans_clause/3, update_trans_clause_rflag/3, update_trans_clause/6]).
