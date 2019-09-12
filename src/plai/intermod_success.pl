@@ -1,7 +1,6 @@
 :- module(intermod_success,
 	[ 
 	    get_success_info/7,
-	    succ_pattern/5,       %% for compatibility. reexported by p_abs.pl
 	    apply_success_policy/9
 	],[assertions, isomodes, datafacts]).
 
@@ -233,6 +232,7 @@ comparison_criteria(bottom_up,lt).
 %% ********************************************************************
 %% ********************************************************************
 
+% :- export(succ_pattern/5). %% for compatibility. reexported by p_abs.pl
 :- pred succ_pattern(+SuccessPolicy,+AbsInt,+Sg,-Call,-Succ)
 # "Provides on backtracking the call and success patterns @var{Call}
   and @var{Succ} of exported predicates of a given goal @var{Sg} on a
