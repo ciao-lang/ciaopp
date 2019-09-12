@@ -42,7 +42,7 @@
 :- use_module(domain(sharefree_amgu), [
 	sharefree_amgu_call_to_success_builtin/6,
 	sharefree_amgu_extend_asub/3,
-	sharefree_amgu_special_builtin/4,
+	sharefree_amgu_special_builtin/5,
 	sharefree_amgu_success_builtin/5,
 	sharefree_delete_variables/3]).
 :- use_module(domain(share_aux), [if_not_nil/4,list_ground/2]).
@@ -258,12 +258,12 @@ shfrlin_call_to_prime_fact(_Sg,_Hv,_Head,_Sv,'$bottom','$bottom').
 %------------------------------------------------------------------------%
 
 %------------------------------------------------------------------------%
-% shfrlin_special_builtin(+,+,-,-)                                       |
-% shfrlin_special_builtin(SgKey,Sg,Type,Condvars)                        |
+% shfrlin_special_builtin(+,+,+,-,-)                                     |
+% shfrlin_special_builtin(SgKey,Sg,Subgoal,Type,Condvars)                |
 %------------------------------------------------------------------------%
-:- export(shfrlin_special_builtin/4).
-shfrlin_special_builtin(SgKey,Sg,Type,Condvars):-
-	sharefree_amgu_special_builtin(SgKey,Sg,Type,Condvars).
+:- export(shfrlin_special_builtin/5).
+shfrlin_special_builtin(SgKey,Sg,Subgoal,Type,Condvars):-
+	sharefree_amgu_special_builtin(SgKey,Sg,Subgoal,Type,Condvars).
 	
 %------------------------------------------------------------------------%
 % shfrlin_success_builtin(+,+,+,+,-)                                     |

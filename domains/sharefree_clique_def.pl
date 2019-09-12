@@ -59,7 +59,7 @@
 	sharefree_clique_input_user_interface/3,
 	sharefree_clique_unknown_call/4,
 	sharefree_clique_empty_entry/3,
-	sharefree_clique_special_builtin/4
+	sharefree_clique_special_builtin/5
    ]).
 :- use_module(domain(def)).
 
@@ -268,13 +268,13 @@ sharefree_clique_def_unknown_entry(_Sg,Qv,(SHF_Call,a([],[]))):-
 %------------------------------------------------------------------------%
 %                         HANDLING BUILTINS                              |
 %------------------------------------------------------------------------%
-% sharefree_clique_def_special_builtin(+,+,-,-)                          |
-% sharefree_clique_def_special_builtin(SgKey,Sg,Type,Condvars)           |
+% sharefree_clique_def_special_builtin(+,+,+,-,-)                        |
+% sharefree_clique_def_special_builtin(SgKey,Sg,Subgoal,Type,Condvars)   |
 %------------------------------------------------------------------------%
-:- export(sharefree_clique_def_special_builtin/4).
-sharefree_clique_def_special_builtin(SgKey,Sg,Type,Condvars):-
-	sharefree_clique_special_builtin(SgKey,Sg,SHF_Type,SHF_Condvars),!,
-	( def_special_builtin(SgKey,Sg,Def_Type,Def_Condvars) ->
+:- export(sharefree_clique_def_special_builtin/5).
+sharefree_clique_def_special_builtin(SgKey,Sg,Subgoal,Type,Condvars):-
+	sharefree_clique_special_builtin(SgKey,Sg,Subgoal,SHF_Type,SHF_Condvars),!,
+	( def_special_builtin(SgKey,Sg,Subgoal,Def_Type,Def_Condvars) ->
    	  Type = (SHF_Type,Def_Type),
 	  Condvars = (SHF_Condvars,Def_Condvars)
         ;

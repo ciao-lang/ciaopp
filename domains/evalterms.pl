@@ -2,7 +2,7 @@
 	evalterms_call_to_success_builtin/6,
 	evalterms_widen/3,
 	evalterms_widencall/3,
-	evalterms_special_builtin/4
+	evalterms_special_builtin/5
    ], [assertions,regtypes,basicmodes,datafacts]).
 
 :- use_module(domain(eterms), 
@@ -93,51 +93,51 @@
 :- use_module(domain(deftypes), [absu/1]).
 
 
-evalterms_special_builtin('!/0',_Sg,id,[]).
-evalterms_special_builtin('@=</2',_Sg,id,[]).
-evalterms_special_builtin('@>/2',_Sg,id,[]).
-evalterms_special_builtin('@>=/2',_Sg,id,[]).
-evalterms_special_builtin('@</2',_Sg,id,[]).
-evalterms_special_builtin('\\==/2',_Sg,id,[]).
-evalterms_special_builtin('==/2',_Sg,id,[]).
-evalterms_special_builtin('display/1',_Sg,id,[]).
-evalterms_special_builtin('get_code/1',Sg,type(T),Condvars):-
+evalterms_special_builtin('!/0',_Sg,_Subgoal,id,[]).
+evalterms_special_builtin('@=</2',_Sg,_Subgoal,id,[]).
+evalterms_special_builtin('@>/2',_Sg,_Subgoal,id,[]).
+evalterms_special_builtin('@>=/2',_Sg,_Subgoal,id,[]).
+evalterms_special_builtin('@</2',_Sg,_Subgoal,id,[]).
+evalterms_special_builtin('\\==/2',_Sg,_Subgoal,id,[]).
+evalterms_special_builtin('==/2',_Sg,_Subgoal,id,[]).
+evalterms_special_builtin('display/1',_Sg,_Subgoal,id,[]).
+evalterms_special_builtin('get_code/1',Sg,_Subgoal,type(T),Condvars):-
         set_int_type(T),
 	varset(Sg,Condvars).
-% eterms_special_builtin('integer/1',Sg,type(T),Condvars):-
+% eterms_special_builtin('integer/1',Sg,_Subgoal,type(T),Condvars):-
 %         set_int_type(T),
 % 	varset(Sg,Condvars).
-evalterms_special_builtin('atom/1',Sg,type(T),Condvars):-
+evalterms_special_builtin('atom/1',Sg,_Subgoal,type(T),Condvars):-
         set_atom_type(T), % no, it is atom or num type
 	varset(Sg,Condvars).
-evalterms_special_builtin('atomic/1',Sg,type(T),Condvars):-
+evalterms_special_builtin('atomic/1',Sg,_Subgoal,type(T),Condvars):-
         set_atom_type(T), % no, it is atom or num type
 	varset(Sg,Condvars).
-evalterms_special_builtin('var/1',_Sg,id,[]).
+evalterms_special_builtin('var/1',_Sg,_Subgoal,id,[]).
 	% set_top_type(T),
 	% varset(Sg,Condvars).
-evalterms_special_builtin('nonvar/1',_Sg,id,[]).
+evalterms_special_builtin('nonvar/1',_Sg,_Subgoal,id,[]).
 	% set_top_type(T),
 	% varset(Sg,Condvars).
-evalterms_special_builtin('ground/1',_Sg,id,[]).
+evalterms_special_builtin('ground/1',_Sg,_Subgoal,id,[]).
 	% set_top_type(T),
 	% varset(Sg,Condvars).
-% eterms_special_builtin('float/1',Sg,type(T),Condvars):-
+% eterms_special_builtin('float/1',Sg,_Subgoal,type(T),Condvars):-
 % 	set_float_type(T),
 % 	varset(Sg,Condvars).
-% eterms_special_builtin('number/1',Sg,type(T),Condvars):-
+% eterms_special_builtin('number/1',Sg,_Subgoal,type(T),Condvars):-
 % 	set_numeric_type(T),
 % 	varset(Sg,Condvars).
-evalterms_special_builtin('fail/0',_Sg,bot,[]).
-evalterms_special_builtin('true/0',_Sg,id,[]).
-evalterms_special_builtin('nl/0',_Sg,id,[]).
-evalterms_special_builtin('repeat/0',_Sg,id,[]).
-
-evalterms_special_builtin('erase/1',Sg,type(T),Condvars):-
+evalterms_special_builtin('fail/0',_Sg,_Subgoal,bot,[]).
+evalterms_special_builtin('true/0',_Sg,_Subgoal,id,[]).
+evalterms_special_builtin('nl/0',_Sg,_Subgoal,id,[]).
+evalterms_special_builtin('repeat/0',_Sg,_Subgoal,id,[]).
+%
+evalterms_special_builtin('erase/1',Sg,_Subgoal,type(T),Condvars):-
 	set_top_type(T),
 	varset(Sg,Condvars).
-
-evalterms_special_builtin(Key,_Sg,special(Key),[]):-
+%
+evalterms_special_builtin(Key,_Sg,_Subgoal,special(Key),[]):-
 	evalterms_very_special_builtin(Key).
 
 evalterms_very_special_builtin('=/2').

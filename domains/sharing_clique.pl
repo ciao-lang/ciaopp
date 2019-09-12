@@ -892,8 +892,8 @@ reduce_sharing([(L-Cand-Sh_cand)|T],SH,LB,Size,Res):-
 %------------------------------------------------------------------------%
 %                         HANDLING BUILTINS                              |
 %------------------------------------------------------------------------%
-% share_clique_special_builtin(+,+,-,-)                                  |
-% share_clique_special_builtin(SgKey,Sg,Type,Condvars)                   |
+% share_clique_special_builtin(+,+,+,-,-)                                |
+% share_clique_special_builtin(SgKey,Sg,Subgoal,Type,Condvars)           |
 % Satisfied if the builtin does not need a very complex action. It       |
 % divides builtins into groups determined by the flag returned in the    |
 % second argument + some special handling for some builtins:             |
@@ -908,12 +908,12 @@ reduce_sharing([(L-Cand-Sh_cand)|T],SH,LB,Size,Res):-
 % (4) some: if it makes some variables ground without imposing conditions|
 % (5) Sgkey: special handling of some particular builtins                |
 %------------------------------------------------------------------------%
-:- export(share_clique_special_builtin/4).
-share_clique_special_builtin('read/2',read(X,Y),'recorded/3',p(Y,X)) :- !.
-share_clique_special_builtin('length/2',length(_X,Y),some,[Y]) :- !.
-share_clique_special_builtin('==/2',_,_,_):- !, fail.
-share_clique_special_builtin(SgKey,Sg,Type,Condvars):-
-	share_special_builtin(SgKey,Sg,Type,Condvars).
+:- export(share_clique_special_builtin/5).
+share_clique_special_builtin('read/2',read(X,Y),_,'recorded/3',p(Y,X)) :- !.
+share_clique_special_builtin('length/2',length(_X,Y),_,some,[Y]) :- !.
+share_clique_special_builtin('==/2',_,_,_,_):- !, fail.
+share_clique_special_builtin(SgKey,Sg,Subgoal,Type,Condvars):-
+	share_special_builtin(SgKey,Sg,Subgoal,Type,Condvars).
 	
 %------------------------------------------------------------------------%
 % share_clique_success_builtin(+,+,+,+,-)                                |

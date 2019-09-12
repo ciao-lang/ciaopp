@@ -188,8 +188,8 @@ share_amgu_call_to_prime_fact(Sg,Hv,Head,Sv,Call,Prime) :-
 %------------------------------------------------------------------------%
 %                         HANDLING BUILTINS                              %
 %------------------------------------------------------------------------%
-% share_special_builtin(+,+,-,-)                                         |
-% share_special_builtin(SgKey,Sg,Type,Condvars)                          |
+% share_special_builtin(+,+,+,-,-)                                       |
+% share_special_builtin(SgKey,Sg,Subgoal,Type,Condvars)                  |
 % Satisfied if the builtin does not need a very complex action. It       |
 % divides builtins into groups determined by the flag returned in the    |
 % second argument + some special handling for some builtins:             |
@@ -204,12 +204,12 @@ share_amgu_call_to_prime_fact(Sg,Hv,Head,Sv,Call,Prime) :-
 % (4) some: if it makes some variables ground without imposing conditions|
 % (5) Sgkey: special handling of some particular builtins                |
 %-------------------------------------------------------------------------
-:- export(share_amgu_special_builtin/4).
-share_amgu_special_builtin('read/2',read(X,Y),'recorded/3',p(Y,X)).
-share_amgu_special_builtin('length/2',length(_X,Y),some,[Y]).
-share_amgu_special_builtin('==/2',_,_,_):- !, fail.
-share_amgu_special_builtin(SgKey,Sg,Type,Condvars):-
-	share_special_builtin(SgKey,Sg,Type,Condvars).
+:- export(share_amgu_special_builtin/5).
+share_amgu_special_builtin('read/2',read(X,Y),_,'recorded/3',p(Y,X)).
+share_amgu_special_builtin('length/2',length(_X,Y),_,some,[Y]).
+share_amgu_special_builtin('==/2',_,_,_,_):- !, fail.
+share_amgu_special_builtin(SgKey,Sg,Subgoal,Type,Condvars):-
+	share_special_builtin(SgKey,Sg,Subgoal,Type,Condvars).
 	
 
 %-------------------------------------------------------------------------

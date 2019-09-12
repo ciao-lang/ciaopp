@@ -537,8 +537,8 @@ sharefree_clique_unknown_entry(_Sg,Qv,Call):-
 %------------------------------------------------------------------------%
 
 %------------------------------------------------------------------------%
-% sharefree_clique_special_builtin(+,+,-,-)                              |
-% sharefree_clique_special_builtin(SgKey,Sg,Type,Condvars)               |
+% sharefree_clique_special_builtin(+,+,+,-,-)                            |
+% sharefree_clique_special_builtin(SgKey,Sg,Subgoal,Type,Condvars)       |
 % Satisfied if the builtin does not need a very complex action. It       |
 % divides builtins into groups determined by the flag returned in the    |
 % second argument + some special handling for some builtins:             |
@@ -557,12 +557,12 @@ sharefree_clique_unknown_entry(_Sg,Qv,Call):-
 %------------------------------------------------------------------------%
 % list/1 is not defined
 %------------------------------------------------------------------------%
-:- export(sharefree_clique_special_builtin/4).
-sharefree_clique_special_builtin('read/2',read(X,Y),'recorded/3',p(Y,X)) :- !.
-sharefree_clique_special_builtin('length/2',length(_X,Y),some,[Y]) :- !.
-sharefree_clique_special_builtin('==/2',_,_,_):- !, fail.
-sharefree_clique_special_builtin(SgKey,Sg,Type,Condvars):-
-	shfr_special_builtin(SgKey,Sg,Type,Condvars).
+:- export(sharefree_clique_special_builtin/5).
+sharefree_clique_special_builtin('read/2',read(X,Y),_,'recorded/3',p(Y,X)) :- !.
+sharefree_clique_special_builtin('length/2',length(_X,Y),_,some,[Y]) :- !.
+sharefree_clique_special_builtin('==/2',_,_,_,_):- !, fail.
+sharefree_clique_special_builtin(SgKey,Sg,Subgoal,Type,Condvars):-
+	shfr_special_builtin(SgKey,Sg,Subgoal,Type,Condvars).
 	
 %------------------------------------------------------------------------%
 % sharefree_clique_success_builtin(+,+,+,+,-)                            |

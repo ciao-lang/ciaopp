@@ -40,7 +40,7 @@
 	def_glb/3,
 	def_project/3,
 	def_sort/2,
-	def_special_builtin/4,
+	def_special_builtin/5,
 	def_unknown_entry/3]).
 :- use_module(domain(sharing_clique), [
 	share_clique_call_to_entry/9,
@@ -55,7 +55,7 @@
 	share_clique_lub_cl/3,
 	share_clique_project/3,
 	share_clique_sort/2,
-	share_clique_special_builtin/4,
+	share_clique_special_builtin/5,
 	share_clique_unknown_call/4]).
 
 :- use_module(domain(share_clique_aux), [irrel_w/3]).
@@ -273,14 +273,14 @@ share_clique_def_unknown_entry(_Sg,Qv,((Qv,[]),a([],[]))).
 %------------------------------------------------------------------------%
 %                         HANDLING BUILTINS                              |
 %------------------------------------------------------------------------%
-% share_clique_def_special_builtin(+,+,-,-)                              |
-% share_clique_def_special_builtin(SgKey,Sg,Type,Condvars)               |
+% share_clique_def_special_builtin(+,+,+,-,-)                            |
+% share_clique_def_special_builtin(SgKey,Sg,Subgoal,Type,Condvars)       |
 %------------------------------------------------------------------------%
 
-:- export(share_clique_def_special_builtin/4).
-share_clique_def_special_builtin(SgKey,Sg,Type,Condvars):-
-	share_clique_special_builtin(SgKey,Sg,SH_Type,SH_Condvars),!,
-	( def_special_builtin(SgKey,Sg,Def_Type,Def_Condvars) ->
+:- export(share_clique_def_special_builtin/5).
+share_clique_def_special_builtin(SgKey,Sg,Subgoal,Type,Condvars):-
+	share_clique_special_builtin(SgKey,Sg,Subgoal,SH_Type,SH_Condvars),!,
+	( def_special_builtin(SgKey,Sg,Subgoal,Def_Type,Def_Condvars) ->
    	  Type = (SH_Type,Def_Type),
 	  Condvars = (SH_Condvars,Def_Condvars)
         ;

@@ -16,7 +16,7 @@
 	deftypes_unknown_entry/3,
 	deftypes_empty_entry/3,
 	deftypes_call_to_success_fact/9,
-%	deftypes_special_builtin/4,
+%	deftypes_special_builtin/5,
 %	deftypes_success_builtin/5,
 	deftypes_call_to_success_builtin/6,
 	deftypes_input_interface/4,

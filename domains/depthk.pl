@@ -13,7 +13,7 @@
 	  depthk_asub_to_native/5, 
 	  depthk_project/3,   
 	  depthk_sort/2,      
-	  depthk_special_builtin/4,  
+	  depthk_special_builtin/5,  
 	  depthk_success_builtin/5,
 	  depthk_unknown_call/4, 
 	  depthk_unknown_entry/3,  
@@ -336,49 +336,49 @@ accumulate(X,T,Info,[instance(X,T)|Info]).
 %                         HANDLING BUILTINS                              %
 %------------------------------------------------------------------------%
 
-depthk_special_builtin('!/0',(!),nochange,[]).
+depthk_special_builtin('!/0',(!),_,nochange,[]).
 % SICStus3 (ISO)
-depthk_special_builtin('=\\=/2',(_ =\= _),nochange,[]).
+depthk_special_builtin('=\\=/2',(_ =\= _),_,nochange,[]).
 % SICStus2.x
-% depthk_special_builtin('=\=/2',(_ =\= _),nochange,[]).
-depthk_special_builtin('=<'/2,'=<'(_,_),nochange,[]).
-depthk_special_builtin('@=<'/2,'@=<'(_,_),nochange,[]).
-depthk_special_builtin('@>'/2,'@>'(_,_),nochange,[]).
-depthk_special_builtin('@>='/2,'@>='(_,_),nochange,[]).
-depthk_special_builtin('@<'/2,'@<'(_,_),nochange,[]).
-depthk_special_builtin('>'/2,'>'(_,_),nochange,[]).
-depthk_special_builtin('>='/2,'>='(_,_),nochange,[]).
+% depthk_special_builtin('=\=/2',(_ =\= _),_,nochange,[]).
+depthk_special_builtin('=<'/2,'=<'(_,_),_,nochange,[]).
+depthk_special_builtin('@=<'/2,'@=<'(_,_),_,nochange,[]).
+depthk_special_builtin('@>'/2,'@>'(_,_),_,nochange,[]).
+depthk_special_builtin('@>='/2,'@>='(_,_),_,nochange,[]).
+depthk_special_builtin('@<'/2,'@<'(_,_),_,nochange,[]).
+depthk_special_builtin('>'/2,'>'(_,_),_,nochange,[]).
+depthk_special_builtin('>='/2,'>='(_,_),_,nochange,[]).
 % SICStus3 (ISO)
-depthk_special_builtin('\\==/2',(_ \== _),nochange,[]).
+depthk_special_builtin('\\==/2',(_ \== _),_,nochange,[]).
 % SICStus2.x
-% depthk_special_builtin('\==/2',(_ \== _),nochange,[]).
-depthk_special_builtin('<'/2,'<'(_,_),nochange,[]).
-depthk_special_builtin('$metachoice'/1,'$metachoice'(_),nochange,[]).
-depthk_special_builtin('$metacut'/1,'$metacut'(_),nochange,[]).
-%depthk_special_builtin('arg/3',arg(_,_,_),nochange,[]).
-depthk_special_builtin('atom/2',atom(_),nochange,[]).
-depthk_special_builtin('atomic/2',atomic(_),nochange,[]).
-depthk_special_builtin('format/2',format(_,_),nochange,[]).
-depthk_special_builtin('format/3',format(_,_,_),nochange,[]).
-%depthk_special_builtin('functor/3',functor(_,_,_),nochange,[]).
-depthk_special_builtin('ground/1',ground(_),nochange,[]).
-depthk_special_builtin('integer/1',integer(_),nochange,[]).
-depthk_special_builtin('instance/2',instance(X,Y),instance,(X,Y)).
-depthk_special_builtin('is/2',is(_,_),nochange,[]).
-depthk_special_builtin('length/2',length(_,_),nochange,[]).
-depthk_special_builtin('nl/1',nl(_),nochange,[]).
-depthk_special_builtin('nonvar/1',nonvar(_),nochange,[]).
-depthk_special_builtin('number/1',number(_),nochange,[]).
-depthk_special_builtin('statistics/2',statistics(_,_),nochange,[]).
-depthk_special_builtin('var/1',var(_),nochange,[]).
-depthk_special_builtin('write/1',write(_),nochange,[]).      
-depthk_special_builtin('write/2',write(_,_),nochange,[]).
-depthk_special_builtin('write_canonical/1',write_canonical(_),nochange,[]).
-depthk_special_builtin('write_canonical/2',write_canonical(_,_),nochange,[]).
-depthk_special_builtin('writeq/1',writeq(_),nochange,[]).
-depthk_special_builtin('writeq/2',writeq(_,_),nochange,[]).
-depthk_special_builtin(_Key,Builtin,nochange,[]):- functor(Builtin,_,0).
-depthk_special_builtin(Key,_Builtin,special(Key),[]):- 
+% depthk_special_builtin('\==/2',(_ \== _),_,nochange,[]).
+depthk_special_builtin('<'/2,'<'(_,_),_,nochange,[]).
+depthk_special_builtin('$metachoice'/1,'$metachoice'(_),_,nochange,[]).
+depthk_special_builtin('$metacut'/1,'$metacut'(_),_,nochange,[]).
+%depthk_special_builtin('arg/3',arg(_,_,_),_,nochange,[]).
+depthk_special_builtin('atom/2',atom(_),_,nochange,[]).
+depthk_special_builtin('atomic/2',atomic(_),_,nochange,[]).
+depthk_special_builtin('format/2',format(_,_),_,nochange,[]).
+depthk_special_builtin('format/3',format(_,_,_),_,nochange,[]).
+%depthk_special_builtin('functor/3',functor(_,_,_),_,nochange,[]).
+depthk_special_builtin('ground/1',ground(_),_,nochange,[]).
+depthk_special_builtin('integer/1',integer(_),_,nochange,[]).
+depthk_special_builtin('instance/2',instance(X,Y),_,instance,(X,Y)).
+depthk_special_builtin('is/2',is(_,_),_,nochange,[]).
+depthk_special_builtin('length/2',length(_,_),_,nochange,[]).
+depthk_special_builtin('nl/1',nl(_),_,nochange,[]).
+depthk_special_builtin('nonvar/1',nonvar(_),_,nochange,[]).
+depthk_special_builtin('number/1',number(_),_,nochange,[]).
+depthk_special_builtin('statistics/2',statistics(_,_),_,nochange,[]).
+depthk_special_builtin('var/1',var(_),_,nochange,[]).
+depthk_special_builtin('write/1',write(_),_,nochange,[]).      
+depthk_special_builtin('write/2',write(_,_),_,nochange,[]).
+depthk_special_builtin('write_canonical/1',write_canonical(_),_,nochange,[]).
+depthk_special_builtin('write_canonical/2',write_canonical(_,_),_,nochange,[]).
+depthk_special_builtin('writeq/1',writeq(_),_,nochange,[]).
+depthk_special_builtin('writeq/2',writeq(_,_),_,nochange,[]).
+depthk_special_builtin(_Key,Builtin,_,nochange,[]):- functor(Builtin,_,0).
+depthk_special_builtin(Key,_Builtin,_,special(Key),[]):- 
 	very_special_builtin(Key).
 
 very_special_builtin('=../2').

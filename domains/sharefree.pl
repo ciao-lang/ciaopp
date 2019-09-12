@@ -685,8 +685,8 @@ shfr_less_or_equal((Sh0,Fr0),(Sh1,Fr1)):-
 %------------------------------------------------------------------------%
 
 %-------------------------------------------------------------------------
-% shfr_special_builtin(+,+,-,-)                                         |
-% shfr_special_builtin(SgKey,Sg,Type,Condvars)                          |
+% shfr_special_builtin(+,+,+,-,-)                                        |
+% shfr_special_builtin(SgKey,Sg,Subgoal,Type,Condvars)                   |
 % Satisfied if the builtin does not need a very complex action. It       |
 % divides builtins into groups determined by the flag returned in the    |
 % second argument + some special handling for some builtins:             |
@@ -705,200 +705,200 @@ shfr_less_or_equal((Sh0,Fr0),(Sh1,Fr1)):-
 % (6) Sgkey, special handling of some particular builtins                |
 %-------------------------------------------------------------------------
 
-:- export(shfr_special_builtin/4).
+:- export(shfr_special_builtin/5).
 %-------------------------------------------------------------------------
 % metacuts
-%% shfr_special_builtin('CHOICE IDIOM/1',_,new_ground,_).
-%% shfr_special_builtin('CUT IDIOM/1',_,old_ground,_).
-%% shfr_special_builtin('$metachoice/1',_,new_ground,_).
-%% shfr_special_builtin('$metacut/1',_,old_ground,_).
-%% shfr_special_builtin(':/2',(prolog:'$metachoice'(_)),new_ground,_).
-%% shfr_special_builtin(':/2',(prolog:'$metacut'(_)),old_ground,_).
+%% shfr_special_builtin('CHOICE IDIOM/1',_,_,new_ground,_).
+%% shfr_special_builtin('CUT IDIOM/1',_,_,old_ground,_).
+%% shfr_special_builtin('$metachoice/1',_,_,new_ground,_).
+%% shfr_special_builtin('$metacut/1',_,_,old_ground,_).
+%% shfr_special_builtin(':/2',(prolog:'$metachoice'(_)),_,new_ground,_).
+%% shfr_special_builtin(':/2',(prolog:'$metacut'(_)),_,old_ground,_).
 %%%% TODO: Missing cuts in all the following clauses
-shfr_special_builtin('metachoice/1',_,new_ground,_).
-shfr_special_builtin('metacut/1',_,old_ground,_).
+shfr_special_builtin('metachoice/1',_,_,new_ground,_).
+shfr_special_builtin('metacut/1',_,_,old_ground,_).
 %-------------------------------------------------------------------------
-shfr_special_builtin('current_atom/1',_,new_ground,_).
-shfr_special_builtin('current_input/1',_,new_ground,_).
-shfr_special_builtin('current_module/1',_,new_ground,_).
-shfr_special_builtin('current_output/1',_,new_ground,_).
-shfr_special_builtin('current_op/3',_,new_ground,_).
-shfr_special_builtin('depth/1',_,new_ground,_).
-shfr_special_builtin('get_code/1',_,new_ground,_).
-shfr_special_builtin('get1_code/1',_,new_ground,_).
-shfr_special_builtin('seeing/1',_,new_ground,_).
-shfr_special_builtin('telling/1',_,new_ground,_).
-shfr_special_builtin('statistics/2',_,new_ground,_).
+shfr_special_builtin('current_atom/1',_,_,new_ground,_).
+shfr_special_builtin('current_input/1',_,_,new_ground,_).
+shfr_special_builtin('current_module/1',_,_,new_ground,_).
+shfr_special_builtin('current_output/1',_,_,new_ground,_).
+shfr_special_builtin('current_op/3',_,_,new_ground,_).
+shfr_special_builtin('depth/1',_,_,new_ground,_).
+shfr_special_builtin('get_code/1',_,_,new_ground,_).
+shfr_special_builtin('get1_code/1',_,_,new_ground,_).
+shfr_special_builtin('seeing/1',_,_,new_ground,_).
+shfr_special_builtin('telling/1',_,_,new_ground,_).
+shfr_special_builtin('statistics/2',_,_,new_ground,_).
 %-------------------------------------------------------------------------
-shfr_special_builtin('op/3',_,old_ground,_).
-shfr_special_builtin('save_event_trace/1',_,old_ground,_).
-shfr_special_builtin('close/1',_,old_ground,_).
+shfr_special_builtin('op/3',_,_,old_ground,_).
+shfr_special_builtin('save_event_trace/1',_,_,old_ground,_).
+shfr_special_builtin('close/1',_,_,old_ground,_).
 %-------------------------------------------------------------------------
-shfr_special_builtin('abort/0',_,bottom,_).
-shfr_special_builtin('fail/0',_,bottom,_).
-shfr_special_builtin('false/0',_,bottom,_).
-shfr_special_builtin('halt/0',_,bottom,_).
+shfr_special_builtin('abort/0',_,_,bottom,_).
+shfr_special_builtin('fail/0',_,_,bottom,_).
+shfr_special_builtin('false/0',_,_,bottom,_).
+shfr_special_builtin('halt/0',_,_,bottom,_).
 %-------------------------------------------------------------------------
-shfr_special_builtin('!/0',_,unchanged,_).
-shfr_special_builtin('assert/1',_,unchanged,_).
-shfr_special_builtin('asserta/1',_,unchanged,_).
-shfr_special_builtin('assertz/1',_,unchanged,_).
-shfr_special_builtin('debug/0',_,unchanged,_).
-shfr_special_builtin('debugging/0',_,unchanged,_).
-shfr_special_builtin('dif/2',_,unchanged,_).
-shfr_special_builtin('display/1',_,unchanged,_).
-shfr_special_builtin('flush_output/0',_,unchanged,_).
-shfr_special_builtin('garbage_collect/0',_,unchanged,_).
-shfr_special_builtin('gc/0',_,unchanged,_).
-shfr_special_builtin('listing/0',_,unchanged,_).
-shfr_special_builtin('listing/1',_,unchanged,_).
-shfr_special_builtin('nl/0',_,unchanged,_).
-shfr_special_builtin('nogc/0',_,unchanged,_).
-shfr_special_builtin('not/1',_,unchanged,_).
-shfr_special_builtin('print/1',_,unchanged,_).
-shfr_special_builtin('repeat/0',_,unchanged,_).
-shfr_special_builtin('start_event_trace/0',_,unchanged,_).
-shfr_special_builtin('stop_event_trace/0',_,unchanged,_).
-shfr_special_builtin('seen/0',_,unchanged,_).
-shfr_special_builtin('told/0',_,unchanged,_).
-shfr_special_builtin('true/0',_,unchanged,_).
-shfr_special_builtin('ttyflush/0',_,unchanged,_).
-shfr_special_builtin('otherwise/0',_,unchanged,_).
-shfr_special_builtin('ttynl/0',_,unchanged,_).
-shfr_special_builtin('write/1',_,unchanged,_).
-shfr_special_builtin('writeq/1',_,unchanged,_).
+shfr_special_builtin('!/0',_,_,unchanged,_).
+shfr_special_builtin('assert/1',_,_,unchanged,_).
+shfr_special_builtin('asserta/1',_,_,unchanged,_).
+shfr_special_builtin('assertz/1',_,_,unchanged,_).
+shfr_special_builtin('debug/0',_,_,unchanged,_).
+shfr_special_builtin('debugging/0',_,_,unchanged,_).
+shfr_special_builtin('dif/2',_,_,unchanged,_).
+shfr_special_builtin('display/1',_,_,unchanged,_).
+shfr_special_builtin('flush_output/0',_,_,unchanged,_).
+shfr_special_builtin('garbage_collect/0',_,_,unchanged,_).
+shfr_special_builtin('gc/0',_,_,unchanged,_).
+shfr_special_builtin('listing/0',_,_,unchanged,_).
+shfr_special_builtin('listing/1',_,_,unchanged,_).
+shfr_special_builtin('nl/0',_,_,unchanged,_).
+shfr_special_builtin('nogc/0',_,_,unchanged,_).
+shfr_special_builtin('not/1',_,_,unchanged,_).
+shfr_special_builtin('print/1',_,_,unchanged,_).
+shfr_special_builtin('repeat/0',_,_,unchanged,_).
+shfr_special_builtin('start_event_trace/0',_,_,unchanged,_).
+shfr_special_builtin('stop_event_trace/0',_,_,unchanged,_).
+shfr_special_builtin('seen/0',_,_,unchanged,_).
+shfr_special_builtin('told/0',_,_,unchanged,_).
+shfr_special_builtin('true/0',_,_,unchanged,_).
+shfr_special_builtin('ttyflush/0',_,_,unchanged,_).
+shfr_special_builtin('otherwise/0',_,_,unchanged,_).
+shfr_special_builtin('ttynl/0',_,_,unchanged,_).
+shfr_special_builtin('write/1',_,_,unchanged,_).
+shfr_special_builtin('writeq/1',_,_,unchanged,_).
 % SICStus3 (ISO)
-%meta! (no need) shfr_special_builtin('\\+/1',_,unchanged,_).
-shfr_special_builtin('\\==/2',_,unchanged,_).
+%meta! (no need) shfr_special_builtin('\\+/1',_,_,unchanged,_).
+shfr_special_builtin('\\==/2',_,_,unchanged,_).
 % SICStus2.x
-% shfr_special_builtin('\+/1',_,unchanged,_).
-% shfr_special_builtin('\==/2',_,unchanged,_).
-shfr_special_builtin('@>=/2',_,unchanged,_).
-shfr_special_builtin('@=</2',_,unchanged,_).
-shfr_special_builtin('@>/2',_,unchanged,_).
-shfr_special_builtin('@</2',_,unchanged,_).
+% shfr_special_builtin('\+/1',_,_,unchanged,_).
+% shfr_special_builtin('\==/2',_,_,unchanged,_).
+shfr_special_builtin('@>=/2',_,_,unchanged,_).
+shfr_special_builtin('@=</2',_,_,unchanged,_).
+shfr_special_builtin('@>/2',_,_,unchanged,_).
+shfr_special_builtin('@</2',_,_,unchanged,_).
 %
-shfr_special_builtin('rt_module_exp/6',_,unchanged,_).
+shfr_special_builtin('rt_module_exp/6',_,_,unchanged,_).
 %-------------------------------------------------------------------------
-shfr_special_builtin('read/1',_,all_nonfree,_).
-shfr_special_builtin('read/2',read(X,Y),read2,p(X,Y)).
+shfr_special_builtin('read/1',_,_,all_nonfree,_).
+shfr_special_builtin('read/2',read(X,Y),_,read2,p(X,Y)).
 %-------------------------------------------------------------------------
-shfr_special_builtin('atom/1',_,old_ground,_).
-shfr_special_builtin('atomic/1',_,old_ground,_).
-shfr_special_builtin('ensure_loaded/1',_,old_ground,_).
-shfr_special_builtin('erase/1',_,old_ground,_).
-shfr_special_builtin('float/1',_,old_ground,_).
-shfr_special_builtin('flush_output/1',_,old_ground,_).
-shfr_special_builtin('int/1',_,new_ground,_).
-shfr_special_builtin('integer/1',_,old_ground,_).
-shfr_special_builtin('num/1',_,new_ground,_).
-shfr_special_builtin('number/1',_,old_ground,_).
-shfr_special_builtin('nl/1',_,old_ground,_).
-shfr_special_builtin('put_code/1',_,old_ground,_).
-shfr_special_builtin('put_code/2',_,old_ground,_).
-shfr_special_builtin('see/1',_,old_ground,_).
-shfr_special_builtin('tell/1',_,old_ground,_).
-shfr_special_builtin('tab/1',_,old_ground,_).
-shfr_special_builtin('tab/2',_,old_ground,_).
-shfr_special_builtin('ttyput/1',_,old_ground,_).
-shfr_special_builtin('=:=/2',_,old_ground,_).
-shfr_special_builtin('>=/2',_,old_ground,_).
-shfr_special_builtin('>/2',_,old_ground,_).
-shfr_special_builtin('</2',_,old_ground,_).
-shfr_special_builtin('=</2',_,old_ground,_).
+shfr_special_builtin('atom/1',_,_,old_ground,_).
+shfr_special_builtin('atomic/1',_,_,old_ground,_).
+shfr_special_builtin('ensure_loaded/1',_,_,old_ground,_).
+shfr_special_builtin('erase/1',_,_,old_ground,_).
+shfr_special_builtin('float/1',_,_,old_ground,_).
+shfr_special_builtin('flush_output/1',_,_,old_ground,_).
+shfr_special_builtin('int/1',_,_,new_ground,_).
+shfr_special_builtin('integer/1',_,_,old_ground,_).
+shfr_special_builtin('num/1',_,_,new_ground,_).
+shfr_special_builtin('number/1',_,_,old_ground,_).
+shfr_special_builtin('nl/1',_,_,old_ground,_).
+shfr_special_builtin('put_code/1',_,_,old_ground,_).
+shfr_special_builtin('put_code/2',_,_,old_ground,_).
+shfr_special_builtin('see/1',_,_,old_ground,_).
+shfr_special_builtin('tell/1',_,_,old_ground,_).
+shfr_special_builtin('tab/1',_,_,old_ground,_).
+shfr_special_builtin('tab/2',_,_,old_ground,_).
+shfr_special_builtin('ttyput/1',_,_,old_ground,_).
+shfr_special_builtin('=:=/2',_,_,old_ground,_).
+shfr_special_builtin('>=/2',_,_,old_ground,_).
+shfr_special_builtin('>/2',_,_,old_ground,_).
+shfr_special_builtin('</2',_,_,old_ground,_).
+shfr_special_builtin('=</2',_,_,old_ground,_).
 % SICStus3 (ISO)
-shfr_special_builtin('=\\=/2',_,old_ground,_).
+shfr_special_builtin('=\\=/2',_,_,old_ground,_).
 % SICStus2.x
-% shfr_special_builtin('=\=/2',_,old_ground,_).
-shfr_special_builtin('ground/1',_,old_ground,_).
+% shfr_special_builtin('=\=/2',_,_,old_ground,_).
+shfr_special_builtin('ground/1',_,_,old_ground,_).
 %-------------------------------------------------------------------------
-shfr_special_builtin('absolute_file_name/2',absolute_file_name(X,Y),old_new_ground,(OldG,NewG)):-
+shfr_special_builtin('absolute_file_name/2',absolute_file_name(X,Y),_,old_new_ground,(OldG,NewG)):-
 	varset(X,OldG),
 	varset(Y,NewG).
-shfr_special_builtin('get_code/2',get_code(X,Y),old_new_ground,(OldG,NewG)):-
+shfr_special_builtin('get_code/2',get_code(X,Y),_,old_new_ground,(OldG,NewG)):-
 	varset(X,OldG),
 	varset(Y,NewG).
-shfr_special_builtin('get1_code/2',get1_code(X,Y),old_new_ground,(OldG,NewG)):-
+shfr_special_builtin('get1_code/2',get1_code(X,Y),_,old_new_ground,(OldG,NewG)):-
 	varset(X,OldG),
 	varset(Y,NewG).
-shfr_special_builtin('is/2',is(X,Y),old_new_ground,(OldG,NewG)):-
+shfr_special_builtin('is/2',is(X,Y),_,old_new_ground,(OldG,NewG)):-
 	varset(X,NewG),
 	varset(Y,OldG).
-shfr_special_builtin('open/3',open(X,Y,Z),old_new_ground,(OldG,NewG)):-
+shfr_special_builtin('open/3',open(X,Y,Z),_,old_new_ground,(OldG,NewG)):-
 	varset(p(X,Y),OldG),
 	varset(Z,NewG).
-shfr_special_builtin('format/2',format(X,_Y),old_new_ground,(OldG,[])):-
+shfr_special_builtin('format/2',format(X,_Y),_,old_new_ground,(OldG,[])):-
  	varset(X,OldG).
-shfr_special_builtin('format/3',format(X,Y,_Z),old_new_ground,(OldG,[])):-
+shfr_special_builtin('format/3',format(X,Y,_Z),_,old_new_ground,(OldG,[])):-
 	varset(p(X,Y),OldG).
-shfr_special_builtin('predicate_property/2',predicate_property(_X,Y),old_new_ground,
+shfr_special_builtin('predicate_property/2',predicate_property(_X,Y),_,old_new_ground,
 	                                                                ([],NewG)):-
  	varset(Y,NewG).
-shfr_special_builtin('print/2',print(X,_Y),old_new_ground,(OldG,[])):-
+shfr_special_builtin('print/2',print(X,_Y),_,old_new_ground,(OldG,[])):-
  	varset(X,OldG).
-shfr_special_builtin('prolog_flag/2',prolog_flag(X,Y),old_new_ground,(OldG,NewG)):-
+shfr_special_builtin('prolog_flag/2',prolog_flag(X,Y),_,old_new_ground,(OldG,NewG)):-
  	varset(X,OldG),
  	varset(Y,NewG).
-shfr_special_builtin('prolog_flag/3',prolog_flag(X,Y,Z),old_new_ground,(OldG,NewG)):-
+shfr_special_builtin('prolog_flag/3',prolog_flag(X,Y,Z),_,old_new_ground,(OldG,NewG)):-
  	varset(X,OldG),
  	varset(f(Y,Z),NewG).
-shfr_special_builtin('write/2',write(X,_Y),old_new_ground,(OldG,[])):-
+shfr_special_builtin('write/2',write(X,_Y),_,old_new_ground,(OldG,[])):-
  	varset(X,OldG).
 %-------------------------------------------------------------------------
-shfr_special_builtin('assert/2',assert(_X,Y),some,Vars):-
+shfr_special_builtin('assert/2',assert(_X,Y),_,some,Vars):-
 	varset(Y,Vars).
-shfr_special_builtin('assertz/2',assertz(_X,Y),some,Vars):-
+shfr_special_builtin('assertz/2',assertz(_X,Y),_,some,Vars):-
 	varset(Y,Vars).
-shfr_special_builtin('asserta/2',asserta(_X,Y),some,Vars):-
+shfr_special_builtin('asserta/2',asserta(_X,Y),_,some,Vars):-
 	varset(Y,Vars).
-shfr_special_builtin('recorda/3',recorda(_X,_Y,Z),some,Vars):-
+shfr_special_builtin('recorda/3',recorda(_X,_Y,Z),_,some,Vars):-
 	varset(Z,Vars).
-shfr_special_builtin('recordz/3',recordz(_X,_Y,Z),some,Vars):-
+shfr_special_builtin('recordz/3',recordz(_X,_Y,Z),_,some,Vars):-
 	varset(Z,Vars).
 %%%%%%%%%% arg/3
-shfr_special_builtin('arg/3',arg(X,Y,Z),arg,p(X,Y,Z)).
+shfr_special_builtin('arg/3',arg(X,Y,Z),_,arg,p(X,Y,Z)).
 %%%%%%%%%% expand_term/2
-shfr_special_builtin('expand_term/2',expand_term(X,Y),exp,p(X,Y)).
+shfr_special_builtin('expand_term/2',expand_term(X,Y),_,exp,p(X,Y)).
 %%%%%%%%%% =../2
-shfr_special_builtin('=../2','=..'(X,Y),'=../2',p(X,Y)).
+shfr_special_builtin('=../2','=..'(X,Y),_,'=../2',p(X,Y)).
 %%%%%%%%%% recorded/3
-shfr_special_builtin('recorded/3',recorded(_X,Y,Z),recorded,p(Y,Z)).
-shfr_special_builtin('retract/1',retract(X),recorded,p(X,a)).
-shfr_special_builtin('retractall/1',retractall(X),recorded,p(X,a)).
+shfr_special_builtin('recorded/3',recorded(_X,Y,Z),_,recorded,p(Y,Z)).
+shfr_special_builtin('retract/1',retract(X),_,recorded,p(X,a)).
+shfr_special_builtin('retractall/1',retractall(X),_,recorded,p(X,a)).
 %%%%%%%%%% copy_term
-shfr_special_builtin('copy_term/2',copy_term(X,Y),copy_term,p(X,Y)).
+shfr_special_builtin('copy_term/2',copy_term(X,Y),_,copy_term,p(X,Y)).
 %%%%%%%%%% current_key/2
-shfr_special_builtin('current_key/2',current_key(X,_Y),'current_key/2',p(X)).
+shfr_special_builtin('current_key/2',current_key(X,_Y),_,'current_key/2',p(X)).
 %%%%%%%%%% current_predicate/2
-shfr_special_builtin('current_predicate/2',current_predicate(X,Y),
+shfr_special_builtin('current_predicate/2',current_predicate(X,Y),_,
                                                'current_predicate/2',p(X,Y)).
 %%%%%%%%%% findall/3
 %meta! (but needs special extension)
-shfr_special_builtin('findall/3',findall(X,_,Z),findall,p(X,Z)).
+shfr_special_builtin('findall/3',findall(X,_,Z),_,findall,p(X,Z)).
 %%%%%%%%%% functor/3
-shfr_special_builtin('functor/3',functor(X,Y,Z),'functor/3',p(X,Y,Z)).
+shfr_special_builtin('functor/3',functor(X,Y,Z),_,'functor/3',p(X,Y,Z)).
 %%%%%%%%%% name/2
-shfr_special_builtin('name/2',name(X,Y),'name/2',p(X,Y)).
+shfr_special_builtin('name/2',name(X,Y),_,'name/2',p(X,Y)).
 %%%%%%%%%% nonvar/1
-% shfr_special_builtin('nonvar/1',nonvar(X),'not_free/1',p(X)).
-shfr_special_builtin('not_free/1',nonvar(X),'not_free/1',p(X)).
+% shfr_special_builtin('nonvar/1',nonvar(X),_,'not_free/1',p(X)).
+shfr_special_builtin('not_free/1',nonvar(X),_,'not_free/1',p(X)).
 %%%%%%%%%% numbervars/3
-shfr_special_builtin('numbervars/3',numbervars(X,Y,Z),'numbervars/3',p(X,Y,Z)).
+shfr_special_builtin('numbervars/3',numbervars(X,Y,Z),_,'numbervars/3',p(X,Y,Z)).
 %%%%%%%%%% compare/3
-shfr_special_builtin('compare/3',compare(X,_Y,_Z),'compare/3',p(X)).
+shfr_special_builtin('compare/3',compare(X,_Y,_Z),_,'compare/3',p(X)).
 %%%%%%%%%% indep/2
-shfr_special_builtin('indep/2',indep(X,Y),'indep/2',p(X,Y)).
+shfr_special_builtin('indep/2',indep(X,Y),_,'indep/2',p(X,Y)).
 %%%%%%%%%% length/2
-shfr_special_builtin('length/2',length(X,Y),'length/2',p(X,Y)).
+shfr_special_builtin('length/2',length(X,Y),_,'length/2',p(X,Y)).
 %%%%%%%%%% list/1
-shfr_special_builtin('list/1',list(X),'list/1',p(X)).
+shfr_special_builtin('list/1',list(X),_,'list/1',p(X)).
 %%%%%%%%%% var/1
-% shfr_special_builtin('var/1',var(X),'free/1',p(X)).
-shfr_special_builtin('free/1',free(X),'free/1',p(X)).
+% shfr_special_builtin('var/1',var(X),_,'free/1',p(X)).
+shfr_special_builtin('free/1',free(X),_,'free/1',p(X)).
 %%%%%%%%%% indep/1
-shfr_special_builtin('indep/1',indep(X),'indep/1',p(X)).
+shfr_special_builtin('indep/1',indep(X),_,'indep/1',p(X)).
 %%%%%%%%%% others
-shfr_special_builtin(Key,_Goal,special(Key),[]):-
+shfr_special_builtin(Key,_Goal,_,special(Key),[]):-
 	shfr_not_that_special_builtin(Key).
 
 shfr_not_that_special_builtin('==/2').

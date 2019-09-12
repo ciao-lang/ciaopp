@@ -15,7 +15,7 @@
 	  son_asub_to_native/5,
 	  son_project/3,      
 	  son_sort/2,         
-	  son_special_builtin/4,
+	  son_special_builtin/5,
 	  son_success_builtin/5,
 	  son_unknown_call/4,
 	  son_unknown_entry/3,
@@ -421,7 +421,7 @@ may_be_var(X,X):- ( X=[] ; true ), !.
 %------------------------------------------------------------------------%
 
 son_less_or_equal(ASub0,ASub1):-
-	ASub0 == ASub1.
+	ASub0 == ASub1, !.
 son_less_or_equal((Gr0,Sh0),(Gr1,Sh1)):-
 	ord_subset(Gr1,Gr0),
 	ord_subset(Sh0,Sh1).
@@ -432,8 +432,8 @@ son_less_or_equal((Gr0,Sh0),(Gr1,Sh1)):-
 %------------------------------------------------------------------------%
 
 %-------------------------------------------------------------------------
-% son_special_builtin(+,+,-,-)                                           |
-% son_special_builtin(SgKey,Sg,Type,Condvars)                            |
+% son_special_builtin(+,+,+,-,-)                                         |
+% son_special_builtin(SgKey,Sg,Subgoal,Type,Condvars)                    |
 % Satisfied if the builtin does not need a very complex action. It       |
 % divides builtins into groups determined by the flag returned in the    |
 % second argument + some special handling for some builtins:             |
@@ -450,162 +450,162 @@ son_less_or_equal((Gr0,Sh0),(Gr1,Sh1)):-
 %-------------------------------------------------------------------------
 
 %-------------------------------------------------------------------------
-son_special_builtin('absolute_file_name/2',_,ground,_).
-son_special_builtin('abolish/2',_,ground,_).
-son_special_builtin('atom/1',_,ground,_).
-son_special_builtin('atomic/1',_,ground,_).
-%son_special_builtin('CHOICE IDIOM/1',_,ground,_).
-son_special_builtin('internals:$metachoice/1',_,ground,_).
-son_special_builtin('$simplify_unconditional_cges/1',_,ground,_).
-son_special_builtin('compare/3',_,ground,_).
-son_special_builtin('current_atom/1',_,ground,_).
-son_special_builtin('current_input/1',_,ground,_).
-son_special_builtin('current_module/1',_,ground,_).
-son_special_builtin('current_output/1',_,ground,_).
-son_special_builtin('current_op/3',_,ground,_).
-%son_special_builtin('CUT IDIOM/1',_,ground,_).
-son_special_builtin('internals:$metacut/1',_,ground,_).
-son_special_builtin('close/1',_,ground,_).
-son_special_builtin('depth/1',_,ground,_).
-son_special_builtin('ensure_loaded/1',_,ground,_).
-son_special_builtin('erase/1',_,ground,_).
-son_special_builtin('float/1',_,ground,_).
-son_special_builtin('flush_output/1',_,ground,_).
-son_special_builtin('get_code/1',_,ground,_).
-son_special_builtin('get1_code/1',_,ground,_).
-son_special_builtin('get_code/2',_,ground,_).
-son_special_builtin('get1_code/2',_,ground,_).
-son_special_builtin('ground/1',_,ground,_).
-son_special_builtin('int/1',_,ground,_).
-son_special_builtin('integer/1',_,ground,_).
-son_special_builtin('is/2',_,ground,_).
-son_special_builtin('name/2',_,ground,_).
-son_special_builtin('number/1',_,ground,_).
-son_special_builtin('num/1',_,ground,_).
-son_special_builtin('numbervars/3',_,ground,_).
-son_special_builtin('nl/1',_,ground,_).
-son_special_builtin('open/3',_,ground,_).
-son_special_builtin('op/3',_,ground,_).
-son_special_builtin('prolog_flag/2',_,ground,_).
-son_special_builtin('prolog_flag/3',_,ground,_).
-son_special_builtin('put_code/1',_,ground,_).
-son_special_builtin('put_code/2',_,ground,_).
-son_special_builtin('statistics/2',_,ground,_).
-son_special_builtin('seeing/1',_,ground,_).
-son_special_builtin('see/1',_,ground,_).
-son_special_builtin('telling/1',_,ground,_).
-son_special_builtin('tell/1',_,ground,_).
-son_special_builtin('tab/1',_,ground,_).
-son_special_builtin('tab/2',_,ground,_).
-son_special_builtin('ttyput/1',_,ground,_).
-%son_special_builtin(':/2',(prolog:'$metachoice'(_)),ground,_).
-%son_special_builtin(':/2',(prolog:'$metacut'(_)),ground,_).
-son_special_builtin('save_event_trace/1',_,ground,_).
-son_special_builtin('=:=/2',_,ground,_).
-son_special_builtin('>=/2',_,ground,_).
-son_special_builtin('>/2',_,ground,_).
-son_special_builtin('</2',_,ground,_).
-son_special_builtin('=</2',_,ground,_).
+son_special_builtin('absolute_file_name/2',_,_,ground,_).
+son_special_builtin('abolish/2',_,_,ground,_).
+son_special_builtin('atom/1',_,_,ground,_).
+son_special_builtin('atomic/1',_,_,ground,_).
+%son_special_builtin('CHOICE IDIOM/1',_,_,ground,_).
+son_special_builtin('internals:$metachoice/1',_,_,ground,_).
+son_special_builtin('$simplify_unconditional_cges/1',_,_,ground,_).
+son_special_builtin('compare/3',_,_,ground,_).
+son_special_builtin('current_atom/1',_,_,ground,_).
+son_special_builtin('current_input/1',_,_,ground,_).
+son_special_builtin('current_module/1',_,_,ground,_).
+son_special_builtin('current_output/1',_,_,ground,_).
+son_special_builtin('current_op/3',_,_,ground,_).
+%son_special_builtin('CUT IDIOM/1',_,_,ground,_).
+son_special_builtin('internals:$metacut/1',_,_,ground,_).
+son_special_builtin('close/1',_,_,ground,_).
+son_special_builtin('depth/1',_,_,ground,_).
+son_special_builtin('ensure_loaded/1',_,_,ground,_).
+son_special_builtin('erase/1',_,_,ground,_).
+son_special_builtin('float/1',_,_,ground,_).
+son_special_builtin('flush_output/1',_,_,ground,_).
+son_special_builtin('get_code/1',_,_,ground,_).
+son_special_builtin('get1_code/1',_,_,ground,_).
+son_special_builtin('get_code/2',_,_,ground,_).
+son_special_builtin('get1_code/2',_,_,ground,_).
+son_special_builtin('ground/1',_,_,ground,_).
+son_special_builtin('int/1',_,_,ground,_).
+son_special_builtin('integer/1',_,_,ground,_).
+son_special_builtin('is/2',_,_,ground,_).
+son_special_builtin('name/2',_,_,ground,_).
+son_special_builtin('number/1',_,_,ground,_).
+son_special_builtin('num/1',_,_,ground,_).
+son_special_builtin('numbervars/3',_,_,ground,_).
+son_special_builtin('nl/1',_,_,ground,_).
+son_special_builtin('open/3',_,_,ground,_).
+son_special_builtin('op/3',_,_,ground,_).
+son_special_builtin('prolog_flag/2',_,_,ground,_).
+son_special_builtin('prolog_flag/3',_,_,ground,_).
+son_special_builtin('put_code/1',_,_,ground,_).
+son_special_builtin('put_code/2',_,_,ground,_).
+son_special_builtin('statistics/2',_,_,ground,_).
+son_special_builtin('seeing/1',_,_,ground,_).
+son_special_builtin('see/1',_,_,ground,_).
+son_special_builtin('telling/1',_,_,ground,_).
+son_special_builtin('tell/1',_,_,ground,_).
+son_special_builtin('tab/1',_,_,ground,_).
+son_special_builtin('tab/2',_,_,ground,_).
+son_special_builtin('ttyput/1',_,_,ground,_).
+%son_special_builtin(':/2',(prolog:'$metachoice'(_)),_,ground,_).
+%son_special_builtin(':/2',(prolog:'$metacut'(_)),_,ground,_).
+son_special_builtin('save_event_trace/1',_,_,ground,_).
+son_special_builtin('=:=/2',_,_,ground,_).
+son_special_builtin('>=/2',_,_,ground,_).
+son_special_builtin('>/2',_,_,ground,_).
+son_special_builtin('</2',_,_,ground,_).
+son_special_builtin('=</2',_,_,ground,_).
 % SICStus3 (ISO)
-son_special_builtin('=\\=/2',_,ground,_).
+son_special_builtin('=\\=/2',_,_,ground,_).
 % SICStus2.x
-% son_special_builtin('=\=/2',_,ground,_).
+% son_special_builtin('=\=/2',_,_,ground,_).
 %-------------------------------------------------------------------------
-son_special_builtin('abort/0',_,bottom,_).
-son_special_builtin('fail/0',_,bottom,_).
-son_special_builtin('false/0',_,bottom,_).
-son_special_builtin('halt/0',_,bottom,_).
+son_special_builtin('abort/0',_,_,bottom,_).
+son_special_builtin('fail/0',_,_,bottom,_).
+son_special_builtin('false/0',_,_,bottom,_).
+son_special_builtin('halt/0',_,_,bottom,_).
 %-------------------------------------------------------------------------
-son_special_builtin('!/0',_,unchanged,_).
-son_special_builtin('assert/1',_,unchanged,_).
-son_special_builtin('asserta/1',_,unchanged,_).
-son_special_builtin('assertz/1',_,unchanged,_).
-son_special_builtin('debug/0',_,unchanged,_).
-son_special_builtin('debugging/0',_,unchanged,_).
-son_special_builtin('dif/2',_,unchanged,_).
-son_special_builtin('display/1',_,unchanged,_).
-son_special_builtin('flush_output/0',_,unchanged,_).
-son_special_builtin('garbage_collect/0',_,unchanged,_).
-son_special_builtin('gc/0',_,unchanged,_).
-son_special_builtin('listing/0',_,unchanged,_).
-son_special_builtin('listing/1',_,unchanged,_).
-son_special_builtin('nl/0',_,unchanged,_).
-son_special_builtin('nogc/0',_,unchanged,_).
-son_special_builtin('nonvar/1',_,unchanged,_). 
-son_special_builtin('not/1',_,unchanged,_).
-son_special_builtin('print/1',_,unchanged,_).
-son_special_builtin('repeat/0',_,unchanged,_).
-son_special_builtin('start_event_trace/0',_,unchanged,_).
-son_special_builtin('stop_event_trace/0',_,unchanged,_).
-son_special_builtin('seen/0',_,unchanged,_).
-son_special_builtin('told/0',_,unchanged,_).
-son_special_builtin('true/0',_,unchanged,_).
-son_special_builtin('ttyflush/0',_,unchanged,_).
-son_special_builtin('otherwise/0',_,unchanged,_).
-son_special_builtin('ttynl/0',_,unchanged,_).
-son_special_builtin('write/1',_,unchanged,_).
-son_special_builtin('writeq/1',_,unchanged,_).
+son_special_builtin('!/0',_,_,unchanged,_).
+son_special_builtin('assert/1',_,_,unchanged,_).
+son_special_builtin('asserta/1',_,_,unchanged,_).
+son_special_builtin('assertz/1',_,_,unchanged,_).
+son_special_builtin('debug/0',_,_,unchanged,_).
+son_special_builtin('debugging/0',_,_,unchanged,_).
+son_special_builtin('dif/2',_,_,unchanged,_).
+son_special_builtin('display/1',_,_,unchanged,_).
+son_special_builtin('flush_output/0',_,_,unchanged,_).
+son_special_builtin('garbage_collect/0',_,_,unchanged,_).
+son_special_builtin('gc/0',_,_,unchanged,_).
+son_special_builtin('listing/0',_,_,unchanged,_).
+son_special_builtin('listing/1',_,_,unchanged,_).
+son_special_builtin('nl/0',_,_,unchanged,_).
+son_special_builtin('nogc/0',_,_,unchanged,_).
+son_special_builtin('nonvar/1',_,_,unchanged,_). 
+son_special_builtin('not/1',_,_,unchanged,_).
+son_special_builtin('print/1',_,_,unchanged,_).
+son_special_builtin('repeat/0',_,_,unchanged,_).
+son_special_builtin('start_event_trace/0',_,_,unchanged,_).
+son_special_builtin('stop_event_trace/0',_,_,unchanged,_).
+son_special_builtin('seen/0',_,_,unchanged,_).
+son_special_builtin('told/0',_,_,unchanged,_).
+son_special_builtin('true/0',_,_,unchanged,_).
+son_special_builtin('ttyflush/0',_,_,unchanged,_).
+son_special_builtin('otherwise/0',_,_,unchanged,_).
+son_special_builtin('ttynl/0',_,_,unchanged,_).
+son_special_builtin('write/1',_,_,unchanged,_).
+son_special_builtin('writeq/1',_,_,unchanged,_).
 % SICStus3 (ISO)
-%meta! (no need) son_special_builtin('\\+/1',_,unchanged,_).
-son_special_builtin('\\==/2',_,unchanged,_).
+%meta! (no need) son_special_builtin('\\+/1',_,_,unchanged,_).
+son_special_builtin('\\==/2',_,_,unchanged,_).
 % SICStus2.x
-% son_special_builtin('\+/1',_,unchanged,_).
-% son_special_builtin('\==/2',_,unchanged,_).
-son_special_builtin('@>=/2',_,unchanged,_).
-son_special_builtin('@=</2',_,unchanged,_).
-son_special_builtin('@>/2',_,unchanged,_).
-son_special_builtin('@</2',_,unchanged,_).
+% son_special_builtin('\+/1',_,_,unchanged,_).
+% son_special_builtin('\==/2',_,_,unchanged,_).
+son_special_builtin('@>=/2',_,_,unchanged,_).
+son_special_builtin('@=</2',_,_,unchanged,_).
+son_special_builtin('@>/2',_,_,unchanged,_).
+son_special_builtin('@</2',_,_,unchanged,_).
 %-------------------------------------------------------------------------
-son_special_builtin('format/2',format(X,_Y),some,[X]).
-son_special_builtin('format/3',format(X,Y,_Z),some,List):-
+son_special_builtin('format/2',format(X,_Y),_,some,[X]).
+son_special_builtin('format/3',format(X,Y,_Z),_,some,List):-
 	varset([X,Y],List).
-son_special_builtin('functor/3',functor(_X,Y,Z),some,List):-
+son_special_builtin('functor/3',functor(_X,Y,Z),_,some,List):-
 	varset([Y,Z],List).
-son_special_builtin('length/2',length(_X,Y),some,List):-
+son_special_builtin('length/2',length(_X,Y),_,some,List):-
 	varset(Y,List).
-son_special_builtin('print/2',print(X,_Y),some,[X]).
-son_special_builtin('predicate_property/2',predicate_property(_X,Y),some,Vars):-
+son_special_builtin('print/2',print(X,_Y),_,some,[X]).
+son_special_builtin('predicate_property/2',predicate_property(_X,Y),_,some,Vars):-
 	varset(Y,Vars).
-son_special_builtin('recorda/3',recorda(_,_,Z),some,Vars):-
+son_special_builtin('recorda/3',recorda(_,_,Z),_,some,Vars):-
 	varset(Z,Vars).
-son_special_builtin('recordz/3',recordz(_,_,Z),some,Vars):-
+son_special_builtin('recordz/3',recordz(_,_,Z),_,some,Vars):-
 	varset(Z,Vars).
-son_special_builtin('assert/2',assert(_X,Y),some,Vars):-
+son_special_builtin('assert/2',assert(_X,Y),_,some,Vars):-
 	varset(Y,Vars).
-son_special_builtin('asserta/2',asserta(_X,Y),some,Vars):-
+son_special_builtin('asserta/2',asserta(_X,Y),_,some,Vars):-
 	varset(Y,Vars).
-son_special_builtin('assertz/2',assertz(_X,Y),some,Vars):-
+son_special_builtin('assertz/2',assertz(_X,Y),_,some,Vars):-
 	varset(Y,Vars).
-son_special_builtin('write/2',write(X,_Y),some,Vars):-
+son_special_builtin('write/2',write(X,_Y),_,some,Vars):-
 	varset(X,Vars).
 %%%%%%%%%% '=../2'
-son_special_builtin('=../2','=..'(X,Y),'=../2',p(X,Y)).
+son_special_builtin('=../2','=..'(X,Y),_,'=../2',p(X,Y)).
 %%%%%%%%%% 'recorded/3'
-son_special_builtin('recorded/3',recorded(_,Y,Z),'recorded/3',p(Y,Z)).
-son_special_builtin('retract/1',retract(X),'recorded/3',p(X,a)).
-son_special_builtin('retractall/1',retractall(X),'recorded/3',p(X,a)).
+son_special_builtin('recorded/3',recorded(_,Y,Z),_,'recorded/3',p(Y,Z)).
+son_special_builtin('retract/1',retract(X),_,'recorded/3',p(X,a)).
+son_special_builtin('retractall/1',retractall(X),_,'recorded/3',p(X,a)).
 %%%%%%%%%% 'read/1'
-son_special_builtin('read/1',read(X),'read/1',p(X)).
+son_special_builtin('read/1',read(X),_,'read/1',p(X)).
 %%%%%%%%%% 'read/2'
-son_special_builtin('read/2',read(X,Y),'read/2',p(X,Y)).
+son_special_builtin('read/2',read(X,Y),_,'read/2',p(X,Y)).
 %%%%%%%%%% 'copy_term/2'
-son_special_builtin('copy_term/2',copy_term(X,Y),copy_term,p(X,Y)).
+son_special_builtin('copy_term/2',copy_term(X,Y),_,copy_term,p(X,Y)).
 %%%%%%%%%% 'var/1'
-son_special_builtin('var/1',var(X),var,p(X)).
+son_special_builtin('var/1',var(X),_,var,p(X)).
 %%%%%%%%%% 'indep/2'
-son_special_builtin('indep/2',indep(X,Y),'indep/2',p(X,Y)).
+son_special_builtin('indep/2',indep(X,Y),_,'indep/2',p(X,Y)).
 %%%%%%%%%% 'indep/1'
-son_special_builtin('indep/1',indep(X),'indep/1',p(X)).
+son_special_builtin('indep/1',indep(X),_,'indep/1',p(X)).
 %%%%%%%%%% 'arg/3'
-son_special_builtin('arg/3',arg(X,Y,Z),'arg/3',p(X,Y,Z)).
+son_special_builtin('arg/3',arg(X,Y,Z),_,'arg/3',p(X,Y,Z)).
 %%%%%%%%%% '==/2'
-son_special_builtin('==/2','=='(X,Y),'==/2',p(X,Y)).
+son_special_builtin('==/2','=='(X,Y),_,'==/2',p(X,Y)).
 %%%%%%%%%% reducible to '=/2'
-son_special_builtin('=/2','='(X,Y),'=/2',p(X,Y)).
-son_special_builtin('C/3','C'(X,Y,Z),'=/2',p(X,[Y|Z])).
-son_special_builtin('expand_term/2',expand_term(X,Y),'arg/3',p(1,Y,X)).
-son_special_builtin('keysort/2',keysort(X,Y),'=/2',p(X,Y)).
-son_special_builtin('sort/2',sort(X,Y),'=/2',p(X,Y)).
+son_special_builtin('=/2','='(X,Y),_,'=/2',p(X,Y)).
+son_special_builtin('C/3','C'(X,Y,Z),_,'=/2',p(X,[Y|Z])).
+son_special_builtin('expand_term/2',expand_term(X,Y),_,'arg/3',p(1,Y,X)).
+son_special_builtin('keysort/2',keysort(X,Y),_,'=/2',p(X,Y)).
+son_special_builtin('sort/2',sort(X,Y),_,'=/2',p(X,Y)).
 
 %-------------------------------------------------------------------------
 % son_success_builtin(+,+,+,-,-)                                         |

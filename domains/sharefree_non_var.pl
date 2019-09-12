@@ -765,8 +765,8 @@ shfrnv_less_or_equal((Sh0,Fr0),(Sh1,Fr1)):-
 %------------------------------------------------------------------------%
 
 %-------------------------------------------------------------------------
-% shfrnv_special_builtin(+,+,-,-)                                        |
-% shfrnv_special_builtin(SgKey,Sg,Type,Condvars)                         |
+% shfrnv_special_builtin(+,+,+,-,-)                                      |
+% shfrnv_special_builtin(SgKey,Sg,Subgoal,Type,Condvars)                 |
 %-------------------------------------------------------------------------
 % Identical to shfr, called straight from domain_dependent.pl            %
 %-------------------------------------------------------------------------

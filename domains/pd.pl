@@ -3,7 +3,7 @@
 :- doc(module, "This abstract domain is the domain with one value,
    top. PD stands for Partial Deduction.").
 
-:- use_module(domain(sharefree), [shfr_special_builtin/4]).
+:- use_module(domain(sharefree), [shfr_special_builtin/5]).
 
 :- export(pd_call_to_entry/9).
 pd_call_to_entry(_Sv,_Sg,_Hv,_Head,_K,_Fv,Proj,Proj,_ExtraInfo).
@@ -68,8 +68,8 @@ pd_empty_entry(_Sg,_Qv,'top').
 %% pd_lub(_ASub1,_ASub2,top).
 
 :- export(pd_special_builtin/5).
-pd_special_builtin(SgKey,Sg,_Subgoal,Type,Condvars) :-
-	shfr_special_builtin(SgKey,Sg,Type,Condvars), !. % TODO: why?
+pd_special_builtin(SgKey,Sg,Subgoal,Type,Condvars) :-
+	shfr_special_builtin(SgKey,Sg,Subgoal,Type,Condvars), !. % TODO: why?
 pd_special_builtin(Key,_Sg,_Subgoal,special(Key),[]):-
 	pd_very_special_builtin(Key).
 

@@ -14,7 +14,7 @@
 	terms_unknown_entry/3,
 	terms_empty_entry/3,
 	terms_call_to_success_fact/9,
-	terms_special_builtin/4,
+	terms_special_builtin/5,
 	terms_success_builtin/5,
 	terms_call_to_success_builtin/6,
 	terms_input_interface/4,
@@ -1207,61 +1207,59 @@ terms_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ):-
 %------------------------------------------------------------------------%
 
 %------------------------------------------------------------------------%
-% terms_special_builtin(+SgKey,+Sg,-Type,-Condvars)                      %
+% terms_special_builtin(+SgKey,+Sg,+Subgoal,-Type,-Condvars)             %
 % Type is a flag indicating what is the abstraction of builtin SgKey     %
 % and to which variables Condvars of the goal Sg it affects.             %
 %------------------------------------------------------------------------%
 
-
-terms_special_builtin('!/0',_Sg,id,[]).
-terms_special_builtin('@=</2',_Sg,id,[]).
-terms_special_builtin('@>/2',_Sg,id,[]).
-terms_special_builtin('@>=/2',_Sg,id,[]).
-terms_special_builtin('@</2',_Sg,id,[]).
-terms_special_builtin('\\==/2',_Sg,id,[]).
-terms_special_builtin('==/2',_Sg,id,[]).
-terms_special_builtin('display/1',_Sg,id,[]).
-terms_special_builtin('get_code/1',Sg,type(T),Condvars):-
+terms_special_builtin('!/0',_Sg,_Subgoal,id,[]).
+terms_special_builtin('@=</2',_Sg,_Subgoal,id,[]).
+terms_special_builtin('@>/2',_Sg,_Subgoal,id,[]).
+terms_special_builtin('@>=/2',_Sg,_Subgoal,id,[]).
+terms_special_builtin('@</2',_Sg,_Subgoal,id,[]).
+terms_special_builtin('\\==/2',_Sg,_Subgoal,id,[]).
+terms_special_builtin('==/2',_Sg,_Subgoal,id,[]).
+terms_special_builtin('display/1',_Sg,_Subgoal,id,[]).
+terms_special_builtin('get_code/1',Sg,_Subgoal,type(T),Condvars):-
         set_int_type(T),
 	varset(Sg,Condvars).
-% terms_special_builtin('integer/1',Sg,type(T),Condvars):-
+% terms_special_builtin('integer/1',Sg,_Subgoal,type(T),Condvars):-
 %         set_int_type(T),
 % 	varset(Sg,Condvars).
-terms_special_builtin('atom/1',Sg,type(T),Condvars):-
+terms_special_builtin('atom/1',Sg,_Subgoal,type(T),Condvars):-
         set_atom_type(T), % no, it is atom or num type
 	varset(Sg,Condvars).
-terms_special_builtin('atomic/1',Sg,type(T),Condvars):-
+terms_special_builtin('atomic/1',Sg,_Subgoal,type(T),Condvars):-
         set_atom_type(T), % no, it is atom or num type
 	varset(Sg,Condvars).
-terms_special_builtin('var/1',_Sg,id,[]).
+terms_special_builtin('var/1',_Sg,_Subgoal,id,[]).
 	% set_top_type(T),
 	% varset(Sg,Condvars).
-terms_special_builtin('nonvar/1',_Sg,id,[]).
+terms_special_builtin('nonvar/1',_Sg,_Subgoal,id,[]).
 	% set_top_type(T),
 	% varset(Sg,Condvars).
-terms_special_builtin('ground/1',_Sg,id,[]).
+terms_special_builtin('ground/1',_Sg,_Subgoal,id,[]).
 	% set_top_type(T),
 	% varset(Sg,Condvars).
-% terms_special_builtin('float/1',Sg,type(T),Condvars):-
+% terms_special_builtin('float/1',Sg,_Subgoal,type(T),Condvars):-
 % 	set_float_type(T),
 % 	varset(Sg,Condvars).
-% terms_special_builtin('number/1',Sg,type(T),Condvars):-
+% terms_special_builtin('number/1',Sg,_Subgoal,type(T),Condvars):-
 % 	set_numeric_type(T),
 % 	varset(Sg,Condvars).
-terms_special_builtin('fail/0',_Sg,bot,[]).
-terms_special_builtin('true/0',_Sg,id,[]).
-terms_special_builtin('nl/0',_Sg,id,[]).
-terms_special_builtin('repeat/0',_Sg,id,[]).
-
-terms_special_builtin('erase/1',Sg,type(T),Condvars):-
+terms_special_builtin('fail/0',_Sg,_Subgoal,bot,[]).
+terms_special_builtin('true/0',_Sg,_Subgoal,id,[]).
+terms_special_builtin('nl/0',_Sg,_Subgoal,id,[]).
+terms_special_builtin('repeat/0',_Sg,_Subgoal,id,[]).
+%
+terms_special_builtin('erase/1',Sg,_Subgoal,type(T),Condvars):-
 	set_top_type(T),
 	varset(Sg,Condvars).
-
-terms_special_builtin(Key,_Sg,special(Key),[]):-
+%
+terms_special_builtin(Key,_Sg,_Subgoal,special(Key),[]):-
 	terms_very_special_builtin(Key).
 
 terms_very_special_builtin('=/2').
-
 
 %------------------------------------------------------------------------%
 % terms_success_builtin(+Type,+Sv_uns,+Condvars,+Call,-Succ)             %

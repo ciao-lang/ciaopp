@@ -14,7 +14,7 @@
 	  lsign_less_or_equal/2,
 	  lsign_project/4,    
 	  lsign_sort/2,       
-	  lsign_special_builtin/4,
+	  lsign_special_builtin/5,
 	  lsign_success_builtin/6,
 	  lsign_unknown_call/4,
 	  lsign_unknown_entry/3,
@@ -1244,8 +1244,8 @@ lsign_eliminate_equivalent(_LSucc0,_LSucc):-
 	throw(not_implemented(lsign_eliminate_equivalent)).
 
 %------------------------------------------------------------------------%
-% lsign_special_builtin(+,+,-,-) 
-% lsign_special_builtin(SgKey,Sg,Type,Condvars) 
+% lsign_special_builtin(+,+,+,-,-) 
+% lsign_special_builtin(SgKey,Sg,Subgoal,Type,Condvars) 
 %------------------------------------------------------------------------%
 % It divides builtins into groups determined by the flag returned in the |
 % second argument + some special handling for some builtins:             |
@@ -1274,139 +1274,139 @@ lsign_eliminate_equivalent(_LSucc0,_LSucc):-
 %------------------------------------------------------------------------%
 
 %-------------------------------------------------------------------------
-lsign_special_builtin('abort/0',_,bottom,_).
-lsign_special_builtin('fail/0',_,bottom,_).
-lsign_special_builtin('false/0',_,bottom,_).
-lsign_special_builtin('halt/0',_,bottom,_).
+lsign_special_builtin('abort/0',_,_,bottom,_).
+lsign_special_builtin('fail/0',_,_,bottom,_).
+lsign_special_builtin('false/0',_,_,bottom,_).
+lsign_special_builtin('halt/0',_,_,bottom,_).
 %-------------------------------------------------------------------------
-lsign_special_builtin('CHOICE IDIOM/1',_,herbrand,_).
-lsign_special_builtin('$metachoice/1',_,herbrand,_).
-lsign_special_builtin('current_atom/1',_,herbrand,_).
-lsign_special_builtin('current_input/1',_,herbrand,_).
-lsign_special_builtin('current_module/1',_,herbrand,_).
-lsign_special_builtin('current_output/1',_,herbrand,_).
-lsign_special_builtin('current_op/3',_,herbrand,_).
-lsign_special_builtin('prolog_flag/2',_,herbrand,_).
-lsign_special_builtin('prolog_flag/3',_,herbrand,_).
-lsign_special_builtin('seeing/1',_,herbrand,_).
-lsign_special_builtin('telling/1',_,herbrand,_).
-lsign_special_builtin(':/2',(prolog:'$metachoice'(_)),herbrand,_).
+lsign_special_builtin('CHOICE IDIOM/1',_,_,herbrand,_).
+lsign_special_builtin('$metachoice/1',_,_,herbrand,_).
+lsign_special_builtin('current_atom/1',_,_,herbrand,_).
+lsign_special_builtin('current_input/1',_,_,herbrand,_).
+lsign_special_builtin('current_module/1',_,_,herbrand,_).
+lsign_special_builtin('current_output/1',_,_,herbrand,_).
+lsign_special_builtin('current_op/3',_,_,herbrand,_).
+lsign_special_builtin('prolog_flag/2',_,_,herbrand,_).
+lsign_special_builtin('prolog_flag/3',_,_,herbrand,_).
+lsign_special_builtin('seeing/1',_,_,herbrand,_).
+lsign_special_builtin('telling/1',_,_,herbrand,_).
+lsign_special_builtin(':/2',(prolog:'$metachoice'(_)),_,herbrand,_).
 %-------------------------------------------------------------------------
-lsign_special_builtin('atom/1',_,old_herbrand,_).
-lsign_special_builtin('close/1',_,old_herbrand,_).
-lsign_special_builtin('CUT IDIOM/1',_,old_herbrand,_).
-lsign_special_builtin('ensure_loaded/1',_,old_herbrand,_).
-lsign_special_builtin('erase/1',_,old_herbrand,_).
-lsign_special_builtin('flush_output/1',_,old_herbrand,_).
-lsign_special_builtin('$metacut/1',_,old_herbrand,_).
-lsign_special_builtin('nl/1',_,old_herbrand,_).
-lsign_special_builtin('op/3',_,old_herbrand,_).
-lsign_special_builtin('save_event_trace/1',_,old_herbrand,_).
-lsign_special_builtin('see/1',_,old_herbrand,_).
-lsign_special_builtin('tell/1',_,old_herbrand,_).
-lsign_special_builtin(':/2',(prolog:'$metacut'(_)),old_herbrand,_).
+lsign_special_builtin('atom/1',_,_,old_herbrand,_).
+lsign_special_builtin('close/1',_,_,old_herbrand,_).
+lsign_special_builtin('CUT IDIOM/1',_,_,old_herbrand,_).
+lsign_special_builtin('ensure_loaded/1',_,_,old_herbrand,_).
+lsign_special_builtin('erase/1',_,_,old_herbrand,_).
+lsign_special_builtin('flush_output/1',_,_,old_herbrand,_).
+lsign_special_builtin('$metacut/1',_,_,old_herbrand,_).
+lsign_special_builtin('nl/1',_,_,old_herbrand,_).
+lsign_special_builtin('op/3',_,_,old_herbrand,_).
+lsign_special_builtin('save_event_trace/1',_,_,old_herbrand,_).
+lsign_special_builtin('see/1',_,_,old_herbrand,_).
+lsign_special_builtin('tell/1',_,_,old_herbrand,_).
+lsign_special_builtin(':/2',(prolog:'$metacut'(_)),_,old_herbrand,_).
 %-------------------------------------------------------------------------
-lsign_special_builtin('!/0',_,unchanged,_).
-lsign_special_builtin('assert/1',_,unchanged,_).
-lsign_special_builtin('asserta/1',_,unchanged,_).
-lsign_special_builtin('assertz/1',_,unchanged,_).
-lsign_special_builtin('debug/0',_,unchanged,_).
-lsign_special_builtin('debugging/0',_,unchanged,_).
-lsign_special_builtin('dif/2',_,unchanged,_).  %%%%%%
-lsign_special_builtin('display/1',_,unchanged,_).
-lsign_special_builtin('garbage_collect/0',_,unchanged,_).
-lsign_special_builtin('gc/0',_,unchanged,_).
-lsign_special_builtin('listing/0',_,unchanged,_).
-lsign_special_builtin('listing/1',_,unchanged,_).
-lsign_special_builtin('nl/0',_,unchanged,_).
-lsign_special_builtin('nogc/0',_,unchanged,_).
-lsign_special_builtin('print/1',_,unchanged,_).
-lsign_special_builtin('repeat/0',_,unchanged,_).
-lsign_special_builtin('start_event_trace/0',_,unchanged,_).
-lsign_special_builtin('stop_event_trace/0',_,unchanged,_).
-lsign_special_builtin('seen/0',_,unchanged,_).
-lsign_special_builtin('told/0',_,unchanged,_).
-lsign_special_builtin('true/0',_,unchanged,_).
-lsign_special_builtin('ttyflush/0',_,unchanged,_).
-lsign_special_builtin('otherwise/0',_,unchanged,_).
-lsign_special_builtin('ttynl/0',_,unchanged,_).
-lsign_special_builtin('write/1',_,unchanged,_).
-lsign_special_builtin('writeq/1',_,unchanged,_).
+lsign_special_builtin('!/0',_,_,unchanged,_).
+lsign_special_builtin('assert/1',_,_,unchanged,_).
+lsign_special_builtin('asserta/1',_,_,unchanged,_).
+lsign_special_builtin('assertz/1',_,_,unchanged,_).
+lsign_special_builtin('debug/0',_,_,unchanged,_).
+lsign_special_builtin('debugging/0',_,_,unchanged,_).
+lsign_special_builtin('dif/2',_,_,unchanged,_).  %%%%%%
+lsign_special_builtin('display/1',_,_,unchanged,_).
+lsign_special_builtin('garbage_collect/0',_,_,unchanged,_).
+lsign_special_builtin('gc/0',_,_,unchanged,_).
+lsign_special_builtin('listing/0',_,_,unchanged,_).
+lsign_special_builtin('listing/1',_,_,unchanged,_).
+lsign_special_builtin('nl/0',_,_,unchanged,_).
+lsign_special_builtin('nogc/0',_,_,unchanged,_).
+lsign_special_builtin('print/1',_,_,unchanged,_).
+lsign_special_builtin('repeat/0',_,_,unchanged,_).
+lsign_special_builtin('start_event_trace/0',_,_,unchanged,_).
+lsign_special_builtin('stop_event_trace/0',_,_,unchanged,_).
+lsign_special_builtin('seen/0',_,_,unchanged,_).
+lsign_special_builtin('told/0',_,_,unchanged,_).
+lsign_special_builtin('true/0',_,_,unchanged,_).
+lsign_special_builtin('ttyflush/0',_,_,unchanged,_).
+lsign_special_builtin('otherwise/0',_,_,unchanged,_).
+lsign_special_builtin('ttynl/0',_,_,unchanged,_).
+lsign_special_builtin('write/1',_,_,unchanged,_).
+lsign_special_builtin('writeq/1',_,_,unchanged,_).
 % SICStus3 (ISO)
-lsign_special_builtin('\\==/2',_,unchanged,_).
+lsign_special_builtin('\\==/2',_,_,unchanged,_).
 % SICStus2.x
-% lsign_special_builtin('\==/2',_,unchanged,_).
-lsign_special_builtin('@>=/2',_,unchanged,_).
-lsign_special_builtin('@=</2',_,unchanged,_).
-lsign_special_builtin('@>/2',_,unchanged,_).
-lsign_special_builtin('@</2',_,unchanged,_).
+% lsign_special_builtin('\==/2',_,_,unchanged,_).
+lsign_special_builtin('@>=/2',_,_,unchanged,_).
+lsign_special_builtin('@=</2',_,_,unchanged,_).
+lsign_special_builtin('@>/2',_,_,unchanged,_).
+lsign_special_builtin('@</2',_,_,unchanged,_).
 %-------------------------------------------------------------------------
-lsign_special_builtin('depth/1',_,positive,_).
-lsign_special_builtin('get_code/1',_,positive,_).
-lsign_special_builtin('get1_code/1',_,positive,_).
-lsign_special_builtin('put_code/1',_,positive,_).
-lsign_special_builtin('tab/1',_,positive,_).
-lsign_special_builtin('ttyput/1',_,positive,_).
+lsign_special_builtin('depth/1',_,_,positive,_).
+lsign_special_builtin('get_code/1',_,_,positive,_).
+lsign_special_builtin('get1_code/1',_,_,positive,_).
+lsign_special_builtin('put_code/1',_,_,positive,_).
+lsign_special_builtin('tab/1',_,_,positive,_).
+lsign_special_builtin('ttyput/1',_,_,positive,_).
 %-------------------------------------------------------------------------
 % SICStus3 (ISO)
-lsign_special_builtin('=\\=/2',_,unsigned,_).
+lsign_special_builtin('=\\=/2',_,_,unsigned,_).
 % SICStus2.x
-% lsign_special_builtin('=\=/2',_,unsigned,_).
+% lsign_special_builtin('=\=/2',_,_,unsigned,_).
 %-------------------------------------------------------------------------
-lsign_special_builtin('atomic/1',_,old_unsigned,_).
-lsign_special_builtin('float/1',_,old_unsigned,_).
-lsign_special_builtin('ground/1',_,old_unsigned,_).
-lsign_special_builtin('integer/1',_,old_unsigned,_).
-lsign_special_builtin('number/1',_,old_unsigned,_).
+lsign_special_builtin('atomic/1',_,_,old_unsigned,_).
+lsign_special_builtin('float/1',_,_,old_unsigned,_).
+lsign_special_builtin('ground/1',_,_,old_unsigned,_).
+lsign_special_builtin('integer/1',_,_,old_unsigned,_).
+lsign_special_builtin('number/1',_,_,old_unsigned,_).
 %-------------------------------------------------------------------------
-lsign_special_builtin('assert/2',assert(_,Y),some_old_herbrand,Y).
-lsign_special_builtin('asserta/2',asserta(_,Y),some_old_herbrand,Y).
-lsign_special_builtin('assertz/2',assertz(_,Y),some_old_herbrand,Y).
-lsign_special_builtin('format/2',format(X,_),some_old_herbrand,X).
-lsign_special_builtin('format/3',format(X,Y,_),some_old_herbrand,p(X,Y)).
-lsign_special_builtin('print/2',print(X,_),some_old_herbrand,X).
-lsign_special_builtin('recorda/3',recorda(_,_,Z),some_old_herbrand,Z).
-lsign_special_builtin('recordz/3',recordz(_,_,Z),some_old_herbrand,Z).
-lsign_special_builtin('write/2',write(X,_),some_old_herbrand,X).
+lsign_special_builtin('assert/2',assert(_,Y),_,some_old_herbrand,Y).
+lsign_special_builtin('asserta/2',asserta(_,Y),_,some_old_herbrand,Y).
+lsign_special_builtin('assertz/2',assertz(_,Y),_,some_old_herbrand,Y).
+lsign_special_builtin('format/2',format(X,_),_,some_old_herbrand,X).
+lsign_special_builtin('format/3',format(X,Y,_),_,some_old_herbrand,p(X,Y)).
+lsign_special_builtin('print/2',print(X,_),_,some_old_herbrand,X).
+lsign_special_builtin('recorda/3',recorda(_,_,Z),_,some_old_herbrand,Z).
+lsign_special_builtin('recordz/3',recordz(_,_,Z),_,some_old_herbrand,Z).
+lsign_special_builtin('write/2',write(X,_),_,some_old_herbrand,X).
 %-------------------------------------------------------------------------
-lsign_special_builtin('compare/3',compare(X,_,_),some_herbrand,X).
+lsign_special_builtin('compare/3',compare(X,_,_),_,some_herbrand,X).
 %-------------------------------------------------------------------------
-lsign_special_builtin('put_code/2',put_code(X,Y),positive_old_herbrand,p(Y,X)).
-lsign_special_builtin('tab/2',tab(X,Y),positive_old_herbrand,p(Y,X)).
-lsign_special_builtin('get_code/2',get_code(X,Y),positive_old_herbrand,p(Y,X)).
-lsign_special_builtin('get1_code/2',get1_code(X,Y),positive_old_herbrand,p(Y,X)).
+lsign_special_builtin('put_code/2',put_code(X,Y),_,positive_old_herbrand,p(Y,X)).
+lsign_special_builtin('tab/2',tab(X,Y),_,positive_old_herbrand,p(Y,X)).
+lsign_special_builtin('get_code/2',get_code(X,Y),_,positive_old_herbrand,p(Y,X)).
+lsign_special_builtin('get1_code/2',get1_code(X,Y),_,positive_old_herbrand,p(Y,X)).
 %-------------------------------------------------------------------------
-lsign_special_builtin('statistics/2',statistics(X,Y),positive_herbrand,p(Y,X)).
+lsign_special_builtin('statistics/2',statistics(X,Y),_,positive_herbrand,p(Y,X)).
 %-------------------------------------------------------------------------
-lsign_special_builtin('open/3',open(X,Y,Z),herbrand_old_herbrand,p(Z,p(X,Y))).
+lsign_special_builtin('open/3',open(X,Y,Z),_,herbrand_old_herbrand,p(Z,p(X,Y))).
 %-------------------------------------------------------------------------
 %%%%%%%%%% Constraints
-lsign_special_builtin('=/2','='(X,Y),'=/2',p(X,Y)).
-lsign_special_builtin('>/2','>'(X,Y),inequation,eq(less,Y,X)).
-lsign_special_builtin('</2','<'(X,Y),inequation,eq(less,X,Y)).
-lsign_special_builtin('=</2','=<'(X,Y),inequation,eq(leq,X,Y)).
-lsign_special_builtin('>=/2','>='(X,Y),inequation,eq(leq,Y,X)).
-lsign_special_builtin('.=./2','.=.'(X,Y),'=/2',p(X,Y)).
-lsign_special_builtin('.>./2','.>.'(X,Y),inequation,eq(less,Y,X)).
-lsign_special_builtin('.<./2','.<.'(X,Y),inequation,eq(less,X,Y)).
-lsign_special_builtin('.=<./2','.=<.'(X,Y),inequation,eq(leq,X,Y)).
-lsign_special_builtin('.>=./2','.>=.'(X,Y),inequation,eq(leq,Y,X)).
+lsign_special_builtin('=/2','='(X,Y),_,'=/2',p(X,Y)).
+lsign_special_builtin('>/2','>'(X,Y),_,inequation,eq(less,Y,X)).
+lsign_special_builtin('</2','<'(X,Y),_,inequation,eq(less,X,Y)).
+lsign_special_builtin('=</2','=<'(X,Y),_,inequation,eq(leq,X,Y)).
+lsign_special_builtin('>=/2','>='(X,Y),_,inequation,eq(leq,Y,X)).
+lsign_special_builtin('.=./2','.=.'(X,Y),_,'=/2',p(X,Y)).
+lsign_special_builtin('.>./2','.>.'(X,Y),_,inequation,eq(less,Y,X)).
+lsign_special_builtin('.<./2','.<.'(X,Y),_,inequation,eq(less,X,Y)).
+lsign_special_builtin('.=<./2','.=<.'(X,Y),_,inequation,eq(leq,X,Y)).
+lsign_special_builtin('.>=./2','.>=.'(X,Y),_,inequation,eq(leq,Y,X)).
 %-------------------------------------------------------------------------
-lsign_special_builtin('is/2',Sg,is,Sg).
+lsign_special_builtin('is/2',Sg,_,is,Sg).
 %-------------------------------------------------------------------------
-%% lsign_special_builtin('nonvar/1',_,unchanged,_). 
-%% lsign_special_builtin('var/1',_,unchanged,_). 
-%% lsign_special_builtin('functor/3',functor(_,Y,Z),ground_herbrand,p(Y,Z)).
-%% lsign_special_builtin('length/2',length(_,Y),ground_arithmetic,Y).
-%% lsign_special_builtin('dif/2',_,unchanged,_).
-%% lsign_special_builtin('=:=/2',_,old_ground,_).
+%% lsign_special_builtin('nonvar/1',_,_,unchanged,_). 
+%% lsign_special_builtin('var/1',_,_,unchanged,_). 
+%% lsign_special_builtin('functor/3',functor(_,Y,Z),_,ground_herbrand,p(Y,Z)).
+%% lsign_special_builtin('length/2',length(_,Y),_,ground_arithmetic,Y).
+%% lsign_special_builtin('dif/2',_,_,unchanged,_).
+%% lsign_special_builtin('=:=/2',_,_,old_ground,_).
 %% % SICStus3 (ISO)
-%% lsign_special_builtin('=\\=/2',_,old_ground,_).
+%% lsign_special_builtin('=\\=/2',_,_,old_ground,_).
 %% % SICStus2.x
-%% % lsign_special_builtin('=\=/2',_,old_ground,_).
-%% lsign_special_builtin('numbervars/3',_,usigned_herbrand,Sg).
-%% lsign_special_builtin('absolute_file_name/2',_,ground_herbrand,_).
-%% lsign_special_builtin('name/2',_,herbrand,_).
+%% % lsign_special_builtin('=\=/2',_,_,old_ground,_).
+%% lsign_special_builtin('numbervars/3',_,_,usigned_herbrand,Sg).
+%% lsign_special_builtin('absolute_file_name/2',_,_,ground_herbrand,_).
+%% lsign_special_builtin('name/2',_,_,herbrand,_).
 
 %-------------------------------------------------------------------------
 % lsign_success_builtin(+,+,+,+,-,-) 

@@ -14,7 +14,7 @@
 	  aeq_asub_to_native/5,
 	  aeq_project/3,      
 	  aeq_sort/2,         
-	  aeq_special_builtin/4,
+	  aeq_special_builtin/5,
 	  aeq_success_builtin/5,
 	  aeq_unknown_call/4,
 	  aeq_unknown_entry/3,
@@ -230,107 +230,107 @@ aeq_call_to_success_fact(Sgoal,Hv,Head,_K,_Sv,_Call,Proj_aeqs,Prime_aeqs,_Succ) 
 
 %------------------------------------------------------------------------------
 
-%% :- mode aeq_special_builtin(+,+,-,-) .
+%% :- mode aeq_special_builtin(+,+,+,-,-) .
 
-%%  aeq_special_builtin(Sg_key, Sg, Type, InfoSg)
+%%  aeq_special_builtin(Sg_key, Sg, Subgoal, Type, InfoSg)
 
 %%  Determines Type and InfoSg based on Sg_key and Sg
 %%  REMARK %% : not all builtins are recognized yet; as a result, precision
 %%		may be lost.
 
-aeq_special_builtin( 'fail/0',    _Sg, aeq_fail, _) .
-aeq_special_builtin( 'false/0',   _Sg, aeq_fail, _) .
+aeq_special_builtin( 'fail/0',    _Sg,_Subgoal, aeq_fail, _) .
+aeq_special_builtin( 'false/0',   _Sg,_Subgoal, aeq_fail, _) .
    
-aeq_special_builtin( '</2',	  Sg, aeq_comparison, Sg ) . 
-aeq_special_builtin( '=</2',	  Sg, aeq_comparison, Sg ) . 
-aeq_special_builtin( '>/2',	  Sg, aeq_comparison, Sg ) . 
-aeq_special_builtin( '>=/2',	  Sg, aeq_comparison, Sg ) .
-aeq_special_builtin( '=:=/2',	  Sg, aeq_comparison, Sg ) .
+aeq_special_builtin( '</2',	  Sg,_Subgoal, aeq_comparison, Sg ) . 
+aeq_special_builtin( '=</2',	  Sg,_Subgoal, aeq_comparison, Sg ) . 
+aeq_special_builtin( '>/2',	  Sg,_Subgoal, aeq_comparison, Sg ) . 
+aeq_special_builtin( '>=/2',	  Sg,_Subgoal, aeq_comparison, Sg ) .
+aeq_special_builtin( '=:=/2',	  Sg,_Subgoal, aeq_comparison, Sg ) .
 % SICStus3 (ISO)
-aeq_special_builtin( '=\\=/2',	  Sg, aeq_comparison, Sg ) .
+aeq_special_builtin( '=\\=/2',	  Sg,_Subgoal, aeq_comparison, Sg ) .
 % SICStus2.x
-% aeq_special_builtin( '=\=/2',	  Sg, aeq_comparison, Sg ) .
+% aeq_special_builtin( '=\=/2',	  Sg,_Subgoal, aeq_comparison, Sg ) .
 
-aeq_special_builtin( '@</2',	  _Sg, aeq_unchanged, _) . 
-aeq_special_builtin( '@=</2',	  _Sg, aeq_unchanged, _) . 
-aeq_special_builtin( '@>/2',	  _Sg, aeq_unchanged, _) . 
-aeq_special_builtin( '@>=/2',	  _Sg, aeq_unchanged, _) .
+aeq_special_builtin( '@</2',	  _Sg,_Subgoal, aeq_unchanged, _) . 
+aeq_special_builtin( '@=</2',	  _Sg,_Subgoal, aeq_unchanged, _) . 
+aeq_special_builtin( '@>/2',	  _Sg,_Subgoal, aeq_unchanged, _) . 
+aeq_special_builtin( '@>=/2',	  _Sg,_Subgoal, aeq_unchanged, _) .
 
-aeq_special_builtin( '==/2',   L == R,   '=/2',  L = R ) :-
+aeq_special_builtin( '==/2',   L == R,   _, '=/2',  L = R ) :-
 	( atomic(L) ; atomic(R) ), ! .
-aeq_special_builtin( '==/2',	  _Sg, aeq_unchanged, _) .
+aeq_special_builtin( '==/2',	  _Sg,_Subgoal, aeq_unchanged, _) .
 % SICStus3 (ISO)
-aeq_special_builtin( '\\==/2',	   Sg, '\\==/2',   Sg  ) .
+aeq_special_builtin( '\\==/2',	   Sg,_Subgoal, '\\==/2',   Sg  ) .
 % SICStus2.x
-% aeq_special_builtin( '\==/2',	   Sg, '\==/2',    Sg  ) .
+% aeq_special_builtin( '\==/2',	   Sg,_Subgoal, '\==/2',    Sg  ) .
 % SICStus3 (ISO)
-aeq_special_builtin( 'dif/2',	   dif(X,Y), '\\==/2',   X \== Y  ) .
+aeq_special_builtin( 'dif/2',	   dif(X,Y), _, '\\==/2',   X \== Y  ) .
 % SICStus2.x
-% aeq_special_builtin( 'dif/2',	   dif(X,Y), '\==/2',    X \== Y  ) .
+% aeq_special_builtin( 'dif/2',	   dif(X,Y), _, '\==/2',    X \== Y  ) .
 
-aeq_special_builtin( 'repeat/0',  _Sg, aeq_unchanged, _) .   
-aeq_special_builtin( 'true/0',	  _Sg, aeq_unchanged, _) .   
-aeq_special_builtin( '!/0',	  _Sg, aeq_unchanged, _) .   
-aeq_special_builtin( 'nl/0',	  _Sg, aeq_unchanged, _) .   
-aeq_special_builtin( 'ttynl/0',	  _Sg, aeq_unchanged, _) .   
-aeq_special_builtin( 'write/1',   _Sg, aeq_unchanged, _) .   
-aeq_special_builtin( 'ttyput/1',  _Sg, aeq_unchanged, _) .   
-aeq_special_builtin( 'display/1', _Sg, aeq_unchanged, _) .
-aeq_special_builtin( 'print/1',   _Sg, aeq_unchanged, _) .
+aeq_special_builtin( 'repeat/0',  _Sg,_Subgoal, aeq_unchanged, _) .   
+aeq_special_builtin( 'true/0',	  _Sg,_Subgoal, aeq_unchanged, _) .   
+aeq_special_builtin( '!/0',	  _Sg,_Subgoal, aeq_unchanged, _) .   
+aeq_special_builtin( 'nl/0',	  _Sg,_Subgoal, aeq_unchanged, _) .   
+aeq_special_builtin( 'ttynl/0',	  _Sg,_Subgoal, aeq_unchanged, _) .   
+aeq_special_builtin( 'write/1',   _Sg,_Subgoal, aeq_unchanged, _) .   
+aeq_special_builtin( 'ttyput/1',  _Sg,_Subgoal, aeq_unchanged, _) .   
+aeq_special_builtin( 'display/1', _Sg,_Subgoal, aeq_unchanged, _) .
+aeq_special_builtin( 'print/1',   _Sg,_Subgoal, aeq_unchanged, _) .
 
-aeq_special_builtin( '=/2',	      Sg, '=/2', Sg).
+aeq_special_builtin( '=/2',	      Sg,_Subgoal, '=/2', Sg).
 
-aeq_special_builtin( 'is/2',	   Sg, aeq_is, Sg) .
-aeq_special_builtin( 'var/1',	   Sg, aeq_var, Sg) .
-aeq_special_builtin( 'nonvar/1',   Sg, aeq_nonvar, Sg) .
+aeq_special_builtin( 'is/2',	   Sg,_Subgoal, aeq_is, Sg) .
+aeq_special_builtin( 'var/1',	   Sg,_Subgoal, aeq_var, Sg) .
+aeq_special_builtin( 'nonvar/1',   Sg,_Subgoal, aeq_nonvar, Sg) .
 
-aeq_special_builtin( 'atomic/1',     atomic(X), aeq_cond_ground, atomic(X)-Vars ):- % REMARK :
+aeq_special_builtin( 'atomic/1',     atomic(X), _, aeq_cond_ground, atomic(X)-Vars ):- % REMARK :
 	varset(X,Vars).
-aeq_special_builtin( 'atom/1',       atom(X), aeq_cond_ground, atom(X)-Vars ) :- % these could be made
+aeq_special_builtin( 'atom/1',       atom(X), _, aeq_cond_ground, atom(X)-Vars ) :- % these could be made
 	varset(X,Vars).
-aeq_special_builtin( 'float/1',      float(X), aeq_cond_ground, float(X)-Vars ) :- % more precise, detecting
+aeq_special_builtin( 'float/1',      float(X), _, aeq_cond_ground, float(X)-Vars ) :- % more precise, detecting
 	varset(X,Vars).
-aeq_special_builtin( 'integer/1',    integer(X), aeq_cond_ground, integer(X)-Vars ) :- % failure at compile-time
+aeq_special_builtin( 'integer/1',    integer(X), _, aeq_cond_ground, integer(X)-Vars ) :- % failure at compile-time
 	varset(X,Vars).
-aeq_special_builtin( 'ground/1',     ground(X), aeq_cond_ground, ground(X)-Vars ) :- % in some cases.
+aeq_special_builtin( 'ground/1',     ground(X), _, aeq_cond_ground, ground(X)-Vars ) :- % in some cases.
 	varset(X,Vars).
-aeq_special_builtin( 'number/1',     number(X), aeq_cond_ground, number(X)-Vars ):- 
+aeq_special_builtin( 'number/1',     number(X), _, aeq_cond_ground, number(X)-Vars ):- 
 	varset(X,Vars).
-aeq_special_builtin( 'nl/1',	     nl(X), aeq_cond_ground, nl(X)-Vars ):- 
+aeq_special_builtin( 'nl/1',	     nl(X), _, aeq_cond_ground, nl(X)-Vars ):- 
 	varset(X,Vars).
-aeq_special_builtin( 'write/2',	     write(X,_), aeq_cond_ground, write(X)-Vars ):- 
+aeq_special_builtin( 'write/2',	     write(X,_), _, aeq_cond_ground, write(X)-Vars ):- 
 	varset(X,Vars).
-aeq_special_builtin( '$getch/2',     Sg, aeq_ground, Sg ) .  
-aeq_special_builtin( 'get_code/1',       Sg, aeq_ground, Sg ) .
-aeq_special_builtin( '$getch0/2',    Sg, aeq_ground, Sg ) .
-aeq_special_builtin( 'statistics/2', Sg, aeq_ground, Sg ) .
-aeq_special_builtin( 'current_op/3', Sg, aeq_ground, Sg ) .
-aeq_special_builtin( 'recorda/3',    Sg, aeq_ground, Arg3 ) :-
+aeq_special_builtin( '$getch/2',     Sg,_Subgoal, aeq_ground, Sg ) .  
+aeq_special_builtin( 'get_code/1',       Sg,_Subgoal, aeq_ground, Sg ) .
+aeq_special_builtin( '$getch0/2',    Sg,_Subgoal, aeq_ground, Sg ) .
+aeq_special_builtin( 'statistics/2', Sg,_Subgoal, aeq_ground, Sg ) .
+aeq_special_builtin( 'current_op/3', Sg,_Subgoal, aeq_ground, Sg ) .
+aeq_special_builtin( 'recorda/3',    Sg,_Subgoal, aeq_ground, Arg3 ) :-
 	arg( 3, Sg, Arg3 ).
 
-aeq_special_builtin( 'erase/1',	       Sg, aeq_cond_ground, Sg - [Arg1]) :-
+aeq_special_builtin( 'erase/1',	       Sg,_Subgoal, aeq_cond_ground, Sg - [Arg1]) :-
 	arg( 1, Sg, Arg1 ) .
-aeq_special_builtin( 'tab/1',	       Sg, aeq_cond_ground, Sg - [Arg1]) :-
+aeq_special_builtin( 'tab/1',	       Sg,_Subgoal, aeq_cond_ground, Sg - [Arg1]) :-
 	arg( 1, Sg, Arg1 ) .
-aeq_special_builtin( '$skip/1',	       Sg, aeq_cond_ground, Sg - [Arg1]) :-
+aeq_special_builtin( '$skip/1',	       Sg,_Subgoal, aeq_cond_ground, Sg - [Arg1]) :-
 	arg( 1, Sg, Arg1 ) .
-aeq_special_builtin( '$prompt/2',      Sg, aeq_cond_ground, Sg - [Arg2]) :-
+aeq_special_builtin( '$prompt/2',      Sg,_Subgoal, aeq_cond_ground, Sg - [Arg2]) :-
 	arg( 2, Sg, Arg2 ) .
-aeq_special_builtin( 'numbervars/3',   Sg, aeq_cond_ground, Sg - [Arg2]) :-
+aeq_special_builtin( 'numbervars/3',   Sg,_Subgoal, aeq_cond_ground, Sg - [Arg2]) :-
 	arg( 2, Sg, Arg2 ) .
-aeq_special_builtin( '$number_chars/2',Sg, aeq_cond_ground, Sg - Args) :-
+aeq_special_builtin( '$number_chars/2',Sg,_Subgoal, aeq_cond_ground, Sg - Args) :-
 	Sg =.. [_F|Args] .
-aeq_special_builtin( '$atom_chars/2',  Sg, aeq_cond_ground, Sg - Args) :-
+aeq_special_builtin( '$atom_chars/2',  Sg,_Subgoal, aeq_cond_ground, Sg - Args) :-
 	Sg =.. [_F|Args] .
-aeq_special_builtin( '$prolog_radix/2',Sg, aeq_cond_ground, Sg - Args) :-
+aeq_special_builtin( '$prolog_radix/2',Sg,_Subgoal, aeq_cond_ground, Sg - Args) :-
 	Sg =.. [_F|Args] .
-aeq_special_builtin( 'name/2',         Sg, aeq_cond_ground, Sg - Args) :-
+aeq_special_builtin( 'name/2',         Sg,_Subgoal, aeq_cond_ground, Sg - Args) :-
 	Sg =.. [_F|Args] .
-aeq_special_builtin( 'compare/3',         Sg, aeq_compare, Sg ) .
+aeq_special_builtin( 'compare/3',         Sg,_Subgoal, aeq_compare, Sg ) .
 
-aeq_special_builtin( 'read/1',     Sg, aeq_top, Sg ) .
-aeq_special_builtin( 'arg/3',	   Sg, aeq_arg, Sg ) .
-aeq_special_builtin( 'functor/3', functor(T,F,A), Type, Eq ) :-
+aeq_special_builtin( 'read/1',     Sg,_Subgoal, aeq_top, Sg ) .
+aeq_special_builtin( 'arg/3',	   Sg,_Subgoal, aeq_arg, Sg ) .
+aeq_special_builtin( 'functor/3', functor(T,F,A), _, Type, Eq ) :-
 	( var( T ), !, 
 	  ( nonvar(F), nonvar(A), !,
 	    ( atom(F), integer(A), functor(NV_T,F,A), !, NV_T =.. [F|Args],
@@ -341,7 +341,7 @@ aeq_special_builtin( 'functor/3', functor(T,F,A), Type, Eq ) :-
 				% at analysis time 
 	; functor(T,NV_F,NV_A),
 	  Type = '=/2', Eq = ( (NV_F,NV_A)=(F,A) ) ) .
-aeq_special_builtin( '=../2', L =.. R, Type, Eq ) :-
+aeq_special_builtin( '=../2', L =.. R, _, Type, Eq ) :-
 	( var( L ), !,
 	  ( nonvar(R), !, 
 	    ( R = [F|Args], !,
@@ -359,8 +359,8 @@ aeq_special_builtin( '=../2', L =.. R, Type, Eq ) :-
 				% L, R vars at analysis time
 	; L =.. NV_R ,
 	  Type = '=/2', Eq = ( NV_R=R )) .
-aeq_special_builtin( 'sort/2', Sg, aeq_sort, Sg ) .
-aeq_special_builtin( Key,   _Sg, _, _) :-
+aeq_special_builtin( 'sort/2', Sg,_Subgoal, aeq_sort, Sg ) .
+aeq_special_builtin( Key,   _Sg,_Subgoal, _, _) :-
 	aeq_warning( builtin_undef, Key ), fail .
 
 %------------------------------------------------------------------------------

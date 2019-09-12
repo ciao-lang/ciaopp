@@ -11,7 +11,7 @@
 	  path_asub_to_native/5,  
 	  path_project/3,     
 	  path_sort/2,        
-	  path_special_builtin/4,
+	  path_special_builtin/5,
 	  path_success_builtin/5,
 	  path_unknown_call/4,
 	  path_unknown_entry/3,
@@ -437,8 +437,8 @@ path_less_or_equal(ASub,ASub):-
 %------------------------------------------------------------------------%
 
 %-------------------------------------------------------------------------
-% path_special_builtin(+,+,-,-)                                         |
-% path_special_builtin(SgKey,Sg,Type,Condvars)                          |
+% path_special_builtin(+,+,+,-,-)                                        |
+% path_special_builtin(SgKey,Sg,Subgoal,Type,Condvars)                   |
 % Satisfied if the builtin does not need a very complex action. It       |
 % divides builtins into groups determined by the flag returned in the    |
 % second argument + some special handling for some builtins:             |
@@ -447,7 +447,7 @@ path_less_or_equal(ASub,ASub):-
 %     imposing any condition on the previous freeness values of the      |
 %     variables                                                          |
 % (2) old_ground if the builtin requires the variables to be ground      |
-% (3) old_new_ground if the builtin requires some variables to be       |
+% (3) old_new_ground if the builtin requires some variables to be        |
 %     ground and grounds the rest                                        |
 % (4) unchanged if we cannot infer anything from the builtin, the        |
 %     substitution remains unchanged and there are no conditions imposed |
@@ -457,149 +457,149 @@ path_less_or_equal(ASub,ASub):-
 % (6) Sgkey, special handling of some particular builtins                |
 %-------------------------------------------------------------------------
 
-path_special_builtin('CHOICE IDIOM/1',_,new_ground,_).
-path_special_builtin('$metachoice/1',_,new_ground,_).
-path_special_builtin('current_atom/1',_,new_ground,_).
-path_special_builtin('current_input/1',_,new_ground,_).
-path_special_builtin('current_module/1',_,new_ground,_).
-path_special_builtin('current_output/1',_,new_ground,_).
-path_special_builtin('current_op/3',_,new_ground,_).
-path_special_builtin('depth/1',_,new_ground,_).
-path_special_builtin('get_code/1',_,new_ground,_).
-path_special_builtin('get1_code/1',_,new_ground,_).
-path_special_builtin('seeing/1',_,new_ground,_).
-path_special_builtin('telling/1',_,new_ground,_).
-path_special_builtin('statistics/2',_,new_ground,_).
-path_special_builtin(':/2',(prolog:'$metachoice'(_)),new_ground,_).
+path_special_builtin('CHOICE IDIOM/1',_,_,new_ground,_).
+path_special_builtin('$metachoice/1',_,_,new_ground,_).
+path_special_builtin('current_atom/1',_,_,new_ground,_).
+path_special_builtin('current_input/1',_,_,new_ground,_).
+path_special_builtin('current_module/1',_,_,new_ground,_).
+path_special_builtin('current_output/1',_,_,new_ground,_).
+path_special_builtin('current_op/3',_,_,new_ground,_).
+path_special_builtin('depth/1',_,_,new_ground,_).
+path_special_builtin('get_code/1',_,_,new_ground,_).
+path_special_builtin('get1_code/1',_,_,new_ground,_).
+path_special_builtin('seeing/1',_,_,new_ground,_).
+path_special_builtin('telling/1',_,_,new_ground,_).
+path_special_builtin('statistics/2',_,_,new_ground,_).
+path_special_builtin(':/2',(prolog:'$metachoice'(_)),_,new_ground,_).
 %-------------------------------------------------------------------------
-path_special_builtin('CUT IDIOM/1',_,old_ground,_).
-path_special_builtin('$metacut/1',_,old_ground,_).
-path_special_builtin(':/2',(prolog:'$metacut'(_)),old_ground,_).
-path_special_builtin('op/3',_,old_ground,_).
-path_special_builtin('save_event_trace/1',_,old_ground,_).
-path_special_builtin('close/1',_,old_ground,_).
+path_special_builtin('CUT IDIOM/1',_,_,old_ground,_).
+path_special_builtin('$metacut/1',_,_,old_ground,_).
+path_special_builtin(':/2',(prolog:'$metacut'(_)),_,old_ground,_).
+path_special_builtin('op/3',_,_,old_ground,_).
+path_special_builtin('save_event_trace/1',_,_,old_ground,_).
+path_special_builtin('close/1',_,_,old_ground,_).
 %-------------------------------------------------------------------------
-path_special_builtin('atom/1',_,old_ground,_).
-path_special_builtin('atomic/1',_,old_ground,_).
-path_special_builtin('ensure_loaded/1',_,old_ground,_).
-path_special_builtin('erase/1',_,old_ground,_).
-path_special_builtin('float/1',_,old_ground,_).
-path_special_builtin('flush_output/1',_,old_ground,_).
-path_special_builtin('integer/1',_,old_ground,_).
-path_special_builtin('number/1',_,old_ground,_).
-path_special_builtin('nl/1',_,old_ground,_).
-path_special_builtin('put_code/1',_,old_ground,_).
-path_special_builtin('put_code/2',_,old_ground,_).
-path_special_builtin('see/1',_,old_ground,_).
-path_special_builtin('tell/1',_,old_ground,_).
-path_special_builtin('tab/1',_,old_ground,_).
-path_special_builtin('tab/2',_,old_ground,_).
-path_special_builtin('ttyput/1',_,old_ground,_).
-path_special_builtin('=:=/2',_,old_ground,_).
-path_special_builtin('>=/2',_,old_ground,_).
-path_special_builtin('>/2',_,old_ground,_).
-path_special_builtin('</2',_,old_ground,_).
-path_special_builtin('=</2',_,old_ground,_).
+path_special_builtin('atom/1',_,_,old_ground,_).
+path_special_builtin('atomic/1',_,_,old_ground,_).
+path_special_builtin('ensure_loaded/1',_,_,old_ground,_).
+path_special_builtin('erase/1',_,_,old_ground,_).
+path_special_builtin('float/1',_,_,old_ground,_).
+path_special_builtin('flush_output/1',_,_,old_ground,_).
+path_special_builtin('integer/1',_,_,old_ground,_).
+path_special_builtin('number/1',_,_,old_ground,_).
+path_special_builtin('nl/1',_,_,old_ground,_).
+path_special_builtin('put_code/1',_,_,old_ground,_).
+path_special_builtin('put_code/2',_,_,old_ground,_).
+path_special_builtin('see/1',_,_,old_ground,_).
+path_special_builtin('tell/1',_,_,old_ground,_).
+path_special_builtin('tab/1',_,_,old_ground,_).
+path_special_builtin('tab/2',_,_,old_ground,_).
+path_special_builtin('ttyput/1',_,_,old_ground,_).
+path_special_builtin('=:=/2',_,_,old_ground,_).
+path_special_builtin('>=/2',_,_,old_ground,_).
+path_special_builtin('>/2',_,_,old_ground,_).
+path_special_builtin('</2',_,_,old_ground,_).
+path_special_builtin('=</2',_,_,old_ground,_).
 % SICStus3 (ISO)
-path_special_builtin('=\\=/2',_,old_ground,_).
+path_special_builtin('=\\=/2',_,_,old_ground,_).
 % SICStus2.x
-% path_special_builtin('=\=/2',_,old_ground,_).
-path_special_builtin('ground/1',_,old_ground,_).
+% path_special_builtin('=\=/2',_,_,old_ground,_).
+path_special_builtin('ground/1',_,_,old_ground,_).
 %-------------------------------------------------------------------------
 path_special_builtin('absolute_file_name/2',absolute_file_name(X,Y),
-                                           old_new_ground,(OldG,NewG)):-
+                                           _,old_new_ground,(OldG,NewG)):-
 	varset(X,OldG),
 	varset(Y,NewG).
-path_special_builtin('get_code/2',get_code(X,Y),old_new_ground,(OldG,NewG)):-
+path_special_builtin('get_code/2',get_code(X,Y),_,old_new_ground,(OldG,NewG)):-
 	varset(X,OldG),
 	varset(Y,NewG).
-path_special_builtin('get1_code/2',get1_code(X,Y),old_new_ground,(OldG,NewG)):-
+path_special_builtin('get1_code/2',get1_code(X,Y),_,old_new_ground,(OldG,NewG)):-
 	varset(X,OldG),
 	varset(Y,NewG).
-path_special_builtin('is/2',is(X,Y),old_new_ground,(OldG,NewG)):-
+path_special_builtin('is/2',is(X,Y),_,old_new_ground,(OldG,NewG)):-
 	varset(X,NewG),
 	varset(Y,OldG).
-path_special_builtin('open/3',open(X,Y,Z),old_new_ground,(OldG,NewG)):-
+path_special_builtin('open/3',open(X,Y,Z),_,old_new_ground,(OldG,NewG)):-
 	varset(p(X,Y),OldG),
 	varset(Z,NewG).
-path_special_builtin('format/2',format(X,_Y),old_new_ground,(OldG,[])):-
+path_special_builtin('format/2',format(X,_Y),_,old_new_ground,(OldG,[])):-
  	varset(X,OldG).
-path_special_builtin('format/3',format(X,Y,_Z),old_new_ground,(OldG,[])):-
+path_special_builtin('format/3',format(X,Y,_Z),_,old_new_ground,(OldG,[])):-
 	varset(p(X,Y),OldG).
 path_special_builtin('predicate_property/2',predicate_property(_X,Y),
-	                                           old_new_ground,([],NewG)):-
+	                                           _,old_new_ground,([],NewG)):-
  	varset(Y,NewG).
-path_special_builtin('print/2',print(X,_Y),old_new_ground,(OldG,[])):-
+path_special_builtin('print/2',print(X,_Y),_,old_new_ground,(OldG,[])):-
  	varset(X,OldG).
-path_special_builtin('prolog_flag/2',prolog_flag(X,Y),old_new_ground,
+path_special_builtin('prolog_flag/2',prolog_flag(X,Y),_,old_new_ground,
 	                                                       (OldG,NewG)):-
  	varset(X,OldG),
  	varset(Y,NewG).
-path_special_builtin('prolog_flag/3',prolog_flag(X,Y,Z),old_new_ground,
+path_special_builtin('prolog_flag/3',prolog_flag(X,Y,Z),_,old_new_ground,
 	                                                       (OldG,NewG)):-
  	varset(X,OldG),
  	varset(f(Y,Z),NewG).
-path_special_builtin('write/2',write(X,_Y),old_new_ground,(OldG,[])):-
+path_special_builtin('write/2',write(X,_Y),_,old_new_ground,(OldG,[])):-
  	varset(X,OldG).
 %-------------------------------------------------------------------------
-path_special_builtin('abort/0',_,bottom,_).
-path_special_builtin('fail/0',_,bottom,_).
-path_special_builtin('false/0',_,bottom,_).
-path_special_builtin('halt/0',_,bottom,_).
+path_special_builtin('abort/0',_,_,bottom,_).
+path_special_builtin('fail/0',_,_,bottom,_).
+path_special_builtin('false/0',_,_,bottom,_).
+path_special_builtin('halt/0',_,_,bottom,_).
 %-------------------------------------------------------------------------
-path_special_builtin('!/0',_,unchanged,_).
-path_special_builtin('assert/1',_,unchanged,_).
-path_special_builtin('asserta/1',_,unchanged,_).
-path_special_builtin('assertz/1',_,unchanged,_).
-path_special_builtin('debug/0',_,unchanged,_).
-path_special_builtin('debugging/0',_,unchanged,_).
-path_special_builtin('dif/2',_,unchanged,_).
-path_special_builtin('display/1',_,unchanged,_).
-path_special_builtin('garbage_collect/0',_,unchanged,_).
-path_special_builtin('gc/0',_,unchanged,_).
-path_special_builtin('listing/0',_,unchanged,_).
-path_special_builtin('listing/1',_,unchanged,_).
-path_special_builtin('nl/0',_,unchanged,_).
-path_special_builtin('nogc/0',_,unchanged,_).
-path_special_builtin('not/1',_,unchanged,_).
-path_special_builtin('print/1',_,unchanged,_).
-path_special_builtin('repeat/0',_,unchanged,_).
-path_special_builtin('start_event_trace/0',_,unchanged,_).
-path_special_builtin('stop_event_trace/0',_,unchanged,_).
-path_special_builtin('seen/0',_,unchanged,_).
-path_special_builtin('told/0',_,unchanged,_).
-path_special_builtin('true/0',_,unchanged,_).
-path_special_builtin('ttyflush/0',_,unchanged,_).
-path_special_builtin('otherwise/0',_,unchanged,_).
-path_special_builtin('ttynl/0',_,unchanged,_).
-path_special_builtin('write/1',_,unchanged,_).
-path_special_builtin('writeq/1',_,unchanged,_).
+path_special_builtin('!/0',_,_,unchanged,_).
+path_special_builtin('assert/1',_,_,unchanged,_).
+path_special_builtin('asserta/1',_,_,unchanged,_).
+path_special_builtin('assertz/1',_,_,unchanged,_).
+path_special_builtin('debug/0',_,_,unchanged,_).
+path_special_builtin('debugging/0',_,_,unchanged,_).
+path_special_builtin('dif/2',_,_,unchanged,_).
+path_special_builtin('display/1',_,_,unchanged,_).
+path_special_builtin('garbage_collect/0',_,_,unchanged,_).
+path_special_builtin('gc/0',_,_,unchanged,_).
+path_special_builtin('listing/0',_,_,unchanged,_).
+path_special_builtin('listing/1',_,_,unchanged,_).
+path_special_builtin('nl/0',_,_,unchanged,_).
+path_special_builtin('nogc/0',_,_,unchanged,_).
+path_special_builtin('not/1',_,_,unchanged,_).
+path_special_builtin('print/1',_,_,unchanged,_).
+path_special_builtin('repeat/0',_,_,unchanged,_).
+path_special_builtin('start_event_trace/0',_,_,unchanged,_).
+path_special_builtin('stop_event_trace/0',_,_,unchanged,_).
+path_special_builtin('seen/0',_,_,unchanged,_).
+path_special_builtin('told/0',_,_,unchanged,_).
+path_special_builtin('true/0',_,_,unchanged,_).
+path_special_builtin('ttyflush/0',_,_,unchanged,_).
+path_special_builtin('otherwise/0',_,_,unchanged,_).
+path_special_builtin('ttynl/0',_,_,unchanged,_).
+path_special_builtin('write/1',_,_,unchanged,_).
+path_special_builtin('writeq/1',_,_,unchanged,_).
 % SICStus3 (ISO)
-path_special_builtin('\\+/1',_,unchanged,_).
+path_special_builtin('\\+/1',_,_,unchanged,_).
 % SICStus2.x
-% path_special_builtin('\+/1',_,unchanged,_).
+% path_special_builtin('\+/1',_,_,unchanged,_).
 % this may not be correct!!!!!!!!
 % SICStus3 (ISO)
-path_special_builtin('\\==/2',_,unchanged,_).
+path_special_builtin('\\==/2',_,_,unchanged,_).
 % SICStus2.x
-% path_special_builtin('\==/2',_,unchanged,_).
-path_special_builtin('@>=/2',_,unchanged,_).
-path_special_builtin('@=</2',_,unchanged,_).
-path_special_builtin('@>/2',_,unchanged,_).
-path_special_builtin('@</2',_,unchanged,_).
+% path_special_builtin('\==/2',_,_,unchanged,_).
+path_special_builtin('@>=/2',_,_,unchanged,_).
+path_special_builtin('@=</2',_,_,unchanged,_).
+path_special_builtin('@>/2',_,_,unchanged,_).
+path_special_builtin('@</2',_,_,unchanged,_).
 %-------------------------------------------------------------------------
-path_special_builtin('assert/2',assert(_X,Y),some,Vars):-
+path_special_builtin('assert/2',assert(_X,Y),_,some,Vars):-
 	varset(Y,Vars).
-path_special_builtin('assertz/2',assertz(_X,Y),some,Vars):-
+path_special_builtin('assertz/2',assertz(_X,Y),_,some,Vars):-
 	varset(Y,Vars).
-path_special_builtin('asserta/2',asserta(_X,Y),some,Vars):-
+path_special_builtin('asserta/2',asserta(_X,Y),_,some,Vars):-
 	varset(Y,Vars).
-path_special_builtin('recorda/3',recorda(_X,_Y,Z),some,Vars):-
+path_special_builtin('recorda/3',recorda(_X,_Y,Z),_,some,Vars):-
 	varset(Z,Vars).
-path_special_builtin('recordz/3',recordz(_X,_Y,Z),some,Vars):-
+path_special_builtin('recordz/3',recordz(_X,_Y,Z),_,some,Vars):-
 	varset(Z,Vars).
 %-------------------------------------------------------------------------
-path_special_builtin('=/2','='(X,Y),'=/2',p(X,Y)).
+path_special_builtin('=/2','='(X,Y),_,'=/2',p(X,Y)).
 
 
 %-------------------------------------------------------------------------

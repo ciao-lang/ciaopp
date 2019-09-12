@@ -10,7 +10,7 @@
 	%gr_extend_free/3,
 	gr_sort/2,
 	gr_call_to_success_fact/9,
-	gr_special_builtin/4,
+	gr_special_builtin/5,
 	gr_success_builtin/5,
 	gr_call_to_success_builtin/6,
 	gr_input_interface/4,
@@ -478,8 +478,8 @@ gr_call_to_success_fact(_Sg,_Hv,_Head,_K,_Sv,_Call,_Proj,'$bottom','$bottom').
 %------------------------------------------------------------------------%
 
 %-------------------------------------------------------------------------
-% gr_special_builtin(+,+,-,-)                                            |
-% gr_special_builtin(SgKey,Sg,Type,Condvars)                             |
+% gr_special_builtin(+,+,+,-,-)                                          |
+% gr_special_builtin(SgKey,Sg,Subgoal,Type,Condvars)                     |
 % Satisfied if the builtin does not need a very complex action. It       |
 % divides builtins into groups determined by the flag returned in the    |
 % second argument + some special handling for some builtins:             |
@@ -499,7 +499,7 @@ gr_call_to_success_fact(_Sg,_Hv,_Head,_K,_Sv,_Call,_Proj,'$bottom','$bottom').
 
 %-------------------------------------------------------------------------
 
-:- pred gr_special_builtin(+SgKey,+Sg,-Type,-Condvars): predname * callable * atm * term  # 
+:- pred gr_special_builtin(+SgKey,+Sg,+Subgoal,-Type,-Condvars): predname * callable * term * atm * term  # 
 " Satisfied if the builtin does not need a very complex action. It       
  divides builtins into groups determined by the flag returned in the    
  second argument + some special handling for some builtins:             
@@ -518,184 +518,184 @@ gr_call_to_success_fact(_Sg,_Hv,_Head,_K,_Sv,_Call,_Proj,'$bottom','$bottom').
 @end{enumerate}
 ".
 
-gr_special_builtin('CHOICE IDIOM/1',_,new_ground,_).
-gr_special_builtin('$metachoice/1',_,new_ground,_).
-gr_special_builtin('current_atom/1',_,new_ground,_).
-gr_special_builtin('current_input/1',_,new_ground,_).
-gr_special_builtin('current_module/1',_,new_ground,_).
-gr_special_builtin('current_output/1',_,new_ground,_).
-gr_special_builtin('current_op/3',_,new_ground,_).
-gr_special_builtin('depth/1',_,new_ground,_).
-gr_special_builtin('get_code/1',_,new_ground,_).
-gr_special_builtin('get1_code/1',_,new_ground,_).
-gr_special_builtin('seeing/1',_,new_ground,_).
-gr_special_builtin('telling/1',_,new_ground,_).
-gr_special_builtin('statistics/2',_,new_ground,_).
-gr_special_builtin(':/2',(prolog:'$metachoice'(_)),new_ground,_).
+gr_special_builtin('CHOICE IDIOM/1',_,_,new_ground,_).
+gr_special_builtin('$metachoice/1',_,_,new_ground,_).
+gr_special_builtin('current_atom/1',_,_,new_ground,_).
+gr_special_builtin('current_input/1',_,_,new_ground,_).
+gr_special_builtin('current_module/1',_,_,new_ground,_).
+gr_special_builtin('current_output/1',_,_,new_ground,_).
+gr_special_builtin('current_op/3',_,_,new_ground,_).
+gr_special_builtin('depth/1',_,_,new_ground,_).
+gr_special_builtin('get_code/1',_,_,new_ground,_).
+gr_special_builtin('get1_code/1',_,_,new_ground,_).
+gr_special_builtin('seeing/1',_,_,new_ground,_).
+gr_special_builtin('telling/1',_,_,new_ground,_).
+gr_special_builtin('statistics/2',_,_,new_ground,_).
+gr_special_builtin(':/2',(prolog:'$metachoice'(_)),_,new_ground,_).
 
-gr_special_builtin('CUT IDIOM/1',_,old_ground,_).
-gr_special_builtin('$metacut/1',_,old_ground,_).
-gr_special_builtin(':/2',(prolog:'$metacut'(_)),old_ground,_).
-gr_special_builtin('op/3',_,old_ground,_).
-gr_special_builtin('save_event_trace/1',_,old_ground,_).
-gr_special_builtin('close/1',_,old_ground,_).
+gr_special_builtin('CUT IDIOM/1',_,_,old_ground,_).
+gr_special_builtin('$metacut/1',_,_,old_ground,_).
+gr_special_builtin(':/2',(prolog:'$metacut'(_)),_,old_ground,_).
+gr_special_builtin('op/3',_,_,old_ground,_).
+gr_special_builtin('save_event_trace/1',_,_,old_ground,_).
+gr_special_builtin('close/1',_,_,old_ground,_).
 
-gr_special_builtin('abort/0',_,bottom,_).
-gr_special_builtin('fail/0',_,bottom,_).
-gr_special_builtin('false/0',_,bottom,_).
-gr_special_builtin('halt/0',_,bottom,_).
+gr_special_builtin('abort/0',_,_,bottom,_).
+gr_special_builtin('fail/0',_,_,bottom,_).
+gr_special_builtin('false/0',_,_,bottom,_).
+gr_special_builtin('halt/0',_,_,bottom,_).
 
-gr_special_builtin('!/0',_,unchanged,_).
-gr_special_builtin('assert/1',_,unchanged,_).
-gr_special_builtin('asserta/1',_,unchanged,_).
-gr_special_builtin('assertz/1',_,unchanged,_).
-gr_special_builtin('debug/0',_,unchanged,_).
-gr_special_builtin('debugging/0',_,unchanged,_).
-gr_special_builtin('dif/2',_,unchanged,_).
-gr_special_builtin('display/1',_,unchanged,_).
-gr_special_builtin('flush_output/0',_,unchanged,_).
-gr_special_builtin('garbage_collect/0',_,unchanged,_).
-gr_special_builtin('gc/0',_,unchanged,_).
-gr_special_builtin('listing/0',_,unchanged,_).
-gr_special_builtin('listing/1',_,unchanged,_).
-gr_special_builtin('nl/0',_,unchanged,_).
-gr_special_builtin('nogc/0',_,unchanged,_).
-gr_special_builtin('not/1',_,unchanged,_).
-gr_special_builtin('print/1',_,unchanged,_).
-gr_special_builtin('repeat/0',_,unchanged,_).
-gr_special_builtin('start_event_trace/0',_,unchanged,_).
-gr_special_builtin('stop_event_trace/0',_,unchanged,_).
-gr_special_builtin('seen/0',_,unchanged,_).
-gr_special_builtin('told/0',_,unchanged,_).
-gr_special_builtin('true/0',_,unchanged,_).
-gr_special_builtin('ttyflush/0',_,unchanged,_).
-gr_special_builtin('otherwise/0',_,unchanged,_).
-gr_special_builtin('ttynl/0',_,unchanged,_).
-gr_special_builtin('write/1',_,unchanged,_).
-gr_special_builtin('writeq/1',_,unchanged,_).
+gr_special_builtin('!/0',_,_,unchanged,_).
+gr_special_builtin('assert/1',_,_,unchanged,_).
+gr_special_builtin('asserta/1',_,_,unchanged,_).
+gr_special_builtin('assertz/1',_,_,unchanged,_).
+gr_special_builtin('debug/0',_,_,unchanged,_).
+gr_special_builtin('debugging/0',_,_,unchanged,_).
+gr_special_builtin('dif/2',_,_,unchanged,_).
+gr_special_builtin('display/1',_,_,unchanged,_).
+gr_special_builtin('flush_output/0',_,_,unchanged,_).
+gr_special_builtin('garbage_collect/0',_,_,unchanged,_).
+gr_special_builtin('gc/0',_,_,unchanged,_).
+gr_special_builtin('listing/0',_,_,unchanged,_).
+gr_special_builtin('listing/1',_,_,unchanged,_).
+gr_special_builtin('nl/0',_,_,unchanged,_).
+gr_special_builtin('nogc/0',_,_,unchanged,_).
+gr_special_builtin('not/1',_,_,unchanged,_).
+gr_special_builtin('print/1',_,_,unchanged,_).
+gr_special_builtin('repeat/0',_,_,unchanged,_).
+gr_special_builtin('start_event_trace/0',_,_,unchanged,_).
+gr_special_builtin('stop_event_trace/0',_,_,unchanged,_).
+gr_special_builtin('seen/0',_,_,unchanged,_).
+gr_special_builtin('told/0',_,_,unchanged,_).
+gr_special_builtin('true/0',_,_,unchanged,_).
+gr_special_builtin('ttyflush/0',_,_,unchanged,_).
+gr_special_builtin('otherwise/0',_,_,unchanged,_).
+gr_special_builtin('ttynl/0',_,_,unchanged,_).
+gr_special_builtin('write/1',_,_,unchanged,_).
+gr_special_builtin('writeq/1',_,_,unchanged,_).
 
 
 % SICStus3 (ISO)
-gr_special_builtin('\\+/1',_,unchanged,_).
-gr_special_builtin('\\==/2',_,unchanged,_).
+gr_special_builtin('\\+/1',_,_,unchanged,_).
+gr_special_builtin('\\==/2',_,_,unchanged,_).
 % SICStus2.x
-% gr_special_builtin('\+/1',_,unchanged,_).
-% gr_special_builtin('\==/2',_,unchanged,_).
-gr_special_builtin('@>=/2',_,unchanged,_).
-gr_special_builtin('@=</2',_,unchanged,_).
-gr_special_builtin('@>/2',_,unchanged,_).
-gr_special_builtin('@</2',_,unchanged,_).
+% gr_special_builtin('\+/1',_,_,unchanged,_).
+% gr_special_builtin('\==/2',_,_,unchanged,_).
+gr_special_builtin('@>=/2',_,_,unchanged,_).
+gr_special_builtin('@=</2',_,_,unchanged,_).
+gr_special_builtin('@>/2',_,_,unchanged,_).
+gr_special_builtin('@</2',_,_,unchanged,_).
 %-------------------------------------------------------------------------
-% gr_special_builtin('read/1',_,all_nonfree,_).     ask to Paco
-% gr_special_builtin('read/2',read(X,Y),read2,p(X,Y)).  ask to Paco
+% gr_special_builtin('read/1',_,_,all_nonfree,_).     ask to Paco
+% gr_special_builtin('read/2',read(X,Y),_,read2,p(X,Y)).  ask to Paco
 %-------------------------------------------------------------------------
-gr_special_builtin('atom/1',_,old_ground,_).
-gr_special_builtin('atomic/1',_,old_ground,_).
-gr_special_builtin('ensure_loaded/1',_,old_ground,_).
-gr_special_builtin('erase/1',_,old_ground,_).
-gr_special_builtin('float/1',_,old_ground,_).
-gr_special_builtin('flush_output/1',_,old_ground,_).
-gr_special_builtin('integer/1',_,old_ground,_).
-gr_special_builtin('number/1',_,old_ground,_).
-gr_special_builtin('nl/1',_,old_ground,_).
-gr_special_builtin('put_code/1',_,old_ground,_).
-gr_special_builtin('put_code/2',_,old_ground,_).
-gr_special_builtin('see/1',_,old_ground,_).
-gr_special_builtin('tell/1',_,old_ground,_).
-gr_special_builtin('tab/1',_,old_ground,_).
-gr_special_builtin('tab/2',_,old_ground,_).
-gr_special_builtin('ttyput/1',_,old_ground,_).
-gr_special_builtin('=:=/2',_,old_ground,_).
-gr_special_builtin('>=/2',_,old_ground,_).
-gr_special_builtin('>/2',_,old_ground,_).
-gr_special_builtin('</2',_,old_ground,_).
-gr_special_builtin('=</2',_,old_ground,_).
+gr_special_builtin('atom/1',_,_,old_ground,_).
+gr_special_builtin('atomic/1',_,_,old_ground,_).
+gr_special_builtin('ensure_loaded/1',_,_,old_ground,_).
+gr_special_builtin('erase/1',_,_,old_ground,_).
+gr_special_builtin('float/1',_,_,old_ground,_).
+gr_special_builtin('flush_output/1',_,_,old_ground,_).
+gr_special_builtin('integer/1',_,_,old_ground,_).
+gr_special_builtin('number/1',_,_,old_ground,_).
+gr_special_builtin('nl/1',_,_,old_ground,_).
+gr_special_builtin('put_code/1',_,_,old_ground,_).
+gr_special_builtin('put_code/2',_,_,old_ground,_).
+gr_special_builtin('see/1',_,_,old_ground,_).
+gr_special_builtin('tell/1',_,_,old_ground,_).
+gr_special_builtin('tab/1',_,_,old_ground,_).
+gr_special_builtin('tab/2',_,_,old_ground,_).
+gr_special_builtin('ttyput/1',_,_,old_ground,_).
+gr_special_builtin('=:=/2',_,_,old_ground,_).
+gr_special_builtin('>=/2',_,_,old_ground,_).
+gr_special_builtin('>/2',_,_,old_ground,_).
+gr_special_builtin('</2',_,_,old_ground,_).
+gr_special_builtin('=</2',_,_,old_ground,_).
 % SICStus3 (ISO)
-gr_special_builtin('=\\=/2',_,old_ground,_).
+gr_special_builtin('=\\=/2',_,_,old_ground,_).
 % SICStus2.x
-% gr_special_builtin('=\=/2',_,old_ground,_).
-gr_special_builtin('ground/1',_,old_ground,_).
+% gr_special_builtin('=\=/2',_,_,old_ground,_).
+gr_special_builtin('ground/1',_,_,old_ground,_).
 %-------------------------------------------------------------------------
-gr_special_builtin('absolute_file_name/2',absolute_file_name(X,Y),old_new_ground,(OldG,NewG)):-
+gr_special_builtin('absolute_file_name/2',absolute_file_name(X,Y),_,old_new_ground,(OldG,NewG)):-
 	varset(X,OldG),
 	varset(Y,NewG).
-gr_special_builtin('get_code/2',get_code(X,Y),old_new_ground,(OldG,NewG)):-
+gr_special_builtin('get_code/2',get_code(X,Y),_,old_new_ground,(OldG,NewG)):-
 	varset(X,OldG),
 	varset(Y,NewG).
-gr_special_builtin('get1_code/2',get1_code(X,Y),old_new_ground,(OldG,NewG)):-
+gr_special_builtin('get1_code/2',get1_code(X,Y),_,old_new_ground,(OldG,NewG)):-
 	varset(X,OldG),
 	varset(Y,NewG).
-gr_special_builtin('is/2',is(X,Y),old_new_ground,(OldG,NewG)):-
+gr_special_builtin('is/2',is(X,Y),_,old_new_ground,(OldG,NewG)):-
 	varset(X,NewG),
 	varset(Y,OldG).
-gr_special_builtin('open/3',open(X,Y,Z),old_new_ground,(OldG,NewG)):-
+gr_special_builtin('open/3',open(X,Y,Z),_,old_new_ground,(OldG,NewG)):-
 	varset(p(X,Y),OldG),
 	varset(Z,NewG).
-gr_special_builtin('format/2',format(X,_Y),old_new_ground,(OldG,[])):-
+gr_special_builtin('format/2',format(X,_Y),_,old_new_ground,(OldG,[])):-
  	varset(X,OldG).
-gr_special_builtin('format/3',format(X,Y,_Z),old_new_ground,(OldG,[])):-
+gr_special_builtin('format/3',format(X,Y,_Z),_,old_new_ground,(OldG,[])):-
 	varset(p(X,Y),OldG).
-gr_special_builtin('predicate_property/2',predicate_property(_X,Y),old_new_ground,
+gr_special_builtin('predicate_property/2',predicate_property(_X,Y),_,old_new_ground,
 	                                                                ([],NewG)):-
  	varset(Y,NewG).
-gr_special_builtin('print/2',print(X,_Y),old_new_ground,(OldG,[])):-
+gr_special_builtin('print/2',print(X,_Y),_,old_new_ground,(OldG,[])):-
  	varset(X,OldG).
-gr_special_builtin('prolog_flag/2',prolog_flag(X,Y),old_new_ground,(OldG,NewG)):-
+gr_special_builtin('prolog_flag/2',prolog_flag(X,Y),_,old_new_ground,(OldG,NewG)):-
  	varset(X,OldG),
  	varset(Y,NewG).
-gr_special_builtin('prolog_flag/3',prolog_flag(X,Y,Z),old_new_ground,(OldG,NewG)):-
+gr_special_builtin('prolog_flag/3',prolog_flag(X,Y,Z),_,old_new_ground,(OldG,NewG)):-
  	varset(X,OldG),
  	varset(f(Y,Z),NewG).
-gr_special_builtin('write/2',write(X,_Y),old_new_ground,(OldG,[])):-
+gr_special_builtin('write/2',write(X,_Y),_,old_new_ground,(OldG,[])):-
  	varset(X,OldG).
 %-------------------------------------------------------------------------
-gr_special_builtin('assert/2',assert(_X,Y),some,Vars):-
+gr_special_builtin('assert/2',assert(_X,Y),_,some,Vars):-
 	varset(Y,Vars).
-gr_special_builtin('assertz/2',assertz(_X,Y),some,Vars):-
+gr_special_builtin('assertz/2',assertz(_X,Y),_,some,Vars):-
 	varset(Y,Vars).
-gr_special_builtin('asserta/2',asserta(_X,Y),some,Vars):-
+gr_special_builtin('asserta/2',asserta(_X,Y),_,some,Vars):-
 	varset(Y,Vars).
-gr_special_builtin('recorda/3',recorda(_X,_Y,Z),some,Vars):-
+gr_special_builtin('recorda/3',recorda(_X,_Y,Z),_,some,Vars):-
 	varset(Z,Vars).
-gr_special_builtin('recordz/3',recordz(_X,_Y,Z),some,Vars):-
+gr_special_builtin('recordz/3',recordz(_X,_Y,Z),_,some,Vars):-
 	varset(Z,Vars).
 %%%%%%%%%% arg/3
-gr_special_builtin('arg/3',arg(X,Y,Z),arg,p(X,Y,Z)).
+gr_special_builtin('arg/3',arg(X,Y,Z),_,arg,p(X,Y,Z)).
 %%%%%%%%%% expand_term/2
-gr_special_builtin('expand_term/2',expand_term(X,Y),exp,p(X,Y)).
+gr_special_builtin('expand_term/2',expand_term(X,Y),_,exp,p(X,Y)).
 %%%%%%%%%% =../2
-gr_special_builtin('=../2','=..'(X,Y),'=../2',p(X,Y)).
+gr_special_builtin('=../2','=..'(X,Y),_,'=../2',p(X,Y)).
 %%%%%%%%%% recorded/3
-gr_special_builtin('recorded/3',recorded(_X,Y,Z),recorded,p(Y,Z)).
-gr_special_builtin('retract/1',retract(X),recorded,p(X,a)).
-gr_special_builtin('retractall/1',retractall(X),recorded,p(X,a)).
+gr_special_builtin('recorded/3',recorded(_X,Y,Z),_,recorded,p(Y,Z)).
+gr_special_builtin('retract/1',retract(X),_,recorded,p(X,a)).
+gr_special_builtin('retractall/1',retractall(X),_,recorded,p(X,a)).
 %%%%%%%%%% copy_term
-gr_special_builtin('copy_term/2',copy_term(X,Y),copy_term,p(X,Y)).
+gr_special_builtin('copy_term/2',copy_term(X,Y),_,copy_term,p(X,Y)).
 %%%%%%%%%% current_key/2
-gr_special_builtin('current_key/2',current_key(X,_Y),'current_key/2',p(X)).
+gr_special_builtin('current_key/2',current_key(X,_Y),_,'current_key/2',p(X)).
 %%%%%%%%%% current_predicate/2
-gr_special_builtin('current_predicate/2',current_predicate(X,Y),
+gr_special_builtin('current_predicate/2',current_predicate(X,Y),_,
                                                'current_predicate/2',p(X,Y)).
 %%%%%%%%%% functor/3
-gr_special_builtin('functor/3',functor(X,Y,Z),'functor/3',p(X,Y,Z)).
+gr_special_builtin('functor/3',functor(X,Y,Z),_,'functor/3',p(X,Y,Z)).
 %%%%%%%%%% name/2
-gr_special_builtin('name/2',name(X,Y),'name/2',p(X,Y)).
+gr_special_builtin('name/2',name(X,Y),_,'name/2',p(X,Y)).
 %%%%%%%%%% nonvar/1
-gr_special_builtin('nonvar/1',_,unchanged,_).  % ask to Paco
+gr_special_builtin('nonvar/1',_,_,unchanged,_).  % ask to Paco
 %%%%%%%%%% numbervars/3
-gr_special_builtin('numbervars/3',numbervars(X,Y,Z),'numbervars/3',p(X,Y,Z)).
+gr_special_builtin('numbervars/3',numbervars(X,Y,Z),_,'numbervars/3',p(X,Y,Z)).
 %%%%%%%%%% compare/3
-gr_special_builtin('compare/3',compare(X,_Y,_Z),'compare/3',p(X)).
+gr_special_builtin('compare/3',compare(X,_Y,_Z),_,'compare/3',p(X)).
 %%%%%%%%%% indep/2
-gr_special_builtin('indep/2',_,unchanged,_).  % ask to Paco
+gr_special_builtin('indep/2',_,_,unchanged,_).  % ask to Paco
 %%%%%%%%%% length/2
-gr_special_builtin('length/2',_,unchanged,_).  % ask to Paco
+gr_special_builtin('length/2',_,_,unchanged,_).  % ask to Paco
 %%%%%%%%%% var/1
-gr_special_builtin('var/1',_,unchanged,_).  % ask to Paco
+gr_special_builtin('var/1',_,_,unchanged,_).  % ask to Paco
 %%%%%%%%%% indep/1
-gr_special_builtin('indep/1',_,unchanged,_).  % ask to Paco
+gr_special_builtin('indep/1',_,_,unchanged,_).  % ask to Paco
 %%%%%%%%%% others
-gr_special_builtin(Key,_Goal,special(Key),[]):-
+gr_special_builtin(Key,_Goal,_,special(Key),[]):-
 	gr_very_special_builtin(Key).
 
 gr_very_special_builtin('==/2').

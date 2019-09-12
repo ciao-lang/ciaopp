@@ -778,8 +778,8 @@ share_less_or_equal(ASub0,ASub1):-
 %------------------------------------------------------------------------%
 
 %-------------------------------------------------------------------------
-% share_special_builtin(+,+,-,-)                                         |
-% share_special_builtin(SgKey,Sg,Type,Condvars)                          |
+% share_special_builtin(+,+,+,-,-)                                       |
+% share_special_builtin(SgKey,Sg,Subgoal,Type,Condvars)                  |
 % Satisfied if the builtin does not need a very complex action. It       |
 % divides builtins into groups determined by the flag returned in the    |
 % second argument + some special handling for some builtins:             |
@@ -795,155 +795,155 @@ share_less_or_equal(ASub0,ASub1):-
 % (5) Sgkey: special handling of some particular builtins                |
 %-------------------------------------------------------------------------
 
-:- export(share_special_builtin/4).
+:- export(share_special_builtin/5).
 %-------------------------------------------------------------------------
 % metacuts
-%% share_special_builtin('CHOICE IDIOM/1',_,ground,_).
-%% share_special_builtin('CUT IDIOM/1',_,ground,_).
-%% share_special_builtin('$metachoice/1',_,ground,_).
-%% share_special_builtin('$metacut/1',_,ground,_).
-%% share_special_builtin(':/2',(prolog:'$metachoice'(_)),ground,_).
-%% share_special_builtin(':/2',(prolog:'$metacut'(_)),ground,_).
-share_special_builtin('metachoice/1',_,ground,_).
-share_special_builtin('metacut/1',_,ground,_).
+%% share_special_builtin('CHOICE IDIOM/1',_,_,ground,_).
+%% share_special_builtin('CUT IDIOM/1',_,_,ground,_).
+%% share_special_builtin('$metachoice/1',_,_,ground,_).
+%% share_special_builtin('$metacut/1',_,_,ground,_).
+%% share_special_builtin(':/2',(prolog:'$metachoice'(_)),_,ground,_).
+%% share_special_builtin(':/2',(prolog:'$metacut'(_)),_,ground,_).
+share_special_builtin('metachoice/1',_,_,ground,_).
+share_special_builtin('metacut/1',_,_,ground,_).
 %-------------------------------------------------------------------------
-share_special_builtin('absolute_file_name/2',_,ground,_).
-share_special_builtin('atom/1',_,ground,_).
-share_special_builtin('atomic/1',_,ground,_).
-share_special_builtin('$simplify_unconditional_cges/1',_,ground,_).
-share_special_builtin('current_atom/1',_,ground,_).
-share_special_builtin('current_input/1',_,ground,_).
-share_special_builtin('current_module/1',_,ground,_).
-share_special_builtin('current_output/1',_,ground,_).
-share_special_builtin('current_op/3',_,ground,_).
-share_special_builtin('close/1',_,ground,_).
-share_special_builtin('depth/1',_,ground,_).
-share_special_builtin('ensure_loaded/1',_,ground,_).
-share_special_builtin('erase/1',_,ground,_).
-share_special_builtin('float/1',_,ground,_).
-share_special_builtin('flush_output/1',_,ground,_).
-share_special_builtin('get_code/1',_,ground,_).
-share_special_builtin('get1_code/1',_,ground,_).
-share_special_builtin('get_code/2',_,ground,_).
-share_special_builtin('get1_code/2',_,ground,_).
-share_special_builtin('ground/1',_,ground,_).
-share_special_builtin('int/1',_,ground,_).
-share_special_builtin('integer/1',_,ground,_).
-share_special_builtin('is/2',_,ground,_).
-share_special_builtin('name/2',_,ground,_).
-share_special_builtin('num/1',_,ground,_).
-share_special_builtin('number/1',_,ground,_).
-share_special_builtin('numbervars/3',_,ground,_).
-share_special_builtin('nl/1',_,ground,_).
-share_special_builtin('open/3',_,ground,_).
-share_special_builtin('op/3',_,ground,_).
-share_special_builtin('prolog_flag/2',_,ground,_).
-share_special_builtin('prolog_flag/3',_,ground,_).
-share_special_builtin('put_code/1',_,ground,_).
-share_special_builtin('put_code/2',_,ground,_).
-share_special_builtin('statistics/2',_,ground,_).
-share_special_builtin('seeing/1',_,ground,_).
-share_special_builtin('see/1',_,ground,_).
-share_special_builtin('telling/1',_,ground,_).
-share_special_builtin('tell/1',_,ground,_).
-share_special_builtin('tab/1',_,ground,_).
-share_special_builtin('tab/2',_,ground,_).
-share_special_builtin('ttyput/1',_,ground,_).
-share_special_builtin('save_event_trace/1',_,ground,_).
-share_special_builtin('=:=/2',_,ground,_).
-share_special_builtin('>=/2',_,ground,_).
-share_special_builtin('>/2',_,ground,_).
-share_special_builtin('</2',_,ground,_).
-share_special_builtin('=</2',_,ground,_).
+share_special_builtin('absolute_file_name/2',_,_,ground,_).
+share_special_builtin('atom/1',_,_,ground,_).
+share_special_builtin('atomic/1',_,_,ground,_).
+share_special_builtin('$simplify_unconditional_cges/1',_,_,ground,_).
+share_special_builtin('current_atom/1',_,_,ground,_).
+share_special_builtin('current_input/1',_,_,ground,_).
+share_special_builtin('current_module/1',_,_,ground,_).
+share_special_builtin('current_output/1',_,_,ground,_).
+share_special_builtin('current_op/3',_,_,ground,_).
+share_special_builtin('close/1',_,_,ground,_).
+share_special_builtin('depth/1',_,_,ground,_).
+share_special_builtin('ensure_loaded/1',_,_,ground,_).
+share_special_builtin('erase/1',_,_,ground,_).
+share_special_builtin('float/1',_,_,ground,_).
+share_special_builtin('flush_output/1',_,_,ground,_).
+share_special_builtin('get_code/1',_,_,ground,_).
+share_special_builtin('get1_code/1',_,_,ground,_).
+share_special_builtin('get_code/2',_,_,ground,_).
+share_special_builtin('get1_code/2',_,_,ground,_).
+share_special_builtin('ground/1',_,_,ground,_).
+share_special_builtin('int/1',_,_,ground,_).
+share_special_builtin('integer/1',_,_,ground,_).
+share_special_builtin('is/2',_,_,ground,_).
+share_special_builtin('name/2',_,_,ground,_).
+share_special_builtin('num/1',_,_,ground,_).
+share_special_builtin('number/1',_,_,ground,_).
+share_special_builtin('numbervars/3',_,_,ground,_).
+share_special_builtin('nl/1',_,_,ground,_).
+share_special_builtin('open/3',_,_,ground,_).
+share_special_builtin('op/3',_,_,ground,_).
+share_special_builtin('prolog_flag/2',_,_,ground,_).
+share_special_builtin('prolog_flag/3',_,_,ground,_).
+share_special_builtin('put_code/1',_,_,ground,_).
+share_special_builtin('put_code/2',_,_,ground,_).
+share_special_builtin('statistics/2',_,_,ground,_).
+share_special_builtin('seeing/1',_,_,ground,_).
+share_special_builtin('see/1',_,_,ground,_).
+share_special_builtin('telling/1',_,_,ground,_).
+share_special_builtin('tell/1',_,_,ground,_).
+share_special_builtin('tab/1',_,_,ground,_).
+share_special_builtin('tab/2',_,_,ground,_).
+share_special_builtin('ttyput/1',_,_,ground,_).
+share_special_builtin('save_event_trace/1',_,_,ground,_).
+share_special_builtin('=:=/2',_,_,ground,_).
+share_special_builtin('>=/2',_,_,ground,_).
+share_special_builtin('>/2',_,_,ground,_).
+share_special_builtin('</2',_,_,ground,_).
+share_special_builtin('=</2',_,_,ground,_).
 % SICStus3 (ISO)
-share_special_builtin('=\\=/2',_,ground,_).
+share_special_builtin('=\\=/2',_,_,ground,_).
 % SICStus2.x
-% share_special_builtin('=\=/2',_,ground,_).
+% share_special_builtin('=\=/2',_,_,ground,_).
 %-------------------------------------------------------------------------
-share_special_builtin('abort/0',_,bottom,_).
-share_special_builtin('fail/0',_,bottom,_).
-share_special_builtin('false/0',_,bottom,_).
-share_special_builtin('halt/0',_,bottom,_).
+share_special_builtin('abort/0',_,_,bottom,_).
+share_special_builtin('fail/0',_,_,bottom,_).
+share_special_builtin('false/0',_,_,bottom,_).
+share_special_builtin('halt/0',_,_,bottom,_).
 %-------------------------------------------------------------------------
-share_special_builtin('!/0',_,unchanged,_).
-share_special_builtin('assert/1',_,unchanged,_).
-share_special_builtin('asserta/1',_,unchanged,_).
-share_special_builtin('assertz/1',_,unchanged,_).
-share_special_builtin('debug/0',_,unchanged,_).
-share_special_builtin('debugging/0',_,unchanged,_).
-share_special_builtin('dif/2',_,unchanged,_).
-share_special_builtin('display/1',_,unchanged,_).
-share_special_builtin('flush_output/0',_,unchanged,_).
-share_special_builtin('garbage_collect/0',_,unchanged,_).
-share_special_builtin('gc/0',_,unchanged,_).
-share_special_builtin('listing/0',_,unchanged,_).
-share_special_builtin('listing/1',_,unchanged,_).
-share_special_builtin('nl/0',_,unchanged,_).
-share_special_builtin('nogc/0',_,unchanged,_).
-share_special_builtin('nonvar/1',_,unchanged,_).
-share_special_builtin('not/1',_,unchanged,_).
-share_special_builtin('print/1',_,unchanged,_).
-share_special_builtin('repeat/0',_,unchanged,_).
-share_special_builtin('start_event_trace/0',_,unchanged,_).
-share_special_builtin('stop_event_trace/0',_,unchanged,_).
-share_special_builtin('true/0',_,unchanged,_).
-share_special_builtin('ttyflush/0',_,unchanged,_).
-share_special_builtin('otherwise/0',_,unchanged,_).
-share_special_builtin('seen/0',_,unchanged,_).
-share_special_builtin('told/0',_,unchanged,_).
-share_special_builtin('ttynl/0',_,unchanged,_).
-share_special_builtin('write/1',_,unchanged,_).
-share_special_builtin('writeq/1',_,unchanged,_).
+share_special_builtin('!/0',_,_,unchanged,_).
+share_special_builtin('assert/1',_,_,unchanged,_).
+share_special_builtin('asserta/1',_,_,unchanged,_).
+share_special_builtin('assertz/1',_,_,unchanged,_).
+share_special_builtin('debug/0',_,_,unchanged,_).
+share_special_builtin('debugging/0',_,_,unchanged,_).
+share_special_builtin('dif/2',_,_,unchanged,_).
+share_special_builtin('display/1',_,_,unchanged,_).
+share_special_builtin('flush_output/0',_,_,unchanged,_).
+share_special_builtin('garbage_collect/0',_,_,unchanged,_).
+share_special_builtin('gc/0',_,_,unchanged,_).
+share_special_builtin('listing/0',_,_,unchanged,_).
+share_special_builtin('listing/1',_,_,unchanged,_).
+share_special_builtin('nl/0',_,_,unchanged,_).
+share_special_builtin('nogc/0',_,_,unchanged,_).
+share_special_builtin('nonvar/1',_,_,unchanged,_).
+share_special_builtin('not/1',_,_,unchanged,_).
+share_special_builtin('print/1',_,_,unchanged,_).
+share_special_builtin('repeat/0',_,_,unchanged,_).
+share_special_builtin('start_event_trace/0',_,_,unchanged,_).
+share_special_builtin('stop_event_trace/0',_,_,unchanged,_).
+share_special_builtin('true/0',_,_,unchanged,_).
+share_special_builtin('ttyflush/0',_,_,unchanged,_).
+share_special_builtin('otherwise/0',_,_,unchanged,_).
+share_special_builtin('seen/0',_,_,unchanged,_).
+share_special_builtin('told/0',_,_,unchanged,_).
+share_special_builtin('ttynl/0',_,_,unchanged,_).
+share_special_builtin('write/1',_,_,unchanged,_).
+share_special_builtin('writeq/1',_,_,unchanged,_).
 % SICStus3 (ISO)
-%meta! (no need) share_special_builtin('\\+/1',_,unchanged,_).
-share_special_builtin('\\==/2',_,unchanged,_).
+%meta! (no need) share_special_builtin('\\+/1',_,_,unchanged,_).
+share_special_builtin('\\==/2',_,_,unchanged,_).
 % SICStus2.x
-% share_special_builtin('\+/1',_,unchanged,_).
-% share_special_builtin('\==/2',_,unchanged,_).
-share_special_builtin('@>=/2',_,unchanged,_).
-share_special_builtin('@=</2',_,unchanged,_).
-share_special_builtin('@>/2',_,unchanged,_).
-share_special_builtin('@</2',_,unchanged,_).
+% share_special_builtin('\+/1',_,_,unchanged,_).
+% share_special_builtin('\==/2',_,_,unchanged,_).
+share_special_builtin('@>=/2',_,_,unchanged,_).
+share_special_builtin('@=</2',_,_,unchanged,_).
+share_special_builtin('@>/2',_,_,unchanged,_).
+share_special_builtin('@</2',_,_,unchanged,_).
 %-------------------------------------------------------------------------
-share_special_builtin('assert/2',assert(_,Z),some,Vars):-
+share_special_builtin('assert/2',assert(_,Z),_,some,Vars):-
 	varset(Z,Vars).
-share_special_builtin('asserta/2',asserta(_,Z),some,Vars):-
+share_special_builtin('asserta/2',asserta(_,Z),_,some,Vars):-
 	varset(Z,Vars).
-share_special_builtin('assertz/2',assertz(_,Z),some,Vars):-
+share_special_builtin('assertz/2',assertz(_,Z),_,some,Vars):-
 	varset(Z,Vars).
-share_special_builtin('compare/3',compare(X,_,_),some,Vars):-
+share_special_builtin('compare/3',compare(X,_,_),_,some,Vars):-
 	varset(X,Vars).
-share_special_builtin('format/2',format(X,_Y),some,Vars):-
+share_special_builtin('format/2',format(X,_Y),_,some,Vars):-
 	varset(X,Vars).
-share_special_builtin('format/3',format(X,Y,_Z),some,List):-
+share_special_builtin('format/3',format(X,Y,_Z),_,some,List):-
 	varset([X,Y],List).
-share_special_builtin('functor/3',functor(_X,Y,Z),some,List):-
+share_special_builtin('functor/3',functor(_X,Y,Z),_,some,List):-
 	varset([Y,Z],List).
-share_special_builtin('length/2',length(_X,Y),some,[Y]).
-share_special_builtin('print/2',print(X,_Y),some,Vars):-
+share_special_builtin('length/2',length(_X,Y),_,some,[Y]).
+share_special_builtin('print/2',print(X,_Y),_,some,Vars):-
 	varset(X,Vars).
-share_special_builtin('recorda/3',recorda(_,_,Z),some,Vars):-
+share_special_builtin('recorda/3',recorda(_,_,Z),_,some,Vars):-
 	varset(Z,Vars).
-share_special_builtin('recordz/3',recordz(_,_,Z),some,Vars):-
+share_special_builtin('recordz/3',recordz(_,_,Z),_,some,Vars):-
 	varset(Z,Vars).
-share_special_builtin('write/2',write(X,_Y),some,Vars):-
+share_special_builtin('write/2',write(X,_Y),_,some,Vars):-
 	varset(X,Vars).
 %-------------------------------------------------------------------------
-share_special_builtin('=../2','=..'(X,Y),'=../2',p(X,Y)).
-share_special_builtin('==/2','=='(X,Y),'==/2',p(X,Y)).
-share_special_builtin('copy_term/2',copy_term(X,Y),copy_term,p(X,Y)).
+share_special_builtin('=../2','=..'(X,Y),_,'=../2',p(X,Y)).
+share_special_builtin('==/2','=='(X,Y),_,'==/2',p(X,Y)).
+share_special_builtin('copy_term/2',copy_term(X,Y),_,copy_term,p(X,Y)).
 %meta! (but needs special extension)
-share_special_builtin('findall/3',findall(X,_,Z),findall,p(X,Z)).
-share_special_builtin('indep/2',indep(X,Y),'indep/2',p(X,Y)).
-share_special_builtin('indep/1',indep(X),'indep/1',p(X)).
-share_special_builtin('recorded/3',recorded(_,Y,Z),'recorded/3',p(Y,Z)).
-share_special_builtin('retract/1',retract(X),'recorded/3',p(X,b)).
-share_special_builtin('retractall/1',retractall(X),'recorded/3',p(X,b)).
-share_special_builtin('read/1',read(X),'recorded/3',p(X,b)).
-share_special_builtin('read/2',read(X,Y),'recorded/3',p(Y,X)).
-share_special_builtin('var/1',var(X),var,p(X)).
+share_special_builtin('findall/3',findall(X,_,Z),_,findall,p(X,Z)).
+share_special_builtin('indep/2',indep(X,Y),_,'indep/2',p(X,Y)).
+share_special_builtin('indep/1',indep(X),_,'indep/1',p(X)).
+share_special_builtin('recorded/3',recorded(_,Y,Z),_,'recorded/3',p(Y,Z)).
+share_special_builtin('retract/1',retract(X),_,'recorded/3',p(X,b)).
+share_special_builtin('retractall/1',retractall(X),_,'recorded/3',p(X,b)).
+share_special_builtin('read/1',read(X),_,'recorded/3',p(X,b)).
+share_special_builtin('read/2',read(X,Y),_,'recorded/3',p(Y,X)).
+share_special_builtin('var/1',var(X),_,var,p(X)).
 %%%%%%%%%% others
-share_special_builtin(Key,_Goal,special(Key),[]):-
+share_special_builtin(Key,_Goal,_,special(Key),[]):-
 	share_not_that_special_builtin(Key).
 
 share_not_that_special_builtin('=/2').

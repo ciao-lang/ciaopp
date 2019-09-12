@@ -15,7 +15,7 @@
 	  def_project/3,    
 	  def_handle_bottom_project/3,  % JN needed by sharedef.pl
 	  def_sort/2,       
-	  def_special_builtin/4,
+	  def_special_builtin/5,
 	  def_success_builtin/4,
 	  def_unknown_call/4,
 	  def_unknown_entry/3
@@ -362,8 +362,8 @@ def_call_to_success_fact(Sg,_Hv,Head,_K,Sv,Call,_Proj,Prime,Succ):-
 	def_handle_bottom_project(Succ,Sv,Prime).
 
 %-------------------------------------------------------------------------
-% def_special_builtin(+,+,-,-)                                           %
-% def_special_builtin(SgKey,Sg,Type,Condvars)                            %
+% def_special_builtin(+,+,+,-,-)                                         %
+% def_special_builtin(SgKey,Sg,Subgoal,Type,Condvars)                    %
 % succeeds if the Sgkey indicates a builtin or a constraint              %
 % Type indicates the kind of builtin and Condvars contains the info      %
 % needed for their abstraction                                           %
@@ -377,133 +377,133 @@ def_call_to_success_fact(Sg,_Hv,Head,_K,Sv,Call,_Proj,Prime,Succ):-
 %	should be completed                                              %
 %-------------------------------------------------------------------------
 
-def_special_builtin('=/2',Sg,'$fd_=',Sg).
-def_special_builtin('C/3','C'(X,Y,Z),'$fd_=','='(X,[Y|Z])).
-def_special_builtin('fail/0',_Sg,'$fd_fail',_Condvars).   
-def_special_builtin('#/2',_Sg,'$fd_#',_Condvars).   
-def_special_builtin('</2',_Sg,Type,_Condvars):-
+def_special_builtin('=/2',Sg,_,'$fd_=',Sg).
+def_special_builtin('C/3','C'(X,Y,Z),_,'$fd_=','='(X,[Y|Z])).
+def_special_builtin('fail/0',_Sg,_,'$fd_fail',_Condvars).   
+def_special_builtin('#/2',_Sg,_,'$fd_#',_Condvars).   
+def_special_builtin('</2',_Sg,_,Type,_Condvars):-
 	language(clp),!,
 	Type = '$fd_comp'.
-def_special_builtin('</2',Sg,Type,Condvars):-
+def_special_builtin('</2',Sg,_,Type,Condvars):-
 	language(lp),!,
 	Type = '$fd_ground',
 	Condvars = Sg.
-%% def_special_builtin('<=/2',_Sg,Type,_Condvars):-
+%% def_special_builtin('<=/2',_Sg,_,Type,_Condvars):-
 %% 	language(clp),!,
 %% 	Type = '$fd_comp'.
-def_special_builtin('=</2',_Sg,Type,_Condvars):-
+def_special_builtin('=</2',_Sg,_,Type,_Condvars):-
 	language(clp),!,
 	Type = '$fd_comp'.
-def_special_builtin('=</2',Sg,Type,Condvars):-
+def_special_builtin('=</2',Sg,_,Type,Condvars):-
 	language(lp),!,
 	Type = '$fd_ground',
 	Condvars = Sg.
-def_special_builtin('>/2',_Sg,Type,_Condvars):-
+def_special_builtin('>/2',_Sg,_,Type,_Condvars):-
 	language(clp),!,
 	Type = '$fd_comp'.
-def_special_builtin('>/2',Sg,Type,Condvars):-
+def_special_builtin('>/2',Sg,_,Type,Condvars):-
 	language(lp),!,
 	Type = '$fd_ground',
 	Condvars = Sg.
-def_special_builtin('>=/2',_Sg,Type,_Condvars):-
+def_special_builtin('>=/2',_Sg,_,Type,_Condvars):-
 	language(clp),!,
 	Type = '$fd_comp'.
-def_special_builtin('>=/2',Sg,Type,Condvars):-
+def_special_builtin('>=/2',Sg,_,Type,Condvars):-
 	language(lp),!,
 	Type = '$fd_ground',
 	Condvars = Sg.
-def_special_builtin('.<./2',_Sg,Type,_Condvars):-
+def_special_builtin('.<./2',_Sg,_,Type,_Condvars):-
 	Type = '$fd_comp'.
-def_special_builtin('.=<./2',_Sg,Type,_Condvars):-
+def_special_builtin('.=<./2',_Sg,_,Type,_Condvars):-
 	Type = '$fd_comp'.
-def_special_builtin('.>./2',_Sg,Type,_Condvars):-
+def_special_builtin('.>./2',_Sg,_,Type,_Condvars):-
 	Type = '$fd_comp'.
-def_special_builtin('.>=./2',_Sg,Type,_Condvars):-
+def_special_builtin('.>=./2',_Sg,_,Type,_Condvars):-
 	Type = '$fd_comp'.
-def_special_builtin('true/0',_Sg,'$fd_unchanged',_Condvars).   
-def_special_builtin('!/0',_Sg,'$fd_unchanged',_Condvars).   
-def_special_builtin('nl/0',_Sg,'$fd_unchanged',_Condvars).   
-def_special_builtin('nl/1',Sg,'$fd_ground',Sg).   
+def_special_builtin('true/0',_Sg,_,'$fd_unchanged',_Condvars).   
+def_special_builtin('!/0',_Sg,_,'$fd_unchanged',_Condvars).   
+def_special_builtin('nl/0',_Sg,_,'$fd_unchanged',_Condvars).   
+def_special_builtin('nl/1',Sg,_,'$fd_ground',Sg).   
 %%% PrologIII
-def_special_builtin('assign/2',Sg,'$fd_ground',Sg).
-def_special_builtin('bound_mult/3',Sg,'$fd_bound_mult',Sg).
-def_special_builtin('cpu_time/1',Sg,'$fd_ground',Sg).
-def_special_builtin('enum/1',Sg,'$fd_ground',Sg).
-def_special_builtin('erase/1',Sg,'$fd_ground',Sg).
-def_special_builtin('line/0',_Sg,'$fd_unchanged',_Condvars).   
-def_special_builtin('min_value/2',min_value(_X,Y),'$fd_ground',Y).
-def_special_builtin('out/1',_Sg,'$fd_unchanged',_Condvars).   
-def_special_builtin('outc/1',_Sg,'$fd_unchanged',_Condvars).   
-def_special_builtin('outl/1',_Sg,'$fd_unchanged',_Condvars).   
-def_special_builtin('outm/1',Sg,'$fd_ground',Sg).
-def_special_builtin('outml/1',Sg,'$fd_ground',Sg).
-def_special_builtin('recorda/3',recorda(_X,_Y,Z),'$fd_ground',Z).
-def_special_builtin('recorded/3',recorded(_X,_Y,Z),'$fd_ground',Z).
-def_special_builtin('reset_cpu_time/0',_Sg,'$fd_unchanged',_Condvars).
-def_special_builtin('sys_command/1',Sg,'$fd_ground',Sg).
-def_special_builtin('val/2',Sg,'$fd_ground',Sg).
-def_special_builtin('$::/2',Sg,'$fd_$::',Sg).
+def_special_builtin('assign/2',Sg,_,'$fd_ground',Sg).
+def_special_builtin('bound_mult/3',Sg,_,'$fd_bound_mult',Sg).
+def_special_builtin('cpu_time/1',Sg,_,'$fd_ground',Sg).
+def_special_builtin('enum/1',Sg,_,'$fd_ground',Sg).
+def_special_builtin('erase/1',Sg,_,'$fd_ground',Sg).
+def_special_builtin('line/0',_Sg,_,'$fd_unchanged',_Condvars).   
+def_special_builtin('min_value/2',min_value(_X,Y),_,'$fd_ground',Y).
+def_special_builtin('out/1',_Sg,_,'$fd_unchanged',_Condvars).   
+def_special_builtin('outc/1',_Sg,_,'$fd_unchanged',_Condvars).   
+def_special_builtin('outl/1',_Sg,_,'$fd_unchanged',_Condvars).   
+def_special_builtin('outm/1',Sg,_,'$fd_ground',Sg).
+def_special_builtin('outml/1',Sg,_,'$fd_ground',Sg).
+def_special_builtin('recorda/3',recorda(_X,_Y,Z),_,'$fd_ground',Z).
+def_special_builtin('recorded/3',recorded(_X,_Y,Z),_,'$fd_ground',Z).
+def_special_builtin('reset_cpu_time/0',_Sg,_,'$fd_unchanged',_Condvars).
+def_special_builtin('sys_command/1',Sg,_,'$fd_ground',Sg).
+def_special_builtin('val/2',Sg,_,'$fd_ground',Sg).
+def_special_builtin('$::/2',Sg,_,'$fd_$::',Sg).
 %%%%%%%% CLP(R)
-def_special_builtin('ctime/1',Sg,'$fd_ground',Sg).
-def_special_builtin('dump/1',_Sg,'$fd_unchanged',_Condvars).   
-def_special_builtin('floor/2',Sg,'$fd_ground',Sg).   
-def_special_builtin('printf/2',_Sg,'$fd_unchanged',_Condvars).   
-def_special_builtin('inf/2',inf(_X,Y),'$fd_ground',Y).   
-def_special_builtin('ztime/0',_Sg,'$fd_unchanged',_Condvars).   
+def_special_builtin('ctime/1',Sg,_,'$fd_ground',Sg).
+def_special_builtin('dump/1',_Sg,_,'$fd_unchanged',_Condvars).   
+def_special_builtin('floor/2',Sg,_,'$fd_ground',Sg).   
+def_special_builtin('printf/2',_Sg,_,'$fd_unchanged',_Condvars).   
+def_special_builtin('inf/2',inf(_X,Y),_,'$fd_ground',Y).   
+def_special_builtin('ztime/0',_Sg,_,'$fd_unchanged',_Condvars).   
 %%%%%%%% SICStus
-def_special_builtin('arg/3',Sg,'$fd_arg',Sg).
-def_special_builtin('assert/1',_Sg,'$fd_unchanged',_Condvars). 
-def_special_builtin('asserta/1',_Sg,'$fd_unchanged',_Condvars). 
-def_special_builtin('assertz/1',_Sg,'$fd_unchanged',_Condvars). 
-def_special_builtin('display/1',_Sg,'$fd_unchanged',_Condvars). 
-def_special_builtin('length/2',length(_,Y),'$fd_ground',f(Y)).
-def_special_builtin('functor/3',functor(_,Y,Z),'$fd_ground',f(Y,Z)).   
-def_special_builtin('nonzero/1',_Sg,'$fd_unchanged',_Condvars).
-def_special_builtin('=../2',Sg,'$fd_=..',Sg).   
-def_special_builtin('write/1',_,'$fd_unchanged',_).   
-def_special_builtin('write/2',write(X,_),'$fd_ground',X).   
-def_special_builtin('read/1',_Sg,'$fd_unchanged',_Condvars).   
-def_special_builtin('var/1',Sg,'$fd_free',Sg).   
-def_special_builtin('nonvar/1',_,'$fd_unchanged',_).   
-def_special_builtin('numbervars/3',Sg,'$fd_ground',Sg).   
-def_special_builtin('format/2',format(X,_),'$fd_ground',f(X)).   
-def_special_builtin('ground/1',Sg,'$fd_ground',Sg).
-def_special_builtin('get_code/1',Sg,'$fd_ground',Sg).   
-def_special_builtin('get1_code/1',Sg,'$fd_ground',Sg).   
-def_special_builtin('put_code/1',Sg,'$fd_ground',Sg).   
+def_special_builtin('arg/3',Sg,_,'$fd_arg',Sg).
+def_special_builtin('assert/1',_Sg,_,'$fd_unchanged',_Condvars). 
+def_special_builtin('asserta/1',_Sg,_,'$fd_unchanged',_Condvars). 
+def_special_builtin('assertz/1',_Sg,_,'$fd_unchanged',_Condvars). 
+def_special_builtin('display/1',_Sg,_,'$fd_unchanged',_Condvars). 
+def_special_builtin('length/2',length(_,Y),_,'$fd_ground',f(Y)).
+def_special_builtin('functor/3',functor(_,Y,Z),_,'$fd_ground',f(Y,Z)).   
+def_special_builtin('nonzero/1',_Sg,_,'$fd_unchanged',_Condvars).
+def_special_builtin('=../2',Sg,_,'$fd_=..',Sg).   
+def_special_builtin('write/1',_,_,'$fd_unchanged',_).   
+def_special_builtin('write/2',write(X,_),_,'$fd_ground',X).   
+def_special_builtin('read/1',_Sg,_,'$fd_unchanged',_Condvars).   
+def_special_builtin('var/1',Sg,_,'$fd_free',Sg).   
+def_special_builtin('nonvar/1',_,_,'$fd_unchanged',_).   
+def_special_builtin('numbervars/3',Sg,_,'$fd_ground',Sg).   
+def_special_builtin('format/2',format(X,_),_,'$fd_ground',f(X)).   
+def_special_builtin('ground/1',Sg,_,'$fd_ground',Sg).
+def_special_builtin('get_code/1',Sg,_,'$fd_ground',Sg).   
+def_special_builtin('get1_code/1',Sg,_,'$fd_ground',Sg).   
+def_special_builtin('put_code/1',Sg,_,'$fd_ground',Sg).   
 % SICStus3 (ISO)
-def_special_builtin('=\\=/2',Sg,'$fd_ground',Sg).
+def_special_builtin('=\\=/2',Sg,_,'$fd_ground',Sg).
 % SICStus2.x
-% def_special_builtin('=\=/2',Sg,'$fd_ground',Sg).
-def_special_builtin('is/2',Sg,'$fd_ground',Sg).
-def_special_builtin('integer/1',Sg,'$fd_ground',Sg).
-def_special_builtin('sort/2',sort(X,Y),'$fd_=',X=Y).
-def_special_builtin('keysort/2',keysort(X,Y),'$fd_=',X=Y).
-def_special_builtin('name/2',Sg,'$fd_ground',Sg).
-def_special_builtin('repeat/0',_,'$fd_unchanged',_).
-def_special_builtin('tab/1',Sg,'$fd_ground',Sg).
-def_special_builtin('tab/2',Sg,'$fd_ground',Sg).
-def_special_builtin('ttynl/0',_,'$fd_unchanged',_).
-def_special_builtin('ttyput/1',Sg,'$fd_ground',Sg).
-def_special_builtin('current_op/3',Sg,'$fd_ground',Sg).
-def_special_builtin('statistics/2',Sg,'$fd_ground',Sg).
+% def_special_builtin('=\=/2',Sg,_,'$fd_ground',Sg).
+def_special_builtin('is/2',Sg,_,'$fd_ground',Sg).
+def_special_builtin('integer/1',Sg,_,'$fd_ground',Sg).
+def_special_builtin('sort/2',sort(X,Y),_,'$fd_=',X=Y).
+def_special_builtin('keysort/2',keysort(X,Y),_,'$fd_=',X=Y).
+def_special_builtin('name/2',Sg,_,'$fd_ground',Sg).
+def_special_builtin('repeat/0',_,_,'$fd_unchanged',_).
+def_special_builtin('tab/1',Sg,_,'$fd_ground',Sg).
+def_special_builtin('tab/2',Sg,_,'$fd_ground',Sg).
+def_special_builtin('ttynl/0',_,_,'$fd_unchanged',_).
+def_special_builtin('ttyput/1',Sg,_,'$fd_ground',Sg).
+def_special_builtin('current_op/3',Sg,_,'$fd_ground',Sg).
+def_special_builtin('statistics/2',Sg,_,'$fd_ground',Sg).
 % SICStus3 (ISO)
-def_special_builtin('\\==/2',_,'$fd_unchanged',_).
+def_special_builtin('\\==/2',_,_,'$fd_unchanged',_).
 % SICStus2.x
-% def_special_builtin('\==/2',_,'$fd_unchanged',_).
-def_special_builtin('==/2',X==Y,'$fd_=',X=Y).
-def_special_builtin('atomic/1',Sg,'$fd_ground',Sg).
-def_special_builtin('atom/1',Sg,'$fd_ground',Sg).
-def_special_builtin('$metachoice/1',Sg,'$fd_ground',Sg).
-def_special_builtin('$metacut/1',Sg,'$fd_ground',Sg).
-def_special_builtin('=:=/2',Sg,'$fd_ground',Sg).
-def_special_builtin('@</2',Sg,'$fd_ground',Sg).
-def_special_builtin('@>/2',Sg,'$fd_ground',Sg).
+% def_special_builtin('\==/2',_,_,'$fd_unchanged',_).
+def_special_builtin('==/2',X==Y,_,'$fd_=',X=Y).
+def_special_builtin('atomic/1',Sg,_,'$fd_ground',Sg).
+def_special_builtin('atom/1',Sg,_,'$fd_ground',Sg).
+def_special_builtin('$metachoice/1',Sg,_,'$fd_ground',Sg).
+def_special_builtin('$metacut/1',Sg,_,'$fd_ground',Sg).
+def_special_builtin('=:=/2',Sg,_,'$fd_ground',Sg).
+def_special_builtin('@</2',Sg,_,'$fd_ground',Sg).
+def_special_builtin('@>/2',Sg,_,'$fd_ground',Sg).
 % added by JN
-def_special_builtin('findall/3',findall(X,_,Z),findall,p(X,Z)).  
-def_special_builtin('compare/3',compare(X,_,_),'$fd_ground',Vars):-
+def_special_builtin('findall/3',findall(X,_,Z),_,findall,p(X,Z)).  
+def_special_builtin('compare/3',compare(X,_,_),_,'$fd_ground',Vars):-
 	varset(X,Vars).
-def_special_builtin('number/1',Sg,'$fd_ground',Sg).
+def_special_builtin('number/1',Sg,_,'$fd_ground',Sg).
 %-------------------------------------------------------------------------
 % def_success_builtin(+,+,+,-)                                           %
 % def_success_builtin(Type,Term,Call,Succ)                               %

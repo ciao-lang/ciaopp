@@ -138,7 +138,7 @@ extend(frdef,Sg,Prime,Sv,Call,Succ) :- !, fd_extend(Sg,Prime,Sv,Call,Succ).
 less_or_equal(frdef,ASub0,ASub1) :- !, fd_less_or_equal(ASub0,ASub1).
 glb(frdef,ASub0,ASub1,ASub) :- !, fd_glb(ASub0,ASub1,ASub).
 call_to_success_fact(frdef,Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ) :- !, fd_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ).
-special_builtin(frdef,SgKey,Sg,Subgoal,(TypeF,TypeD),(CondF,CondD)) :- !, def_special_builtin(SgKey,Sg,TypeD,CondD), fr_special_builtin(SgKey,Sg,Subgoal,TypeF,CondF).
+special_builtin(frdef,SgKey,Sg,Subgoal,Type,Condvars) :- !, fd_special_builtin(SgKey,Sg,Subgoal,Type,Condvars).
 success_builtin(frdef,Type,Sv_uns,Condvars,_HvFv_u,Call,Succ) :- !, fd_success_builtin(Type,Sv_uns,Condvars,Call,Succ).
 input_interface(frdef,InputUser,Kind,Struct0,Struct1) :- !, fd_input_interface(InputUser,Kind,Struct0,Struct1).
 input_user_interface(frdef,InputUser,Qv,ASub,_Sg,_MaybeCallASub) :- !, fd_input_user_interface(InputUser,Qv,ASub).
@@ -149,6 +149,9 @@ empty_entry(frdef,Sg,Qv,Call) :- !, fd_empty_entry(Sg,Qv,Call).
 %
 :- use_module(ciaopp(plai/plai_errors), [compiler_error/1]).
 fd_glb(_ASub0,_ASub1,_ASub) :- compiler_error(op_not_implemented(glb)), fail.
+fd_special_builtin(SgKey,Sg,Subgoal,(TypeF,TypeD),(CondF,CondD)) :-
+	def_special_builtin(SgKey,Sg,Subgoal,TypeD,CondD),
+	fr_special_builtin(SgKey,Sg,Subgoal,TypeF,CondF).
 % TODO: body_succ_builtin/9: (old comment) these do not have special(_), so ok: AbsInt \== def, AbsInt \== fr, AbsInt \== frdef
 % ---------------------------------------------------------------------------
 % lsign
@@ -166,7 +169,7 @@ glb(lsign,ASub0,ASub1,ASub) :- !, lsign_glb(ASub0,ASub1,ASub).
 eliminate_equivalent(lsign,TmpLSucc,LSucc) :- !, lsign_eliminate_equivalent(TmpLSucc,LSucc).
 abs_subset(lsign,LASub1,LASub2) :- !, lsign_is_subset(LASub1,LASub2).
 call_to_success_fact(lsign,Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ) :- !, lsign_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ).
-special_builtin(lsign,SgKey,Sg,_Subgoal,Type,Condvars) :- !, lsign_special_builtin(SgKey,Sg,Type,Condvars).
+special_builtin(lsign,SgKey,Sg,Subgoal,Type,Condvars) :- !, lsign_special_builtin(SgKey,Sg,Subgoal,Type,Condvars).
 success_builtin(lsign,Type,Sv_uns,Condvars,HvFv_u,Call,Succ) :- !, lsign_success_builtin(Type,Sv_uns,Condvars,HvFv_u,Call,Succ).
 input_interface(lsign,InputUser,Kind,Struct0,Struct1) :- !, lsign_input_interface(InputUser,Kind,Struct0,Struct1).
 input_user_interface(lsign,InputUser,Qv,ASub,_Sg,_MaybeCallASub) :- !, lsign_input_user_interface(InputUser,Qv,ASub).
@@ -193,7 +196,7 @@ extend(difflsign,Sg,Prime,Sv,Call,Succ) :- !, simple_lsign_extend(Sg,Prime,Sv,Ca
 less_or_equal(difflsign,ASub0,ASub1) :- !, simple_lsign_less_or_equal(ASub0,ASub1).
 glb(difflsign,ASub0,ASub1,ASub) :- !, simple_lsign_glb(ASub0,ASub1,ASub).
 call_to_success_fact(difflsign,Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ) :- !, lsign_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ).
-special_builtin(difflsign,SgKey,Sg,_Subgoal,Type,Condvars) :- !, lsign_special_builtin(SgKey,Sg,Type,Condvars).
+special_builtin(difflsign,SgKey,Sg,Subgoal,Type,Condvars) :- !, lsign_special_builtin(SgKey,Sg,Subgoal,Type,Condvars).
 success_builtin(difflsign,Type,Sv_uns,Condvars,HvFv_u,Call,Succ) :- !, simple_lsign_success_builtin(Type,Sv_uns,Condvars,HvFv_u,Call,Succ).
 input_interface(difflsign,InputUser,Kind,Struct0,Struct1) :- !, lsign_input_interface(InputUser,Kind,Struct0,Struct1).
 input_user_interface(difflsign,InputUser,Qv,ASub,_Sg,_MaybeCallASub) :- !, simple_lsign_input_user_interface(InputUser,Qv,ASub).
@@ -289,7 +292,7 @@ glb(sha,ASub0,ASub1,ASub) :- !, sha_glb(ASub0,ASub1,ASub).
 eliminate_equivalent(sha,TmpLSucc,LSucc) :- !, sha_eliminate_equivalent(TmpLSucc,LSucc).
 abs_subset(sha,LASub1,LASub2) :- !, sha_abs_subset(LASub1,LASub2).
 call_to_success_fact(sha,Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ) :- !, sha_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ).
-special_builtin(sha,SgKey,Sg,_Subgoal,Type,Condvars) :- !, sha_special_builtin(SgKey,Sg,Type,Condvars).
+special_builtin(sha,SgKey,Sg,Subgoal,Type,Condvars) :- !, sha_special_builtin(SgKey,Sg,Subgoal,Type,Condvars).
 success_builtin(sha,Type,Sv_uns,Condvars,_HvFv_u,Call,Succ) :- !, sha_success_builtin(Type,Sv_uns,Condvars,Call,Succ).
 call_to_success_builtin(sha,SgKey,Sg,Sv,Call,Proj,Succ) :- !, sha_call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,Succ).
 input_interface(sha,InputUser,Kind,Struct0,Struct1) :- !, sha_input_interface(InputUser,Kind,Struct0,Struct1).
@@ -318,7 +321,7 @@ sha_less_or_equal(_,_).
 % sha_output_interface(_,_).
 sha_asub_to_native(_,_,_,[],[]).
 sha_project(_,_,_,_,_).      
-sha_special_builtin(_,_,_,_).
+sha_special_builtin(_,_,_,_,_).
 sha_success_builtin(_,_,_,_,_).
 sha_unknown_call(_,_,_,_).
 sha_unknown_entry(_,_,_).
@@ -346,7 +349,7 @@ extend(gr,_Sg,Prime,Sv,Call,Succ) :- !, gr_extend(Prime,Sv,Call,Succ).
 less_or_equal(gr,ASub0,ASub1) :- !, gr_less_or_equal(ASub0,ASub1).
 glb(gr,ASub0,ASub1,ASub) :- !, gr_glb(ASub0,ASub1,ASub).
 call_to_success_fact(gr,Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ) :- !, gr_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ).
-special_builtin(gr,SgKey,Sg,_Subgoal,Type,Condvars) :- !, gr_special_builtin(SgKey,Sg,Type,Condvars).
+special_builtin(gr,SgKey,Sg,Subgoal,Type,Condvars) :- !, gr_special_builtin(SgKey,Sg,Subgoal,Type,Condvars).
 success_builtin(gr,Type,Sv_uns,Condvars,_HvFv_u,Call,Succ) :- !, gr_success_builtin(Type,Sv_uns,Condvars,Call,Succ).
 call_to_success_builtin(gr,SgKey,Sg,Sv,Call,Proj,Succ) :- !, gr_call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,Succ).
 input_interface(gr,InputUser,Kind,Struct0,Struct1) :- !, gr_input_interface(InputUser,Kind,Struct0,Struct1).
@@ -369,7 +372,7 @@ extend(def,_Sg,Prime,_Sv,Call,Succ) :- !, def_extend(Prime,Call,Succ).
 less_or_equal(def,ASub0,ASub1) :- !, def_less_or_equal(ASub0,ASub1).
 glb(def,ASub0,ASub1,ASub) :- !, def_glb(ASub0,ASub1,ASub).
 call_to_success_fact(def,Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ) :- !, def_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ).
-special_builtin(def,SgKey,Sg,_Subgoal,Type,Condvars) :- !, def_special_builtin(SgKey,Sg,Type,Condvars).
+special_builtin(def,SgKey,Sg,Subgoal,Type,Condvars) :- !, def_special_builtin(SgKey,Sg,Subgoal,Type,Condvars).
 success_builtin(def,Type,_Sv_uns,Condvars,_HvFv_u,Call,Succ) :- !, def_success_builtin(Type,Condvars,Call,Succ).
 input_interface(def,InputUser,Kind,Struct0,Struct1) :- !, def_input_interface(InputUser,Kind,Struct0,Struct1).
 input_user_interface(def,InputUser,_Qv,ASub,_Sg,_MaybeCallASub) :- !, def_input_user_interface(InputUser,ASub).
@@ -409,7 +412,7 @@ extend(share,_Sg,Prime,Sv,Call,Succ) :- !, share_extend(Prime,Sv,Call,Succ).
 less_or_equal(share,ASub0,ASub1) :- !, share_less_or_equal(ASub0,ASub1).
 glb(share,ASub0,ASub1,ASub) :- !, share_glb(ASub0,ASub1,ASub).
 call_to_success_fact(share,Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ) :- !, share_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ).
-special_builtin(share,SgKey,Sg,_Subgoal,Type,Condvars) :- !, share_special_builtin(SgKey,Sg,Type,Condvars).
+special_builtin(share,SgKey,Sg,Subgoal,Type,Condvars) :- !, share_special_builtin(SgKey,Sg,Subgoal,Type,Condvars).
 success_builtin(share,Type,Sv_uns,Condvars,_HvFv_u,Call,Succ) :- !, share_success_builtin(Type,Sv_uns,Condvars,Call,Succ).
 call_to_success_builtin(share,SgKey,Sg,Sv,Call,Proj,Succ) :- !, share_call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,Succ).
 input_interface(share,InputUser,Kind,Struct0,Struct1) :- !, share_input_interface(InputUser,Kind,Struct0,Struct1).
@@ -433,7 +436,7 @@ extend(shfr,_Sg,Prime,Sv,Call,Succ) :- !, shfr_extend(Prime,Sv,Call,Succ).
 less_or_equal(shfr,ASub0,ASub1) :- !, shfr_less_or_equal(ASub0,ASub1).
 glb(shfr,ASub0,ASub1,ASub) :- !, shfr_glb(ASub0,ASub1,ASub).
 call_to_success_fact(shfr,Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ) :- !, shfr_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ).
-special_builtin(shfr,SgKey,Sg,_Subgoal,Type,Condvars) :- !, shfr_special_builtin(SgKey,Sg,Type,Condvars).
+special_builtin(shfr,SgKey,Sg,Subgoal,Type,Condvars) :- !, shfr_special_builtin(SgKey,Sg,Subgoal,Type,Condvars).
 success_builtin(shfr,Type,Sv_uns,Condvars,_HvFv_u,Call,Succ) :- !, shfr_success_builtin(Type,Sv_uns,Condvars,Call,Succ).
 call_to_success_builtin(shfr,SgKey,Sg,Sv,Call,Proj,Succ) :- !, shfr_call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,Succ).
 obtain_info(shfr,Prop,Vars,ASub,Info) :- !, shfr_obtain(Prop,Vars,ASub,Info).
@@ -474,7 +477,7 @@ extend(shfrnv,_Sg,Prime,Sv,Call,Succ) :- !, shfrnv_extend(Prime,Sv,Call,Succ).
 less_or_equal(shfrnv,ASub0,ASub1) :- !, shfrnv_less_or_equal(ASub0,ASub1).
 glb(shfrnv,ASub0,ASub1,ASub) :- !, shfrnv_glb(ASub0,ASub1,ASub).
 call_to_success_fact(shfrnv,Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ) :- !, shfrnv_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ).
-special_builtin(shfrnv,SgKey,Sg,_Subgoal,Type,Condvars) :- !, shfr_special_builtin(SgKey,Sg,Type,Condvars).
+special_builtin(shfrnv,SgKey,Sg,Subgoal,Type,Condvars) :- !, shfr_special_builtin(SgKey,Sg,Subgoal,Type,Condvars).
 success_builtin(shfrnv,Type,Sv_uns,Condvars,_HvFv_u,Call,Succ) :- !, shfrnv_success_builtin(Type,Sv_uns,Condvars,Call,Succ).
 call_to_success_builtin(shfrnv,SgKey,Sg,Sv,Call,Proj,Succ) :- !, shfrnv_call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,Succ).
 input_interface(shfrnv,InputUser,Kind,Struct0,Struct1) :- !, shfrnv_input_interface(InputUser,Kind,Struct0,Struct1).
@@ -555,7 +558,7 @@ extend(shareson,_Sg,Prime,Sv,Call,Succ) :- !, shareson_extend(Prime,Sv,Call,Succ
 less_or_equal(shareson,ASub0,ASub1) :- !, shareson_less_or_equal(ASub0,ASub1).
 glb(shareson,ASub0,ASub1,ASub) :- !, shareson_glb(ASub0,ASub1,ASub).
 call_to_success_fact(shareson,Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ) :- !, shareson_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ).
-special_builtin(shareson,SgKey,Sg,_Subgoal,(TypeSon,TypeSh),(CondSon,CondSh)) :- !, share_special_builtin(SgKey,Sg,TypeSh,CondSh), son_special_builtin(SgKey,Sg,TypeSon,CondSon).
+special_builtin(shareson,SgKey,Sg,Subgoal,Type,Condvars) :- !, shareson_special_builtin(SgKey,Sg,Subgoal,Type,Condvars).
 body_succ_builtin(shareson,Type,Sg,Condvs,Sv,HvFv_u,Call,Proj,Succ) :- !, shareson_body_succ_builtin(Type,Sg,Condvs,Sv,HvFv_u,Call,Proj,Succ).
 input_interface(shareson,InputUser,Kind,Struct0,Struct1) :- !, shareson_input_interface(InputUser,Kind,Struct0,Struct1).
 input_user_interface(shareson,InputUser,Qv,ASub,_Sg,_MaybeCallASub) :- !, shareson_input_user_interface(InputUser,Qv,ASub).
@@ -565,6 +568,9 @@ unknown_entry(shareson,Sg,Qv,Call) :- !, shareson_unknown_entry(Sg,Qv,Call).
 empty_entry(shareson,Sg,Qv,Call) :- !, shareson_empty_entry(Sg,Qv,Call).
 %
 :- use_module(ciaopp(plai/plai_errors), [compiler_error/1]).
+shareson_special_builtin(SgKey,Sg,Subgoal,(TypeSon,TypeSh),(CondSon,CondSh)) :-
+	share_special_builtin(SgKey,Sg,Subgoal,TypeSh,CondSh),
+	son_special_builtin(SgKey,Sg,Subgoal,TypeSon,CondSon).
 % TODO: These do have special(_), special care (old comment)
 shareson_body_succ_builtin((TSon,TSh),Sg,(CSon,CSh),Sv,HvFv,Call,Proj,Succ) :- !,
 	Call=(Call_son,Call_sh),
@@ -587,7 +593,7 @@ extend(shfrson,_Sg,Prime,Sv,Call,Succ) :- !, shfrson_extend(Prime,Sv,Call,Succ).
 less_or_equal(shfrson,ASub0,ASub1) :- !, shfrson_less_or_equal(ASub0,ASub1).
 glb(shfrson,ASub0,ASub1,ASub) :- !, shfrson_glb(ASub0,ASub1,ASub).
 call_to_success_fact(shfrson,Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ) :- !, shfrson_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ).
-special_builtin(shfrson,SgKey,Sg,_Subgoal,(TypeSon,TypeSh),(CondSon,CondSh)) :- !, shfr_special_builtin(SgKey,Sg,TypeSh,CondSh), son_special_builtin(SgKey,Sg,TypeSon,CondSon).
+special_builtin(shfrson,SgKey,Sg,Subgoal,Type,Condvars) :- !, shfrson_special_builtin(SgKey,Sg,Subgoal,Type,Condvars).
 body_succ_builtin(shfrson,Type,Sg,Condvs,Sv,HvFv_u,Call,Proj,Succ) :- !, shfrson_body_succ_builtin(Type,Sg,Condvs,Sv,HvFv_u,Call,Proj,Succ).
 input_interface(shfrson,InputUser,Kind,Struct0,Struct1) :- !, shfrson_input_interface(InputUser,Kind,Struct0,Struct1).
 input_user_interface(shfrson,InputUser,Qv,ASub,_Sg,_MaybeCallASub) :- !, shfrson_input_user_interface(InputUser,Qv,ASub).
@@ -597,6 +603,9 @@ unknown_entry(shfrson,Sg,Qv,Call) :- !, shfrson_unknown_entry(Sg,Qv,Call).
 empty_entry(shfrson,Sg,Qv,Call) :- !, shfrson_empty_entry(Sg,Qv,Call).
 %
 :- use_module(ciaopp(plai/plai_errors), [compiler_error/1]).
+shfrson_special_builtin(SgKey,Sg,Subgoal,(TypeSon,TypeSh),(CondSon,CondSh)) :-
+	shfr_special_builtin(SgKey,Sg,Subgoal,TypeSh,CondSh),
+	son_special_builtin(SgKey,Sg,Subgoal,TypeSon,CondSon).
 % TODO: These do have special(_), special care (old comment)
 shfrson_body_succ_builtin((TSon,TSh),Sg,(CSon,CSh),Sv,HvFv,Call,Proj,Succ) :- !,
 	Call=(Call_son,Call_sh),
@@ -619,7 +628,7 @@ extend(son,_Sg,Prime,Sv,Call,Succ) :- !, son_extend(Prime,Sv,Call,Succ).
 less_or_equal(son,ASub0,ASub1) :- !, son_less_or_equal(ASub0,ASub1).
 glb(son,ASub0,ASub1,ASub) :- !, son_glb(ASub0,ASub1,ASub).
 call_to_success_fact(son,Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ) :- !, son_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ).
-special_builtin(son,SgKey,Sg,_Subgoal,Type,Condvars) :- !, son_special_builtin(SgKey,Sg,Type,Condvars).
+special_builtin(son,SgKey,Sg,Subgoal,Type,Condvars) :- !, son_special_builtin(SgKey,Sg,Subgoal,Type,Condvars).
 success_builtin(son,Type,Sv_uns,Condvars,_HvFv_u,Call,Succ) :- !, son_success_builtin(Type,Sv_uns,Condvars,Call,Succ).
 call_to_success_builtin(son,SgKey,Sg,Sv,Call,Proj,Succ) :- !, son_call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,Succ).
 input_interface(son,InputUser,Kind,Struct0,Struct1) :- !, son_input_interface(InputUser,Kind,Struct0,Struct1).
@@ -644,7 +653,7 @@ extend(share_amgu,_Sg,Prime,Sv,Call,Succ) :- !, share_extend(Prime,Sv,Call,Succ)
 less_or_equal(share_amgu,ASub0,ASub1) :- !, share_less_or_equal(ASub0,ASub1).
 glb(share_amgu,ASub0,ASub1,ASub) :- !, share_glb(ASub0,ASub1,ASub).
 call_to_success_fact(share_amgu,Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ) :- !, share_amgu_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ).
-special_builtin(share_amgu,SgKey,Sg,_Subgoal,Type,Condvars) :- !, share_amgu_special_builtin(SgKey,Sg,Type,Condvars).
+special_builtin(share_amgu,SgKey,Sg,Subgoal,Type,Condvars) :- !, share_amgu_special_builtin(SgKey,Sg,Subgoal,Type,Condvars).
 success_builtin(share_amgu,Type,Sv_uns,Condvars,_HvFv_u,Call,Succ) :- !, share_amgu_success_builtin(Type,Sv_uns,Condvars,Call,Succ).
 call_to_success_builtin(share_amgu,SgKey,Sg,Sv,Call,Proj,Succ) :- !, share_amgu_call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,Succ).
 input_interface(share_amgu,InputUser,Kind,Struct0,Struct1) :- !, share_input_interface(InputUser,Kind,Struct0,Struct1).
@@ -668,7 +677,7 @@ extend(sharefree_amgu,_Sg,Prime,Sv,Call,Succ) :- !, shfr_extend(Prime,Sv,Call,Su
 less_or_equal(sharefree_amgu,ASub0,ASub1) :- !, shfr_less_or_equal(ASub0,ASub1).
 glb(sharefree_amgu,ASub0,ASub1,ASub) :- !, shfr_glb(ASub0,ASub1,ASub).
 call_to_success_fact(sharefree_amgu,Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ) :- !, sharefree_amgu_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ).
-special_builtin(sharefree_amgu,SgKey,Sg,_Subgoal,Type,Condvars) :- !, sharefree_amgu_special_builtin(SgKey,Sg,Type,Condvars).
+special_builtin(sharefree_amgu,SgKey,Sg,Subgoal,Type,Condvars) :- !, sharefree_amgu_special_builtin(SgKey,Sg,Subgoal,Type,Condvars).
 success_builtin(sharefree_amgu,Type,Sv_uns,Condvars,_HvFv_u,Call,Succ) :- !, sharefree_amgu_success_builtin(Type,Sv_uns,Condvars,Call,Succ).
 call_to_success_builtin(sharefree_amgu,SgKey,Sg,Sv,Call,Proj,Succ) :- !, sharefree_amgu_call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,Succ).
 obtain_info(sharefree_amgu,Prop,Vars,ASub,Info) :- !, shfr_obtain(Prop,Vars,ASub,Info).
@@ -692,7 +701,7 @@ extend(shfrlin_amgu,_Sg,Prime,Sv,Call,Succ) :- !, shfrlin_extend(Prime,Sv,Call,S
 less_or_equal(shfrlin_amgu,ASub0,ASub1) :- !, shfrlin_less_or_equal(ASub0,ASub1).
 glb(shfrlin_amgu,ASub0,ASub1,ASub) :- !, shfrlin_glb(ASub0,ASub1,ASub).
 call_to_success_fact(shfrlin_amgu,Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ) :- !, shfrlin_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ).
-special_builtin(shfrlin_amgu,SgKey,Sg,_Subgoal,Type,Condvars) :- !, shfrlin_special_builtin(SgKey,Sg,Type,Condvars).
+special_builtin(shfrlin_amgu,SgKey,Sg,Subgoal,Type,Condvars) :- !, shfrlin_special_builtin(SgKey,Sg,Subgoal,Type,Condvars).
 success_builtin(shfrlin_amgu,Type,Sv_uns,Condvars,_HvFv_u,Call,Succ) :- !, shfrlin_success_builtin(Type,Sv_uns,Condvars,Call,Succ).
 call_to_success_builtin(shfrlin_amgu,SgKey,Sg,Sv,Call,Proj,Succ) :- !, shfrlin_call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,Succ).
 obtain_info(shfrlin_amgu,Prop,Vars,(Sh,Fr,_Lin),Info) :- !, shfr_obtain(Prop,Vars,(Sh,Fr),Info).
@@ -718,7 +727,7 @@ less_or_equal(share_clique,ASub0,ASub1) :- !, share_clique_less_or_equal(ASub0,A
 glb(share_clique,ASub0,ASub1,ASub) :- !, share_clique_glb(ASub0,ASub1,ASub).
 eliminate_equivalent(share_clique,TmpLSucc,LSucc) :- !, share_clique_eliminate_equivalent(TmpLSucc,LSucc).
 call_to_success_fact(share_clique,Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ) :- !, share_clique_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ).
-special_builtin(share_clique,SgKey,Sg,_Subgoal,Type,Condvars) :- !, share_clique_special_builtin(SgKey,Sg,Type,Condvars).
+special_builtin(share_clique,SgKey,Sg,Subgoal,Type,Condvars) :- !, share_clique_special_builtin(SgKey,Sg,Subgoal,Type,Condvars).
 success_builtin(share_clique,Type,Sv_uns,Condvars,_HvFv_u,Call,Succ) :- !, share_clique_success_builtin(Type,Sv_uns,Condvars,Call,Succ).
 call_to_success_builtin(share_clique,SgKey,Sg,Sv,Call,Proj,Succ) :- !, share_clique_call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,Succ).
 input_interface(share_clique,InputUser,Kind,Struct0,Struct1) :- !, share_clique_input_interface(InputUser,Kind,Struct0,Struct1).
@@ -742,7 +751,7 @@ less_or_equal(share_clique_1,ASub0,ASub1) :- !, share_clique_1_less_or_equal(ASu
 glb(share_clique_1,ASub0,ASub1,ASub) :- !, share_clique_1_glb(ASub0,ASub1,ASub).
 eliminate_equivalent(share_clique_1,TmpLSucc,LSucc) :- !, share_clique_1_eliminate_equivalent(TmpLSucc,LSucc).
 call_to_success_fact(share_clique_1,Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ) :- !, share_clique_1_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ).
-special_builtin(share_clique_1,SgKey,Sg,_Subgoal,Type,Condvars) :- !, share_clique_special_builtin(SgKey,Sg,Type,Condvars).
+special_builtin(share_clique_1,SgKey,Sg,Subgoal,Type,Condvars) :- !, share_clique_special_builtin(SgKey,Sg,Subgoal,Type,Condvars).
 success_builtin(share_clique_1,Type,Sv_uns,Condvars,_HvFv_u,Call,Succ) :- !, share_clique_1_success_builtin(Type,Sv_uns,Condvars,Call,Succ).
 call_to_success_builtin(share_clique_1,SgKey,Sg,Sv,Call,Proj,Succ) :- !, share_clique_1_call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,Succ).
 input_interface(share_clique_1,InputUser,Kind,Struct0,Struct1) :- !, share_clique_1_input_interface(InputUser,Kind,Struct0,Struct1).
@@ -768,7 +777,7 @@ less_or_equal(sharefree_clique,ASub0,ASub1) :- !, sharefree_clique_less_or_equal
 glb(sharefree_clique,ASub0,ASub1,ASub) :- !, sharefree_clique_glb(ASub0,ASub1,ASub).
 eliminate_equivalent(sharefree_clique,TmpLSucc,LSucc) :- !, sharefree_clique_eliminate_equivalent(TmpLSucc,LSucc).
 call_to_success_fact(sharefree_clique,Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ) :- !, sharefree_clique_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ).
-special_builtin(sharefree_clique,SgKey,Sg,_Subgoal,Type,Condvars) :- !, sharefree_clique_special_builtin(SgKey,Sg,Type,Condvars).
+special_builtin(sharefree_clique,SgKey,Sg,Subgoal,Type,Condvars) :- !, sharefree_clique_special_builtin(SgKey,Sg,Subgoal,Type,Condvars).
 success_builtin(sharefree_clique,Type,Sv_uns,Condvars,_HvFv_u,Call,Succ) :- !, sharefree_clique_success_builtin(Type,Sv_uns,Condvars,Call,Succ).
 call_to_success_builtin(sharefree_clique,SgKey,Sg,Sv,Call,Proj,Succ) :- !, sharefree_clique_call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,Succ).
 obtain_info(sharefree_clique,Prop,Vars,ASub,Info) :- !, shfr_obtain(Prop,Vars,ASub,Info).
@@ -793,7 +802,7 @@ less_or_equal(share_clique_def,ASub0,ASub1) :- !, share_clique_def_less_or_equal
 glb(share_clique_def,ASub0,ASub1,ASub) :- !, share_clique_def_glb(ASub0,ASub1,ASub).
 eliminate_equivalent(share_clique_def,TmpLSucc,LSucc) :- !, share_clique_def_eliminate_equivalent(TmpLSucc,LSucc).
 call_to_success_fact(share_clique_def,Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ) :- !, share_clique_def_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ).
-special_builtin(share_clique_def,SgKey,Sg,_Subgoal,Type,Condvars) :- !, share_clique_def_special_builtin(SgKey,Sg,Type,Condvars).
+special_builtin(share_clique_def,SgKey,Sg,Subgoal,Type,Condvars) :- !, share_clique_def_special_builtin(SgKey,Sg,Subgoal,Type,Condvars).
 body_succ_builtin(share_clique_def,Type,Sg,Condvs,Sv,HvFv_u,Call,Proj,Succ) :- !, share_clique_def_body_succ_builtin(Type,Sg,Condvs,Sv,HvFv_u,Call,Proj,Succ).
 input_interface(share_clique_def,InputUser,Kind,Struct0,Struct1) :- !, share_clique_input_interface(InputUser,Kind,Struct0,Struct1).
 input_user_interface(share_clique_def,InputUser,Qv,ASub,_Sg,_MaybeCallASub) :- !, share_clique_def_input_user_interface(InputUser,Qv,ASub).
@@ -832,7 +841,7 @@ less_or_equal(sharefree_clique_def,ASub0,ASub1) :- !, sharefree_clique_def_less_
 glb(sharefree_clique_def,ASub0,ASub1,ASub) :- !, sharefree_clique_def_glb(ASub0,ASub1,ASub).
 eliminate_equivalent(sharefree_clique_def,TmpLSucc,LSucc) :- !, sharefree_clique_def_eliminate_equivalent(TmpLSucc,LSucc).
 call_to_success_fact(sharefree_clique_def,Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ) :- !, sharefree_clique_def_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ).
-special_builtin(sharefree_clique_def,SgKey,Sg,_Subgoal,Type,Condvars) :- !, sharefree_clique_def_special_builtin(SgKey,Sg,Type,Condvars).
+special_builtin(sharefree_clique_def,SgKey,Sg,Subgoal,Type,Condvars) :- !, sharefree_clique_def_special_builtin(SgKey,Sg,Subgoal,Type,Condvars).
 body_succ_builtin(sharefree_clique_def,Type,Sg,Condvs,Sv,HvFv_u,Call,Proj,Succ) :- !, sharefree_clique_def_body_succ_builtin(Type,Sg,Condvs,Sv,HvFv_u,Call,Proj,Succ).
 input_interface(sharefree_clique_def,InputUser,Kind,Struct0,Struct1) :- !, sharefree_clique_input_interface(InputUser,Kind,Struct0,Struct1).
 input_user_interface(sharefree_clique_def,InputUser,Qv,ASub,_Sg,_MaybeCallASub) :- !, sharefree_clique_def_input_user_interface(InputUser,Qv,ASub).
@@ -870,7 +879,7 @@ compute_lub(bshare,ListAsub,LubASub) :- !, bshare_compute_lub(ListAsub,LubASub).
 identical_abstract(bshare,ASub1,ASub2) :- !, bshare_identical_abstract(ASub1,ASub2).
 abs_sort(bshare,ASub,ASub_s) :- !, bshare_sort(ASub,ASub_s).
 call_to_success_fact(bshare,Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ) :- !, bshare_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ).
-special_builtin(bshare,SgKey,Sg,_Subgoal,Type,Condvars) :- !, bshare_special_builtin(SgKey,Sg,Type,Condvars).
+special_builtin(bshare,SgKey,Sg,Subgoal,Type,Condvars) :- !, bshare_special_builtin(SgKey,Sg,Subgoal,Type,Condvars).
 success_builtin(bshare,Type,Sv_uns,Condvars,_HvFv_u,Call,Succ) :- !, bshare_success_builtin(Type,Sv_uns,Condvars,Call,Succ).
 call_to_success_builtin(bshare,SgKey,Sg,Sv,Call,Proj,Succ) :- !, bshare_call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,Succ).
 asub_to_native(bshare,ASub,Qv,OutFlag,OutputUser,Comps) :- !, bshare_asub_to_native(ASub,Qv,OutFlag,OutputUser,Comps).
@@ -894,7 +903,7 @@ less_or_equal(aeq,ASub0,ASub1) :- !, aeq_less_or_equal(ASub0,ASub1).
 glb(aeq,ASub0,ASub1,ASub) :- !, aeq_glb(ASub0,ASub1,ASub).
 eliminate_equivalent(aeq,TmpLSucc,LSucc) :- !, aeq_eliminate_equivalent(TmpLSucc,LSucc).
 call_to_success_fact(aeq,Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ) :- !, aeq_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ).
-special_builtin(aeq,Sg_key,Sg,_Subgoal,Type,Condvars) :- !, aeq_special_builtin(Sg_key,Sg,Type,Condvars).
+special_builtin(aeq,Sg_key,Sg,Subgoal,Type,Condvars) :- !, aeq_special_builtin(Sg_key,Sg,Subgoal,Type,Condvars).
 success_builtin(aeq,Type,Sv_uns,Condvars,_HvFv_u,Call,Succ) :- !, aeq_success_builtin(Type,Sv_uns,Condvars,Call,Succ).
 input_interface(aeq,InputUser,Kind,Struct0,Struct1) :- !, aeq_input_interface(InputUser,Kind,Struct0,Struct1).
 input_user_interface(aeq,InputUser,Qv,ASub,_Sg,_MaybeCallASub) :- !, aeq_input_user_interface(InputUser,Qv,ASub).
@@ -940,7 +949,7 @@ glb(depth,ASub0,ASub1,ASub) :- !, depthk_glb(ASub0,ASub1,ASub).
 eliminate_equivalent(depth,TmpLSucc,LSucc) :- !, depthk_eliminate_equivalent(TmpLSucc,LSucc).
 abs_subset(depth,LASub1,LASub2) :- !, depthk_abs_subset(LASub1,LASub2).
 call_to_success_fact(depth,Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ) :- !, depthk_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ).
-special_builtin(depth,SgKey,Sg,_Subgoal,Type,Condvars) :- !, depthk_special_builtin(SgKey,Sg,Type,Condvars).
+special_builtin(depth,SgKey,Sg,Subgoal,Type,Condvars) :- !, depthk_special_builtin(SgKey,Sg,Subgoal,Type,Condvars).
 success_builtin(depth,Type,Sv_uns,Condvars,_HvFv_u,Call,Succ) :- !, depthk_success_builtin(Type,Sv_uns,Condvars,Call,Succ).
 call_to_success_builtin(depth,_SgKey,Sg,Sv,Call,_Proj,Succ) :- !, depthk_call_to_success_builtin(Sg,Sv,Call,Succ).
 input_interface(depth,InputUser,Kind,Struct0,Struct1) :- !, depthk_input_interface(InputUser,Kind,Struct0,Struct1).
@@ -965,7 +974,7 @@ extend(path,_Sg,Prime,Sv,Call,Succ) :- !, path_extend(Prime,Sv,Call,Succ).
 less_or_equal(path,ASub0,ASub1) :- !, path_less_or_equal(ASub0,ASub1).
 glb(path,ASub0,ASub1,ASub) :- !, path_glb(ASub0,ASub1,ASub).
 call_to_success_fact(path,Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ) :- !, path_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ).
-special_builtin(path,SgKey,Sg,_Subgoal,Type,Condvars) :- !, path_special_builtin(SgKey,Sg,Type,Condvars).
+special_builtin(path,SgKey,Sg,Subgoal,Type,Condvars) :- !, path_special_builtin(SgKey,Sg,Subgoal,Type,Condvars).
 success_builtin(path,Type,Sv_uns,Condvars,_HvFv_u,Call,Succ) :- !, path_success_builtin(Type,Sv_uns,Condvars,Call,Succ).
 input_interface(path,InputUser,Kind,Struct0,Struct1) :- !, path_input_interface(InputUser,Kind,Struct0,Struct1).
 input_user_interface(path,InputUser,Qv,ASub,_Sg,_MaybeCallASub) :- !, path_input_user_interface(InputUser,Qv,ASub).
@@ -998,7 +1007,7 @@ extend(terms,_Sg,Prime,Sv,Call,Succ) :- !, terms_extend(Prime,Sv,Call,Succ).
 less_or_equal(terms,ASub0,ASub1) :- !, terms_less_or_equal(ASub0,ASub1).
 glb(terms,ASub0,ASub1,ASub) :- !, terms_glb(ASub0,ASub1,ASub).
 call_to_success_fact(terms,Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ) :- !, terms_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ).
-special_builtin(terms,SgKey,Sg,_Subgoal,Type,Condvars) :- !, terms_special_builtin(SgKey,Sg,Type,Condvars).
+special_builtin(terms,SgKey,Sg,Subgoal,Type,Condvars) :- !, terms_special_builtin(SgKey,Sg,Subgoal,Type,Condvars).
 success_builtin(terms,Type,Sv_uns,Condvars,_HvFv_u,Call,Succ) :- !, terms_success_builtin(Type,Sv_uns,Condvars,Call,Succ).
 call_to_success_builtin(terms,SgKey,Sg,Sv,Call,Proj,Succ) :- !, terms_call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,Succ).
 input_interface(terms,InputUser,Kind,Struct0,Struct1) :- !, terms_input_interface(InputUser,Kind,Struct0,Struct1).
@@ -1029,7 +1038,7 @@ extend(ptypes,_Sg,Prime,Sv,Call,Succ) :- !, terms_extend(Prime,Sv,Call,Succ).
 less_or_equal(ptypes,ASub0,ASub1) :- !, terms_less_or_equal(ASub0,ASub1).
 glb(ptypes,ASub0,ASub1,ASub) :- !, terms_glb(ASub0,ASub1,ASub).
 call_to_success_fact(ptypes,Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ) :- !, terms_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ).
-special_builtin(ptypes,SgKey,Sg,_Subgoal,Type,Condvars) :- !, terms_special_builtin(SgKey,Sg,Type,Condvars).
+special_builtin(ptypes,SgKey,Sg,Subgoal,Type,Condvars) :- !, terms_special_builtin(SgKey,Sg,Subgoal,Type,Condvars).
 success_builtin(ptypes,Type,Sv_uns,Condvars,_HvFv_u,Call,Succ) :- !, terms_success_builtin(Type,Sv_uns,Condvars,Call,Succ).
 call_to_success_builtin(ptypes,SgKey,Sg,Sv,Call,Proj,Succ) :- !, terms_call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,Succ).
 input_interface(ptypes,InputUser,Kind,Struct0,Struct1) :- !, terms_input_interface(InputUser,Kind,Struct0,Struct1).
@@ -1164,7 +1173,7 @@ extend(deftypes,_Sg,Prime,Sv,Call,Succ) :- !, deftypes_extend(Prime,Sv,Call,Succ
 less_or_equal(deftypes,ASub0,ASub1) :- !, deftypes_less_or_equal(ASub0,ASub1).
 glb(deftypes,ASub0,ASub1,ASub) :- !, deftypes_glb(ASub0,ASub1,ASub).
 call_to_success_fact(deftypes,Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ) :- !, deftypes_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ).
-special_builtin(deftypes,SgKey,Sg,_Subgoal,Type,Condvars) :- !, terms_special_builtin(SgKey,Sg,Type,Condvars).
+special_builtin(deftypes,SgKey,Sg,Subgoal,Type,Condvars) :- !, terms_special_builtin(SgKey,Sg,Subgoal,Type,Condvars).
 success_builtin(deftypes,Type,Sv_uns,Condvars,_HvFv_u,Call,Succ) :- !, terms_success_builtin(Type,Sv_uns,Condvars,Call,Succ).
 call_to_success_builtin(deftypes,SgKey,Sg,Sv,Call,Proj,Succ) :- !, deftypes_call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,Succ).
 input_interface(deftypes,InputUser,Kind,Struct0,Struct1) :- !, deftypes_input_interface(InputUser,Kind,Struct0,Struct1).
@@ -1229,7 +1238,7 @@ less_or_equal(polyhedra,ASub0,ASub1) :- !, polyhedra_less_or_equal(ASub0,ASub1).
 glb(polyhedra,ASub0,ASub1,ASub) :- !, polyhedra_glb(ASub0,ASub1,ASub).
 eliminate_equivalent(polyhedra,TmpLSucc,LSucc) :- !, polyhedra_sort(TmpLSucc,LSucc).
 call_to_success_fact(polyhedra,Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ) :- !, polyhedra_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ).
-special_builtin(polyhedra,SgKey,Sg,_Subgoal,Type,Condvars) :- !, polyhedra_special_builtin(SgKey,Sg,Type,Condvars).
+special_builtin(polyhedra,SgKey,Sg,Subgoal,Type,Condvars) :- !, polyhedra_special_builtin(SgKey,Sg,Subgoal,Type,Condvars).
 success_builtin(polyhedra,Type,Sv_uns,Condvars,_HvFv_u,Call,Succ) :- !, polyhedra_success_builtin(Type,Sv_uns,Condvars,Call,Succ).
 call_to_success_builtin(polyhedra,SgKey,Sg,Sv,Call,Proj,Succ) :- !, polyhedra_call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,Succ).
 input_interface(polyhedra,InputUser,Kind,Struct0,Struct1) :- !, polyhedra_input_interface(InputUser,Kind,Struct0,Struct1).
@@ -1258,7 +1267,7 @@ extend(java_nullity,_Sg,Prime,Sv,Call,Succ) :- !, java_nullity_extend(Prime,Sv,C
 less_or_equal(java_nullity,ASub0,ASub1) :- !, java_nullity_less_or_equal(ASub0,ASub1).
 glb(java_nullity,ASub0,ASub1,ASub) :- !, java_nullity_glb(ASub0,ASub1,ASub).
 call_to_success_fact(java_nullity,Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ) :- !, java_nullity_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ).
-special_builtin(java_nullity,SgKey,Sg,_Subgoal,Type,Condvars) :- !, java_nullity_special_builtin(SgKey,Sg,Type,Condvars).
+special_builtin(java_nullity,SgKey,Sg,Subgoal,Type,Condvars) :- !, java_nullity_special_builtin(SgKey,Sg,Subgoal,Type,Condvars).
 success_builtin(java_nullity,Type,Sv_uns,Condvars,_HvFv_u,Call,Succ) :- !, java_nullity_success_builtin(Type,Sv_uns,Condvars,Call,Succ).
 input_interface(java_nullity,InputUser,Kind,Struct0,Struct1) :- !, java_nullity_input_interface(InputUser,Kind,Struct0,Struct1).
 input_user_interface(java_nullity,InputUser,Qv,ASub,_Sg,_MaybeCallASub) :- !, java_nullity_input_user_interface(InputUser,Qv,ASub).
@@ -1280,7 +1289,7 @@ extend(oo_son,_Sg,Prime,Sv,Call,Succ) :- !, oo_son_extend(Prime,Sv,Call,Succ).
 less_or_equal(oo_son,ASub0,ASub1) :- !, oo_son_less_or_equal(ASub0,ASub1).
 glb(oo_son,ASub0,ASub1,ASub) :- !, oo_son_glb(ASub0,ASub1,ASub).
 call_to_success_fact(oo_son,Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ) :- !, oo_son_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ).
-special_builtin(oo_son,SgKey,Sg,_Subgoal,Type,Condvars) :- !, oo_son_special_builtin(SgKey,Sg,Type,Condvars).
+special_builtin(oo_son,SgKey,Sg,Subgoal,Type,Condvars) :- !, oo_son_special_builtin(SgKey,Sg,Subgoal,Type,Condvars).
 success_builtin(oo_son,Type,Sv_uns,Condvars,_HvFv_u,Call,Succ) :- !, oo_son_success_builtin(Type,Sv_uns,Condvars,Call,Succ).
 call_to_success_builtin(oo_son,SgKey,Sg,Sv,Call,Proj,Succ) :- !, oo_son_call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,Succ).
 input_interface(oo_son,InputUser,Kind,Struct0,Struct1) :- !, oo_son_input_interface(InputUser,Kind,Struct0,Struct1).
@@ -1305,7 +1314,7 @@ extend(oo_shnltau,_Sg,Prime,Sv,Call,Succ) :- !, oo_shnltau_extend(Prime,Sv,Call,
 less_or_equal(oo_shnltau,ASub0,ASub1) :- !, oo_shnltau_less_or_equal(ASub0,ASub1).
 glb(oo_shnltau,ASub0,ASub1,ASub) :- !, oo_shnltau_glb(ASub0,ASub1,ASub).
 call_to_success_fact(oo_shnltau,Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ) :- !, oo_shnltau_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ).
-special_builtin(oo_shnltau,SgKey,Sg,_Subgoal,Type,Condvars) :- !, oo_shnltau_special_builtin(SgKey,Sg,Type,Condvars).
+special_builtin(oo_shnltau,SgKey,Sg,Subgoal,Type,Condvars) :- !, oo_shnltau_special_builtin(SgKey,Sg,Subgoal,Type,Condvars).
 success_builtin(oo_shnltau,Type,Sv_uns,Condvars,_HvFv_u,Call,Succ) :- !, oo_shnltau_success_builtin(Type,Sv_uns,Condvars,Call,Succ).
 call_to_success_builtin(oo_shnltau,SgKey,Sg,Sv,Call,Proj,Succ) :- !, oo_shnltau_call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,Succ).
 input_interface(oo_shnltau,InputUser,Kind,Struct0,Struct1) :- !, oo_shnltau_input_interface(InputUser,Kind,Struct0,Struct1).
@@ -1330,7 +1339,7 @@ extend(oo_types,_Sg,Prime,Sv,Call,Succ) :- !, oo_types_extend(Prime,Sv,Call,Succ
 less_or_equal(oo_types,ASub0,ASub1) :- !, oo_types_less_or_equal(ASub0,ASub1).
 glb(oo_types,ASub0,ASub1,ASub) :- !, oo_types_glb(ASub0,ASub1,ASub).
 call_to_success_fact(oo_types,Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ) :- !, oo_types_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ).
-special_builtin(oo_types,SgKey,Sg,_Subgoal,Type,Condvars) :- !, oo_types_special_builtin(SgKey,Sg,Type,Condvars).
+special_builtin(oo_types,SgKey,Sg,Subgoal,Type,Condvars) :- !, oo_types_special_builtin(SgKey,Sg,Subgoal,Type,Condvars).
 success_builtin(oo_types,Type,Sv_uns,Condvars,_HvFv_u,Call,Succ) :- !, oo_types_success_builtin(Type,Sv_uns,Condvars,Call,Succ).
 call_to_success_builtin(oo_types,SgKey,Sg,Sv,Call,Proj,Succ) :- !, oo_types_call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,Succ).
 input_interface(oo_types,InputUser,Kind,Struct0,Struct1) :- !, oo_types_input_interface(InputUser,Kind,Struct0,Struct1).
@@ -1353,7 +1362,7 @@ extend(java_cha,_Sg,Prime,Sv,Call,Succ) :- !, java_cha_extend(Prime,Sv,Call,Succ
 less_or_equal(java_cha,ASub0,ASub1) :- !, java_cha_less_or_equal(ASub0,ASub1).
 glb(java_cha,ASub0,ASub1,ASub) :- !, java_cha_glb(ASub0,ASub1,ASub).
 call_to_success_fact(java_cha,Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ) :- !, java_cha_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ).
-special_builtin(java_cha,SgKey,Sg,_Subgoal,Type,Condvars) :- !, java_cha_special_builtin(SgKey,Sg,Type,Condvars).
+special_builtin(java_cha,SgKey,Sg,Subgoal,Type,Condvars) :- !, java_cha_special_builtin(SgKey,Sg,Subgoal,Type,Condvars).
 success_builtin(java_cha,Type,Sv_uns,Condvars,_HvFv_u,Call,Succ) :- !, java_cha_success_builtin(Type,Sv_uns,Condvars,Call,Succ).
 input_interface(java_cha,InputUser,Kind,Struct0,Struct1) :- !, java_cha_input_interface(InputUser,Kind,Struct0,Struct1).
 input_user_interface(java_cha,InputUser,Qv,ASub,_Sg,_MaybeCallASub) :- !, java_cha_input_user_interface(InputUser,Qv,ASub).
@@ -1384,7 +1393,7 @@ less_or_equal(nf,ASub0,ASub1) :- !, nf_less_or_equal(ASub0,ASub1).
 glb(nf,ASub0,ASub1,ASub) :- !, nf_glb(ASub0,ASub1,ASub).
 eliminate_equivalent(nf,TmpLSucc,LSucc) :- !, nf_eliminate_equivalent(TmpLSucc,LSucc).
 call_to_success_fact(nf,Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ) :- !, nf_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ).
-special_builtin(nf,SgKey,Sg,_Subgoal,Type,Condvars) :- !, nf_special_builtin(SgKey,Sg,Type,Condvars).
+special_builtin(nf,SgKey,Sg,Subgoal,Type,Condvars) :- !, nf_special_builtin(SgKey,Sg,Subgoal,Type,Condvars).
 combined_special_builtin(nf,SgKey,Domains) :- !, nf_combined_special_builtin(SgKey,Domains).
 split_combined_domain(nf,ASub,ASubs,Doms) :- !, nf_split_combined_domain(ASub,ASubs,Doms).
 success_builtin(nf,Type,Sv_uns,Condvars,_HvFv_u,Call,Succ) :- !, nf_success_builtin(Type,Sv_uns,Condvars,Call,Succ).
@@ -1433,7 +1442,7 @@ less_or_equal(det,ASub0,ASub1) :- !, det_less_or_equal(ASub0,ASub1).
 glb(det,ASub0,ASub1,ASub) :- !, det_glb(ASub0,ASub1,ASub).
 eliminate_equivalent(det,TmpLSucc,LSucc) :- !, det_eliminate_equivalent(TmpLSucc,LSucc).
 call_to_success_fact(det,Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ) :- !, det_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ).
-special_builtin(det,SgKey,Sg,_Subgoal,Type,Condvars) :- !, det_special_builtin(SgKey,Sg,Type,Condvars).
+special_builtin(det,SgKey,Sg,Subgoal,Type,Condvars) :- !, det_special_builtin(SgKey,Sg,Subgoal,Type,Condvars).
 combined_special_builtin(det,SgKey,Domains) :- !, det_combined_special_builtin(SgKey,Domains).
 split_combined_domain(det,ASub,ASubs,Doms) :- !, det_split_combined_domain(ASub,ASubs,Doms).
 success_builtin(det,Type,Sv_uns,Condvars,_HvFv_u,Call,Succ) :- !, det_success_builtin(Type,Sv_uns,Condvars,Call,Succ).
@@ -1486,7 +1495,7 @@ less_or_equal(res_plai,ASub0,ASub1) :- !, res_plai_less_or_equal(ASub0,ASub1).
 glb(res_plai,ASub0,ASub1,ASub) :- !, res_plai_glb(ASub0,ASub1,ASub).
 eliminate_equivalent(res_plai,TmpLSucc,LSucc) :- !, res_plai_eliminate_equivalent(TmpLSucc,LSucc).
 call_to_success_fact(res_plai,Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ) :- !, res_plai_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ).
-special_builtin(res_plai,SgKey,Sg,_Subgoal,Type,Condvars) :- !, res_plai_special_builtin(SgKey,Sg,Type,Condvars).
+special_builtin(res_plai,SgKey,Sg,Subgoal,Type,Condvars) :- !, res_plai_special_builtin(SgKey,Sg,Subgoal,Type,Condvars).
 combined_special_builtin(res_plai,SgKey,Domains) :- !, res_plai_combined_special_builtin(SgKey,Domains).
 split_combined_domain(res_plai,ASub,ASubs,Doms) :- !, res_plai_split_combined_domain(ASub,ASubs,Doms).
 % success_builtin(res_plai,Type,Sv_uns,Condvars,_HvFv_u,Call,Succ) :- !, res_plai_success_builtin(Type,Sv_uns,Condvars,Call,Succ).
@@ -1533,7 +1542,7 @@ less_or_equal(res_plai_stprf,ASub0,ASub1) :- !, res_plai_stprf_less_or_equal(ASu
 glb(res_plai_stprf,ASub0,ASub1,ASub) :- !, res_plai_stprf_glb(ASub0,ASub1,ASub).
 eliminate_equivalent(res_plai_stprf,TmpLSucc,LSucc) :- !, res_plai_stprf_eliminate_equivalent(TmpLSucc,LSucc).
 call_to_success_fact(res_plai_stprf,Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ) :- !, res_plai_stprf_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ).
-special_builtin(res_plai_stprf,SgKey,Sg,_Subgoal,Type,Condvars) :- !, res_plai_stprf_special_builtin(SgKey,Sg,Type,Condvars).
+special_builtin(res_plai_stprf,SgKey,Sg,Subgoal,Type,Condvars) :- !, res_plai_stprf_special_builtin(SgKey,Sg,Subgoal,Type,Condvars).
 combined_special_builtin(res_plai_stprf,SgKey,Domains) :- !, res_plai_stprf_combined_special_builtin(SgKey,Domains).
 split_combined_domain(res_plai_stprf,ASub,ASubs,Doms) :- !, res_plai_stprf_split_combined_domain(ASub,ASubs,Doms).
 call_to_success_builtin(res_plai_stprf,SgKey,Sg,Sv,Call,Proj,Succ) :- !, res_plai_stprf_call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,Succ).
@@ -1579,7 +1588,7 @@ less_or_equal(sized_types,ASub0,ASub1) :- !, sized_types_less_or_equal(ASub0,ASu
 glb(sized_types,ASub0,ASub1,ASub) :- !, sized_types_glb(ASub0,ASub1,ASub).
 eliminate_equivalent(sized_types,TmpLSucc,LSucc) :- !, sized_types_eliminate_equivalent(TmpLSucc,LSucc).
 call_to_success_fact(sized_types,Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ) :- !, sized_types_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ).
-special_builtin(sized_types,SgKey,Sg,_Subgoal,Type,Condvars) :- !, sized_types_special_builtin(SgKey,Sg,Type,Condvars).
+special_builtin(sized_types,SgKey,Sg,Subgoal,Type,Condvars) :- !, sized_types_special_builtin(SgKey,Sg,Subgoal,Type,Condvars).
 combined_special_builtin(sized_types,SgKey,Domains) :- !, sized_types_combined_special_builtin(SgKey,Domains).
 split_combined_domain(sized_types,ASub,ASubs,Doms) :- !, sized_types_split_combined_domain(ASub,ASubs,Doms).
 call_to_success_builtin(sized_types,SgKey,Sg,Sv,Call,Proj,Succ) :- !, sized_types_call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,Succ).
