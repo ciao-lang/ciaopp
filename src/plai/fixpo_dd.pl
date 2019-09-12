@@ -607,7 +607,7 @@ query(AbsInt,QKey,Query,Qv,RFlag,N,Call0,Succ) :-
 query(_AbsInt,_QKey,Query,Qv,_RFlag,_N,_Call,_Succ):-
 % should never happen, but...
 	error_message("~q:~q SOMETHING HAS FAILED!~n",[Query,Qv]),
-	abort.
+	throw(bug).
 
 % --------------------------------------------------
 %%% Code added by IG
