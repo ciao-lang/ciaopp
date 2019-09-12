@@ -105,7 +105,8 @@
 :- use_module(ciaopp(p_unit/assrt_db), [
 	assertion_body/7,
 	assertion_read/9,
-	add_assertion_read/9]).
+	add_assertion_read/9,
+	pgm_assertion_read/9]).
 :- use_module(library(lists), [member/2]).
 :- use_module(engine(runtime_control), [module_split/3]).
 :- use_module(engine(internals), [module_concat/3]).
@@ -157,8 +158,7 @@ rewrite_clauses([clause(H,B):Key|Cs0], [D|Ds0], Cs, Ds) :-
 rewrite_clauses([C|Cs0], [D|Ds0], [C|Cs], [D|Ds]) :-
 	rewrite_clauses(Cs0, Ds0, Cs, Ds).
 
-:- use_module(ciaopp(p_unit/itf_base_db), []).
-:- import(itf_base_db, [defines/3, impl_defines/2]).
+:- use_module(ciaopp(p_unit/itf_base_db), [defines/3, impl_defines/2]).
 
 :- use_module(ciaopp(p_unit/clause_db), [source_clause/3]).
 
@@ -218,10 +218,6 @@ pred_needs_wrapper(N, A) :-
 	Status = check,
 	( Type = calls ; Type = success ),
 	!.
-
-% TODO: hack, export?
-:- import(assrt_db, [pgm_assertion_read/9]).
-% :- data pgm_assertion_read/9. 
 
 :- use_module(library(aggregates), [findall/3]).
 

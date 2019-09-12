@@ -17,12 +17,10 @@ and related memo_table data from analysis necessary for recomputing
 correctly analysis after removing clauses or modifying the answers of
 the analysis.").
 
-:- use_module(ciaopp(plai/re_analysis), []).
-:- import(re_analysis,  % TODO: fix me
-	[erase_previous_memo_tables_and_parents/4,
-	 erase_previous_parents_info/5,
-	 erase_last_memo_table/3
-	]).
+:- use_module(ciaopp(plai/re_analysis), [
+	erase_previous_memo_tables_and_parents/4,
+	erase_previous_parents_info/5,
+	erase_last_memo_table/3]).
 
 :- use_module(ciaopp(plai/tarjan), [get_recursivity_class/3]).
 

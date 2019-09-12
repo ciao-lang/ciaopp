@@ -164,6 +164,7 @@ regdata_set_mark(OldReg, Mark, NewReg) :-
 
 %% --------------------------------------------------------------------
 
+:- export(typedef/2).
 :- pred typedef(Module,TypeDef) :: atm * term
 # "Data predicate to locally store information about the types used in
   the registry of one or several modules. @var{Module} is the name of

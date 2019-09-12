@@ -35,11 +35,11 @@ according to the strategy defined.
 
 @end{itemize}").
 
-:- use_module(ciaopp(plai/fixpo_dd), [add_change/5, add_external_complete_change/6]).
-:- import(fixpo_dd, ['$change_list'/2, proj_to_prime/9, compute/9,
-        fixpoint_compute_change/9, proj_to_prime_r/8, proj_to_prime_nr/9]). % TODO: fix me
-:- use_module(ciaopp(plai/transform), [trans_clause/3, cleanup_trans_clauses/0]).
-:- import(transform, [determine_r_flag/3]). % TODO: fix me
+:- use_module(ciaopp(plai/fixpo_dd), [add_change/5, add_external_complete_change/6,
+	'$change_list'/2,
+	proj_to_prime/9, proj_to_prime_r/8, proj_to_prime_nr/9,
+	compute/9, fixpoint_compute_change/9]).
+:- use_module(ciaopp(plai/transform), [trans_clause/3, cleanup_trans_clauses/0, determine_r_flag/3]).
 :- use_module(ciaopp(plai/domains), [identical_proj/5, init_abstract_domain/2, abs_sort/3, identical_abstract/3]).
 :- use_module(ciaopp(plai/tarjan), [recursive_class/2, get_recursivity_class/3]).
 :- use_module(ciaopp(p_unit/program_keys),
@@ -57,8 +57,7 @@ according to the strategy defined.
 :- use_module(ciaopp(p_unit/assrt_db), [cleanup_assrt_db/0]).
 
 :- use_module(ciaopp(plai/plai_db)).
-:- use_module(ciaopp(plai), []). % Do not remove!! Low level imports below.
-:- import(plai, [topdown_analysis/3, mod_topdown_analysis/3, transform_clauses_/6]). % TODO: fix me
+:- use_module(ciaopp(plai), [topdown_analysis/3, mod_topdown_analysis/3]).
 
 :- use_module(engine(runtime_control), [module_split/3]).
 :- use_module(engine(messages_basic), [message/2]).
@@ -117,6 +116,7 @@ cl_from_clid(Clid, Cl) :-
 source_from_clid(Clid, Cl, D) :-
 	source_clause(Clid, Cl, D).
 
+%:- export(sources_from_clids/3).
 sources_from_clids([], [], []).
 sources_from_clids([Clid|Clids], [Cl:Clid|Cls], [D|Ds]) :-
 	source_from_clid(Clid, Cl, D),
@@ -630,8 +630,7 @@ restore_types_mod(Mod, Dict) :-
 	set_fact(restore_module(Mod)),
 	restore_auxiliary_info(enum_types,Dict).
 
-:- use_module(ciaopp(p_unit/p_abs), [curr_mod_entry/4]).
-:- import(p_abs, [typedef/2]). % TODO: fix me
+:- use_module(ciaopp(p_unit/p_abs), [curr_mod_entry/4, typedef/2]).
 
 :- data restore_module/1.
 

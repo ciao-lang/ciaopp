@@ -247,6 +247,7 @@ generate_trans_clauses(Cls,Ds,AbsInt,Ps) :-
 	recursive_classify(Cls,Sccs,Rs,Ps),
 	transform_clauses_(Cls,Ds,Rs,Ps,AbsInt).
 
+:- export(transform_clauses_/5).
 transform_clauses_(Cls,Ds,Rs,Ps,AbsInt):-
 	current_pp_flag(normalize, off), !,
 	transform_clauses(Cls,Ds,Rs,Ps,AbsInt).
@@ -254,6 +255,7 @@ transform_clauses_(Cls,Ds,Rs,Ps,AbsInt):-
 	normalize_args(Cls,Ds,NormCls,NormDs),
 	transform_clauses(NormCls,NormDs,Rs,Ps,AbsInt).
 
+:- export(topdown_analysis/3).
 :- if(defined(has_ciaopp_extra)).
 topdown_analysis(poly_spec,_AbsInt,_Ps):-!,
 	findall(Goal, entry_point(_AbsInt,Goal,_Gv,_Call,_Name), Goals),
@@ -411,6 +413,7 @@ do_mod_plai(Cls,Ds,Fixp,AbsInt,Time):-
 
 %------------------------------------------------------------------------%
 
+:- export(mod_topdown_analysis/3).
 mod_topdown_analysis(AbsInt,Fixp,Ps):-
 	setcounter(1,0),
 	get_entry_info(AbsInt,Goal,Call),

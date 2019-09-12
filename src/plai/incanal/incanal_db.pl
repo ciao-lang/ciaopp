@@ -30,12 +30,11 @@ incremental analysis").
 :- use_module(library(pathnames), [path_basename/2]).
 
 :- use_module(ciaopp(p_unit/clause_db), [cleanup_clause_db/0, source_clause/3]).
-:- use_module(ciaopp(p_unit/assrt_db), []).
-:- import(assrt_db, [pgm_assertion_read/9]). % TODO: fix me
+:- use_module(ciaopp(p_unit/assrt_db), [pgm_assertion_read/9]).
 :- use_module(ciaopp(p_unit/program_keys),
-        [decode_litkey/5, decode_clkey/4, decode_predkey/3, get_clkey/4]).
+        [decode_litkey/5, decode_clkey/4, decode_predkey/3, get_clkey/4,
+	 counter/3]).
 %:- use_module(ciaopp(p_unit/p_dump), [add_to_db/1]).
-:- import(program_keys, [counter/3]). % TODO: fix me
 :- use_module(ciaopp(plai/domains), [identical_proj/5, abs_sort/3]).
 :- use_module(ciaopp(plai/fixpo_ops), [fixpoint_id/1, fixp_id/1]).
 

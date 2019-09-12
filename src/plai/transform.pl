@@ -34,6 +34,7 @@
 %  Vars_u  : All the variables present in a clause (head and body)       %
 %------------------------------------------------------------------------%
 
+:- export(trans_clause_/6).
 :- data trans_clause_/6.
 % NOTE: clauses are transformed for a domain (and recomputed for each domain).
 
@@ -207,6 +208,7 @@ meta_info(G,A,Ps,AbsInt,Bodies,Data,NewG):-
 	A1 is A-1,
 	meta_info(G,A1,Ps,AbsInt,Bodies0,Data0,NewG).
 
+:- export(determine_r_flag/3).
 determine_r_flag(notarjan,_P,Rflag):-!,
 	Rflag = r. % if no tarjan done we have to assume recursive...
 determine_r_flag(Ps,P,Rflag):-

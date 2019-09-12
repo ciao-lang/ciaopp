@@ -40,6 +40,7 @@
 :- doc(bug, "singleton/1 is leaving choicepoints.").
 %------------------------------------------------------------------------%
 
+:- export('$change_list'/2).
 :- data '$change_list'/2.
 :- data computing_change/1.
 
@@ -158,6 +159,7 @@ init_fixpoint_(SgKey,Call,Proj,Sg,Sv,AbsInt,F,N,Id,Prime):-
 
 %-------------------------------------------------------------------------
 % [IG] add compute_clauses_lub (resources) and ready to merge with fixpo_plai
+:- export(proj_to_prime_nr/9).
 :- pred proj_to_prime_nr(+SgKey,+Sg,+Sv,+Call,+Proj,+AbsInt,+Clid,-ListPrime,+Id)
  : (atm(SgKey), list(Sv,var), atm(AbsInt), plai_db_id(Id))
  => (list(ListPrime)) + not_fails
@@ -186,6 +188,7 @@ proj_to_prime_nr(SgKey,_Sg,_Sv,_Call,_Proj,_AbsInt,ClId,Bot,_Id) :-
 	bottom(Bot), !, % TODO: fix, it should not leave choice points
 	inexistent(SgKey,ClId).
 
+:- export(proj_to_prime_r/8).
 :- pred proj_to_prime_r/8 + not_fails.
 proj_to_prime_r(SgKey,Sg,Sv,Call,Proj,AbsInt,Prime,Id) :-
 	bagof(X, X^(trans_clause(SgKey,nr,X)),Clauses), !,
@@ -193,6 +196,7 @@ proj_to_prime_r(SgKey,Sg,Sv,Call,Proj,AbsInt,Prime,Id) :-
 proj_to_prime_r(_SgKey,_Sg,_Sv,_Call,_Proj,_AbsInt,Bot,_Id):-
 	bottom(Bot), !. % TODO: fix, it should not leave choice points
 
+:- export(proj_to_prime/9).
 :- pred proj_to_prime(+Clauses,+SgKey,+Sg,+Sv,+Call,+Proj,+AbsInt,Prime,+Id)
         : (list(Clauses), atm(SgKey), list(Sv), atm(AbsInt)) + not_fails.
 proj_to_prime(Clauses,SgKey,Sg,Sv,Call,Proj,AbsInt,Prime,Id) :-
@@ -279,6 +283,7 @@ change_son_if_necessary(NewId,Key,NewN,Vars_u,Call,AbsInt):-
        decide_memo(AbsInt,Key,NewN,NewId,Vars_u,Call)).
 
 %------------------------------------------------------------------------
+:- export(compute/9).
 :- pred compute(+Clauses,+SgKey,+Sg,+Sv,+Proj,+AbsInt,+TempPrime,-Prime,+Id)
         : (atm(SgKey), list(Sv), atm(AbsInt), plai_db_id(Id))
         => nonvar(Prime) + not_fails
@@ -433,6 +438,7 @@ add_change_(C,Lit_Key,Literal,Parents,SCC,AbsInt):-
         ).
 
 %------------------------------------------------------------------------
+:- export(fixpoint_compute_change/9).
 :- pred fixpoint_compute_change(+Changes,+SgKey,+Sg,+Sv,+Proj,+AbsInt,+TempPrime,-Prime,+Id)
         : (atm(SgKey), list(Sv), atm(AbsInt), plai_db_id(Id))
         => nonvar(Prime) + not_fails

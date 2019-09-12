@@ -134,8 +134,7 @@ generated when transforming the code can be modified.
 :- use_module(ciaopp(analyze_driver), [clean_analysis_info/0]).
 :- use_module(ciaopp(preprocess_flags), [current_pp_flag/2, set_pp_flag/2]).
 :- use_module(ciaopp(p_unit/clause_db), [cleanup_clause_db/0]).
-:- use_module(ciaopp(plai/fixpo_dd), []).
-:- import(fixpo_dd, ['$change_list'/2]). % TODO: fix me
+:- use_module(ciaopp(plai/fixpo_dd), ['$change_list'/2]).
 :- use_module(typeslib(typeslib), [undoall_types/0]).
 
 % incanal
@@ -305,8 +304,7 @@ all_clauses_pred([Cl|Cls], F/A, PredCls, NCls) :-
 	),
 	all_clauses_pred(Cls, F/A, PredCls1, NCls1).
 
-:- use_module(ciaopp(p_unit/assrt_db), []).
-:- import(assrt_db, [pgm_assertion_read/9]).
+:- use_module(ciaopp(p_unit/assrt_db), [pgm_assertion_read/9]).
 
 :- pred assrts_diff(Assrts1, Assrts2, Diff) #"Computes the differences of
         assertions for each predicate separately".
@@ -605,7 +603,7 @@ same_body((!, B1), (!, B2), Vars, NVars) :-
 % Code for testing adding/removing clauses in incremental tarjan
 % (source transformations, without analysis)
 %
-% :- import(incanal_driver, [sources_from_clids/3]).
+% :- use_module(ciaopp(plain/incanal/incanal_driver), [sources_from_clids/3]).
 % % for testing adding in tarjan
 % :- export(inc_update_source_db/1).
 %

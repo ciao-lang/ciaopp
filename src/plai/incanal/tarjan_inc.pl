@@ -19,14 +19,14 @@
 	get_recursivity_class/3, init_depends/3, recursive_classes/1]).
 
 :- use_module(ciaopp(plai/transform),
-	[trans_clause/3, update_trans_clause_rflag/3, update_trans_clause/6]).
+	[trans_clause/3, update_trans_clause_rflag/3, update_trans_clause/6,
+	 trans_clause_/6]).
 :- use_module(ciaopp(p_unit/program_keys),
 	[decode_predkey/3, decode_clkey/4, decode_litkey/5, get_predkeys/2,
 	 get_predkey/3]).
 :- use_module(spec(s_simpspec), [make_atom/2]).
 :- use_module(ciaopp(plai/plai_db), [complete/7]).
-:- use_module(ciaopp(plai), []).
-:- import(plai, [transform_clauses_/5]). % TODO: fix me
+:- use_module(ciaopp(plai), [transform_clauses_/5]).
 
 :- use_module(ciaopp(p_unit/clause_db), [source_clause/3]).
 
@@ -141,8 +141,6 @@ previous_vertex([]).
 previous_predicates(Ps):-
 	current_fact(predicates(Ps)),!.
 previous_predicates([]).
-
-:- import(transform, [trans_clause_/6]).
 
 :- pred update_clauses_opt(Clauses, RC) : list(Clauses)
       #"@var{Clauses} we had stored previously may have changed due to

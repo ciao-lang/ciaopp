@@ -40,12 +40,10 @@
 
 % clauses
 :- use_module(ciaopp(p_unit/clause_db), [source_clause/3, cleanup_clause_db/0]).
-:- use_module(ciaopp(plai/transform), []).
-:- import(transform, [trans_clause_/6]). % TODO: fix me
+:- use_module(ciaopp(plai/transform), [trans_clause_/6]).
 
 % assertions
-:- use_module(ciaopp(p_unit/assrt_db), []).
-:- import(assrt_db, [pgm_assertion_read/9]). % TODO: fix me
+:- use_module(ciaopp(p_unit/assrt_db), [pgm_assertion_read/9]).
 :- use_module(ciaopp(plai/apply_assertions),
         [call_asr/5, success_asr/6]). % assertions translated to some domain
 
@@ -53,8 +51,7 @@
 :- use_module(ciaopp(plai/tarjan), [recursive_classes/1]).
 :- use_module(ciaopp(plai/incanal/tarjan_inc),
         [rec/1, vertexes/1, predicates/1, rec_preds/1, tarjan_data/1]).
-:- use_module(ciaopp(plai/fixpo_dd), []).
-:- import(fixpo_dd, ['$change_list'/2]). % TODO: fix me
+:- use_module(ciaopp(plai/fixpo_dd), ['$change_list'/2]).
 :- use_module(ciaopp(plai/incanal/incanal_db), [update_inc_clid/1, fixpoint_id_/2]).
 
 % TODO: make add_to_db multifile and split in the modules in which

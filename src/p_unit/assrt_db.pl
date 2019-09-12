@@ -64,6 +64,7 @@ assertion_read(Goal,M,Status,Type,Body,Dict,Source,LB,LE):-
 assertion_type(assertion_read(_,_,_,Type,_,_,_,_,_),Type).
 assertion_type(pgm_assertion_read(_,_,_,Type,_,_,_,_,_),Type).
 
+:- export(pgm_assertion_read/9).
 :- data pgm_assertion_read/9.
 :- data lib_assertion_read/9.
 

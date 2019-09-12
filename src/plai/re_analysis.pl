@@ -7,10 +7,10 @@
 %% 	  delete_old_info_annotation/2,
 	  renaming/3,
  	  update_ai_info_case/4,
-	  erase_previous_memo_tables_and_parents/4
+	  erase_previous_memo_tables_and_parents/4,
 %% %% for incanal experiments
-%% 	  erase_previous_parents_info/4,
-%% 	  erase_last_memo_table/2
+ 	  erase_previous_parents_info/5,
+ 	  erase_last_memo_table/3
 	],
 	[assertions, datafacts]).
 

@@ -66,8 +66,7 @@ to avoid recomputation), but it not implemented yet.").
 :- use_module(typeslib(typeslib), [show_types/0]).
 :- use_module(ciaopp(p_unit/p_abs), [registry_headers/2, registry/3]).
 :- use_module(ciaopp(plai), [generate_trans_clauses/4]).
-:- use_module(ciaopp(plai/fixpo_dd), []).
-:- import(fixpo_dd, ['$change_list'/2]).
+:- use_module(ciaopp(plai/fixpo_dd), ['$change_list'/2]).
 :- use_module(ciaopp(p_unit/program_keys),
 	[decode_litkey/5, decode_clkey/4, get_predkey/3]).
 :- use_module(spec(s_simpspec), [make_atom/2]).
@@ -162,8 +161,7 @@ show_dep_list_([E|Es]) :-
         format(user,' ~w, ', [E]),
         show_dep_list_(Es).
 
-:- use_module(ciaopp(p_unit/p_abs), []).
-:- import(p_abs, [typedef/2]).
+:- use_module(ciaopp(p_unit/p_abs), [typedef/2]).
 
 :- pred show_global_answer_table(AbsInt) #"Shows de global answer
 	table for modular analysis with domain @var{AbsInt}".

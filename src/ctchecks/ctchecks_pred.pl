@@ -50,6 +50,7 @@
 :- doc(bug,"5. Compatibility properties are not considered at all.").
 
 %-------------------------------------------------------------------
+:- export(decide_get_info/4).
 decide_get_info(none,_Key,_Goal,[]):-!.
 % set of completes
 decide_get_info(AbsInt,Key,MGoal,Completes):-
@@ -289,6 +290,7 @@ abs_exec_complete_call(Goal, Call, AbsInt,
 	reduce_compl(SingleStatus, Status0, Status).
 
 %--------------------------------------------------------------------------------
+:- export(abs_exec_one_assertion/6).
 abs_exec_one_assertion(_AbsInt, [], A, _Key, A, check) :- !.
 abs_exec_one_assertion(AbsInt, Cmpls, A, _Key, NA, Status) :-
 	A = as${status=>check, type=>success, head=>Goal, call=>Call, succ=>Success},

@@ -206,6 +206,7 @@ literal_ppkey(!).
 % ----------------------------------------------------------------------
 % Key state
 
+:- export(counter/3).
 :- data counter/3.
 :- data decode_clkey_/4.
 
