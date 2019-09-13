@@ -694,16 +694,16 @@ share_asub_to_native(Succ,Qv,_OutFlag,Info,[]):-
 	if_not_nil(Gv,ground(Gv),Info0,[]).
 
 %------------------------------------------------------------------------%
-% share_input_user_interface(+,+,-)                                      %
-% share_input_user_interface(InputUser,Qv,ASub)                          %
+% share_input_user_interface(+,+,-,+,+)                                  %
+% share_input_user_interface(InputUser,Qv,ASub,Sg,MaybeCallASub)         %
 % Obtaining the abstract substitution for Sharing from the user supplied %
 % information just consists in taking the mshare(Sharing) element of     %
 % InputUser and sorting it. If there is no such element, get the "top"   %
 % sharing for the variables involved.                                    %
 %------------------------------------------------------------------------%
 
-:- export(share_input_user_interface/3).  
-share_input_user_interface((Gv0,Sh0,Indep0),Qv,Call):-
+:- export(share_input_user_interface/5).  
+share_input_user_interface((Gv0,Sh0,Indep0),Qv,Call,_Sg,_MaybeCallASub):-
 	may_be_var(Gv0,Gv),
 	may_be_var(Sh0,ASub0),
 	may_be_var(Indep0,Indep),

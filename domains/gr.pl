@@ -14,7 +14,7 @@
 	gr_success_builtin/5,
 	gr_call_to_success_builtin/6,
 	gr_input_interface/4,
-	gr_input_user_interface/3,
+	gr_input_user_interface/5,
 	gr_asub_to_native/5,
 	%gr_output_interface/2,
 	gr_unknown_call/4,
@@ -920,15 +920,15 @@ gr_call_to_success_builtin('keysort/2',keysort(X,Y),Sv,Call,Proj,Succ):-
         gr_call_to_success_builtin('sort/2',sort(X,Y),Sv,Call,Proj,Succ).
 
 %------------------------------------------------------------------------%
-% gr_input_user_interface(+,+,-)                                         %
-% gr_input_user_interface(InputUser,Qv,ASub)                             %
+% gr_input_user_interface(+,+,-,+,+)                                     %
+% gr_input_user_interface(InputUser,Qv,ASub,Sg,MaybeCallASub)            %
 % Obtaining the abstract substitution for gr from the user supplied      %
 %------------------------------------------------------------------------%
 
-:- pred gr_input_user_interface(+InputUser,+Qv,+ASub): term * list * absu # 
+:- pred gr_input_user_interface(+InputUser,+Qv,+ASub,+Sg,+MaybeCallASub): term * list * absu * term * term # 
 "Obtains the abstract substitution for gr from the native properties found
 in the user supplied info.". 
-gr_input_user_interface((Gv_u,Ng_u),Qv,ASub):-
+gr_input_user_interface((Gv_u,Ng_u),Qv,ASub,_Sg,_MaybeCallASub):-
 	may_be_var(Gv_u,Gv),
 	may_be_var(Ng_u,Ng),
 	merge(Gv,Ng,Infv),

@@ -8,7 +8,7 @@
 	  son_exit_to_prime/7,
 	  son_extend/4,       
 	  son_glb/3,        
-	  son_input_user_interface/3, 
+	  son_input_user_interface/5, 
 	  son_input_interface/4, 
 	  son_less_or_equal/2,
 	  son_lub/3,        
@@ -31,7 +31,7 @@
 
 :- use_module(domain(sharing), 
 	[ share_input_interface/4,
-	  share_input_user_interface/3
+	  share_input_user_interface/5
 	]).
 :- use_module(domain(s_grshfr), [new1_gvars/4]).
 :- use_module(domain(share_aux), [if_not_nil/4,append_dl/3,handle_each_indep/4]).
@@ -376,8 +376,8 @@ son_asub_to_native((Gr,SSon),Qv,_OutFlag,ASub_user,[]):-
 	if_not_nil(SetSh,sharing(SetSh),ASub_user1,[]).
 
 %-------------------------------------------------------------------------
-% son_input_user_interface(+,+,-)                                        %
-% son_input_user_interface(InputUser,Qv,ASub)                            %
+% son_input_user_interface(+,+,-,+,+)                                    %
+% son_input_user_interface(InputUser,Qv,ASub,Sg,MaybeCallASub)           %
 % Gr is the set of variables which are in Qv but not in Sharing          %
 % (share(Sharing) given by the user). Sh is computed as follows:         %
 %  - Linear is the set of linear variables given by the user (if any)    %
@@ -390,8 +390,8 @@ son_asub_to_native((Gr,SSon),Qv,_OutFlag,ASub_user,[]):-
 %    (pair) sharing Sh                                                   %
 %-------------------------------------------------------------------------
 
-son_input_user_interface((Sh0,Lin0),Qv,(Gr,Sh)):-
-	share_input_user_interface(Sh0,Qv,SH),
+son_input_user_interface((Sh0,Lin0),Qv,(Gr,Sh),Sg,MaybeCallASub):-
+	share_input_user_interface(Sh0,Qv,SH,Sg,MaybeCallASub),
 	varset(SH,SHv),
 	ord_subtract(Qv,SHv,Gr),
 	may_be_var(Lin0,Linear),

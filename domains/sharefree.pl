@@ -57,7 +57,7 @@
 	share_project/3, 
 	share_less_or_equal/2,
 	share_glb/3,
-	share_input_user_interface/3,
+	share_input_user_interface/5,
 	share_input_interface/4,
 	% TODO: move to other shared module?
 	pos/4, 
@@ -519,15 +519,15 @@ shfr_empty_entry(_Sg,Qv,Entry):-
 	Entry=(Entry_sh,Entry_fr).
 
 %------------------------------------------------------------------------%
-% shfr_input_user_interface(+,+,-)                                       %
-% shfr_input_user_interface(InputUser,Qv,ASub)                           %
+% shfr_input_user_interface(+,+,-,+,+)                                   %
+% shfr_input_user_interface(InputUser,Qv,ASub,Sg,MaybeCallASub)          %
 % Obtaining the abstract substitution for Sh+Fr from the user supplied   %
 % information just consists in taking the Sharing first and the var(Fv)  %
 % element of InputUser, and construct from them the Freeness.            %
 %------------------------------------------------------------------------%
-:- export(shfr_input_user_interface/3).
-shfr_input_user_interface((Sh,Fv0),Qv,(Call_sh,Call_fr)):-
-	share_input_user_interface(Sh,Qv,Call_sh),
+:- export(shfr_input_user_interface/5).
+shfr_input_user_interface((Sh,Fv0),Qv,(Call_sh,Call_fr),Sg,MaybeCallASub):-
+	share_input_user_interface(Sh,Qv,Call_sh,Sg,MaybeCallASub),
 	may_be_var(Fv0,Fv),
 	merge_list_of_lists(Call_sh,SHv),
 	ord_subtract(Qv,SHv,Gv),

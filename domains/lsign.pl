@@ -7,7 +7,7 @@
 	  lsign_eliminate_equivalent/2,
 	  lsign_exit_to_prime/6,
 	  lsign_global_info/5,
-	  lsign_input_user_interface/3,  
+	  lsign_input_user_interface/5,  
 	  lsign_input_interface/4,  
 	  lsign_output_interface/2,  
 	  lsign_is_subset/2,
@@ -23,7 +23,7 @@
 	  simple_lsign_call_to_entry/9,  
 	  simple_lsign_exit_to_prime/6,  
 	  simple_lsign_extend/5,
-	  simple_lsign_input_user_interface/3,
+	  simple_lsign_input_user_interface/5,
 	  simple_lsign_output_interface/2,  
 	  simple_lsign_less_or_equal/2, 
 	  simple_lsign_project/5,
@@ -1179,15 +1179,15 @@ lsign_build_elem(X/t,Last,Rhs,Tail):-
         ).
 
 %------------------------------------------------------------------------%
-% lsign_input_user_interface(+,+,-) 
-% lsign_input_user_interface(InputUser,Qv,ACons) 
+% lsign_input_user_interface(+,+,-,+,+) 
+% lsign_input_user_interface(InputUser,Qv,ACons,Sg,MaybeCallASub) 
 %------------------------------------------------------------------------%
 % Identical to the original but for the addition of a new component
 % New assumptions:
 %    - There is no information about non linear equations
 %------------------------------------------------------------------------%
 
-lsign_input_user_interface((Pv,Nv,Gv),Qv,a(S,AEqIn,[])):-
+lsign_input_user_interface((Pv,Nv,Gv),Qv,a(S,AEqIn,[]),_Sg,_MaybeCallASub):-
 	may_be_var(Pv),
 	may_be_var(Nv),
 	may_be_var(Gv),

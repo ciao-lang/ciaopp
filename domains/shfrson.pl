@@ -4,7 +4,7 @@
 	  shfrson_compute_lub/2,
 	  shfrson_exit_to_prime/7,
 	  shfrson_extend/4,   
-	  shfrson_input_user_interface/3, 
+	  shfrson_input_user_interface/5, 
 	  shfrson_input_interface/4, 
 	  shfrson_less_or_equal/2,  
 	  shfrson_asub_to_native/5,
@@ -157,9 +157,9 @@ shfrson_sort((ASub_son,ASub_shfr),(ASub_son_s,ASub_shfr_s)):-
 
 %--------------------------------------------------------------------------
 
-shfrson_input_user_interface((Son,Shfr),Qv,ASub):-
-	son_input_user_interface(Son,Qv,ASubSon),
-	shfr_input_user_interface(Shfr,Qv,ASubShfr),
+shfrson_input_user_interface((Son,Shfr),Qv,ASub,Sg,MaybeCallASub):-
+	son_input_user_interface(Son,Qv,ASubSon,Sg,MaybeCallASub),
+	shfr_input_user_interface(Shfr,Qv,ASubShfr,Sg,MaybeCallASub),
 	compose(ASubSon,ASubShfr,Qv,ASub).
 
 shfrson_input_interface(Info,Kind,(Son0,Shfr0),(Son,Shfr)):-

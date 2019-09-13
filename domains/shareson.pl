@@ -5,7 +5,7 @@
 	  shareson_compute_lub/2,
 	  shareson_exit_to_prime/7,  
 	  shareson_extend/4,  
-	  shareson_input_user_interface/3,
+	  shareson_input_user_interface/5,
 	  shareson_input_interface/4,
 	  shareson_less_or_equal/2, 
 	  shareson_asub_to_native/5,
@@ -154,10 +154,10 @@ shareson_sort((ASub_son,ASub_sh),(ASub_son_s,ASub_sh_s)):-
 
 %--------------------------------------------------------------------------
 
-shareson_input_user_interface(Struct,Qv,(Son,Sh)):-
+shareson_input_user_interface(Struct,Qv,(Son,Sh),Sg,MaybeCallASub):-
 	Struct = (Sharing,_Lin),
-	son_input_user_interface(Struct,Qv,Son),
-	share_input_user_interface(Sharing,Qv,Sh).
+	son_input_user_interface(Struct,Qv,Son,Sg,MaybeCallASub),
+	share_input_user_interface(Sharing,Qv,Sh,Sg,MaybeCallASub).
 
 shareson_input_interface(Info,Kind,Struct0,Struct):-
 	% already calls share_input_...

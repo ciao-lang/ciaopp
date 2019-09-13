@@ -77,12 +77,12 @@ simple_lsign_less_or_equal(_ACons0,_ACons1):-
 	throw(not_implemented(simple_lsign_less_or_equal)).
 
 %-------------------------------------------------------------------------
-% simple_lsign_input_user_interface(+,+,-)                               %
-% simple_lsign_input_user_interface(InputUser,Qv,ACons)                  %
+% simple_lsign_input_user_interface(+,+,-,+,+)                           %
+% simple_lsign_input_user_interface(InputUser,Qv,ACons,Sg,MaybeCallASub) %
 %-------------------------------------------------------------------------
 
-simple_lsign_input_user_interface(Info,Qv,ACons):-
-	lsign_input_user_interface(Info,Qv,In),
+simple_lsign_input_user_interface(Info,Qv,ACons,Sg,MaybeCallASub):-
+	lsign_input_user_interface(Info,Qv,In,Sg,MaybeCallASub),
 	In = a(G,_,_),
 	ACons = p(In,a(G,[],[]),In).
 

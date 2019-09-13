@@ -40,7 +40,7 @@
 	share_clique_extend_asub/3,
 	share_clique_glb/3,
 	share_clique_input_interface/4,
-	share_clique_input_user_interface/3,
+	share_clique_input_user_interface/5,
 	share_clique_less_or_equal/2,
 	share_clique_lub_cl/3,
 	share_clique_project/3,
@@ -442,15 +442,15 @@ sharefree_clique_glb((SH1,Fr1),(SH2,Fr2),Glb):-
 	)  ).
 
 %------------------------------------------------------------------------%
-% sharefree_clique_input_user_interface(+,+,-)                           |
-% sharefree_clique_input_user_interface(InputUser,Qv,ASub)               |
+% sharefree_clique_input_user_interface(+,+,-,+,+)                       |
+% sharefree_clique_input_user_interface(InputUser,Qv,ASub,Sg,MaybeCallASub) |
 % Obtaining the abstract substitution for Cl+Fr from the user supplied   |
 % information just consists in taking th Cliques first and the var(Fv)   |
 % element of InputUser, and construct from them the Freeness.            |
 %------------------------------------------------------------------------%
-:- export(sharefree_clique_input_user_interface/3).  
-sharefree_clique_input_user_interface((SH,Fv0),Qv,(Call_SH,Call_fr)):-
-	share_clique_input_user_interface(SH,Qv,Call_SH),
+:- export(sharefree_clique_input_user_interface/5).  
+sharefree_clique_input_user_interface((SH,Fv0),Qv,(Call_SH,Call_fr),Sg,MaybeCallASub):-
+	share_clique_input_user_interface(SH,Qv,Call_SH,Sg,MaybeCallASub),
 %% freeness  
 	may_be_var(Fv0,Fv),
 	Call_SH = (Cl,Sh),

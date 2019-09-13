@@ -8,7 +8,7 @@
 	  fd_exit_to_prime/7,
 	  fd_extend/5,        
 	  fd_identical_abstract/2, 
-	  fd_input_user_interface/3,  
+	  fd_input_user_interface/5,  
 	  fd_input_interface/4,  
 	  fd_less_or_equal/2,
 	  fd_asub_to_native/5,
@@ -169,9 +169,9 @@ fd_decide_builtin(a(G_succ,_),Type,Sv_u,InfoF,F_call,F_succ):-
 
 %------------------------------------------------------------------------------
 
-fd_input_user_interface((InfoF,InfoD),Vars,(F,D)):-
-        def_input_user_interface(InfoD,D),
-        vero_input_user_interface(InfoF,Vars,F).
+fd_input_user_interface((InfoF,InfoD),Vars,(F,D),Sg,MaybeCallASub):-
+        def_input_user_interface(InfoD,Vars,D,Sg,MaybeCallASub),
+        vero_input_user_interface(InfoF,Vars,F,Sg,MaybeCallASub).
 
 fd_input_interface(Prop,Kind,(F0,D0),(F,D)):-
         def_input_interface(Prop,Kind0,D0,D),

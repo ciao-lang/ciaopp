@@ -56,7 +56,7 @@
 	sharefree_clique_less_or_equal/2,
 	sharefree_clique_call_to_success_fact/9,
 	sharefree_clique_compute_lub_el/3,
-	sharefree_clique_input_user_interface/3,
+	sharefree_clique_input_user_interface/5,
 	sharefree_clique_unknown_call/4,
 	sharefree_clique_empty_entry/3,
 	sharefree_clique_special_builtin/5
@@ -205,12 +205,12 @@ sharefree_clique_def_lub_cl((SHF_ASub1,Def_ASub1),(SHF_ASub2,Def_ASub2),Lub):-
 	Lub = (SHF_lub,Def_lub),!.
 
 %------------------------------------------------------------------------%
-% sharefree_clique_def_input_user_interface(+,+,-)                       |
-% sharefree_clique_def_input_user_interface(InputUser,Qv,ASub)           |
+% sharefree_clique_def_input_user_interface(+,+,-,+,+)                   |
+% sharefree_clique_def_input_user_interface(InputUser,Qv,ASub,Sg,MaybeCallASub) |
 %------------------------------------------------------------------------%
-:- export(sharefree_clique_def_input_user_interface/3).
-sharefree_clique_def_input_user_interface((SH,Fv),Qv,Call):-
-	sharefree_clique_input_user_interface((SH,Fv),Qv,(SH_call,Fr_call)),
+:- export(sharefree_clique_def_input_user_interface/5).
+sharefree_clique_def_input_user_interface((SH,Fv),Qv,Call,Sg,MaybeCallASub):-
+	sharefree_clique_input_user_interface((SH,Fv),Qv,(SH_call,Fr_call),Sg,MaybeCallASub),
 	member_value_freeness(Fr_call,Gv,g),
 	Def_call = a(Gv,[]),
 	Call = ((SH_call,Fr_call),Def_call).

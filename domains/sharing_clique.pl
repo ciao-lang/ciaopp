@@ -583,17 +583,17 @@ share_clique_glb(ASub0,ASub1,Glb):-
 	ord_intersection_w(ASub0,ASub1,Glb).
 
 %------------------------------------------------------------------------%
-% share_clique_input_user_interface(+,+,-)                               |
-% share_clique_input_user_interface(InputUser,Qv,ASub)                   |
+% share_clique_input_user_interface(+,+,-,+,+)                           |
+% share_clique_input_user_interface(InputUser,Qv,ASub,Sg,MaybeCallASub)  |
 % Obtaining the abstract substitution for Sharing from the user supplied |
 % information just consists in taking the mshare(Sharing) and            | 
 % clique(Clique)element of InputUser and sorting it. If there is no such |
 % element, get the "top" sharing for the variables involved.             |
 %------------------------------------------------------------------------%
 
-:- export(share_clique_input_user_interface/3).
-share_clique_input_user_interface((Gv,Sh,Cl,I),Qv,Call):-
-	share_input_user_interface((Gv,Sh,I),Qv,New_Sh),
+:- export(share_clique_input_user_interface/5).
+share_clique_input_user_interface((Gv,Sh,Cl,I),Qv,Call,Sg,MaybeCallASub):-
+	share_input_user_interface((Gv,Sh,I),Qv,New_Sh,Sg,MaybeCallASub),
 	may_be_var(Cl,Cl0),
 	take_ground_out_clique(Gv,Cl0,New_Cl),   
 	Call = (New_Cl,New_Sh).

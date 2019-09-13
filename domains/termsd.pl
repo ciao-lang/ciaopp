@@ -20,7 +20,7 @@
 	terms_input_interface/4,
 	terms_asub_to_native/5,
 	terms_output_interface/2,
-	terms_input_user_interface/3,
+	terms_input_user_interface/5,
 	terms_collect_abstypes/3,
 	terms_rename_abs/4,
 	terms_identical_abstract/2,
@@ -1479,11 +1479,11 @@ terms_call_to_success_builtin(Key,Sg,Sv,Call,Proj,Succ):-
 %------------------------------------------------------------------------%
 
 %------------------------------------------------------------------------%
-% terms_input_user_interface(+InputUser,+Qv,-ASub)                       %
+% terms_input_user_interface(+InputUser,+Qv,-ASub,+Sg,+MaybeCallASub)    %
 % Obtains the abstract substitution ASub from user supplied information. %
 %------------------------------------------------------------------------%
 
-terms_input_user_interface(InputUser,Qv,ASub):-
+terms_input_user_interface(InputUser,Qv,ASub,_Sg,_MaybeCallASub):-
         obtain_Asub_user(InputUser,ASub0),
 	sort(ASub0,ASub_s),
 	reduce_same_var(ASub_s,ASub1),

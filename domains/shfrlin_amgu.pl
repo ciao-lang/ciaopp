@@ -27,7 +27,7 @@
 	shfr_extend/4,
 	shfr_glb/3,
 	shfr_input_interface/4,
-	shfr_input_user_interface/3,
+	shfr_input_user_interface/5,
 	shfr_less_or_equal/2,
 	shfr_project/3,
 	shfr_sort/2,
@@ -446,16 +446,16 @@ shfrlin_less_or_equal((Sh0,Fr0,Lin0),(Sh1,Fr1,Lin1)):-
 
 
 %------------------------------------------------------------------------%
-% shfrlin_input_user_interface(+,+,-)                                    |
-% shfrlin_input_user_interface(InputUser,Qv,ASub)                        |
+% shfrlin_input_user_interface(+,+,-,+,+)                                |
+% shfrlin_input_user_interface(InputUser,Qv,ASub,Sg,MaybeCallASub)       |
 % Obtaining the abstract substitution for Sh+Fr+lin from the user        |
 % supplied information just consists in taking the Sharing first and the |
 % var(Fv) element of InputUser, and construct from them the Freeness and |
 % the Linearity.                                                         |
 %------------------------------------------------------------------------%
-:- export(shfrlin_input_user_interface/3).
-shfrlin_input_user_interface((Sh,Vars,_),Qv,(Call_sh,Call_fr,Call_lin)):-
-	shfr_input_user_interface((Sh,Vars),Qv,(Call_sh,Call_fr)),
+:- export(shfrlin_input_user_interface/5).
+shfrlin_input_user_interface((Sh,Vars,_),Qv,(Call_sh,Call_fr,Call_lin),Sg,MaybeCallASub):-
+	shfr_input_user_interface((Sh,Vars),Qv,(Call_sh,Call_fr),Sg,MaybeCallASub),
 	member_value_freeness(Call_fr,Call_lin,f).
 
 %------------------------------------------------------------------------%

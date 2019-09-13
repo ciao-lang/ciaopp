@@ -8,7 +8,7 @@
 	  aeq_exit_to_prime/7,
 	  aeq_extend/3,       
 	  aeq_identical_abstract/2, 
-	  aeq_input_user_interface/3, 
+	  aeq_input_user_interface/5, 
 	  aeq_input_interface/4,
 	  aeq_less_or_equal/2,
 	  aeq_asub_to_native/5,
@@ -28,7 +28,7 @@
 :- use_module(ciaopp(preprocess_flags), [current_pp_flag/2]).
 :- use_module(domain(s_eqs), [apply/1, keys_and_values/3]).
 :- use_module(domain(sharing), 
-	[ share_input_interface/4, share_input_user_interface/3,
+	[ share_input_interface/4, share_input_user_interface/5,
 	  share_project/3, share_sort/2
 	]).
 %
@@ -525,11 +525,14 @@ aeq_success_builtin( aeq_top,	        Sv_uns, 	Sg, Call, Succ) :-
 
 %------------------------------------------------------------------------------
 
-%% :- mode aeq_input_user_interface(+,+,-).
-aeq_input_user_interface(InputUser,_Qv,ASub):-
+%% :- mode aeq_input_user_interface(+,+,-,+,+).
+aeq_input_user_interface(InputUser,Qv,ASub,_Sg,_MaybeCallASub):-
+	aeq_input_user_interface_(InputUser,Qv,ASub).
+
+aeq_input_user_interface_(InputUser,_Qv,ASub):-
 	member(aeqs(X,Y,Z),InputUser), !,
 	aeq_extern_to_intern(X,Y,Z,ASub).
-aeq_input_user_interface(InputUser,Qv,ASub):-
+aeq_input_user_interface_(InputUser,Qv,ASub):-
 	aeq_input_to_extern(InputUser,Qv,X,Y,Z),
 	aeq_extern_to_intern(X,Y,Z,ASub).
 
@@ -583,7 +586,7 @@ aeq_unknown_entry(_Sg, QVars, Top_aeqs) :-
 aeq_empty_entry(_Sg, QVars, ASub) :-
 	list_to_list_of_lists(QVars,Sh),
 	share_input_interface(sharing(Sh),_Kind,_Sh0,ShInfo),
-	aeq_input_user_interface((ShInfo,[],[],QVars),QVars,ASub).
+	aeq_input_user_interface_((ShInfo,[],[],QVars),QVars,ASub).
 
 %------------------------------------------------------------------------------
 %   NOT NEEDED ?!

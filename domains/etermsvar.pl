@@ -16,7 +16,7 @@
 	etermsvar_success_builtin/5,
 	etermsvar_call_to_success_builtin/6,
 	etermsvar_input_interface/4,
-	etermsvar_input_user_interface/3,
+	etermsvar_input_user_interface/5,
 	etermsvar_output_interface/2,
 	etermsvar_asub_to_native/5,
 	etermsvar_asub_to_native1/3,
@@ -1908,11 +1908,11 @@ normalize_names([(X:(Type, Y))|T], [(X:(Type_, Y))|T_] ):-
 %------------------------------------------------------------------------%
 
 %------------------------------------------------------------------------%
-% etermsvar_input_user_interface(+InputUser,+Qv,-ASub)                   %
+% etermsvar_input_user_interface(+InputUser,+Qv,-ASub,+Sg,+MaybeCallASub) %
 % Obtains the abstract substitution ASub from user supplied information. %
 %------------------------------------------------------------------------%
 
-etermsvar_input_user_interface(InputUser,Qv,ASub):-
+etermsvar_input_user_interface(InputUser,Qv,ASub,_Sg,_MaybeCallASub):-
         obtain_Asub_user(InputUser,ASub0),
 	sort(ASub0,ASub_s),
 	reduce_same_var(ASub_s,ASub1),

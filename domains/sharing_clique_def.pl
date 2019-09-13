@@ -50,7 +50,7 @@
 	share_clique_extend/4,
 	share_clique_glb/3,
 	share_clique_identical_abstract/2,
-	share_clique_input_user_interface/3,
+	share_clique_input_user_interface/5,
 	share_clique_less_or_equal/2,
 	share_clique_lub_cl/3,
 	share_clique_project/3,
@@ -211,13 +211,13 @@ share_clique_def_lub_cl((SH_ASub1,Def_ASub1),(SH_ASub2,Def_ASub2),ASub3):-
 	share_clique_lub_cl(NewSH_ASub1,NewSH_ASub2,SH_ASub3),
 	ASub3 = (SH_ASub3,Def_ASub3).
 %------------------------------------------------------------------------%
-% share_clique_def_input_user_interface(+,+,-)                           |
-% share_clique_def_input_user_interface(InputUser,Qv,ASub)               |
+% share_clique_def_input_user_interface(+,+,-,+,+)                       |
+% share_clique_def_input_user_interface(InputUser,Qv,ASub,Sg,MaybeCallASub) |
 %------------------------------------------------------------------------%
 
-:- export(share_clique_def_input_user_interface/3).
-share_clique_def_input_user_interface((Gv,Sh,Cl,I),Qv,Call):-
-	share_clique_input_user_interface((Gv,Sh,Cl,I),Qv,SH_Call),
+:- export(share_clique_def_input_user_interface/5).
+share_clique_def_input_user_interface((Gv,Sh,Cl,I),Qv,Call,Sg,MaybeCallASub):-
+	share_clique_input_user_interface((Gv,Sh,Cl,I),Qv,SH_Call,Sg,MaybeCallASub),
 	may_be_var(Gv,Gv0),
 	Def_Call = a(Gv0,[]),
 	Call = (SH_Call,Def_Call).

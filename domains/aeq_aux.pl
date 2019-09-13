@@ -252,7 +252,7 @@ aeq_input_to_extern((Sh,Eqs_u,Lin_u,Free_u),Qv,AEqs,Ann,Shr):-
 	aeq_unify_num(NumVarSet,0),
 	keys_and_values(Qv,AVars,Pairs),
 %
-	share_input_user_interface(Sh,Qv,ShASub),
+	share_input_user_interface(Sh,Qv,ShASub,sg_not_provided,no),
 	copy_term(t(ShASub,Pairs),t(Share0,Pairs_sh)),
 	apply(Pairs_sh),
 	flatten_lists(Share0,Share1),

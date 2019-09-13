@@ -16,7 +16,7 @@
 	svterms_success_builtin/5,
 	svterms_call_to_success_builtin/6,
 	svterms_input_interface/4,
-	svterms_input_user_interface/3,
+	svterms_input_user_interface/5,
 	svterms_output_interface/2,
 	svterms_asub_to_native/5,
 	svterms_asub_to_native1/3,
@@ -61,7 +61,7 @@
 	    eterms_special_builtin/5,
 	    eterms_call_to_success_builtin/6,
 	    eterms_input_interface/4,
-	    eterms_input_user_interface/3,
+	    eterms_input_user_interface/5,
 	    eterms_asub_to_native/5,
 	    eterms_asub_to_native1/3,
 	    eterms_identical_abstract/2,
@@ -640,8 +640,8 @@ buildargsamevalue([Sel|SameValues],Y,Z,[sv(Y/Sel,Z/[])|SVPrime]):-
 
 
 %--------------------------------------------------------------%		
-svterms_input_user_interface(InputUser,Qv,ASub):-
-	eterms_input_user_interface(InputUser,Qv,TASub),
+svterms_input_user_interface(InputUser,Qv,ASub,Sg,MaybeCallASub):-
+	eterms_input_user_interface(InputUser,Qv,TASub,Sg,MaybeCallASub),
 	abssubst_b(ASub,TASub,[]).		
 
 %--------------------------------------------------------------%	

@@ -13,7 +13,7 @@
 	  shfret_call_to_success_fact/9,
 	  shfret_split_combined_domain/3,
 	  shfret_input_interface/4,
-	  shfret_input_user_interface/3,
+	  shfret_input_user_interface/5,
 	  shfret_asub_to_native/5,
 	  shfret_unknown_call/4,
 	  shfret_unknown_entry/3,
@@ -207,13 +207,13 @@ eterms_input_interface_(InputUser,Kind,ITypes,OTypes):-
 eterms_input_interface_(_InputUser,_Kind,ITypes,ITypes).
 
 %------------------------------------------------------------------------%
-% shfret_input_user_interface(+,+,-)                                         %
-% shfret_input_user_interface(InputUser,Qv,ASub)                             %
+% shfret_input_user_interface(+,+,-,+,+)                                 %
+% shfret_input_user_interface(InputUser,Qv,ASub,Sg,MaybeCallASub)        %
 %------------------------------------------------------------------------%
-shfret_input_user_interface(Struct,Qv,ASub):-
+shfret_input_user_interface(Struct,Qv,ASub,Sg,MaybeCallASub):-
 	asub(Struct,Types,Modes),
-	shfr_input_user_interface(Modes,Qv,AModes),
-	eterms_input_user_interface(Types,Qv,ATypes),
+	shfr_input_user_interface(Modes,Qv,AModes,Sg,MaybeCallASub),
+	eterms_input_user_interface(Types,Qv,ATypes,Sg,MaybeCallASub),
 	asub(ASub,ATypes,AModes).
 
 %------------------------------------------------------------------------%

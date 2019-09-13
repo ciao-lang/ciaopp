@@ -16,7 +16,7 @@
 	eterms_success_builtin/5,
 	eterms_call_to_success_builtin/6,
 	eterms_input_interface/4,
-	eterms_input_user_interface/3,
+	eterms_input_user_interface/5,
 	eterms_output_interface/2,
 	eterms_asub_to_native/5,
 	eterms_asub_to_native1/3,
@@ -1818,11 +1818,11 @@ eterms_call_to_success_builtin(key(Key,SubGoal),_Sg,Sv,Call,Proj,Succ):- !,
 %------------------------------------------------------------------------%
 
 %------------------------------------------------------------------------%
-% eterms_input_user_interface(+InputUser,+Qv,-ASub)                       %
+% eterms_input_user_interface(+InputUser,+Qv,-ASub,+Sg,+MaybeCallASub)   %
 % Obtains the abstract substitution ASub from user supplied information. %
 %------------------------------------------------------------------------%
 
-eterms_input_user_interface(InputUser,Qv,ASub):-
+eterms_input_user_interface(InputUser,Qv,ASub,_Sg,_MaybeCallASub):-
         obtain_Asub_user(InputUser,ASub0),
 	sort(ASub0,ASub_s),
 	reduce_same_var(ASub_s,ASub1),

@@ -5,7 +5,7 @@
 	  path_compute_lub/2, 
 	  path_exit_to_prime/7,
 	  path_extend/4,      
-	  path_input_user_interface/3,
+	  path_input_user_interface/5,
 	  path_input_interface/4,
 	  path_less_or_equal/2,
 	  path_asub_to_native/5,  
@@ -327,15 +327,15 @@ path_empty_entry(_Sg,Qv,Call):-
 %-------------------------------------------------------------------------
 
 %------------------------------------------------------------------------%
-% path_input_user_interface(+,+,-)                                       %
-% path_input_user_interface(InputUser,Qv,ASub)                           %
+% path_input_user_interface(+,+,-,+,+)                                   %
+% path_input_user_interface(InputUser,Qv,ASub,Sg,MaybeCallASub)          %
 % Obtaining the abstract substitution for Path from the user supplied    %
 % information                                                            %
 %------------------------------------------------------------------------%
 % For now, only either ground or free variables are accepted
 % should use sharing, and do a topmost for the rest of Qv
 
-path_input_user_interface((_Sh,Fr),_Qv,Call):-
+path_input_user_interface((_Sh,Fr),_Qv,Call,_Sg,_MaybeCallASub):-
 	may_be_var(Fr),
 	list_to_free_abstraction(Fr,Call).
 

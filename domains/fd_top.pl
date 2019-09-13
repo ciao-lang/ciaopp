@@ -396,7 +396,7 @@ vero_less_or_equal(as(Do1,Po1,Dn1,Pn1), as(Do2,Po2,Dn2,Pn2)) :-
 % Similar to the one above but with Info with the form free(ListFreeVars)
 % instead of [mode(X,f),mode(Y,g),..] etc
 
-vero_input_user_interface((Gv,Fv),Vars,Call):-
+vero_input_user_interface((Gv,Fv),Vars,Call,_Sg,_MaybeCallASub):-
 	may_be_var(Gv),
 	may_be_var(Fv),
 	merge(Gv,Fv,FreeAndGroundVars),

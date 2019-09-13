@@ -184,7 +184,7 @@ cond(polyhedra_constraint,Abs,Goal,Info) :-
         Abs = polyhedra,
         Info = (_Addr, Vars),
         Goal = 'native_props:constraint'(Cons_Sys),
-        polyhedra_input_user_interface(Cons_Sys, Vars, GoalASub),
+        polyhedra_input_user_interface(Cons_Sys, Vars, GoalASub, Goal, no), % TODO: check that last 2 args are OK
         polyhedra_less_or_equal(Info, GoalASub).
 :- endif.
 
@@ -192,7 +192,7 @@ cond(polyhedra_constraint,Abs,Goal,Info) :-
 % TODO: move above, make it modular, etc.
 :- use_module(domain(polyhedra),
         [
-            polyhedra_input_user_interface/3,
+            polyhedra_input_user_interface/5,
             polyhedra_less_or_equal/2
         ]).
 :- endif.

@@ -53,7 +53,7 @@
 :- use_module(domain(sharefree),
 	[ shfr_asub_to_native/5,
 	  shfr_input_interface/4,
-	  shfr_input_user_interface/3,
+	  shfr_input_user_interface/5,
 	  shfr_project/3,
 	  shfr_sort/2,
 	  % TODO: move to other shared module?
@@ -645,15 +645,15 @@ shfrnv_call_to_success_fact(_Sg,_Hv,_Head,_K,_Sv,_Call,_Proj,'$bottom','$bottom'
 %-------------------------------------------------------------------------
 
 %------------------------------------------------------------------------%
-% shfrnv_input_user_interface(+,+,-)                                     %
-% shfrnv_input_user_interface(InputUser,Qv,ASub)                         %
+% shfrnv_input_user_interface(+,+,-,+,+)                                 %
+% shfrnv_input_user_interface(InputUser,Qv,ASub,Sg,MaybeCallASub)        %
 %------------------------------------------------------------------------%
 % identical but taking non_free into account.                            %
 %------------------------------------------------------------------------%
 
-:- export(shfrnv_input_user_interface/3). 
-shfrnv_input_user_interface((Sh,Fr,Nv),Qv,(Call_sh,Call_fr)):-
-	shfr_input_user_interface((Sh,Fr),Qv,(Call_sh,Call_fr0)),
+:- export(shfrnv_input_user_interface/5). 
+shfrnv_input_user_interface((Sh,Fr,Nv),Qv,(Call_sh,Call_fr),Sg,MaybeCallASub):-
+	shfr_input_user_interface((Sh,Fr),Qv,(Call_sh,Call_fr0),Sg,MaybeCallASub),
 	sort(Nv,NonVar),
 	change_values_insert(NonVar,Call_fr0,Call_fr,nv).
 

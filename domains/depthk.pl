@@ -7,7 +7,7 @@
 	  depthk_exit_to_prime/7,
 	  depthk_extend/4,    
 	  depthk_identical_abstract/2, 
-	  depthk_input_user_interface/3,
+	  depthk_input_user_interface/5,
 	  depthk_input_interface/4,
 	  depthk_less_or_equal/2,  
 	  depthk_asub_to_native/5, 
@@ -289,13 +289,13 @@ depthk_empty_entry(Sg,Qv,Call):-
 %-------------------------------------------------------------------------
 
 %------------------------------------------------------------------------%
-% depthk_input_user_interface(+,+,-)                                     %
-% depthk_input_user_interface(InputUser,Qv,ASub)                         %
+% depthk_input_user_interface(+,+,-,+,+)                                 %
+% depthk_input_user_interface(InputUser,Qv,ASub,Sg,MaybeCallASub)        %
 % Obtaining the abstract substitution for Depthk from the user supplied  %
 % information                                                            %
 %------------------------------------------------------------------------%
 
-depthk_input_user_interface(Info,Qv,Call):-
+depthk_input_user_interface(Info,Qv,Call,_Sg,_MaybeCallASub):-
 	may_be_var(Info),
 	sort(Info,Eqs),
 	eqs_ranges(Qv,Eqs,Terms,_Vars,[],_AVarSet),

@@ -9,7 +9,7 @@
 	  def_exit_to_prime/7,
 	  def_extend/3,     
 	  def_glb/3,      
-	  def_input_user_interface/2,  
+	  def_input_user_interface/5,  
 	  def_input_interface/4,  
 	  def_less_or_equal/2,
 	  def_project/3,    
@@ -561,12 +561,12 @@ def_success_builtin(findall,p(X,Z),a(G,S),Succ):-  %% added by JN
 	def_success_builtin('$fd_ground',Varsz,a(G,S),Succ).
 def_success_builtin(findall,_,Call,Call).  %% jcf
 %-------------------------------------------------------------------------
-% def_input_user_interface(+,-)
+% def_input_user_interface(+,+,-,+,+)
 % It translate the query mode given by the user into the internal 
 % structure.
 %-------------------------------------------------------------------------
 
-def_input_user_interface(Gv0,a(Gv,[])):-
+def_input_user_interface(Gv0,_Qv,a(Gv,[]),_Sg,_MaybeCallASub):-
 	may_be_var(Gv0,Gv).
 %	get_domain(Info,defdeps,[],Dep).
 

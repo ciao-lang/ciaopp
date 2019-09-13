@@ -141,7 +141,7 @@ call_to_success_fact(frdef,Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ) :- !, fd_call_t
 special_builtin(frdef,SgKey,Sg,Subgoal,Type,Condvars) :- !, fd_special_builtin(SgKey,Sg,Subgoal,Type,Condvars).
 success_builtin(frdef,Type,Sv_uns,Condvars,_HvFv_u,Call,Succ) :- !, fd_success_builtin(Type,Sv_uns,Condvars,Call,Succ).
 input_interface(frdef,InputUser,Kind,Struct0,Struct1) :- !, fd_input_interface(InputUser,Kind,Struct0,Struct1).
-input_user_interface(frdef,InputUser,Qv,ASub,_Sg,_MaybeCallASub) :- !, fd_input_user_interface(InputUser,Qv,ASub).
+input_user_interface(frdef,InputUser,Qv,ASub,Sg,MaybeCallASub) :- !, fd_input_user_interface(InputUser,Qv,ASub,Sg,MaybeCallASub).
 asub_to_native(frdef,ASub,Qv,OutFlag,OutputUser,Comps) :- !, fd_asub_to_native(ASub,Qv,OutFlag,OutputUser,Comps).
 unknown_call(frdef,Sg,Vars,Call,Succ) :- !, fd_unknown_call(Sg,Vars,Call,Succ).
 unknown_entry(frdef,Sg,Qv,Call) :- !, fd_unknown_entry(Sg,Qv,Call).
@@ -172,7 +172,7 @@ call_to_success_fact(lsign,Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ) :- !, lsign_cal
 special_builtin(lsign,SgKey,Sg,Subgoal,Type,Condvars) :- !, lsign_special_builtin(SgKey,Sg,Subgoal,Type,Condvars).
 success_builtin(lsign,Type,Sv_uns,Condvars,HvFv_u,Call,Succ) :- !, lsign_success_builtin(Type,Sv_uns,Condvars,HvFv_u,Call,Succ).
 input_interface(lsign,InputUser,Kind,Struct0,Struct1) :- !, lsign_input_interface(InputUser,Kind,Struct0,Struct1).
-input_user_interface(lsign,InputUser,Qv,ASub,_Sg,_MaybeCallASub) :- !, lsign_input_user_interface(InputUser,Qv,ASub).
+input_user_interface(lsign,InputUser,Qv,ASub,Sg,MaybeCallASub) :- !, lsign_input_user_interface(InputUser,Qv,ASub,Sg,MaybeCallASub).
 asub_to_native(lsign,ASub,Qv,OutFlag,OutputUser,Comps) :- !, lsign_asub_to_native(ASub,Qv,OutFlag,OutputUser,Comps).
 unknown_call(lsign,Sg,Vars,Call,Succ) :- !, lsign_unknown_call(Sg,Vars,Call,Succ).
 unknown_entry(lsign,Sg,Qv,Call) :- !, lsign_unknown_entry(Sg,Qv,Call).
@@ -199,7 +199,7 @@ call_to_success_fact(difflsign,Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ) :- !, lsign
 special_builtin(difflsign,SgKey,Sg,Subgoal,Type,Condvars) :- !, lsign_special_builtin(SgKey,Sg,Subgoal,Type,Condvars).
 success_builtin(difflsign,Type,Sv_uns,Condvars,HvFv_u,Call,Succ) :- !, simple_lsign_success_builtin(Type,Sv_uns,Condvars,HvFv_u,Call,Succ).
 input_interface(difflsign,InputUser,Kind,Struct0,Struct1) :- !, lsign_input_interface(InputUser,Kind,Struct0,Struct1).
-input_user_interface(difflsign,InputUser,Qv,ASub,_Sg,_MaybeCallASub) :- !, simple_lsign_input_user_interface(InputUser,Qv,ASub).
+input_user_interface(difflsign,InputUser,Qv,ASub,Sg,MaybeCallASub) :- !, simple_lsign_input_user_interface(InputUser,Qv,ASub,Sg,MaybeCallASub).
 asub_to_native(difflsign,ASub,Qv,OutFlag,OutputUser,Comps) :- !, simple_lsign_asub_to_native(ASub,Qv,OutFlag,OutputUser,Comps).
 unknown_call(difflsign,Sg,Vars,Call,Succ) :- !, simple_lsign_unknown_call(Sg,Vars,Call,Succ).
 unknown_entry(difflsign,Sg,Qv,Call) :- !, simple_lsign_unknown_entry(Sg,Qv,Call).
@@ -219,8 +219,8 @@ extend(lsigndef,Sg,Prime,Sv,Call,Succ) :- !, lsigndef_extend(Sg,Prime,Sv,Call,Su
 less_or_equal(lsigndef,ASub0,ASub1) :- !, lsigndef_less_or_equal(ASub0,ASub1).
 glb(lsigndef,ASub0,ASub1,ASub) :- !, lsigndef_glb(ASub0,ASub1,ASub).
 call_to_success_fact(lsigndef,Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ) :- !, lsigndef_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ).
-input_interface(lsigndef,InputUser,Kind,_Struct0,Struct1) :- !, lsigndef_input_interface(InputUser,Kind,Struct1).
-input_user_interface(lsigndef,InputUser,_Qv,ASub,_Sg,_MaybeCallASub) :- !, lsigndef_input_user_interface(InputUser,ASub).
+input_interface(lsigndef,InputUser,Kind,Struct0,Struct1) :- !, lsigndef_input_interface(InputUser,Kind,Struct0,Struct1).
+input_user_interface(lsigndef,InputUser,Qv,ASub,Sg,MaybeCallASub) :- !, lsigndef_input_user_interface(InputUser,Qv,ASub,Sg,MaybeCallASub).
 asub_to_native(lsigndef,ASub,Qv,OutFlag,OutputUser,Comps) :- !, lsigndef_asub_to_native(ASub,Qv,OutFlag,OutputUser,Comps).
 unknown_call(lsigndef,Sg,Vars,Call,Succ) :- !, lsigndef_unknown_call(Sg,Call,Vars,Succ).
 unknown_entry(lsigndef,Sg,Qv,Call) :- !, lsigndef_unknown_entry(Sg,Qv,Call).
@@ -233,8 +233,8 @@ lsigndef_call_to_success_fact(_,_,_,_,_,_,_,_,_).
 lsigndef_compute_lub(_,_).
 lsigndef_exit_to_prime(_,_,_,_,_,_,_).
 lsigndef_extend(_,_,_,_,_).  
-lsigndef_input_user_interface(_,_).
-lsigndef_input_interface(_,_,_).
+lsigndef_input_user_interface(_,_,_,_,_).
+lsigndef_input_interface(_,_,_,_).
 lsigndef_less_or_equal(_,_). 
 lsigndef_asub_to_native(_,_,_,[],[]).
 lsigndef_project(_,_,_,_,_). 
@@ -256,7 +256,7 @@ less_or_equal(lsignshfr,ASub0,ASub1) :- !, lsignshfr_less_or_equal(ASub0,ASub1).
 glb(lsignshfr,ASub0,ASub1,ASub) :- !, lsignshfr_glb(ASub0,ASub1,ASub).
 call_to_success_fact(lsignshfr,Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ) :- !, lsignshfr_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ).
 input_interface(lsignshfr,InputUser,Kind,Struct0,Struct1) :- !, lsignshfr_input_interface(InputUser,Kind,Struct0,Struct1).
-input_user_interface(lsignshfr,InputUser,Qv,ASub,_Sg,_MaybeCallASub) :- !, lsignshfr_input_user_interface(InputUser,Qv,ASub).
+input_user_interface(lsignshfr,InputUser,Qv,ASub,Sg,MaybeCallASub) :- !, lsignshfr_input_user_interface(InputUser,Qv,ASub,Sg,MaybeCallASub).
 asub_to_native(lsignshfr,ASub,Qv,OutFlag,OutputUser,Comps) :- !, lsignshfr_asub_to_native(ASub,Qv,OutFlag,OutputUser,Comps).
 unknown_call(lsignshfr,Sg,Vars,Call,Succ) :- !, lsignshfr_unknown_call(Sg,Vars,Call,Succ).
 unknown_entry(lsignshfr,Sg,Qv,Call) :- !, lsignshfr_unknown_entry(Sg,Qv,Call).
@@ -269,7 +269,7 @@ lsignshfr_call_to_success_fact(_,_,_,_,_,_,_,_,_).
 lsignshfr_compute_lub(_,_).
 lsignshfr_exit_to_prime(_,_,_,_,_,_,_).  
 lsignshfr_extend(_,_,_,_,_). 
-lsignshfr_input_user_interface(_,_,_). 
+lsignshfr_input_user_interface(_,_,_,_,_). 
 lsignshfr_input_interface(_,_,_,_). 
 lsignshfr_less_or_equal(_,_). 
 lsignshfr_asub_to_native(_,_,_,[],[]).
@@ -296,7 +296,7 @@ special_builtin(sha,SgKey,Sg,Subgoal,Type,Condvars) :- !, sha_special_builtin(Sg
 success_builtin(sha,Type,Sv_uns,Condvars,_HvFv_u,Call,Succ) :- !, sha_success_builtin(Type,Sv_uns,Condvars,Call,Succ).
 call_to_success_builtin(sha,SgKey,Sg,Sv,Call,Proj,Succ) :- !, sha_call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,Succ).
 input_interface(sha,InputUser,Kind,Struct0,Struct1) :- !, sha_input_interface(InputUser,Kind,Struct0,Struct1).
-input_user_interface(sha,InputUser,Qv,ASub,_Sg,_MaybeCallASub) :- !, sha_input_user_interface(InputUser,Qv,ASub).
+input_user_interface(sha,InputUser,Qv,ASub,Sg,MaybeCallASub) :- !, sha_input_user_interface(InputUser,Qv,ASub,Sg,MaybeCallASub).
 asub_to_native(sha,ASub,Qv,OutFlag,OutputUser,Comps) :- !, sha_asub_to_native(ASub,Qv,OutFlag,OutputUser,Comps).
 unknown_call(sha,Sg,Vars,Call,Succ) :- !, sha_unknown_call(Sg,Vars,Call,Succ).
 unknown_entry(sha,Sg,Qv,Call) :- !, sha_unknown_entry(Sg,Qv,Call).
@@ -314,7 +314,7 @@ sha_exit_to_prime(_,_,_,_,_,_,_).
 sha_extend(_,_,_,_,_).       
 sha_eliminate_equivalent(TmpLSucc,LSucc) :- absub_eliminate_equivalent(TmpLSucc,sha,LSucc).
 sha_abs_subset(LASub1,LASub2) :- absub_is_subset(LASub1,sha,LASub2).
-sha_input_user_interface(_,_,_). 
+sha_input_user_interface(_,_,_,_,_). 
 sha_input_interface(_,_,_,_). 
 sha_less_or_equal(_,_).
 % sha_lub(_,_,_).        
@@ -353,7 +353,7 @@ special_builtin(gr,SgKey,Sg,Subgoal,Type,Condvars) :- !, gr_special_builtin(SgKe
 success_builtin(gr,Type,Sv_uns,Condvars,_HvFv_u,Call,Succ) :- !, gr_success_builtin(Type,Sv_uns,Condvars,Call,Succ).
 call_to_success_builtin(gr,SgKey,Sg,Sv,Call,Proj,Succ) :- !, gr_call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,Succ).
 input_interface(gr,InputUser,Kind,Struct0,Struct1) :- !, gr_input_interface(InputUser,Kind,Struct0,Struct1).
-input_user_interface(gr,InputUser,Qv,ASub,_Sg,_MaybeCallASub) :- !, gr_input_user_interface(InputUser,Qv,ASub).
+input_user_interface(gr,InputUser,Qv,ASub,Sg,MaybeCallASub) :- !, gr_input_user_interface(InputUser,Qv,ASub,Sg,MaybeCallASub).
 asub_to_native(gr,ASub,Qv,OutFlag,OutputUser,Comps) :- !, gr_asub_to_native(ASub,Qv,OutFlag,OutputUser,Comps).
 unknown_call(gr,Sg,Vars,Call,Succ) :- !, gr_unknown_call(Sg,Vars,Call,Succ).
 unknown_entry(gr,Sg,Qv,Call) :- !, gr_unknown_entry(Sg,Qv,Call).
@@ -375,7 +375,7 @@ call_to_success_fact(def,Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ) :- !, def_call_to
 special_builtin(def,SgKey,Sg,Subgoal,Type,Condvars) :- !, def_special_builtin(SgKey,Sg,Subgoal,Type,Condvars).
 success_builtin(def,Type,_Sv_uns,Condvars,_HvFv_u,Call,Succ) :- !, def_success_builtin(Type,Condvars,Call,Succ).
 input_interface(def,InputUser,Kind,Struct0,Struct1) :- !, def_input_interface(InputUser,Kind,Struct0,Struct1).
-input_user_interface(def,InputUser,_Qv,ASub,_Sg,_MaybeCallASub) :- !, def_input_user_interface(InputUser,ASub).
+input_user_interface(def,InputUser,Qv,ASub,Sg,MaybeCallASub) :- !, def_input_user_interface(InputUser,Qv,ASub,Sg,MaybeCallASub).
 asub_to_native(def,ASub,Qv,OutFlag,OutputUser,Comps) :- !, def_asub_to_native(ASub,Qv,OutFlag,OutputUser,Comps).
 unknown_call(def,Sg,Vars,Call,Succ) :- !, def_unknown_call(Sg,Vars,Call,Succ).
 unknown_entry(def,Sg,Qv,Call) :- !, def_unknown_entry(Sg,Qv,Call).
@@ -416,7 +416,7 @@ special_builtin(share,SgKey,Sg,Subgoal,Type,Condvars) :- !, share_special_builti
 success_builtin(share,Type,Sv_uns,Condvars,_HvFv_u,Call,Succ) :- !, share_success_builtin(Type,Sv_uns,Condvars,Call,Succ).
 call_to_success_builtin(share,SgKey,Sg,Sv,Call,Proj,Succ) :- !, share_call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,Succ).
 input_interface(share,InputUser,Kind,Struct0,Struct1) :- !, share_input_interface(InputUser,Kind,Struct0,Struct1).
-input_user_interface(share,InputUser,Qv,ASub,_Sg,_MaybeCallASub) :- !, share_input_user_interface(InputUser,Qv,ASub).
+input_user_interface(share,InputUser,Qv,ASub,Sg,MaybeCallASub) :- !, share_input_user_interface(InputUser,Qv,ASub,Sg,MaybeCallASub).
 asub_to_native(share,ASub,Qv,OutFlag,OutputUser,Comps) :- !, share_asub_to_native(ASub,Qv,OutFlag,OutputUser,Comps).
 unknown_call(share,Sg,Vars,Call,Succ) :- !, share_unknown_call(Sg,Vars,Call,Succ).
 unknown_entry(share,Sg,Qv,Call) :- !, share_unknown_entry(Sg,Qv,Call).
@@ -441,7 +441,7 @@ success_builtin(shfr,Type,Sv_uns,Condvars,_HvFv_u,Call,Succ) :- !, shfr_success_
 call_to_success_builtin(shfr,SgKey,Sg,Sv,Call,Proj,Succ) :- !, shfr_call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,Succ).
 obtain_info(shfr,Prop,Vars,ASub,Info) :- !, shfr_obtain(Prop,Vars,ASub,Info).
 input_interface(shfr,InputUser,Kind,Struct0,Struct1) :- !, shfr_input_interface(InputUser,Kind,Struct0,Struct1).
-input_user_interface(shfr,InputUser,Qv,ASub,_Sg,_MaybeCallASub) :- !, shfr_input_user_interface(InputUser,Qv,ASub).
+input_user_interface(shfr,InputUser,Qv,ASub,Sg,MaybeCallASub) :- !, shfr_input_user_interface(InputUser,Qv,ASub,Sg,MaybeCallASub).
 asub_to_native(shfr,ASub,Qv,OutFlag,OutputUser,Comps) :- !, shfr_asub_to_native(ASub,Qv,OutFlag,OutputUser,Comps).
 unknown_call(shfr,Sg,Vars,Call,Succ) :- !, shfr_unknown_call(Sg,Vars,Call,Succ).
 unknown_entry(shfr,Sg,Qv,Call) :- !, shfr_unknown_entry(Sg,Qv,Call).
@@ -481,7 +481,7 @@ special_builtin(shfrnv,SgKey,Sg,Subgoal,Type,Condvars) :- !, shfr_special_builti
 success_builtin(shfrnv,Type,Sv_uns,Condvars,_HvFv_u,Call,Succ) :- !, shfrnv_success_builtin(Type,Sv_uns,Condvars,Call,Succ).
 call_to_success_builtin(shfrnv,SgKey,Sg,Sv,Call,Proj,Succ) :- !, shfrnv_call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,Succ).
 input_interface(shfrnv,InputUser,Kind,Struct0,Struct1) :- !, shfrnv_input_interface(InputUser,Kind,Struct0,Struct1).
-input_user_interface(shfrnv,InputUser,Qv,ASub,_Sg,_MaybeCallASub) :- !, shfrnv_input_user_interface(InputUser,Qv,ASub).
+input_user_interface(shfrnv,InputUser,Qv,ASub,Sg,MaybeCallASub) :- !, shfrnv_input_user_interface(InputUser,Qv,ASub,Sg,MaybeCallASub).
 asub_to_native(shfrnv,ASub,Qv,OutFlag,OutputUser,Comps) :- !, shfrnv_asub_to_native(ASub,Qv,OutFlag,OutputUser,Comps).
 unknown_call(shfrnv,Sg,Vars,Call,Succ) :- !, shfr_unknown_call(Sg,Vars,Call,Succ).
 unknown_entry(shfrnv,Sg,Qv,Call) :- !, shfr_unknown_entry(Sg,Qv,Call).
@@ -527,7 +527,7 @@ call_to_success_fact(shfret,Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ) :- !, shfret_c
 combined_special_builtin(shfret,SgKey,Domains) :- !, shfret_combined_special_builtin(SgKey,Domains).
 split_combined_domain(shfret,ASub,ASubs,Doms) :- !, shfret_split_combined_domain(ASub,ASubs,Doms).
 input_interface(shfret,InputUser,Kind,Struct0,Struct1) :- !, shfret_input_interface(InputUser,Kind,Struct0,Struct1).
-input_user_interface(shfret,InputUser,Qv,ASub,_Sg,_MaybeCallASub) :- !, shfret_input_user_interface(InputUser,Qv,ASub).
+input_user_interface(shfret,InputUser,Qv,ASub,Sg,MaybeCallASub) :- !, shfret_input_user_interface(InputUser,Qv,ASub,Sg,MaybeCallASub).
 asub_to_native(shfret,ASub,Qv,OutFlag,OutputUser,Comps) :- !, shfret_asub_to_native(ASub,Qv,OutFlag,OutputUser,Comps).
 unknown_call(shfret,Sg,Vars,Call,Succ) :- !, shfret_unknown_call(Sg,Vars,Call,Succ).
 unknown_entry(shfret,Sg,Qv,Call) :- !, shfret_unknown_entry(Sg,Qv,Call).
@@ -561,7 +561,7 @@ call_to_success_fact(shareson,Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ) :- !, shares
 special_builtin(shareson,SgKey,Sg,Subgoal,Type,Condvars) :- !, shareson_special_builtin(SgKey,Sg,Subgoal,Type,Condvars).
 body_succ_builtin(shareson,Type,Sg,Condvs,Sv,HvFv_u,Call,Proj,Succ) :- !, shareson_body_succ_builtin(Type,Sg,Condvs,Sv,HvFv_u,Call,Proj,Succ).
 input_interface(shareson,InputUser,Kind,Struct0,Struct1) :- !, shareson_input_interface(InputUser,Kind,Struct0,Struct1).
-input_user_interface(shareson,InputUser,Qv,ASub,_Sg,_MaybeCallASub) :- !, shareson_input_user_interface(InputUser,Qv,ASub).
+input_user_interface(shareson,InputUser,Qv,ASub,Sg,MaybeCallASub) :- !, shareson_input_user_interface(InputUser,Qv,ASub,Sg,MaybeCallASub).
 asub_to_native(shareson,ASub,Qv,OutFlag,OutputUser,Comps) :- !, shareson_asub_to_native(ASub,Qv,OutFlag,OutputUser,Comps).
 unknown_call(shareson,Sg,Vars,Call,Succ) :- !, shareson_unknown_call(Sg,Vars,Call,Succ).
 unknown_entry(shareson,Sg,Qv,Call) :- !, shareson_unknown_entry(Sg,Qv,Call).
@@ -596,7 +596,7 @@ call_to_success_fact(shfrson,Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ) :- !, shfrson
 special_builtin(shfrson,SgKey,Sg,Subgoal,Type,Condvars) :- !, shfrson_special_builtin(SgKey,Sg,Subgoal,Type,Condvars).
 body_succ_builtin(shfrson,Type,Sg,Condvs,Sv,HvFv_u,Call,Proj,Succ) :- !, shfrson_body_succ_builtin(Type,Sg,Condvs,Sv,HvFv_u,Call,Proj,Succ).
 input_interface(shfrson,InputUser,Kind,Struct0,Struct1) :- !, shfrson_input_interface(InputUser,Kind,Struct0,Struct1).
-input_user_interface(shfrson,InputUser,Qv,ASub,_Sg,_MaybeCallASub) :- !, shfrson_input_user_interface(InputUser,Qv,ASub).
+input_user_interface(shfrson,InputUser,Qv,ASub,Sg,MaybeCallASub) :- !, shfrson_input_user_interface(InputUser,Qv,ASub,Sg,MaybeCallASub).
 asub_to_native(shfrson,ASub,Qv,OutFlag,OutputUser,Comps) :- !, shfrson_asub_to_native(ASub,Qv,OutFlag,OutputUser,Comps).
 unknown_call(shfrson,Sg,Vars,Call,Succ) :- !, shfrson_unknown_call(Sg,Vars,Call,Succ).
 unknown_entry(shfrson,Sg,Qv,Call) :- !, shfrson_unknown_entry(Sg,Qv,Call).
@@ -632,7 +632,7 @@ special_builtin(son,SgKey,Sg,Subgoal,Type,Condvars) :- !, son_special_builtin(Sg
 success_builtin(son,Type,Sv_uns,Condvars,_HvFv_u,Call,Succ) :- !, son_success_builtin(Type,Sv_uns,Condvars,Call,Succ).
 call_to_success_builtin(son,SgKey,Sg,Sv,Call,Proj,Succ) :- !, son_call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,Succ).
 input_interface(son,InputUser,Kind,Struct0,Struct1) :- !, son_input_interface(InputUser,Kind,Struct0,Struct1).
-input_user_interface(son,InputUser,Qv,ASub,_Sg,_MaybeCallASub) :- !, son_input_user_interface(InputUser,Qv,ASub).
+input_user_interface(son,InputUser,Qv,ASub,Sg,MaybeCallASub) :- !, son_input_user_interface(InputUser,Qv,ASub,Sg,MaybeCallASub).
 asub_to_native(son,ASub,Qv,OutFlag,OutputUser,Comps) :- !, son_asub_to_native(ASub,Qv,OutFlag,OutputUser,Comps).
 unknown_call(son,Sg,Vars,Call,Succ) :- !, son_unknown_call(Sg,Vars,Call,Succ).
 unknown_entry(son,Sg,Qv,Call) :- !, son_unknown_entry(Sg,Qv,Call).
@@ -657,7 +657,7 @@ special_builtin(share_amgu,SgKey,Sg,Subgoal,Type,Condvars) :- !, share_amgu_spec
 success_builtin(share_amgu,Type,Sv_uns,Condvars,_HvFv_u,Call,Succ) :- !, share_amgu_success_builtin(Type,Sv_uns,Condvars,Call,Succ).
 call_to_success_builtin(share_amgu,SgKey,Sg,Sv,Call,Proj,Succ) :- !, share_amgu_call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,Succ).
 input_interface(share_amgu,InputUser,Kind,Struct0,Struct1) :- !, share_input_interface(InputUser,Kind,Struct0,Struct1).
-input_user_interface(share_amgu,InputUser,Qv,ASub,_Sg,_MaybeCallASub) :- !, share_input_user_interface(InputUser,Qv,ASub).
+input_user_interface(share_amgu,InputUser,Qv,ASub,Sg,MaybeCallASub) :- !, share_input_user_interface(InputUser,Qv,ASub,Sg,MaybeCallASub).
 asub_to_native(share_amgu,ASub,Qv,OutFlag,OutputUser,Comps) :- !, share_asub_to_native(ASub,Qv,OutFlag,OutputUser,Comps).
 unknown_call(share_amgu,Sg,Vars,Call,Succ) :- !, share_unknown_call(Sg,Vars,Call,Succ).
 unknown_entry(share_amgu,Sg,Qv,Call) :- !, share_unknown_entry(Sg,Qv,Call).
@@ -682,7 +682,7 @@ success_builtin(sharefree_amgu,Type,Sv_uns,Condvars,_HvFv_u,Call,Succ) :- !, sha
 call_to_success_builtin(sharefree_amgu,SgKey,Sg,Sv,Call,Proj,Succ) :- !, sharefree_amgu_call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,Succ).
 obtain_info(sharefree_amgu,Prop,Vars,ASub,Info) :- !, shfr_obtain(Prop,Vars,ASub,Info).
 input_interface(sharefree_amgu,InputUser,Kind,Struct0,Struct1) :- !, shfr_input_interface(InputUser,Kind,Struct0,Struct1).
-input_user_interface(sharefree_amgu,InputUser,Qv,ASub,_Sg,_MaybeCallASub) :- !, shfr_input_user_interface(InputUser,Qv,ASub).
+input_user_interface(sharefree_amgu,InputUser,Qv,ASub,Sg,MaybeCallASub) :- !, shfr_input_user_interface(InputUser,Qv,ASub,Sg,MaybeCallASub).
 asub_to_native(sharefree_amgu,ASub,Qv,OutFlag,OutputUser,Comps) :- !, shfr_asub_to_native(ASub,Qv,OutFlag,OutputUser,Comps).
 unknown_call(sharefree_amgu,Sg,Vars,Call,Succ) :- !, shfr_unknown_call(Sg,Vars,Call,Succ).
 unknown_entry(sharefree_amgu,Sg,Qv,Call) :- !, shfr_unknown_entry(Sg,Qv,Call).
@@ -706,7 +706,7 @@ success_builtin(shfrlin_amgu,Type,Sv_uns,Condvars,_HvFv_u,Call,Succ) :- !, shfrl
 call_to_success_builtin(shfrlin_amgu,SgKey,Sg,Sv,Call,Proj,Succ) :- !, shfrlin_call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,Succ).
 obtain_info(shfrlin_amgu,Prop,Vars,(Sh,Fr,_Lin),Info) :- !, shfr_obtain(Prop,Vars,(Sh,Fr),Info).
 input_interface(shfrlin_amgu,InputUser,Kind,Struct0,Struct1) :- !, shfrlin_input_interface(InputUser,Kind,Struct0,Struct1).
-input_user_interface(shfrlin_amgu,InputUser,Qv,ASub,_Sg,_MaybeCallASub) :- !, shfrlin_input_user_interface(InputUser,Qv,ASub).
+input_user_interface(shfrlin_amgu,InputUser,Qv,ASub,Sg,MaybeCallASub) :- !, shfrlin_input_user_interface(InputUser,Qv,ASub,Sg,MaybeCallASub).
 asub_to_native(shfrlin_amgu,ASub,Qv,OutFlag,OutputUser,Comps) :- !, shfrlin_asub_to_native(ASub,Qv,OutFlag,OutputUser,Comps).
 unknown_call(shfrlin_amgu,Sg,Vars,Call,Succ) :- !, shfrlin_unknown_call(Sg,Vars,Call,Succ).
 unknown_entry(shfrlin_amgu,Sg,Qv,Call) :- !, shfrlin_unknown_entry(Sg,Qv,Call).
@@ -731,7 +731,7 @@ special_builtin(share_clique,SgKey,Sg,Subgoal,Type,Condvars) :- !, share_clique_
 success_builtin(share_clique,Type,Sv_uns,Condvars,_HvFv_u,Call,Succ) :- !, share_clique_success_builtin(Type,Sv_uns,Condvars,Call,Succ).
 call_to_success_builtin(share_clique,SgKey,Sg,Sv,Call,Proj,Succ) :- !, share_clique_call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,Succ).
 input_interface(share_clique,InputUser,Kind,Struct0,Struct1) :- !, share_clique_input_interface(InputUser,Kind,Struct0,Struct1).
-input_user_interface(share_clique,InputUser,Qv,ASub,_Sg,_MaybeCallASub) :- !, share_clique_input_user_interface(InputUser,Qv,ASub).
+input_user_interface(share_clique,InputUser,Qv,ASub,Sg,MaybeCallASub) :- !, share_clique_input_user_interface(InputUser,Qv,ASub,Sg,MaybeCallASub).
 asub_to_native(share_clique,ASub,Qv,OutFlag,OutputUser,Comps) :- !, share_clique_asub_to_native(ASub,Qv,OutFlag,OutputUser,Comps).
 unknown_call(share_clique,Sg,Vars,Call,Succ) :- !, share_clique_unknown_call(Sg,Vars,Call,Succ).
 unknown_entry(share_clique,Sg,Qv,Call) :- !, share_clique_unknown_entry(Sg,Qv,Call).
@@ -755,7 +755,7 @@ special_builtin(share_clique_1,SgKey,Sg,Subgoal,Type,Condvars) :- !, share_cliqu
 success_builtin(share_clique_1,Type,Sv_uns,Condvars,_HvFv_u,Call,Succ) :- !, share_clique_1_success_builtin(Type,Sv_uns,Condvars,Call,Succ).
 call_to_success_builtin(share_clique_1,SgKey,Sg,Sv,Call,Proj,Succ) :- !, share_clique_1_call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,Succ).
 input_interface(share_clique_1,InputUser,Kind,Struct0,Struct1) :- !, share_clique_1_input_interface(InputUser,Kind,Struct0,Struct1).
-input_user_interface(share_clique_1,InputUser,Qv,ASub,_Sg,_MaybeCallASub) :- !, share_clique_input_user_interface(InputUser,Qv,ASub).
+input_user_interface(share_clique_1,InputUser,Qv,ASub,Sg,MaybeCallASub) :- !, share_clique_input_user_interface(InputUser,Qv,ASub,Sg,MaybeCallASub).
 asub_to_native(share_clique_1,ASub,Qv,OutFlag,OutputUser,Comps) :- !, share_clique_1_asub_to_native(ASub,Qv,OutFlag,OutputUser,Comps).
 unknown_call(share_clique_1,Sg,Vars,Call,Succ) :- !, share_clique_1_unknown_call(Sg,Vars,Call,Succ).
 unknown_entry(share_clique_1,Sg,Qv,Call) :- !, share_clique_1_unknown_entry(Sg,Qv,Call).
@@ -782,7 +782,7 @@ success_builtin(sharefree_clique,Type,Sv_uns,Condvars,_HvFv_u,Call,Succ) :- !, s
 call_to_success_builtin(sharefree_clique,SgKey,Sg,Sv,Call,Proj,Succ) :- !, sharefree_clique_call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,Succ).
 obtain_info(sharefree_clique,Prop,Vars,ASub,Info) :- !, shfr_obtain(Prop,Vars,ASub,Info).
 input_interface(sharefree_clique,InputUser,Kind,Struct0,Struct1) :- !, sharefree_clique_input_interface(InputUser,Kind,Struct0,Struct1).
-input_user_interface(sharefree_clique,InputUser,Qv,ASub,_Sg,_MaybeCallASub) :- !, sharefree_clique_input_user_interface(InputUser,Qv,ASub).
+input_user_interface(sharefree_clique,InputUser,Qv,ASub,Sg,MaybeCallASub) :- !, sharefree_clique_input_user_interface(InputUser,Qv,ASub,Sg,MaybeCallASub).
 asub_to_native(sharefree_clique,ASub,Qv,OutFlag,OutputUser,Comps) :- !, sharefree_clique_asub_to_native(ASub,Qv,OutFlag,OutputUser,Comps).
 unknown_call(sharefree_clique,Sg,Vars,Call,Succ) :- !, sharefree_clique_unknown_call(Sg,Vars,Call,Succ).
 unknown_entry(sharefree_clique,Sg,Qv,Call) :- !, sharefree_clique_unknown_entry(Sg,Qv,Call).
@@ -805,7 +805,7 @@ call_to_success_fact(share_clique_def,Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ) :- !
 special_builtin(share_clique_def,SgKey,Sg,Subgoal,Type,Condvars) :- !, share_clique_def_special_builtin(SgKey,Sg,Subgoal,Type,Condvars).
 body_succ_builtin(share_clique_def,Type,Sg,Condvs,Sv,HvFv_u,Call,Proj,Succ) :- !, share_clique_def_body_succ_builtin(Type,Sg,Condvs,Sv,HvFv_u,Call,Proj,Succ).
 input_interface(share_clique_def,InputUser,Kind,Struct0,Struct1) :- !, share_clique_input_interface(InputUser,Kind,Struct0,Struct1).
-input_user_interface(share_clique_def,InputUser,Qv,ASub,_Sg,_MaybeCallASub) :- !, share_clique_def_input_user_interface(InputUser,Qv,ASub).
+input_user_interface(share_clique_def,InputUser,Qv,ASub,Sg,MaybeCallASub) :- !, share_clique_def_input_user_interface(InputUser,Qv,ASub,Sg,MaybeCallASub).
 asub_to_native(share_clique_def,ASub,Qv,OutFlag,OutputUser,Comps) :- !, share_clique_def_asub_to_native(ASub,Qv,OutFlag,OutputUser,Comps).
 unknown_call(share_clique_def,Sg,Vars,Call,Succ) :- !, share_clique_def_unknown_call(Sg,Vars,Call,Succ).
 unknown_entry(share_clique_def,Sg,Qv,Call) :- !, share_clique_def_unknown_entry(Sg,Qv,Call).
@@ -844,7 +844,7 @@ call_to_success_fact(sharefree_clique_def,Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ) 
 special_builtin(sharefree_clique_def,SgKey,Sg,Subgoal,Type,Condvars) :- !, sharefree_clique_def_special_builtin(SgKey,Sg,Subgoal,Type,Condvars).
 body_succ_builtin(sharefree_clique_def,Type,Sg,Condvs,Sv,HvFv_u,Call,Proj,Succ) :- !, sharefree_clique_def_body_succ_builtin(Type,Sg,Condvs,Sv,HvFv_u,Call,Proj,Succ).
 input_interface(sharefree_clique_def,InputUser,Kind,Struct0,Struct1) :- !, sharefree_clique_input_interface(InputUser,Kind,Struct0,Struct1).
-input_user_interface(sharefree_clique_def,InputUser,Qv,ASub,_Sg,_MaybeCallASub) :- !, sharefree_clique_def_input_user_interface(InputUser,Qv,ASub).
+input_user_interface(sharefree_clique_def,InputUser,Qv,ASub,Sg,MaybeCallASub) :- !, sharefree_clique_def_input_user_interface(InputUser,Qv,ASub,Sg,MaybeCallASub).
 asub_to_native(sharefree_clique_def,ASub,Qv,OutFlag,OutputUser,Comps) :- !, sharefree_clique_def_asub_to_native(ASub,Qv,OutFlag,OutputUser,Comps).
 unknown_call(sharefree_clique_def,Sg,Vars,Call,Succ) :- !, sharefree_clique_def_unknown_call(Sg,Vars,Call,Succ).
 unknown_entry(sharefree_clique_def,Sg,Qv,Call) :- !, sharefree_clique_def_unknown_entry(Sg,Qv,Call).
@@ -906,7 +906,7 @@ call_to_success_fact(aeq,Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ) :- !, aeq_call_to
 special_builtin(aeq,Sg_key,Sg,Subgoal,Type,Condvars) :- !, aeq_special_builtin(Sg_key,Sg,Subgoal,Type,Condvars).
 success_builtin(aeq,Type,Sv_uns,Condvars,_HvFv_u,Call,Succ) :- !, aeq_success_builtin(Type,Sv_uns,Condvars,Call,Succ).
 input_interface(aeq,InputUser,Kind,Struct0,Struct1) :- !, aeq_input_interface(InputUser,Kind,Struct0,Struct1).
-input_user_interface(aeq,InputUser,Qv,ASub,_Sg,_MaybeCallASub) :- !, aeq_input_user_interface(InputUser,Qv,ASub).
+input_user_interface(aeq,InputUser,Qv,ASub,Sg,MaybeCallASub) :- !, aeq_input_user_interface(InputUser,Qv,ASub,Sg,MaybeCallASub).
 asub_to_native(aeq,ASub,Qv,OutFlag,OutputUser,Comps) :- !, aeq_asub_to_native(ASub,Qv,OutFlag,OutputUser,Comps).
 unknown_call(aeq,Sg,Vars,Call,Succ) :- !, aeq_unknown_call(Sg,Vars,Call,Succ).
 unknown_entry(aeq,Sg,Qv,Call) :- !, aeq_unknown_entry(Sg,Qv,Call).
@@ -953,7 +953,7 @@ special_builtin(depth,SgKey,Sg,Subgoal,Type,Condvars) :- !, depthk_special_built
 success_builtin(depth,Type,Sv_uns,Condvars,_HvFv_u,Call,Succ) :- !, depthk_success_builtin(Type,Sv_uns,Condvars,Call,Succ).
 call_to_success_builtin(depth,_SgKey,Sg,Sv,Call,_Proj,Succ) :- !, depthk_call_to_success_builtin(Sg,Sv,Call,Succ).
 input_interface(depth,InputUser,Kind,Struct0,Struct1) :- !, depthk_input_interface(InputUser,Kind,Struct0,Struct1).
-input_user_interface(depth,InputUser,Qv,ASub,_Sg,_MaybeCallASub) :- !, depthk_input_user_interface(InputUser,Qv,ASub).
+input_user_interface(depth,InputUser,Qv,ASub,Sg,MaybeCallASub) :- !, depthk_input_user_interface(InputUser,Qv,ASub,Sg,MaybeCallASub).
 asub_to_native(depth,ASub,Qv,OutFlag,OutputUser,Comps) :- !, depthk_asub_to_native(ASub,Qv,OutFlag,OutputUser,Comps).
 unknown_call(depth,Sg,Vars,Call,Succ) :- !, depthk_unknown_call(Sg,Vars,Call,Succ).
 unknown_entry(depth,Sg,Qv,Call) :- !, depthk_unknown_entry(Sg,Qv,Call).
@@ -977,7 +977,7 @@ call_to_success_fact(path,Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ) :- !, path_call_
 special_builtin(path,SgKey,Sg,Subgoal,Type,Condvars) :- !, path_special_builtin(SgKey,Sg,Subgoal,Type,Condvars).
 success_builtin(path,Type,Sv_uns,Condvars,_HvFv_u,Call,Succ) :- !, path_success_builtin(Type,Sv_uns,Condvars,Call,Succ).
 input_interface(path,InputUser,Kind,Struct0,Struct1) :- !, path_input_interface(InputUser,Kind,Struct0,Struct1).
-input_user_interface(path,InputUser,Qv,ASub,_Sg,_MaybeCallASub) :- !, path_input_user_interface(InputUser,Qv,ASub).
+input_user_interface(path,InputUser,Qv,ASub,Sg,MaybeCallASub) :- !, path_input_user_interface(InputUser,Qv,ASub,Sg,MaybeCallASub).
 asub_to_native(path,ASub,Qv,OutFlag,OutputUser,Comps) :- !, path_asub_to_native(ASub,Qv,OutFlag,OutputUser,Comps).
 unknown_call(path,Sg,Vars,Call,Succ) :- !, path_unknown_call(Sg,Vars,Call,Succ).
 unknown_entry(path,Sg,Qv,Call) :- !, path_unknown_entry(Sg,Qv,Call).
@@ -1011,7 +1011,7 @@ special_builtin(terms,SgKey,Sg,Subgoal,Type,Condvars) :- !, terms_special_builti
 success_builtin(terms,Type,Sv_uns,Condvars,_HvFv_u,Call,Succ) :- !, terms_success_builtin(Type,Sv_uns,Condvars,Call,Succ).
 call_to_success_builtin(terms,SgKey,Sg,Sv,Call,Proj,Succ) :- !, terms_call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,Succ).
 input_interface(terms,InputUser,Kind,Struct0,Struct1) :- !, terms_input_interface(InputUser,Kind,Struct0,Struct1).
-input_user_interface(terms,InputUser,Qv,ASub,_Sg,_MaybeCallASub) :- !, terms_input_user_interface(InputUser,Qv,ASub).
+input_user_interface(terms,InputUser,Qv,ASub,Sg,MaybeCallASub) :- !, terms_input_user_interface(InputUser,Qv,ASub,Sg,MaybeCallASub).
 asub_to_native(terms,ASub,Qv,OutFlag,OutputUser,Comps) :- !, terms_asub_to_native(ASub,Qv,OutFlag,OutputUser,Comps).
 concrete(terms,Var,ASub,List) :- !, terms_concret(Var,ASub,List).
 unknown_call(terms,Sg,Vars,Call,Succ) :- !, terms_unknown_call(Sg,Vars,Call,Succ).
@@ -1042,7 +1042,7 @@ special_builtin(ptypes,SgKey,Sg,Subgoal,Type,Condvars) :- !, terms_special_built
 success_builtin(ptypes,Type,Sv_uns,Condvars,_HvFv_u,Call,Succ) :- !, terms_success_builtin(Type,Sv_uns,Condvars,Call,Succ).
 call_to_success_builtin(ptypes,SgKey,Sg,Sv,Call,Proj,Succ) :- !, terms_call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,Succ).
 input_interface(ptypes,InputUser,Kind,Struct0,Struct1) :- !, terms_input_interface(InputUser,Kind,Struct0,Struct1).
-input_user_interface(ptypes,InputUser,Qv,ASub,_Sg,_MaybeCallASub) :- !, terms_input_user_interface(InputUser,Qv,ASub).
+input_user_interface(ptypes,InputUser,Qv,ASub,Sg,MaybeCallASub) :- !, terms_input_user_interface(InputUser,Qv,ASub,Sg,MaybeCallASub).
 asub_to_native(ptypes,ASub,Qv,OutFlag,OutputUser,Comps) :- !, terms_asub_to_native(ASub,Qv,OutFlag,OutputUser,Comps).
 concrete(ptypes,Var,ASub,List) :- !, terms_concret(Var,ASub,List).
 unknown_call(ptypes,Sg,Vars,Call,Succ) :- !, terms_unknown_call(Sg,Vars,Call,Succ).
@@ -1075,7 +1075,7 @@ success_builtin(eterms,Type,Sv_uns,Condvars,_HvFv_u,Call,Succ) :- !, eterms_succ
 call_to_success_builtin(eterms,SgKey,Sg,Sv,Call,Proj,Succ) :- !, eterms_call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,Succ).
 obtain_info(eterms,_Prop,Vars,ASub,Info) :- !, asub_to_info(eterms,ASub,Vars,Info,_CompProps).
 input_interface(eterms,InputUser,Kind,Struct0,Struct1) :- !, eterms_input_interface(InputUser,Kind,Struct0,Struct1).
-input_user_interface(eterms,InputUser,Qv,ASub,_Sg,_MaybeCallASub) :- !, eterms_input_user_interface(InputUser,Qv,ASub).
+input_user_interface(eterms,InputUser,Qv,ASub,Sg,MaybeCallASub) :- !, eterms_input_user_interface(InputUser,Qv,ASub,Sg,MaybeCallASub).
 asub_to_native(eterms,ASub,Qv,OutFlag,OutputUser,Comps) :- !, eterms_asub_to_native(ASub,Qv,OutFlag,OutputUser,Comps).
 concrete(eterms,Var,ASub,List) :- !, eterms_concret(Var,ASub,List).
 unknown_call(eterms,Sg,Vars,Call,Succ) :- !, eterms_unknown_call(Sg,Vars,Call,Succ).
@@ -1110,7 +1110,7 @@ success_builtin(etermsvar,Type,Sv_uns,Condvars,_HvFv_u,Call,Succ) :- !, etermsva
 call_to_success_builtin(etermsvar,SgKey,Sg,Sv,Call,Proj,Succ) :- !, etermsvar_call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,Succ).
 obtain_info(etermsvar,_Prop,Vars,ASub,Info) :- !, asub_to_info(etermsvar,ASub,Vars,Info,_CompProps).
 input_interface(etermsvar,InputUser,Kind,Struct0,Struct1) :- !, etermsvar_input_interface(InputUser,Kind,Struct0,Struct1).
-input_user_interface(etermsvar,InputUser,Qv,ASub,_Sg,_MaybeCallASub) :- !, etermsvar_input_user_interface(InputUser,Qv,ASub).
+input_user_interface(etermsvar,InputUser,Qv,ASub,Sg,MaybeCallASub) :- !, etermsvar_input_user_interface(InputUser,Qv,ASub,Sg,MaybeCallASub).
 asub_to_native(etermsvar,ASub,Qv,OutFlag,OutputUser,Comps) :- !, etermsvar_asub_to_native(ASub,Qv,OutFlag,OutputUser,Comps).
 %concrete(etermsvar,Var,ASub,List) :- !, etermsvar_concret(Var,ASub,List).
 unknown_call(etermsvar,Sg,Vars,Call,Succ) :- !, etermsvar_unknown_call(Sg,Vars,Call,Succ).
@@ -1145,7 +1145,7 @@ special_builtin(svterms,SgKey,Sg,Subgoal,Type,Condvars) :- !, svterms_special_bu
 success_builtin(svterms,Type,Sv_uns,Condvars,_HvFv_u,Call,Succ) :- !, svterms_success_builtin(Type,Sv_uns,Condvars,Call,Succ).
 call_to_success_builtin(svterms,SgKey,Sg,Sv,Call,Proj,Succ) :- !, svterms_call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,Succ).
 input_interface(svterms,InputUser,Kind,Struct0,Struct1) :- !, svterms_input_interface(InputUser,Kind,Struct0,Struct1).
-input_user_interface(svterms,InputUser,Qv,ASub,_Sg,_MaybeCallASub) :- !, svterms_input_user_interface(InputUser,Qv,ASub).
+input_user_interface(svterms,InputUser,Qv,ASub,Sg,MaybeCallASub) :- !, svterms_input_user_interface(InputUser,Qv,ASub,Sg,MaybeCallASub).
 asub_to_native(svterms,ASub,Qv,OutFlag,OutputUser,Comps) :- !, svterms_asub_to_native(ASub,Qv,OutFlag,OutputUser,Comps).
 concrete(svterms,Var,ASub,List) :- !, svterms_concret(Var,ASub,List).
 unknown_call(svterms,Sg,Vars,Call,Succ) :- !, svterms_unknown_call(Sg,Vars,Call,Succ).
@@ -1177,7 +1177,7 @@ special_builtin(deftypes,SgKey,Sg,Subgoal,Type,Condvars) :- !, terms_special_bui
 success_builtin(deftypes,Type,Sv_uns,Condvars,_HvFv_u,Call,Succ) :- !, terms_success_builtin(Type,Sv_uns,Condvars,Call,Succ).
 call_to_success_builtin(deftypes,SgKey,Sg,Sv,Call,Proj,Succ) :- !, deftypes_call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,Succ).
 input_interface(deftypes,InputUser,Kind,Struct0,Struct1) :- !, deftypes_input_interface(InputUser,Kind,Struct0,Struct1).
-input_user_interface(deftypes,InputUser,Qv,ASub,_Sg,_MaybeCallASub) :- !, deftypes_input_user_interface(InputUser,Qv,ASub).
+input_user_interface(deftypes,InputUser,Qv,ASub,Sg,MaybeCallASub) :- !, deftypes_input_user_interface(InputUser,Qv,ASub,Sg,MaybeCallASub).
 asub_to_native(deftypes,ASub,Qv,OutFlag,OutputUser,Comps) :- !, deftypes_asub_to_native(ASub,Qv,OutFlag,OutputUser,Comps).
 concrete(deftypes,Var,ASub,List) :- !, terms_concret(Var,ASub,List).
 unknown_call(deftypes,Sg,Vars,Call,Succ) :- !, terms_unknown_call(Sg,Vars,Call,Succ).
@@ -1242,7 +1242,7 @@ special_builtin(polyhedra,SgKey,Sg,Subgoal,Type,Condvars) :- !, polyhedra_specia
 success_builtin(polyhedra,Type,Sv_uns,Condvars,_HvFv_u,Call,Succ) :- !, polyhedra_success_builtin(Type,Sv_uns,Condvars,Call,Succ).
 call_to_success_builtin(polyhedra,SgKey,Sg,Sv,Call,Proj,Succ) :- !, polyhedra_call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,Succ).
 input_interface(polyhedra,InputUser,Kind,Struct0,Struct1) :- !, polyhedra_input_interface(InputUser,Kind,Struct0,Struct1).
-input_user_interface(polyhedra,InputUser,Qv,ASub,_Sg,_MaybeCallASub) :- !, polyhedra_input_user_interface(InputUser,Qv,ASub).
+input_user_interface(polyhedra,InputUser,Qv,ASub,Sg,MaybeCallASub) :- !, polyhedra_input_user_interface(InputUser,Qv,ASub,Sg,MaybeCallASub).
 asub_to_native(polyhedra,ASub,Qv,OutFlag,OutputUser,Comps) :- !, polyhedra_asub_to_native(ASub,Qv,OutFlag,OutputUser,Comps).
 unknown_call(polyhedra,Sg,Vars,Call,Succ) :- !, polyhedra_unknown_call(Sg,Vars,Call,Succ).
 unknown_entry(polyhedra,Sg,Qv,Call) :- !, polyhedra_unknown_entry(Sg,Qv,Call).
@@ -1270,7 +1270,7 @@ call_to_success_fact(java_nullity,Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ) :- !, ja
 special_builtin(java_nullity,SgKey,Sg,Subgoal,Type,Condvars) :- !, java_nullity_special_builtin(SgKey,Sg,Subgoal,Type,Condvars).
 success_builtin(java_nullity,Type,Sv_uns,Condvars,_HvFv_u,Call,Succ) :- !, java_nullity_success_builtin(Type,Sv_uns,Condvars,Call,Succ).
 input_interface(java_nullity,InputUser,Kind,Struct0,Struct1) :- !, java_nullity_input_interface(InputUser,Kind,Struct0,Struct1).
-input_user_interface(java_nullity,InputUser,Qv,ASub,_Sg,_MaybeCallASub) :- !, java_nullity_input_user_interface(InputUser,Qv,ASub).
+input_user_interface(java_nullity,InputUser,Qv,ASub,Sg,MaybeCallASub) :- !, java_nullity_input_user_interface(InputUser,Qv,ASub,Sg,MaybeCallASub).
 asub_to_native(java_nullity,ASub,Qv,OutFlag,OutputUser,Comps) :- !, java_nullity_asub_to_native(ASub,Qv,OutFlag,OutputUser,Comps).
 unknown_call(java_nullity,Sg,Vars,Call,Succ) :- !, java_nullity_unknown_call(Sg,Vars,Call,Succ).
 unknown_entry(java_nullity,Sg,Qv,Call) :- !, java_nullity_unknown_entry(Sg,Qv,Call).
@@ -1293,7 +1293,7 @@ special_builtin(oo_son,SgKey,Sg,Subgoal,Type,Condvars) :- !, oo_son_special_buil
 success_builtin(oo_son,Type,Sv_uns,Condvars,_HvFv_u,Call,Succ) :- !, oo_son_success_builtin(Type,Sv_uns,Condvars,Call,Succ).
 call_to_success_builtin(oo_son,SgKey,Sg,Sv,Call,Proj,Succ) :- !, oo_son_call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,Succ).
 input_interface(oo_son,InputUser,Kind,Struct0,Struct1) :- !, oo_son_input_interface(InputUser,Kind,Struct0,Struct1).
-input_user_interface(oo_son,InputUser,Qv,ASub,_Sg,_MaybeCallASub) :- !, oo_son_input_user_interface(InputUser,Qv,ASub).
+input_user_interface(oo_son,InputUser,Qv,ASub,Sg,MaybeCallASub) :- !, oo_son_input_user_interface(InputUser,Qv,ASub,Sg,MaybeCallASub).
 asub_to_native(oo_son,ASub,Qv,OutFlag,OutputUser,Comps) :- !, oo_son_asub_to_native(ASub,Qv,OutFlag,OutputUser,Comps).
 unknown_call(oo_son,Sg,Vars,Call,Succ) :- !, oo_son_unknown_call(Sg,Vars,Call,Succ).
 unknown_entry(oo_son,Sg,Qv,Call) :- !, oo_son_unknown_entry(Sg,Qv,Call).
@@ -1318,7 +1318,7 @@ special_builtin(oo_shnltau,SgKey,Sg,Subgoal,Type,Condvars) :- !, oo_shnltau_spec
 success_builtin(oo_shnltau,Type,Sv_uns,Condvars,_HvFv_u,Call,Succ) :- !, oo_shnltau_success_builtin(Type,Sv_uns,Condvars,Call,Succ).
 call_to_success_builtin(oo_shnltau,SgKey,Sg,Sv,Call,Proj,Succ) :- !, oo_shnltau_call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,Succ).
 input_interface(oo_shnltau,InputUser,Kind,Struct0,Struct1) :- !, oo_shnltau_input_interface(InputUser,Kind,Struct0,Struct1).
-input_user_interface(oo_shnltau,InputUser,Qv,ASub,_Sg,_MaybeCallASub) :- !, oo_shnltau_input_user_interface(InputUser,Qv,ASub).
+input_user_interface(oo_shnltau,InputUser,Qv,ASub,Sg,MaybeCallASub) :- !, oo_shnltau_input_user_interface(InputUser,Qv,ASub,Sg,MaybeCallASub).
 asub_to_native(oo_shnltau,ASub,Qv,OutFlag,OutputUser,Comps) :- !, oo_shnltau_asub_to_native(ASub,Qv,OutFlag,OutputUser,Comps).
 unknown_call(oo_shnltau,Sg,Vars,Call,Succ) :- !, oo_shnltau_unknown_call(Sg,Vars,Call,Succ).
 unknown_entry(oo_shnltau,Sg,Qv,Call) :- !, oo_shnltau_unknown_entry(Sg,Qv,Call).
@@ -1343,7 +1343,7 @@ special_builtin(oo_types,SgKey,Sg,Subgoal,Type,Condvars) :- !, oo_types_special_
 success_builtin(oo_types,Type,Sv_uns,Condvars,_HvFv_u,Call,Succ) :- !, oo_types_success_builtin(Type,Sv_uns,Condvars,Call,Succ).
 call_to_success_builtin(oo_types,SgKey,Sg,Sv,Call,Proj,Succ) :- !, oo_types_call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,Succ).
 input_interface(oo_types,InputUser,Kind,Struct0,Struct1) :- !, oo_types_input_interface(InputUser,Kind,Struct0,Struct1).
-input_user_interface(oo_types,InputUser,Qv,ASub,_Sg,_MaybeCallASub) :- !, oo_types_input_user_interface(InputUser,Qv,ASub).
+input_user_interface(oo_types,InputUser,Qv,ASub,Sg,MaybeCallASub) :- !, oo_types_input_user_interface(InputUser,Qv,ASub,Sg,MaybeCallASub).
 asub_to_native(oo_types,ASub,Qv,OutFlag,OutputUser,Comps) :- !, oo_types_asub_to_native(ASub,Qv,OutFlag,OutputUser,Comps).
 unknown_call(oo_types,Sg,Vars,Call,Succ) :- !, oo_types_unknown_call(Sg,Vars,Call,Succ).
 unknown_entry(oo_types,Sg,Qv,Call) :- !, oo_types_unknown_entry(Sg,Qv,Call).
@@ -1365,7 +1365,7 @@ call_to_success_fact(java_cha,Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ) :- !, java_c
 special_builtin(java_cha,SgKey,Sg,Subgoal,Type,Condvars) :- !, java_cha_special_builtin(SgKey,Sg,Subgoal,Type,Condvars).
 success_builtin(java_cha,Type,Sv_uns,Condvars,_HvFv_u,Call,Succ) :- !, java_cha_success_builtin(Type,Sv_uns,Condvars,Call,Succ).
 input_interface(java_cha,InputUser,Kind,Struct0,Struct1) :- !, java_cha_input_interface(InputUser,Kind,Struct0,Struct1).
-input_user_interface(java_cha,InputUser,Qv,ASub,_Sg,_MaybeCallASub) :- !, java_cha_input_user_interface(InputUser,Qv,ASub).
+input_user_interface(java_cha,InputUser,Qv,ASub,Sg,MaybeCallASub) :- !, java_cha_input_user_interface(InputUser,Qv,ASub,Sg,MaybeCallASub).
 asub_to_native(java_cha,ASub,Qv,OutFlag,OutputUser,Comps) :- !, java_cha_asub_to_native(ASub,Qv,OutFlag,OutputUser,Comps).
 unknown_call(java_cha,Sg,Vars,Call,Succ) :- !, java_cha_unknown_call(Sg,Vars,Call,Succ).
 unknown_entry(java_cha,Sg,Qv,Call) :- !, java_cha_unknown_entry(Sg,Qv,Call).
@@ -1398,7 +1398,7 @@ combined_special_builtin(nf,SgKey,Domains) :- !, nf_combined_special_builtin(SgK
 split_combined_domain(nf,ASub,ASubs,Doms) :- !, nf_split_combined_domain(ASub,ASubs,Doms).
 success_builtin(nf,Type,Sv_uns,Condvars,_HvFv_u,Call,Succ) :- !, nf_success_builtin(Type,Sv_uns,Condvars,Call,Succ).
 input_interface(nf,InputUser,Kind,Struct0,Struct1) :- !, nf_input_interface(InputUser,Kind,Struct0,Struct1).
-input_user_interface(nf,InputUser,Qv,ASub,_Sg,_MaybeCallASub) :- !, nf_input_user_interface(InputUser,Qv,ASub).
+input_user_interface(nf,InputUser,Qv,ASub,Sg,MaybeCallASub) :- !, nf_input_user_interface(InputUser,Qv,ASub,Sg,MaybeCallASub).
 asub_to_native(nf,ASub,Qv,OutFlag,OutputUser,Comp) :- !, nf_asub_to_native(ASub,Qv,OutFlag,OutputUser,Comp).
 unknown_call(nf,Sg,Vars,Call,Succ) :- !, nf_unknown_call(Sg,Vars,Call,Succ).
 unknown_entry(nf,Sg,Qv,Call) :- !, nf_unknown_entry(Sg,Qv,Call).
@@ -1451,7 +1451,7 @@ success_builtin(det,Type,Sv_uns,Condvars,_HvFv_u,Call,Succ) :- !, det_success_bu
 % 	CompProps = Info.
 obtain_info(det,Prop,Vars,ASub,Info) :- !, det_obtain(Prop,Vars,ASub,Info).
 input_interface(det,InputUser,Kind,Struct0,Struct1) :- !, det_input_interface(InputUser,Kind,Struct0,Struct1).
-input_user_interface(det,InputUser,Qv,ASub,_Sg,_MaybeCallASub) :- !, det_input_user_interface(InputUser,Qv,ASub).
+input_user_interface(det,InputUser,Qv,ASub,Sg,MaybeCallASub) :- !, det_input_user_interface(InputUser,Qv,ASub,Sg,MaybeCallASub).
 asub_to_native(det,ASub,Qv,OutFlag,OutputUser,Comp) :- !, det_asub_to_native(ASub,Qv,OutFlag,OutputUser,Comp).
 unknown_call(det,Sg,Vars,Call,Succ) :- !, det_unknown_call(Sg,Vars,Call,Succ).
 unknown_entry(det,Sg,Qv,Call) :- !, det_unknown_entry(Sg,Qv,Call).

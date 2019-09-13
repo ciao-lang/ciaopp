@@ -22,7 +22,7 @@
 	deftypes_input_interface/4,
 	deftypes_asub_to_native/5,
 	deftypes_output_interface/2,
-	deftypes_input_user_interface/3,
+	deftypes_input_user_interface/5,
 	deftypes_collect_abstypes/3,
 	deftypes_rename_abs/4,
 	deftypes_identical_abstract/2,
@@ -637,11 +637,11 @@ deftypes_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ):-
 %------------------------------------------------------------------------%
 
 %------------------------------------------------------------------------%
-% deftypes_input_user_interface(+InputUser,+Qv,-ASub)                       %
+% deftypes_input_user_interface(+InputUser,+Qv,-ASub,+Sg,+MaybeCallASub) %
 % Obtains the abstract substitution ASub from user supplied information. %
 %------------------------------------------------------------------------%
 
-deftypes_input_user_interface(InputUser,Qv,ASub):-
+deftypes_input_user_interface(InputUser,Qv,ASub,_Sg,_MaybeCallASub):-
         obtain_Asub_user(InputUser,ASub0),
 	sort(ASub0,ASub_s),
 	reduce_same_var(ASub_s,ASub1),
