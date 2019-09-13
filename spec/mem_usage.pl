@@ -7,7 +7,7 @@
 	  ask_mem_usage/2,
 	  ask_mem_usage_no_gc/2
 	],
-	[assertions, datafacts]).
+	[assertions, isomodes, datafacts]).
 
 :- doc(author, "Germ@'{a}n Puebla").
 :- doc(module," This module contains some predicates for polling
@@ -86,7 +86,6 @@ report_mem_usage:-
 	member((choice,C,C0),Details),
 	C_used is C - C0,
         simple_message("Choice-points ~0f",[C_used]).
-
 
 :- pred ask_mem_usage(-Delta,-Details) # "Returns in @var{Delta} 
       the total memory used in bytes and in @var{Details} such 

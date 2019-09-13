@@ -10,7 +10,7 @@
 	  list_format/2,
 	  newformat/2
 	],
-	[assertions]).
+	[assertions,isomodes]).
 
 :- use_module(ciaopp(p_unit/program_keys), [decode_litkey/5]).
 

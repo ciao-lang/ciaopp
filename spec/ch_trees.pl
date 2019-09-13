@@ -3,7 +3,7 @@
 	 add_ch_tree/2, 
 	 clean_up_ch_trees/0,
 	 collect_all_ch_trees/1
-	], [assertions, datafacts]).
+	], [assertions, isomodes, datafacts]).
 
 :- doc(title,"Basic Operations on Characteristic Trees").
 
@@ -21,7 +21,7 @@
 
 add_ch_tree(Id,Ch_Tree):-
 	assertz_fact(ch_tree(Id,Ch_Tree)).
-	
+
 :- pred clean_up_ch_trees #"Clean ups all ch_trees".
 
 clean_up_ch_trees:-
@@ -78,8 +78,6 @@ collect_all_ch_trees(All_trees):-
 % 	meta_count_atoms(T,N2),
 % 	N is N1 + N2.
 
-
-
 % count_atoms_chtree([],0):-!.
 % count_atoms_chtree([Path],N):-!, % deterministic: count body atoms
 % 	body_sizes(Path,N).
@@ -93,14 +91,11 @@ collect_all_ch_trees(All_trees):-
 % 	meta_count_atoms(EndP,N2),
 % 	Atoms is N1 + N2 + Heads - 1.
 
-
-
 % add_body_atoms([],0).
 % add_body_atoms([A|T],N):-
 % 	body_sizes([A],N1),
 % 	add_body_atoms(T,N2),
 % 	N is N1 + N2.
-
 
 % next_branches(Cht,Br):-
 % 	next(Cht,NB),
@@ -128,7 +123,6 @@ collect_all_ch_trees(All_trees):-
 % insert_into_partition([C|T],D,Tail,[C|R]):-
 % 	insert_into_partition(T,D,Tail,R).
 
-
 % :- pred body_sizes(+Col,-N) # "Returns the amount of literals @var{N}
 % 	in the body of clauses in @var{Col}".
 
@@ -141,10 +135,6 @@ collect_all_ch_trees(All_trees):-
 % 	N is N2 + N1 -1 .
 % body_sizes([_|T],N):-
 % 	body_sizes(T,N).
-	
-
-
-
 
 % :- pred rename_vars(+Cht) # "In order to be able to compare variables,
 % 	these are renamed in @var{Cht}. This is done on a per-path basis, so equivalent".
@@ -154,12 +144,10 @@ collect_all_ch_trees(All_trees):-
 % 	rename_vars_path(Path).
 % 	rename_vars(T).
 
-
 % rename_vars([]).
 % rename_vars([Term|T]):-
 % 	numbervars(Term,0,_),
 % 	rename_vars(T).
-
 
 % count_atoms_t([],0).
 % count_atoms_t([Col|T],N):-
@@ -174,8 +162,6 @@ collect_all_ch_trees(All_trees):-
 % 	heads(S,N1),
 % 	body_sizes(S,N2),
 % 	N is N1 + N2 - 2.
-
-
 
 % :- pred heads(+Col,-N) #"Returns the number @var{N} of new heads to be
 % 	created, i.e., 1 if the pred is determinate, or greater than 1

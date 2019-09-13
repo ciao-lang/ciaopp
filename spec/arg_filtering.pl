@@ -6,23 +6,13 @@
 	 arg_filtering/5,
 	 list_exported/3,
 	 filter_args/2
-	], [assertions, datafacts]).
+	], [assertions, isomodes, datafacts]).
 
-:- use_module(spec(global_control), 
- 	[ 
- 	  spec_def_for/8,
- 	  spec_wrt/3
- 	]).
+:- use_module(spec(global_control), [spec_def_for/8, spec_wrt/3]).
 
-:- use_module(ciaopp(plai/fixpo_ops), 
- 	[ 
- 	  collect_exported_completes/2
- 	]).
+:- use_module(ciaopp(plai/fixpo_ops), [collect_exported_completes/2]).
 
-:- use_module(ciaopp(p_unit/itf_db), 
- 	[ 
- 	  assert_itf/5
- 	]).
+:- use_module(ciaopp(p_unit/itf_db), [assert_itf/5]).
 
 :- use_module(engine(messages_basic), [message/2]).
 :- use_module(library(terms),      [copy_args/3]). 
@@ -32,9 +22,7 @@
 :- use_module(ciaopp(analysis_stats), [pp_statistics/2]). 
 :- use_module(library(aggregates), [findall/3]). 
 
-
 :- data filter/3.
-
 
 create_filters(Init_sp,AbsInt):-
 	current_fact(spec_def_for(_Key,Sg,_Sv,_Proj,AbsInt,Id,NewName,Arity)),
@@ -76,7 +64,6 @@ build_fgoal([V|Vars],Pos,FGoal):-
 	Pos1 is Pos + 1,
 	build_fgoal(Vars,Pos1,FGoal).
 
-
 arg_filtering(Cls,_Ds,AbsInt,NCls,NDs):-
 	pp_statistics(runtime,_),
 	collect_exported_completes(AbsInt,Init),
@@ -85,7 +72,6 @@ arg_filtering(Cls,_Ds,AbsInt,NCls,NDs):-
 	arg_filt(Cls,NCls,NDs),
 	pp_statistics(runtime,[_,T]),
 	message(inform, ['{transformed by arg_filtering in ', ~~(T),' msec.}']).
-
 
 :- pred list_exported(+Init,+AbsInt,-Init_sp) # "@var{Init_sp} is the
 	list of implemented versions which are exported by the

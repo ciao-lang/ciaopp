@@ -14,7 +14,7 @@
 	    reunion_phase/4,
 	    split_phase/1
 	],
-	[assertions, datafacts]).
+	[assertions, isomodes, datafacts]).
 
 :- doc(title,"Multi Variant Program Specialization").
 :- doc(author, "Germ@'{a}n Puebla").

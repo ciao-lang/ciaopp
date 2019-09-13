@@ -1,4 +1,4 @@
-:- module(_, [depth_first_decompile/7], [assertions]).
+:- module(_, [depth_first_decompile/7], [assertions, isomodes]).
 
 :- use_package(spec(no_debug)).
 
@@ -47,7 +47,6 @@ depth_first_decompile(SelRule,_AbsInt,Sg,_Sv,_Proj,UnfClause,Ch_Path):-
 	depth_first_emb_local_no_path(SelRule,NClause,UnfClause),
 	Ch_Path = null.
 
-
 depth_first_emb_local_no_path(SelRule,Clause,UnfClause):-
 	(fact_or_residual(Clause) ->
 	    peel_fact_or_residual(Clause,UnfClause)
@@ -55,7 +54,6 @@ depth_first_emb_local_no_path(SelRule,Clause,UnfClause):-
 	    unfold_one_step_one_clause(Clause,SelRule,UnfClause1Step),
 	    depth_first_emb_local_no_path(SelRule,UnfClause1Step,UnfClause)
 	).
-
 
 unfold_one_step_one_clause(residual(Cl),_SelRule,Clause):-!,
 	Clause = residual(Cl).
@@ -127,9 +125,6 @@ unfold_literal_or_residualize(clause(Sg,NewBody,Susp),_R,_L,_Lit,NCl,_Flag):-
 	    debug(L)
 	;
 	    true).
-
-
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%  END DEPTH-FIRST UNFOLDING WITH EMBEDDING BASED ON STACKS  %%% 

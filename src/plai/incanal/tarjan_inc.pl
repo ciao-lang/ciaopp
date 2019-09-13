@@ -1,7 +1,7 @@
 :- module(tarjan_inc,
 	[ inc_add_source_clauses/3,
 	  rearrange_tarjan_after_deletion/1
-	], [assertions, datafacts]).
+	], [assertions, isomodes, datafacts]).
 
 :- doc(title, "Incremental computation of tarjan algorithm").
 

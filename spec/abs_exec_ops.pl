@@ -4,10 +4,7 @@
 	  adapt_info_to_assrt_head/6,
 	  abs_exec_regtype/3,
 	  abs_exec_regtype_in_clause/8
-	],[]).
-
-
-:- use_package(assertions).
+	],[assertions, isomodes]).
 
 :- doc(title,"Auxiliary Operations for Abstract Execution").
 
@@ -21,16 +18,12 @@
 
 :- use_module(spec(abs_exec_cond), [cond/4]).
  
-:- use_module(ciaopp(plai/domains), [
-	                           call_to_entry/10, 
-				   project/6
-				] ).
+:- use_module(ciaopp(plai/domains), [call_to_entry/10, project/6]).
 
 :- use_module(library(terms_check), [instance/2, variant/2]).
 :- use_module(library(terms_vars), [varset/2]).
 
-:- use_module(library(assertions/assrt_lib), 
-	[denorm_goal_prop/3]).
+:- use_module(library(assertions/assrt_lib), [denorm_goal_prop/3]).
 
 unify_if_it_is_instance(Goal,NGoal):-
 	copy_term(Goal,Copy),
@@ -43,7 +36,6 @@ unify_if_it_is_variant(Goal,NGoal):-
 	Goal = NGoal.
 
 :- pred adapt_info_to_assrt_head(+Abs,+Goal,Vars,+Info,+Head,-NewInfo) 
-
    # "This predicate allows adapting the analysis info available at a
      given program point to the head of an assertion which is
      applicable to such program point. The @var{Head} of the assertion
@@ -63,7 +55,6 @@ adapt_info_to_assrt_head(Abs,Goal,Vars,Info,Head,NewInfo):-
 	project(Abs,Goal,Sv,Vars,Info,InfoProj),   
 	call_to_entry(Abs,Sv,Goal,Hv,Head,not_provided,[],InfoProj,NewInfo,_Info). % TODO: add some ClauseKey? (JF)
 
-
 :- pred abs_exec_regtype(TypeSymbol,Sense,Cond) # "Calls to regular
    types can be abstractly executed to true or false assuming type
    analysis information is available.".
@@ -72,8 +63,6 @@ abs_exec_regtype(TypeSymbol, true , type_incl(1,TypeSymbol)).
 abs_exec_regtype(TypeSymbol, fail , incomp_type(1,TypeSymbol)).
 abs_exec_regtype(TypeSymbol, fail, free(1)):-
 	TypeSymbol \== term.
-
-
 
 :- pred abs_exec_regtype_in_clause/8 # "This predicate tries to
    abstractly execute a call to a regtype appearing in a clause to

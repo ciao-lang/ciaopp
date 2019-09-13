@@ -17,7 +17,7 @@
         add_changed_registry/4,
         get_changed_registry/4,
         clean_incanal_mod_data/0
-        ], [assertions, datafacts]).
+        ], [assertions, isomodes, datafacts]).
 
 :- doc(title, "Database for incremental analysis").
 

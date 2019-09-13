@@ -1,4 +1,4 @@
-:- module(analysis_stats, [], [assertions, regtypes, hiord, datafacts]).
+:- module(analysis_stats, [], [assertions, isomodes, regtypes, hiord, datafacts]).
 
 % TODO: This is independent from incremental analysis
 

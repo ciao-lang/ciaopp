@@ -11,7 +11,7 @@
 	 abs_exec_reg_type_with_post_info_one_version/5,
 	 abs_exec_conj_props/3
 	],
-	[assertions, datafacts, ciaopp(ciaopp_options)]).
+	[assertions, isomodes, datafacts, ciaopp(ciaopp_options)]).
 
 :- doc(title,"Abstract Execution of Conditions").
 :- doc(author, "Germ@'{a}n Puebla").

@@ -4,7 +4,7 @@
 	  inc_unfold_evals/1,
 	  ask_unfold_stats/1
 	],
-	[assertions, datafacts]).
+	[assertions, isomodes, datafacts]).
 
 :- doc(author, "Claudio Ochoa").
 :- doc(module,"This module contains some predicates for updating
@@ -14,7 +14,6 @@
      series of calls to @pred{inc_derivation_steps/1} or
      @pred{inc_unfold_evals/1} finalyzed by one call to
      @pred{ask_unfold_stats/1}.").
-
 
 :- trust success derivation_steps(A) => ground(A).
 
@@ -45,7 +44,6 @@ inc_derivation_steps(D):-
 	D >= 0,!,
 	asserta_fact(derivation_steps(D)).	
 
-
 :- pred inc_unfold_evals(+Evals) # "This predicate should be called
 	every time an evaluation is performed during unfolding,
 	indicating the number @var{Evals} of evaluations to be
@@ -61,14 +59,9 @@ inc_unfold_evals(N):-
 	N >= 0,!,
 	asserta_fact(evaluations(N)).	
 
-
 :- pred ask_unfold_stats(-Stats) # "Returns in list @var{Stats} the
 	statistics collected in this module".
 
 ask_unfold_stats([derivation_steps(U),evaluations(E)]):-
 	(derivation_steps(U) -> true; U=0),
 	(evaluations(E) -> true; E=0),!.  
-
-
-
-

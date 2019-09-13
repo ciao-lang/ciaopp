@@ -8,7 +8,7 @@
 	 decide_lc_filter_f/2,
 	 decide_generalize_atom/2,
 	 get_petype_mask/2
-	],[assertions, datafacts]).
+	],[assertions, isomodes, datafacts]).
 
 :- use_package(spec(no_debug)).
 

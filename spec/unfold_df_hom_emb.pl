@@ -1,6 +1,5 @@
-:- module(_,[depth_first_emb_hom_emb_0/7],[]).
+:- module(_,[depth_first_emb_hom_emb_0/7],[assertions, isomodes]).
 
-:- use_package(assertions).
 :- use_package(spec(no_debug)).
 
 :- doc(title,"Depth-first Unfolding with embedding, naive

@@ -8,9 +8,7 @@
 	 is_embedded/4,
 	 is_embedded_tree/4
 	 ],
-	 []).
-
-:- use_package(assertions).
+	 [assertions, isomodes]).
 
 :- doc(author, "Germ@'{a}n Puebla").
 :- doc(author, "Elvira Albert").
@@ -50,6 +48,7 @@ decide_orig_goal(Goal,Orig_Goal):-
 decide_orig_goal(Goal,Orig_Goal):-
 	orig_goal(Goal,Orig_Goal).
 
+% TODO: duplicated code
 :- pred body2list(+Body,-List) # "Transforms the body of clause
       (conjunction) into a list.".
 
@@ -63,7 +62,6 @@ body2list(Body,LBody):-
 	Body = true,!,
 	LBody = [].
 body2list(Last,[Last]).
-
 
 :- pred list2body(+List,-Body) # "Transforms a list into the body of
       clause (conjunction).".

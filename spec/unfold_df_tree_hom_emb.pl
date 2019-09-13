@@ -1,4 +1,4 @@
-:- module(_,[depth_first_emb_tree_0/7],[assertions, datafacts]).
+:- module(_,[depth_first_emb_tree_0/7],[assertions, isomodes, datafacts]).
 
 :- doc(title,"Depth-first Unfolding with embedding based on
 proof trees").
@@ -54,7 +54,6 @@ depth_first_emb_tree_0(SelRule,AbsInt,Sg,Sv,Proj,UnfClause,Ch_Path):-
 	    Ch_Path = [(1:Counter)| Ch_Path_Res ],
 	    depth_first_emb_tree(SelRule,NClause,[(1,NSg,0)],Info,UnfClause,Ch_Path_Res)).
 
-
 depth_first_emb_tree_no_path(SelRule,Clause,Atoms,Info,UnfClause):-
 	(fact_or_residual(Clause) ->
 	    peel_fact_or_residual_tree(Clause,UnfClause)
@@ -105,7 +104,6 @@ unfold_literal_or_residualize_tree(clause(Sg,NewBody),Susp,_R,L,Parent,A,_Info,_
 	NCl = residual(clause(Sg,SBody)),
 	NAs = A,
 	Id = no.
-	
 
 unfold_literal_or_residualize_tree(clause(Sg,NewBody),Susp,_R,L,Parent,A,Info,Lit,NCl,NAs,_Flag,Id):-
 	copy_term(L,L2),
@@ -120,8 +118,7 @@ unfold_literal_or_residualize_tree(clause(Sg,NewBody),Susp,_R,L,Parent,A,Info,Li
 	    NAs = [(New_Parent,L2,Parent)|A],
 	    form_one_rule_tree_with_susp(clause(Sg,NewBody),Susp,UnfClauseP,NCl)
 	).
-	
-		 
+
 unfold_literal_or_residualize_tree(clause(Sg,NewBody),Susp,_R,_L,_Parent,A,_Info,_Lit,NCl,NAs,_Flag,Id):-
 	append(Susp,NewBody,SBody),
         NCl = residual(clause(Sg,SBody)),
@@ -132,7 +129,6 @@ unfold_literal_or_residualize_tree(clause(Sg,NewBody),Susp,_R,_L,_Parent,A,_Info
 	;
 	    true),
 	Id = no.
-
 
 :- data par_id/1.
 

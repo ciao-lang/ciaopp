@@ -1,6 +1,5 @@
-:- module(_,[depth_first_emb_local_0/7],[]).
+:- module(_,[depth_first_emb_local_0/7],[assertions, isomodes]).
 
-:- use_package(assertions).
 :- use_package(spec(no_debug)).
 
 :- doc(title,"Depth-first Unfolding with embedding based on ancestor stacks").
@@ -55,7 +54,6 @@ depth_first_emb_local_0(SelRule,AbsInt,Sg,Sv,Proj,UnfClause,Ch_Path):-
 	    Ch_Path = [(1:Counter)| Ch_Path_Res ],
 	    depth_first_emb_local(SelRule,Clause,[NSg_fr],Info,FNums,
 	                          UnfClause,Ch_Path_Res)).
-
 
 depth_first_emb_local_no_path(SelRule,Clause,Atoms,Info,FNums,UnfClause):-
  	(current_pp_flag(verbosity,very_high) ->
@@ -174,9 +172,6 @@ unfold_literal_or_residualize(clause(Sg,NewBody),Susp,_R,_L,A,_Info,_FNums,_Lit,
 	;
 	    true),
         Id = no.
-
-
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%  END DEPTH-FIRST UNFOLDING WITH EMBEDDING BASED ON STACKS  %%% 

@@ -6,7 +6,7 @@
 	minimal_unif/3,
 	really_unify/1,
 	clause_result/2], % temporary
-	[assertions, datafacts]).
+	[assertions, isomodes, datafacts]).
 
 :- use_module(engine(hiord_rt), [call/1]). % TODO: review uses here
 
