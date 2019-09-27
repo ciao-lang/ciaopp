@@ -1,34 +1,17 @@
-:- module(ptypes,[
-	ptypes_widen/3,ptypes_widencall/3
-	     ],
-	     [assertions,regtypes,basicmodes
-	     ]).
+:- module(ptypes,[],[assertions,regtypes,basicmodes]).
 
-:- doc(title,"Types Abstract Domain").
+:- doc(title, "Types Abstract Domain").
 :- doc(author, "Claudio Vaucheret").
 :- doc(author, "Francisco Bueno").
 
-:- doc(module,"
+:- doc(module,"This module implements the topological clash widening
+   operator for types domain.").
 
-This module implements the topological clash widening operator for
-types domain.
-
-").
-:- use_module(library(lists), 
-	[
-	    member/2,
-	    reverse/2
-	]).
-
-
-:- use_module(library(sort), 
-	[
-	    sort/2
-	]).
+:- use_module(library(lists), [member/2, reverse/2]).
+:- use_module(library(sort), [sort/2]).
 
 :- use_module(domain(termsd)).
-:- use_module(typeslib(typeslib), 
-	[
+:- use_module(typeslib(typeslib), [
 	    compound_pure_type_term/4,
 	    construct_compound_pure_type_term/2,
 	    dz_type_included/2,
@@ -38,6 +21,73 @@ types domain.
 	    unfold_type_union_1/4
 	]).
 
+:- use_module(ciaopp(preprocess_flags), [push_pp_flag/2]).
+
+:- export(ptypes_init_abstract_domain/1).
+ptypes_init_abstract_domain([widen]) :-
+	push_pp_flag(widen,on).
+
+:- export(ptypes_call_to_entry/9).
+ptypes_call_to_entry(Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo) :- terms_call_to_entry(Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo).
+
+:- export(ptypes_exit_to_prime/7).
+ptypes_exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime) :- terms_exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime).
+
+:- export(ptypes_compute_lub/2).
+ptypes_compute_lub(ListASub,LubASub) :- terms_compute_lub(ListASub,LubASub).
+
+:- export(ptypes_identical_abstract/2).
+ptypes_identical_abstract(ASub1,ASub2) :- terms_identical_abstract(ASub1,ASub2).
+
+:- export(ptypes_sort/2).
+ptypes_sort(ASub,ASub_s) :- terms_sort(ASub,ASub_s).
+
+:- export(ptypes_extend/4).
+ptypes_extend(Prime,Sv,Call,Succ) :- terms_extend(Prime,Sv,Call,Succ).
+
+:- export(ptypes_less_or_equal/2).
+ptypes_less_or_equal(ASub0,ASub1) :- terms_less_or_equal(ASub0,ASub1).
+
+:- export(ptypes_glb/3).
+ptypes_glb(ASub0,ASub1,ASub) :- terms_glb(ASub0,ASub1,ASub).
+
+:- export(ptypes_call_to_success_fact/9).
+ptypes_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ) :- terms_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ).
+
+:- export(ptypes_special_builtin/5).
+ptypes_special_builtin(SgKey,Sg,Subgoal,Type,Condvars) :- terms_special_builtin(SgKey,Sg,Subgoal,Type,Condvars).
+
+:- export(ptypes_success_builtin/5).
+ptypes_success_builtin(Type,Sv_uns,Condvars,Call,Succ) :- terms_success_builtin(Type,Sv_uns,Condvars,Call,Succ).
+
+:- export(ptypes_call_to_success_builtin/6).
+ptypes_call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,Succ) :- terms_call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,Succ).
+
+:- export(ptypes_input_interface/4).
+ptypes_input_interface(InputUser,Kind,Struct0,Struct1) :- terms_input_interface(InputUser,Kind,Struct0,Struct1).
+
+:- export(ptypes_input_user_interface/5).
+ptypes_input_user_interface(InputUser,Qv,ASub,Sg,MaybeCallASub) :- terms_input_user_interface(InputUser,Qv,ASub,Sg,MaybeCallASub).
+
+:- export(ptypes_asub_to_native/5).
+ptypes_asub_to_native(ASub,Qv,OutFlag,OutputUser,Comps) :- terms_asub_to_native(ASub,Qv,OutFlag,OutputUser,Comps).
+
+:- export(ptypes_concret/3).
+ptypes_concret(Var,ASub,List) :- terms_concret(Var,ASub,List).
+
+:- export(ptypes_unknown_call/4).
+ptypes_unknown_call(Sg,Vars,Call,Succ) :- terms_unknown_call(Sg,Vars,Call,Succ).
+
+:- export(ptypes_unknown_entry/3).
+ptypes_unknown_entry(Sg,Qv,Call) :- terms_unknown_entry(Sg,Qv,Call).
+
+:- export(ptypes_empty_entry/3).
+ptypes_empty_entry(Sg,Qv,Call) :- terms_empty_entry(Sg,Qv,Call).
+
+:- export(ptypes_collect_abstypes/3).
+ptypes_collect_abstypes(ASub,Types0,Types) :- terms_collect_abstypes(ASub,Types0,Types).
+
+:- export(ptypes_widencall/3).
 ptypes_widencall(Prime0,Prime1,Result):-
 	(
 	    terms_less_or_equal(Prime1,Prime0) ->
@@ -53,6 +103,7 @@ ptypes_widencall(Prime0,Prime1,Result):-
 	    )
 	).
 
+:- export(ptypes_widen/3).
 ptypes_widen(Prime0,Prime1,NewPrime):-
 	terms_compute_lub_el(Prime0,Prime1,Prime),
 	henten(Prime0,Prime,NewPrime).

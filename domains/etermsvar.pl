@@ -1,4 +1,5 @@
 :- module(etermsvar,[                          
+	etermsvar_init_abstract_domain/1,
 	etermsvar_call_to_entry/9,
 	etermsvar_exit_to_prime/7,
 	etermsvar_project/3,
@@ -193,6 +194,12 @@ etermsvar_concret(Var,ASub,List):-
 	get_type(Var,ASub,Type),
 	concret(Type,List,[],[]).
 
+%------------------------------------------------------------------%
+
+:- use_module(ciaopp(preprocess_flags), [push_pp_flag/2]).
+etermsvar_init_abstract_domain([type_eval,widen]) :-
+	push_pp_flag(type_eval,on),
+	push_pp_flag(widen,on).
 
 %------------------------------------------------------------------%
 :- pred etermsvar_compute_lub(+ListASub,-Lub): list(absu) * absu # 

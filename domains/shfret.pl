@@ -1,5 +1,6 @@
 :- module(shfret,
-	[ shfret_call_to_entry/9,
+	[ shfret_init_abstract_domain/1,
+	  shfret_call_to_entry/9,
 	  shfret_exit_to_prime/7,
 	  shfret_project/3,
 	  shfret_extend/4,
@@ -7,10 +8,12 @@
 	  shfret_widencall/3,
 	  shfret_compute_lub/2,
 	  shfret_glb/3,
+	  shfret_eliminate_equivalent/2,
 	  shfret_less_or_equal/2,
 	  shfret_identical_abstract/2,
 	  shfret_sort/2,
 	  shfret_call_to_success_fact/9,
+	  shfret_combined_special_builtin0/2,
 	  shfret_split_combined_domain/3,
 	  shfret_input_interface/4,
 	  shfret_input_user_interface/5,
@@ -31,6 +34,14 @@
 %% :- use_module(library(sort),[sort/2]).
 
 asub(comb(Types,Modes),Types,Modes).
+
+% ---------------------------------------------------------------------------
+
+:- use_module(ciaopp(preprocess_flags), [push_pp_flag/2]).
+
+shfret_init_abstract_domain([variants,widen]) :-
+	push_pp_flag(variants,off),
+	push_pp_flag(widen,on).
 
 %------------------------------------------------------------------------%
 % shfret_call_to_entry(+,+,+,+,+,+,+,-,-)                                %
@@ -141,6 +152,10 @@ shfret_glb(ASub0,ASub1,Glb):-
 	asub(Glb,GTypes,GModes).
 
 %------------------------------------------------------------------------%
+
+shfret_eliminate_equivalent(LSucc,LSucc). % TODO: wrong or not needed? (JF)
+
+%------------------------------------------------------------------------%
 % shfret_less_or_equal(+,+)                                                  %
 % shfret_less_or_equal(ASub0,ASub1)                                          %
 %------------------------------------------------------------------------%
@@ -184,6 +199,19 @@ shfret_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ):-
 	eterms_call_to_success_fact(Sg,Hv,Head,K,Sv,CTypes,PTypes,RTypes,STypes),
 	asub(Prime,RTypes,RModes),
 	asub(Succ,STypes,SModes).
+
+% ---------------------------------------------------------------------------
+
+:- use_module(ciaopp(plai/domains), [special_builtin/6, body_builtin/9]).
+
+shfret_combined_special_builtin0(SgKey,Domains) :-
+	% TODO: refactor (define a nondet pred with combined domains instead)
+	( special_builtin(eterms,SgKey,_Sg,SgKey,_Type,_Condvars) ->
+	    Domains=[eterms,shfr]
+	; special_builtin(shfr,SgKey,_Sg,SgKey,_Type,_Condvars) ->
+	    Domains=[eterms,shfr]
+	; fail
+	).
 
 %------------------------------------------------------------------------%
 % shfret_input_interface(+,+,+,-)                                            %

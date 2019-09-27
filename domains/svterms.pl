@@ -1,4 +1,5 @@
 :- module(svterms,[                             
+	svterms_init_abstract_domain/1,
 	svterms_call_to_entry/9,
 	svterms_exit_to_prime/7,
 	svterms_project/3,
@@ -256,6 +257,9 @@ svterms_widen(Prime0,Prime1,NewPrime):-
 
 %------------------------------------------------------------------%
 
+:- use_module(ciaopp(preprocess_flags), [push_pp_flag/2]).
+svterms_init_abstract_domain([widen]) :-
+	push_pp_flag(widen,on).
 
 %------------------------------------------------------------------%
 svterms_call_to_entry(Sv,Sg,Hv,Head,K,Fv,Proj,Entry,i(ExtraInfoSV,ExtraInfoType)):- 

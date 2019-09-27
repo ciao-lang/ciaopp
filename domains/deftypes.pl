@@ -1,14 +1,15 @@
 :- module(deftypes,[
-	gen_graph/0,
+	gen_graph/0, % TODO: disable (debugging)
 	build_defined_types_lattice/0,
 	pre_build_defined_types_lattice/1,
 	load_lib_deftypes/1,
+	deftypes_init_abstract_domain/1,
 	deftypes_call_to_entry/9,
 	deftypes_exit_to_prime/7,
 	deftypes_project/3,
 	deftypes_compute_lub/2,
 	deftypes_compute_lub_el/3,
-%	deftypes_sort/2,
+	deftypes_sort/2,
 	deftypes_extend/4,
 	deftypes_less_or_equal/2,
 	deftypes_glb/3,
@@ -16,8 +17,8 @@
 	deftypes_unknown_entry/3,
 	deftypes_empty_entry/3,
 	deftypes_call_to_success_fact/9,
-%	deftypes_special_builtin/5,
-%	deftypes_success_builtin/5,
+	deftypes_special_builtin/5,
+	deftypes_success_builtin/5,
 	deftypes_call_to_success_builtin/6,
 	deftypes_input_interface/4,
 	deftypes_asub_to_native/5,
@@ -30,9 +31,9 @@
 	deftypes_widencall/3,
 	approx_as_defined/2,
 	deftypes_contains_parameters/1,
-	absu/1
+	absu/1,
 %	is_interesting_type/1
-%	deftypes_concret/3
+	deftypes_concret/3
 	%
 %	concret/4,
 %	normalize_type_asub/2,
@@ -99,6 +100,13 @@ variable and Type is a pure type term @cite{Dart-Zobel}.
 %:- reexport(typeslib(typeslib),[insert_rule/2]). % delete
 
 :- use_module(domain(termsd), [precondition_builtin/2, 	postcondition_builtin/4]).
+:- use_module(domain(termsd), [
+	substitution/3,
+	variables_are_top_type/2,
+	terms_special_builtin/5,
+	terms_success_builtin/5,
+	terms_concret/3,
+	terms_unknown_call/4]).
 
 :- use_module(engine(internals), [module_concat/3]).
 :- use_module(engine(runtime_control), [module_split/3]).
@@ -170,7 +178,23 @@ deftypes_input_interface(member(X,L),perfect,Acc,[P|Acc]):-
 may_be_var([]):- !.
 may_be_var(_Acc).
 
-	
+%------------------------------------------------------------------%
+
+deftypes_sort(ASub,ASub_s) :- terms_sort(ASub,ASub_s).
+
+deftypes_special_builtin(SgKey,Sg,Subgoal,Type,Condvars) :- terms_special_builtin(SgKey,Sg,Subgoal,Type,Condvars).
+
+deftypes_success_builtin(Type,Sv_uns,Condvars,Call,Succ) :- terms_success_builtin(Type,Sv_uns,Condvars,Call,Succ).
+
+deftypes_concret(Var,ASub,List) :- terms_concret(Var,ASub,List).
+
+deftypes_unknown_call(Sg,Vars,Call,Succ) :- terms_unknown_call(Sg,Vars,Call,Succ).
+
+%------------------------------------------------------------------%
+
+:- use_module(ciaopp(preprocess_flags), [push_pp_flag/2]).
+deftypes_init_abstract_domain([widen]) :-
+	push_pp_flag(widen,on).
 
 %------------------------------------------------------------------%
 :- pred deftypes_compute_lub(+ListASub,-Lub): list(absu) * absu # 
@@ -287,10 +311,8 @@ extrainfo(no).
 "at the moment it assigns the value top_type to the variables in @var{Fv}
  but in the future it must assign the value ``var''".
 
-
 variables_are_variable_type(Fv,ASub):-
 	variables_are_top_type(Fv,ASub).
-
 
 %------------------------------------------------------------------%
 :- pred deftypes_exit_to_prime(+Sg,+Hv,+Head,+Sv,+Exit,-ExtraInfo,-Prime): list
@@ -583,6 +605,7 @@ deftypes_glb0([],[],[]).
  literal whose definition is not present, and adds this top value to   
  Call. In this domain the top value is X:term forall X in the set of variables".
 
+% deftypes_unknown_entry(Sg,Qv,Call) :- terms_unknown_entry(Sg,Qv,Call).
 deftypes_unknown_entry(_Sg,Vars,ASub):-
 	variables_are_top_type(Vars,ASub).
 
@@ -593,34 +616,9 @@ obtains the abstraction of a substitution in which all variables
 @var{Vars} are unbound: free and unaliased. In this domain the empty
 value is giving the variable type to each variable".
 
+% deftypes_empty_entry(Sg,Qv,Call) :- terms_empty_entry(Sg,Qv,Call).
 deftypes_empty_entry(_Sg,Vars,ASub):-
 	variables_are_variable_type(Vars,ASub).
-
-
-%------------------------------------------------------------------%
-:- pred deftypes_unknown_call(+Sg,+Vars,+Call,-Succ): callable * list * absu * absu # 
-"Gives the ``top'' value for the variables involved in a 
- literal whose definition is not present, and adds this top value to
- @var{Call}".
-
-deftypes_unknown_call(_Sg,Vars,Call,Succ):-
-	substitution(Call,CallVars,_),
-	ord_subtract(Vars,CallVars,TopVars),
-	variables_are_top_type(TopVars,ASub),
-	merge(Call,ASub,Succ).
-	
-substitution([],[],[]).
-substitution([X:T|TypeAss],[X|Vars],[T|ListTypes]):-
-	substitution(TypeAss,Vars,ListTypes).
-
-:- pred variables_are_top_type(+Fv,-ASub): list * absu # 
-"it assigns the value top_type to the variables in @var{Fv}
-and return the abstract substitution @var{ASub} ".
-
-variables_are_top_type([V|Fv],[V:Type|ASub]):-
-	set_top_type(Type),
-	variables_are_top_type(Fv,ASub).
-variables_are_top_type([],[]).
 
 %------------------------------------------------------------------%
 :- pred deftypes_call_to_success_fact(+Sg,+Hv,+Head,+K,+Sv,+Call,+Proj,-Prime,-Succ): callable * 
@@ -768,6 +766,8 @@ deftypes_collect_abstypes([_:Type|Abs],Types0,Types):-
 	insert(Types0,Type,Types1),
 	deftypes_collect_abstypes(Abs,Types1,Types).
 
+% TODO: duplicated
+% deftypes_rename_abs(ASub,Types,Names,RenASub) :- terms_rename_abs(ASub,Types,Names,RenASub).
 deftypes_rename_abs([],_,_,[]).
 deftypes_rename_abs([C|Call],Types,Names,[RenC|RenCall]):-
 	C = Var:Type,

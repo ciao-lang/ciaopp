@@ -18,7 +18,7 @@
 
 :- use_module(ciaopp(p_unit/program_keys), [predkey_from_sg/2]).
 :- use_module(ciaopp(p_unit), [type_of_goal/2]).
-:- use_module(ciaopp(plai/domains), [combined_special_builtin/3, special_builtin/6]).
+:- use_module(ciaopp(plai/domains), [combined_special_builtin0/3, special_builtin/6]).
 
 %------------------------------------------------------------------------%
 %                    Meaning of the Module Variables                     %
@@ -185,9 +185,9 @@ builtin_info(Subgoal,SgKey,AbsInt,Type,Subgoal,Condvars):-
 combined_special_builtin(AbsInt,Subgoal,_SgKey,Domains):-
 	type_of_goal(builtin(TypeGoal),Subgoal),
 	predkey_from_sg(TypeGoal,SgKey),
-	domains:combined_special_builtin(AbsInt,SgKey,Domains).
+	domains:combined_special_builtin0(AbsInt,SgKey,Domains).
 combined_special_builtin(AbsInt,_Subgoal,SgKey,Domains):-
-	domains:combined_special_builtin(AbsInt,SgKey,Domains).
+	domains:combined_special_builtin0(AbsInt,SgKey,Domains).
 
 meta_info(_,0,_Ps,_,[],_,_) :- !.
 meta_info(G,A,Ps,AbsInt,Bodies,Data,NewG):-

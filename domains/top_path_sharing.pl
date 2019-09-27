@@ -1,6 +1,7 @@
 /*             Copyright (C)1990-94 UPM-CLIP				*/
 :- module(top_path_sharing,
-	[ path_call_to_entry/9,
+	[ path_init_abstract_domain/1,
+	  path_call_to_entry/9,
 	  path_call_to_success_fact/9,
 	  path_compute_lub/2, 
 	  path_exit_to_prime/7,
@@ -8,6 +9,7 @@
 	  path_input_user_interface/5,
 	  path_input_interface/4,
 	  path_less_or_equal/2,
+	  path_glb/3,
 	  path_asub_to_native/5,  
 	  path_project/3,     
 	  path_sort/2,        
@@ -61,6 +63,13 @@ depth_k(K):- current_pp_flag(depth,K).
 :- doc(bug,"Don't know how to treat different paths, e.g.: A=f(_),
 	A=g(_,_). This is related to the topmost (how many paths does A have?)
 	and affects correctness of compute_lub.").
+
+% ---------------------------------------------------------------------------
+
+:- use_module(ciaopp(preprocess_flags), [push_pp_flag/2]).
+path_init_abstract_domain([variants,multi_success]) :-
+	push_pp_flag(variants,off),
+	push_pp_flag(multi_success,on).
 
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
@@ -431,6 +440,12 @@ eqs_to_univ([],[]).
 
 path_less_or_equal(ASub,ASub):-
 	throw(unimplemented(path_less_or_equal/2)).
+
+%------------------------------------------------------------------------%
+
+:- use_module(ciaopp(plai/plai_errors), [compiler_error/1]).
+
+path_glb(_ASub0,_ASub1,_ASub) :- compiler_error(op_not_implemented(glb)), fail.
 
 %------------------------------------------------------------------------%
 %                         HANDLING BUILTINS                              %

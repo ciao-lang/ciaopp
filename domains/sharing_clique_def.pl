@@ -290,6 +290,27 @@ share_clique_def_special_builtin(SgKey,Sg,Subgoal,Type,Condvars):-
 	  Condvars = (SH_Condvars,_)
         ).
 
+% ---------------------------------------------------------------------------
+
+:- use_module(ciaopp(plai/domains), [body_succ_builtin/9, body_builtin/9]).
+
+:- export(share_clique_def_body_succ_builtin/8).
+share_clique_def_body_succ_builtin((TSH,not_defined),Sg,(CSH,_),Sv,HvFv,Call,Proj,Succ) :- !,
+	Call=(Call_SH,Call_def),
+	Proj=(Proj_SH,_Proj_def),
+	body_succ_builtin(share_clique,TSH,Sg,CSH,Sv,HvFv,Call_SH,Proj_SH,Succ_SH),
+	Succ = (Succ_SH,Call_def).
+share_clique_def_body_succ_builtin((TSH,Tdef),Sg,(CSH,Cdef),Sv,HvFv,Call,Proj,Succ) :- !,
+	Call=(Call_SH,Call_def),
+	Proj=(Proj_SH,Proj_def),
+	body_succ_builtin(def,Tdef,Sg,Cdef,Sv,HvFv,Call_def,Proj_def,Succ_def),
+	share_clique_def_compose((Call_SH,Succ_def),NewCall_SH),
+	share_clique_def_compose((Proj_SH,Succ_def),NewProj_SH),
+	body_succ_builtin(share_clique,TSH,Sg,CSH,Sv,HvFv,NewCall_SH,NewProj_SH,Succ_SH),
+	Succ = (Succ_SH,Succ_def).
+share_clique_def_body_succ_builtin(Type,Sg,Condvs,Sv,HvFv_u,Call,Proj,Succ) :- % TODO: for \+Type=(_,_), is it OK?
+	body_builtin(share_clique_def,Type,Sg,Condvs,Sv,HvFv_u,Call,Proj,Succ).
+
 %------------------------------------------------------------------------%
 % share_clique_def_compose(+,-)                                                           
 % share_clique_def_compose(((Cl,Sh),a(G,SS)),((NewCl,NewSh),a(NewG,NewSS)))     
@@ -309,5 +330,4 @@ share_clique_def_special_builtin(SgKey,Sg,Subgoal,Type,Condvars):-
 share_clique_def_compose(((Cl,Sh),a(G,_)),(NewCl,NewSh)):-
 	irrel_w(G,(Cl,Sh),(NewCl,NewSh)),!.
 share_clique_def_compose(_,'$bottom'):-!.
-
 

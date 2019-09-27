@@ -1,6 +1,8 @@
 :- module(termsd,[
 %	replace/6,  % delete
 %	get_typedefinition/2, % delete
+	terms_init_abstract_domain/1,
+	%
 	terms_call_to_entry/9,
 	terms_exit_to_prime/7,
 	terms_project/3,
@@ -902,8 +904,10 @@ prlblist([T|RestT],Lab,L,Seen):-
 %---------------------------------------------------------------------%	 
 %---------------------------------------------------------------------%	 
 
+:- use_module(ciaopp(preprocess_flags), [push_pp_flag/2]).
 
-
+terms_init_abstract_domain([widen]) :-
+	push_pp_flag(widen,on).
 
 %------------------------------------------------------------------%
 :- pred terms_call_to_entry(+Sv,+Sg,+Hv,+Head,+K,+Fv,+Proj,-Entry,-ExtraInfo): term * callable * list * 
@@ -1176,11 +1180,13 @@ terms_unknown_call(_Sg,Vars,Call,Succ):-
 	ord_subtract(Vars,CallVars,TopVars),
 	variables_are_top_type(TopVars,ASub),
 	merge(Call,ASub,Succ).
-	
+
+:- export(substitution/3).
 substitution([],[],[]).
 substitution([X:T|TypeAss],[X|Vars],[T|ListTypes]):-
 	substitution(TypeAss,Vars,ListTypes).
 
+:- export(variables_are_top_type/2).
 :- pred variables_are_top_type(+Fv,-ASub): list * absu # 
 "it assigns the value top_type to the variables in @var{Fv}
 and return the abstract substitution @var{ASub} ".
@@ -1189,8 +1195,6 @@ variables_are_top_type([V|Fv],[V:Type|ASub]):-
 	set_top_type(Type),
 	variables_are_top_type(Fv,ASub).
 variables_are_top_type([],[]).
-
-
 
 %------------------------------------------------------------------%
 :- pred terms_call_to_success_fact(+Sg,+Hv,+Head,+K,+Sv,+Call,+Proj,-Prime,-Succ): callable * 

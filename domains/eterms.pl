@@ -1,4 +1,5 @@
 :- module(eterms,[                          
+	eterms_init_abstract_domain/1,
 	eterms_call_to_entry/9,
 	eterms_exit_to_prime/7,
 	eterms_project/3,
@@ -167,6 +168,11 @@ eterms_concret(Var,ASub,List):-
 	get_type(Var,ASub,Type),
 	concret(Type,List,[],[]).
 
+%------------------------------------------------------------------%
+
+:- use_module(ciaopp(preprocess_flags), [push_pp_flag/2]).
+eterms_init_abstract_domain([widen]) :-
+	push_pp_flag(widen,on).
 
 %------------------------------------------------------------------%
 :- pred eterms_compute_lub(+ListASub,-Lub): list(absu) * absu # 

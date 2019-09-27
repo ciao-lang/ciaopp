@@ -1,6 +1,6 @@
-
 :- module(lsign,
-	[ lsign_call_to_entry/9,
+	[ lsign_init_abstract_domain/1,
+	  lsign_call_to_entry/9,
 	  lsign_call_to_success_fact/9,  
 	  lsign_compute_lub/2,
 	  lsign_extend/5,   
@@ -9,9 +9,10 @@
 	  lsign_global_info/5,
 	  lsign_input_user_interface/5,  
 	  lsign_input_interface/4,  
-	  lsign_output_interface/2,  
+	  lsign_asub_to_native/5,
 	  lsign_is_subset/2,
 	  lsign_less_or_equal/2,
+	  lsign_glb/3,
 	  lsign_project/4,    
 	  lsign_sort/2,       
 	  lsign_special_builtin/5,
@@ -20,18 +21,23 @@
 	  lsign_unknown_entry/3,
 	  lsign_empty_entry/3,
 	%
-	  simple_lsign_call_to_entry/9,  
-	  simple_lsign_exit_to_prime/6,  
-	  simple_lsign_extend/5,
-	  simple_lsign_input_user_interface/5,
-	  simple_lsign_output_interface/2,  
-	  simple_lsign_less_or_equal/2, 
-	  simple_lsign_project/5,
-	  simple_lsign_sort/2,
-	  simple_lsign_success_builtin/6, 
-	  simple_lsign_unknown_call/4, 
-	  simple_lsign_unknown_entry/3, 
-	  simple_lsign_empty_entry/3
+	  difflsign_call_to_entry/9,  
+	  difflsign_call_to_success_fact/9,
+	  difflsign_compute_lub/2,
+	  difflsign_exit_to_prime/6,  
+	  difflsign_extend/5,
+	  difflsign_input_user_interface/5,
+	  difflsign_input_interface/4,
+	  difflsign_asub_to_native/5,
+	  difflsign_less_or_equal/2, 
+	  difflsign_glb/3,
+	  difflsign_project/5,
+	  difflsign_sort/2,
+	  difflsign_special_builtin/5,
+	  difflsign_success_builtin/6, 
+	  difflsign_unknown_call/4, 
+	  difflsign_unknown_entry/3, 
+	  difflsign_empty_entry/3
 	], [assertions, datafacts]).
 
 % simple lsign domain
@@ -83,6 +89,8 @@
 
 :- use_module(domain(share_aux), [if_not_nil/4]).
 
+:- use_module(ciaopp(plai/plai_errors), [compiler_error/1]).
+
 %------------------------------------------------------------------------%
 %                                                                        %
 %                          started: 1/5/95                               %
@@ -133,6 +141,13 @@
 :- op(500,xfx,eqx).
 :- op(500,xfx,leq).
 :- op(500,xfx,less).
+
+%-------------------------------------------------------------------------
+
+:- use_module(ciaopp(preprocess_flags), [push_pp_flag/2]).
+lsign_init_abstract_domain([normalize,variants]) :-
+	push_pp_flag(normalize,on),
+	push_pp_flag(variants,off).
 
 %-------------------------------------------------------------------------
 %-------------------------------------------------------------------------
@@ -1140,6 +1155,8 @@ lsign_empty_entry(_Sg,_Qv,_Call):-
 %    - none
 %------------------------------------------------------------------------%
 
+lsign_asub_to_native(ASub,_Qv,_OutFlag,OutputUser,[]) :- lsign_output_interface(ASub,OutputUser).
+
 % fail: lsign_output_interface('$bottom',[solutions(0)]).
 lsign_output_interface(a(S,AEqIn,Non),Info):-
 	lsign_output_user_interface0(AEqIn,NAEqIn),
@@ -1242,6 +1259,10 @@ lsign_is_subset(_LASub1,_LASub2):-
 lsign_eliminate_equivalent(LSucc0,LSucc):- !, sort(LSucc0,LSucc).
 lsign_eliminate_equivalent(_LSucc0,_LSucc):-
 	throw(not_implemented(lsign_eliminate_equivalent)).
+
+%------------------------------------------------------------------------%
+
+lsign_glb(_ASub0,_ASub1,_ASub) :- compiler_error(op_not_implemented(glb)), fail.
 
 %------------------------------------------------------------------------%
 % lsign_special_builtin(+,+,+,-,-) 
@@ -2808,6 +2829,3 @@ lsign_super(indep(X),indep(Y),SmallAnt):-
 	; Union == VY,
 	  SmallAnt = indep(X)
         ).
-
-compiler_error(not_normalized(Sg,Head)):-
-	warning_message("not normalised program: goal ~q wrt head ~q",[Sg,Head]).

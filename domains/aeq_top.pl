@@ -11,6 +11,8 @@
 	  aeq_input_user_interface/5, 
 	  aeq_input_interface/4,
 	  aeq_less_or_equal/2,
+	  aeq_glb/3,
+	  aeq_eliminate_equivalent/2,	  
 	  aeq_asub_to_native/5,
 	  aeq_project/3,      
 	  aeq_sort/2,         
@@ -184,6 +186,18 @@ aeq_identical_abstract(ASub1,ASub2) :-
 aeq_less_or_equal('$bottom',_ASub) :- !.
 aeq_less_or_equal(ASub1,ASub2) :-
 	aeq_leq_nb(ASub1,ASub2) .
+
+% ---------------------------------------------------------------------------
+
+:- use_module(ciaopp(plai/plai_errors), [compiler_error/1]).
+
+aeq_glb(_ASub0,_ASub1,_ASub) :- compiler_error(op_not_implemented(glb)), fail.
+
+% ---------------------------------------------------------------------------
+
+:- use_module(ciaopp(plai/domains), [absub_eliminate_equivalent/3]).
+
+aeq_eliminate_equivalent(TmpLSucc,LSucc) :- absub_eliminate_equivalent(TmpLSucc,aeq,LSucc).
 
 %------------------------------------------------------------------------------
 

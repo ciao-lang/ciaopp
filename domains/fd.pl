@@ -11,9 +11,11 @@
 	  fd_input_user_interface/5,  
 	  fd_input_interface/4,  
 	  fd_less_or_equal/2,
+	  fd_glb/3,
 	  fd_asub_to_native/5,
 	  fd_project/3,       
 	  fd_sort/2,          
+	  fd_special_builtin/5,
 	  fd_success_builtin/5,
 	  fd_unknown_call/4,
 	  fd_unknown_entry/3,
@@ -24,6 +26,7 @@
 :- use_module(domain(def)).
 :- use_module(domain(fr_sets)).
 :- use_module(domain(fr_shared)).
+:- use_module(domain(fr_top), [fr_special_builtin/5]).
 
 :- use_module(library(lists), [member/2]).
 :- use_module(library(sets), [insert/3, merge/3, ord_subtract/3]).
@@ -158,6 +161,13 @@ fd_decide_continue_fact(a(G_succ,_),F_call,F_proj,a(G_proj,_),Hv,Head,K,Sv,Sg,F_
 
 %------------------------------------------------------------------------------
 
+fd_special_builtin(SgKey,Sg,Subgoal,(TypeF,TypeD),(CondF,CondD)) :-
+	def_special_builtin(SgKey,Sg,Subgoal,TypeD,CondD),
+	fr_special_builtin(SgKey,Sg,Subgoal,TypeF,CondF).
+% TODO: body_succ_builtin/9: (old comment) these do not have special(_), so ok: AbsInt \== def, AbsInt \== fr, AbsInt \== frdef
+
+%------------------------------------------------------------------------------
+
 fd_success_builtin((F_type,D_type),Sv_u,(InfoF,InfoD),(F_call,D_call),Succ):-
         def_success_builtin(D_type,InfoD,D_call,D_succ),
         fd_decide_builtin(D_succ,F_type,Sv_u,InfoF,F_call,F_succ),
@@ -218,6 +228,11 @@ fd_less_or_equal((F1,D1),(F2,D2)):-
         def_less_or_equal(D1,D2),
         vero_less_or_equal(F1,F2).
 
+% ---------------------------------------------------------------------------
+
+:- use_module(ciaopp(plai/plai_errors), [compiler_error/1]).
+fd_glb(_ASub0,_ASub1,_ASub) :- compiler_error(op_not_implemented(glb)), fail.
+
 %------------------------------------------------------------------------------
 
 get_free_vars([],_,_,[]).
@@ -234,3 +249,4 @@ get_free_vars([X|Xs],Po,Pn,[X|Rest]) :-
 
 % fd_reverse((F,D),(Frev,D)):-
 %         vero_reverse(F,Frev).
+

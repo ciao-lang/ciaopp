@@ -26,7 +26,7 @@
 :- discontiguous(abs_subset/3).
 :- discontiguous(call_to_success_fact/10).
 :- discontiguous(special_builtin/6).
-:- discontiguous(combined_special_builtin/3).
+:- discontiguous(combined_special_builtin0/3).
 :- discontiguous(body_succ_builtin/9).
 :- discontiguous(split_combined_domain/4).
 :- discontiguous(success_builtin/7).
@@ -146,13 +146,6 @@ asub_to_native(frdef,ASub,Qv,OutFlag,OutputUser,Comps) :- !, fd_asub_to_native(A
 unknown_call(frdef,Sg,Vars,Call,Succ) :- !, fd_unknown_call(Sg,Vars,Call,Succ).
 unknown_entry(frdef,Sg,Qv,Call) :- !, fd_unknown_entry(Sg,Qv,Call).
 empty_entry(frdef,Sg,Qv,Call) :- !, fd_empty_entry(Sg,Qv,Call).
-%
-:- use_module(ciaopp(plai/plai_errors), [compiler_error/1]).
-fd_glb(_ASub0,_ASub1,_ASub) :- compiler_error(op_not_implemented(glb)), fail.
-fd_special_builtin(SgKey,Sg,Subgoal,(TypeF,TypeD),(CondF,CondD)) :-
-	def_special_builtin(SgKey,Sg,Subgoal,TypeD,CondD),
-	fr_special_builtin(SgKey,Sg,Subgoal,TypeF,CondF).
-% TODO: body_succ_builtin/9: (old comment) these do not have special(_), so ok: AbsInt \== def, AbsInt \== fr, AbsInt \== frdef
 % ---------------------------------------------------------------------------
 % lsign
 :- use_module(domain(lsign)).
@@ -177,163 +170,25 @@ asub_to_native(lsign,ASub,Qv,OutFlag,OutputUser,Comps) :- !, lsign_asub_to_nativ
 unknown_call(lsign,Sg,Vars,Call,Succ) :- !, lsign_unknown_call(Sg,Vars,Call,Succ).
 unknown_entry(lsign,Sg,Qv,Call) :- !, lsign_unknown_entry(Sg,Qv,Call).
 empty_entry(lsign,Sg,Qv,Call) :- !, lsign_empty_entry(Sg,Qv,Call).
-%
-:- use_module(ciaopp(plai/plai_errors), [compiler_error/1]).
-:- use_module(ciaopp(preprocess_flags), [push_pp_flag/2]).
-lsign_init_abstract_domain([normalize,variants]) :-
-	push_pp_flag(normalize,on),
-	push_pp_flag(variants,off).
-lsign_glb(_ASub0,_ASub1,_ASub) :- compiler_error(op_not_implemented(glb)), fail.
-lsign_asub_to_native(ASub,_Qv,_OutFlag,OutputUser,[]) :- lsign_output_interface(ASub,OutputUser).
 % ----------
-aidomain(difflsign).
-call_to_entry(difflsign,Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo) :- !, simple_lsign_call_to_entry(Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo).
-exit_to_prime(difflsign,Sg,Hv,Head,_Sv,Exit,ExtraInfo,Prime) :- !, simple_lsign_exit_to_prime(Sg,Hv,Head,Exit,ExtraInfo,Prime).
-project(difflsign,Sg,Vars,HvFv,ASub,Proj) :- !, simple_lsign_project(Sg,Vars,HvFv,ASub,Proj).
-compute_lub(difflsign,ListASub,LubASub) :- !, lsign_compute_lub(ListASub,LubASub).
-abs_sort(difflsign,ASub,ASub_s) :- !, simple_lsign_sort(ASub,ASub_s).
-extend(difflsign,Sg,Prime,Sv,Call,Succ) :- !, simple_lsign_extend(Sg,Prime,Sv,Call,Succ).
-less_or_equal(difflsign,ASub0,ASub1) :- !, simple_lsign_less_or_equal(ASub0,ASub1).
-glb(difflsign,ASub0,ASub1,ASub) :- !, simple_lsign_glb(ASub0,ASub1,ASub).
-call_to_success_fact(difflsign,Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ) :- !, lsign_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ).
-special_builtin(difflsign,SgKey,Sg,Subgoal,Type,Condvars) :- !, lsign_special_builtin(SgKey,Sg,Subgoal,Type,Condvars).
-success_builtin(difflsign,Type,Sv_uns,Condvars,HvFv_u,Call,Succ) :- !, simple_lsign_success_builtin(Type,Sv_uns,Condvars,HvFv_u,Call,Succ).
-input_interface(difflsign,InputUser,Kind,Struct0,Struct1) :- !, lsign_input_interface(InputUser,Kind,Struct0,Struct1).
-input_user_interface(difflsign,InputUser,Qv,ASub,Sg,MaybeCallASub) :- !, simple_lsign_input_user_interface(InputUser,Qv,ASub,Sg,MaybeCallASub).
-asub_to_native(difflsign,ASub,Qv,OutFlag,OutputUser,Comps) :- !, simple_lsign_asub_to_native(ASub,Qv,OutFlag,OutputUser,Comps).
-unknown_call(difflsign,Sg,Vars,Call,Succ) :- !, simple_lsign_unknown_call(Sg,Vars,Call,Succ).
-unknown_entry(difflsign,Sg,Qv,Call) :- !, simple_lsign_unknown_entry(Sg,Qv,Call).
-empty_entry(difflsign,Sg,Qv,Call) :- !, simple_lsign_empty_entry(Sg,Qv,Call).
-%
-:- use_module(ciaopp(plai/plai_errors), [compiler_error/1]).
-simple_lsign_glb(_ASub0,_ASub1,_ASub) :- compiler_error(op_not_implemented(glb)), fail.
-simple_lsign_asub_to_native(ASub,_Qv,_OutFlag,OutputUser,[]) :- simple_lsign_output_interface(ASub,OutputUser).
-% ----------
-% aidomain(lsigndef). % TODO: empty, why?
-call_to_entry(lsigndef,Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo) :- !, lsigndef_call_to_entry(Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo).
-exit_to_prime(lsigndef,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime) :- !, lsigndef_exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime).
-project(lsigndef,Sg,Vars,HvFv,ASub,Proj) :- !, lsigndef_project(Sg,Vars,HvFv,ASub,Proj).
-compute_lub(lsigndef,ListASub,LubASub) :- !, lsigndef_compute_lub(ListASub,LubASub).
-abs_sort(lsigndef,ASub,ASub_s) :- !, lsigndef_sort(ASub,ASub_s).
-extend(lsigndef,Sg,Prime,Sv,Call,Succ) :- !, lsigndef_extend(Sg,Prime,Sv,Call,Succ).
-less_or_equal(lsigndef,ASub0,ASub1) :- !, lsigndef_less_or_equal(ASub0,ASub1).
-glb(lsigndef,ASub0,ASub1,ASub) :- !, lsigndef_glb(ASub0,ASub1,ASub).
-call_to_success_fact(lsigndef,Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ) :- !, lsigndef_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ).
-input_interface(lsigndef,InputUser,Kind,Struct0,Struct1) :- !, lsigndef_input_interface(InputUser,Kind,Struct0,Struct1).
-input_user_interface(lsigndef,InputUser,Qv,ASub,Sg,MaybeCallASub) :- !, lsigndef_input_user_interface(InputUser,Qv,ASub,Sg,MaybeCallASub).
-asub_to_native(lsigndef,ASub,Qv,OutFlag,OutputUser,Comps) :- !, lsigndef_asub_to_native(ASub,Qv,OutFlag,OutputUser,Comps).
-unknown_call(lsigndef,Sg,Vars,Call,Succ) :- !, lsigndef_unknown_call(Sg,Call,Vars,Succ).
-unknown_entry(lsigndef,Sg,Qv,Call) :- !, lsigndef_unknown_entry(Sg,Qv,Call).
-empty_entry(lsigndef,Sg,Qv,Call) :- !, lsigndef_empty_entry(Sg,Qv,Call).
-%
-:- use_module(ciaopp(plai/plai_errors), [compiler_error/1]).
-% lsigndef_body_succ_builtin(_,_,_,_,_,_). % TODO: be careful (old comment)
-lsigndef_call_to_entry(_,_,_,_,_,_,_,_,_). 
-lsigndef_call_to_success_fact(_,_,_,_,_,_,_,_,_).
-lsigndef_compute_lub(_,_).
-lsigndef_exit_to_prime(_,_,_,_,_,_,_).
-lsigndef_extend(_,_,_,_,_).  
-lsigndef_input_user_interface(_,_,_,_,_).
-lsigndef_input_interface(_,_,_,_).
-lsigndef_less_or_equal(_,_). 
-lsigndef_asub_to_native(_,_,_,[],[]).
-lsigndef_project(_,_,_,_,_). 
-lsigndef_sort(_,_).    
-% lsigndef_success_builtin(_,_,_,_,_,_).
-lsigndef_unknown_call(_,_,_,_).  
-lsigndef_unknown_entry(_,_,_).
-lsigndef_empty_entry(_,_,_). 
-lsigndef_glb(_ASub0,_ASub1,_ASub) :- compiler_error(op_not_implemented(glb)), fail.
-% ----------
-% aidomain(lsignshfr). % TODO: empty, why?
-call_to_entry(lsignshfr,Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo) :- !, lsignshfr_call_to_entry(Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo).
-exit_to_prime(lsignshfr,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime) :- !, lsignshfr_exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime).
-project(lsignshfr,Sg,Vars,HvFv,ASub,Proj) :- !, lsignshfr_project(Sg,Vars,HvFv,ASub,Proj).
-compute_lub(lsignshfr,ListASub,LubASub) :- !, lsignshfr_compute_lub(ListASub,LubASub).
-abs_sort(lsignshfr,ASub,ASub_s) :- !, lsignshfr_sort(ASub,ASub_s).
-extend(lsignshfr,Sg,Prime,Sv,Call,Succ) :- !, lsignshfr_extend(Sg,Prime,Sv,Call,Succ).
-less_or_equal(lsignshfr,ASub0,ASub1) :- !, lsignshfr_less_or_equal(ASub0,ASub1).
-glb(lsignshfr,ASub0,ASub1,ASub) :- !, lsignshfr_glb(ASub0,ASub1,ASub).
-call_to_success_fact(lsignshfr,Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ) :- !, lsignshfr_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ).
-input_interface(lsignshfr,InputUser,Kind,Struct0,Struct1) :- !, lsignshfr_input_interface(InputUser,Kind,Struct0,Struct1).
-input_user_interface(lsignshfr,InputUser,Qv,ASub,Sg,MaybeCallASub) :- !, lsignshfr_input_user_interface(InputUser,Qv,ASub,Sg,MaybeCallASub).
-asub_to_native(lsignshfr,ASub,Qv,OutFlag,OutputUser,Comps) :- !, lsignshfr_asub_to_native(ASub,Qv,OutFlag,OutputUser,Comps).
-unknown_call(lsignshfr,Sg,Vars,Call,Succ) :- !, lsignshfr_unknown_call(Sg,Vars,Call,Succ).
-unknown_entry(lsignshfr,Sg,Qv,Call) :- !, lsignshfr_unknown_entry(Sg,Qv,Call).
-empty_entry(lsignshfr,Sg,Qv,Call) :- !, lsignshfr_empty_entry(Sg,Qv,Call).
-%
-:- use_module(ciaopp(plai/plai_errors), [compiler_error/1]).
-% lsignshfr_body_succ_builtin(_,_,_,_,_,_). % TODO: be careful (old comment)
-lsignshfr_call_to_entry(_,_,_,_,_,_,_,_,_).  
-lsignshfr_call_to_success_fact(_,_,_,_,_,_,_,_,_).
-lsignshfr_compute_lub(_,_).
-lsignshfr_exit_to_prime(_,_,_,_,_,_,_).  
-lsignshfr_extend(_,_,_,_,_). 
-lsignshfr_input_user_interface(_,_,_,_,_). 
-lsignshfr_input_interface(_,_,_,_). 
-lsignshfr_less_or_equal(_,_). 
-lsignshfr_asub_to_native(_,_,_,[],[]).
-lsignshfr_project(_,_,_,_,_).
-lsignshfr_sort(_,_).   
-lsignshfr_unknown_call(_,_,_,_). 
-lsignshfr_unknown_entry(_,_,_). 
-lsignshfr_empty_entry(_,_,_). 
-lsignshfr_glb(_ASub0,_ASub1,_ASub) :- compiler_error(op_not_implemented(glb)), fail.
-% ----------
-% aidomain(sha). % TODO: empty, why?
-call_to_entry(sha,Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo) :- !, sha_call_to_entry(Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo).
-exit_to_prime(sha,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime) :- !, sha_exit_to_prime(Exit,Hv,Head,Sv,Sg,Prime,ExtraInfo).
-project(sha,Sg,Vars,HvFv,ASub,Proj) :- !, sha_project(Sg,Vars,HvFv,ASub,Proj).
-compute_lub(sha,ListASub,LubASub) :- !, sha_compute_lub(ListASub,LubASub).
-abs_sort(sha,ASub,ASub_s) :- !, sha_abs_sort(ASub,ASub_s).
-extend(sha,Sg,Prime,Sv,Call,Succ) :- !, sha_extend(Sg,Prime,Sv,Call,Succ).
-less_or_equal(sha,ASub0,ASub1) :- !, sha_less_or_equal(ASub0,ASub1).
-glb(sha,ASub0,ASub1,ASub) :- !, sha_glb(ASub0,ASub1,ASub).
-eliminate_equivalent(sha,TmpLSucc,LSucc) :- !, sha_eliminate_equivalent(TmpLSucc,LSucc).
-abs_subset(sha,LASub1,LASub2) :- !, sha_abs_subset(LASub1,LASub2).
-call_to_success_fact(sha,Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ) :- !, sha_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ).
-special_builtin(sha,SgKey,Sg,Subgoal,Type,Condvars) :- !, sha_special_builtin(SgKey,Sg,Subgoal,Type,Condvars).
-success_builtin(sha,Type,Sv_uns,Condvars,_HvFv_u,Call,Succ) :- !, sha_success_builtin(Type,Sv_uns,Condvars,Call,Succ).
-call_to_success_builtin(sha,SgKey,Sg,Sv,Call,Proj,Succ) :- !, sha_call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,Succ).
-input_interface(sha,InputUser,Kind,Struct0,Struct1) :- !, sha_input_interface(InputUser,Kind,Struct0,Struct1).
-input_user_interface(sha,InputUser,Qv,ASub,Sg,MaybeCallASub) :- !, sha_input_user_interface(InputUser,Qv,ASub,Sg,MaybeCallASub).
-asub_to_native(sha,ASub,Qv,OutFlag,OutputUser,Comps) :- !, sha_asub_to_native(ASub,Qv,OutFlag,OutputUser,Comps).
-unknown_call(sha,Sg,Vars,Call,Succ) :- !, sha_unknown_call(Sg,Vars,Call,Succ).
-unknown_entry(sha,Sg,Qv,Call) :- !, sha_unknown_entry(Sg,Qv,Call).
-empty_entry(sha,Sg,Qv,Call) :- !, sha_empty_entry(Sg,Qv,Call).
-%% compute_lub_el(sha,ASub1,ASub2,ASub) :- !, sha_lub(ASub1,ASub2,ASub).
-%
-:- use_module(ciaopp(plai/plai_errors), [compiler_error/1]).
-sha_call_to_entry(_,_,_,_,_,_,_,_,_).
-sha_call_to_success_builtin(_,_,_,_,_,_). 
-sha_call_to_success_fact(_,_,_,_,_,_,_,_,_). 
-sha_compute_lub(_,_).  
-sha_abs_sort(_,_).     
-% sha_body_succ_builtin(_,_,_,_,_,_). % TODO: be careful (old comment)
-sha_exit_to_prime(_,_,_,_,_,_,_).
-sha_extend(_,_,_,_,_).       
-sha_eliminate_equivalent(TmpLSucc,LSucc) :- absub_eliminate_equivalent(TmpLSucc,sha,LSucc).
-sha_abs_subset(LASub1,LASub2) :- absub_is_subset(LASub1,sha,LASub2).
-sha_input_user_interface(_,_,_,_,_). 
-sha_input_interface(_,_,_,_). 
-sha_less_or_equal(_,_).
-% sha_lub(_,_,_).        
-% sha_output_interface(_,_).
-sha_asub_to_native(_,_,_,[],[]).
-sha_project(_,_,_,_,_).      
-sha_special_builtin(_,_,_,_,_).
-sha_success_builtin(_,_,_,_,_).
-sha_unknown_call(_,_,_,_).
-sha_unknown_entry(_,_,_).
-sha_empty_entry(_,_,_).
-sha_glb(_ASub0,_ASub1,_ASub) :- compiler_error(op_not_implemented(glb)), fail.
-% ----------
-% aidomain(typeshfr). % TODO: empty, why?
-call_to_entry(typeshfr,Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo) :- !, shfr_call_to_entry(Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo). % AADEBUG
-compute_lub(typeshfr,ListASub,LubASub) :- !, shfr_compute_lub(ListASub,LubASub). %% AADEBUG added
-identical_abstract(typeshfr,ASub1,ASub2) :- !, identical_abstract(shfr,ASub1,ASub2). %% AADEBUG
-abs_sort(typeshfr,ASub,ASub_s) :- !, abs_sort(shfr,ASub,ASub_s). %% AADEBUG
-glb(typeshfr,ASub0,ASub1,ASub) :- !, glb(shfr,ASub0,ASub1,ASub).
+aidomain(difflsign). % TODO: move to its own module
+call_to_entry(difflsign,Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo) :- !, difflsign_call_to_entry(Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo).
+exit_to_prime(difflsign,Sg,Hv,Head,_Sv,Exit,ExtraInfo,Prime) :- !, difflsign_exit_to_prime(Sg,Hv,Head,Exit,ExtraInfo,Prime).
+project(difflsign,Sg,Vars,HvFv,ASub,Proj) :- !, difflsign_project(Sg,Vars,HvFv,ASub,Proj).
+compute_lub(difflsign,ListASub,LubASub) :- !, difflsign_compute_lub(ListASub,LubASub).
+abs_sort(difflsign,ASub,ASub_s) :- !, difflsign_sort(ASub,ASub_s).
+extend(difflsign,Sg,Prime,Sv,Call,Succ) :- !, difflsign_extend(Sg,Prime,Sv,Call,Succ).
+less_or_equal(difflsign,ASub0,ASub1) :- !, difflsign_less_or_equal(ASub0,ASub1).
+glb(difflsign,ASub0,ASub1,ASub) :- !, difflsign_glb(ASub0,ASub1,ASub).
+call_to_success_fact(difflsign,Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ) :- !, difflsign_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ).
+special_builtin(difflsign,SgKey,Sg,Subgoal,Type,Condvars) :- !, difflsign_special_builtin(SgKey,Sg,Subgoal,Type,Condvars).
+success_builtin(difflsign,Type,Sv_uns,Condvars,HvFv_u,Call,Succ) :- !, difflsign_success_builtin(Type,Sv_uns,Condvars,HvFv_u,Call,Succ).
+input_interface(difflsign,InputUser,Kind,Struct0,Struct1) :- !, difflsign_input_interface(InputUser,Kind,Struct0,Struct1).
+input_user_interface(difflsign,InputUser,Qv,ASub,Sg,MaybeCallASub) :- !, difflsign_input_user_interface(InputUser,Qv,ASub,Sg,MaybeCallASub).
+asub_to_native(difflsign,ASub,Qv,OutFlag,OutputUser,Comps) :- !, difflsign_asub_to_native(ASub,Qv,OutFlag,OutputUser,Comps).
+unknown_call(difflsign,Sg,Vars,Call,Succ) :- !, difflsign_unknown_call(Sg,Vars,Call,Succ).
+unknown_entry(difflsign,Sg,Qv,Call) :- !, difflsign_unknown_entry(Sg,Qv,Call).
+empty_entry(difflsign,Sg,Qv,Call) :- !, difflsign_empty_entry(Sg,Qv,Call).
 % ===========================================================================
 :- doc(section, "Groundness and sharing").
 % ---------------------------------------------------------------------------
@@ -455,7 +310,7 @@ empty_entry(shfr,Sg,Qv,Call) :- !, shfr_empty_entry(Sg,Qv,Call).
 %% extend_free(shfr,ASub1,Vars,ASub) :- !, shfr_extend_free(ASub1,Vars,ASub).
 %% del_check_cond(shfr,Cond,ASub,Sv,Flag,WConds) :- !, shfr_check_cond(Cond,ASub,Sv,Flag,WConds).
 %% del_impose_cond(shfr,LCond,Sv,ASub,LASub) :- !, shfr_impose_cond(LCond,Sv,ASub,LASub).
-%
+% % TODO: move to its own module
 %% shfr_check_cond(_,_,_,_,_).
 %% % shfr_compute_lub_el(_,_,_). %% commented out by JNL
 %% shfr_convex_hull(_,_,_).
@@ -497,7 +352,7 @@ empty_entry(shfrnv,Sg,Qv,Call) :- !, shfr_empty_entry(Sg,Qv,Call).
 %% extend_free(shfrnv,ASub1,Vars,ASub) :- !, shfr_extend_free(ASub1,Vars,ASub).
 %% del_check_cond(shfrnv,Cond,ASub,Sv,Flag,WConds) :- !, shfrnv_check_cond(Cond,ASub,Sv,Flag,WConds).
 %% del_impose_cond(shfrnv,LCond,Sv,ASub,LASub) :- !, shfrnv_impose_cond(LCond,Sv,ASub,LASub).
-%
+% % TODO: move to its own module
 %% shfrnv_check_cond(_,_,_,_,_).
 %% shfrnv_compute_lub_el(_,_,_).  
 %% shfrnv_convex_hull(_,_,_).
@@ -509,7 +364,7 @@ empty_entry(shfrnv,Sg,Qv,Call) :- !, shfr_empty_entry(Sg,Qv,Call).
 shfrnv_glb(_ASub0,_ASub1,_ASub) :- compiler_error(op_not_implemented(glb)), fail.
 % ---------------------------------------------------------------------------
 :- use_module(domain(shfret)).
-%aidomain(shfret). % TODO: it was missing, disabled?
+%aidomain(shfret). % TODO: MOVE TO ATTIC or ENABLE?
 init_abstract_domain(shfret,PushedFlags) :- !, shfret_init_abstract_domain(PushedFlags).
 call_to_entry(shfret,Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo) :- !, shfret_call_to_entry(Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo).
 exit_to_prime(shfret,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime) :- !, shfret_exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime).
@@ -524,7 +379,7 @@ less_or_equal(shfret,ASub0,ASub1) :- !, shfret_less_or_equal(ASub0,ASub1).
 glb(shfret,ASub0,ASub1,ASub) :- !, shfret_glb(ASub0,ASub1,ASub).
 eliminate_equivalent(shfret,TmpLSucc,LSucc) :- !, shfret_eliminate_equivalent(TmpLSucc,LSucc).
 call_to_success_fact(shfret,Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ) :- !, shfret_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ).
-combined_special_builtin(shfret,SgKey,Domains) :- !, shfret_combined_special_builtin(SgKey,Domains).
+combined_special_builtin0(shfret,SgKey,Domains) :- !, shfret_combined_special_builtin0(SgKey,Domains).
 split_combined_domain(shfret,ASub,ASubs,Doms) :- !, shfret_split_combined_domain(ASub,ASubs,Doms).
 input_interface(shfret,InputUser,Kind,Struct0,Struct1) :- !, shfret_input_interface(InputUser,Kind,Struct0,Struct1).
 input_user_interface(shfret,InputUser,Qv,ASub,Sg,MaybeCallASub) :- !, shfret_input_user_interface(InputUser,Qv,ASub,Sg,MaybeCallASub).
@@ -532,20 +387,6 @@ asub_to_native(shfret,ASub,Qv,OutFlag,OutputUser,Comps) :- !, shfret_asub_to_nat
 unknown_call(shfret,Sg,Vars,Call,Succ) :- !, shfret_unknown_call(Sg,Vars,Call,Succ).
 unknown_entry(shfret,Sg,Qv,Call) :- !, shfret_unknown_entry(Sg,Qv,Call).
 empty_entry(shfret,Sg,Qv,Call) :- !, shfret_empty_entry(Sg,Qv,Call).
-%
-:- use_module(ciaopp(preprocess_flags), [push_pp_flag/2]).
-shfret_init_abstract_domain([variants,widen]) :-
-	push_pp_flag(variants,off),
-	push_pp_flag(widen,on).
-shfret_eliminate_equivalent(LSucc,LSucc). % TODO: wrong or not needed? (JF)
-shfret_combined_special_builtin(SgKey,Domains) :-
-	% TODO: refactor (define a nondet pred with combined domains instead)
-	( special_builtin(eterms,SgKey,_Sg,SgKey,_Type,_Condvars) ->
-	    Domains=[eterms,shfr]
-	; special_builtin(shfr,SgKey,_Sg,SgKey,_Type,_Condvars) ->
-	    Domains=[eterms,shfr]
-	; fail
-	).
 % ---------------------------------------------------------------------------
 :- use_module(domain(shareson)).
 aidomain(shareson).
@@ -567,6 +408,7 @@ unknown_call(shareson,Sg,Vars,Call,Succ) :- !, shareson_unknown_call(Sg,Vars,Cal
 unknown_entry(shareson,Sg,Qv,Call) :- !, shareson_unknown_entry(Sg,Qv,Call).
 empty_entry(shareson,Sg,Qv,Call) :- !, shareson_empty_entry(Sg,Qv,Call).
 %
+% TODO: move to its own module
 :- use_module(ciaopp(plai/plai_errors), [compiler_error/1]).
 shareson_special_builtin(SgKey,Sg,Subgoal,(TypeSon,TypeSh),(CondSon,CondSh)) :-
 	share_special_builtin(SgKey,Sg,Subgoal,TypeSh,CondSh),
@@ -602,6 +444,7 @@ unknown_call(shfrson,Sg,Vars,Call,Succ) :- !, shfrson_unknown_call(Sg,Vars,Call,
 unknown_entry(shfrson,Sg,Qv,Call) :- !, shfrson_unknown_entry(Sg,Qv,Call).
 empty_entry(shfrson,Sg,Qv,Call) :- !, shfrson_empty_entry(Sg,Qv,Call).
 %
+% TODO: move to its own module
 :- use_module(ciaopp(plai/plai_errors), [compiler_error/1]).
 shfrson_special_builtin(SgKey,Sg,Subgoal,(TypeSon,TypeSh),(CondSon,CondSh)) :-
 	shfr_special_builtin(SgKey,Sg,Subgoal,TypeSh,CondSh),
@@ -812,21 +655,6 @@ unknown_entry(share_clique_def,Sg,Qv,Call) :- !, share_clique_def_unknown_entry(
 empty_entry(share_clique_def,Sg,Qv,Call) :- !, share_clique_def_empty_entry(Sg,Qv,Call).
 %% compute_lub_el(share_clique_def,ASub1,ASub2,ASub) :- !, share_clique_def_lub_cl(ASub1,ASub2,ASub).
 %
-share_clique_def_body_succ_builtin((TSH,not_defined),Sg,(CSH,_),Sv,HvFv,Call,Proj,Succ) :- !,
-	Call=(Call_SH,Call_def),
-	Proj=(Proj_SH,_Proj_def),
-	body_succ_builtin(share_clique,TSH,Sg,CSH,Sv,HvFv,Call_SH,Proj_SH,Succ_SH),
-	Succ = (Succ_SH,Call_def).
-share_clique_def_body_succ_builtin((TSH,Tdef),Sg,(CSH,Cdef),Sv,HvFv,Call,Proj,Succ) :- !,
-	Call=(Call_SH,Call_def),
-	Proj=(Proj_SH,Proj_def),
-	body_succ_builtin(def,Tdef,Sg,Cdef,Sv,HvFv,Call_def,Proj_def,Succ_def),
-	share_clique_def_compose((Call_SH,Succ_def),NewCall_SH),
-	share_clique_def_compose((Proj_SH,Succ_def),NewProj_SH),
-	body_succ_builtin(share_clique,TSH,Sg,CSH,Sv,HvFv,NewCall_SH,NewProj_SH,Succ_SH),
-	Succ = (Succ_SH,Succ_def).
-share_clique_def_body_succ_builtin(Type,Sg,Condvs,Sv,HvFv_u,Call,Proj,Succ) :- % TODO: for \+Type=(_,_), is it OK?
-	body_builtin(share_clique_def,Type,Sg,Condvs,Sv,HvFv_u,Call,Proj,Succ).
 % ----------
 :- use_module(domain(sharefree_clique_def)).
 aidomain(sharefree_clique_def).
@@ -851,21 +679,6 @@ unknown_entry(sharefree_clique_def,Sg,Qv,Call) :- !, sharefree_clique_def_unknow
 empty_entry(sharefree_clique_def,Sg,Qv,Call) :- !, sharefree_clique_def_empty_entry(Sg,Qv,Call).
 %% compute_lub_el(sharefree_clique_def,ASub1,ASub2,ASub) :- !, sharefree_clique_def_lub_cl(ASub1,ASub2,ASub).
 %
-sharefree_clique_def_body_succ_builtin((TSHF,not_defined),Sg,(CSHF,_),Sv,HvFv,Call,Proj,Succ) :- !,
-	Call=(Call_SHF,Call_def),
-	Proj=(Proj_SHF,_Proj_def),
-	body_succ_builtin(sharefree_clique,TSHF,Sg,CSHF,Sv,HvFv,Call_SHF,Proj_SHF,Succ_SHF),
-	Succ = (Succ_SHF,Call_def).
-sharefree_clique_def_body_succ_builtin((TSHF,Tdef),Sg,(CSHF,Cdef),Sv,HvFv,Call,Proj,Succ) :- !,
-	Call=(Call_SHF,Call_def),
-	Proj=(Proj_SHF,Proj_def),
-	body_succ_builtin(def,Tdef,Sg,Cdef,Sv,HvFv,Call_def,Proj_def,Def_succ),
-	sharefree_clique_def_compose(Call_SHF,Def_succ,NewCall_SHF),
-	sharefree_clique_def_compose(Proj_SHF,Def_succ,NewProj_SHF),
-	body_succ_builtin(sharefree_clique,TSHF,Sg,CSHF,Sv,HvFv,NewCall_SHF,NewProj_SHF,Succ_SHF),
-	unify_asub_if_bottom((Succ_SHF,Def_succ),Succ),!.
-sharefree_clique_def_body_succ_builtin(Type,Sg,Condvs,Sv,HvFv_u,Call,Proj,Succ) :- % TODO: for \+Type=(_,_), is it OK?
-	body_builtin(sharefree_clique_def,Type,Sg,Condvs,Sv,HvFv_u,Call,Proj,Succ).
 % ---------------------------------------------------------------------------
 :- if(defined(has_ciaopp_extra)).
 :- use_module(domain(bshare/bshare)).
@@ -912,7 +725,6 @@ unknown_call(aeq,Sg,Vars,Call,Succ) :- !, aeq_unknown_call(Sg,Vars,Call,Succ).
 unknown_entry(aeq,Sg,Qv,Call) :- !, aeq_unknown_entry(Sg,Qv,Call).
 empty_entry(aeq,Sg,Qv,Call) :- !, aeq_empty_entry(Sg,Qv,Call).
 %
-:- use_module(ciaopp(plai/plai_errors), [compiler_error/1]).
 %% propagate_downwards_closed(aeq,ASub1,ASub2,ASub) :- !, aeq_downwards_closed(ASub1,ASub2,ASub).
 %% del_real_conjoin(aeq,ASub1,ASub2,ASub) :- !, aeq_real_conjoin(ASub1,ASub2,ASub).
 %% del_hash(aeq,ASub,Vars,N) :- !, aeq_hash(ASub,Vars,N).
@@ -932,8 +744,6 @@ empty_entry(aeq,Sg,Qv,Call) :- !, aeq_empty_entry(Sg,Qv,Call).
 %% aeq_lub(_,_,_).        
 %% aeq_more_instantiate(_,_). 
 %% aeq_real_conjoin(_,_,_).
-aeq_glb(_ASub0,_ASub1,_ASub) :- compiler_error(op_not_implemented(glb)), fail.
-aeq_eliminate_equivalent(TmpLSucc,LSucc) :- absub_eliminate_equivalent(TmpLSucc,aeq,LSucc).
 % ---------------------------------------------------------------------------
 :- use_module(domain(depthk)).
 aidomain(depth).
@@ -982,13 +792,6 @@ asub_to_native(path,ASub,Qv,OutFlag,OutputUser,Comps) :- !, path_asub_to_native(
 unknown_call(path,Sg,Vars,Call,Succ) :- !, path_unknown_call(Sg,Vars,Call,Succ).
 unknown_entry(path,Sg,Qv,Call) :- !, path_unknown_entry(Sg,Qv,Call).
 empty_entry(path,Sg,Qv,Call) :- !, path_empty_entry(Sg,Qv,Call).
-%
-:- use_module(ciaopp(plai/plai_errors), [compiler_error/1]).
-:- use_module(ciaopp(preprocess_flags), [push_pp_flag/2]).
-path_init_abstract_domain([variants,multi_success]) :-
-	push_pp_flag(variants,off),
-	push_pp_flag(multi_success,on).
-path_glb(_ASub0,_ASub1,_ASub) :- compiler_error(op_not_implemented(glb)), fail.
 % ===========================================================================
 :- doc(section, "Type domains"). % TODO: shape/structure?
 % ---------------------------------------------------------------------------
@@ -1019,41 +822,34 @@ unknown_entry(terms,Sg,Qv,Call) :- !, terms_unknown_entry(Sg,Qv,Call).
 empty_entry(terms,Sg,Qv,Call) :- !, terms_empty_entry(Sg,Qv,Call).
 collect_abstypes_abs(terms,ASub,Types0,Types) :- !, terms_collect_abstypes(ASub,Types0,Types).
 rename_abstypes_abs(terms,ASub,(Types,Names),RenASub) :- !, terms_rename_abs(ASub,Types,Names,RenASub).
-%
-:- use_module(ciaopp(preprocess_flags), [push_pp_flag/2]).
-terms_init_abstract_domain([widen]) :-
-	push_pp_flag(widen,on).
 % ---------------------------------------------------------------------------
 :- use_module(domain(ptypes)).
 aidomain(ptypes).
 init_abstract_domain(ptypes,PushedFlags) :- !, ptypes_init_abstract_domain(PushedFlags).
-call_to_entry(ptypes,Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo) :- !, terms_call_to_entry(Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo).
-exit_to_prime(ptypes,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime) :- !, terms_exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime).
+call_to_entry(ptypes,Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo) :- !, ptypes_call_to_entry(Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo).
+exit_to_prime(ptypes,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime) :- !, ptypes_exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime).
 widencall(ptypes,Prime0,Prime1,NewPrime) :- !, ptypes_widencall(Prime0,Prime1,NewPrime).
 widen(ptypes,Prime0,Prime1,NewPrime) :- !, ptypes_widen(Prime0,Prime1,NewPrime).
-compute_lub(ptypes,ListASub,LubASub) :- !, terms_compute_lub(ListASub,LubASub).
-identical_abstract(ptypes,ASub1,ASub2) :- !, terms_identical_abstract(ASub1,ASub2).
-abs_sort(ptypes,ASub,ASub_s) :- !, terms_sort(ASub,ASub_s).
-extend(ptypes,_Sg,Prime,Sv,Call,Succ) :- !, terms_extend(Prime,Sv,Call,Succ).
-less_or_equal(ptypes,ASub0,ASub1) :- !, terms_less_or_equal(ASub0,ASub1).
-glb(ptypes,ASub0,ASub1,ASub) :- !, terms_glb(ASub0,ASub1,ASub).
-call_to_success_fact(ptypes,Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ) :- !, terms_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ).
-special_builtin(ptypes,SgKey,Sg,Subgoal,Type,Condvars) :- !, terms_special_builtin(SgKey,Sg,Subgoal,Type,Condvars).
-success_builtin(ptypes,Type,Sv_uns,Condvars,_HvFv_u,Call,Succ) :- !, terms_success_builtin(Type,Sv_uns,Condvars,Call,Succ).
-call_to_success_builtin(ptypes,SgKey,Sg,Sv,Call,Proj,Succ) :- !, terms_call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,Succ).
-input_interface(ptypes,InputUser,Kind,Struct0,Struct1) :- !, terms_input_interface(InputUser,Kind,Struct0,Struct1).
-input_user_interface(ptypes,InputUser,Qv,ASub,Sg,MaybeCallASub) :- !, terms_input_user_interface(InputUser,Qv,ASub,Sg,MaybeCallASub).
-asub_to_native(ptypes,ASub,Qv,OutFlag,OutputUser,Comps) :- !, terms_asub_to_native(ASub,Qv,OutFlag,OutputUser,Comps).
-concrete(ptypes,Var,ASub,List) :- !, terms_concret(Var,ASub,List).
-unknown_call(ptypes,Sg,Vars,Call,Succ) :- !, terms_unknown_call(Sg,Vars,Call,Succ).
-unknown_entry(ptypes,Sg,Qv,Call) :- !, terms_unknown_entry(Sg,Qv,Call).
-empty_entry(ptypes,Sg,Qv,Call) :- !, terms_empty_entry(Sg,Qv,Call).
-collect_abstypes_abs(ptypes,ASub,Types0,Types) :- !, terms_collect_abstypes(ASub,Types0,Types).
-% rename_abstypes_abs(ptypes,ASub,(Types,Names),RenASub) :- !, terms_rename_abs(ASub,Types,Names,RenASub). % TODO: missing, why?
+compute_lub(ptypes,ListASub,LubASub) :- !, ptypes_compute_lub(ListASub,LubASub).
+identical_abstract(ptypes,ASub1,ASub2) :- !, ptypes_identical_abstract(ASub1,ASub2).
+abs_sort(ptypes,ASub,ASub_s) :- !, ptypes_sort(ASub,ASub_s).
+extend(ptypes,_Sg,Prime,Sv,Call,Succ) :- !, ptypes_extend(Prime,Sv,Call,Succ).
+less_or_equal(ptypes,ASub0,ASub1) :- !, ptypes_less_or_equal(ASub0,ASub1).
+glb(ptypes,ASub0,ASub1,ASub) :- !, ptypes_glb(ASub0,ASub1,ASub).
+call_to_success_fact(ptypes,Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ) :- !, ptypes_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ).
+special_builtin(ptypes,SgKey,Sg,Subgoal,Type,Condvars) :- !, ptypes_special_builtin(SgKey,Sg,Subgoal,Type,Condvars).
+success_builtin(ptypes,Type,Sv_uns,Condvars,_HvFv_u,Call,Succ) :- !, ptypes_success_builtin(Type,Sv_uns,Condvars,Call,Succ).
+call_to_success_builtin(ptypes,SgKey,Sg,Sv,Call,Proj,Succ) :- !, ptypes_call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,Succ).
+input_interface(ptypes,InputUser,Kind,Struct0,Struct1) :- !, ptypes_input_interface(InputUser,Kind,Struct0,Struct1).
+input_user_interface(ptypes,InputUser,Qv,ASub,Sg,MaybeCallASub) :- !, ptypes_input_user_interface(InputUser,Qv,ASub,Sg,MaybeCallASub).
+asub_to_native(ptypes,ASub,Qv,OutFlag,OutputUser,Comps) :- !, ptypes_asub_to_native(ASub,Qv,OutFlag,OutputUser,Comps).
+concrete(ptypes,Var,ASub,List) :- !, ptypes_concret(Var,ASub,List).
+unknown_call(ptypes,Sg,Vars,Call,Succ) :- !, ptypes_unknown_call(Sg,Vars,Call,Succ).
+unknown_entry(ptypes,Sg,Qv,Call) :- !, ptypes_unknown_entry(Sg,Qv,Call).
+empty_entry(ptypes,Sg,Qv,Call) :- !, ptypes_empty_entry(Sg,Qv,Call).
+collect_abstypes_abs(ptypes,ASub,Types0,Types) :- !, ptypes_collect_abstypes(ASub,Types0,Types).
+% rename_abstypes_abs(ptypes,ASub,(Types,Names),RenASub) :- !, ptypes_rename_abs(ASub,Types,Names,RenASub). % TODO: missing, why?
 %
-:- use_module(ciaopp(preprocess_flags), [push_pp_flag/2]).
-ptypes_init_abstract_domain([widen]) :-
-	push_pp_flag(widen,on).
 % ---------------------------------------------------------------------------
 :- use_module(domain(eterms)).
 aidomain(eterms).
@@ -1073,7 +869,7 @@ call_to_success_fact(eterms,Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ) :- !, eterms_c
 special_builtin(eterms,SgKey,Sg,Subgoal,Type,Condvars) :- !, eterms_special_builtin(SgKey,Sg,Subgoal,Type,Condvars).
 success_builtin(eterms,Type,Sv_uns,Condvars,_HvFv_u,Call,Succ) :- !, eterms_success_builtin(Type,Sv_uns,Condvars,Call,Succ).
 call_to_success_builtin(eterms,SgKey,Sg,Sv,Call,Proj,Succ) :- !, eterms_call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,Succ).
-obtain_info(eterms,_Prop,Vars,ASub,Info) :- !, asub_to_info(eterms,ASub,Vars,Info,_CompProps).
+obtain_info(eterms,_Prop,Vars,ASub,Info) :- !, asub_to_info(eterms,ASub,Vars,Info,_CompProps). % TODO: add pred
 input_interface(eterms,InputUser,Kind,Struct0,Struct1) :- !, eterms_input_interface(InputUser,Kind,Struct0,Struct1).
 input_user_interface(eterms,InputUser,Qv,ASub,Sg,MaybeCallASub) :- !, eterms_input_user_interface(InputUser,Qv,ASub,Sg,MaybeCallASub).
 asub_to_native(eterms,ASub,Qv,OutFlag,OutputUser,Comps) :- !, eterms_asub_to_native(ASub,Qv,OutFlag,OutputUser,Comps).
@@ -1086,9 +882,6 @@ multi_part_conc(eterms,Sg,Subs,List) :- !, eterms_multi_part_conc(Sg,Subs,List).
 collect_abstypes_abs(eterms,ASub,Types0,Types) :- !, eterms_collect_abstypes(ASub,Types0,Types).
 rename_abstypes_abs(eterms,ASub,(Types,Names),RenASub) :- !, eterms_rename_abs(ASub,Types,Names,RenASub).
 %
-:- use_module(ciaopp(preprocess_flags), [push_pp_flag/2]).
-eterms_init_abstract_domain([widen]) :-
-	push_pp_flag(widen,on).
 % ---------------------------------------------------------------------------
 :- use_module(domain(etermsvar)).
 aidomain(etermsvar).
@@ -1121,10 +914,6 @@ multi_part_conc(etermsvar,Sg,Subs,List) :- !, etermsvar_multi_part_conc(Sg,Subs,
 collect_abstypes_abs(etermsvar,ASub,Types0,Types) :- !, etermsvar_collect_abstypes(ASub,Types0,Types).
 rename_abstypes_abs(etermsvar,ASub,(Types,Names),RenASub) :- !, etermsvar_rename_abs(ASub,Types,Names,RenASub).
 %
-:- use_module(ciaopp(preprocess_flags), [push_pp_flag/2]).
-etermsvar_init_abstract_domain([type_eval,widen]) :-
-	push_pp_flag(type_eval,on),
-	push_pp_flag(widen,on).
 % ---------------------------------------------------------------------------
 :- use_module(domain(svterms)).
 aidomain(svterms).
@@ -1154,9 +943,6 @@ empty_entry(svterms,Sg,Qv,Call) :- !, svterms_empty_entry(Sg,Qv,Call).
 collect_abstypes_abs(svterms,ASub,Types0,Types) :- !, svterms_collect_abstypes(ASub,Types0,Types).
 rename_abstypes_abs(svterms,ASub,(Types,Names),RenASub) :- !, svterms_rename_abs(ASub,Types,Names,RenASub).
 %
-:- use_module(ciaopp(preprocess_flags), [push_pp_flag/2]).
-svterms_init_abstract_domain([widen]) :-
-	push_pp_flag(widen,on).
 % ---------------------------------------------------------------------------
 :- use_module(domain(deftypes)).
 aidomain(deftypes).
@@ -1168,28 +954,25 @@ widencall(deftypes,Prime0,Prime1,NewPrime) :- !, deftypes_widencall(Prime0,Prime
 widen(deftypes,Prime0,Prime1,NewPrime) :- !, deftypes_widen(Prime0,Prime1,NewPrime).
 compute_lub(deftypes,ListASub,LubASub) :- !, deftypes_compute_lub(ListASub,LubASub).
 identical_abstract(deftypes,ASub1,ASub2) :- !, deftypes_identical_abstract(ASub1,ASub2).
-abs_sort(deftypes,ASub,ASub_s) :- !, terms_sort(ASub,ASub_s).
+abs_sort(deftypes,ASub,ASub_s) :- !, deftypes_sort(ASub,ASub_s).
 extend(deftypes,_Sg,Prime,Sv,Call,Succ) :- !, deftypes_extend(Prime,Sv,Call,Succ).
 less_or_equal(deftypes,ASub0,ASub1) :- !, deftypes_less_or_equal(ASub0,ASub1).
 glb(deftypes,ASub0,ASub1,ASub) :- !, deftypes_glb(ASub0,ASub1,ASub).
 call_to_success_fact(deftypes,Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ) :- !, deftypes_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ).
-special_builtin(deftypes,SgKey,Sg,Subgoal,Type,Condvars) :- !, terms_special_builtin(SgKey,Sg,Subgoal,Type,Condvars).
-success_builtin(deftypes,Type,Sv_uns,Condvars,_HvFv_u,Call,Succ) :- !, terms_success_builtin(Type,Sv_uns,Condvars,Call,Succ).
+special_builtin(deftypes,SgKey,Sg,Subgoal,Type,Condvars) :- !, deftypes_special_builtin(SgKey,Sg,Subgoal,Type,Condvars).
+success_builtin(deftypes,Type,Sv_uns,Condvars,_HvFv_u,Call,Succ) :- !, deftypes_success_builtin(Type,Sv_uns,Condvars,Call,Succ).
 call_to_success_builtin(deftypes,SgKey,Sg,Sv,Call,Proj,Succ) :- !, deftypes_call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,Succ).
 input_interface(deftypes,InputUser,Kind,Struct0,Struct1) :- !, deftypes_input_interface(InputUser,Kind,Struct0,Struct1).
 input_user_interface(deftypes,InputUser,Qv,ASub,Sg,MaybeCallASub) :- !, deftypes_input_user_interface(InputUser,Qv,ASub,Sg,MaybeCallASub).
 asub_to_native(deftypes,ASub,Qv,OutFlag,OutputUser,Comps) :- !, deftypes_asub_to_native(ASub,Qv,OutFlag,OutputUser,Comps).
-concrete(deftypes,Var,ASub,List) :- !, terms_concret(Var,ASub,List).
-unknown_call(deftypes,Sg,Vars,Call,Succ) :- !, terms_unknown_call(Sg,Vars,Call,Succ).
-unknown_entry(deftypes,Sg,Qv,Call) :- !, terms_unknown_entry(Sg,Qv,Call).
-empty_entry(deftypes,Sg,Qv,Call) :- !, terms_empty_entry(Sg,Qv,Call).
+concrete(deftypes,Var,ASub,List) :- !, deftypes_concret(Var,ASub,List).
+unknown_call(deftypes,Sg,Vars,Call,Succ) :- !, deftypes_unknown_call(Sg,Vars,Call,Succ).
+unknown_entry(deftypes,Sg,Qv,Call) :- !, deftypes_unknown_entry(Sg,Qv,Call).
+empty_entry(deftypes,Sg,Qv,Call) :- !, deftypes_empty_entry(Sg,Qv,Call).
 collect_abstypes_abs(deftypes,ASub,Types0,Types) :- !, deftypes_collect_abstypes(ASub,Types0,Types).
-rename_abstypes_abs(deftypes,ASub,(Types,Names),RenASub) :- !, terms_rename_abs(ASub,Types,Names,RenASub).
+rename_abstypes_abs(deftypes,ASub,(Types,Names),RenASub) :- !, deftypes_rename_abs(ASub,Types,Names,RenASub).
 contains_parameters(deftypes,Subst) :-!, deftypes_contains_parameters(Subst).
 %
-:- use_module(ciaopp(preprocess_flags), [push_pp_flag/2]).
-deftypes_init_abstract_domain([widen]) :-
-	push_pp_flag(widen,on).
 % ===========================================================================
 :- doc(section, "Numeric domains").
 % ---------------------------------------------------------------------------
@@ -1247,10 +1030,6 @@ asub_to_native(polyhedra,ASub,Qv,OutFlag,OutputUser,Comps) :- !, polyhedra_asub_
 unknown_call(polyhedra,Sg,Vars,Call,Succ) :- !, polyhedra_unknown_call(Sg,Vars,Call,Succ).
 unknown_entry(polyhedra,Sg,Qv,Call) :- !, polyhedra_unknown_entry(Sg,Qv,Call).
 empty_entry(polyhedra,Sg,Qv,Call) :- !, polyhedra_empty_entry(Sg,Qv,Call).
-%
-:- use_module(ciaopp(preprocess_flags), [push_pp_flag/2]).
-polyhedra_init_abstract_domain([widen]) :- 
-        push_pp_flag(widen,on).
 :- endif.
 % ===========================================================================
 :- doc(section, "OO/Java domains"). % TODO: imperative? points-to? nullity?
@@ -1394,7 +1173,7 @@ glb(nf,ASub0,ASub1,ASub) :- !, nf_glb(ASub0,ASub1,ASub).
 eliminate_equivalent(nf,TmpLSucc,LSucc) :- !, nf_eliminate_equivalent(TmpLSucc,LSucc).
 call_to_success_fact(nf,Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ) :- !, nf_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ).
 special_builtin(nf,SgKey,Sg,Subgoal,Type,Condvars) :- !, nf_special_builtin(SgKey,Sg,Subgoal,Type,Condvars).
-combined_special_builtin(nf,SgKey,Domains) :- !, nf_combined_special_builtin(SgKey,Domains).
+combined_special_builtin0(nf,SgKey,Domains) :- !, nf_combined_special_builtin0(SgKey,Domains).
 split_combined_domain(nf,ASub,ASubs,Doms) :- !, nf_split_combined_domain(ASub,ASubs,Doms).
 success_builtin(nf,Type,Sv_uns,Condvars,_HvFv_u,Call,Succ) :- !, nf_success_builtin(Type,Sv_uns,Condvars,Call,Succ).
 input_interface(nf,InputUser,Kind,Struct0,Struct1) :- !, nf_input_interface(InputUser,Kind,Struct0,Struct1).
@@ -1404,22 +1183,6 @@ unknown_call(nf,Sg,Vars,Call,Succ) :- !, nf_unknown_call(Sg,Vars,Call,Succ).
 unknown_entry(nf,Sg,Qv,Call) :- !, nf_unknown_entry(Sg,Qv,Call).
 empty_entry(nf,Sg,Qv,Call) :- !, nf_empty_entry(Sg,Qv,Call).
 dom_statistics(nf, Info) :- !, nf_statistics(Info).
-%
-:- use_module(ciaopp(preprocess_flags), [push_pp_flag/2]).
-nf_init_abstract_domain([variants,widen]) :-
-	push_pp_flag(variants,off),
-	push_pp_flag(widen,on).
-nf_eliminate_equivalent(LSucc,LSucc). % TODO: wrong or not needed? (JF)
-nf_combined_special_builtin(SgKey,Domains) :-
-	% TODO: refactor (define a nondet pred with combined domains instead)
-	( special_builtin(eterms,SgKey,_Sg,SgKey,_Type,_Condvars) ->
-	    Domains=[eterms,shfr,nf]
-	; special_builtin(shfr,SgKey,_Sg,SgKey,_Type,_Condvars) ->
-	    Domains=[eterms,shfr,nf]
-	; special_builtin(nf,SgKey,_Sg,SgKey,_Type,_Condvars) ->
-	    Domains=[eterms,shfr,nf]
-	; fail
-	).
 :- endif.
 % ---------------------------------------------------------------------------
 % determinism
@@ -1443,7 +1206,7 @@ glb(det,ASub0,ASub1,ASub) :- !, det_glb(ASub0,ASub1,ASub).
 eliminate_equivalent(det,TmpLSucc,LSucc) :- !, det_eliminate_equivalent(TmpLSucc,LSucc).
 call_to_success_fact(det,Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ) :- !, det_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ).
 special_builtin(det,SgKey,Sg,Subgoal,Type,Condvars) :- !, det_special_builtin(SgKey,Sg,Subgoal,Type,Condvars).
-combined_special_builtin(det,SgKey,Domains) :- !, det_combined_special_builtin(SgKey,Domains).
+combined_special_builtin0(det,SgKey,Domains) :- !, det_combined_special_builtin0(SgKey,Domains).
 split_combined_domain(det,ASub,ASubs,Doms) :- !, det_split_combined_domain(ASub,ASubs,Doms).
 success_builtin(det,Type,Sv_uns,Condvars,_HvFv_u,Call,Succ) :- !, det_success_builtin(Type,Sv_uns,Condvars,Call,Succ).
 % obtain_info(det,Prop,Vars,ASub,Info) :- !, 
@@ -1457,22 +1220,6 @@ unknown_call(det,Sg,Vars,Call,Succ) :- !, det_unknown_call(Sg,Vars,Call,Succ).
 unknown_entry(det,Sg,Qv,Call) :- !, det_unknown_entry(Sg,Qv,Call).
 empty_entry(det,Sg,Qv,Call) :- !, det_empty_entry(Sg,Qv,Call).
 dom_statistics(det, Info) :- !, det_statistics(Info).
-%
-:- use_module(ciaopp(preprocess_flags), [push_pp_flag/2]).
-det_init_abstract_domain([variants,widen]) :-
-	push_pp_flag(variants,off),
-	push_pp_flag(widen,on).
-det_eliminate_equivalent(LSucc,LSucc). % TODO: wrong or not needed? (JF)
-det_combined_special_builtin(SgKey,Domains) :-
-	% TODO: refactor (define a nondet pred with combined domains instead)
-	( special_builtin(eterms,SgKey,_Sg,SgKey,_Type,_Condvars) ->
-	    Domains=[eterms,shfr,det]
-	; special_builtin(shfr,SgKey,_Sg,SgKey,_Type,_Condvars) ->
-	    Domains=[eterms,shfr,det]
-	; special_builtin(det,SgKey,_Sg,SgKey,_Type,_Condvars) ->
-	    Domains=[eterms,shfr,det]
-	; fail
-	).
 :- endif.
 % ===========================================================================
 :- doc(section, "Resources domains").
@@ -1496,7 +1243,7 @@ glb(res_plai,ASub0,ASub1,ASub) :- !, res_plai_glb(ASub0,ASub1,ASub).
 eliminate_equivalent(res_plai,TmpLSucc,LSucc) :- !, res_plai_eliminate_equivalent(TmpLSucc,LSucc).
 call_to_success_fact(res_plai,Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ) :- !, res_plai_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ).
 special_builtin(res_plai,SgKey,Sg,Subgoal,Type,Condvars) :- !, res_plai_special_builtin(SgKey,Sg,Subgoal,Type,Condvars).
-combined_special_builtin(res_plai,SgKey,Domains) :- !, res_plai_combined_special_builtin(SgKey,Domains).
+combined_special_builtin0(res_plai,SgKey,Domains) :- !, res_plai_combined_special_builtin0(SgKey,Domains).
 split_combined_domain(res_plai,ASub,ASubs,Doms) :- !, res_plai_split_combined_domain(ASub,ASubs,Doms).
 % success_builtin(res_plai,Type,Sv_uns,Condvars,_HvFv_u,Call,Succ) :- !, res_plai_success_builtin(Type,Sv_uns,Condvars,Call,Succ).
 call_to_success_builtin(res_plai,SgKey,Sg,Sv,Call,Proj,Succ) :- !, res_plai_call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,Succ).
@@ -1509,20 +1256,6 @@ unknown_entry(res_plai,Sg,Qv,Call) :- !, res_plai_unknown_entry(Sg,Qv,Call).
 empty_entry(res_plai,Sg,Qv,Call) :- !, res_plai_empty_entry(Sg,Qv,Call).
 collect_abstypes_abs(res_plai,ASub,Types0,Types) :- !, res_plai_collect_abstypes(ASub,Types0,Types).
 rename_abstypes_abs(res_plai,ASub,(Types,Names),RenASub) :- !, res_plai_rename_abs(ASub,Types,Names,RenASub).
-%
-:- use_module(ciaopp(preprocess_flags), [push_pp_flag/2]).
-res_plai_init_abstract_domain([widen]) :-
-	push_pp_flag(widen,on),
-%	res_plai:load_resources_modules.
-	res_plai:init_abstract_domain.
-res_plai_eliminate_equivalent(LSucc,LSucc). % TODO: wrong or not needed? (JF)
-res_plai_combined_special_builtin(SgKey,Domains) :-
-	% TODO: missing check for special_builtin(res_plai, ...)? (see nf_combined_special_builtin)
-	% TODO: (if the TODO above works) refactor (define a nondet pred with combined domains instead)
-	( special_builtin(etermsvar,SgKey,_Sg,SgKey,_Type,_Condvars) ->
-	    Domains=[etermsvar,res_plai]
-	; fail
-	).
 :- endif.
 % ---------------------------------------------------------------------------
 :- if(defined(has_ciaopp_extra)).
@@ -1543,7 +1276,7 @@ glb(res_plai_stprf,ASub0,ASub1,ASub) :- !, res_plai_stprf_glb(ASub0,ASub1,ASub).
 eliminate_equivalent(res_plai_stprf,TmpLSucc,LSucc) :- !, res_plai_stprf_eliminate_equivalent(TmpLSucc,LSucc).
 call_to_success_fact(res_plai_stprf,Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ) :- !, res_plai_stprf_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ).
 special_builtin(res_plai_stprf,SgKey,Sg,Subgoal,Type,Condvars) :- !, res_plai_stprf_special_builtin(SgKey,Sg,Subgoal,Type,Condvars).
-combined_special_builtin(res_plai_stprf,SgKey,Domains) :- !, res_plai_stprf_combined_special_builtin(SgKey,Domains).
+combined_special_builtin0(res_plai_stprf,SgKey,Domains) :- !, res_plai_stprf_combined_special_builtin0(SgKey,Domains).
 split_combined_domain(res_plai_stprf,ASub,ASubs,Doms) :- !, res_plai_stprf_split_combined_domain(ASub,ASubs,Doms).
 call_to_success_builtin(res_plai_stprf,SgKey,Sg,Sv,Call,Proj,Succ) :- !, res_plai_stprf_call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,Succ).
 obtain_info(res_plai_stprf,_Prop,Vars,ASub,Info) :- !, asub_to_info(res_plai_stprf,ASub,Vars,_Info,Info).
@@ -1555,20 +1288,6 @@ unknown_entry(res_plai_stprf,Sg,Qv,Call) :- !, res_plai_stprf_unknown_entry(Sg,Q
 empty_entry(res_plai_stprf,Sg,Qv,Call) :- !, res_plai_stprf_empty_entry(Sg,Qv,Call).
 collect_abstypes_abs(res_plai_stprf,ASub,Types0,Types) :- !, res_plai_stprf_collect_abstypes(ASub,Types0,Types).
 rename_abstypes_abs(res_plai_stprf,ASub,(Types,Names),RenASub) :- !, res_plai_stprf_rename_abs(ASub,Types,Names,RenASub).
-%
-:- use_module(ciaopp(preprocess_flags), [push_pp_flag/2]).
-res_plai_stprf_init_abstract_domain([widen]) :-
-	push_pp_flag(widen,on),
-%	res_plai:load_resources_modules.
-	res_plai_stprf:init_abstract_domain.
-res_plai_stprf_eliminate_equivalent(LSucc,LSucc). % TODO: wrong or not needed? (JF)
-res_plai_stprf_combined_special_builtin(SgKey,Domains) :-
-	% TODO: missing check for special_builtin(res_plai, ...)? (see nf_combined_special_builtin)
-	% TODO: (if the TODO above works) refactor (define a nondet pred with combined domains instead)
-	( special_builtin(etermsvar,SgKey,_Sg,SgKey,_Type,_Condvars) ->
-	    Domains=[etermsvar,res_plai_stprf]
-	; fail
-	).
 :- endif.
 % ---------------------------------------------------------------------------
 :- if(defined(has_ciaopp_extra)).
@@ -1589,7 +1308,7 @@ glb(sized_types,ASub0,ASub1,ASub) :- !, sized_types_glb(ASub0,ASub1,ASub).
 eliminate_equivalent(sized_types,TmpLSucc,LSucc) :- !, sized_types_eliminate_equivalent(TmpLSucc,LSucc).
 call_to_success_fact(sized_types,Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ) :- !, sized_types_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ).
 special_builtin(sized_types,SgKey,Sg,Subgoal,Type,Condvars) :- !, sized_types_special_builtin(SgKey,Sg,Subgoal,Type,Condvars).
-combined_special_builtin(sized_types,SgKey,Domains) :- !, sized_types_combined_special_builtin(SgKey,Domains).
+combined_special_builtin0(sized_types,SgKey,Domains) :- !, sized_types_combined_special_builtin0(SgKey,Domains).
 split_combined_domain(sized_types,ASub,ASubs,Doms) :- !, sized_types_split_combined_domain(ASub,ASubs,Doms).
 call_to_success_builtin(sized_types,SgKey,Sg,Sv,Call,Proj,Succ) :- !, sized_types_call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,Succ).
 obtain_info(sized_types,_Prop,Vars,ASub,Info) :- !, asub_to_info(sized_types,ASub,Vars,_Info,Info).
@@ -1601,20 +1320,6 @@ unknown_entry(sized_types,Sg,Qv,Call) :- !, sized_types_unknown_entry(Sg,Qv,Call
 empty_entry(sized_types,Sg,Qv,Call) :- !, sized_types_empty_entry(Sg,Qv,Call).
 collect_abstypes_abs(sized_types,ASub,Types0,Types) :- !, sized_types_collect_abstypes(ASub,Types0,Types).
 rename_abstypes_abs(sized_types,ASub,(Types,Names),RenASub) :- !, sized_types_rename_abs(ASub,Types,Names,RenASub).
-%
-:- use_module(ciaopp(preprocess_flags), [push_pp_flag/2]).
-sized_types_init_abstract_domain([widen]) :-
-	push_pp_flag(widen,on),
-%	sized_types:load_resources_modules.
-	sized_types:init_abstract_domain.
-sized_types_eliminate_equivalent(LSucc,LSucc). % TODO: wrong or not needed? (JF)
-sized_types_combined_special_builtin(SgKey,Domains) :-
-	% TODO: missing check for special_builtin(sized_types, ...)? (see nf_combined_special_builtin)
-	% TODO: (if the TODO above works) refactor (define a nondet pred with combined domains instead)
-	( special_builtin(etermsvar,SgKey,_Sg,SgKey,_Type,_Condvars) ->
-	    Domains=[etermsvar,sized_types]
-	; fail
-	).
 :- endif.
 % ===========================================================================
 
@@ -1623,6 +1328,7 @@ sized_types_combined_special_builtin(SgKey,Domains) :-
 
 :- use_module(library(lists), [member/2]).
 
+:- export(absub_eliminate_equivalent/3).
 absub_eliminate_equivalent([],_AbsInt,[]).
 absub_eliminate_equivalent([ASub],_AbsInt,[ASub]) :- !.
 absub_eliminate_equivalent([ASub|LASub],AbsInt,[ASub|NLASub]) :-
@@ -1656,6 +1362,7 @@ absub_fixpoint_covered(AbsInt,Prime0,Prime1) :-
 	; fail % TODO: anything else?
 	).
 
+:- export(body_builtin/9).
 body_builtin(AbsInt,special(SgKey),Sg,_Condvs,Sv,_HvFv_u,Call,Proj,Succ) :- !,
 	call_to_success_builtin(AbsInt,SgKey,Sg,Sv,Call,Proj,Succ).
 body_builtin(AbsInt,Type,_Sg,Condvs,Sv,HvFv_u,Call,_Proj,Succ) :-

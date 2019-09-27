@@ -409,8 +409,8 @@ less_or_equal_proj(AbsInt,Sg,Proj,Sg1,Proj1) :-
           different ways to treat these predicates: see
           @tt{body_succ_builtin/9}.".
 
-:- doc(hide,combined_special_builtin/3).
-:- export(combined_special_builtin/3).
+:- doc(hide,combined_special_builtin0/3).
+:- export(combined_special_builtin0/3).
 
 :- doc(hide,split_combined_domain/4).
 :- export(split_combined_domain/4).
