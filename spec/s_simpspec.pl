@@ -105,16 +105,15 @@ next_pred([],none).
 %%         G1 is G+1,
 %% 	make_atom([P,A,C,G1],K1).
 %% 
-:- pred last_key(+atm(K),-atm(K1)) # "@tt{K1} is the key for the end
-of the clause to which @tt{K} belongs.".
+:- pred last_key(K,K1) : atm(K) => atm(K1)
+        # "@tt{K1} is the key for the end of the clause to which @tt{K} belongs.".
 last_key(K,K1):-
 	decode_litkey(K,P,A,C,_G),
 	make_atom([P,A,C],K1).
 
-:- pred next_or_last_key(+list(Goals),+atm(K),-atm(K1)) # "@tt{K1} is
-the key for the end of the clause to which @tt{K} belongs if
-@tt{Goals} is empty or the key for the next literal otherwise.".
-
+:- pred next_or_last_key(Goals,K,K1) : (list(Goals), atm(K)) => atm(K1)
+        # "@tt{K1} is the key for the end of the clause to which @tt{K} belongs
+         if @tt{Goals} is empty or the key for the next literal otherwise.".
 next_or_last_key([],K,K1):-
 	last_key(K,K1).
 next_or_last_key([(_:GK)|_],_K,K1):-
