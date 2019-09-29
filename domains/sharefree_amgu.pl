@@ -40,11 +40,11 @@
 :- dom_impl(sharefree_amgu, empty_entry/3, from(sharefree:shfr)).
 
 %------------------------------------------------------------------------%
-% This file implements the same domain dependent abstract functions than |
+% This file implements the same domain-dependent abstract functions than |
 % sharefree.pl but the functions call_to_entry and exit_to_prime are     |
 % defined based on amgu.                                                 |
 %------------------------------------------------------------------------%
-% The meaning of the variables are defined in sharefree.pl               |
+% The meaning of the variables os defined in sharefree.pl                |
 %------------------------------------------------------------------------%
 
 :- doc(bug,"1. The builtin ==/2 is defined but it is not used because

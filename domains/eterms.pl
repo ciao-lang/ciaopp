@@ -57,7 +57,7 @@ Type is a pure type term @cite{Dart-Zobel}.
 
 ").
 
-:- doc(bug,"A (imported?) goal which is a regtype should probably be treated
+:- doc(bug,"An (imported?) goal which is a regtype should probably be treated
     as a builtin: its success is itself! Maybe do it in trust.pl?
     Otherwise, assertions trust list(X) => list(X) should be added.").
 
