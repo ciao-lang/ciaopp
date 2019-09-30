@@ -368,7 +368,7 @@ clause_applies(Head,Sg):-
 
 abs_subset_([NewPrime],AbsInt,[TempPrime]):- !,
 	fixpoint_covered(AbsInt,TempPrime,NewPrime).
-abs_subset_(AbsInt,NewPrime,TempPrime):-
+abs_subset_(NewPrime,AbsInt,TempPrime):- % TODO: only depthk.pl!
 	abs_subset(AbsInt,NewPrime,TempPrime).
 
 %------------------------------------------------------------------------%

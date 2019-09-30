@@ -4,6 +4,8 @@
 	  depthk_call_to_success_fact/9,
 	  depthk_compute_lub/2,
 	  depthk_glb/3,
+	  depthk_eliminate_equivalent/2,
+	  depthk_abs_subset/2,
 	  depthk_exit_to_prime/7,
 	  depthk_extend/4,    
 	  depthk_identical_abstract/2, 
@@ -213,6 +215,25 @@ glb_each_eq([],[],[]).
 glb_each_eq([X=T1|ASub1],[X=T2|ASub2],[X=T|Lub]):-
 	most_general_instance(T1,T2,T),
 	glb_each_eq(ASub1,ASub2,Lub).
+
+%------------------------------------------------------------------------%
+
+:- use_module(ciaopp(plai/domains), [absub_eliminate_equivalent/3]).
+
+depthk_eliminate_equivalent(TmpLSucc,LSucc) :- absub_eliminate_equivalent(TmpLSucc,depth,LSucc).
+
+%------------------------------------------------------------------------%
+
+depthk_abs_subset(LASub1,LASub2) :- absub_is_subset(LASub1,LASub2), !. % TODO: added cut (absub_is_subset/2 leaves choicepoints)
+
+% TODO: leaves choicepoints!
+absub_is_subset([],_LASub2).
+absub_is_subset([Sub1|Subs1],LASub2) :-
+	member(ASub2,LASub2),
+	depthk_identical_abstract(Sub1,ASub2),
+% OR:
+%	absub_fixpoint_covered(depth,Sub1,ASub2),
+	absub_is_subset(Subs1,LASub2).
 
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%

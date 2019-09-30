@@ -728,6 +728,13 @@ shfrnv_less_or_equal((Sh0,Fr0),(Sh1,Fr1)):-
 	member_value_freeness(Fr1,ListNv1,nv),
 	ord_subset(ListNv1,ListNv0).
 
+%------------------------------------------------------------------------%
+
+:- use_module(ciaopp(plai/plai_errors), [compiler_error/1]).
+
+:- export(shfrnv_glb/3).
+shfrnv_glb(_ASub0,_ASub1,_ASub) :- compiler_error(op_not_implemented(glb)), fail.
+
 %% %------------------------------------------------------------------------%
 %% % shfrnv_more_instantiate(+,+)                                           %
 %% % shfrnv_more_instantiate(ASub0,ASub1)                                   %

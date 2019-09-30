@@ -2,12 +2,15 @@
 :- module(shareson,
 	[ shareson_call_to_entry/9,
 	  shareson_call_to_success_fact/9, 
+	  shareson_special_builtin/5,
+	  shareson_body_succ_builtin/8,
 	  shareson_compute_lub/2,
 	  shareson_exit_to_prime/7,  
 	  shareson_extend/4,  
 	  shareson_input_user_interface/5,
 	  shareson_input_interface/4,
 	  shareson_less_or_equal/2, 
+	  shareson_glb/3,
 	  shareson_asub_to_native/5,
 	  shareson_project/3, 
 	  shareson_sort/2,    
@@ -90,6 +93,27 @@ shareson_call_to_success_fact(Sg,Hv,Head,_K,Sv,Call,Proj,Prime,Succ):-
 	share_call_to_prime_fact(Sg,Hv,Head,Sv,Proj_sh,Prime_sh),
 	compose(Prime_son,Prime_sh,Sv,Prime),
 	shareson_extend(Prime,Sv,Call,Succ).
+
+%-------------------------------------------------------------------------
+
+:- use_module(ciaopp(plai/plai_errors), [compiler_error/1]).
+shareson_special_builtin(SgKey,Sg,Subgoal,(TypeSon,TypeSh),(CondSon,CondSh)) :-
+	share_special_builtin(SgKey,Sg,Subgoal,TypeSh,CondSh),
+	son_special_builtin(SgKey,Sg,Subgoal,TypeSon,CondSon).
+
+%-------------------------------------------------------------------------
+
+:- use_module(ciaopp(plai/domains), [body_succ_builtin/9, body_builtin/9]).
+
+% TODO: These do have special(_), special care (old comment)
+shareson_body_succ_builtin((TSon,TSh),Sg,(CSon,CSh),Sv,HvFv,Call,Proj,Succ) :- !,
+	Call=(Call_son,Call_sh),
+	Proj=(Proj_son,Proj_sh),
+	body_succ_builtin(son,TSon,Sg,CSon,Sv,HvFv,Call_son,Proj_son,Succ_son),
+	body_succ_builtin(share,TSh,Sg,CSh,Sv,HvFv,Call_sh,Proj_sh,Succ_sh),
+	shareson_compose(Call,Succ_sh,Succ_son,Succ).
+shareson_body_succ_builtin(Type,Sg,Condvs,Sv,HvFv_u,Call,Proj,Succ) :- % TODO: for \+Type=(_,_), is it OK?
+	body_builtin(shareson,Type,Sg,Condvs,Sv,HvFv_u,Call,Proj,Succ).
 
 %-------------------------------------------------------------------------
 
@@ -184,6 +208,10 @@ shareson_less_or_equal(ASub0,ASub1):-
 shareson_less_or_equal((Son0,Sh0),(Son1,Sh1)):-
 	share_less_or_equal(Sh0,Sh1),
 	son_less_or_equal(Son0,Son1).
+
+%-------------------------------------------------------------------------
+
+shareson_glb(_ASub0,_ASub1,_ASub) :- compiler_error(op_not_implemented(glb)), fail.
 
 %-------------------------------------------------------------------------
 % compose(+,+,+,-)                                                       |

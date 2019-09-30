@@ -1,3 +1,25 @@
+:- module(lsigndiff,
+	[ difflsign_call_to_entry/9,  
+	  difflsign_call_to_success_fact/9,
+	  difflsign_compute_lub/2,
+	  difflsign_exit_to_prime/6,  
+	  difflsign_extend/5,
+	  difflsign_input_user_interface/5,
+	  difflsign_input_interface/4,
+	  difflsign_asub_to_native/5,
+	  difflsign_less_or_equal/2, 
+	  difflsign_glb/3,
+	  difflsign_project/5,
+	  difflsign_sort/2,
+	  difflsign_special_builtin/5,
+	  difflsign_success_builtin/6, 
+	  difflsign_unknown_call/4, 
+	  difflsign_unknown_entry/3, 
+	  difflsign_empty_entry/3
+	], [assertions]).
+
+% simple lsign domain
+
 %------------------------------------------------------------------------%
 %                                                                        %
 %                          started: 5/5/95                               %
@@ -5,6 +27,18 @@
 %                                                                        %
 %------------------------------------------------------------------------%
 
+:- use_module(domain(lsign)).
+
+:- use_module(domain(s_grshfr), 
+	[ change_values_insert/4,
+	  collect_vars_freeness/2
+	]).
+
+:- use_module(library(sets), 
+	[ ord_subtract/3,
+	  ord_union_diff/4
+	]).
+:- use_module(library(sort)).
 :- use_module(ciaopp(plai/plai_errors), [compiler_error/1]).
 
 %------------------------------------------------------------------------%

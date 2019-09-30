@@ -19,29 +19,8 @@
 	  lsign_success_builtin/6,
 	  lsign_unknown_call/4,
 	  lsign_unknown_entry/3,
-	  lsign_empty_entry/3,
-	%
-	  difflsign_call_to_entry/9,  
-	  difflsign_call_to_success_fact/9,
-	  difflsign_compute_lub/2,
-	  difflsign_exit_to_prime/6,  
-	  difflsign_extend/5,
-	  difflsign_input_user_interface/5,
-	  difflsign_input_interface/4,
-	  difflsign_asub_to_native/5,
-	  difflsign_less_or_equal/2, 
-	  difflsign_glb/3,
-	  difflsign_project/5,
-	  difflsign_sort/2,
-	  difflsign_special_builtin/5,
-	  difflsign_success_builtin/6, 
-	  difflsign_unknown_call/4, 
-	  difflsign_unknown_entry/3, 
-	  difflsign_empty_entry/3
-	], [assertions, datafacts]).
-
-% simple lsign domain
-:- include(domain(lsigndiff)).
+	  lsign_empty_entry/3
+	], [assertions]).
 
 :- use_module(engine(io_basic)).
 :- use_module(domain(deftools), [find_type/2]).
@@ -619,6 +598,7 @@ lsign_extend(_Sg,Prime,_Sv,Call,Succ):-
 %   - ACons1 and ACons 2 are sorted
 %------------------------------------------------------------------------%
 
+:- export(lsign_sum/3).
 lsign_sum(a(S1,AEqIn1,Non1),a(S2,AEqIn2,Non2),ACons):-
 	ord_union_diff(S2,S1,Union,Diff),
 	lsign_propagate_fixpoint(Diff,AEqIn2,Non2,NAEqIn2,NNon2,Union,S,F),
@@ -1158,6 +1138,7 @@ lsign_empty_entry(_Sg,_Qv,_Call):-
 lsign_asub_to_native(ASub,_Qv,_OutFlag,OutputUser,[]) :- lsign_output_interface(ASub,OutputUser).
 
 % fail: lsign_output_interface('$bottom',[solutions(0)]).
+:- export(lsign_output_interface/2).
 lsign_output_interface(a(S,AEqIn,Non),Info):-
 	lsign_output_user_interface0(AEqIn,NAEqIn),
 	if_not_nil(S,a(S),Info,Info0),
@@ -1985,6 +1966,7 @@ lsign_propagate_herbrand([EqIn|AEqIn],S1,NAEqIn,S2,S):-
 % Assumptions
 %------------------------------------------------------------------------%
 
+:- export(lsign_propagate_fixpoint/8).
 lsign_propagate_fixpoint([],AEqIn_u,Non_u,AEqIn,Non,S2,S,_):- !,
 	sort(AEqIn_u,AEqIn),
 	sort(Non_u,Non),

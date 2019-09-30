@@ -18,7 +18,8 @@
 	  def_special_builtin/5,
 	  def_success_builtin/4,
 	  def_unknown_call/4,
-	  def_unknown_entry/3
+	  def_unknown_entry/3,
+	  def_empty_entry/3
 	],
 	[assertions, datafacts]).
 
@@ -659,6 +660,10 @@ def_unknown_call(_Sg,_Vars,Call,Call).
 %------------------------------------------------------------------------%
 
 def_unknown_entry(_Sg,_Vars,a([],[])).
+
+%------------------------------------------------------------------------%
+
+def_empty_entry(Sg,Qv,Call) :- def_unknown_entry(Sg,Qv,Call).
 
 %------------------------------------------------------------------------%
 % def_less_or_equal(+,+)                                                 %

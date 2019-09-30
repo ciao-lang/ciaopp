@@ -170,8 +170,10 @@ asub_to_native(lsign,ASub,Qv,OutFlag,OutputUser,Comps) :- !, lsign_asub_to_nativ
 unknown_call(lsign,Sg,Vars,Call,Succ) :- !, lsign_unknown_call(Sg,Vars,Call,Succ).
 unknown_entry(lsign,Sg,Qv,Call) :- !, lsign_unknown_entry(Sg,Qv,Call).
 empty_entry(lsign,Sg,Qv,Call) :- !, lsign_empty_entry(Sg,Qv,Call).
-% ----------
-aidomain(difflsign). % TODO: move to its own module
+% ---------------------------------------------------------------------------
+% lsigndiff
+:- use_module(domain(lsigndiff)).
+aidomain(difflsign).
 call_to_entry(difflsign,Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo) :- !, difflsign_call_to_entry(Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo).
 exit_to_prime(difflsign,Sg,Hv,Head,_Sv,Exit,ExtraInfo,Prime) :- !, difflsign_exit_to_prime(Sg,Hv,Head,Exit,ExtraInfo,Prime).
 project(difflsign,Sg,Vars,HvFv,ASub,Proj) :- !, difflsign_project(Sg,Vars,HvFv,ASub,Proj).
@@ -245,7 +247,6 @@ empty_entry(def,Sg,Qv,Call) :- !, def_empty_entry(Sg,Qv,Call).
 %% del_check_cond(def,Cond,ASub,Sv,Flag,WConds) :- !, def_check_cond(Cond,ASub,Sv,Flag,WConds).
 %% del_impose_cond(def,LCond,Sv,ASub,LASub) :- !, def_impose_cond(LCond,Sv,ASub,LASub).
 %
-def_empty_entry(Sg,Qv,Call) :- def_unknown_entry(Sg,Qv,Call). % TODO: move to def.pl
 %% def_check_cond(_,_,_,_,_). 
 %% def_downwards_closed(_,_,_).
 %% def_hash(_,_,_).
@@ -310,7 +311,7 @@ empty_entry(shfr,Sg,Qv,Call) :- !, shfr_empty_entry(Sg,Qv,Call).
 %% extend_free(shfr,ASub1,Vars,ASub) :- !, shfr_extend_free(ASub1,Vars,ASub).
 %% del_check_cond(shfr,Cond,ASub,Sv,Flag,WConds) :- !, shfr_check_cond(Cond,ASub,Sv,Flag,WConds).
 %% del_impose_cond(shfr,LCond,Sv,ASub,LASub) :- !, shfr_impose_cond(LCond,Sv,ASub,LASub).
-% % TODO: move to its own module
+%
 %% shfr_check_cond(_,_,_,_,_).
 %% % shfr_compute_lub_el(_,_,_). %% commented out by JNL
 %% shfr_convex_hull(_,_,_).
@@ -342,7 +343,6 @@ unknown_call(shfrnv,Sg,Vars,Call,Succ) :- !, shfr_unknown_call(Sg,Vars,Call,Succ
 unknown_entry(shfrnv,Sg,Qv,Call) :- !, shfr_unknown_entry(Sg,Qv,Call).
 empty_entry(shfrnv,Sg,Qv,Call) :- !, shfr_empty_entry(Sg,Qv,Call).
 %
-:- use_module(ciaopp(plai/plai_errors), [compiler_error/1]).
 %% propagate_downwards_closed(shfrnv,ASub1,ASub2,ASub) :- !, shfrnv_downwards_closed(ASub1,ASub2,ASub).
 %% del_real_conjoin(shfrnv,ASub1,ASub2,ASub) :- !, shfrnv_real_conjoin(ASub1,ASub2,ASub).
 %% del_hash(shfrnv,ASub,Vars,N) :- !, shfrnv_hash(ASub,Vars,N).
@@ -352,7 +352,7 @@ empty_entry(shfrnv,Sg,Qv,Call) :- !, shfr_empty_entry(Sg,Qv,Call).
 %% extend_free(shfrnv,ASub1,Vars,ASub) :- !, shfr_extend_free(ASub1,Vars,ASub).
 %% del_check_cond(shfrnv,Cond,ASub,Sv,Flag,WConds) :- !, shfrnv_check_cond(Cond,ASub,Sv,Flag,WConds).
 %% del_impose_cond(shfrnv,LCond,Sv,ASub,LASub) :- !, shfrnv_impose_cond(LCond,Sv,ASub,LASub).
-% % TODO: move to its own module
+%
 %% shfrnv_check_cond(_,_,_,_,_).
 %% shfrnv_compute_lub_el(_,_,_).  
 %% shfrnv_convex_hull(_,_,_).
@@ -361,10 +361,9 @@ empty_entry(shfrnv,Sg,Qv,Call) :- !, shfr_empty_entry(Sg,Qv,Call).
 %% shfrnv_impose_cond(_,_,_,_).
 %% shfrnv_more_instantiate(_,_). 
 %% shfrnv_real_conjoin(_,_,_).
-shfrnv_glb(_ASub0,_ASub1,_ASub) :- compiler_error(op_not_implemented(glb)), fail.
 % ---------------------------------------------------------------------------
-:- use_module(domain(shfret)).
-%aidomain(shfret). % TODO: MOVE TO ATTIC or ENABLE?
+:- use_module(domain(shfret)). % TODO: this domain was not registerd in aidomain/1
+aidomain(shfret).
 init_abstract_domain(shfret,PushedFlags) :- !, shfret_init_abstract_domain(PushedFlags).
 call_to_entry(shfret,Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo) :- !, shfret_call_to_entry(Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo).
 exit_to_prime(shfret,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime) :- !, shfret_exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime).
@@ -407,22 +406,6 @@ asub_to_native(shareson,ASub,Qv,OutFlag,OutputUser,Comps) :- !, shareson_asub_to
 unknown_call(shareson,Sg,Vars,Call,Succ) :- !, shareson_unknown_call(Sg,Vars,Call,Succ).
 unknown_entry(shareson,Sg,Qv,Call) :- !, shareson_unknown_entry(Sg,Qv,Call).
 empty_entry(shareson,Sg,Qv,Call) :- !, shareson_empty_entry(Sg,Qv,Call).
-%
-% TODO: move to its own module
-:- use_module(ciaopp(plai/plai_errors), [compiler_error/1]).
-shareson_special_builtin(SgKey,Sg,Subgoal,(TypeSon,TypeSh),(CondSon,CondSh)) :-
-	share_special_builtin(SgKey,Sg,Subgoal,TypeSh,CondSh),
-	son_special_builtin(SgKey,Sg,Subgoal,TypeSon,CondSon).
-% TODO: These do have special(_), special care (old comment)
-shareson_body_succ_builtin((TSon,TSh),Sg,(CSon,CSh),Sv,HvFv,Call,Proj,Succ) :- !,
-	Call=(Call_son,Call_sh),
-	Proj=(Proj_son,Proj_sh),
-	body_succ_builtin(son,TSon,Sg,CSon,Sv,HvFv,Call_son,Proj_son,Succ_son),
-	body_succ_builtin(share,TSh,Sg,CSh,Sv,HvFv,Call_sh,Proj_sh,Succ_sh),
-	shareson_compose(Call,Succ_sh,Succ_son,Succ).
-shareson_body_succ_builtin(Type,Sg,Condvs,Sv,HvFv_u,Call,Proj,Succ) :- % TODO: for \+Type=(_,_), is it OK?
-	body_builtin(shareson,Type,Sg,Condvs,Sv,HvFv_u,Call,Proj,Succ).
-shareson_glb(_ASub0,_ASub1,_ASub) :- compiler_error(op_not_implemented(glb)), fail.
 % ---------------------------------------------------------------------------
 :- use_module(domain(shfrson)).
 aidomain(shfrson).
@@ -443,22 +426,6 @@ asub_to_native(shfrson,ASub,Qv,OutFlag,OutputUser,Comps) :- !, shfrson_asub_to_n
 unknown_call(shfrson,Sg,Vars,Call,Succ) :- !, shfrson_unknown_call(Sg,Vars,Call,Succ).
 unknown_entry(shfrson,Sg,Qv,Call) :- !, shfrson_unknown_entry(Sg,Qv,Call).
 empty_entry(shfrson,Sg,Qv,Call) :- !, shfrson_empty_entry(Sg,Qv,Call).
-%
-% TODO: move to its own module
-:- use_module(ciaopp(plai/plai_errors), [compiler_error/1]).
-shfrson_special_builtin(SgKey,Sg,Subgoal,(TypeSon,TypeSh),(CondSon,CondSh)) :-
-	shfr_special_builtin(SgKey,Sg,Subgoal,TypeSh,CondSh),
-	son_special_builtin(SgKey,Sg,Subgoal,TypeSon,CondSon).
-% TODO: These do have special(_), special care (old comment)
-shfrson_body_succ_builtin((TSon,TSh),Sg,(CSon,CSh),Sv,HvFv,Call,Proj,Succ) :- !,
-	Call=(Call_son,Call_sh),
-	Proj=(Proj_son,Proj_sh),
-	body_succ_builtin(son,TSon,Sg,CSon,Sv,HvFv,Call_son,Proj_son,Succ_son),
-	body_succ_builtin(shfr,TSh,Sg,CSh,Sv,HvFv,Call_sh,Proj_sh,Succ_sh),
-	shfrson_compose(Call,Succ_sh,Succ_son,Succ).
-shfrson_body_succ_builtin(Type,Sg,Condvs,Sv,HvFv_u,Call,Proj,Succ) :- % TODO: for \+Type=(_,_), is it OK?
-	body_builtin(shfrson,Type,Sg,Condvs,Sv,HvFv_u,Call,Proj,Succ).
-shfrson_glb(_ASub0,_ASub1,_ASub) :- compiler_error(op_not_implemented(glb)), fail.
 % ---------------------------------------------------------------------------
 :- use_module(domain(sondergaard)).
 aidomain(son).
@@ -768,9 +735,6 @@ asub_to_native(depth,ASub,Qv,OutFlag,OutputUser,Comps) :- !, depthk_asub_to_nati
 unknown_call(depth,Sg,Vars,Call,Succ) :- !, depthk_unknown_call(Sg,Vars,Call,Succ).
 unknown_entry(depth,Sg,Qv,Call) :- !, depthk_unknown_entry(Sg,Qv,Call).
 empty_entry(depth,Sg,Qv,Call) :- !, depthk_empty_entry(Sg,Qv,Call).
-%
-depthk_eliminate_equivalent(TmpLSucc,LSucc) :- absub_eliminate_equivalent(TmpLSucc,depth,LSucc).
-depthk_abs_subset(LASub1,LASub2) :- absub_is_subset(LASub1,depth,LASub2).
 % ---------------------------------------------------------------------------
 :- use_module(domain(top_path_sharing)).
 aidomain(path).
@@ -1344,15 +1308,6 @@ equivalent_or_not(ASub0,ASub,AbsInt,NLASub,Tail) :-
 	identical_abstract(AbsInt,ASub0,ASub), !,
 	NLASub=Tail.
 equivalent_or_not(ASub0,_ASub,_AbsInt,[ASub0|Tail],Tail).
-
-% TODO: leaves choicepoints!
-absub_is_subset([],_AbsInt,_LASub2).
-absub_is_subset([Sub1|Subs1],AbsInt,LASub2) :-
-	member(ASub2,LASub2),
-	identical_abstract(AbsInt,Sub1,ASub2),
-% OR:
-%	fixpoint_covered(AbsInt,Sub1,ASub2),
-	absub_is_subset(Subs1,AbsInt,LASub2).
 
 absub_fixpoint_covered(AbsInt,Prime0,Prime1) :-
 	( current_pp_flag(multi_call,on) ->

@@ -1,12 +1,15 @@
 :- module(shfrson,
 	[ shfrson_call_to_entry/9,
 	  shfrson_call_to_success_fact/9, 
+	  shfrson_special_builtin/5,
+	  shfrson_body_succ_builtin/8,
 	  shfrson_compute_lub/2,
 	  shfrson_exit_to_prime/7,
 	  shfrson_extend/4,   
 	  shfrson_input_user_interface/5, 
 	  shfrson_input_interface/4, 
 	  shfrson_less_or_equal/2,  
+	  shfrson_glb/3,
 	  shfrson_asub_to_native/5,
 	  shfrson_project/3,  
 	  shfrson_sort/2,     
@@ -17,15 +20,6 @@
 	  shfrson_compose/4
 	],
 	[ ]).
-
-:- use_module(domain(sharefree)).
-:- use_module(domain(sondergaard)).
-:- use_module(domain(s_grshfr), [change_values_if_differ/5, projected_gvars/3]).
-:- use_module(domain(share_aux), [if_not_nil/4]).
-
-:- use_module(library(llists), [collect_singletons/2]).
-:- use_module(library(sets), [merge/3, ord_subtract/3]).
-:- use_module(library(terms_vars), [varset/2]).
 
 %------------------------------------------------------------------------%
 %                                                                        %
@@ -57,6 +51,18 @@
 % and then compose the information of both, eliminating redundancies.    %
 % See compose function.                                                  %
 %-------------------------------------------------------------------------
+
+:- use_module(domain(sharefree)).
+:- use_module(domain(sondergaard)).
+:- use_module(domain(s_grshfr), [change_values_if_differ/5, projected_gvars/3]).
+:- use_module(domain(share_aux), [if_not_nil/4]).
+
+:- use_module(library(llists), [collect_singletons/2]).
+:- use_module(library(sets), [merge/3, ord_subtract/3]).
+:- use_module(library(terms_vars), [varset/2]).
+
+%-------------------------------------------------------------------------
+
 shfrson_call_to_entry(Sv,Sg,Hv,Head,K,Fv,(Proj_son,Proj_shfr),Entry,Extra):-
 	son_call_to_entry(Sv,Sg,Hv,Head,K,Fv,Proj_son,Entry_son,Extra_son),
 	shfr_call_to_entry(Sv,Sg,Hv,Head,K,Fv,Proj_shfr,Entry_shfr,Extra_shfr),
@@ -92,6 +98,26 @@ shfrson_call_to_success_fact(Sg,Hv,Head,_K,Sv,Call,Proj,Prime,Succ):-
 	shfr_call_to_prime_fact(Sg,Hv,Head,Sv,Proj_shfr,Prime_shfr),
 	compose(Prime_son,Prime_shfr,Sv,Prime),
 	shfrson_extend(Prime,Sv,Call,Succ).
+
+% ---------------------------------------------------------------------------
+
+shfrson_special_builtin(SgKey,Sg,Subgoal,(TypeSon,TypeSh),(CondSon,CondSh)) :-
+	shfr_special_builtin(SgKey,Sg,Subgoal,TypeSh,CondSh),
+	son_special_builtin(SgKey,Sg,Subgoal,TypeSon,CondSon).
+
+% ---------------------------------------------------------------------------
+
+:- use_module(ciaopp(plai/domains), [body_succ_builtin/9, body_builtin/9]).
+
+% TODO: These do have special(_), special care (old comment)
+shfrson_body_succ_builtin((TSon,TSh),Sg,(CSon,CSh),Sv,HvFv,Call,Proj,Succ) :- !,
+	Call=(Call_son,Call_sh),
+	Proj=(Proj_son,Proj_sh),
+	body_succ_builtin(son,TSon,Sg,CSon,Sv,HvFv,Call_son,Proj_son,Succ_son),
+	body_succ_builtin(shfr,TSh,Sg,CSh,Sv,HvFv,Call_sh,Proj_sh,Succ_sh),
+	shfrson_compose(Call,Succ_sh,Succ_son,Succ).
+shfrson_body_succ_builtin(Type,Sg,Condvs,Sv,HvFv_u,Call,Proj,Succ) :- % TODO: for \+Type=(_,_), is it OK?
+	body_builtin(shfrson,Type,Sg,Condvs,Sv,HvFv_u,Call,Proj,Succ).
 
 %-------------------------------------------------------------------------
 
@@ -190,6 +216,11 @@ shfrson_less_or_equal(ASub0,ASub1):-
 shfrson_less_or_equal((Son0,Sh0),(Son1,Sh1)):-
 	shfr_less_or_equal(Sh0,Sh1),
 	son_less_or_equal(Son0,Son1).
+
+% ---------------------------------------------------------------------------
+
+:- use_module(ciaopp(plai/plai_errors), [compiler_error/1]).
+shfrson_glb(_ASub0,_ASub1,_ASub) :- compiler_error(op_not_implemented(glb)), fail.
 
 %-------------------------------------------------------------------------
 % compose(+,+,+,-)                                               |
