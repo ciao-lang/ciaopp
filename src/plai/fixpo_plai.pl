@@ -39,7 +39,7 @@
 :- use_module(ciaopp(plai/plai_db), 
 	[ complete/7, memo_call/5, memo_table/6, cleanup_plai_db/1, patch_parents/6 ]).
 :- use_module(ciaopp(plai/psets), [update_if_member_idlist/3]).
-:- use_module(ciaopp(plai/re_analysis), [erase_previous_memo_tables_and_parents/4]).
+:- use_module(ciaopp(plai/plai_db), [erase_previous_memo_tables_and_parents/4]).
 :- use_module(ciaopp(plai/transform), [body_info0/4, trans_clause/3]).
 :- use_module(ciaopp(plai/apply_assertions_old),
 	[ apply_trusted0/7, 
@@ -1002,22 +1002,19 @@ body_succ0('$meta'(T,B,_),SgKey,Sg,Sv_u,HvFv_u,Call,Succ,List0,List,AbsInt,
 	; % for the trusts, if any:
 	  varset(Sg,Sv_r), % Sv_u contains extra vars (from meta-term)
                            % which will confuse apply_trusted
-	  body_succ0(nr,SgKey,Sg,Sv_r,HvFv_u,Call,Succ,[],_List,AbsInt,
-		        ClId,F,N,Id0),  % TODO: Why forced nr? Can this make the fixpoint not to finish?
+	  body_succ0(nr,SgKey,Sg,Sv_r,HvFv_u,Call,Succ,[],_List,AbsInt,ClId,F,N,Id0),
+    % TODO: Why forced nr? Can this make the fixpoint not to finish?
 	  retract_fact(complete(SgKey,AbsInt,Sg,Proj,Prime,Id0,Ps)), % missing cut? (Id instantiated?)
 	  asserta_fact(complete(SgKey,AbsInt,Sg,Proj,Prime,Id,Ps))
 	).
-%asserta_complete(K,AbsInt,Sg,Sv_u,HvFv_u,Call,Succ,Id,F,N).
 body_succ0('$built'(T,Tg,Vs),SgKey,Sg,Sv_u,HvFv_u,Call,Succ,List0,List,AbsInt,
 	    _ClId,F,N,Id):-
 	!,
 	Id=no,
 	List=List0,
 	sort(Sv_u,Sv),
-	each_body_succ_builtin(Call,AbsInt,T,Tg,Vs,SgKey,Sg,Sv,HvFv_u,
-	                       F,N,Succ).
-body_succ0(RFlag,SgKey,Sg,Sv_u,HvFv_u,Call,Succ,List0,List,AbsInt,
-	   ClId,F,N,Id):-
+	each_body_succ_builtin(Call,AbsInt,T,Tg,Vs,SgKey,Sg,Sv,HvFv_u,F,N,Succ).
+body_succ0(RFlag,SgKey,Sg,Sv_u,HvFv_u,Call,Succ,List0,List,AbsInt,ClId,F,N,Id):-
 	sort(Sv_u,Sv),
 	each_call_to_success(Call,RFlag,SgKey,Sg,Sv,HvFv_u,AbsInt,ClId,
                              Succ,List0,List,F,N,Id).

@@ -2,13 +2,13 @@
 	[ complete/7, lub_complete/6, 
 	  memo_call/5, memo_table/6, memo_lub/5, pragma/5,complete_parent/2,
 	 cleanup_plai_db/1],
-	[assertions, datafacts,regtypes,isomodes]).
+	[assertions, datafacts,regtypes,isomodes,nativeprops]).
 
-:- use_module(ciaopp(plai/transform), [cleanup_trans_clauses/0]).
+:- use_module(ciaopp(plai/transform), [cleanup_trans_clauses/0, trans_clause/3]).
 :- use_module(ciaopp(p_unit/program_keys), [get_predkey/3, decode_litkey/5,
         predkey/1, litkey/1]). % Props
 
-:- doc(bug,"The cleanup does not work when in debugging mode!!!").
+:- doc(bug,"The cleanup does not work in debugging mode!!!").
 
 :- doc(complete(SgKey,AbsInt,Sg,Proj,Prime,Id,Parents),
 	"The predicate @var{SgKey} has a variant success pattern 
@@ -127,7 +127,7 @@ get_complete(SgKey,AbsInt,Sg,Proj,Prime,Id,Parents,Ref) :-
         current_fact(complete(SgKey,AbsInt,Sg,Proj,Prime,Id,Parents),Ref), !.
 
 :- export(get_memo_table/7).
-% complete + (!) to avoid unnecessary choicepoints
+% memo_table + (!) to avoid unnecessary choicepoints
 :- pred get_memo_table(LitKey,AbsInt,Id,Child,Vars,Call,Ref)
         : (predkey(SgKey), atm(Id)).
 get_memo_table(LitKey,AbsInt,Id,Child,Vars,Call,Ref) :-
@@ -169,7 +169,265 @@ del_parent([],_,_,[]).
 del_parent([(K,C)|Parents],K,C,NParents):-!,
  	del_parent(Parents,K,C,NParents).
 del_parent([P|Parents],K,C,[P|NParents]):-
- 	del_parent(Parents,K,C,NParents).
+        del_parent(Parents,K,C,NParents).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+:- doc(section, "Modifying completes.").
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%% Change the Id of a complete %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% TODO: This is a pain...
+:- export(update_complete_id/4).
+update_complete_id(SgKey,AbsInt,Id,NId) :-
+        retract_fact(complete(SgKey, AbsInt, Sg, Proj, Prime, Id, Ps)), !,
+        asserta_fact(complete(SgKey, AbsInt, Sg, Proj, Prime, NId, Ps)),
+        update_extra_info_complete(Id, NId, AbsInt).
+%        retract_fact(complete_id_key_(Id, AbsInt, _)), !, % update indexing
+%        assertz_fact(complete_id_key_(NId,AbsInt,SgKey)).
+
+% TODO: this predicate should be in plai_db, there should be some way to plug
+% removing auxiliary information that is kept for the completes (e.g., info
+% related to assertions, widenings, etc)
+update_extra_info_complete(Id, NId, AbsInt) :-
+        update_complete_parent(Id,NId),
+        ( % failure-driven loop
+            memo_table_id_key(Id, AbsInt, MKey), % (for indexing)
+            % update all the arcs of the call that depends on that memo_table entry
+            retract_fact(memo_table(MKey, AbsInt, Id, Child, Vars, Proj)),
+              asserta_fact(memo_table(MKey, AbsInt, Id, Child, Vars, Proj)),
+              update_raw_success(MKey,AbsInt,Id,NId),
+              fail
+        ; true
+        ).
+
+update_complete_parent(Id,NId) :-
+        retract_fact(complete_parent(Id,F)), !,
+        asserta_fact(complete_parent(NId,F)).
+update_complete_parent(_,_).
+
+update_raw_success(ClKey, AbsInt, Id,NId) :-
+        retract_fact(raw_success(ClKey,AbsInt,Id,A,B,C)), !,
+        asserta_fact(raw_success(ClKey,AbsInt,NId,A,B,C)).
+update_raw_success(_, _, _,_).
+
+%%%%%%%%%%%%%%%%% Delete a complete %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+:- export(delete_complete/3).
+:- pred delete_complete(+SgKey,+AbsInt,+Id).
+delete_complete(SgKey,AbsInt,Id) :-
+        retract_fact(complete(SgKey, AbsInt, _, _, _, Id, _)), !,
+        remove_extra_info_complete(SgKey,Id,AbsInt).
+
+% TODO: this predicate should be in plai_db, there should be some way to plug
+% removing auxiliary information that is kept for the completes (e.g., info
+% related to assertions, widenings, etc)
+:- export(remove_extra_info_complete/3).
+remove_extra_info_complete(PredKey,Id,AbsInt) :-
+        remove_complete_parent(Id),
+        ( % failure-driven loop
+          trans_clause(PredKey, _, clause(_, _, ClKey, _)),
+            delete_plai_db_one_clause(PredKey,ClKey,Id,AbsInt),
+            fail
+        ;   true
+        ).
+
+:- export(delete_plai_db_one_clause/4).
+delete_plai_db_one_clause(PredKey,ClKey,Id,AbsInt) :-
+        trans_clause(PredKey, _, clause(_, _, ClKey, Body)), !,
+        remove_raw_success(ClKey, AbsInt, Id),
+        erase_previous_memo_tables_and_parents(Body,AbsInt,ClKey,Id),
+        erase_previous_memo_lubs(Body,ClKey).
+
+% IG: retract also auxiliary completes (Id = no) created from this one
+% IG: not necessary, they are not created (see add_complete_builtin in fixpo_ops.pl)
+% ( % failure-driven loop
+%   current_fact(complete(_BKey,AbsInt,_,_,_,no,Ps), Ref),
+%       member((_,Id), Ps), % TODO: performance!
+%       erase(Ref),
+%       fail
+% ; true ),
+
+:- pred erase_memo_tables_and_parents_one_Id(+Body, +ClKey, +Key1, +Id, +AbsInt)
+	# "The memo_tables and parents information for the clause
+        @var{Body} with key @var{ClKey} which correspond to the
+        complete @var{Id} are erased. @var{Key1} is the key of the
+        first literal in @var{Body}. The difference with
+        erase_memo_tables_and_parents is that it only deletes the
+        memo_tables and parents that correspond to one complete (Id)
+      instead of to all the completes for the predicate.".
+erase_memo_tables_and_parents_one_Id((Body,RestBody),ClKey,Key1,Id, AbsInt) :-
+        Body = g(MKey, _Vars, _Info, SgKey, _Goal),
+        current_fact(memo_table(Key1, AbsInt, Id, Child, _, _)), !,
+        ( erase_previous_parents_info(Child, SgKey, AbsInt, MKey, Id) -> true
+        ; true  % allow failure because the builtins do not have completes (IG)
+        ),
+        erase_previous_memo_tables_and_parents(RestBody, AbsInt, ClKey, Id),
+        fail.
+erase_memo_tables_and_parents_one_Id(g(MKey,_,_,SgKey,_),ClKey, Key1, Id,AbsInt) :-
+        erase_last_memo_table(AbsInt, ClKey, Id),
+        % before memo table because facts may not have a memo_table entry. (IG)
+        current_fact(memo_table(Key1, AbsInt, Id, Child, _, _)), !,
+        erase_previous_parents_info(Child, SgKey, AbsInt, MKey, Id),
+        % allow failure because the builtins do not have completes (IG)
+        fail.
+erase_memo_tables_and_parents_one_Id(_, _, _, _, _).
+
+remove_complete_parent(Id) :-
+        retract_fact(complete_parent(Id,_)), !.
+remove_complete_parent(_).
+
+remove_raw_success(ClKey, AbsInt, Id) :-
+        retract_fact(raw_success(ClKey,AbsInt,Id,_,_,_)), !.
+remove_raw_success(_, _, _).
+
+:- export(complete_key_from_id/3).
+complete_key_from_id(Id, AbsInt, Key) :-
+	complete_id_key(Id, AbsInt, Key0), % (for indexing)
+	% complete(Key, AbsInt, _, _, _, Id, _), % slower (no indexing)
+	!,
+	Key = Key0.
+
+%--------------------------------------------------------------------------
+:- export(erase_previous_memo_tables_and_parents/4).
+:- pred erase_previous_memo_tables_and_parents(+Body,+AbsInt,+ClKey,+Id)
+        #"We use @var{Body} to erase all the memo_tables and all the pointers in
+      the dependency graph that are not longer valid".
+erase_previous_memo_tables_and_parents(true,_,_,_):-!. % deprecated
+erase_previous_memo_tables_and_parents((G,Goals),AbsInt,ClKey,Id):-
+        erase_previous_memo_table_and_parents_one_goal(G,AbsInt,ClKey,Id), !,
+        erase_previous_memo_tables_and_parents(Goals,AbsInt,ClKey,Id).
+erase_previous_memo_tables_and_parents(G,AbsInt,ClKey,Id):-
+        erase_previous_memo_table_and_parents_one_goal(G,AbsInt,ClKey,Id), !,
+        erase_last_memo_table(AbsInt,ClKey,Id).
+erase_previous_memo_tables_and_parents(_,_,_,_). %nothing had been recorded
+
+erase_previous_memo_table_and_parents_one_goal(g(Key,_,Info,SgKey,Sg),AbsInt,ClKey,Id) :-
+        get_memo_table(Key,AbsInt,Id,Son,_,_Info,Ref),
+        erase(Ref),
+        ( Info = '$meta'(_,LGoals,_) ->
+          listbody_to_body(LGoals,MetaGoals),
+          erase_previous_memo_tables_and_parents(MetaGoals,AbsInt,ClKey,Id)
+        ;   true
+        ),
+        Goal = (SgKey,Info,Sg),
+        erase_previous_parents_info(Son,Goal,AbsInt,Key,Id).
+
+:- export(erase_last_memo_table/3).
+:- pred erase_last_memo_table(+AbsInt,+ClKey,+Id) + not_fails.
+erase_last_memo_table(AbsInt,ClKey,Id):-
+        get_memo_table(ClKey,AbsInt,Id,no,_,_,Ref2),!,
+        erase(Ref2).
+erase_last_memo_table(_,_,_). %maybe we have not written it yet
+
+:- export(erase_previous_memo_lubs/2).
+:- pred erase_previous_memo_lubs(+Body, +ClKey) 
+	# "This predicate traverses @var{Body} and removes the existing 
+           memo_lubs. When @var{Body} is finished, we also remove the 
+           memo-lub for the end of the clause using @var{ClKey}.".
+erase_previous_memo_lubs(true,_):- !.
+erase_previous_memo_lubs((Goal,Goals),K):-
+        Goal = g(_Id, _Vars, _Info, Key, _),
+        retract_fact(memo_lub(Key, _, _, _, _)), !,
+        erase_previous_memo_lubs(Goals,K).
+erase_previous_memo_lubs(Goal,K):-
+        Goal = g(_Id, _Vars, _Info, Key, _),
+        retract_fact(memo_lub(Key, _, _, _, _)), !,
+        erase_last_memo_lub(K).
+erase_previous_memo_lubs(_,_). %nothing had been recorded
+
+erase_last_memo_lub(K):-
+        retract_fact(memo_lub(K, _, _, _, _)), !.
+erase_last_memo_lub(_). %maybe we have not written it yet
+
+%------------------------------------------------------------------------
+:- pred erase_previous_parents_info(+Id,+Goal,+AbsInt,+Key,+NewN)
+    #"@var{Id} is the node identifier of the complete that has this
+    @var{Goal} in its list of parents. If Id is no then nothing needs to be
+    done (it is a builtin)".
+:- export(erase_previous_parents_info/5).
+erase_previous_parents_info(no,_,_,_,_):- !.
+% Cut has a no?
+erase_previous_parents_info(Id,Goal,AbsInt,Key,NewN):-
+	erase_prev_parents(Goal, Key,AbsInt,NewN,Id).
+
+% IG % TODO: UNIFY
+% IG % TODO: Goal has now a different shape
+erase_prev_parents(('$meta',_,Call),K,AbsInt,NewN,Id):-
+	functor(Call,_,1),!,
+	arg(1,Call,NGoal),
+	erase_prev_parents(NGoal,K,AbsInt,NewN,Id).
+erase_prev_parents(('$meta',_,Call),K,AbsInt,NewN,Id):-
+	functor(Call,_,3),!,
+	arg(2,Call,NGoal),
+	erase_prev_parents(NGoal,K,AbsInt,NewN,Id).
+erase_prev_parents((GKey,_,_),K,AbsInt,NewN,Id):- !, % TODO: old notation
+	erase_prev_parents(GKey,K,AbsInt,NewN,Id).
+erase_prev_parents(GKey,K,AbsInt,NewN,Id):-
+	atom(GKey),
+	current_fact(complete(GKey,AbsInt,A1,A2,A3,Id,Parents),Ref),!,
+	% TODO: possibly more retracts of complete_parent are needed
+	( retract_fact(complete_parent(Id,K)) -> true ; true), % Used for widening
+	del_parent(Parents,K,NewN,NewParents),
+	erase(Ref),
+	asserta_fact(complete(GKey,AbsInt,A1,A2,A3,Id,NewParents)).
+%% erase_prev_parents((GKey,_,_),K,_AbsInt,NewN,Id):-
+ %% 	current_fact(approx(GKey,A1,A2,A3,Id,Parents),Ref),!,
+ %% 	del_parent(Parents,K,NewN,NewParents),
+ %% 	erase(Ref),
+ %% 	asserta_fact(approx(GKey,A1,A2,A3,Id,NewParents)).
+ %% erase_prev_parents((GKey,_,_),K,_AbsInt,NewN,Id):-
+ %% 	current_fact(fixpoint(GKey,A1,A2,A3,Id,Parents),Ref),!,
+ %% 	del_parent(Parents,K,NewN,NewParents),
+ %% 	erase(Ref),
+ %% 	asserta_fact(fixpoint(GKey,A1,A2,A3,Id,NewParents)).
+erase_prev_parents(_,_,_,_,_).
+
+listbody_to_body([X],(X)) :- !.
+listbody_to_body([X|Xs],(X,Goals)) :-
+	listbody_to_body(Xs,Goals).
+
+
+:- doc(section, "Reverse indexes for plai_db").
+%
+% *IMPORTANT NOTE*: THESE INDEXES NEED TO BE MAINTAINED MANUALLY USING
+% init_rev_idx/1 and clean_rev_idx/1.
+
+% ---- begin hack: construct reverse indices for better indexing ----
+% TODO: merge with complete and memo_table updates (if it works)
+:- data complete_id_key_/3.
+:- data memo_table_id_key_/3.
+:- export(init_rev_idx/1). % for inc assertions
+init_rev_idx(AbsInt) :-
+	clean_rev_idx(AbsInt),
+	( complete(Key, AbsInt, _Sg, _Proj, _Prime, Id, _Parents),
+	    \+ Id = no,
+	    assertz_fact(complete_id_key_(Id,AbsInt,Key)),
+	    fail
+	; true
+	),
+	( memo_table(MKey, AbsInt, Id, _Child, _Sg, _Proj),
+	    assertz_fact(memo_table_id_key_(Id,AbsInt,MKey)),
+	    fail
+	; true
+	).
+:- export(clean_rev_idx/1). % for inc assertions
+clean_rev_idx(AbsInt) :-
+	retractall_fact(complete_id_key_(_,AbsInt,_)),
+	retractall_fact(memo_table_id_key_(_,AbsInt,_)).
+
+% IG: ensure that the deletion does not fail even if the indexes are not created
+:- export(complete_id_key/3). % for inc assertions
+complete_id_key(A, B, C) :-
+	complete_id_key_(A, B, C), !.
+complete_id_key(_, _, _).
+
+:- export(memo_table_id_key/3). % for inc assertions ( % TODO: not necessary )
+memo_table_id_key(_, _, _) :-
+	\+ memo_table_id_key_(_, _, _), !.
+memo_table_id_key(A, B, C) :-
+	memo_table_id_key_(A, B, C).
+
+% ---- end hack: construct reverse indices for better indexing ----
+
 
 % ----------------------------------------------------------------------
 :- doc(section, "Operations for invalid calls").

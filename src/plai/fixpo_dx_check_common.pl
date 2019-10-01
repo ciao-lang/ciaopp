@@ -37,14 +37,13 @@
 :- use_module(ciaopp(plai/domains)).
 :- use_module(ciaopp(plai/trace_fixp), [fixpoint_trace/7, cleanup/0]).
 :- use_module(ciaopp(plai/plai_db), 
-	[complete/7,memo_call/5,memo_table/6,cleanup_plai_db/1,complete_parent/2]).
-:- use_module(ciaopp(plai/re_analysis), [erase_previous_memo_tables_and_parents/4]).
+	[complete/7,memo_call/5,memo_table/6,cleanup_plai_db/1,complete_parent/2,update_complete_id/4]).
+:- use_module(ciaopp(plai/plai_db), [erase_previous_memo_tables_and_parents/4]).
 :- use_module(ciaopp(plai/transform), [body_info0/4, trans_clause/3]).
 :- use_module(ciaopp(plai/apply_assertions_old), [apply_trusted0/7, cleanup_trusts/1]).
 :- use_module(ciaopp(plai/apply_assertions), [cleanup_applied_assertions/1]).
 :- use_module(ciaopp(plai/fixpo_dx_check_basic)).
 :- use_module(spec(global_control), [cleanup_unfolds/0]).
-
 
 %------------------------------------------------------------------------%
 %                                                                        %
@@ -153,14 +152,16 @@ body_succ0('$meta'(T,B,_),SgKey,Sg,Sv_u,HvFv_u,Call,Succ,AbsInt,ClId,F,N,Id):-
 	 ; % for the trusts, if any:  % not apply trust here??
 	    varset(Sg,Sv_r),
 	    body_succ0(nr,SgKey,Sg,Sv_r,HvFv_u,Call,Succ,AbsInt,ClId,F,N,Id0),
-	    retract_fact(complete(SgKey,AbsInt,Sg,Proj,Prime,Id0,Ps)),
-	    asserta_fact(complete(SgKey,AbsInt,Sg,Proj,Prime,Id,Ps)),
-	    ( retract_fact(complete_parent(Id0,Fs)) ->
-	        asserta_fact(complete_parent(Id,Fs))     % for fixpo_di/dd
-	    ;
-          true                                     % for the rest of fixpo_dx
-	    )
-	).
+      retract_fact(complete(SgKey,AbsInt,Sg,Proj,Prime,Id0,Ps)),
+      asserta_fact(complete(SgKey,AbsInt,Sg,Proj,Prime,Id,Ps)),
+      % TODO: !!!!! UPDATE ALSO memo_table
+      ( retract_fact(complete_parent(Id0,Fs)) ->
+          asserta_fact(complete_parent(Id,Fs))     % for fixpo_di/dd
+      ;
+          true
+      )
+  ).
+
 body_succ0('$built'(T,Tg,Vs),SgKey,Sg,Sv_u,HvFv_u,Call,Succ,AbsInt,_ClId,F,N,Id):-
 	!,
 	Id=no,
