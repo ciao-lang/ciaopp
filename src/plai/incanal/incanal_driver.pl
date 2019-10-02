@@ -147,7 +147,7 @@ td_mark_add_clauses([clause(_Head,_Body):Clid|Clauses], AbsInt) :-
 
 td_mark_add_complete(Key,LitKey,Literal, AbsInt) :-
         current_fact(complete(Key,AbsInt,_,_,_,Id,Parents)),
-        add_change(Id,LitKey,Literal,Parents, AbsInt),
+        add_change(Id,LitKey,Literal,Parents, AbsInt), % why free _A ?
         fail.
 td_mark_add_complete(_, _, _, _).
 
@@ -165,6 +165,45 @@ td_delete_clauses(Clids, AbsInt) :-
 	stat(td_delete, td_rec_delete_completes(Keys, AbsInt)),
 	clean_rev_idx(AbsInt), % TODO: !!!
 	run_inc_fixpoint(AbsInt).
+
+% IG BEGIN NEW CODE
+
+% ---- begin hack: construct reverse indices for better indexing ----
+% TODO: merge with complete and memo_table updates (if it works)
+:- data complete_id_key_/3.
+:- data memo_table_id_key_/3.
+:- export(init_rev_idx/1). % for inc assertions
+init_rev_idx(AbsInt) :-
+	clean_rev_idx(AbsInt),
+	( complete(Key, AbsInt, _Sg, _Proj, _Prime, Id, _Parents),
+	    \+ Id = no,
+	    assertz_fact(complete_id_key_(Id,AbsInt,Key)),
+	    fail
+	; true
+	),
+	( memo_table(MKey, AbsInt, Id, _Child, _Sg, _Proj),
+	    assertz_fact(memo_table_id_key_(Id,AbsInt,MKey)),
+	    fail
+	; true
+	).
+:- export(clean_rev_idx/1). % for inc assertions
+clean_rev_idx(AbsInt) :-
+	retractall_fact(complete_id_key_(_,AbsInt,_)),
+	retractall_fact(memo_table_id_key_(_,AbsInt,_)).
+
+% IG: ensure that the deletion does not fail even if the indexes are not created
+:- export(complete_id_key/3). % for inc assertions
+complete_id_key(A, B, C) :-
+	complete_id_key_(A, B, C), !.
+complete_id_key(_, _, _).
+
+:- export(memo_table_id_key/3). % for inc assertions ( % TODO: not necessary )
+memo_table_id_key(_, _, _) :-
+	\+ memo_table_id_key_(_, _, _), !.
+memo_table_id_key(A, B, C) :-
+	memo_table_id_key_(A, B, C).
+
+% ---- end hack: construct reverse indices for better indexing ----
 
 td_rec_delete_completes([], _).
 td_rec_delete_completes([Key|Keys], AbsInt) :-
@@ -189,25 +228,10 @@ td_rec_delete_completes_([_|Ids], Key, AbsInt) :-
 td_rec_delete_complete(no, _Key, _) :- !.
 td_rec_delete_complete(Id, Key, AbsInt) :- % pass Key
         %	complete_id_key(Id, AbsInt, Key), % (for indexing) % this should work
-        get_complete(Key,AbsInt,_,_,_,Id,Parents,_),
-        findall((MKey,Child), complete_child(Id, AbsInt, MKey,Child), Children),
-        % IG: this findall is done for termination, delete_complete removes the memo_table
-        delete_complete(Key, AbsInt, Id),
-        td_rec_delete_memo_table(Children,AbsInt),
+        retract_fact(complete(Key, AbsInt, _Sg, _Proj, _Prime, Id, Parents)), !,
+        remove_memo_table(Id, AbsInt),
         remove_memo_table_depends_complete(Parents, AbsInt, Id).
 td_rec_delete_complete(_,_,_).
-
-complete_child(Id,AbsInt,MKey,Child) :-
-        memo_table_id_key(Id, AbsInt, MKey),
-        memo_table(MKey, AbsInt, Id, Child, _Vars, _Proj).
-
-td_rec_delete_memo_table(Ids,AbsInt) :-
-        ( % failure-driven loop
-          member((MKey,Id), Ids),
-            complete_key_from_id(Child, AbsInt, PKey),
-            erase_rec_prev_parents(PKey, MKey, AbsInt, Id, Child),
-            fail
-        ; true ).
 
 remove_memo_table_depends_complete([], _, _).
 remove_memo_table_depends_complete([(PKey, _Id)|Parents], AbsInt, Id) :-
@@ -219,6 +243,24 @@ remove_memo_table_depends_complete([(LitKey, PId)|Parents], AbsInt, Id) :-
         ; true
         ),
         remove_memo_table_depends_complete(Parents, AbsInt, Id).
+
+% remove all the arcs of the call that depends on that memo_table entry
+remove_memo_table(Id, AbsInt) :-
+	( % failure-driven loop
+	  memo_table_id_key(Id, AbsInt, MKey), % (for indexing)
+	  retract_fact(memo_table(MKey, AbsInt, Id, Child, _Sg, _Proj)),
+	     % TODO: check PKey for basicprops completes
+	     complete_key_from_id(Child, AbsInt, PKey),
+	     erase_rec_prev_parents(PKey, MKey, AbsInt, Id, Child),
+	     fail
+	; true
+	).
+
+complete_key_from_id(Id, AbsInt, Key) :-
+	complete_id_key(Id, AbsInt, Key0), % (for indexing)
+	% complete(Key, AbsInt, _, _, _, Id, _), % slower (no indexing)
+	!,
+	Key = Key0.
 
 erase_rec_prev_parents(GKey,K,AbsInt,NewN,Id):-
         atom(GKey), !,
@@ -287,17 +329,20 @@ mark_useful_sons(Id, AbsInt) :-
 
 remove_useless_tuples(AbsInt) :-
 	current_fact(complete(SgKey, AbsInt, Sg, Proj, Prime, Id, Fs), Ref),
-	( useless(Id) ->
-      delete_complete(SgKey,AbsInt,Id)
+	( useless(Id) -> true
 	;
-      ( (Id = no, Fs = []) -> % Auxiliary complete, remove for now
-          erase(Ref)
+	    ( (Id = no, Fs = []) -> true % Auxiliary complete, remove for now
 	    ;
           update_parents(Fs, NFs),
-          assertz_fact(complete(SgKey, AbsInt, Sg, Proj, Prime, Id, NFs)),
-          erase(Ref)
+          assertz_fact(complete(SgKey, AbsInt, Sg, Proj, Prime, Id, NFs))
 	    )
 	),
+	erase(Ref),
+	fail.
+remove_useless_tuples(AbsInt) :-
+	current_fact(memo_table(_MKey, AbsInt, Id, _, _, _), Ref),
+	useless(Id),
+	erase(Ref),
 	fail.
 remove_useless_tuples(_).
 
@@ -369,8 +414,8 @@ b_up_mark_prev_parents([Fs|Fss], Completes, AbsInt, SCCs) :-
 	b_up_mark_prev_parents(Fss, MoreCompletes, AbsInt, SCCs).
 
 b_up_prev_literal([],[],_,_).
-b_up_prev_literal([(Clid, _)|Fs],Completes,AbsInt,SCCs) :-
-  is_entrykey(Clid), !,
+b_up_prev_literal([(_Clid, 0)|Fs],Completes,AbsInt,SCCs) :- !, 
+	% Id = 0,   % IG: entries have clause id of parent 0
 	b_up_prev_literal(Fs,Completes,AbsInt,SCCs).
 b_up_prev_literal([(Lit,Id)|Fs],Completes,AbsInt,SCCs):-
 	decode_litkey(Lit,N,A,_,_),
@@ -394,15 +439,39 @@ analyze_external_calls([comp(Sg,Proj,_,Id,Fs)|Comps],[Answer|Answers],AbsInt):-
 	analyze_external_calls(Comps,Answers,AbsInt).
 
 :- pred bu_del_call_to_succ(+R_flag,+SgKey,+Call,+Proj,+Sg,+Sv,+AbsInt,-Succ,+Fs,+Id)
-	#"This predicate is a modification of predicate @pred{call_to_success/11}
-     defined in an analysis algorithms. The main differences are that rather
-     than adding one element to the list of clauses for the complete, we add the
-     list of external calls previously computed for the complete.".
+	# "This predicate is a modification of predicate
+           @pred{call_to_success/11} defined in an analysis
+           algorithms.  The main differences are that rather than
+           adding one element to the list of clauses for the complete,
+           we add the list of external calls previously computed for
+           the complete.".
+% TODO: This predicate is never used
+% bu_del_call_to_success(_,SgKey,Call,Proj,Sg,Sv,AbsInt,Succ,Fs,Id) :-
+% %	display('WARNING! using bu_del_call_to_success/10'), nl,
+% 	current_fact(complete(SgKey,AbsInt,Subg,Proj1,Prime1,Id,Fs1), Ref), % IG up
+% 	identical_proj(AbsInt,Sg,Subg,Proj,Proj1),!,
+% 	abs_sort(AbsInt,Prime1,TempPrime), % TODO: WRONG! Prime1 is a list!
+% 	erase(Ref),
+% 	(retract_fact('$change_list'(Id,ChList)) ->
+% 	    fixpoint_compute_change(ChList,SgKey,Sg,Sv,Proj,AbsInt,TempPrime,Prime,Id),
+% 	    delete_complete_and_aux(complete(SgKey, AbsInt, A,B,C,Id,Fs2)),
+% 	    union(Fs,Fs2,Fs3),
+% 	    asserta_fact(complete(SgKey, AbsInt, A,B,C,Id,Fs3)) % IG up
+% 	;
+% 	    Prime = TempPrime,
+% 	    union(Fs,Fs1,Fs3),
+% 	    asserta_fact(complete(SgKey, AbsInt, Sg,Proj,Prime,Id,Fs3)) % IG up
+% 	),
+% 	extend(AbsInt,Prime,Sv,Call,Succ), !.
+
 bu_del_call_to_succ(nr,SgKey,Call,Proj,Sg,Sv,AbsInt,Prime,Fs,Id) :-
-	proj_to_prime_nr(SgKey, Sg, Sv, Call, Proj, AbsInt, SgKey, Prime, Id),  !, % TODO: remove?
-	asserta_fact(complete(SgKey, AbsInt, Sg,Proj,Prime,Id,Fs)).
+	proj_to_prime_nr(SgKey, Sg, Sv, Call, Proj, AbsInt, SgKey, Prime, Id),
+	% compute_lub(AbsInt,ListPrime,Prime), % IG not needed
+	%extend(AbsInt,Prime,Sv,Call,Succ), % IG already extended
+	asserta_fact(complete(SgKey, AbsInt, Sg,Proj,Prime,Id,Fs)), !. % IG: why the cut here, assert never fails
 bu_del_call_to_succ(r,SgKey,Call,Proj,Sg,Sv,AbsInt,Succ,Fs,Id) :-
-	proj_to_prime_r(SgKey, Sg, Sv, Call, Proj, AbsInt, TempPrime, Id),
+	proj_to_prime_r(SgKey, Sg, Sv, Call, Proj, AbsInt, TempPrime, Id), % IG
+	% compute_lub(AbsInt,ListPrime,TempPrime), % IG not needed
 	asserta_fact(complete(SgKey, AbsInt, Sg,Proj,TempPrime,Id,[])),
 	% IG: asserting a complete with no parents!
 	bagof(X, X^(trans_clause(SgKey, r, X)),Clauses), % IG old, moved to the first line
@@ -414,9 +483,21 @@ bu_del_call_to_succ(r,SgKey,Call,Proj,Sg,Sv,AbsInt,Succ,Fs,Id) :-
 	    NPrime = Prime
 	),
 	retract_fact(complete(SgKey, AbsInt, A,B,C,Id,Fs2)),
+	%delete_complete_and_aux(complete(SgKey, AbsInt, A,B,C,Id,Fs2)),
 	union(Fs,Fs2,Fs3),
 	asserta_fact(complete(SgKey, AbsInt, A,B,C,Id,Fs3)),
-	Succ = NPrime.
+	Succ = NPrime. % IG Is this right?
+        % extend(AbsInt,NPrime,Sv,Call,Succ),!. % IG Is this extend needed?
+                                             % IG probably made by project
+
+delete_complete_and_aux(complete(SgKey,AbsInt,C,D,E,Id,Fs)) :-
+	( % failure-driven loop
+    current_fact(complete(_, AbsInt, _, _, _, no, Ps), Ref), % TODO: performance
+    member((_, Id), Ps),
+        erase(Ref),
+        fail
+	; retract_fact(complete(SgKey, AbsInt, C,D,E,Id,Fs))
+	).
 
 %-------------------------------------------------------------------
 :- doc(section, "Predicates for running the fixpoint.").

@@ -88,11 +88,11 @@ show_trans_clauses :-
 show_trans_clauses.
 
 display_body(Body) :-
-	Body = g(Id, _, RFlag, _, Goal), !,
-	format('      ~w. %~w ~w~n~n', [Goal, RFlag, Id]).
+	Body = g(_, _, RFlag, _, Goal), !,
+	format('      ~w. %~w~n~n', [Goal, RFlag]).
 display_body((Body, Goals)) :-
-	Body = g(Id, _, RFlag, _, Goal),
-	format('      ~w, %~w ~w~n', [Goal, RFlag, Id]),
+	Body = g(_, _, RFlag, _, Goal),
+	format('      ~w, %~w~n', [Goal, RFlag]),
 	display_body(Goals).
 
 % TODO: pretty_dump?
@@ -103,11 +103,11 @@ show_analysis :-
 %	Id \= no,
 	show_data(complete(A, B, C, D, E, Id, G)),
 	fail.
-show_analysis :-
- 	nl,
- 	memo_table(A, B, C, D, E, F ),
- 	show_data(memo_table(A, B, C, D, E, F )),
- 	fail.
+% show_analysis :-
+%  	nl,
+%  	memo_table(A, B, C, D, E, F ),
+%  	show_data(memo_table(A, B, C, D, E, F )),
+%  	fail.
 show_analysis :-
         nl,
         \+ \+ complete(_,eterms,_,_,_,_,_),

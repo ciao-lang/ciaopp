@@ -59,7 +59,7 @@
 :- use_module(ciaopp(plai/plai_db), 
 	[ complete/7, memo_call/5, memo_table/6, cleanup_plai_db/1 ]).
 :- use_module(ciaopp(plai/psets), [update_if_member_idlist/3]).
-:- use_module(ciaopp(plai/plai_db), [erase_previous_memo_tables_and_parents/4]).
+:- use_module(ciaopp(plai/re_analysis), [erase_previous_memo_tables_and_parents/4]).
 :- use_module(ciaopp(plai/transform), [body_info0/4, trans_clause/3]).
 :- use_module(ciaopp(plai/apply_assertions_old),
 	[ apply_trusted0/7, cleanup_trusts/1]).

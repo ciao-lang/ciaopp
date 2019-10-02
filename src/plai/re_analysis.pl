@@ -6,7 +6,11 @@
 %% 	  analyze_ann_clauses/1,
 %% 	  delete_old_info_annotation/2,
 	  renaming/3,
- 	  update_ai_info_case/4
+ 	  update_ai_info_case/4,
+	  erase_previous_memo_tables_and_parents/4,
+%% %% for incanal experiments
+ 	  erase_previous_parents_info/5,
+ 	  erase_last_memo_table/3
 	],
 	[assertions, datafacts]).
 
@@ -260,3 +264,95 @@ update_each_complete([C|Cs],Key,NewKey,Name):-
 	copy_args(Arity,Goal,NewGoal),
 	asserta_fact(complete(NewKey,AbsInt,NewGoal,A1,A2,C,A4)),
 	update_each_complete(Cs,Key,NewKey,Name).
+
+% TODO: move the predicates below to plai_db?
+
+%--------------------------------------------------------------------------
+% erase_previous_memo_tables_and_parents(+,+,+,+)
+% erase_previous_memo_tables_and_parents(Body,AbsInt,Clid,Id)
+%  We use Body erase all the memo_tables and all the pointers in the 
+%  dependency graph that are not longer valid
+erase_previous_memo_tables_and_parents(true,_,_,_):-!.
+% TODO: IG this is not the shape of true (?)
+erase_previous_memo_tables_and_parents((G,Goals),AbsInt,Clid,Id):-
+  erase_previous_memo_table_and_parents_one_goal(G,AbsInt,Clid,Id), !,
+  erase_previous_memo_tables_and_parents(Goals,AbsInt,Clid,Id).
+erase_previous_memo_tables_and_parents(G,AbsInt,Clid,Id):-
+  erase_previous_memo_table_and_parents_one_goal(G,AbsInt,Clid,Id), !,
+  erase_last_memo_table(AbsInt,Clid,Id).
+erase_previous_memo_tables_and_parents(_,_,_,_). %nothing had been recorded
+
+erase_previous_memo_table_and_parents_one_goal(g(Key,_,Info,SgKey,Sg),AbsInt,Clid,Id) :-
+	get_memo_table(Key,AbsInt,Id,Son,_,_Info,Ref),
+	erase(Ref),
+	( Info = '$meta'(_,LGoals,_) ->
+    listbody_to_body(LGoals,MetaGoals),
+	    erase_previous_memo_tables_and_parents(MetaGoals,AbsInt,Clid,Id)
+	;   true
+	),
+  Goal = (SgKey,Info,Sg),
+	erase_previous_parents_info(Son,Goal,AbsInt,Key,Id).
+
+% erase_previous_memo_tables_and_parents(true,_,_,_):-!.
+% erase_previous_memo_tables_and_parents(([Key,_,Goal],Goals),AbsInt,Clid,Id):-
+% 	current_fact(memo_table(Key,AbsInt,Id,Son,_,_Info),Ref),!,
+% 	erase(Ref),
+% 	erase_previous_parents_info(Son,Goal,AbsInt,Key,Id),
+% 	erase_previous_memo_tables_and_parents(Goals,AbsInt,Clid,Id).
+% erase_previous_memo_tables_and_parents([Key,_,Goal],AbsInt,Clid,Id):-
+% 	current_fact(memo_table(Key,AbsInt,Id,Son,_,_Info),Ref),!,
+% 	erase(Ref),
+% 	erase_previous_parents_info(Son,Goal,AbsInt,Key,Id),
+% 	erase_last_memo_table(AbsInt,Clid,Id).
+% erase_previous_memo_tables_and_parents(_,_,_,_). %nothing had been recorded
+
+erase_last_memo_table(AbsInt,Clid,Id):-
+	get_memo_table(Clid,AbsInt,Id,no,_,_,Ref2),!,
+	erase(Ref2).
+erase_last_memo_table(_,_,_). %maybe we have not written it yet
+
+%------------------------------------------------------------------------
+% erase_previous_parents_info(+,+,+,+,+)
+% erase_previous_parents_info(Id,Goal,AbsInt,Key,NewN)
+%  Id is the node identifier of the complete that has this Goal in its 
+% list of parents. If Id is no then nothing needs to be done (it is a builtin)
+erase_previous_parents_info(no,_,_,_,_):- !.
+% Cut has a no?
+erase_previous_parents_info(Id,Goal,AbsInt,Key,NewN):-
+	erase_prev_parents(Goal, Key,AbsInt,NewN,Id).
+
+% IG % TODO: UNIFY
+% IG % TODO: Goal has now a different shape
+erase_prev_parents(('$meta',_,Call),K,AbsInt,NewN,Id):-
+	functor(Call,_,1),!,
+	arg(1,Call,NGoal),
+	erase_prev_parents(NGoal,K,AbsInt,NewN,Id).
+erase_prev_parents(('$meta',_,Call),K,AbsInt,NewN,Id):-
+	functor(Call,_,3),!,
+	arg(2,Call,NGoal),
+	erase_prev_parents(NGoal,K,AbsInt,NewN,Id).
+erase_prev_parents((GKey,_,_),K,AbsInt,NewN,Id):- !, % TODO: old notation
+	erase_prev_parents(GKey,K,AbsInt,NewN,Id).
+erase_prev_parents(GKey,K,AbsInt,NewN,Id):-
+	atom(GKey),
+	current_fact(complete(GKey,AbsInt,A1,A2,A3,Id,Parents),Ref),!,
+	% TODO: possibly more retracts of complete_parent are needed
+	( retract_fact(complete_parent(Id,K)) -> true ; true), % Used for widening
+	del_parent(Parents,K,NewN,NewParents),
+	erase(Ref),
+	asserta_fact(complete(GKey,AbsInt,A1,A2,A3,Id,NewParents)).
+%% erase_prev_parents((GKey,_,_),K,_AbsInt,NewN,Id):-
+ %% 	current_fact(approx(GKey,A1,A2,A3,Id,Parents),Ref),!,
+ %% 	del_parent(Parents,K,NewN,NewParents),
+ %% 	erase(Ref),
+ %% 	asserta_fact(approx(GKey,A1,A2,A3,Id,NewParents)).
+ %% erase_prev_parents((GKey,_,_),K,_AbsInt,NewN,Id):-
+ %% 	current_fact(fixpoint(GKey,A1,A2,A3,Id,Parents),Ref),!,
+ %% 	del_parent(Parents,K,NewN,NewParents),
+ %% 	erase(Ref),
+ %% 	asserta_fact(fixpoint(GKey,A1,A2,A3,Id,NewParents)).
+erase_prev_parents(_,_,_,_,_).
+
+listbody_to_body([X],(X)) :- !.
+listbody_to_body([X|Xs],(X,Goals)) :-
+	listbody_to_body(Xs,Goals).
