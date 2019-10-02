@@ -715,28 +715,28 @@
 %% aeq_real_conjoin(_,_,_).
 % ---------------------------------------------------------------------------
 :- use_module(domain(depthk)).
-:- dom_def(depth).
-:- dom_op((call_to_entry(depth,Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo) :- !, depthk_call_to_entry(Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo))).
-:- dom_op((exit_to_prime(depth,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime) :- !, depthk_exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime))).
-:- dom_op((project(depth,_Sg,Vars,_HvFv,ASub,Proj) :- !, depthk_project(Vars,ASub,Proj))).
-:- dom_op((compute_lub(depth,ListASub,LubASub) :- !, depthk_compute_lub(ListASub,LubASub))).
-:- dom_op((identical_abstract(depth,ASub1,ASub2) :- !, depthk_identical_abstract(ASub1,ASub2))).
-:- dom_op((abs_sort(depth,ASub,ASub_s) :- !, depthk_sort(ASub,ASub_s))).
-:- dom_op((extend(depth,_Sg,Prime,Sv,Call,Succ) :- !, depthk_extend(Prime,Sv,Call,Succ))).
-:- dom_op((less_or_equal(depth,ASub0,ASub1) :- !, depthk_less_or_equal(ASub0,ASub1))).
-:- dom_op((glb(depth,ASub0,ASub1,ASub) :- !, depthk_glb(ASub0,ASub1,ASub))).
-:- dom_op((eliminate_equivalent(depth,TmpLSucc,LSucc) :- !, depthk_eliminate_equivalent(TmpLSucc,LSucc))).
-:- dom_op((abs_subset(depth,LASub1,LASub2) :- !, depthk_abs_subset(LASub1,LASub2))).
-:- dom_op((call_to_success_fact(depth,Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ) :- !, depthk_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ))).
-:- dom_op((special_builtin(depth,SgKey,Sg,Subgoal,Type,Condvars) :- !, depthk_special_builtin(SgKey,Sg,Subgoal,Type,Condvars))).
-:- dom_op((success_builtin(depth,Type,Sv_uns,Condvars,_HvFv_u,Call,Succ) :- !, depthk_success_builtin(Type,Sv_uns,Condvars,Call,Succ))).
-:- dom_op((call_to_success_builtin(depth,_SgKey,Sg,Sv,Call,_Proj,Succ) :- !, depthk_call_to_success_builtin(Sg,Sv,Call,Succ))).
-:- dom_op((input_interface(depth,InputUser,Kind,Struct0,Struct1) :- !, depthk_input_interface(InputUser,Kind,Struct0,Struct1))).
-:- dom_op((input_user_interface(depth,InputUser,Qv,ASub,Sg,MaybeCallASub) :- !, depthk_input_user_interface(InputUser,Qv,ASub,Sg,MaybeCallASub))).
-:- dom_op((asub_to_native(depth,ASub,Qv,OutFlag,OutputUser,Comps) :- !, depthk_asub_to_native(ASub,Qv,OutFlag,OutputUser,Comps))).
-:- dom_op((unknown_call(depth,Sg,Vars,Call,Succ) :- !, depthk_unknown_call(Sg,Vars,Call,Succ))).
-:- dom_op((unknown_entry(depth,Sg,Qv,Call) :- !, depthk_unknown_entry(Sg,Qv,Call))).
-:- dom_op((empty_entry(depth,Sg,Qv,Call) :- !, depthk_empty_entry(Sg,Qv,Call))).
+:- dom_def(depthk).
+:- dom_op((call_to_entry(depthk,Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo) :- !, depthk_call_to_entry(Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo))).
+:- dom_op((exit_to_prime(depthk,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime) :- !, depthk_exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime))).
+:- dom_op((project(depthk,_Sg,Vars,_HvFv,ASub,Proj) :- !, depthk_project(Vars,ASub,Proj))).
+:- dom_op((compute_lub(depthk,ListASub,LubASub) :- !, depthk_compute_lub(ListASub,LubASub))).
+:- dom_op((identical_abstract(depthk,ASub1,ASub2) :- !, depthk_identical_abstract(ASub1,ASub2))).
+:- dom_op((abs_sort(depthk,ASub,ASub_s) :- !, depthk_sort(ASub,ASub_s))).
+:- dom_op((extend(depthk,_Sg,Prime,Sv,Call,Succ) :- !, depthk_extend(Prime,Sv,Call,Succ))).
+:- dom_op((less_or_equal(depthk,ASub0,ASub1) :- !, depthk_less_or_equal(ASub0,ASub1))).
+:- dom_op((glb(depthk,ASub0,ASub1,ASub) :- !, depthk_glb(ASub0,ASub1,ASub))).
+:- dom_op((eliminate_equivalent(depthk,TmpLSucc,LSucc) :- !, depthk_eliminate_equivalent(TmpLSucc,LSucc))).
+:- dom_op((abs_subset(depthk,LASub1,LASub2) :- !, depthk_abs_subset(LASub1,LASub2))).
+:- dom_op((call_to_success_fact(depthk,Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ) :- !, depthk_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ))).
+:- dom_op((special_builtin(depthk,SgKey,Sg,Subgoal,Type,Condvars) :- !, depthk_special_builtin(SgKey,Sg,Subgoal,Type,Condvars))).
+:- dom_op((success_builtin(depthk,Type,Sv_uns,Condvars,_HvFv_u,Call,Succ) :- !, depthk_success_builtin(Type,Sv_uns,Condvars,Call,Succ))).
+:- dom_op((call_to_success_builtin(depthk,_SgKey,Sg,Sv,Call,_Proj,Succ) :- !, depthk_call_to_success_builtin(Sg,Sv,Call,Succ))).
+:- dom_op((input_interface(depthk,InputUser,Kind,Struct0,Struct1) :- !, depthk_input_interface(InputUser,Kind,Struct0,Struct1))).
+:- dom_op((input_user_interface(depthk,InputUser,Qv,ASub,Sg,MaybeCallASub) :- !, depthk_input_user_interface(InputUser,Qv,ASub,Sg,MaybeCallASub))).
+:- dom_op((asub_to_native(depthk,ASub,Qv,OutFlag,OutputUser,Comps) :- !, depthk_asub_to_native(ASub,Qv,OutFlag,OutputUser,Comps))).
+:- dom_op((unknown_call(depthk,Sg,Vars,Call,Succ) :- !, depthk_unknown_call(Sg,Vars,Call,Succ))).
+:- dom_op((unknown_entry(depthk,Sg,Qv,Call) :- !, depthk_unknown_entry(Sg,Qv,Call))).
+:- dom_op((empty_entry(depthk,Sg,Qv,Call) :- !, depthk_empty_entry(Sg,Qv,Call))).
 % ---------------------------------------------------------------------------
 :- use_module(domain(top_path_sharing)).
 :- dom_def(path).

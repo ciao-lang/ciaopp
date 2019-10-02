@@ -220,7 +220,7 @@ glb_each_eq([X=T1|ASub1],[X=T2|ASub2],[X=T|Lub]):-
 
 :- use_module(ciaopp(plai/domains), [absub_eliminate_equivalent/3]).
 
-depthk_eliminate_equivalent(TmpLSucc,LSucc) :- absub_eliminate_equivalent(TmpLSucc,depth,LSucc).
+depthk_eliminate_equivalent(TmpLSucc,LSucc) :- absub_eliminate_equivalent(TmpLSucc,depthk,LSucc).
 
 %------------------------------------------------------------------------%
 
@@ -232,7 +232,7 @@ absub_is_subset([Sub1|Subs1],LASub2) :-
 	member(ASub2,LASub2),
 	depthk_identical_abstract(Sub1,ASub2),
 % OR:
-%	absub_fixpoint_covered(depth,Sub1,ASub2),
+%	absub_fixpoint_covered(depthk,Sub1,ASub2),
 	absub_is_subset(Subs1,LASub2).
 
 %------------------------------------------------------------------------%

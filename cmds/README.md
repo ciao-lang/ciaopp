@@ -46,7 +46,7 @@ Select Cost Analysis:            [none, steps_ub, steps_lb, steps_ualb,
 Select Mode Analysis:            [none, pd, pdb, def, gr, share, shareson, 
                                   shfr, shfrson, shfrnv, son, share_amgu, 
                                   share_clique, sharefree_amgu, 
-                                  sharefree_clique, aeq, depth, path, 
+                                  sharefree_clique, aeq, depthk, path, 
                                   difflsign, fr, frdef, lsign] (shfr) ? 
 Select Type Analysis:            [none, eterms, ptypes, svterms, terms]
                                   (eterms) ? 
@@ -126,7 +126,7 @@ Select Abs Specialization:       [off, mono, poly] (off) ? poly
 Select Analysis Domain:          [none, pd, pdb, def, gr, share, shareson, 
                                   shfr, shfrson, shfrnv, son, share_amgu, 
                                   share_clique, sharefree_amgu, 
-                                  sharefree_clique, aeq, depth, path, 
+                                  sharefree_clique, aeq, depthk, path, 
                                   difflsign, fr, frdef, lsign, eterms, ptypes, 
                                   svterms, terms] (pd) ? 
 Note: Current Saved Menu Configurations: [default]

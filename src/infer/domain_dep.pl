@@ -33,7 +33,7 @@ join_if_needed(fr,Proj,Prime,_Sg,Sv,Join):- !,
 	fake_fr_extend(Prime,Sv,Proj,Join).
 join_if_needed(_,_,Prime,_,_,Prime).
 
-free_vars_in_asub(depth,Vars,Info,FVars):- !,
+free_vars_in_asub(depthk,Vars,Info,FVars):- !,
 	varset(Info,AllVars),
 	ord_subtract(AllVars,Vars,FVars).
 free_vars_in_asub(sha,Vars,Info,FVars):- !,

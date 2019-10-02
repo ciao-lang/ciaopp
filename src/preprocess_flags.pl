@@ -1055,7 +1055,7 @@ modeanalysis(sharefree_clique).
 modeanalysis(sharefree_clique_def).
 % structure
 modeanalysis(aeq).
-modeanalysis(depth).
+modeanalysis(depthk).
 modeanalysis(path).
 % constraints
 modeanalysis(difflsign).
