@@ -1,7 +1,5 @@
 :- module(analysis_stats, [], [assertions, isomodes, regtypes, hiord, datafacts]).
 
-% TODO: This is independent from incremental analysis
-
 % "High-level" performance counters
 
 :- doc(title, "Analysis statistics library").
@@ -57,7 +55,7 @@ with a phase of analysis of ciaopp.".
 gather_stats(Operation, Stats) :-
 	findall(S, operation_stat(Operation, S), Stats).
 
-:- pred operation_stat(+Operation, -Stat) #".".
+:- pred operation_stat(+Operation, -Stat).
 operation_stat(Operation, Stat) :-
 	ciaopp_operation_stat(Operation, StatName),
 	get_stored_stat_nofail(StatName, Value),
