@@ -130,24 +130,24 @@
 % ---------------------------------------------------------------------------
 :- use_module(domain(fd)).
 :- dom_def(frdef).
-:- dom_op((call_to_entry(frdef,Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo) :- !, fd_call_to_entry(Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo))).
-:- dom_op((exit_to_prime(frdef,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime) :- !, fd_exit_to_prime(Exit,Sg,Hv,Head,Sv,ExtraInfo,Prime))).
-:- dom_op((project(frdef,_Sg,Vars,_HvFv,ASub,Proj) :- !, fd_project(ASub,Vars,Proj))).
-:- dom_op((compute_lub(frdef,ListASub,LubASub) :- !, fd_compute_lub(ListASub,LubASub))).
-:- dom_op((identical_abstract(frdef,ASub1,ASub2) :- !, fd_identical_abstract(ASub1,ASub2))).
-:- dom_op((abs_sort(frdef,ASub,ASub_s) :- !, fd_sort(ASub,ASub_s))).
-:- dom_op((extend(frdef,Sg,Prime,Sv,Call,Succ) :- !, fd_extend(Sg,Prime,Sv,Call,Succ))).
-:- dom_op((less_or_equal(frdef,ASub0,ASub1) :- !, fd_less_or_equal(ASub0,ASub1))).
-:- dom_op((glb(frdef,ASub0,ASub1,ASub) :- !, fd_glb(ASub0,ASub1,ASub))).
-:- dom_op((call_to_success_fact(frdef,Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ) :- !, fd_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ))).
-:- dom_op((special_builtin(frdef,SgKey,Sg,Subgoal,Type,Condvars) :- !, fd_special_builtin(SgKey,Sg,Subgoal,Type,Condvars))).
-:- dom_op((success_builtin(frdef,Type,Sv_uns,Condvars,_HvFv_u,Call,Succ) :- !, fd_success_builtin(Type,Sv_uns,Condvars,Call,Succ))).
-:- dom_op((input_interface(frdef,InputUser,Kind,Struct0,Struct1) :- !, fd_input_interface(InputUser,Kind,Struct0,Struct1))).
-:- dom_op((input_user_interface(frdef,InputUser,Qv,ASub,Sg,MaybeCallASub) :- !, fd_input_user_interface(InputUser,Qv,ASub,Sg,MaybeCallASub))).
-:- dom_op((asub_to_native(frdef,ASub,Qv,OutFlag,OutputUser,Comps) :- !, fd_asub_to_native(ASub,Qv,OutFlag,OutputUser,Comps))).
-:- dom_op((unknown_call(frdef,Sg,Vars,Call,Succ) :- !, fd_unknown_call(Sg,Vars,Call,Succ))).
-:- dom_op((unknown_entry(frdef,Sg,Qv,Call) :- !, fd_unknown_entry(Sg,Qv,Call))).
-:- dom_op((empty_entry(frdef,Sg,Qv,Call) :- !, fd_empty_entry(Sg,Qv,Call))).
+:- dom_op((call_to_entry(frdef,Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo) :- !, frdef_call_to_entry(Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo))).
+:- dom_op((exit_to_prime(frdef,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime) :- !, frdef_exit_to_prime(Exit,Sg,Hv,Head,Sv,ExtraInfo,Prime))).
+:- dom_op((project(frdef,_Sg,Vars,_HvFv,ASub,Proj) :- !, frdef_project(ASub,Vars,Proj))).
+:- dom_op((compute_lub(frdef,ListASub,LubASub) :- !, frdef_compute_lub(ListASub,LubASub))).
+:- dom_op((identical_abstract(frdef,ASub1,ASub2) :- !, frdef_identical_abstract(ASub1,ASub2))).
+:- dom_op((abs_sort(frdef,ASub,ASub_s) :- !, frdef_sort(ASub,ASub_s))).
+:- dom_op((extend(frdef,Sg,Prime,Sv,Call,Succ) :- !, frdef_extend(Sg,Prime,Sv,Call,Succ))).
+:- dom_op((less_or_equal(frdef,ASub0,ASub1) :- !, frdef_less_or_equal(ASub0,ASub1))).
+:- dom_op((glb(frdef,ASub0,ASub1,ASub) :- !, frdef_glb(ASub0,ASub1,ASub))).
+:- dom_op((call_to_success_fact(frdef,Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ) :- !, frdef_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ))).
+:- dom_op((special_builtin(frdef,SgKey,Sg,Subgoal,Type,Condvars) :- !, frdef_special_builtin(SgKey,Sg,Subgoal,Type,Condvars))).
+:- dom_op((success_builtin(frdef,Type,Sv_uns,Condvars,_HvFv_u,Call,Succ) :- !, frdef_success_builtin(Type,Sv_uns,Condvars,Call,Succ))).
+:- dom_op((input_interface(frdef,InputUser,Kind,Struct0,Struct1) :- !, frdef_input_interface(InputUser,Kind,Struct0,Struct1))).
+:- dom_op((input_user_interface(frdef,InputUser,Qv,ASub,Sg,MaybeCallASub) :- !, frdef_input_user_interface(InputUser,Qv,ASub,Sg,MaybeCallASub))).
+:- dom_op((asub_to_native(frdef,ASub,Qv,OutFlag,OutputUser,Comps) :- !, frdef_asub_to_native(ASub,Qv,OutFlag,OutputUser,Comps))).
+:- dom_op((unknown_call(frdef,Sg,Vars,Call,Succ) :- !, frdef_unknown_call(Sg,Vars,Call,Succ))).
+:- dom_op((unknown_entry(frdef,Sg,Qv,Call) :- !, frdef_unknown_entry(Sg,Qv,Call))).
+:- dom_op((empty_entry(frdef,Sg,Qv,Call) :- !, frdef_empty_entry(Sg,Qv,Call))).
 % ---------------------------------------------------------------------------
 % lsign
 :- use_module(domain(lsign)).
