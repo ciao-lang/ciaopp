@@ -14,7 +14,7 @@
 	  lsign_less_or_equal/2,
 	  lsign_glb/3,
 	  lsign_project/4,    
-	  lsign_sort/2,       
+	  lsign_abs_sort/2,       
 	  lsign_special_builtin/5,
 	  lsign_success_builtin/6,
 	  lsign_unknown_call/4,
@@ -415,7 +415,7 @@ lsign_call_to_entry(_Sv,Sg,_Hv,Head,_K,Fv,Proj,Entry,ExtraInfo):-
 	ExtraInfo = (yes,Fv),
 	copy_term((Sg,Proj),(NewTerm,NewEntry)),
 	Head = NewTerm,
-	lsign_sort(NewEntry,Entry).
+	lsign_abs_sort(NewEntry,Entry).
 lsign_call_to_entry(_Sv,Sg,_Hv,Head,_K,_,_,_,_):-
 	compiler_error(not_normalized(Sg,Head)).
 
@@ -438,7 +438,7 @@ lsign_exit_to_prime(Sg,Hv,Head,Exit,(yes,Fv),Prime):-
 	lsign_project(Exit,Hv,Fv,BPrime),
 	copy_term((Head,BPrime),(NewTerm,NewPrime)),
 	Sg = NewTerm,
-	lsign_sort(NewPrime,Prime).
+	lsign_abs_sort(NewPrime,Prime).
 
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
@@ -464,12 +464,12 @@ lsign_call_to_success_fact(Sg,_Hv,Head,_K,_Sv,_Call,_Proj,_Prime,_Succ):-
 %                      ABSTRACT SORT
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% lsign_sort(+,-) 
-% lsign_sort(ACons_u,ACons)
+% lsign_abs_sort(+,-) 
+% lsign_abs_sort(ACons_u,ACons)
 %------------------------------------------------------------------------%
 
-lsign_sort('$bottom','$bottom').
-lsign_sort(a(S_u,AEqIn_u,Non_u),a(S,AEqIn,Non)):-
+lsign_abs_sort('$bottom','$bottom').
+lsign_abs_sort(a(S_u,AEqIn_u,Non_u),a(S,AEqIn,Non)):-
 	sort(S_u,S),
 	lsign_sort_each(AEqIn_u,TmpAEqIn),
 	sort(Non_u,Non),

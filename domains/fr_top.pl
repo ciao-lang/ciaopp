@@ -11,7 +11,7 @@
 	  fr_glb/3,
 	  fr_output_interface/3,
 	  fr_project/5,       
-	  fr_sort/2,          
+	  fr_abs_sort/2,          
 	  fr_special_builtin/5,
 	  fr_success_builtin/6,
 	  fr_asub_to_native/5,
@@ -175,16 +175,16 @@ fr_identical_abstract(as(ACo1,ACn1), as(ACo2,ACn2)) :-
 
 %----------------------------------------------------------------------------
 
-% fr_sort(Asub1, Asub2).
+% fr_abs_sort(Asub1, Asub2).
 % Asub1 is sorted into Asub2
 %
-% :- mode fr_sort(?,o).
-fr_sort(Bottom, Bottom):-
+% :- mode fr_abs_sort(?,o).
+fr_abs_sort(Bottom, Bottom):-
 	bottomelement(Bottom), !.
-fr_sort(as(dummy,ACn), as(dummy, ACn_sort)):-
+fr_abs_sort(as(dummy,ACn), as(dummy, ACn_sort)):-
 	% as(ACo,ACn) may be produced by the specific lub -> ACo may be dummy
 	!, ss_sort(ACn, ACn_sort).
-fr_sort(as(ACo,ACn), as(ACo_sort, ACn_sort)):-
+fr_abs_sort(as(ACo,ACn), as(ACo_sort, ACn_sort)):-
 	ss_sort(ACo, ACo_sort),
 	ss_sort(ACn, ACn_sort).
 

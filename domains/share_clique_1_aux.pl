@@ -21,7 +21,7 @@
 :- use_module(library(lsets), [merge_list_of_lists/2, sort_list_of_lists/2]).
 :- use_module(library(lists), [length/2, delete/3]).
 :- use_module(library(aggregates), [bagof/3]).
-:- use_module(domain(sharing_clique), [share_clique_sort/2, share_clique_widen/4]).
+:- use_module(domain(sharing_clique), [share_clique_abs_sort/2, share_clique_widen/4]).
 :- use_module(domain(share_clique_aux), 
 	[ widen/1,
 	  amgu_rel_non_rel_info/7,
@@ -309,7 +309,7 @@ update_clique_1(Cand,(Cl,Sh),CandSh,SH):-
         delete_list_of_lists_no_singleton(Sh,CandSh,Sh1),
 	% Removes subcliques of the new clique        
 	nosublist_list_of_lists(Cl,Cand,Cl1), 
-	share_clique_sort(([Cand|Cl1],Sh1),SH).
+	share_clique_abs_sort(([Cand|Cl1],Sh1),SH).
  
 delete_list_of_lists_no_singleton(Sh,[],Sh0):- !,
 	delete(Sh,[],Sh0).

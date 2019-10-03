@@ -10,7 +10,7 @@
 	  difflsign_less_or_equal/2, 
 	  difflsign_glb/3,
 	  difflsign_project/5,
-	  difflsign_sort/2,
+	  difflsign_abs_sort/2,
 	  difflsign_special_builtin/5,
 	  difflsign_success_builtin/6, 
 	  difflsign_unknown_call/4, 
@@ -88,16 +88,16 @@ difflsign_extend(_Sg,Prime,_Sv,p(In,DACons,TACons),Succ):-
 	Succ = p(In,a(G,L,Non),STACons).
 
 %-------------------------------------------------------------------------
-% difflsign_sort(+,-)                                                 |
-% difflsign_sort(ACons_u,ACons)                                       |
+% difflsign_abs_sort(+,-)                                                 |
+% difflsign_abs_sort(ACons_u,ACons)                                       |
 %-------------------------------------------------------------------------
 
-difflsign_sort(p(_,_,ACons_u),Sorted):- !,
-	lsign_sort(ACons_u,ACons),
+difflsign_abs_sort(p(_,_,ACons_u),Sorted):- !,
+	lsign_abs_sort(ACons_u,ACons),
 	ACons = a(G,_,_),
 	Sorted = p(ACons,a(G,[],[]),ACons).
-difflsign_sort(ACons_u,ACons):-
-	lsign_sort(ACons_u,ACons).
+difflsign_abs_sort(ACons_u,ACons):-
+	lsign_abs_sort(ACons_u,ACons).
 
 %-------------------------------------------------------------------------
 % difflsign_unknown_entry(+,+,-)                                      |

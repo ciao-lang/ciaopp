@@ -69,7 +69,7 @@
 :- dom_op((exit_to_prime(pd,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime) :- !, pd_exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime))).
 :- dom_op((project(pd,Sg,Vars,HvFv,ASub,Proj) :- !, pd_project(Sg,Vars,HvFv,ASub,Proj))).
 :- dom_op((compute_lub(pd,ListAsub,LubASub) :- !, pd_compute_lub(ListAsub,LubASub))).
-:- dom_op((abs_sort(pd,ASub,ASub_s) :- !, pd_sort(ASub,ASub_s))).
+:- dom_op((abs_sort(pd,ASub,ASub_s) :- !, pd_abs_sort(ASub,ASub_s))).
 :- dom_op((extend(pd,Sg,Prime,Sv,Call,Succ) :- !, pd_extend(Sg,Prime,Sv,Call,Succ))).
 :- dom_op((less_or_equal(pd,ASub0,ASub1) :- !, pd_less_or_equal(ASub0,ASub1))).
 :- dom_op((glb(pd,ASub0,ASub1,ASub) :- !, pd_glb(ASub0,ASub1,ASub))).
@@ -90,7 +90,7 @@
 :- dom_op((exit_to_prime(pdb,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime) :- !, pdb_exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime))).
 :- dom_op((project(pdb,Sg,Vars,HvFv,ASub,Proj) :- !, pdb_project(Sg,Vars,HvFv,ASub,Proj))).
 :- dom_op((compute_lub(pdb,ListAsub,LubASub) :- !, pdb_compute_lub(ListAsub,LubASub))).
-:- dom_op((abs_sort(pdb,ASub,ASub_s) :- !, pdb_sort(ASub,ASub_s))).
+:- dom_op((abs_sort(pdb,ASub,ASub_s) :- !, pdb_abs_sort(ASub,ASub_s))).
 :- dom_op((extend(pdb,Sg,Prime,Sv,Call,Succ) :- !, pdb_extend(Sg,Prime,Sv,Call,Succ))).
 :- dom_op((less_or_equal(pdb,ASub0,ASub1) :- !, pdb_less_or_equal(ASub0,ASub1))).
 :- dom_op((glb(pdb,ASub0,ASub1,ASub) :- !, pdb_glb(ASub0,ASub1,ASub))).
@@ -113,7 +113,7 @@
 :- dom_op((project(fr,Sg,Vars,HvFv,ASub,Proj) :- !, fr_project(Sg,Vars,HvFv,ASub,Proj))).
 :- dom_op((compute_lub(fr,ListASub,LubASub) :- !, fr_compute_lub(ListASub,LubASub))).
 :- dom_op((identical_abstract(fr,ASub1,ASub2) :- !, fr_identical_abstract(ASub1,ASub2))).
-:- dom_op((abs_sort(fr,ASub,ASub_s) :- !, fr_sort(ASub,ASub_s))).
+:- dom_op((abs_sort(fr,ASub,ASub_s) :- !, fr_abs_sort(ASub,ASub_s))).
 :- dom_op((extend(fr,Sg,Prime,Sv,Call,Succ) :- !, fr_extend(Sg,Prime,Sv,Call,Succ))).
 :- dom_op((less_or_equal(fr,ASub0,ASub1) :- !, fr_less_or_equal(ASub0,ASub1))).
 :- dom_op((glb(fr,ASub0,ASub1,ASub) :- !, fr_glb(ASub0,ASub1,ASub))).
@@ -135,7 +135,7 @@
 :- dom_op((project(frdef,_Sg,Vars,_HvFv,ASub,Proj) :- !, frdef_project(ASub,Vars,Proj))).
 :- dom_op((compute_lub(frdef,ListASub,LubASub) :- !, frdef_compute_lub(ListASub,LubASub))).
 :- dom_op((identical_abstract(frdef,ASub1,ASub2) :- !, frdef_identical_abstract(ASub1,ASub2))).
-:- dom_op((abs_sort(frdef,ASub,ASub_s) :- !, frdef_sort(ASub,ASub_s))).
+:- dom_op((abs_sort(frdef,ASub,ASub_s) :- !, frdef_abs_sort(ASub,ASub_s))).
 :- dom_op((extend(frdef,Sg,Prime,Sv,Call,Succ) :- !, frdef_extend(Sg,Prime,Sv,Call,Succ))).
 :- dom_op((less_or_equal(frdef,ASub0,ASub1) :- !, frdef_less_or_equal(ASub0,ASub1))).
 :- dom_op((glb(frdef,ASub0,ASub1,ASub) :- !, frdef_glb(ASub0,ASub1,ASub))).
@@ -157,7 +157,7 @@
 :- dom_op((exit_to_prime(lsign,Sg,Hv,Head,_Sv,Exit,ExtraInfo,Prime) :- !, lsign_exit_to_prime(Sg,Hv,Head,Exit,ExtraInfo,Prime))).
 :- dom_op((project(lsign,_Sg,Vars,HvFv,ASub,Proj) :- !, lsign_project(ASub,Vars,HvFv,Proj))).
 :- dom_op((compute_lub(lsign,ListASub,LubASub) :- !, lsign_compute_lub(ListASub,LubASub))).
-:- dom_op((abs_sort(lsign,ASub,ASub_s) :- !, lsign_sort(ASub,ASub_s))).
+:- dom_op((abs_sort(lsign,ASub,ASub_s) :- !, lsign_abs_sort(ASub,ASub_s))).
 :- dom_op((extend(lsign,Sg,Prime,Sv,Call,Succ) :- !, lsign_extend(Sg,Prime,Sv,Call,Succ))).
 :- dom_op((less_or_equal(lsign,ASub0,ASub1) :- !, lsign_less_or_equal(ASub0,ASub1))).
 :- dom_op((glb(lsign,ASub0,ASub1,ASub) :- !, lsign_glb(ASub0,ASub1,ASub))).
@@ -180,7 +180,7 @@
 :- dom_op((exit_to_prime(difflsign,Sg,Hv,Head,_Sv,Exit,ExtraInfo,Prime) :- !, difflsign_exit_to_prime(Sg,Hv,Head,Exit,ExtraInfo,Prime))).
 :- dom_op((project(difflsign,Sg,Vars,HvFv,ASub,Proj) :- !, difflsign_project(Sg,Vars,HvFv,ASub,Proj))).
 :- dom_op((compute_lub(difflsign,ListASub,LubASub) :- !, difflsign_compute_lub(ListASub,LubASub))).
-:- dom_op((abs_sort(difflsign,ASub,ASub_s) :- !, difflsign_sort(ASub,ASub_s))).
+:- dom_op((abs_sort(difflsign,ASub,ASub_s) :- !, difflsign_abs_sort(ASub,ASub_s))).
 :- dom_op((extend(difflsign,Sg,Prime,Sv,Call,Succ) :- !, difflsign_extend(Sg,Prime,Sv,Call,Succ))).
 :- dom_op((less_or_equal(difflsign,ASub0,ASub1) :- !, difflsign_less_or_equal(ASub0,ASub1))).
 :- dom_op((glb(difflsign,ASub0,ASub1,ASub) :- !, difflsign_glb(ASub0,ASub1,ASub))).
@@ -203,7 +203,7 @@
 :- dom_op((exit_to_prime(gr,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime) :- !, gr_exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime))).
 :- dom_op((project(gr,_Sg,Vars,_HvFv,ASub,Proj) :- !, gr_project(ASub,Vars,Proj))).
 :- dom_op((compute_lub(gr,ListAsub,LubASub) :- !, gr_compute_lub(ListAsub,LubASub))).
-:- dom_op((abs_sort(gr,ASub,ASub_s) :- !, gr_sort(ASub,ASub_s))).
+:- dom_op((abs_sort(gr,ASub,ASub_s) :- !, gr_abs_sort(ASub,ASub_s))).
 :- dom_op((extend(gr,_Sg,Prime,Sv,Call,Succ) :- !, gr_extend(Prime,Sv,Call,Succ))).
 :- dom_op((less_or_equal(gr,ASub0,ASub1) :- !, gr_less_or_equal(ASub0,ASub1))).
 :- dom_op((glb(gr,ASub0,ASub1,ASub) :- !, gr_glb(ASub0,ASub1,ASub))).
@@ -226,7 +226,7 @@
 :- dom_op((exit_to_prime(def,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime) :- !, def_exit_to_prime(Exit,ExtraInfo,Hv,Sv,Head,Sg,Prime))).
 :- dom_op((project(def,_Sg,Vars,_HvFv,ASub,Proj) :- !, def_project(ASub,Vars,Proj))).
 :- dom_op((compute_lub(def,ListASub,LubASub) :- !, def_compute_lub(ListASub,LubASub))).
-:- dom_op((abs_sort(def,ASub,ASub_s) :- !, def_sort(ASub,ASub_s))).
+:- dom_op((abs_sort(def,ASub,ASub_s) :- !, def_abs_sort(ASub,ASub_s))).
 :- dom_op((extend(def,_Sg,Prime,_Sv,Call,Succ) :- !, def_extend(Prime,Call,Succ))).
 :- dom_op((less_or_equal(def,ASub0,ASub1) :- !, def_less_or_equal(ASub0,ASub1))).
 :- dom_op((glb(def,ASub0,ASub1,ASub) :- !, def_glb(ASub0,ASub1,ASub))).
@@ -265,7 +265,7 @@
 :- dom_op((exit_to_prime(share,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime) :- !, share_exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime))).
 :- dom_op((project(share,_Sg,Vars,_HvFv,ASub,Proj) :- !, share_project(Vars,ASub,Proj))).
 :- dom_op((compute_lub(share,ListAsub,LubASub) :- !, share_compute_lub(ListAsub,LubASub))).
-:- dom_op((abs_sort(share,ASub,ASub_s) :- !, share_sort(ASub,ASub_s))).
+:- dom_op((abs_sort(share,ASub,ASub_s) :- !, share_abs_sort(ASub,ASub_s))).
 :- dom_op((extend(share,_Sg,Prime,Sv,Call,Succ) :- !, share_extend(Prime,Sv,Call,Succ))).
 :- dom_op((less_or_equal(share,ASub0,ASub1) :- !, share_less_or_equal(ASub0,ASub1))).
 :- dom_op((glb(share,ASub0,ASub1,ASub) :- !, share_glb(ASub0,ASub1,ASub))).
@@ -289,7 +289,7 @@
 :- dom_op((exit_to_prime(shfr,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime) :- !, shfr_exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime))).
 :- dom_op((project(shfr,_Sg,Vars,_HvFv,ASub,Proj) :- !, shfr_project(ASub,Vars,Proj))).
 :- dom_op((compute_lub(shfr,ListAsub,LubASub) :- !, shfr_compute_lub(ListAsub,LubASub))).
-:- dom_op((abs_sort(shfr,ASub,ASub_s) :- !, shfr_sort(ASub,ASub_s))).
+:- dom_op((abs_sort(shfr,ASub,ASub_s) :- !, shfr_abs_sort(ASub,ASub_s))).
 :- dom_op((extend(shfr,_Sg,Prime,Sv,Call,Succ) :- !, shfr_extend(Prime,Sv,Call,Succ))).
 :- dom_op((less_or_equal(shfr,ASub0,ASub1) :- !, shfr_less_or_equal(ASub0,ASub1))).
 :- dom_op((glb(shfr,ASub0,ASub1,ASub) :- !, shfr_glb(ASub0,ASub1,ASub))).
@@ -330,7 +330,7 @@
 :- dom_op((exit_to_prime(shfrnv,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime) :- !, shfrnv_exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime))).
 :- dom_op((project(shfrnv,_Sg,Vars,_HvFv,ASub,Proj) :- !, shfr_project(ASub,Vars,Proj))).
 :- dom_op((compute_lub(shfrnv,ListAsub,LubASub) :- !, shfrnv_compute_lub(ListAsub,LubASub))).
-:- dom_op((abs_sort(shfrnv,ASub,ASub_s) :- !, shfr_sort(ASub,ASub_s))).
+:- dom_op((abs_sort(shfrnv,ASub,ASub_s) :- !, shfr_abs_sort(ASub,ASub_s))).
 :- dom_op((extend(shfrnv,_Sg,Prime,Sv,Call,Succ) :- !, shfrnv_extend(Prime,Sv,Call,Succ))).
 :- dom_op((less_or_equal(shfrnv,ASub0,ASub1) :- !, shfrnv_less_or_equal(ASub0,ASub1))).
 :- dom_op((glb(shfrnv,ASub0,ASub1,ASub) :- !, shfrnv_glb(ASub0,ASub1,ASub))).
@@ -374,7 +374,7 @@
 :- dom_op((widen(shfret,Prime0,Prime1,NewPrime) :- !, shfret_widen(Prime0,Prime1,NewPrime))).
 :- dom_op((compute_lub(shfret,ListAsub,LubASub) :- !, shfret_compute_lub(ListAsub,LubASub))).
 :- dom_op((identical_abstract(shfret,ASub1,ASub2) :- !, shfret_identical_abstract(ASub1,ASub2))).
-:- dom_op((abs_sort(shfret,ASub,ASub_s) :- !, shfret_sort(ASub,ASub_s))).
+:- dom_op((abs_sort(shfret,ASub,ASub_s) :- !, shfret_abs_sort(ASub,ASub_s))).
 :- dom_op((extend(shfret,_Sg,Prime,Sv,Call,Succ) :- !, shfret_extend(Prime,Sv,Call,Succ))).
 :- dom_op((less_or_equal(shfret,ASub0,ASub1) :- !, shfret_less_or_equal(ASub0,ASub1))).
 :- dom_op((glb(shfret,ASub0,ASub1,ASub) :- !, shfret_glb(ASub0,ASub1,ASub))).
@@ -395,7 +395,7 @@
 :- dom_op((exit_to_prime(shareson,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime) :- !, shareson_exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime))).
 :- dom_op((project(shareson,_Sg,Vars,_HvFv,ASub,Proj) :- !, shareson_project(Vars,ASub,Proj))).
 :- dom_op((compute_lub(shareson,ListAsub,LubASub) :- !, shareson_compute_lub(ListAsub,LubASub))).
-:- dom_op((abs_sort(shareson,ASub,ASub_s) :- !, shareson_sort(ASub,ASub_s))).
+:- dom_op((abs_sort(shareson,ASub,ASub_s) :- !, shareson_abs_sort(ASub,ASub_s))).
 :- dom_op((extend(shareson,_Sg,Prime,Sv,Call,Succ) :- !, shareson_extend(Prime,Sv,Call,Succ))).
 :- dom_op((less_or_equal(shareson,ASub0,ASub1) :- !, shareson_less_or_equal(ASub0,ASub1))).
 :- dom_op((glb(shareson,ASub0,ASub1,ASub) :- !, shareson_glb(ASub0,ASub1,ASub))).
@@ -415,7 +415,7 @@
 :- dom_op((exit_to_prime(shfrson,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime) :- !, shfrson_exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime))).
 :- dom_op((project(shfrson,_Sg,Vars,_HvFv,ASub,Proj) :- !, shfrson_project(Vars,ASub,Proj))).
 :- dom_op((compute_lub(shfrson,ListAsub,LubASub) :- !, shfrson_compute_lub(ListAsub,LubASub))).
-:- dom_op((abs_sort(shfrson,ASub,ASub_s) :- !, shfrson_sort(ASub,ASub_s))).
+:- dom_op((abs_sort(shfrson,ASub,ASub_s) :- !, shfrson_abs_sort(ASub,ASub_s))).
 :- dom_op((extend(shfrson,_Sg,Prime,Sv,Call,Succ) :- !, shfrson_extend(Prime,Sv,Call,Succ))).
 :- dom_op((less_or_equal(shfrson,ASub0,ASub1) :- !, shfrson_less_or_equal(ASub0,ASub1))).
 :- dom_op((glb(shfrson,ASub0,ASub1,ASub) :- !, shfrson_glb(ASub0,ASub1,ASub))).
@@ -435,7 +435,7 @@
 :- dom_op((exit_to_prime(son,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime) :- !, son_exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime))).
 :- dom_op((project(son,_Sg,Vars,_HvFv,ASub,Proj) :- !, son_project(Vars,ASub,Proj))).
 :- dom_op((compute_lub(son,ListAsub,LubASub) :- !, son_compute_lub(ListAsub,LubASub))).
-:- dom_op((abs_sort(son,ASub,ASub_s) :- !, son_sort(ASub,ASub_s))).
+:- dom_op((abs_sort(son,ASub,ASub_s) :- !, son_abs_sort(ASub,ASub_s))).
 :- dom_op((extend(son,_Sg,Prime,Sv,Call,Succ) :- !, son_extend(Prime,Sv,Call,Succ))).
 :- dom_op((less_or_equal(son,ASub0,ASub1) :- !, son_less_or_equal(ASub0,ASub1))).
 :- dom_op((glb(son,ASub0,ASub1,ASub) :- !, son_glb(ASub0,ASub1,ASub))).
@@ -460,7 +460,7 @@
 :- dom_op((exit_to_prime(share_amgu,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime) :- !, share_amgu_exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime))).
 :- dom_op((project(share_amgu,_Sg,Vars,_HvFv,ASub,Proj) :- !, share_project(Vars,ASub,Proj))).
 :- dom_op((compute_lub(share_amgu,ListAsub,LubASub) :- !, share_compute_lub(ListAsub,LubASub))).
-:- dom_op((abs_sort(share_amgu,ASub,ASub_s) :- !, share_sort(ASub,ASub_s))).
+:- dom_op((abs_sort(share_amgu,ASub,ASub_s) :- !, share_abs_sort(ASub,ASub_s))).
 :- dom_op((extend(share_amgu,_Sg,Prime,Sv,Call,Succ) :- !, share_extend(Prime,Sv,Call,Succ))).
 :- dom_op((less_or_equal(share_amgu,ASub0,ASub1) :- !, share_less_or_equal(ASub0,ASub1))).
 :- dom_op((glb(share_amgu,ASub0,ASub1,ASub) :- !, share_glb(ASub0,ASub1,ASub))).
@@ -484,7 +484,7 @@
 :- dom_op((exit_to_prime(sharefree_amgu,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime) :- !, sharefree_amgu_exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime))).
 :- dom_op((project(sharefree_amgu,_Sg,Vars,_HvFv,ASub,Proj) :- !, shfr_project(ASub,Vars,Proj))).
 :- dom_op((compute_lub(sharefree_amgu,ListAsub,LubASub) :- !, shfr_compute_lub(ListAsub,LubASub))).
-:- dom_op((abs_sort(sharefree_amgu,ASub,ASub_s) :- !, shfr_sort(ASub,ASub_s))).
+:- dom_op((abs_sort(sharefree_amgu,ASub,ASub_s) :- !, shfr_abs_sort(ASub,ASub_s))).
 :- dom_op((extend(sharefree_amgu,_Sg,Prime,Sv,Call,Succ) :- !, shfr_extend(Prime,Sv,Call,Succ))).
 :- dom_op((less_or_equal(sharefree_amgu,ASub0,ASub1) :- !, shfr_less_or_equal(ASub0,ASub1))).
 :- dom_op((glb(sharefree_amgu,ASub0,ASub1,ASub) :- !, shfr_glb(ASub0,ASub1,ASub))).
@@ -533,7 +533,7 @@
 :- dom_op((project(share_clique,_Sg,Vars,_HvFv,ASub,Proj) :- !, share_clique_project(Vars,ASub,Proj))).
 :- dom_op((compute_lub(share_clique,ListAsub,LubASub) :- !, share_clique_compute_lub(ListAsub,LubASub))).
 :- dom_op((identical_abstract(share_clique,ASub1,ASub2) :- !, share_clique_identical_abstract(ASub1,ASub2))).
-:- dom_op((abs_sort(share_clique,ASub,ASub_s) :- !, share_clique_sort(ASub,ASub_s))).
+:- dom_op((abs_sort(share_clique,ASub,ASub_s) :- !, share_clique_abs_sort(ASub,ASub_s))).
 :- dom_op((extend(share_clique,_Sg,Prime,Sv,Call,Succ) :- !, share_clique_extend(Prime,Sv,Call,Succ))).
 :- dom_op((less_or_equal(share_clique,ASub0,ASub1) :- !, share_clique_less_or_equal(ASub0,ASub1))).
 :- dom_op((glb(share_clique,ASub0,ASub1,ASub) :- !, share_clique_glb(ASub0,ASub1,ASub))).
@@ -557,7 +557,7 @@
 :- dom_op((project(share_clique_1,_Sg,Vars,_HvFv,ASub,Proj) :- !, share_clique_1_project(Vars,ASub,Proj))).
 :- dom_op((compute_lub(share_clique_1,ListAsub,LubASub) :- !, share_clique_1_compute_lub(ListAsub,LubASub))).
 :- dom_op((identical_abstract(share_clique_1,ASub1,ASub2) :- !, share_clique_1_identical_abstract(ASub1,ASub2))).
-:- dom_op((abs_sort(share_clique_1,ASub,ASub_s) :- !, share_clique_sort(ASub,ASub_s))).
+:- dom_op((abs_sort(share_clique_1,ASub,ASub_s) :- !, share_clique_abs_sort(ASub,ASub_s))).
 :- dom_op((extend(share_clique_1,_Sg,Prime,Sv,Call,Succ) :- !, share_clique_1_extend(Prime,Sv,Call,Succ))).
 :- dom_op((less_or_equal(share_clique_1,ASub0,ASub1) :- !, share_clique_1_less_or_equal(ASub0,ASub1))).
 :- dom_op((glb(share_clique_1,ASub0,ASub1,ASub) :- !, share_clique_1_glb(ASub0,ASub1,ASub))).
@@ -583,7 +583,7 @@
 :- dom_op((project(sharefree_clique,_Sg,Vars,_HvFv,ASub,Proj) :- !, sharefree_clique_project(ASub,Vars,Proj))).
 :- dom_op((compute_lub(sharefree_clique,ListAsub,LubASub) :- !, sharefree_clique_compute_lub(ListAsub,LubASub))).
 :- dom_op((identical_abstract(sharefree_clique,ASub1,ASub2) :- !, sharefree_clique_identical_abstract(ASub1,ASub2))).
-:- dom_op((abs_sort(sharefree_clique,ASub,ASub_s) :- !, sharefree_clique_sort(ASub,ASub_s))).
+:- dom_op((abs_sort(sharefree_clique,ASub,ASub_s) :- !, sharefree_clique_abs_sort(ASub,ASub_s))).
 :- dom_op((extend(sharefree_clique,_Sg,Prime,Sv,Call,Succ) :- !, sharefree_clique_extend(Prime,Sv,Call,Succ))).
 :- dom_op((less_or_equal(sharefree_clique,ASub0,ASub1) :- !, sharefree_clique_less_or_equal(ASub0,ASub1))).
 :- dom_op((glb(sharefree_clique,ASub0,ASub1,ASub) :- !, sharefree_clique_glb(ASub0,ASub1,ASub))).
@@ -608,7 +608,7 @@
 :- dom_op((project(share_clique_def,_Sg,Vars,_HvFv,ASub,Proj) :- !, share_clique_def_project(Vars,ASub,Proj))).
 :- dom_op((compute_lub(share_clique_def,ListAsub,LubASub) :- !, share_clique_def_compute_lub(ListAsub,LubASub))).
 :- dom_op((identical_abstract(share_clique_def,ASub1,ASub2) :- !, share_clique_def_identical_abstract(ASub1,ASub2))).
-:- dom_op((abs_sort(share_clique_def,ASub,ASub_s) :- !, share_clique_def_sort(ASub,ASub_s))).
+:- dom_op((abs_sort(share_clique_def,ASub,ASub_s) :- !, share_clique_def_abs_sort(ASub,ASub_s))).
 :- dom_op((extend(share_clique_def,_Sg,Prime,Sv,Call,Succ) :- !, share_clique_def_extend(Prime,Sv,Call,Succ))).
 :- dom_op((less_or_equal(share_clique_def,ASub0,ASub1) :- !, share_clique_def_less_or_equal(ASub0,ASub1))).
 :- dom_op((glb(share_clique_def,ASub0,ASub1,ASub) :- !, share_clique_def_glb(ASub0,ASub1,ASub))).
@@ -632,7 +632,7 @@
 :- dom_op((project(sharefree_clique_def,_Sg,Vars,_HvFv,ASub,Proj) :- !, sharefree_clique_def_project(Vars,ASub,Proj))).
 :- dom_op((compute_lub(sharefree_clique_def,ListAsub,LubASub) :- !, sharefree_clique_def_compute_lub(ListAsub,LubASub))).
 :- dom_op((identical_abstract(sharefree_clique_def,ASub1,ASub2) :- !, sharefree_clique_def_identical_abstract(ASub1,ASub2))).
-:- dom_op((abs_sort(sharefree_clique_def,ASub,ASub_s) :- !, sharefree_clique_def_sort(ASub,ASub_s))).
+:- dom_op((abs_sort(sharefree_clique_def,ASub,ASub_s) :- !, sharefree_clique_def_abs_sort(ASub,ASub_s))).
 :- dom_op((extend(sharefree_clique_def,_Sg,Prime,Sv,Call,Succ) :- !, sharefree_clique_def_extend(Prime,Sv,Call,Succ))).
 :- dom_op((less_or_equal(sharefree_clique_def,ASub0,ASub1) :- !, sharefree_clique_def_less_or_equal(ASub0,ASub1))).
 :- dom_op((glb(sharefree_clique_def,ASub0,ASub1,ASub) :- !, sharefree_clique_def_glb(ASub0,ASub1,ASub))).
@@ -659,7 +659,7 @@
 :- dom_op((project(bshare,_Sg,Vars,_HvFv,ASub,Proj) :- !, bshare_project(Vars,ASub,Proj))).
 :- dom_op((compute_lub(bshare,ListAsub,LubASub) :- !, bshare_compute_lub(ListAsub,LubASub))).
 :- dom_op((identical_abstract(bshare,ASub1,ASub2) :- !, bshare_identical_abstract(ASub1,ASub2))).
-:- dom_op((abs_sort(bshare,ASub,ASub_s) :- !, bshare_sort(ASub,ASub_s))).
+:- dom_op((abs_sort(bshare,ASub,ASub_s) :- !, bshare_abs_sort(ASub,ASub_s))).
 :- dom_op((call_to_success_fact(bshare,Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ) :- !, bshare_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ))).
 :- dom_op((special_builtin(bshare,SgKey,Sg,Subgoal,Type,Condvars) :- !, bshare_special_builtin(SgKey,Sg,Subgoal,Type,Condvars))).
 :- dom_op((success_builtin(bshare,Type,Sv_uns,Condvars,_HvFv_u,Call,Succ) :- !, bshare_success_builtin(Type,Sv_uns,Condvars,Call,Succ))).
@@ -679,7 +679,7 @@
 :- dom_op((project(aeq,_Sg,Vars,_HvFv,ASub,Proj) :- !, aeq_project(ASub,Vars,Proj))).
 :- dom_op((compute_lub(aeq,ListASub,LubASub) :- !, aeq_compute_lub(ListASub,LubASub))).
 :- dom_op((identical_abstract(aeq,ASub1,ASub2) :- !, aeq_identical_abstract(ASub1,ASub2))).
-:- dom_op((abs_sort(aeq,ASub,ASub_s) :- !, aeq_sort(ASub,ASub_s))).
+:- dom_op((abs_sort(aeq,ASub,ASub_s) :- !, aeq_abs_sort(ASub,ASub_s))).
 :- dom_op((extend(aeq,_Sg,Prime,_Sv,Call,Succ) :- !, aeq_extend(Prime,Call,Succ))).
 :- dom_op((less_or_equal(aeq,ASub0,ASub1) :- !, aeq_less_or_equal(ASub0,ASub1))).
 :- dom_op((glb(aeq,ASub0,ASub1,ASub) :- !, aeq_glb(ASub0,ASub1,ASub))).
@@ -745,7 +745,7 @@
 :- dom_op((exit_to_prime(path,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime) :- !, path_exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime))).
 :- dom_op((project(path,_Sg,Vars,_HvFv,ASub,Proj) :- !, path_project(Vars,ASub,Proj))).
 :- dom_op((compute_lub(path,ListAsub,LubASub) :- !, path_compute_lub(ListAsub,LubASub))).
-:- dom_op((abs_sort(path,ASub,ASub_s) :- !, path_sort(ASub,ASub_s))).
+:- dom_op((abs_sort(path,ASub,ASub_s) :- !, path_abs_sort(ASub,ASub_s))).
 :- dom_op((extend(path,_Sg,Prime,Sv,Call,Succ) :- !, path_extend(Prime,Sv,Call,Succ))).
 :- dom_op((less_or_equal(path,ASub0,ASub1) :- !, path_less_or_equal(ASub0,ASub1))).
 :- dom_op((glb(path,ASub0,ASub1,ASub) :- !, path_glb(ASub0,ASub1,ASub))).
@@ -771,7 +771,7 @@
 :- dom_op((widen(terms,Prime0,Prime1,NewPrime) :- !, terms_widen(Prime0,Prime1,NewPrime))).
 :- dom_op((compute_lub(terms,ListASub,LubASub) :- !, terms_compute_lub(ListASub,LubASub))).
 :- dom_op((identical_abstract(terms,ASub1,ASub2) :- !, terms_identical_abstract(ASub1,ASub2))).
-:- dom_op((abs_sort(terms,ASub,ASub_s) :- !, terms_sort(ASub,ASub_s))).
+:- dom_op((abs_sort(terms,ASub,ASub_s) :- !, terms_abs_sort(ASub,ASub_s))).
 :- dom_op((extend(terms,_Sg,Prime,Sv,Call,Succ) :- !, terms_extend(Prime,Sv,Call,Succ))).
 :- dom_op((less_or_equal(terms,ASub0,ASub1) :- !, terms_less_or_equal(ASub0,ASub1))).
 :- dom_op((glb(terms,ASub0,ASub1,ASub) :- !, terms_glb(ASub0,ASub1,ASub))).
@@ -798,7 +798,7 @@
 :- dom_op((widen(ptypes,Prime0,Prime1,NewPrime) :- !, ptypes_widen(Prime0,Prime1,NewPrime))).
 :- dom_op((compute_lub(ptypes,ListASub,LubASub) :- !, ptypes_compute_lub(ListASub,LubASub))).
 :- dom_op((identical_abstract(ptypes,ASub1,ASub2) :- !, ptypes_identical_abstract(ASub1,ASub2))).
-:- dom_op((abs_sort(ptypes,ASub,ASub_s) :- !, ptypes_sort(ASub,ASub_s))).
+:- dom_op((abs_sort(ptypes,ASub,ASub_s) :- !, ptypes_abs_sort(ASub,ASub_s))).
 :- dom_op((extend(ptypes,_Sg,Prime,Sv,Call,Succ) :- !, ptypes_extend(Prime,Sv,Call,Succ))).
 :- dom_op((less_or_equal(ptypes,ASub0,ASub1) :- !, ptypes_less_or_equal(ASub0,ASub1))).
 :- dom_op((glb(ptypes,ASub0,ASub1,ASub) :- !, ptypes_glb(ASub0,ASub1,ASub))).
@@ -827,7 +827,7 @@
 :- dom_op((widen(eterms,Prime0,Prime1,NewPrime) :- !, eterms_widen(Prime0,Prime1,NewPrime))).
 :- dom_op((compute_lub(eterms,ListASub,LubASub) :- !, eterms_compute_lub(ListASub,LubASub))).
 :- dom_op((identical_abstract(eterms,ASub1,ASub2) :- !, eterms_identical_abstract(ASub1,ASub2))).
-:- dom_op((abs_sort(eterms,ASub,ASub_s) :- !, eterms_sort(ASub,ASub_s))).
+:- dom_op((abs_sort(eterms,ASub,ASub_s) :- !, eterms_abs_sort(ASub,ASub_s))).
 :- dom_op((extend(eterms,_Sg,Prime,Sv,Call,Succ) :- !, eterms_extend(Prime,Sv,Call,Succ))).
 :- dom_op((less_or_equal(eterms,ASub0,ASub1) :- !, eterms_less_or_equal(ASub0,ASub1))).
 :- dom_op((glb(eterms,ASub0,ASub1,ASub) :- !, eterms_glb(ASub0,ASub1,ASub))).
@@ -859,7 +859,7 @@
 :- dom_op((widen(etermsvar,Prime0,Prime1,NewPrime) :- !, etermsvar_widen(Prime0,Prime1,NewPrime))).
 :- dom_op((compute_lub(etermsvar,ListASub,LubASub) :- !, etermsvar_compute_lub(ListASub,LubASub))).
 :- dom_op((identical_abstract(etermsvar,ASub1,ASub2) :- !, etermsvar_identical_abstract(ASub1,ASub2))).
-:- dom_op((abs_sort(etermsvar,ASub,ASub_s) :- !, etermsvar_sort(ASub,ASub_s))).
+:- dom_op((abs_sort(etermsvar,ASub,ASub_s) :- !, etermsvar_abs_sort(ASub,ASub_s))).
 :- dom_op((extend(etermsvar,_Sg,Prime,Sv,Call,Succ) :- !, etermsvar_extend(Prime,Sv,Call,Succ))).
 :- dom_op((less_or_equal(etermsvar,ASub0,ASub1) :- !, etermsvar_less_or_equal(ASub0,ASub1))).
 :- dom_op((glb(etermsvar,ASub0,ASub1,ASub) :- !, etermsvar_glb(ASub0,ASub1,ASub))).
@@ -891,7 +891,7 @@
 :- dom_op((widen(svterms,Prime0,Prime1,NewPrime) :- !, svterms_widen(Prime0,Prime1,NewPrime))).
 :- dom_op((compute_lub(svterms,ListASub,LubASub) :- !, svterms_compute_lub(ListASub,LubASub))).
 :- dom_op((identical_abstract(svterms,ASub1,ASub2) :- !, svterms_identical_abstract(ASub1,ASub2))).
-:- dom_op((abs_sort(svterms,ASub,ASub_s) :- !, svterms_sort(ASub,ASub_s))).
+:- dom_op((abs_sort(svterms,ASub,ASub_s) :- !, svterms_abs_sort(ASub,ASub_s))).
 :- dom_op((extend(svterms,_Sg,Prime,Sv,Call,Succ) :- !, svterms_extend(Prime,Sv,Call,Succ))).
 :- dom_op((less_or_equal(svterms,ASub0,ASub1) :- !, svterms_less_or_equal(ASub0,ASub1))).
 :- dom_op((glb(svterms,ASub0,ASub1,ASub) :- !, svterms_glb(ASub0,ASub1,ASub))).
@@ -920,7 +920,7 @@
 :- dom_op((widen(deftypes,Prime0,Prime1,NewPrime) :- !, deftypes_widen(Prime0,Prime1,NewPrime))).
 :- dom_op((compute_lub(deftypes,ListASub,LubASub) :- !, deftypes_compute_lub(ListASub,LubASub))).
 :- dom_op((identical_abstract(deftypes,ASub1,ASub2) :- !, deftypes_identical_abstract(ASub1,ASub2))).
-:- dom_op((abs_sort(deftypes,ASub,ASub_s) :- !, deftypes_sort(ASub,ASub_s))).
+:- dom_op((abs_sort(deftypes,ASub,ASub_s) :- !, deftypes_abs_sort(ASub,ASub_s))).
 :- dom_op((extend(deftypes,_Sg,Prime,Sv,Call,Succ) :- !, deftypes_extend(Prime,Sv,Call,Succ))).
 :- dom_op((less_or_equal(deftypes,ASub0,ASub1) :- !, deftypes_less_or_equal(ASub0,ASub1))).
 :- dom_op((glb(deftypes,ASub0,ASub1,ASub) :- !, deftypes_glb(ASub0,ASub1,ASub))).
@@ -981,11 +981,11 @@
 :- dom_op((widen(polyhedra,Prime0,Prime1,NewPrime) :- !, polyhedra_widen(Prime0,Prime1,NewPrime))).
 :- dom_op((compute_lub(polyhedra,ListASub,LubASub) :- !, polyhedra_compute_lub(ListASub,LubASub))).
 :- dom_op((identical_abstract(polyhedra,ASub1,ASub2) :- !, polyhedra_identical_abstract(ASub1,ASub2))).
-:- dom_op((abs_sort(polyhedra,ASub,ASub_s) :- !, polyhedra_sort(ASub,ASub_s))).
+:- dom_op((abs_sort(polyhedra,ASub,ASub_s) :- !, polyhedra_abs_sort(ASub,ASub_s))).
 :- dom_op((extend(polyhedra,_Sg,Prime,Sv,Call,Succ) :- !, polyhedra_extend(Prime,Sv,Call,Succ))).
 :- dom_op((less_or_equal(polyhedra,ASub0,ASub1) :- !, polyhedra_less_or_equal(ASub0,ASub1))).
 :- dom_op((glb(polyhedra,ASub0,ASub1,ASub) :- !, polyhedra_glb(ASub0,ASub1,ASub))).
-:- dom_op((eliminate_equivalent(polyhedra,TmpLSucc,LSucc) :- !, polyhedra_sort(TmpLSucc,LSucc))).
+:- dom_op((eliminate_equivalent(polyhedra,TmpLSucc,LSucc) :- !, polyhedra_abs_sort(TmpLSucc,LSucc))).
 :- dom_op((call_to_success_fact(polyhedra,Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ) :- !, polyhedra_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ))).
 :- dom_op((special_builtin(polyhedra,SgKey,Sg,Subgoal,Type,Condvars) :- !, polyhedra_special_builtin(SgKey,Sg,Subgoal,Type,Condvars))).
 :- dom_op((success_builtin(polyhedra,Type,Sv_uns,Condvars,_HvFv_u,Call,Succ) :- !, polyhedra_success_builtin(Type,Sv_uns,Condvars,Call,Succ))).
@@ -1007,7 +1007,7 @@
 :- dom_op((exit_to_prime(java_nullity,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime) :- !, java_nullity_exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime))).
 :- dom_op((project(java_nullity,_Sg,Vars,_HvFv,ASub,Proj) :- !, java_nullity_project(ASub,Vars,Proj))).
 :- dom_op((compute_lub(java_nullity,ListAsub,LubASub) :- !, java_nullity_compute_lub(ListAsub,LubASub))).
-:- dom_op((abs_sort(java_nullity,ASub,ASub_s) :- !, java_nullity_sort(ASub,ASub_s))).
+:- dom_op((abs_sort(java_nullity,ASub,ASub_s) :- !, java_nullity_abs_sort(ASub,ASub_s))).
 :- dom_op((extend(java_nullity,_Sg,Prime,Sv,Call,Succ) :- !, java_nullity_extend(Prime,Sv,Call,Succ))).
 :- dom_op((less_or_equal(java_nullity,ASub0,ASub1) :- !, java_nullity_less_or_equal(ASub0,ASub1))).
 :- dom_op((glb(java_nullity,ASub0,ASub1,ASub) :- !, java_nullity_glb(ASub0,ASub1,ASub))).
@@ -1029,7 +1029,7 @@
 :- dom_op((project(oo_son,_Sg,Vars,_HvFv,ASub,Proj) :- !, oo_son_project(ASub,Vars,Proj))).
 :- dom_op((compute_lub(oo_son,ListAsub,LubASub) :- !, oo_son_compute_lub(ListAsub,LubASub))).
 :- dom_op((identical_abstract(oo_son,ASub1,ASub2) :- !, oo_son_identical_abstract(ASub1,ASub2))).
-:- dom_op((abs_sort(oo_son,ASub,ASub_s) :- !, oo_son_sort(ASub,ASub_s))).
+:- dom_op((abs_sort(oo_son,ASub,ASub_s) :- !, oo_son_abs_sort(ASub,ASub_s))).
 :- dom_op((extend(oo_son,_Sg,Prime,Sv,Call,Succ) :- !, oo_son_extend(Prime,Sv,Call,Succ))).
 :- dom_op((less_or_equal(oo_son,ASub0,ASub1) :- !, oo_son_less_or_equal(ASub0,ASub1))).
 :- dom_op((glb(oo_son,ASub0,ASub1,ASub) :- !, oo_son_glb(ASub0,ASub1,ASub))).
@@ -1054,7 +1054,7 @@
 :- dom_op((exit_to_prime(oo_shnltau,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime) :- !, oo_shnltau_exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime))).
 :- dom_op((project(oo_shnltau,_Sg,Vars,_HvFv,ASub,Proj) :- !, oo_shnltau_project(ASub,Vars,Proj))).
 :- dom_op((compute_lub(oo_shnltau,ListAsub,LubASub) :- !, oo_shnltau_compute_lub(ListAsub,LubASub))).
-:- dom_op((abs_sort(oo_shnltau,ASub,ASub_s) :- !, oo_shnltau_sort(ASub,ASub_s))).
+:- dom_op((abs_sort(oo_shnltau,ASub,ASub_s) :- !, oo_shnltau_abs_sort(ASub,ASub_s))).
 :- dom_op((extend(oo_shnltau,_Sg,Prime,Sv,Call,Succ) :- !, oo_shnltau_extend(Prime,Sv,Call,Succ))).
 :- dom_op((less_or_equal(oo_shnltau,ASub0,ASub1) :- !, oo_shnltau_less_or_equal(ASub0,ASub1))).
 :- dom_op((glb(oo_shnltau,ASub0,ASub1,ASub) :- !, oo_shnltau_glb(ASub0,ASub1,ASub))).
@@ -1079,7 +1079,7 @@
 :- dom_op((exit_to_prime(oo_types,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime) :- !, oo_types_exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime))).
 :- dom_op((project(oo_types,_Sg,Vars,_HvFv,ASub,Proj) :- !, oo_types_project(ASub,Vars,Proj))).
 :- dom_op((compute_lub(oo_types,ListAsub,LubASub) :- !, oo_types_compute_lub(ListAsub,LubASub))).
-:- dom_op((abs_sort(oo_types,ASub,ASub_s) :- !, oo_types_sort(ASub,ASub_s))).
+:- dom_op((abs_sort(oo_types,ASub,ASub_s) :- !, oo_types_abs_sort(ASub,ASub_s))).
 :- dom_op((extend(oo_types,_Sg,Prime,Sv,Call,Succ) :- !, oo_types_extend(Prime,Sv,Call,Succ))).
 :- dom_op((less_or_equal(oo_types,ASub0,ASub1) :- !, oo_types_less_or_equal(ASub0,ASub1))).
 :- dom_op((glb(oo_types,ASub0,ASub1,ASub) :- !, oo_types_glb(ASub0,ASub1,ASub))).
@@ -1102,7 +1102,7 @@
 :- dom_op((exit_to_prime(java_cha,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime) :- !, java_cha_exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime))).
 :- dom_op((project(java_cha,_Sg,Vars,_HvFv,ASub,Proj) :- !, java_cha_project(ASub,Vars,Proj))).
 :- dom_op((compute_lub(java_cha,ListAsub,LubASub) :- !, java_cha_compute_lub(ListAsub,LubASub))).
-:- dom_op((abs_sort(java_cha,ASub,ASub_s) :- !, java_cha_sort(ASub,ASub_s))).
+:- dom_op((abs_sort(java_cha,ASub,ASub_s) :- !, java_cha_abs_sort(ASub,ASub_s))).
 :- dom_op((extend(java_cha,_Sg,Prime,Sv,Call,Succ) :- !, java_cha_extend(Prime,Sv,Call,Succ))).
 :- dom_op((less_or_equal(java_cha,ASub0,ASub1) :- !, java_cha_less_or_equal(ASub0,ASub1))).
 :- dom_op((glb(java_cha,ASub0,ASub1,ASub) :- !, java_cha_glb(ASub0,ASub1,ASub))).
@@ -1132,7 +1132,7 @@
 :- dom_op((compute_clauses_lub(nf,Proj,ASub,Lub) :- !, nf_compute_clauses_lub(ASub,Proj,Lub))).
 :- dom_op((identical_abstract(nf,ASub1,ASub2) :- !, nf_identical_abstract(ASub1,ASub2))).
 :- dom_op((fixpoint_covered(nf,Prime0,Prime1) :- !, nf_less_or_equal(Prime0,Prime1))).
-:- dom_op((abs_sort(nf,ASub,ASub_s) :- !, nf_sort(ASub,ASub_s))).
+:- dom_op((abs_sort(nf,ASub,ASub_s) :- !, nf_abs_sort(ASub,ASub_s))).
 :- dom_op((extend(nf,_Sg,Prime,Sv,Call,Succ) :- !, nf_extend(Prime,Sv,Call,Succ))).
 :- dom_op((less_or_equal(nf,ASub0,ASub1) :- !, nf_less_or_equal(ASub0,ASub1))).
 :- dom_op((glb(nf,ASub0,ASub1,ASub) :- !, nf_glb(ASub0,ASub1,ASub))).
@@ -1165,7 +1165,7 @@
 :- dom_op((compute_clauses_lub(det,Proj,ASub,Lub) :- !, det_compute_clauses_lub(ASub,Proj,Lub))).
 :- dom_op((identical_abstract(det,ASub1,ASub2) :- !, det_identical_abstract(ASub1,ASub2))).
 :- dom_op((fixpoint_covered(det,Prime0,Prime1) :- !, det_less_or_equal(Prime0,Prime1))).
-:- dom_op((abs_sort(det,ASub,ASub_s) :- !, det_sort(ASub,ASub_s))).
+:- dom_op((abs_sort(det,ASub,ASub_s) :- !, det_abs_sort(ASub,ASub_s))).
 :- dom_op((extend(det,_Sg,Prime,Sv,Call,Succ) :- !, det_extend(Prime,Sv,Call,Succ))).
 :- dom_op((less_or_equal(det,ASub0,ASub1) :- !, det_less_or_equal(ASub0,ASub1))).
 :- dom_op((glb(det,ASub0,ASub1,ASub) :- !, det_glb(ASub0,ASub1,ASub))).
@@ -1202,7 +1202,7 @@
 :- dom_op((compute_clauses_lub(res_plai,Proj,ASub,Lub) :- !, res_plai_compute_clauses_lub(ASub,Proj,Lub))).
 % :- dom_op((compute_clauses_glb(res_plai,Proj,ASub,Lub) :- !, res_plai_compute_clauses_lub(ASub,Proj,Lub))).
 :- dom_op((identical_abstract(res_plai,ASub1,ASub2) :- !, res_plai_identical_abstract(ASub1,ASub2))).
-:- dom_op((abs_sort(res_plai,ASub,ASub_s) :- !, res_plai_sort(ASub,ASub_s))).
+:- dom_op((abs_sort(res_plai,ASub,ASub_s) :- !, res_plai_abs_sort(ASub,ASub_s))).
 :- dom_op((extend(res_plai,Sg,Prime,Sv,Call,Succ) :- !, res_plai_extend(Sg,Prime,Sv,Call,Succ))).
 :- dom_op((less_or_equal(res_plai,ASub0,ASub1) :- !, res_plai_less_or_equal(ASub0,ASub1))).
 :- dom_op((glb(res_plai,ASub0,ASub1,ASub) :- !, res_plai_glb(ASub0,ASub1,ASub))).
@@ -1235,7 +1235,7 @@
 :- dom_op((compute_lub(res_plai_stprf,ListASub,GlbASub) :- !, res_plai_stprf_compute_lub(ListASub,GlbASub))).
 :- dom_op((compute_clauses_lub(res_plai_stprf,Proj,ASub,Lub) :- !, res_plai_stprf_compute_clauses_lub(ASub,Proj,Lub))).
 :- dom_op((identical_abstract(res_plai_stprf,ASub1,ASub2) :- !, res_plai_stprf_identical_abstract(ASub1,ASub2))).
-:- dom_op((abs_sort(res_plai_stprf,ASub,ASub_s) :- !, res_plai_stprf_sort(ASub,ASub_s))).
+:- dom_op((abs_sort(res_plai_stprf,ASub,ASub_s) :- !, res_plai_stprf_abs_sort(ASub,ASub_s))).
 :- dom_op((extend(res_plai_stprf,Sg,Prime,Sv,Call,Succ) :- !, res_plai_stprf_extend(Sg,Prime,Sv,Call,Succ))).
 :- dom_op((less_or_equal(res_plai_stprf,ASub0,ASub1) :- !, res_plai_stprf_less_or_equal(ASub0,ASub1))).
 :- dom_op((glb(res_plai_stprf,ASub0,ASub1,ASub) :- !, res_plai_stprf_glb(ASub0,ASub1,ASub))).
@@ -1267,7 +1267,7 @@
 :- dom_op((compute_lub(sized_types,ListASub,GlbASub) :- !, sized_types_compute_lub(ListASub,GlbASub))).
 :- dom_op((compute_clauses_lub(sized_types,Proj,ASub,Lub) :- !, sized_types_compute_clauses_lub(ASub,Proj,Lub))).
 :- dom_op((identical_abstract(sized_types,ASub1,ASub2) :- !, sized_types_identical_abstract(ASub1,ASub2))).
-:- dom_op((abs_sort(sized_types,ASub,ASub_s) :- !, sized_types_sort(ASub,ASub_s))).
+:- dom_op((abs_sort(sized_types,ASub,ASub_s) :- !, sized_types_abs_sort(ASub,ASub_s))).
 :- dom_op((extend(sized_types,Sg,Prime,Sv,Call,Succ) :- !, sized_types_extend(Sg,Prime,Sv,Call,Succ))).
 :- dom_op((less_or_equal(sized_types,ASub0,ASub1) :- !, sized_types_less_or_equal(ASub0,ASub1))).
 :- dom_op((glb(sized_types,ASub0,ASub1,ASub) :- !, sized_types_glb(ASub0,ASub1,ASub))).

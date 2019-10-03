@@ -185,7 +185,7 @@ shfr_call_to_entry(_Sv,Sg,_Hv,Head,_K,Fv,Proj,Entry,Flag):-
 	Flag = yes,
 	copy_term((Sg,Proj),(NewTerm,NewProj)),
 	Head = NewTerm,
-	shfr_sort(NewProj,(Temp_sh,Temp_fr)),
+	shfr_abs_sort(NewProj,(Temp_sh,Temp_fr)),
 	change_values_insert(Fv,Temp_fr,Entry_fr,f),	
 	list_to_list_of_lists(Fv,Temp1),
 	merge(Temp1,Temp_sh,Entry_sh),
@@ -240,7 +240,7 @@ shfr_exit_to_prime(Sg,Hv,Head,_Sv,Exit,yes,Prime):- !,
 	shfr_project(Exit,Hv,(BPrime_sh,BPrime_fr)),
 	copy_term((Head,(BPrime_sh,BPrime_fr)),(NewTerm,NewPrime)),
 	Sg = NewTerm,
-	shfr_sort(NewPrime,Prime).	
+	shfr_abs_sort(NewPrime,Prime).	
 shfr_exit_to_prime(_Sg,[],_Head,Sv,_Exit,_ExtraInfo,Prime):- !,
 	list_ground(Sv,Prime_fr),
 	Prime = ([],Prime_fr).
@@ -272,19 +272,19 @@ shfr_exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime):-
 %                      ABSTRACT SORT
 %-------------------------------------------------------------------------
 %-------------------------------------------------------------------------
-% shfr_sort(+,-)                                                         |
-% shfr_sort(Asub,Asub_s)                                                 |
+% shfr_abs_sort(+,-)                                                         |
+% shfr_abs_sort(Asub,Asub_s)                                                 |
 % First sorts the set of set of variables Sh to obtain the Sh_s.Then it  |
 % sorts the set of X/Value in Fr obtaining Fr_s.                         |
 %-------------------------------------------------------------------------
-:- export(shfr_sort/2).        
-shfr_sort('$bottom','$bottom').
-shfr_sort(ac(Asub_u,Fg),ac(Asub,Fg)):- 
-	shfr_sort(Asub_u,Asub).
-shfr_sort(d((Sh,Fr),Del),d((Sh_s,Fr_s),Del)):- 
+:- export(shfr_abs_sort/2).        
+shfr_abs_sort('$bottom','$bottom').
+shfr_abs_sort(ac(Asub_u,Fg),ac(Asub,Fg)):- 
+	shfr_abs_sort(Asub_u,Asub).
+shfr_abs_sort(d((Sh,Fr),Del),d((Sh_s,Fr_s),Del)):- 
 	sort_list_of_lists(Sh,Sh_s),
 	sort(Fr,Fr_s).
-shfr_sort((Sh,Fr),(Sh_s,Fr_s)):-
+shfr_abs_sort((Sh,Fr),(Sh_s,Fr_s)):-
 	sort_list_of_lists(Sh,Sh_s),
 	sort(Fr,Fr_s).
 
@@ -1061,7 +1061,7 @@ shfr_success_builtin(copy_term,_,p(X,Y),Call,Succ):-
 	varset(X,VarsX),
 	shfr_project(Call,VarsX,ProjectedX),
 	copy_term((X,ProjectedX),(NewX,NewProjectedX)),
-	shfr_sort(NewProjectedX,ProjectedNewX),
+	shfr_abs_sort(NewProjectedX,ProjectedNewX),
 	varset(NewX,VarsNewX),
 	varset(Y,VarsY),
 	merge(VarsNewX,VarsY,TempSv),

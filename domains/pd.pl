@@ -17,8 +17,8 @@ pd_project(_,_Vars,_,ASub,ASub).
 :- export(pd_compute_lub/2).
 pd_compute_lub(_ListAsub,top).
 
-:- export(pd_sort/2).
-pd_sort(ASub,ASub).
+:- export(pd_abs_sort/2).
+pd_abs_sort(ASub,ASub).
 
 :- export(pd_extend/5).
 pd_extend(_Sg,Prime,_Sv,_Call,Prime).

@@ -30,7 +30,7 @@
 	shfr_input_user_interface/5,
 	shfr_less_or_equal/2,
 	shfr_project/3,
-	shfr_sort/2,
+	shfr_abs_sort/2,
 	shfr_unknown_call/4,
 	shfr_unknown_entry/3,
 	%
@@ -186,7 +186,7 @@ shfrlin_project((Sh,F,L),Vars,(Sh_proj,F_proj,L_proj)):-
 :- export(shfrlin_sort/2).
 shfrlin_sort('$bottom','$bottom').
 shfrlin_sort((Sh,F,L),(Sh_s,F_s,L_s)):-
-	shfr_sort((Sh,F),(Sh_s,F_s)),
+	shfr_abs_sort((Sh,F),(Sh_s,F_s)),
 	sort(L,L_s).
 
 %------------------------------------------------------------------------%
@@ -295,7 +295,7 @@ shfrlin_success_builtin(exp,_,_,_,'$bottom') :- !.
 % 	varset(X,VarsX),
 % 	shfr_project(Call,VarsX,ProjectedX),
 % 	copy_term((X,ProjectedX),(NewX,NewProjectedX)),
-% 	shfr_sort(NewProjectedX,ProjectedNewX),
+% 	shfr_abs_sort(NewProjectedX,ProjectedNewX),
 % 	varset(NewX,VarsNewX),
 % 	varset(Y,VarsY),
 % 	merge(VarsNewX,VarsY,TempSv),

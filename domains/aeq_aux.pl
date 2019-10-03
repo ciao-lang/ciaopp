@@ -257,7 +257,7 @@ aeq_input_to_extern((Sh,Eqs_u,Lin_u,Free_u),Qv,AEqs,Ann,Shr):-
 	apply(Pairs_sh),
 	flatten_lists(Share0,Share1),
 	share_project(NumVarSet,Share1,Share2),
-	share_sort(Share2,Shr),
+	share_abs_sort(Share2,Shr),
 %
 	aeq_input_to_annot(Lin_u,Pairs,l,Ann_u,Ann0),
 	aeq_input_to_annot(Free_u,Pairs,f,Ann0,Ann1),
@@ -340,9 +340,9 @@ aeq_intern_to_extern(aeqs(Eqs_ec,Ann_ic,Shr_ic,_,_),
 
 sort_sh_ex(ps(X_u,Y_u),ps(X,Y)):- !,
 	sort(X_u,X),
-	share_sort(Y_u,Y).
+	share_abs_sort(Y_u,Y).
 sort_sh_ex(X_u,X):- 
-	share_sort(X_u,X).
+	share_abs_sort(X_u,X).
 
 %------------------------------------------------------------------------%
 % aeq_extern_to_output(+,-)
@@ -371,7 +371,7 @@ aeq_extern_to_output(aeqs(AEqs,Ann,Shr),OutputUser):- !,
 	sort(NG_u,NG),
 	sort(NF_u,NF),
 	sort(Eqs_u,Eqs),
-	share_sort(Share_u,Share),
+	share_abs_sort(Share_u,Share),
 	support_user_interface([ground(G),sharing(Share),free(F),linear(L),
                                 not_ground(NG),not_free(NF)],OutputUser0),
 	append(Eqs,OutputUser0,OutputUser).
@@ -3165,7 +3165,7 @@ ann_free_vars(array($(A0,A1,A2,A3),Size),Freevars) :-
 %% % it will contain the set of abtsractions under which the goal is woken.
 %% %-------------------------------------------------------------------------
 %% aeq_check_cond(Conds,AEqs,Sv,Flag,WConds):-
-%% 	aeq_sort(AEqs,AEqs_s),
+%% 	aeq_abs_sort(AEqs,AEqs_s),
 %% 	aeq_check_cond(Conds,AEqs_s,Sv,[],Flag,[],WConds).
 %% 
 %% %-------------------------------------------------------------------------
@@ -3410,7 +3410,7 @@ ann_free_vars(array($(A0,A1,A2,A3),Size),Freevars) :-
 %% myspy.
 %% 
 %% my_print_aeqs(AEqs):-
-%% 	aeq_sort(AEqs,AEqs_s), aeq_intern_to_extern(AEqs_s,AEqsN),
+%% 	aeq_abs_sort(AEqs,AEqs_s), aeq_intern_to_extern(AEqs_s,AEqsN),
 %% 	write(AEqsN),nl.
 
 %% aeq_more_instantiate([],_,[],_,_).

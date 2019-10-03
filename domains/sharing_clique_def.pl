@@ -39,7 +39,7 @@
 	def_extend/3,
 	def_glb/3,
 	def_project/3,
-	def_sort/2,
+	def_abs_sort/2,
 	def_special_builtin/5,
 	def_unknown_entry/3]).
 :- use_module(domain(sharing_clique), [
@@ -54,7 +54,7 @@
 	share_clique_less_or_equal/2,
 	share_clique_lub_cl/3,
 	share_clique_project/3,
-	share_clique_sort/2,
+	share_clique_abs_sort/2,
 	share_clique_special_builtin/5,
 	share_clique_unknown_call/4]).
 
@@ -117,15 +117,15 @@ share_clique_def_project(Vars,(SH_ASub,Def_ASub),Proj) :-
 	Proj = (SH_Proj,Def_Proj).
 
 %------------------------------------------------------------------------%
-% share_clique_def_sort(+,-)                                             |
-% share_clique_def_sort(Asub,Asub_s)                                     |
+% share_clique_def_abs_sort(+,-)                                             |
+% share_clique_def_abs_sort(Asub,Asub_s)                                     |
 %------------------------------------------------------------------------%
 
-:- export(share_clique_def_sort/2).
-share_clique_def_sort('$bottom','$bottom'):- !.
-share_clique_def_sort((SH_ASub,Def_ASub),ASub_s ):-
-	def_sort(Def_ASub,Def_ASub_s),
-	share_clique_sort(SH_ASub,SH_ASub_s),
+:- export(share_clique_def_abs_sort/2).
+share_clique_def_abs_sort('$bottom','$bottom'):- !.
+share_clique_def_abs_sort((SH_ASub,Def_ASub),ASub_s ):-
+	def_abs_sort(Def_ASub,Def_ASub_s),
+	share_clique_abs_sort(SH_ASub,SH_ASub_s),
 	ASub_s = (SH_ASub_s,Def_ASub_s).
 
 %------------------------------------------------------------------------%

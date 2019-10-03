@@ -12,7 +12,7 @@
 	  shfrson_glb/3,
 	  shfrson_asub_to_native/5,
 	  shfrson_project/3,  
-	  shfrson_sort/2,     
+	  shfrson_abs_sort/2,     
 	  shfrson_unknown_call/4,
 	  shfrson_unknown_entry/3,  
 	  shfrson_empty_entry/3,
@@ -176,10 +176,10 @@ shfrson_compute_lub([(ASub_son1,ASub_shfr1),(ASub_son2,ASub_shfr2)|Rest],Lub):-
 
 %-------------------------------------------------------------------------
 
-shfrson_sort('$bottom','$bottom').
-shfrson_sort((ASub_son,ASub_shfr),(ASub_son_s,ASub_shfr_s)):-
-	son_sort(ASub_son,ASub_son_s),
-	shfr_sort(ASub_shfr,ASub_shfr_s).
+shfrson_abs_sort('$bottom','$bottom').
+shfrson_abs_sort((ASub_son,ASub_shfr),(ASub_son_s,ASub_shfr_s)):-
+	son_abs_sort(ASub_son,ASub_son_s),
+	shfr_abs_sort(ASub_shfr,ASub_shfr_s).
 
 %--------------------------------------------------------------------------
 

@@ -12,7 +12,7 @@
 	  path_glb/3,
 	  path_asub_to_native/5,  
 	  path_project/3,     
-	  path_sort/2,        
+	  path_abs_sort/2,        
 	  path_special_builtin/5,
 	  path_success_builtin/5,
 	  path_unknown_call/4,
@@ -252,13 +252,13 @@ decide_project(Set,[Set|Entry],Entry).
 %                      ABSTRACT SORT
 %-------------------------------------------------------------------------
 %-------------------------------------------------------------------------
-% path_sort(+,-)                                                         %
-% path_sort(Asub_u,Asub)                                                 %
+% path_abs_sort(+,-)                                                         %
+% path_abs_sort(Asub_u,Asub)                                                 %
 % Sorts the set of sets of elements in ASub_u yielding ASub.             %
 %-------------------------------------------------------------------------
 
-path_sort('$bottom','$bottom'):- !.
-path_sort(ASub_u,ASub):-
+path_abs_sort('$bottom','$bottom'):- !.
+path_abs_sort(ASub_u,ASub):-
 	sort_list_of_lists(ASub_u,ASub).
 
 %------------------------------------------------------------------------%

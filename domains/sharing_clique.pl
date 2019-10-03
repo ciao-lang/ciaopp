@@ -104,7 +104,7 @@ share_clique_call_to_entry(_Sv,Sg,_Hv,Head,_K,Fv,Proj,Entry,ExtraInfo) :-
      ExtraInfo = yes,
      copy_term((Sg,Proj),(NewSg,NewProj)),
      Head = NewSg,
-     share_clique_sort(NewProj,(Cl,Temp)),
+     share_clique_abs_sort(NewProj,(Cl,Temp)),
      list_to_list_of_lists(Fv,Temp1),
      merge(Temp1,Temp,Sh),
      %Entry = (Cl,Sh).
@@ -142,7 +142,7 @@ share_clique_exit_to_prime(Sg,Hv,Head,_Sv,Exit,Flag,Prime):-
      share_clique_project(Hv,Exit,BPrime),
      copy_term((Head,BPrime),(NewHead,NewPrime)),
      Sg = NewHead,
-     share_clique_sort(NewPrime,Prime).
+     share_clique_abs_sort(NewPrime,Prime).
 share_clique_exit_to_prime(_,[],_,_,_,_,([],[])):- !.
 share_clique_exit_to_prime(_Sg,_Hv,_Head,Sv,Exit,ExtraInfo,Prime):-
      ExtraInfo = (Equations,Gv_Call),     	
@@ -382,10 +382,10 @@ shcl_([Xs|Xss],Cl,Sv,Call,Succ):-
 :- export(share_clique_extend_asub/3).
 share_clique_extend_asub(ASub,[],ASub) :- !.
 share_clique_extend_asub(ASub,Vars,ASub_s):-
-	share_clique_sort(ASub,SASub),
+	share_clique_abs_sort(ASub,SASub),
 	sort(Vars,SVars),!,
 	share_clique_extend_asub_(SASub,SVars,ASub1),
-	share_clique_sort(ASub1,ASub_s).
+	share_clique_abs_sort(ASub1,ASub_s).
 
 share_clique_extend_asub_(ASub,[],ASub) :- !.
 share_clique_extend_asub_(ASub,[H|T],(Cl,[[H]|Sh])):-
@@ -408,13 +408,13 @@ share_clique_project(Vars,(Cl,Sh),(Cl0,Sh0)) :-
 %                      ABSTRACT SORT                                     %
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% share_clique_sort(+,-)                                                 |
-% share_clique_sort(Asub,Asub_s)                                         |
+% share_clique_abs_sort(+,-)                                                 |
+% share_clique_abs_sort(Asub,Asub_s)                                         |
 % sorts the set of set of variables ASub to obtaint the Asub_s           |
 %-------------------------------------------------------------------------
-:- export(share_clique_sort/2).                     
-share_clique_sort('$bottom','$bottom'):- !.
-share_clique_sort((Cl_ASub,Sh_ASub),(Cl_ASub_s,Sh_ASub_s) ):-
+:- export(share_clique_abs_sort/2).                     
+share_clique_abs_sort('$bottom','$bottom'):- !.
+share_clique_abs_sort((Cl_ASub,Sh_ASub),(Cl_ASub_s,Sh_ASub_s) ):-
 	sort_list_of_lists(Cl_ASub,Cl_ASub_s),
 	sort_list_of_lists(Sh_ASub,Sh_ASub_s).
 
@@ -522,7 +522,7 @@ share_clique_call_to_success_fact(Sg,Hv,Head,_K,Sv,Call,_Proj,Prime,Succ):-
 % extend
 	delete_vars_from_list_of_lists(Hv,Cl,Succ_Cl),
 	delete_vars_from_list_of_lists(Hv,Sh,Succ_Sh),
-	share_clique_sort((Succ_Cl,Succ_Sh),Succ),!.
+	share_clique_abs_sort((Succ_Cl,Succ_Sh),Succ),!.
 share_clique_call_to_success_fact(_Sg,_Hv,_Head,_K,_Sv,_Call,_Proj,'$bottom','$bottom').
 
 %------------------------------------------------------------------------%
@@ -998,7 +998,7 @@ share_clique_success_builtin(copy_term,_Sv_u,p(X,Y),Call,Succ):-
 	varset(X,VarsX),
 	share_clique_project(VarsX,Call,ProjectedX),
 	copy_term((X,ProjectedX),(NewX,NewProjectedX)),
-	share_clique_sort(NewProjectedX,ProjectedNewX),
+	share_clique_abs_sort(NewProjectedX,ProjectedNewX),
 	varset(NewX,VarsNewX),
 	varset(Y,VarsY),
 	merge(VarsNewX,VarsY,TempSv),

@@ -5,7 +5,7 @@
 	eterms_project/3,
 	eterms_compute_lub/2,
 	eterms_compute_lub_el/3,
-	eterms_sort/2,
+	eterms_abs_sort/2,
 	eterms_extend/4,
 	eterms_less_or_equal/2,
 	eterms_glb/3,
@@ -679,7 +679,7 @@ eterms_call_to_entry(_Sv,Sg,Hv,Head,_K,Fv,Proj,Entry,(yes,Proj)):-
 	variant(Sg,Head), !,
 	copy_term((Sg,Proj),(NewTerm,NewProj_u)),
 	Head = NewTerm,
-	eterms_sort(NewProj_u,NewProj),
+	eterms_abs_sort(NewProj_u,NewProj),
 	eterms_project(Hv,NewProj,NewProj1),
 	variables_are_variable_type(Fv,Free),
 	merge(Free,NewProj1,Entry).
@@ -730,7 +730,7 @@ eterms_exit_to_prime(Sg,Hv,Head,_Sv,Exit,(yes,Proj),Prime):- !,
 	eterms_project(Hv,Exit,BPrime),
 	copy_term((Head,BPrime),(NewTerm,NewPrime)),
 	Sg = NewTerm,
-	eterms_sort(NewPrime,Prime1),
+	eterms_abs_sort(NewPrime,Prime1),
 	replace_names(Proj,Prime1,Prime).	
 eterms_exit_to_prime(Sg,Hv,Head,Sv,Exit,(no,ExtraInfo),Prime):- 
 	eterms_project(Hv,Exit,BPrime),
@@ -987,7 +987,7 @@ unify_term_and_type_term_exit(Term1,Tv,Term2,ASub,Proj,NewASub):-
 	    member(_:bot,TypeAss) -> fail
 	;
 	    sort(Proj,Proj_s),
-	    eterms_sort(TypeAss,ASub1),
+	    eterms_abs_sort(TypeAss,ASub1),
 	    obtains_names(HeadArg,Args,ASub,TypeNameAss),
 
 	    % generate_subs_exit(ASub1,Proj,Subs),
@@ -1013,7 +1013,7 @@ unify_term_and_type_term(Term1,Tv,Term2,ASub,NewASub):-
 	    member(_:bot,TypeAss) -> fail
 	;
 	    sort(ASub,ASub_s),
-	    eterms_sort(TypeAss,ASub1),
+	    eterms_abs_sort(TypeAss,ASub1),
 	    obtains_names(HeadArg,Args,ASub_s,TypeNameAss),
 	    sort(TypeNameAss,ASub2),
 	    generate_subs(ASub1,ASub2,Subs),
@@ -1148,12 +1148,12 @@ eterms_project_aux_(>,Head1,Tail1,_,[Head2:Type|Tail2],Proj) :-
 	eterms_project_aux_(Order,Head1,Tail1,Head2:Type,Tail2,Proj).
 
 %------------------------------------------------------------------%
-:- pred eterms_sort(+Asub,-Asub_s): absu * absu
+:- pred eterms_abs_sort(+Asub,-Asub_s): absu * absu
 # 
 "It sorts the set of @var{X}:@var{Type} in @var{Asub} ontaining @var{Asub_s}".
 
-eterms_sort('$bottom','$bottom'):- !.
-eterms_sort(ASub,ASub_s):- sort(ASub,ASub_s).
+eterms_abs_sort('$bottom','$bottom'):- !.
+eterms_abs_sort(ASub,ASub_s):- sort(ASub,ASub_s).
 
 %------------------------------------------------------------------%
 :- pred eterms_extend(+Prime,+Sv,+Call,-Succ): absu * list * absu * absu # 

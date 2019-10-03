@@ -15,7 +15,7 @@
 	  aeq_eliminate_equivalent/2,	  
 	  aeq_asub_to_native/5,
 	  aeq_project/3,      
-	  aeq_sort/2,         
+	  aeq_abs_sort/2,         
 	  aeq_special_builtin/5,
 	  aeq_success_builtin/5,
 	  aeq_unknown_call/4,
@@ -31,7 +31,7 @@
 :- use_module(domain(s_eqs), [apply/1, keys_and_values/3]).
 :- use_module(domain(sharing), 
 	[ share_input_interface/4, share_input_user_interface/5,
-	  share_project/3, share_sort/2
+	  share_project/3, share_abs_sort/2
 	]).
 %
 :- use_module(library(idlists), [memberchk/2, union_idlists/3]).
@@ -109,7 +109,7 @@ aeq_call_to_entry(_Sv,Sg,_Hv,Head,_K,Fv,Proj,Entry,Flag) :-
 	(aeq_current_sharing(pair) ->
 	  aeq_init_new_varsPS(Fv,0,NewProj,Entry_u)
 	; aeq_init_new_vars(Fv,0,NewProj,Entry_u)),
-	aeq_sort(Entry_u,Entry).
+	aeq_abs_sort(Entry_u,Entry).
 aeq_call_to_entry(_Sv,Sgoal,Hv,Head,_K,Fvars,Proj,Entry,no):-
 	union_idlists( Hv, Fvars, Vars ),
 	aeq_parameter_passing_proj( Sgoal = Head,Vars,Proj,Init_aeqs),
@@ -123,7 +123,7 @@ aeq_exit_to_prime(Exit,Sg,Hv,Head,_,yes,Prime) :- !,
 	aeq_project(Exit,Hv,BetaPrime),
 	copy_term((Head,BetaPrime),(NewTerm,Prime_u)),
 	Sg = NewTerm,
-	aeq_sort(Prime_u,Prime).
+	aeq_abs_sort(Prime_u,Prime).
 aeq_exit_to_prime( Exit,Sg,_,Head, Sv,_, Prime) :-
 	aeq_parameter_passing_proj( Sg = Head, Sv, Exit, Init_aeqs),
 	aeq_solve( Init_aeqs, Prime ) .
@@ -201,13 +201,13 @@ aeq_eliminate_equivalent(TmpLSucc,LSucc) :- absub_eliminate_equivalent(TmpLSucc,
 
 %------------------------------------------------------------------------------
 
-%% :- mode aeq_sort(+,-) .
-aeq_sort('$bottom','$bottom').
-aeq_sort(ac(Asub_u,Fg),ac(Asub,Fg)) :-
-	aeq_sort(Asub_u,Asub).
-aeq_sort(d(aeqs(Eqs,Ann,Shr,AVars,NGrAVars),Del),d(aeqs(Eqs_s,Ann,Shr,AVars,NGrAVars),Del)) :-
+%% :- mode aeq_abs_sort(+,-) .
+aeq_abs_sort('$bottom','$bottom').
+aeq_abs_sort(ac(Asub_u,Fg),ac(Asub,Fg)) :-
+	aeq_abs_sort(Asub_u,Asub).
+aeq_abs_sort(d(aeqs(Eqs,Ann,Shr,AVars,NGrAVars),Del),d(aeqs(Eqs_s,Ann,Shr,AVars,NGrAVars),Del)) :-
 	sort(Eqs,Eqs_s) .
-aeq_sort(aeqs(Eqs,Ann,Shr,AVars,NGrAVars),aeqs(Eqs_s,Ann,Shr,AVars,NGrAVars)) :-
+aeq_abs_sort(aeqs(Eqs,Ann,Shr,AVars,NGrAVars),aeqs(Eqs_s,Ann,Shr,AVars,NGrAVars)) :-
 	sort(Eqs,Eqs_s) .
 
 %------------------------------------------------------------------------------

@@ -39,8 +39,8 @@ ptypes_compute_lub(ListASub,LubASub) :- terms_compute_lub(ListASub,LubASub).
 :- export(ptypes_identical_abstract/2).
 ptypes_identical_abstract(ASub1,ASub2) :- terms_identical_abstract(ASub1,ASub2).
 
-:- export(ptypes_sort/2).
-ptypes_sort(ASub,ASub_s) :- terms_sort(ASub,ASub_s).
+:- export(ptypes_abs_sort/2).
+ptypes_abs_sort(ASub,ASub_s) :- terms_abs_sort(ASub,ASub_s).
 
 :- export(ptypes_extend/4).
 ptypes_extend(Prime,Sv,Call,Succ) :- terms_extend(Prime,Sv,Call,Succ).

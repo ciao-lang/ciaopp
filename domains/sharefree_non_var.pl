@@ -55,7 +55,7 @@
 	  shfr_input_interface/4,
 	  shfr_input_user_interface/5,
 	  shfr_project/3,
-	  shfr_sort/2,
+	  shfr_abs_sort/2,
 	  % TODO: move to other shared module?
 	  project_freeness/3,
 	  project_freeness_n/3,
@@ -137,7 +137,7 @@ shfrnv_call_to_entry(_Sv,Sg,_Hv,Head,_K,Fv,Proj,Entry,Flag):-
 	Flag = yes,
 	copy_term((Sg,Proj),(NewTerm,NewProj)),
 	Head = NewTerm,
-	shfr_sort(NewProj,(Temp_sh,Temp_fr)),
+	shfr_abs_sort(NewProj,(Temp_sh,Temp_fr)),
 	change_values_insert(Fv,Temp_fr,Entry_fr,f),	
 	list_to_list_of_lists(Fv,Temp1),
 	merge(Temp1,Temp_sh,Entry_sh),
@@ -341,7 +341,7 @@ shfrnv_exit_to_prime(Sg,Hv,Head,_Sv,Exit,yes,Prime):- !,
 	shfr_project(Exit,Hv,(BPrime_sh,BPrime_fr)),
 	copy_term((Head,(BPrime_sh,BPrime_fr)),(NewTerm,NewPrime)),
 	Sg = NewTerm,
-	shfr_sort(NewPrime,Prime).	
+	shfr_abs_sort(NewPrime,Prime).	
 shfrnv_exit_to_prime(_Sg,[],_Head,Sv,_Exit,_ExtraInfo,Prime):- !,
 	list_ground(Sv,Prime_fr),
 	Prime = ([],Prime_fr).
@@ -442,7 +442,7 @@ shfrnv_table_from_term_exit(_,X,_,Tv,Fr,Fr1) :- !,
 %                      ABSTRACT SORT
 %-------------------------------------------------------------------------
 %-------------------------------------------------------------------------
-% Identical to shfr_sort/2, called straight from domain_dependent.pl     %
+% Identical to shfr_abs_sort/2, called straight from domain_dependent.pl     %
 %-------------------------------------------------------------------------
 
 %-------------------------------------------------------------------------
@@ -904,7 +904,7 @@ shfrnv_success_builtin(copy_term,_,p(X,Y),Call,Succ):-
 	varset(X,VarsX),
 	shfr_project(Call,VarsX,ProjectedX),
 	copy_term((X,ProjectedX),(NewX,NewProjectedX)),
-	shfr_sort(NewProjectedX,ProjectedNewX),
+	shfr_abs_sort(NewProjectedX,ProjectedNewX),
 	varset(NewX,VarsNewX),
 	varset(Y,VarsY),
 	merge(VarsNewX,VarsY,TempSv),

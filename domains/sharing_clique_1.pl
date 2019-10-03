@@ -80,7 +80,7 @@
 	prune_success/5,
 	powerset_with_empty_set/2,
 	share_clique_extend_asub/3,
-	share_clique_sort/2,
+	share_clique_abs_sort/2,
 	share_clique_success_builtin/5,
 	share_clique_widen/4,
 	share_clique_widen/5,
@@ -119,7 +119,7 @@ share_clique_1_call_to_entry(_Sv,Sg,_Hv,Head,_K,Fv,Proj,Entry,ExtraInfo) :-
      ExtraInfo = yes,
      copy_term((Sg,Proj),(NewSg,NewProj)),
      Head = NewSg,
-     share_clique_sort(NewProj,(Cl,Temp)),
+     share_clique_abs_sort(NewProj,(Cl,Temp)),
      list_to_list_of_lists(Fv,Temp1),
      merge(Temp1,Temp,Sh),
      share_clique_1_normalize((Cl,Sh),Entry).
@@ -155,7 +155,7 @@ share_clique_1_exit_to_prime(Sg,Hv,Head,_Sv,Exit,Flag,Prime):-
      share_clique_1_project(Hv,Exit,BPrime),
      copy_term((Head,BPrime),(NewHead,NewPrime)),
      Sg = NewHead,
-     share_clique_sort(NewPrime,Prime).
+     share_clique_abs_sort(NewPrime,Prime).
 share_clique_1_exit_to_prime(_,[],_,_,_,_,([],[])):- !.
 share_clique_1_exit_to_prime(_Sg,_Hv,_Head,Sv,Exit,ExtraInfo,Prime):-
      ExtraInfo = (Equations,Gv_Call),    	
@@ -675,7 +675,7 @@ share_clique_1_success_builtin(copy_term,_Sv_u,p(X,Y),Call,Succ):-
 	varset(X,VarsX),
 	share_clique_1_project(VarsX,Call,ProjectedX),
 	copy_term((X,ProjectedX),(NewX,NewProjectedX)),
-	share_clique_sort(NewProjectedX,ProjectedNewX),
+	share_clique_abs_sort(NewProjectedX,ProjectedNewX),
 	varset(NewX,VarsNewX),
 	varset(Y,VarsY),
 	merge(VarsNewX,VarsY,TempSv),

@@ -5,7 +5,7 @@
 	svterms_project/3,
 	svterms_compute_lub/2,
 	svterms_compute_lub_el/3,
-	svterms_sort/2,
+	svterms_abs_sort/2,
 	svterms_extend/4,
 	svterms_less_or_equal/2,
 	svterms_glb/3,
@@ -52,7 +52,7 @@
 	    eterms_exit_to_prime/7,
 	    eterms_project/3,
 	    eterms_compute_lub_el/3,
-	    eterms_sort/2,
+	    eterms_abs_sort/2,
 	    eterms_extend/4,
 	    eterms_less_or_equal/2,
 	    eterms_glb/3,
@@ -453,9 +453,9 @@ sv_project_aux([_|SV],Vars,SVProj):-
 %------------------------------------------------------------------%
 
 %------------------------------------------------------------------%
-svterms_sort(ASub,ASub_s):-
+svterms_abs_sort(ASub,ASub_s):-
 	abssubst(ASub,TASub,SV),
-	eterms_sort(TASub,TASub_s),
+	eterms_abs_sort(TASub,TASub_s),
 	sv_sort(SV,SV_s),
 	abssubst_b(ASub_s,TASub_s,SV_s).	
 

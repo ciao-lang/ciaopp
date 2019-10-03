@@ -14,7 +14,7 @@
 	  frdef_glb/3,
 	  frdef_asub_to_native/5,
 	  frdef_project/3,       
-	  frdef_sort/2,          
+	  frdef_abs_sort/2,          
 	  frdef_special_builtin/5,
 	  frdef_success_builtin/5,
 	  frdef_unknown_call/4,
@@ -129,9 +129,9 @@ frdef_identical_abstract((F1,D1),(F2,D2)):-
 
 %------------------------------------------------------------------------------
 
-frdef_sort('$bottom','$bottom').
-frdef_sort((F,D),(F_s,D_s)):-
-        def_sort(D,D_s),
+frdef_abs_sort('$bottom','$bottom').
+frdef_abs_sort((F,D),(F_s,D_s)):-
+        def_abs_sort(D,D_s),
         vero_sort(F,F_s).
 
 %------------------------------------------------------------------------------

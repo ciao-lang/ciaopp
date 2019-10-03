@@ -8,7 +8,7 @@
 	terms_project/3,
 	terms_compute_lub/2,
 	terms_compute_lub_el/3,
-	terms_sort/2,
+	terms_abs_sort/2,
 	terms_extend/4,
 	terms_less_or_equal/2,
 	terms_glb/3,
@@ -945,7 +945,7 @@ terms_call_to_entry(_Sv,Sg,_Hv,Head,_K,Fv,Proj,Entry,Flag):-
 	Flag = yes,
 	copy_term((Sg,Proj),(NewTerm,NewProj_u)),
 	Head = NewTerm,
-	terms_sort(NewProj_u,NewProj),
+	terms_abs_sort(NewProj_u,NewProj),
 	variables_are_variable_type(Fv,Free),
 	merge(Free,NewProj,Entry).
 terms_call_to_entry(_Sv,Sg,Hv,Head,_K,Fv,Proj,Entry,dummy):-
@@ -994,7 +994,7 @@ terms_exit_to_prime(Sg,Hv,Head,_Sv,Exit,yes,Prime):- !,
 	terms_project(Hv,Exit,BPrime),
 	copy_term((Head,BPrime),(NewTerm,NewPrime)),
 	Sg = NewTerm,
-	terms_sort(NewPrime,Prime).	
+	terms_abs_sort(NewPrime,Prime).	
 terms_exit_to_prime(Sg,Hv,Head,Sv,Exit,_ExtraInfo,Prime):- 
 	terms_project(Hv,Exit,BPrime),
 	unify_term_and_type_term(Sg,Sv,Head,BPrime,Prime).
@@ -1019,7 +1019,7 @@ unify_term_and_type_term(Term1,Tv,Term2,ASub,NewASub):-
 	( 
 	    member(_:bot,TypeAss) -> fail
 	;
-	    terms_sort(TypeAss,ASub1),
+	    terms_abs_sort(TypeAss,ASub1),
 	    terms_project(Tv,ASub1,NASub),
 	    normal_asub(NASub,NewASub)
 	).
@@ -1081,12 +1081,12 @@ terms_project_aux_(>,Head1,Tail1,_,[Head2:Type|Tail2],Proj) :-
 
 
 %------------------------------------------------------------------%
-:- pred terms_sort(+Asub,-Asub_s): absu * absu
+:- pred terms_abs_sort(+Asub,-Asub_s): absu * absu
 # 
 "It sorts the set of @var{X}:@var{Type} in @var{Asub} ontaining @var{Asub_s}".
 
-terms_sort('$bottom','$bottom'):- !.
-terms_sort(ASub,ASub_s):- sort(ASub,ASub_s).
+terms_abs_sort('$bottom','$bottom'):- !.
+terms_abs_sort(ASub,ASub_s):- sort(ASub,ASub_s).
 
 %------------------------------------------------------------------%
 :- pred terms_extend(+Prime,+Sv,+Call,-Succ): absu * list * absu * absu # 

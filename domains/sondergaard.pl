@@ -14,7 +14,7 @@
 	  son_lub/3,        
 	  son_asub_to_native/5,
 	  son_project/3,      
-	  son_sort/2,         
+	  son_abs_sort/2,         
 	  son_special_builtin/5,
 	  son_success_builtin/5,
 	  son_unknown_call/4,
@@ -148,7 +148,7 @@ son_call_to_entry(_Sv,Sg,_Hv,Head,_K,_Fv,Proj,Entry,yes):-
 	variant(Sg,Head),!,
 	copy_term((Sg,Proj),(NewTerm,NewEntry)),
 	Head = NewTerm,
-	son_sort(NewEntry,Entry).
+	son_abs_sort(NewEntry,Entry).
 son_call_to_entry(_Sv,_Sg,[],_Head,_K,_Fv,_Proj,([],[]),no):- !.
 son_call_to_entry(_Sv,Sg,Hv,Head,_K,_Fv,(Proj_gr,Proj_sh),Entry,(NewBinds,GvAll)):-
 	son_abs_unify(Sg,Head,Binds,Gv1),
@@ -193,7 +193,7 @@ son_exit_to_prime(Sg,Hv,Head,_,Exit,Flag,Prime):-
 	son_project(Hv,Exit,BPrime),
 	copy_term((Head,BPrime),(NewTerm,NewPrime)),
 	Sg = NewTerm,
-	son_sort(NewPrime,Prime).
+	son_abs_sort(NewPrime,Prime).
 son_exit_to_prime(_,[],_,Sv,_,_,(Sv,[])):- !.
 son_exit_to_prime(_,Hv,_,Sv,Exit,(Binds,Gv_1),Prime):-
 	son_project(Hv,Exit,(Gv,Sh)),
@@ -209,14 +209,14 @@ son_exit_to_prime(_,Hv,_,Sv,Exit,(Binds,Gv_1),Prime):-
 %                      ABSTRACT SORT
 %-------------------------------------------------------------------------
 %-------------------------------------------------------------------------
-% son_sort(+,-)                                                          |
-% son_sort(ASub_u,ASub)                                                  |
+% son_abs_sort(+,-)                                                          |
+% son_abs_sort(ASub_u,ASub)                                                  |
 % First sorts the set of variables in Gr, then it sorts the set of set   |
 % of variables Sh.                                                       |
 %-------------------------------------------------------------------------
 
-son_sort('$bottom','$bottom').
-son_sort((Gr,Sh),(Gr_s,Sh_s)):-
+son_abs_sort('$bottom','$bottom').
+son_abs_sort((Gr,Sh),(Gr_s,Sh_s)):-
 	sort(Gr,Gr_s),
 	sort_list_of_lists(Sh,Sh_s).
 

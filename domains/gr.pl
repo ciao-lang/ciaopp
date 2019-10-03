@@ -8,7 +8,7 @@
 	gr_less_or_equal/2,
 	%gr_compute_lub_el/3,
 	%gr_extend_free/3,
-	gr_sort/2,
+	gr_abs_sort/2,
 	gr_call_to_success_fact/9,
 	gr_special_builtin/5,
 	gr_success_builtin/5,
@@ -176,16 +176,16 @@ gr_empty_entry(Sg,Vars,Entry):-
 %                      ABSTRACT SORT
 %-------------------------------------------------------------------------
 %-------------------------------------------------------------------------
-% gr_sort(+,-)                                                         |
-% gr_sort(Asub,Asub_s)                                                 |
+% gr_abs_sort(+,-)                                                         |
+% gr_abs_sort(Asub,Asub_s)                                                 |
 % it sorts the set of X/Value in Asub obtaining Asub_s.                |
 %-------------------------------------------------------------------------
-:- pred gr_sort(+Asub,-Asub_s): absu * absu
+:- pred gr_abs_sort(+Asub,-Asub_s): absu * absu
 # 
 "It sorts the set of @var{X}/@var{Value} in @var{Asub} ontaining @var{Asub_s}".
 
-gr_sort('$bottom','$bottom'):- !.
-gr_sort(Asub,Asub_s):-
+gr_abs_sort('$bottom','$bottom'):- !.
+gr_abs_sort(Asub,Asub_s):-
 	sort(Asub,Asub_s).
 
 %------------------------------------------------------------------------%
@@ -288,7 +288,7 @@ gr_call_to_entry(_Sv,Sg,_Hv,Head,_K,Fv,Proj,Entry,Flag):-
 	Flag = yes,
 	copy_term((Sg,Proj),(NewTerm,NewProj)),
 	Head = NewTerm,
-	gr_sort(NewProj,Projsorted),
+	gr_abs_sort(NewProj,Projsorted),
 	gr_change_values_insert(Fv,Projsorted,Entry,any).	
 gr_call_to_entry(_,_,[],_Head,_K,Fv,_Proj,Entry,no):- !,
 	gr_change_values_insert(Fv,[],Entry,any). % (*)
@@ -348,7 +348,7 @@ gr_exit_to_prime(Sg,Hv,Head,_Sv,Exit,yes,Prime):- !,
 	gr_project(Exit,Hv,BPrime),
 	copy_term((Head,BPrime),(NewTerm,NewPrime)),
 	Sg = NewTerm,
-	gr_sort(NewPrime,Prime).	
+	gr_abs_sort(NewPrime,Prime).	
 gr_exit_to_prime(_Sg,[],_Head,Sv,_Exit,_ExtraInfo,Prime):- !,
 	gr_create_values(Sv,Prime,g).
 gr_exit_to_prime(_Sg,Hv,_Head,Sv,Exit,ExtraInfo,Prime):-
@@ -805,7 +805,7 @@ gr_success_builtin(copy_term,_,p(X,Y),Call,Succ):-
 	varset(X,VarsX),
 	gr_project(Call,VarsX,ProjectedX),
 	copy_term((X,ProjectedX),(NewX,NewProjectedX)),
-	gr_sort(NewProjectedX,ProjectedNewX),
+	gr_abs_sort(NewProjectedX,ProjectedNewX),
 	varset(NewX,VarsNewX),
 	varset(Y,VarsY),
 	merge(VarsNewX,VarsY,TempSv),

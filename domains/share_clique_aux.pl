@@ -46,7 +46,7 @@
         [merge_list_of_lists/2, ord_intersect_all/2, sort_list_of_lists/2]).
 :- use_module(library(lists), [length/2, select/3]).
 :- use_module(domain(sharing_clique), 
- 	[share_clique_sort/2,
+ 	[share_clique_abs_sort/2,
 	 share_clique_widen/4      % amgu&star 
         ]).               
 :- use_module(domain(share_amgu_sets), 
@@ -214,7 +214,7 @@ amgu_clique_opt(X,T,(Cl,Sh),AMGU):- !,
 amgu_rel_non_rel_info(X,T,V_xt,ASub,(Cl_x,Sh_x),(Cl_t,Sh_t),Irrel_Sh_xt):-
 	sort(T,V_t),
 	ord_union([X],T,V_xt),
-	share_clique_sort(ASub,(Cl,Sh)),
+	share_clique_abs_sort(ASub,(Cl,Sh)),
 	split_list_of_lists([X],Cl,Cl_x,_),
 	split_list_of_lists(V_t,Cl,Cl_t,_),
 	split_list_of_lists([X],Sh,Sh_x,_),
@@ -241,7 +241,7 @@ amgu_sharing_part(Irrel_Sh_xt,Sh_x,Sh_t,AMGU_sh):-
 amgu_s_clique(X,T,ASub,AMGU):-           
 % Both clique and sharing part are computed together
 	sort(T,V_t),
-	share_clique_sort(ASub,SASub),
+	share_clique_abs_sort(ASub,SASub),
 	ord_union([X],V_t,Vxt), 
 	irrel_w(Vxt,SASub,Irrel),
 	rel_w([X],SASub,Rel_x),
@@ -590,7 +590,7 @@ update_clique(Cand,(Cl,Sh),CandSh,SH):-
         delete_list_of_lists(Sh,CandSh,Sh1),
 	% Removes subcliques of the new clique (regularize in the algorithm) 
 	nosublist_list_of_lists(Cl,Cand,Cl1), 
-	share_clique_sort(([Cand|Cl1],Sh1),SH).
+	share_clique_abs_sort(([Cand|Cl1],Sh1),SH).
 
 is_powerset(CardCand,CardCandSh,CardCandCl,Threshold):- 
 	number_of_subsets(CardCand,CardPws),

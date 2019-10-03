@@ -13,7 +13,7 @@
 	  shareson_glb/3,
 	  shareson_asub_to_native/5,
 	  shareson_project/3, 
-	  shareson_sort/2,    
+	  shareson_abs_sort/2,    
 	  shareson_unknown_call/4,  
 	  shareson_unknown_entry/3, 
 	  shareson_empty_entry/3,
@@ -171,10 +171,10 @@ shareson_compute_lub([ASub],ASub).
 
 %---------------------------------------------------------------------------
 
-shareson_sort('$bottom','$bottom').
-shareson_sort((ASub_son,ASub_sh),(ASub_son_s,ASub_sh_s)):-
-	son_sort(ASub_son,ASub_son_s),
-	share_sort(ASub_sh,ASub_sh_s).
+shareson_abs_sort('$bottom','$bottom').
+shareson_abs_sort((ASub_son,ASub_sh),(ASub_son_s,ASub_sh_s)):-
+	son_abs_sort(ASub_son,ASub_son_s),
+	share_abs_sort(ASub_sh,ASub_sh_s).
 
 %--------------------------------------------------------------------------
 

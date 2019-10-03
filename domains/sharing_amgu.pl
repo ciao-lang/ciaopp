@@ -48,7 +48,7 @@ share_amgu_call_to_entry(_Sv,Sg,_Hv,Head,_K,Fv,Proj,Entry,ExtraInfo) :-
      ExtraInfo = yes,
      copy_term((Sg,Proj),(NewSg,NewProj)),
      Head = NewSg,
-     share_sort(NewProj,Temp),
+     share_abs_sort(NewProj,Temp),
      list_to_list_of_lists(Fv,Temp1),
      merge(Temp1,Temp,Entry).
 share_amgu_call_to_entry(_Sv,_Sg,[],_Head,_K,Fv,_Proj,Entry,ExtraInfo):- !,
@@ -103,10 +103,10 @@ share_amgu(Sg,Head,ASub,AMGU):-
 :- export(share_amgu_extend_asub/3).
 share_amgu_extend_asub(ASub,[],ASub).
 share_amgu_extend_asub(ASub,Vars,ASub1):-
-	share_sort(ASub,SASub),
+	share_abs_sort(ASub,SASub),
 	sort(Vars,SVars),
 	share_amgu_extend_asub_(SASub,SVars,ASub0),
-	share_sort(ASub0,ASub1).
+	share_abs_sort(ASub0,ASub1).
 
 share_amgu_extend_asub_(ASub,[],ASub).
 share_amgu_extend_asub_(ASub,[H|T],[[H]|ASub0]):-
@@ -123,7 +123,7 @@ share_amgu_extend_two_asub([],ASub1,ASub1):-!.
 share_amgu_extend_two_asub(ASub0,[],ASub0):-!.
 share_amgu_extend_two_asub(ASub0,ASub1,ASub):-
         append(ASub0,ASub1,ASub_u),
-	share_sort(ASub_u,ASub),!.
+	share_abs_sort(ASub_u,ASub),!.
 	
        
 %------------------------------------------------------------------------%
@@ -140,7 +140,7 @@ share_amgu_exit_to_prime(Sg,Hv,Head,_Sv,Exit,Flag,Prime):-
 	share_project(Hv,Exit,BPrime),
 	copy_term((Head,BPrime),(NewHead,NewPrime)),
 	Sg = NewHead,
-	share_sort(NewPrime,Prime).
+	share_abs_sort(NewPrime,Prime).
 share_amgu_exit_to_prime(_,[],_,_,_,_,[]):- !.
 share_amgu_exit_to_prime(_Sg,_Hv,_Head,Sv,Exit,ExtraInfo,Prime):-
 	ExtraInfo= (Equations,Gv_Call),

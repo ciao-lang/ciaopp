@@ -44,7 +44,7 @@
 	share_clique_less_or_equal/2,
 	share_clique_lub_cl/3,
 	share_clique_project/3,
-	share_clique_sort/2,
+	share_clique_abs_sort/2,
 	share_clique_widen/4,
 	may_be_var/2,
 	eliminate_couples_clique/4]).
@@ -93,7 +93,7 @@ sharefree_clique_call_to_entry(_Sv,Sg,_Hv,Head,_K,Fv,Proj,Entry,Flag):-
      Flag = yes,
      copy_term((Sg,Proj),(NewTerm,NewProj)),
      Head = NewTerm,
-     sharefree_clique_sort(NewProj,((Temp_cl,Temp_sh),Temp_fr)),
+     sharefree_clique_abs_sort(NewProj,((Temp_cl,Temp_sh),Temp_fr)),
      change_values_insert(Fv,Temp_fr,Entry_fr,f),	
      list_to_list_of_lists(Fv,Temp1),
      merge(Temp1,Temp_sh,New_Temp_sh),
@@ -130,7 +130,7 @@ sharefree_clique_exit_to_prime(Sg,Hv,Head,_Sv,Exit,yes,Prime):- !,
      sharefree_clique_project(Exit,Hv,(BPrime_sh,BPrime_fr)),
      copy_term((Head,(BPrime_sh,BPrime_fr)),(NewTerm,NewPrime)),
      Sg = NewTerm,
-     sharefree_clique_sort(NewPrime,(SH_Prime,Fr_Prime)),
+     sharefree_clique_abs_sort(NewPrime,(SH_Prime,Fr_Prime)),
      %eliminate_redundancies(SH_Prime,SH_Prime_N),
      %share_clique_normalize(SH_Prime,SH_Prime_N),
      SH_Prime = SH_Prime_N,
@@ -244,14 +244,14 @@ sharefree_clique_project((SH,F),Vars,(Proj_SH,Proj_F)) :-
 %                      ABSTRACT SORT                                     %
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% sharefree_clique_sort(+,-)                                             |
-% sharefree_clique_sort(Asub,Asub_s)                                     |
+% sharefree_clique_abs_sort(+,-)                                             |
+% sharefree_clique_abs_sort(Asub,Asub_s)                                     |
 % sorts the set of set of variables ASub to obtaint the Asub_s           |
 %-------------------------------------------------------------------------
-:- export(sharefree_clique_sort/2).                     
-sharefree_clique_sort('$bottom','$bottom'):- !.
-sharefree_clique_sort((SH,F),(Sorted_SH,Sorted_F) ):-
-	share_clique_sort(SH,Sorted_SH),
+:- export(sharefree_clique_abs_sort/2).                     
+sharefree_clique_abs_sort('$bottom','$bottom'):- !.
+sharefree_clique_abs_sort((SH,F),(Sorted_SH,Sorted_F) ):-
+	share_clique_abs_sort(SH,Sorted_SH),
 	sort(F,Sorted_F).
 
 %------------------------------------------------------------------------%
@@ -699,7 +699,7 @@ sharefree_clique_success_builtin(copy_term,_,p(X,Y),Call,Succ):-
 	varset(X,VarsX),
 	sharefree_clique_project(Call,VarsX,ProjectedX),
 	copy_term((X,ProjectedX),(NewX,NewProjectedX)),
-	sharefree_clique_sort(NewProjectedX,ProjectedNewX),
+	sharefree_clique_abs_sort(NewProjectedX,ProjectedNewX),
 	varset(NewX,VarsNewX),
 	varset(Y,VarsY),
 	merge(VarsNewX,VarsY,TempSv),
@@ -1083,14 +1083,14 @@ propagate_clique_non_freeness(Vars,NonFv,(Cl,Sh),Fr,NewFr):-
 product_clique(f,X,VarsY,_,SH,Lda_fr,Prime_SH,Prime_fr):-
 	share_clique_project(VarsY,SH,Temp),
 	bin_union_w(Temp,([],[[X]]),Temp1),
-	share_clique_sort(Temp1,Prime_SH),
+	share_clique_abs_sort(Temp1,Prime_SH),
 	take_clique_coupled(SH,[X],Coupled),
 	change_values_if_f(Coupled,Lda_fr,Prime_fr,nf).
 product_clique(nf,X,VarsY,Sv,SH,Lda_fr,Prime_SH,Prime_fr):-
 	share_clique_project(VarsY,SH,Temp),
 	star_w(Temp,Temp1),
 	bin_union_w(Temp1,([],[[X]]),Temp2),
-	share_clique_sort(Temp2,Prime_SH),
+	share_clique_abs_sort(Temp2,Prime_SH),
 	take_clique_coupled(SH,Sv,Coupled),
 	change_values_if_f(Coupled,Lda_fr,Prime_fr,nf).
 

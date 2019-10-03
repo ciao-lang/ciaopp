@@ -11,7 +11,7 @@
 	  shfret_eliminate_equivalent/2,
 	  shfret_less_or_equal/2,
 	  shfret_identical_abstract/2,
-	  shfret_sort/2,
+	  shfret_abs_sort/2,
 	  shfret_call_to_success_fact/9,
 	  shfret_combined_special_builtin0/2,
 	  shfret_split_combined_domain/3,
@@ -178,14 +178,14 @@ shfret_identical_abstract(ASub0,ASub1):-
 	eterms_identical_abstract(ATypes0,ATypes1).
 
 %------------------------------------------------------------------------%
-% shfret_sort(+,-)                                                           %
-% shfret_sort(ASub0,ASub1)                                                   %
+% shfret_abs_sort(+,-)                                                           %
+% shfret_abs_sort(ASub0,ASub1)                                                   %
 %------------------------------------------------------------------------%
-shfret_sort('$bottom','$bottom'):- !.
-shfret_sort(ASub0,ASub1):-
+shfret_abs_sort('$bottom','$bottom'):- !.
+shfret_abs_sort(ASub0,ASub1):-
 	asub(ASub0,ATypes0,AModes0),
-	shfr_sort(AModes0,AModes1),
-	eterms_sort(ATypes0,ATypes1),
+	shfr_abs_sort(AModes0,AModes1),
+	eterms_abs_sort(ATypes0,ATypes1),
 	asub(ASub1,ATypes1,AModes1).
 
 %------------------------------------------------------------------------%

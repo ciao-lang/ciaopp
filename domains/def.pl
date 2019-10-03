@@ -14,7 +14,7 @@
 	  def_less_or_equal/2,
 	  def_project/3,    
 	  def_handle_bottom_project/3,  % JN needed by sharedef.pl
-	  def_sort/2,       
+	  def_abs_sort/2,       
 	  def_special_builtin/5,
 	  def_success_builtin/4,
 	  def_unknown_call/4,
@@ -110,7 +110,7 @@ def_call_to_entry(_Sv,Sg,_Hv,Head,_K,_Fv,Proj,Entry,BothEntry):-
 	variant(Sg,Head),!,
 	copy_term((Sg,Proj),(NewTerm,NewProj)),
 	Head = NewTerm,
-	def_sort(NewProj,Entry),
+	def_abs_sort(NewProj,Entry),
 	BothEntry = yes.
 def_call_to_entry(_Sv,Sg,Hv,Head,_K,_Fv,Proj,Entry,BothEntry):-
 	def_herbrand_equation(Sg,Head,Proj,NewProj),
@@ -141,7 +141,7 @@ def_exit_to_prime(Exit,yes,Hv,_,Head,Sg,Prime):- !,
 	def_project(Exit,Hv,Beta),
 	copy_term((Head,Beta),(NewTerm,NewPrime)),
 	Sg = NewTerm,
-	def_sort(NewPrime,Prime).
+	def_abs_sort(NewPrime,Prime).
 def_exit_to_prime(Exit,BothEntry,Hv,Sv,_,_,Prime):-
 	def_project(Exit,Hv,BetaPrime),
 	def_conjunct_constr(BetaPrime,BothEntry,TempPrime),
@@ -296,8 +296,8 @@ def_glb(a(G1,SS1),a(G2,SS2),Conj):-
 	def_conjunct_constr(ASub1,ASub2,Conj).
 
 %-------------------------------------------------------------------------
-% def_sort(+,-)                                                          %
-% def_sort(Constr,SortedConstr)                                          %
+% def_abs_sort(+,-)                                                          %
+% def_abs_sort(Constr,SortedConstr)                                          %
 % It sorts the abstract constraint a(Ground,Set) received as first       %
 % argument. In doing this it will:                                       %
 %     - sort the list of variables in Ground                             %
@@ -306,17 +306,17 @@ def_glb(a(G1,SS1),a(G2,SS2),Conj):-
 %          - sort TempSet                                                %
 %-------------------------------------------------------------------------
 
-def_sort('$bottom','$bottom').
-def_sort(a(Ground,Set),a(NewGround,NewSet)):-
+def_abs_sort('$bottom','$bottom').
+def_abs_sort(a(Ground,Set),a(NewGround,NewSet)):-
 	sort(Ground,NewGround),
 	def_sort_set(Set,TempSet),
 	sort(TempSet,NewSet).
-def_sort(d(a(Ground,Set),Del),d(a(NewGround,NewSet),Del)):-
+def_abs_sort(d(a(Ground,Set),Del),d(a(NewGround,NewSet),Del)):-
 	sort(Ground,NewGround),
 	def_sort_set(Set,TempSet),
 	sort(TempSet,NewSet).
-def_sort(ac(Asub_u,Fg),ac(Asub,Fg)):-
-    def_sort(Asub_u,Asub).
+def_abs_sort(ac(Asub_u,Fg),ac(Asub,Fg)):-
+    def_abs_sort(Asub_u,Asub).
 
 %def_sort_set(+,-).
 def_sort_set([],[]).
@@ -620,10 +620,10 @@ defdeps2covered_([L|List],V,[covered(V,L)|Native],Native0):-
 %% def_output_interface('$bottom',_Vars,'$bottom').	
 %% def_output_interface(ac('$bottom',Fg),_Vars,('$bottom',Fg)):-  !.
 %% def_output_interface(ac(d(ACns,Del),Fg),_Vars,Output):- 
-%% 	def_sort(ACns,Out),
+%% 	def_abs_sort(ACns,Out),
 %% 	del_output(ac(Del,Fg),Out,Output).
 %% def_output_interface(d(ACns,Del),_Vars,Output):- 
-%% 	def_sort(ACns,Out),
+%% 	def_abs_sort(ACns,Out),
 %% 	del_output(Del,Out,Output).
 %% def_output_interface(a(Ground,Set),_Vars,a(G,S)):-
 %% 	sort(Ground,G),

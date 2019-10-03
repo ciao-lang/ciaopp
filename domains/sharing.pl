@@ -146,7 +146,7 @@ share_call_to_entry(_Sv,Sg,_Hv,Head,_K,Fv,Proj,Entry,ExtraInfo) :-
 	ExtraInfo = yes,
 	copy_term((Sg,Proj),(NewSg,NewProj)),
 	Head = NewSg,
-	share_sort(NewProj,Temp),
+	share_abs_sort(NewProj,Temp),
 	list_to_list_of_lists(Fv,Temp1),
 	merge(Temp1,Temp,Entry).
 share_call_to_entry(_,_,[],_,_K,Fv,_,Entry,ExtraInfo):- !,
@@ -200,7 +200,7 @@ share_exit_to_prime(Sg,Hv,Head,_Sv,Exit,Flag,Prime):-
 	share_project(Hv,Exit,BPrime),
 	copy_term((Head,BPrime),(NewHead,NewPrime)),
 	Sg = NewHead,
-	share_sort(NewPrime,Prime).
+	share_abs_sort(NewPrime,Prime).
 share_exit_to_prime(_,[],_,_,_,_,[]):- !.
 share_exit_to_prime(Sg,Hv,Head,Sv,Exit,(Gv,NewBinds,NewProj,Partition),Prime):-
 	share_project(Hv,Exit,BPrime),
@@ -230,14 +230,14 @@ share_exit_to_prime(Sg,Hv,Head,Sv,Exit,(Gv,NewBinds,NewProj,Partition),Prime):-
 %                      ABSTRACT SORT                                     %
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% share_sort(+,-)                                                        |
-% share_sort(Asub,Asub_s)                                                |
+% share_abs_sort(+,-)                                                        |
+% share_abs_sort(Asub,Asub_s)                                                |
 % sorts the set of set of variables ASub to obtaint the Asub_s           |
 %-------------------------------------------------------------------------
 
-:- export(share_sort/2).       
-share_sort('$bottom','$bottom'):- !.
-share_sort(ASub,ASub_s):-
+:- export(share_abs_sort/2).       
+share_abs_sort('$bottom','$bottom'):- !.
+share_abs_sort(ASub,ASub_s):-
 	sort_list_of_lists(ASub,ASub_s).
 
 %------------------------------------------------------------------------%

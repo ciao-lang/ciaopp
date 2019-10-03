@@ -50,7 +50,7 @@
 	sharefree_clique_exit_to_prime/7,
 	sharefree_clique_extend/4,
 	sharefree_clique_project/3,
-	sharefree_clique_sort/2,
+	sharefree_clique_abs_sort/2,
 	sharefree_clique_glb/3,
 	sharefree_clique_identical_abstract/2,
 	sharefree_clique_less_or_equal/2,
@@ -114,15 +114,15 @@ sharefree_clique_def_project(Vars,(SHF_ASub,Def_ASub),Proj) :-
 	Proj = (SHF_Proj,Def_Proj).
 
 %------------------------------------------------------------------------%
-% sharefree_clique_def_sort(+,-)                                         |
-% sharefree_clique_def_sort(Asub,Asub_s)                                 |
+% sharefree_clique_def_abs_sort(+,-)                                         |
+% sharefree_clique_def_abs_sort(Asub,Asub_s)                                 |
 %------------------------------------------------------------------------%
 
-:- export(sharefree_clique_def_sort/2).
-sharefree_clique_def_sort('$bottom','$bottom'):- !.
-sharefree_clique_def_sort((SHF_ASub,Def_ASub),ASub_s ):-
-	def_sort(Def_ASub,Def_ASub_s),
-	sharefree_clique_sort(SHF_ASub,SHF_ASub_s),
+:- export(sharefree_clique_def_abs_sort/2).
+sharefree_clique_def_abs_sort('$bottom','$bottom'):- !.
+sharefree_clique_def_abs_sort((SHF_ASub,Def_ASub),ASub_s ):-
+	def_abs_sort(Def_ASub,Def_ASub_s),
+	sharefree_clique_abs_sort(SHF_ASub,SHF_ASub_s),
 	ASub_s = (SHF_ASub_s,Def_ASub_s).
 
 

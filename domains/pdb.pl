@@ -17,8 +17,8 @@ pdb_exit_to_prime(_Sg,_Hv,_Head,_Sv,Exit,_ExtraInfo,Exit).
 :- export(pdb_project/5).
 pdb_project(_,_Vars,_,ASub,ASub).
 
-:- export(pdb_sort/2).
-pdb_sort(ASub,ASub).
+:- export(pdb_abs_sort/2).
+pdb_abs_sort(ASub,ASub).
 
 :- export(pdb_glb/3).
 pdb_glb('$bottom',_ASub1,ASub) :- !, ASub = '$bottom'.
