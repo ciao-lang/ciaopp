@@ -16,7 +16,7 @@
 :- use_module(library(aggregates), [findall/3]).
 :- use_module(library(counters), [setcounter/2, inccounter/2]).
 :- use_module(library(lists), [append/3]).
-:- use_module(ciaopp(analysis_stats), [pp_statistics/2]).
+:- use_module(ciaopp(analysis_stats), [stat_no_store/2]).
 :- use_module(library(terms_vars), [varset/2]).
 :- use_module(library(vndict), [vars_names_dict/3]).
 :- use_module(library(port_reify), [once_port_reify/2, port_call/1]).
@@ -136,40 +136,36 @@ init_fixpoint(poly_spec):- heuristic_pcpe:init_fixpoint.
 	@tt{[time(Total,[(subtask1,T1),...,(subtaskN,TN)])]}.").
 
 plai(Cls,Ds,Fixp,AbsInt,[TimeInfo,MemoryInfo|Info]):-
-	pp_statistics(runtime,_),
 	% initialization
 	init_abstract_domain(AbsInt,Flags),
-	once_port_reify(do_plai(Cls,Ds,Fixp, AbsInt, GT1,T1), Port),
+	once_port_reify(do_plai(Cls,Ds,Fixp, AbsInt, TPre, TAna), Port),
 	pop_pp_flags(Flags),
 	port_call(Port),
-	pp_statistics(runtime,[GT,_T]),
-	global_time_ellapsed(GT,GT1,T),
-	Total is T1 + T,
+	Total is TPre + TAna,
 	current_pp_flag(local_control,LC),
 	(  is_checker(Fixp)
 	-> Header = 'certificate checked by'
 	;  Header = 'analyzed by'),
         message(inform, ['{', Header, ' ', Fixp, ' using ', AbsInt, 
-                     ' with local-control ', LC,' in ', T, ' msec.}\n']),
-	TimeInfo = time(Total,[(prep,T1),(ana,T)|Local_C_Info]),
+                     ' with local-control ', LC,' in ', TAna, ' msec.}\n']),
+	TimeInfo = time(Total,[(prep,TPre),(ana,TAna)|Local_C_Info]),
+  % TODO: Total time is wrong, Local_C_Info not added!!!
 	java_statistics(AbsInt),
 	ask_mem_usage(Delta,Details),
 	MemoryInfo = memory(Delta,Details),
 	ask_unfold_times(Local_C_Info),
-        dom_statistics(AbsInt, Info).
+  dom_statistics(AbsInt, Info).
 
-do_plai(Cls,Ds,Fixp, AbsInt, GT1,T1):-
+do_plai(Cls,Ds,Fixp, AbsInt, TPre, TAna):-
 	init_fixpoint(Fixp),
 	init_unfold,
 	init_unfold_times,
 	cleanup_trans_clauses,
 	undo_errors,
-	preprocess(Fixp,AbsInt,Cls,Ds,Ps),
-	pp_statistics(runtime,[GT1,T1]),
-	message(inform, ['{preprocessed for the ', Fixp, ' fixpoint in ',T1, ' msec.}\n']),
+	stat_no_store(preprocess(Fixp,AbsInt,Cls,Ds,Ps), TPre),
+	message(inform, ['{preprocessed for the ', Fixp, ' fixpoint in ',TPre, ' msec.}\n']),
 	reset_mem_usage,
-	topdown_analysis(Fixp,AbsInt,Ps).
-
+	stat_no_store(topdown_analysis(Fixp,AbsInt,Ps),TAna).
 
 %% *** This has to be revised. MH
 is_checker(check_di3) :- !.
@@ -394,22 +390,17 @@ mod_plai(Cls,Ds,Fixp,AbsInt,[Time|Info]):-
 	dom_statistics(AbsInt, Info).
 
 do_mod_plai(Cls,Ds,Fixp,AbsInt,Time):-
-	pp_statistics(runtime,[T0|_]),
 	init_fixpoint(Fixp),
 	init_unfold,
 	cleanup_trans_clauses,
 	undo_errors,
-	preprocess(Fixp,AbsInt,Cls,Ds,Ps),
-	pp_statistics(runtime,[T1|_]),
-  TPre is T1 - T0,
+	stat_no_store(preprocess(Fixp,AbsInt,Cls,Ds,Ps), TPre),
   message(inform, ['{preprocessed for ', Fixp, ' in ', TPre, ' msec.}\n']),
-	mod_topdown_analysis(AbsInt,Fixp,Ps),
-	pp_statistics(runtime,[T2|_]),
-  TAna is T2 - T1,
+	stat_no_store(mod_topdown_analysis(AbsInt,Fixp,Ps), TAna),
 	message(inform, ['{analyzed by ', Fixp, ' using ', AbsInt, ' in ', TAna,
 	' msec.}\n']),
 	Total is TPre + TAna,
-        Time = time(Total,[(prep,TPre),(ana,TAna)]).
+  Time = time(Total,[(prep,TPre),(ana,TAna)]).
 
 %------------------------------------------------------------------------%
 
