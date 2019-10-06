@@ -56,11 +56,11 @@ share_amgu_call_to_entry(_Sv,_Sg,[],_Head,_K,Fv,_Proj,Entry,ExtraInfo):- !,
      list_to_list_of_lists(Fv,Entry).
 share_amgu_call_to_entry(Sv,Sg,Hv,Head,_K,Fv,Proj,Entry,ExtraInfo):-
      projected_gvars(Proj,Sv,Gv_Call),
-     share_amgu_extend_asub(Proj,Hv,ASub),     
+     share_amgu_augment_asub(Proj,Hv,ASub),     
      peel_equations(Sg,Head,Eqs),
      share_amgu_iterate(Eqs,star,ASub,Result),
      share_project(Hv,Result,Entry0),
-     share_amgu_extend_asub(Entry0,Fv,Entry),
+     share_amgu_augment_asub(Entry0,Fv,Entry),
      ExtraInfo = (Eqs,Gv_Call),!.
 share_amgu_call_to_entry(_Sv,_Sg,_Hv,_Head,_K,_Fv,_Proj,'$bottom',_).
 
@@ -97,31 +97,31 @@ share_amgu_amgu(Sg,Head,ASub,AMGU):-
 %                      ABSTRACT Extend_Asub                              %
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% share_amgu_extend_asub(+,+,-)                                          %
+% share_amgu_augment_asub(+,+,-)                                          %
 %-------------------------------------------------------------------------
 
-:- export(share_amgu_extend_asub/3).
-share_amgu_extend_asub(ASub,[],ASub).
-share_amgu_extend_asub(ASub,Vars,ASub1):-
+:- export(share_amgu_augment_asub/3).
+share_amgu_augment_asub(ASub,[],ASub).
+share_amgu_augment_asub(ASub,Vars,ASub1):-
 	share_abs_sort(ASub,SASub),
 	sort(Vars,SVars),
-	share_amgu_extend_asub_(SASub,SVars,ASub0),
+	share_amgu_augment_asub_(SASub,SVars,ASub0),
 	share_abs_sort(ASub0,ASub1).
 
-share_amgu_extend_asub_(ASub,[],ASub).
-share_amgu_extend_asub_(ASub,[H|T],[[H]|ASub0]):-
-	share_amgu_extend_asub_(ASub,T,ASub0).
+share_amgu_augment_asub_(ASub,[],ASub).
+share_amgu_augment_asub_(ASub,[H|T],[[H]|ASub0]):-
+	share_amgu_augment_asub_(ASub,T,ASub0).
 
 %------------------------------------------------------------------------%
 %                      ABSTRACT Extend_two_asub                          %
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% share_amgu_extend_two_asub(+,+,-)                                      %
+% share_amgu_augment_two_asub(+,+,-)                                      %
 %-------------------------------------------------------------------------
-:- export(share_amgu_extend_two_asub/3).
-share_amgu_extend_two_asub([],ASub1,ASub1):-!.
-share_amgu_extend_two_asub(ASub0,[],ASub0):-!.
-share_amgu_extend_two_asub(ASub0,ASub1,ASub):-
+:- export(share_amgu_augment_two_asub/3).
+share_amgu_augment_two_asub([],ASub1,ASub1):-!.
+share_amgu_augment_two_asub(ASub0,[],ASub0):-!.
+share_amgu_augment_two_asub(ASub0,ASub1,ASub):-
         append(ASub0,ASub1,ASub_u),
 	share_abs_sort(ASub_u,ASub),!.
 	
@@ -144,7 +144,7 @@ share_amgu_exit_to_prime(Sg,Hv,Head,_Sv,Exit,Flag,Prime):-
 share_amgu_exit_to_prime(_,[],_,_,_,_,[]):- !.
 share_amgu_exit_to_prime(_Sg,_Hv,_Head,Sv,Exit,ExtraInfo,Prime):-
 	ExtraInfo= (Equations,Gv_Call),
-	share_amgu_extend_asub(Exit,Sv,ASub),     
+	share_amgu_augment_asub(Exit,Sv,ASub),     
         share_amgu_iterate(Equations,star, ASub, Prime0),
         share_project(Sv,Prime0,Prime1),
 	% groundness propagation from call_to_entry
@@ -160,7 +160,7 @@ share_amgu_exit_to_prime(_Sg,_Hv,_Head,Sv,Exit,ExtraInfo,Prime):-
 :- export(share_amgu_call_to_success_fact/9).
 share_amgu_call_to_success_fact(Sg,Hv,Head,_K,Sv,Call,_Proj,Prime,Succ) :-
 % exit_to_prime
-	share_amgu_extend_asub(Call,Hv,ASub),
+	share_amgu_augment_asub(Call,Hv,ASub),
 	peel_equations(Sg, Head,Equations),
 	share_amgu_iterate(Equations,star,ASub,ASub1),
 	share_project(Sv,ASub1,Prime),
@@ -179,7 +179,7 @@ share_amgu_call_to_success_fact(_Sg,_Hv,_Head,_K,_Sv,_Call,_Proj, '$bottom','$bo
 :- export(share_amgu_call_to_prime_fact/6).
 share_amgu_call_to_prime_fact(Sg,Hv,Head,Sv,Call,Prime) :-
 % exit_to_prime
-	share_amgu_extend_asub(Call,Hv,ASub),
+	share_amgu_augment_asub(Call,Hv,ASub),
 	peel_equations(Sg, Head,Equations),
 	share_amgu_iterate(Equations,star,ASub,ASub1),
 	share_project(Sv,ASub1,Prime).	

@@ -79,7 +79,7 @@
 	asub_gt/2,
 	prune_success/5,
 	powerset_with_empty_set/2,
-	share_clique_extend_asub/3,
+	share_clique_augment_asub/3,
 	share_clique_abs_sort/2,
 	share_clique_success_builtin/5,
 	share_clique_widen/4,
@@ -131,11 +131,11 @@ share_clique_1_call_to_entry(Sv,Sg,Hv,Head,_K,Fv,Proj,Entry,ExtraInfo):-
      % groundness propagation to exit_to_prime
      projected_gvars_clique(Proj,Sv,Gv_Call),
      peel_equations( Sg,Head, Equations),
-     share_clique_extend_asub(Proj,Hv,ASub),     
+     share_clique_augment_asub(Proj,Hv,ASub),     
      share_clique_1_iterate(Equations,ASub,ASub1),
      share_clique_widen(plai_op_clique_1,ASub1,_,Result),
      share_clique_1_project(Hv,Result,Entry0),
-     share_clique_extend_asub(Entry0,Fv,Entry1),
+     share_clique_augment_asub(Entry0,Fv,Entry1),
      share_clique_1_normalize(Entry1,Entry),
      ExtraInfo = (Equations,Gv_Call),!.
 share_clique_1_call_to_entry(_Sv,_Sg,_Hv,_Head,_K,_Fv,_Proj,'$bottom',_).
@@ -159,7 +159,7 @@ share_clique_1_exit_to_prime(Sg,Hv,Head,_Sv,Exit,Flag,Prime):-
 share_clique_1_exit_to_prime(_,[],_,_,_,_,([],[])):- !.
 share_clique_1_exit_to_prime(_Sg,_Hv,_Head,Sv,Exit,ExtraInfo,Prime):-
      ExtraInfo = (Equations,Gv_Call),    	
-     share_clique_extend_asub(Exit,Sv,ASub),   
+     share_clique_augment_asub(Exit,Sv,ASub),   
      share_clique_1_iterate(Equations,ASub, Prime0),
      share_clique_widen(plai_op_clique_1,Prime0,_,Prime1),
      share_clique_1_project(Sv,Prime1,(Cl,Sh)),
@@ -391,7 +391,7 @@ project_clique_1_([X|Xs],Vars,Int1,Disj1):-
 retrieve_singletons(SH_Proj,Ss,Vars,Proj):-
 	retrieve_singletons(Ss,Vars,Sing),
 	merge_list_of_lists(Sing,Sing_vars),
-	share_clique_extend_asub(SH_Proj,Sing_vars,Proj).
+	share_clique_augment_asub(SH_Proj,Sing_vars,Proj).
 
 retrieve_singletons([],_,[]).
 retrieve_singletons([S|Ss],Vars,[Int|Ints]):-
@@ -506,7 +506,7 @@ share_clique_1_call_to_success_fact(_,[],_Head,_K,Sv,(Cl,Sh),_,([],[]),Succ):-!,
 	Succ = (Succ_Cl,Succ_Sh).
 share_clique_1_call_to_success_fact(Sg,Hv,Head,_K,Sv,Call,_Proj,Prime,Succ):-
 % exit_to_prime
-	share_clique_extend_asub(Call,Hv,ASub),	
+	share_clique_augment_asub(Call,Hv,ASub),	
 	peel_equations(Sg, Head,Equations),
 	share_clique_1_iterate(Equations,ASub,(Cl1,Sh1)),
 	share_clique_widen(plai_op_clique_1,(Cl1,Sh1),_,(Cl,Sh)),
@@ -527,7 +527,7 @@ share_clique_1_call_to_success_fact(_Sg,_Hv,_Head,_K,_Sv,_Call,_Proj,'$bottom','
 %% 
 %% share_clique_1_call_to_prime_fact(Sg,Hv,Head,Sv,Call,Prime) :-
 %% % exit_to_prime
-%% 	share_clique_extend_asub(Call,Hv,ASub),	
+%% 	share_clique_augment_asub(Call,Hv,ASub),	
 %% 	peel_equations(Sg, Head,Equations),
 %% 	share_clique_1_iterate(Equations,ASub,(Cl1,Sh1)),
 %% 	share_clique_widen(plai_op_clique_1,(Cl1,Sh1),_,(Cl,Sh)),
@@ -583,7 +583,7 @@ share_clique_1_unknown_call(_Sg,Vars,(Cl,Sh),Succ):-
 :- export(share_clique_1_unknown_entry/3).
 share_clique_1_unknown_entry(_Sg,Qv,Call):-
 	sort(Qv,QvS),	
-	share_clique_extend_asub((QvS,[]),QvS,Call).
+	share_clique_augment_asub((QvS,[]),QvS,Call).
 
 %------------------------------------------------------------------------%
 %                         HANDLING BUILTINS                              |

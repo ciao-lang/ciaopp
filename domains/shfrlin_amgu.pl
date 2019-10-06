@@ -41,7 +41,7 @@
 	product/8]).
 :- use_module(domain(sharefree_amgu), [
 	sharefree_amgu_call_to_success_builtin/6,
-	sharefree_amgu_extend_asub/3,
+	sharefree_amgu_augment_asub/3,
 	sharefree_amgu_special_builtin/5,
 	sharefree_amgu_success_builtin/5,
 	sharefree_delete_variables/3]).
@@ -84,11 +84,11 @@ shfrlin_call_to_entry(_Sv,_Sg,[],_Head,_K,Fv,_Proj,Entry,no):- !,
 shfrlin_call_to_entry(_Sv,Sg,Hv,Head,_K,Fv,Project,Entry,ExtraInfo):-
      Project = (_,F2,_),
      peel_equations_frl(Sg, Head,Equations),
-     shfrlin_extend_asub(Project,Hv,ASub),     
+     shfrlin_augment_asub(Project,Hv,ASub),     
      shfrlin_amgu_iterate(Equations,ASub,ASub0),
      shfrlin_update_fr_lin(ASub0,Hv,ASub1),
      shfrlin_project(ASub1,Hv,Entry0),
-     shfrlin_extend_asub(Entry0,Fv,Entry),
+     shfrlin_augment_asub(Entry0,Fv,Entry),
      ExtraInfo = (Equations,F2),!.
 shfrlin_call_to_entry(_Sv,_Sg,_Hv,_Head,_K,_Fv,_Proj,'$bottom',_).
      
@@ -112,7 +112,7 @@ shfrlin_exit_to_prime(_Sg,[],_Head,Sv,_Exit,_ExtraInfo,Prime):- !,
 shfrlin_exit_to_prime(_Sg,_Hv,_Head,Sv,Exit,ExtraInfo,Prime):-
      ExtraInfo = (Equations,Freeness_Call),	
      filter_freeness_with_call(Sv,Freeness_Call,New_Sv),
-     shfrlin_extend_asub(Exit,New_Sv,ASub),     
+     shfrlin_augment_asub(Exit,New_Sv,ASub),     
      shfrlin_amgu_iterate(Equations,ASub,ASub0),
      shfrlin_update_fr_lin(ASub0,Sv,ASub1),
      shfrlin_project(ASub1,Sv,Prime).
@@ -156,14 +156,14 @@ shfrlin_amgu_amgu(Sg,Head,ASub,AMGU):-
 %                      ABSTRACT Extend_Asub                              |
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% shfrlin_extend_asub(+,+,-)                                             |
+% shfrlin_augment_asub(+,+,-)                                             |
 %------------------------------------------------------------------------%
-:- export(shfrlin_extend_asub/3).
-shfrlin_extend_asub('$bottom',_,'$bottom'):-!.
-shfrlin_extend_asub(SHFL,[],SHFL):-!.
-shfrlin_extend_asub((Sh,F,L),Vars,(NewSh,NewF,NewL)):-
+:- export(shfrlin_augment_asub/3).
+shfrlin_augment_asub('$bottom',_,'$bottom'):-!.
+shfrlin_augment_asub(SHFL,[],SHFL):-!.
+shfrlin_augment_asub((Sh,F,L),Vars,(NewSh,NewF,NewL)):-
 	ord_union(L,Vars,NewL),
-	sharefree_amgu_extend_asub((Sh,F),Vars,(NewSh,NewF)).
+	sharefree_amgu_augment_asub((Sh,F),Vars,(NewSh,NewF)).
 
 %------------------------------------------------------------------------%
 %                      ABSTRACT Project                                  |
@@ -216,7 +216,7 @@ shfrlin_glb((Sh1,Fr1,Lin1),(Sh2,Fr2,Lin2),Glb):-
 :- export(shfrlin_call_to_success_fact/9).
 shfrlin_call_to_success_fact(Sg,Hv,Head,_K,Sv,Call,_Proj,Prime,Succ) :-
 % exit_to_prime   -------------------------------------------------------
-	shfrlin_extend_asub(Call,Hv,ASub),  
+	shfrlin_augment_asub(Call,Hv,ASub),  
 	peel_equations_frl(Sg, Head,Equations),
 	shfrlin_amgu_iterate(Equations,ASub,ASub0),
 	ASub = (_,Vars,_),        
@@ -248,7 +248,7 @@ delete_variables_lin([X|Xs],Vars,[X|Res]):-
 :- export(shfrlin_call_to_prime_fact/6).
 shfrlin_call_to_prime_fact(Sg,Hv,Head,Sv,Call,Prime) :-
 % exit_to_prime    -------------------------------------------------------
-	shfrlin_extend_asub(Call,Hv,Exit),
+	shfrlin_augment_asub(Call,Hv,Exit),
 	Call = (_Sh,Extra_Info,_),
 	shfrlin_exit_to_prime(Sg,Hv,Head,Sv,Exit,Extra_Info,Prime), !.
 shfrlin_call_to_prime_fact(_Sg,_Hv,_Head,_Sv,'$bottom','$bottom').

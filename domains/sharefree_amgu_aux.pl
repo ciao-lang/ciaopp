@@ -209,7 +209,7 @@ amgu_non_star(Flag,X,T,ASub,AMGU):-
 % g'  = Vars \ (Sh)_vars                                                 |
 %                                                                        |  
 % Note: the variables of the body are free but they are added by         |
-% sharefree_amgu_extend_asub/3 (by ortogonality)                         |
+% sharefree_amgu_augment_asub/3 (by ortogonality)                         |
 %-------------------------------------------------------------------------
 shfr_update_freeness(Sh,F,Vars,F1):-
      % ground variables

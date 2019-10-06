@@ -118,11 +118,11 @@ share_clique_call_to_entry(Sv,Sg,Hv,Head,_K,Fv,Proj,Entry,ExtraInfo):-
      % groundness propagation to exit_to_prime
      projected_gvars_clique(Proj,Sv,Gv_Call),
      peel_equations( Sg,Head, Equations),
-     share_clique_extend_asub(Proj,Hv,ASub),     
+     share_clique_augment_asub(Proj,Hv,ASub),     
      share_clique_iterate(Equations,star,ASub,ASub1),
      share_clique_widen(plai_op,ASub1,_,Result),
      share_clique_project(Hv,Result,Entry0),
-     share_clique_extend_asub(Entry0,Fv,Entry1),   
+     share_clique_augment_asub(Entry0,Fv,Entry1),   
      %Entry1 = Entry,
      share_clique_normalize(Entry1,Entry),
      ExtraInfo = (Equations,Gv_Call),!.
@@ -146,7 +146,7 @@ share_clique_exit_to_prime(Sg,Hv,Head,_Sv,Exit,Flag,Prime):-
 share_clique_exit_to_prime(_,[],_,_,_,_,([],[])):- !.
 share_clique_exit_to_prime(_Sg,_Hv,_Head,Sv,Exit,ExtraInfo,Prime):-
      ExtraInfo = (Equations,Gv_Call),     	
-     share_clique_extend_asub(Exit,Sv,ASub),     
+     share_clique_augment_asub(Exit,Sv,ASub),     
      share_clique_iterate(Equations,star,ASub, Prime0),
      share_clique_widen(plai_op,Prime0,_,Prime1),
      share_clique_project(Sv,Prime1,(Cl,Sh)),
@@ -376,20 +376,20 @@ shcl_([Xs|Xss],Cl,Sv,Call,Succ):-
 %                      ABSTRACT Extend_Asub                              |
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% share_clique_extend_asub(+,+,-)                                        |
+% share_clique_augment_asub(+,+,-)                                        |
 % Augments the abstract subtitution with fresh variables                 |
 %------------------------------------------------------------------------%
-:- export(share_clique_extend_asub/3).
-share_clique_extend_asub(ASub,[],ASub) :- !.
-share_clique_extend_asub(ASub,Vars,ASub_s):-
+:- export(share_clique_augment_asub/3).
+share_clique_augment_asub(ASub,[],ASub) :- !.
+share_clique_augment_asub(ASub,Vars,ASub_s):-
 	share_clique_abs_sort(ASub,SASub),
 	sort(Vars,SVars),!,
-	share_clique_extend_asub_(SASub,SVars,ASub1),
+	share_clique_augment_asub_(SASub,SVars,ASub1),
 	share_clique_abs_sort(ASub1,ASub_s).
 
-share_clique_extend_asub_(ASub,[],ASub) :- !.
-share_clique_extend_asub_(ASub,[H|T],(Cl,[[H]|Sh])):-
-	share_clique_extend_asub_(ASub,T,(Cl,Sh)).
+share_clique_augment_asub_(ASub,[],ASub) :- !.
+share_clique_augment_asub_(ASub,[H|T],(Cl,[[H]|Sh])):-
+	share_clique_augment_asub_(ASub,T,(Cl,Sh)).
 
 %------------------------------------------------------------------------%
 %                      ABSTRACT PROJECTION
@@ -514,7 +514,7 @@ share_clique_call_to_success_fact(_,[],_Head,_K,Sv,(Cl,Sh),_,([],[]),Succ):-!,
 	Succ = (Succ_Cl,Succ_Sh).
 share_clique_call_to_success_fact(Sg,Hv,Head,_K,Sv,Call,_Proj,Prime,Succ):-
 % exit_to_prime
-	share_clique_extend_asub(Call,Hv,ASub),	
+	share_clique_augment_asub(Call,Hv,ASub),	
 	peel_equations(Sg, Head,Equations),
 	share_clique_iterate(Equations,star,ASub,(Cl1,Sh1)),
 	share_clique_widen(plai_op,(Cl1,Sh1),_,(Cl,Sh)),
@@ -532,7 +532,7 @@ share_clique_call_to_success_fact(_Sg,_Hv,_Head,_K,_Sv,_Call,_Proj,'$bottom','$b
 :- export(share_clique_call_to_prime_fact/6).
 share_clique_call_to_prime_fact(Sg,Hv,Head,Sv,Call,Prime) :-
 % exit_to_prime
-	share_clique_extend_asub(Call,Hv,ASub),	
+	share_clique_augment_asub(Call,Hv,ASub),	
 	peel_equations(Sg, Head,Equations),
 	share_clique_iterate(Equations,star,ASub,(Cl1,Sh1)),
 	share_clique_widen(plai_op,(Cl1,Sh1),_,(Cl,Sh)),

@@ -258,8 +258,8 @@
 :- use_module(domain(sharing)).
 :- dom_def(share).
 :- dom_op(share, amgu(Sg,Head,ASub,NewASub), from(share_amgu,amgu(Sg,Head,ASub,NewASub))).
-:- dom_op(share, augment_asub(ASub,Vars,ASub0), ok(amgu_extend_asub(ASub,Vars,ASub0))).
-:- dom_op(share, augment_two_asub(ASub0,ASub1,ASub), ok(amgu_extend_two_asub(ASub0,ASub1,ASub))).
+:- dom_op(share, augment_asub(ASub,Vars,ASub0), from(share_amgu,augment_asub(ASub,Vars,ASub0))).
+:- dom_op(share, augment_two_asub(ASub0,ASub1,ASub), from(share_amgu,augment_two_asub(ASub0,ASub1,ASub))).
 :- dom_op(share, call_to_entry/9).
 :- dom_op(share, exit_to_prime/7).
 :- dom_op(share, project(_Sg,Vars,_HvFv,ASub,Proj), ok(project(Vars,ASub,Proj))).
@@ -283,7 +283,7 @@
 :- use_module(domain(sharefree)).
 :- dom_def(shfr).
 :- dom_op(shfr, amgu(Sg,Head,ASub,NewASub), from(sharefree_amgu,amgu(Sg,Head,ASub,NewASub))).
-:- dom_op(shfr, augment_asub(ASub,Vars,ASub0), from(sharefree_amgu,extend_asub(ASub,Vars,ASub0))).
+:- dom_op(shfr, augment_asub(ASub,Vars,ASub0), from(sharefree_amgu,augment_asub(ASub,Vars,ASub0))).
 :- dom_op(shfr, call_to_entry/9).
 :- dom_op(shfr, exit_to_prime/7).
 :- dom_op(shfr, project(_Sg,Vars,_HvFv,ASub,Proj), ok(project(ASub,Vars,Proj))).
@@ -452,9 +452,9 @@
 % ---------------------------------------------------------------------------
 :- use_module(domain(sharing_amgu)).
 :- dom_def(share_amgu).
-:- dom_op(share_amgu, amgu(Sg,Head,ASub,NewASub), ok(amgu(Sg,Head,ASub,NewASub))).
-:- dom_op(share_amgu, augment_asub(ASub,Vars,ASub0), ok(extend_asub(ASub,Vars,ASub0))).
-:- dom_op(share_amgu, augment_two_asub(ASub0,ASub1,ASub), ok(extend_two_asub(ASub0,ASub1,ASub))).
+:- dom_op(share_amgu, amgu/4).
+:- dom_op(share_amgu, augment_asub/3).
+:- dom_op(share_amgu, augment_two_asub/3).
 :- dom_op(share_amgu, call_to_entry/9).
 :- dom_op(share_amgu, exit_to_prime/7).
 :- dom_op(share_amgu, project(_Sg,Vars,_HvFv,ASub,Proj), from(share,project(Vars,ASub,Proj))).
@@ -477,8 +477,8 @@
 % ----------
 :- use_module(domain(sharefree_amgu)).
 :- dom_def(sharefree_amgu).
-:- dom_op(sharefree_amgu, amgu(Sg,Head,ASub,NewASub), ok(amgu(Sg,Head,ASub,NewASub))).
-:- dom_op(sharefree_amgu, augment_asub(ASub,Vars,ASub0), ok(extend_asub(ASub,Vars,ASub0))).
+:- dom_op(sharefree_amgu, amgu/4).
+:- dom_op(sharefree_amgu, augment_asub/3).
 :- dom_op(sharefree_amgu, call_to_entry/9).
 :- dom_op(sharefree_amgu, exit_to_prime/7).
 :- dom_op(sharefree_amgu, project(_Sg,Vars,_HvFv,ASub,Proj), from(shfr,project(ASub,Vars,Proj))).
@@ -501,8 +501,8 @@
 % ----------
 :- use_module(domain(shfrlin_amgu)).
 :- dom_def(shfrlin_amgu).
-:- dom_op(shfrlin_amgu, amgu(Sg,Head,ASub,NewASub), ok(amgu(Sg,Head,ASub,NewASub))).
-:- dom_op(shfrlin_amgu, augment_asub(ASub,Vars,ASub0), from(shfrlin,extend_asub(ASub,Vars,ASub0))).
+:- dom_op(shfrlin_amgu, amgu/4).
+:- dom_op(shfrlin_amgu, augment_asub(ASub,Vars,ASub0), from(shfrlin,augment_asub(ASub,Vars,ASub0))).
 :- dom_op(shfrlin_amgu, call_to_entry(Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo), from(shfrlin,call_to_entry(Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo))).
 :- dom_op(shfrlin_amgu, exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime), from(shfrlin,exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime))).
 :- dom_op(shfrlin_amgu, project(_Sg,Vars,_HvFv,ASub,Proj), from(shfrlin,project(ASub,Vars,Proj))).
@@ -525,8 +525,8 @@
 % ---------------------------------------------------------------------------
 :- use_module(domain(sharing_clique)).
 :- dom_def(share_clique).
-:- dom_op(share_clique, amgu(Sg,Head,ASub,NewASub), ok(amgu(Sg,Head,ASub,NewASub))).
-:- dom_op(share_clique, augment_asub(ASub,Vars,ASub0), ok(extend_asub(ASub,Vars,ASub0))).
+:- dom_op(share_clique, amgu/4).
+:- dom_op(share_clique, augment_asub/3).
 :- dom_op(share_clique, call_to_entry/9).
 :- dom_op(share_clique, exit_to_prime/7).
 :- dom_op(share_clique, project(_Sg,Vars,_HvFv,ASub,Proj), ok(project(Vars,ASub,Proj))).
@@ -575,8 +575,8 @@
 % ----------
 :- use_module(domain(sharefree_clique)).
 :- dom_def(sharefree_clique).
-:- dom_op(sharefree_clique, amgu(Sg,Head,ASub,NewASub), ok(amgu(Sg,Head,ASub,NewASub))).
-:- dom_op(sharefree_clique, augment_asub(ASub,Vars,ASub0), ok(extend_asub(ASub,Vars,ASub0))).
+:- dom_op(sharefree_clique, amgu/4).
+:- dom_op(sharefree_clique, augment_asub/3).
 :- dom_op(sharefree_clique, call_to_entry/9).
 :- dom_op(sharefree_clique, exit_to_prime/7).
 :- dom_op(sharefree_clique, project(_Sg,Vars,_HvFv,ASub,Proj), ok(project(ASub,Vars,Proj))).
@@ -650,8 +650,8 @@
 :- if(defined(has_ciaopp_extra)).
 :- use_module(domain(bshare/bshare)).
 :- dom_def(bshare).
-:- dom_op(bshare, amgu(Sg,Head,ASub,NewASub), ok(amgu(Sg,Head,ASub,NewASub))).
-:- dom_op(bshare, augment_asub(ASub,Vars,ASub0), ok(extend_asub(ASub,Vars,ASub0))).
+:- dom_op(bshare, amgu/4).
+:- dom_op(bshare, augment_asub/3).
 :- dom_op(bshare, augment_two_asub(ASub0,ASub1,ASub), ok(augment_two_asub(ASub0,ASub1,ASub))).
 :- dom_op(bshare, call_to_entry/9).
 :- dom_op(bshare, project(_Sg,Vars,_HvFv,ASub,Proj), ok(project(Vars,ASub,Proj))).
@@ -947,7 +947,7 @@ etermsvar_obtain_info(_Prop,Vars,ASub,Info) :- !, asub_to_info(etermsvar,ASub,Va
 % (simpler domain interface, only for non-relational domains)
 :- dom_def(nonrel_intervals).
 :- dom_op(nonrel_intervals, init_abstract_domain/1).
-:- dom_op(nonrel_intervals, amgu(Sg,Head,ASub,NewASub), ok(amgu(Sg,Head,ASub,NewASub))).
+:- dom_op(nonrel_intervals, amgu/4).
 :- dom_op(nonrel_intervals, call_to_entry/9).
 :- dom_op(nonrel_intervals, exit_to_prime/7).
 :- dom_op(nonrel_intervals, project/5).
@@ -1346,8 +1346,8 @@ init_abstract_domain(_AbsInt,[variants]) :-
         % TODO: [IG] for all domains variants=off??
         push_pp_flag(variants,off).
 %amgu(_AbsInt,_T0,_T1,_ASub,_NewASub):- throw(not_implemented(amgu)).
-%augment_asub(_AbsInt,_ASub,_Vars,_ASub0) :- throw(not_implemented(extend_asub)).
-%augment_two_asub(_AbsInt,_ASub0,_ASub1,_ASub) :- throw(not_implemented(extend_two_asub)).
+%augment_asub(_AbsInt,_ASub,_Vars,_ASub0) :- throw(not_implemented(augment_asub)).
+%augment_two_asub(_AbsInt,_ASub0,_ASub1,_ASub) :- throw(not_implemented(augment_two_asub)).
 %% widencall(AbsInt,Prime0,Prime1,NewPrime) :- % TODO: [IG] why is this commented?
 %% 	compute_lub(AbsInt,[Prime0,Prime1],NewPrime).
 widen(AbsInt,Prime0,Prime1,NewPrime) :- % TODO: [IG] define in domain?

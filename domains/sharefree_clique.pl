@@ -37,7 +37,7 @@
 :- use_module(domain(share_amgu_sets), [delete_vars_from_list_of_lists/3]).
 :- use_module(domain(sharing_clique), [
 	share_clique_extend/4,
-	share_clique_extend_asub/3,
+	share_clique_augment_asub/3,
 	share_clique_glb/3,
 	share_clique_input_interface/4,
 	share_clique_input_user_interface/5,
@@ -59,7 +59,7 @@
 	 change_values_if_differ/5,
 	 var_value/3,
 	 projected_gvars/3]).
-:- use_module(domain(sharefree_amgu), [sharefree_amgu_extend_asub0/3]).
+:- use_module(domain(sharefree_amgu), [sharefree_amgu_augment_asub0/3]).
 :- use_module(domain(s_grshfr),
         [collect_vars_freeness/2, member_value_freeness/3]).
 
@@ -106,12 +106,12 @@ sharefree_clique_call_to_entry(_Sv,_Sg,[],_Head,_K,Fv,_Proj,Entry,no):- !,
      Entry = (Entry_SH,Entry_fr).
 sharefree_clique_call_to_entry(_Sv,Sg,Hv,Head,_K,Fv,Proj,Entry,ExtraInfo):-
      peel_equations_frl(Sg,Head,Equations),
-     sharefree_clique_extend_asub(Proj,Hv,ASub),     
+     sharefree_clique_augment_asub(Proj,Hv,ASub),     
      sharefree_clique_iterate(Equations,ASub,(ASub_SH,F)),
      share_clique_widen(plai_op,ASub_SH,_,SH),
      sharefree_clique_update_freeness(SH,F,Hv,F1),
      sharefree_clique_project((SH,F1),Hv,Entry0),
-     sharefree_clique_extend_asub(Entry0,Fv,(Entry_SH0,Entry_Fr)),
+     sharefree_clique_augment_asub(Entry0,Fv,(Entry_SH0,Entry_Fr)),
      share_clique_normalize(Entry_SH0,Entry_SH),
      Entry = (Entry_SH,Entry_Fr),
      Proj = (_,F2),
@@ -141,7 +141,7 @@ sharefree_clique_exit_to_prime(_Sg,[],_Head,Sv,_Exit,_ExtraInfo,Prime):- !,
 sharefree_clique_exit_to_prime(_Sg,_Hv,_Head,Sv,Exit,ExtraInfo,Prime):-
      ExtraInfo = (Equations,Call_Fr),	
      filter_freeness_with_call(Sv,Call_Fr,New_Sv),
-     sharefree_clique_extend_asub(Exit,New_Sv,ASub),     
+     sharefree_clique_augment_asub(Exit,New_Sv,ASub),     
      sharefree_clique_iterate(Equations,ASub, (ASub_SH,F)),
      share_clique_widen(plai_op,ASub_SH,_,SH),
      sharefree_clique_update_freeness(SH,F,Sv,F1),
@@ -169,13 +169,13 @@ sharefree_clique_amgu(Sg,Head,ASub,AMGU):-
 %                      ABSTRACT Extend_Asub                              %
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% sharefree_clique_extend_asub(+,+,-)                                    %
+% sharefree_clique_augment_asub(+,+,-)                                    %
 %-------------------------------------------------------------------------
-:- export(sharefree_clique_extend_asub/3).
-sharefree_clique_extend_asub(ASub,[],ASub).
-sharefree_clique_extend_asub((SH,F),Vars,(SH1,F1)):-
-	share_clique_extend_asub(SH,Vars,SH1),
-	sharefree_amgu_extend_asub0(F,Vars,F1).
+:- export(sharefree_clique_augment_asub/3).
+sharefree_clique_augment_asub(ASub,[],ASub).
+sharefree_clique_augment_asub((SH,F),Vars,(SH1,F1)):-
+	share_clique_augment_asub(SH,Vars,SH1),
+	sharefree_amgu_augment_asub0(F,Vars,F1).
 
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
@@ -328,7 +328,7 @@ sharefree_clique_less_or_equal((SH0,Fr0),(SH1,Fr1)):-
 :- export(sharefree_clique_call_to_success_fact/9).
 sharefree_clique_call_to_success_fact(Sg,Hv,Head,_K,Sv,Call,_Proj,Prime,Succ):-
 % exit_to_prime
-	sharefree_clique_extend_asub(Call,Hv,ASub),	
+	sharefree_clique_augment_asub(Call,Hv,ASub),	
 	peel_equations_frl(Sg, Head,Equations),
 	sharefree_clique_iterate(Equations,ASub,(ASub_SH,F)),
 	share_clique_widen(plai_op,ASub_SH,_,SH),
@@ -367,7 +367,7 @@ delete_variables_freeness([X/V|Xs],Vars,[X/V|Res]):-
 %------------------------------------------------------------------------%
 :- export(sharefree_clique_call_to_prime_fact/6).
 sharefree_clique_call_to_prime_fact(Sg,Hv,Head,Sv,(_SH,Extra_Info),Prime) :-
-	sharefree_clique_extend_asub((_SH,Extra_Info),Hv,Exit),
+	sharefree_clique_augment_asub((_SH,Extra_Info),Hv,Exit),
 	sharefree_clique_exit_to_prime(Sg,Hv,Head,Sv,Exit,Extra_Info,Prime).
 
 %------------------------------------------------------------------------%

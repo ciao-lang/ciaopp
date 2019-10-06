@@ -42,7 +42,7 @@
 :- use_module(domain(share_aux), [list_ground/2]).
 
 :- use_module(domain(sharing), [share_project/3]).
-:- use_module(domain(sharing_amgu), [share_amgu_extend_asub/3]).
+:- use_module(domain(sharing_amgu), [share_amgu_augment_asub/3]).
 :- use_module(domain(sharefree), [
 	shfr_call_to_success_builtin/6,
 	shfr_extend/4,
@@ -76,11 +76,11 @@ sharefree_amgu_call_to_entry(_Sv,_Sg,[],_Head,_K,Fv,_Proj,Entry,no):- !,
 sharefree_amgu_call_to_entry(_Sv,Sg,Hv,Head,_K,Fv,Project,Entry,ExtraInfo):-
      Project = (_,F2),
      peel_equations_frl(Sg, Head,Equations),
-     sharefree_amgu_extend_asub(Project,Hv,ASub),     
+     sharefree_amgu_augment_asub(Project,Hv,ASub),     
      sharefree_amgu_iterate(Equations,ASub,(Sh,F)),
      shfr_update_freeness(Sh,F,Hv,F1),
      shfr_project((Sh,F1),Hv,Entry0),
-     sharefree_amgu_extend_asub(Entry0,Fv,Entry),
+     sharefree_amgu_augment_asub(Entry0,Fv,Entry),
      ExtraInfo = (Equations,F2),!.
 sharefree_amgu_call_to_entry(_Sv,_Sg,_Hv,_Head,_K,_Fv,_Proj,'$bottom',_).
     
@@ -103,7 +103,7 @@ sharefree_amgu_exit_to_prime(_Sg,[],_Head,Sv,_Exit,_ExtraInfo,Prime):- !,
 sharefree_amgu_exit_to_prime(_Sg,_Hv,_Head,Sv,Exit,ExtraInfo,Prime):-
      ExtraInfo = (Equations,Freeness_Call),	
      filter_freeness_with_call(Sv,Freeness_Call,New_Sv),
-     sharefree_amgu_extend_asub(Exit,New_Sv,ASub),     
+     sharefree_amgu_augment_asub(Exit,New_Sv,ASub),     
      sharefree_amgu_iterate(Equations,ASub,(Sh,F)),
      shfr_update_freeness(Sh,F,Sv,F1),
      shfr_project((Sh,F1),Sv,Prime).
@@ -125,24 +125,24 @@ sharefree_amgu_amgu(Sg,Head,ASub,AMGU):-
 %                      ABSTRACT Extend_Asub                              %
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% sharefree_amgu_extend_asub(+,+,-)                                      %
+% sharefree_amgu_augment_asub(+,+,-)                                      %
 %-------------------------------------------------------------------------
-:- export(sharefree_amgu_extend_asub/3).
-sharefree_amgu_extend_asub(SHF,[],SHF) :- !.
-sharefree_amgu_extend_asub((Sh,F),Vars,(Sh0,F0)):-
-	share_amgu_extend_asub(Sh,Vars,Sh0),
-	sharefree_amgu_extend_asub0(F,Vars,F0).
+:- export(sharefree_amgu_augment_asub/3).
+sharefree_amgu_augment_asub(SHF,[],SHF) :- !.
+sharefree_amgu_augment_asub((Sh,F),Vars,(Sh0,F0)):-
+	share_amgu_augment_asub(Sh,Vars,Sh0),
+	sharefree_amgu_augment_asub0(F,Vars,F0).
 
-:- export(sharefree_amgu_extend_asub0/3).
-sharefree_amgu_extend_asub0(F,[],F) :- !.
-sharefree_amgu_extend_asub0(F,Vars,F1):-
+:- export(sharefree_amgu_augment_asub0/3).
+sharefree_amgu_augment_asub0(F,[],F) :- !.
+sharefree_amgu_augment_asub0(F,Vars,F1):-
 	sort(F,SF),
 	sort(Vars,SVars),
-	sharefree_amgu_extend_asub1(SF,SVars,F1).
+	sharefree_amgu_augment_asub1(SF,SVars,F1).
 
-sharefree_amgu_extend_asub1(F,[],F) :- !.
-sharefree_amgu_extend_asub1(F,[H|T],F1):-
-	sharefree_amgu_extend_asub1(F,T,F0),
+sharefree_amgu_augment_asub1(F,[],F) :- !.
+sharefree_amgu_augment_asub1(F,[H|T],F1):-
+	sharefree_amgu_augment_asub1(F,T,F0),
 	ord_union(F0,[H/f],F1).
 
 %------------------------------------------------------------------------%
@@ -154,7 +154,7 @@ sharefree_amgu_extend_asub1(F,[H|T],F1):-
 :- export(sharefree_amgu_call_to_success_fact/9).
 sharefree_amgu_call_to_success_fact(Sg,Hv,Head,_K,Sv,Call,_Proj,Prime,Succ) :-
 % exit_to_prime    -------------------------------------------------------
-	sharefree_amgu_extend_asub(Call,Hv,ASub),  
+	sharefree_amgu_augment_asub(Call,Hv,ASub),  
 	peel_equations_frl(Sg, Head,Equations),
 	sharefree_amgu_iterate(Equations,ASub,(Sh,F)),
 	ASub = (_,Vars),
@@ -189,7 +189,7 @@ delete_variables_freeness([X/V|Xs],Vars,[X/V|Res]):-
 :- export(sharefree_amgu_call_to_prime_fact/6).
 sharefree_amgu_call_to_prime_fact(Sg,Hv,Head,Sv,Call,Prime) :-
 % exit_to_prime   --------------------------------------------------------
-	sharefree_amgu_extend_asub(Call,Hv,Exit),
+	sharefree_amgu_augment_asub(Call,Hv,Exit),
 	Call = (_Sh,Extra_Info),
 	sharefree_amgu_exit_to_prime(Sg,Hv,Head,Sv,Exit,Extra_Info,Prime).
 
