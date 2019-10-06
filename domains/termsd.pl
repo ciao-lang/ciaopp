@@ -23,8 +23,8 @@
 	terms_asub_to_native/5,
 	terms_output_interface/2,
 	terms_input_user_interface/5,
-	terms_collect_abstypes/3,
-	terms_rename_abs/4,
+	terms_collect_abstypes_abs/3,
+	terms_rename_abstypes_abs/4,
 	terms_identical_abstract/2,
 	terms_widen/3,
 	terms_widencall/3,
@@ -1608,19 +1608,19 @@ terms_output_interface(ASub,ASub).
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
 
-terms_collect_abstypes([],Types,Types).
-terms_collect_abstypes([_:Type|Abs],Types0,Types):-
+terms_collect_abstypes_abs([],Types,Types).
+terms_collect_abstypes_abs([_:Type|Abs],Types0,Types):-
 	insert(Types0,Type,Types1),
-	terms_collect_abstypes(Abs,Types1,Types).
+	terms_collect_abstypes_abs(Abs,Types1,Types).
 
-terms_rename_abs([],_,_,[]).
-terms_rename_abs([C|Call],Types,Names,[RenC|RenCall]):-
+terms_rename_abstypes_abs([],_,_,[]).
+terms_rename_abstypes_abs([C|Call],Types,Names,[RenC|RenCall]):-
 	C = Var:Type,
 	RenC = Var:RenType,
 	get_value_(Types,Type,RenType),
 %	new_type_name(RenName),
 %	insert_type_name(RenName,[],0),
-	terms_rename_abs(Call,Types,Names,RenCall).
+	terms_rename_abstypes_abs(Call,Types,Names,RenCall).
 
 get_value_(Rens,Type,RenType):-
 	assoc:get_assoc(Type,Rens,RenType), !.

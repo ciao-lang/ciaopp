@@ -780,12 +780,12 @@
 :- dom_op(terms, input_interface/4).
 :- dom_op(terms, input_user_interface/5).
 :- dom_op(terms, asub_to_native/5).
-:- dom_op(terms, concrete(Var,ASub,List), ok(concrete(Var,ASub,List))).
+:- dom_op(terms, concrete/3).
 :- dom_op(terms, unknown_call/4).
 :- dom_op(terms, unknown_entry/3).
 :- dom_op(terms, empty_entry/3).
-:- dom_op(terms, collect_abstypes_abs(ASub,Types0,Types), ok(collect_abstypes(ASub,Types0,Types))).
-:- dom_op(terms, rename_abstypes_abs(ASub,(Types,Names),RenASub), ok(rename_abs(ASub,Types,Names,RenASub))).
+:- dom_op(terms, collect_abstypes_abs(ASub,Types0,Types), ok(collect_abstypes_abs(ASub,Types0,Types))).
+:- dom_op(terms, rename_abstypes_abs(ASub,(Types,Names),RenASub), ok(rename_abstypes_abs(ASub,Types,Names,RenASub))).
 % ---------------------------------------------------------------------------
 :- use_module(domain(ptypes)).
 :- dom_def(ptypes).
@@ -807,12 +807,12 @@
 :- dom_op(ptypes, input_interface/4).
 :- dom_op(ptypes, input_user_interface/5).
 :- dom_op(ptypes, asub_to_native/5).
-:- dom_op(ptypes, concrete(Var,ASub,List), ok(concrete(Var,ASub,List))).
+:- dom_op(ptypes, concrete/3).
 :- dom_op(ptypes, unknown_call/4).
 :- dom_op(ptypes, unknown_entry/3).
 :- dom_op(ptypes, empty_entry/3).
-:- dom_op(ptypes, collect_abstypes_abs(ASub,Types0,Types), ok(collect_abstypes(ASub,Types0,Types))).
-% :- dom_op(ptypes, rename_abstypes_abs(ASub,(Types,Names),RenASub), ok(rename_abs(ASub,Types,Names,RenASub))). % TODO: missing, why?
+:- dom_op(ptypes, collect_abstypes_abs(ASub,Types0,Types), ok(collect_abstypes_abs(ASub,Types0,Types))).
+% :- dom_op(ptypes, rename_abstypes_abs(ASub,(Types,Names),RenASub), ok(rename_abstypes_abs(ASub,Types,Names,RenASub))). % TODO: missing, why?
 %
 % ---------------------------------------------------------------------------
 :- use_module(domain(eterms)).
@@ -837,14 +837,14 @@
 :- dom_op(eterms, input_interface/4).
 :- dom_op(eterms, input_user_interface/5).
 :- dom_op(eterms, asub_to_native/5).
-:- dom_op(eterms, concrete(Var,ASub,List), ok(concrete(Var,ASub,List))).
+:- dom_op(eterms, concrete/3).
 :- dom_op(eterms, unknown_call/4).
 :- dom_op(eterms, unknown_entry/3).
 :- dom_op(eterms, empty_entry/3).
-:- dom_op(eterms, part_conc(Sg,Subs,NSg,NSubs), ok(part_conc(Sg,Subs,NSg,NSubs))).
-:- dom_op(eterms, multi_part_conc(Sg,Subs,List), ok(multi_part_conc(Sg,Subs,List))).
-:- dom_op(eterms, collect_abstypes_abs(ASub,Types0,Types), ok(collect_abstypes(ASub,Types0,Types))).
-:- dom_op(eterms, rename_abstypes_abs(ASub,(Types,Names),RenASub), ok(rename_abs(ASub,Types,Names,RenASub))).
+:- dom_op(eterms, part_conc/4).
+:- dom_op(eterms, multi_part_conc/3).
+:- dom_op(eterms, collect_abstypes_abs(ASub,Types0,Types), ok(collect_abstypes_abs(ASub,Types0,Types))).
+:- dom_op(eterms, rename_abstypes_abs(ASub,(Types,Names),RenASub), ok(rename_abstypes_abs(ASub,Types,Names,RenASub))).
 eterms_obtain_info(_Prop,Vars,ASub,Info) :- !, asub_to_info(eterms,ASub,Vars,Info,_CompProps). % TODO: add pred
 %
 % ---------------------------------------------------------------------------
@@ -870,14 +870,14 @@ eterms_obtain_info(_Prop,Vars,ASub,Info) :- !, asub_to_info(eterms,ASub,Vars,Inf
 :- dom_op(etermsvar, input_interface/4).
 :- dom_op(etermsvar, input_user_interface/5).
 :- dom_op(etermsvar, asub_to_native/5).
-% :- dom_op(etermsvar, concrete(Var,ASub,List), ok(concrete(Var,ASub,List))).
+% :- dom_op(etermsvar, concrete/3).
 :- dom_op(etermsvar, unknown_call/4).
 :- dom_op(etermsvar, unknown_entry/3).
 :- dom_op(etermsvar, empty_entry/3).
-:- dom_op(etermsvar, part_conc(Sg,Subs,NSg,NSubs), ok(part_conc(Sg,Subs,NSg,NSubs))).
-:- dom_op(etermsvar, multi_part_conc(Sg,Subs,List), ok(multi_part_conc(Sg,Subs,List))).
-:- dom_op(etermsvar, collect_abstypes_abs(ASub,Types0,Types), ok(collect_abstypes(ASub,Types0,Types))).
-:- dom_op(etermsvar, rename_abstypes_abs(ASub,(Types,Names),RenASub), ok(rename_abs(ASub,Types,Names,RenASub))).
+:- dom_op(etermsvar, part_conc/4).
+:- dom_op(etermsvar, multi_part_conc/3).
+:- dom_op(etermsvar, collect_abstypes_abs(ASub,Types0,Types), ok(collect_abstypes_abs(ASub,Types0,Types))).
+:- dom_op(etermsvar, rename_abstypes_abs(ASub,(Types,Names),RenASub), ok(rename_abstypes_abs(ASub,Types,Names,RenASub))).
 etermsvar_obtain_info(_Prop,Vars,ASub,Info) :- !, asub_to_info(etermsvar,ASub,Vars,Info,_CompProps). % TODO: add pred
 %
 % ---------------------------------------------------------------------------
@@ -902,12 +902,12 @@ etermsvar_obtain_info(_Prop,Vars,ASub,Info) :- !, asub_to_info(etermsvar,ASub,Va
 :- dom_op(svterms, input_interface/4).
 :- dom_op(svterms, input_user_interface/5).
 :- dom_op(svterms, asub_to_native/5).
-:- dom_op(svterms, concrete(Var,ASub,List), ok(concrete(Var,ASub,List))).
+:- dom_op(svterms, concrete/3).
 :- dom_op(svterms, unknown_call/4).
 :- dom_op(svterms, unknown_entry/3).
 :- dom_op(svterms, empty_entry/3).
-:- dom_op(svterms, collect_abstypes_abs(ASub,Types0,Types), ok(collect_abstypes(ASub,Types0,Types))).
-:- dom_op(svterms, rename_abstypes_abs(ASub,(Types,Names),RenASub), ok(rename_abs(ASub,Types,Names,RenASub))).
+:- dom_op(svterms, collect_abstypes_abs(ASub,Types0,Types), ok(collect_abstypes_abs(ASub,Types0,Types))).
+:- dom_op(svterms, rename_abstypes_abs(ASub,(Types,Names),RenASub), ok(rename_abstypes_abs(ASub,Types,Names,RenASub))).
 %
 % ---------------------------------------------------------------------------
 :- use_module(domain(deftypes)).
@@ -931,12 +931,12 @@ etermsvar_obtain_info(_Prop,Vars,ASub,Info) :- !, asub_to_info(etermsvar,ASub,Va
 :- dom_op(deftypes, input_interface/4).
 :- dom_op(deftypes, input_user_interface/5).
 :- dom_op(deftypes, asub_to_native/5).
-:- dom_op(deftypes, concrete(Var,ASub,List), ok(concrete(Var,ASub,List))).
+:- dom_op(deftypes, concrete/3).
 :- dom_op(deftypes, unknown_call/4).
 :- dom_op(deftypes, unknown_entry/3).
 :- dom_op(deftypes, empty_entry/3).
-:- dom_op(deftypes, collect_abstypes_abs(ASub,Types0,Types), ok(collect_abstypes(ASub,Types0,Types))).
-:- dom_op(deftypes, rename_abstypes_abs(ASub,(Types,Names),RenASub), ok(rename_abs(ASub,Types,Names,RenASub))).
+:- dom_op(deftypes, collect_abstypes_abs(ASub,Types0,Types), ok(collect_abstypes_abs(ASub,Types0,Types))).
+:- dom_op(deftypes, rename_abstypes_abs(ASub,(Types,Names),RenASub), ok(rename_abstypes_abs(ASub,Types,Names,RenASub))).
 :- dom_op(deftypes, contains_parameters(Subst), ok(contains_parameters(Subst))).
 %
 % ===========================================================================
@@ -1217,8 +1217,8 @@ etermsvar_obtain_info(_Prop,Vars,ASub,Info) :- !, asub_to_info(etermsvar,ASub,Va
 :- dom_op(res_plai, unknown_call/4).
 :- dom_op(res_plai, unknown_entry/3).
 :- dom_op(res_plai, empty_entry/3).
-:- dom_op(res_plai, collect_abstypes_abs(ASub,Types0,Types), ok(collect_abstypes(ASub,Types0,Types))).
-:- dom_op(res_plai, rename_abstypes_abs(ASub,(Types,Names),RenASub), ok(rename_abs(ASub,Types,Names,RenASub))).
+:- dom_op(res_plai, collect_abstypes_abs(ASub,Types0,Types), ok(collect_abstypes_abs(ASub,Types0,Types))).
+:- dom_op(res_plai, rename_abstypes_abs(ASub,(Types,Names),RenASub), ok(rename_abstypes_abs(ASub,Types,Names,RenASub))).
 res_plai_obtain_info(_Prop,Vars,ASub,Info) :- !, asub_to_info(res_plai,ASub,Vars,_Info,Info). % TODO: add pred
 :- endif.
 % ---------------------------------------------------------------------------
@@ -1250,8 +1250,8 @@ res_plai_obtain_info(_Prop,Vars,ASub,Info) :- !, asub_to_info(res_plai,ASub,Vars
 :- dom_op(res_plai_stprf, unknown_call/4).
 :- dom_op(res_plai_stprf, unknown_entry/3).
 :- dom_op(res_plai_stprf, empty_entry/3).
-:- dom_op(res_plai_stprf, collect_abstypes_abs(ASub,Types0,Types), ok(collect_abstypes(ASub,Types0,Types))).
-:- dom_op(res_plai_stprf, rename_abstypes_abs(ASub,(Types,Names),RenASub), ok(rename_abs(ASub,Types,Names,RenASub))).
+:- dom_op(res_plai_stprf, collect_abstypes_abs(ASub,Types0,Types), ok(collect_abstypes_abs(ASub,Types0,Types))).
+:- dom_op(res_plai_stprf, rename_abstypes_abs(ASub,(Types,Names),RenASub), ok(rename_abstypes_abs(ASub,Types,Names,RenASub))).
 res_plai_stprf_obtain_info(_Prop,Vars,ASub,Info) :- !, asub_to_info(res_plai_stprf,ASub,Vars,_Info,Info). % TODO: add pred
 :- endif.
 % ---------------------------------------------------------------------------
@@ -1283,8 +1283,8 @@ res_plai_stprf_obtain_info(_Prop,Vars,ASub,Info) :- !, asub_to_info(res_plai_stp
 :- dom_op(sized_types, unknown_call/4).
 :- dom_op(sized_types, unknown_entry/3).
 :- dom_op(sized_types, empty_entry/3).
-:- dom_op(sized_types, collect_abstypes_abs(ASub,Types0,Types), ok(collect_abstypes(ASub,Types0,Types))).
-:- dom_op(sized_types, rename_abstypes_abs(ASub,(Types,Names),RenASub), ok(rename_abs(ASub,Types,Names,RenASub))).
+:- dom_op(sized_types, collect_abstypes_abs(ASub,Types0,Types), ok(collect_abstypes_abs(ASub,Types0,Types))).
+:- dom_op(sized_types, rename_abstypes_abs(ASub,(Types,Names),RenASub), ok(rename_abstypes_abs(ASub,Types,Names,RenASub))).
 sized_types_obtain_info(_Prop,Vars,ASub,Info) :- !, asub_to_info(sized_types,ASub,Vars,_Info,Info). % TODO: add pred
 :- endif.
 % ===========================================================================

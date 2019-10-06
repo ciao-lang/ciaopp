@@ -21,8 +21,8 @@
 	svterms_output_interface/2,
 	svterms_asub_to_native/5,
 	svterms_asub_to_native1/3,
-	svterms_collect_abstypes/3,
-	svterms_rename_abs/4,
+	svterms_collect_abstypes_abs/3,
+	svterms_rename_abstypes_abs/4,
 	svterms_identical_abstract/2,
 	svterms_widen/3,
 	svterms_widencall/3,
@@ -667,7 +667,7 @@ svterms_output_interface(ASub,ASub).
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
 
-svterms_collect_abstypes((T,_),Types0,Types):-
+svterms_collect_abstypes_abs((T,_),Types0,Types):-
 	svterms_collect_abstypes_(T,Types0,Types).
 
 svterms_collect_abstypes_([],Types,Types).
@@ -676,7 +676,7 @@ svterms_collect_abstypes_([_:(_,Type)|Abs],Types0,Types):-
 	svterms_collect_abstypes_(Abs,Types1,Types).
 
 %% No renaming applicable.
-svterms_rename_abs((T0,Rest),Types,Names,(T,Rest)):-  %% JCF: Y Rest que es?
+svterms_rename_abstypes_abs((T0,Rest),Types,Names,(T,Rest)):-  %% JCF: Y Rest que es?
 	svterms_rename_abs_(T0,Types,Names,T).
 
 svterms_rename_abs_([],_,_,[]).

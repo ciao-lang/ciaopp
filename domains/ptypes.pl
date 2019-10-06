@@ -84,8 +84,8 @@ ptypes_unknown_entry(Sg,Qv,Call) :- terms_unknown_entry(Sg,Qv,Call).
 :- export(ptypes_empty_entry/3).
 ptypes_empty_entry(Sg,Qv,Call) :- terms_empty_entry(Sg,Qv,Call).
 
-:- export(ptypes_collect_abstypes/3).
-ptypes_collect_abstypes(ASub,Types0,Types) :- terms_collect_abstypes(ASub,Types0,Types).
+:- export(ptypes_collect_abstypes_abs/3).
+ptypes_collect_abstypes_abs(ASub,Types0,Types) :- terms_collect_abstypes_abs(ASub,Types0,Types).
 
 :- export(ptypes_widencall/3).
 ptypes_widencall(Prime0,Prime1,Result):-
