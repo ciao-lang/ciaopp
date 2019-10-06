@@ -72,8 +72,8 @@ ptypes_input_user_interface(InputUser,Qv,ASub,Sg,MaybeCallASub) :- terms_input_u
 :- export(ptypes_asub_to_native/5).
 ptypes_asub_to_native(ASub,Qv,OutFlag,OutputUser,Comps) :- terms_asub_to_native(ASub,Qv,OutFlag,OutputUser,Comps).
 
-:- export(ptypes_concret/3).
-ptypes_concret(Var,ASub,List) :- terms_concret(Var,ASub,List).
+:- export(ptypes_concrete/3).
+ptypes_concrete(Var,ASub,List) :- terms_concrete(Var,ASub,List).
 
 :- export(ptypes_unknown_call/4).
 ptypes_unknown_call(Sg,Vars,Call,Succ) :- terms_unknown_call(Sg,Vars,Call,Succ).

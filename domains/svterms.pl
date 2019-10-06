@@ -26,7 +26,7 @@
 	svterms_identical_abstract/2,
 	svterms_widen/3,
 	svterms_widencall/3,
-	svterms_concret/3
+	svterms_concrete/3
 	     ],
 	     [assertions,regtypes,basicmodes
 	     ]).
@@ -68,7 +68,7 @@
 	    eterms_identical_abstract/2,
 	    eterms_widen/3,
 	    eterms_widencall/3,
-	    eterms_concret/3,
+	    eterms_concrete/3,
 	    keys_same_value/3,
 	    replaceintype/5,
 	    determinate_sel/3,
@@ -117,7 +117,7 @@
 
 %:- reexport(typeslib(typeslib),[insert_rule/2,insert_type_name/2]). % debug
 
-:- use_module(domain(termsd), [concret/4]).
+:- use_module(domain(termsd), [concrete/4]).
 :- use_module(library(aggregates), [setof/3]).
 :- use_module(library(terms_vars), 
 	[
@@ -179,9 +179,9 @@ svmember(sv(X,Y),SV):-
 	    member(sv(Y,X),SV)
 	).
 
-svterms_concret(Var,ASub,List):-
+svterms_concrete(Var,ASub,List):-
 	abssubst(ASub,TypesComp,_SV),
-	eterms_concret(Var,TypesComp,List).
+	eterms_concrete(Var,TypesComp,List).
 
 %------------------------------------------------------------------%
 svterms_compute_lub([ASub1,ASub2|Rest],Lub):-
@@ -613,7 +613,7 @@ svterms_call_to_success_builtin('arg/3',Sg,Sv,Call,Proj,Succ):-
 	eterms_arg_call_to_success(Sg,Hv,arg(X,Y,Z),Sv,TCall,TProj,TSucc1,TypeX,TypeY),
 	sv_call_to_entry(Sv,Sg,Hv,arg(X,Y,Z),not_provided,[],SVProj,_SVEntry,ExtraInfo), % TODO: add some ClauseKey? (JF)
 	(
-    	    concret(TypeX,ValuesX,[],[]) -> 
+    	    concrete(TypeX,ValuesX,[],[]) -> 
 	    (
 		getargtypes(TypeY,ValuesX,_,_,SameValues,[]) ->
 		buildargsamevalue(SameValues,Y,Z,SVPrime1)

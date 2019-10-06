@@ -31,7 +31,7 @@
 
 :- use_module(domain(termsd), 
 	[ 
-	concret/4,
+	concrete/4,
 	shortening_el/2 
 	]).
 
@@ -531,7 +531,7 @@ evalterms_call_to_success_builtin('arg/3',Sg,Sv,Call,Proj,Succ):-
 	insert_type_name(NZ,[],0),
 	sort([X:(NX,int),Y:(NY,term),Z:(NZ,term)],Prime1), % postcondition builtin
 	( 
-	    concret(TypeX,ValuesX,[],[]) -> 
+	    concrete(TypeX,ValuesX,[],[]) -> 
 	    (
 		getargtypes(TypeY,ValuesX,ValuesY,[]) ->
 		resetunion,
@@ -559,8 +559,8 @@ evalterms_call_to_success_builtin('functor/3',Sg,Sv,Call,Proj,Succ):-
 	get_type(Y,Entry,TypeY),
 	get_type(Z,Entry,TypeZ),
 	( getfunctors(TypeX,ValuesX) -> true ; true),
-	( concret(TypeY,ValuesY,[],[]) -> true ; true),
-	( concret(TypeZ,ValuesZ,[],[]) -> true ; true),
+	( concrete(TypeY,ValuesY,[],[]) -> true ; true),
+	( concrete(TypeZ,ValuesZ,[],[]) -> true ; true),
 	  new_type_name(NX),
 	  new_type_name(NY),
 	  new_type_name(NZ),
@@ -700,7 +700,7 @@ getvalues(X,Proj,X/Vals,Concr):-
 	X == Y,
 	(
 %	    member(Type,[int,flt,num,arithexpression]) ->
-	    concret(Type,Values,[],[]) -> 
+	    concrete(Type,Values,[],[]) -> 
 %	    get_type_definition(Type,Vals)
 	    Vals = Values
 	;

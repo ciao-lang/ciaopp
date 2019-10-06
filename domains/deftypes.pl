@@ -33,9 +33,9 @@
 	deftypes_contains_parameters/1,
 	absu/1,
 %	is_interesting_type/1
-	deftypes_concret/3
+	deftypes_concrete/3
 	%
-%	concret/4,
+%	concrete/4,
 %	normalize_type_asub/2,
 %	revert_types/4,
 %	shortening_el/2
@@ -105,7 +105,7 @@ variable and Type is a pure type term @cite{Dart-Zobel}.
 	variables_are_top_type/2,
 	terms_special_builtin/5,
 	terms_success_builtin/5,
-	terms_concret/3,
+	terms_concrete/3,
 	terms_unknown_call/4]).
 
 :- use_module(engine(internals), [module_concat/3]).
@@ -186,7 +186,7 @@ deftypes_special_builtin(SgKey,Sg,Subgoal,Type,Condvars) :- terms_special_builti
 
 deftypes_success_builtin(Type,Sv_uns,Condvars,Call,Succ) :- terms_success_builtin(Type,Sv_uns,Condvars,Call,Succ).
 
-deftypes_concret(Var,ASub,List) :- terms_concret(Var,ASub,List).
+deftypes_concrete(Var,ASub,List) :- terms_concrete(Var,ASub,List).
 
 deftypes_unknown_call(Sg,Vars,Call,Succ) :- terms_unknown_call(Sg,Vars,Call,Succ).
 

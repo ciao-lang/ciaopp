@@ -780,7 +780,7 @@
 :- dom_op(terms, input_interface/4).
 :- dom_op(terms, input_user_interface/5).
 :- dom_op(terms, asub_to_native/5).
-:- dom_op(terms, concrete(Var,ASub,List), ok(concret(Var,ASub,List))).
+:- dom_op(terms, concrete(Var,ASub,List), ok(concrete(Var,ASub,List))).
 :- dom_op(terms, unknown_call/4).
 :- dom_op(terms, unknown_entry/3).
 :- dom_op(terms, empty_entry/3).
@@ -807,7 +807,7 @@
 :- dom_op(ptypes, input_interface/4).
 :- dom_op(ptypes, input_user_interface/5).
 :- dom_op(ptypes, asub_to_native/5).
-:- dom_op(ptypes, concrete(Var,ASub,List), ok(concret(Var,ASub,List))).
+:- dom_op(ptypes, concrete(Var,ASub,List), ok(concrete(Var,ASub,List))).
 :- dom_op(ptypes, unknown_call/4).
 :- dom_op(ptypes, unknown_entry/3).
 :- dom_op(ptypes, empty_entry/3).
@@ -837,7 +837,7 @@
 :- dom_op(eterms, input_interface/4).
 :- dom_op(eterms, input_user_interface/5).
 :- dom_op(eterms, asub_to_native/5).
-:- dom_op(eterms, concrete(Var,ASub,List), ok(concret(Var,ASub,List))).
+:- dom_op(eterms, concrete(Var,ASub,List), ok(concrete(Var,ASub,List))).
 :- dom_op(eterms, unknown_call/4).
 :- dom_op(eterms, unknown_entry/3).
 :- dom_op(eterms, empty_entry/3).
@@ -870,7 +870,7 @@ eterms_obtain_info(_Prop,Vars,ASub,Info) :- !, asub_to_info(eterms,ASub,Vars,Inf
 :- dom_op(etermsvar, input_interface/4).
 :- dom_op(etermsvar, input_user_interface/5).
 :- dom_op(etermsvar, asub_to_native/5).
-% :- dom_op(etermsvar, concrete(Var,ASub,List), ok(concret(Var,ASub,List))).
+% :- dom_op(etermsvar, concrete(Var,ASub,List), ok(concrete(Var,ASub,List))).
 :- dom_op(etermsvar, unknown_call/4).
 :- dom_op(etermsvar, unknown_entry/3).
 :- dom_op(etermsvar, empty_entry/3).
@@ -902,7 +902,7 @@ etermsvar_obtain_info(_Prop,Vars,ASub,Info) :- !, asub_to_info(etermsvar,ASub,Va
 :- dom_op(svterms, input_interface/4).
 :- dom_op(svterms, input_user_interface/5).
 :- dom_op(svterms, asub_to_native/5).
-:- dom_op(svterms, concrete(Var,ASub,List), ok(concret(Var,ASub,List))).
+:- dom_op(svterms, concrete(Var,ASub,List), ok(concrete(Var,ASub,List))).
 :- dom_op(svterms, unknown_call/4).
 :- dom_op(svterms, unknown_entry/3).
 :- dom_op(svterms, empty_entry/3).
@@ -931,7 +931,7 @@ etermsvar_obtain_info(_Prop,Vars,ASub,Info) :- !, asub_to_info(etermsvar,ASub,Va
 :- dom_op(deftypes, input_interface/4).
 :- dom_op(deftypes, input_user_interface/5).
 :- dom_op(deftypes, asub_to_native/5).
-:- dom_op(deftypes, concrete(Var,ASub,List), ok(concret(Var,ASub,List))).
+:- dom_op(deftypes, concrete(Var,ASub,List), ok(concrete(Var,ASub,List))).
 :- dom_op(deftypes, unknown_call/4).
 :- dom_op(deftypes, unknown_entry/3).
 :- dom_op(deftypes, empty_entry/3).

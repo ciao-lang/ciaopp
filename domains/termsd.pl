@@ -28,9 +28,9 @@
 	terms_identical_abstract/2,
 	terms_widen/3,
 	terms_widencall/3,
-	terms_concret/3,
+	terms_concrete/3,
 	%
-	concret/4,
+	concrete/4,
 	normalize_type_asub/2,
 	revert_types/4,
 	shortening_el/2,
@@ -167,7 +167,7 @@ get_type(Var,[_|ASub],T):-
 
 concret_def([],L,L,_).
 concret_def([T1|Def],List1,List2,Seen):-
-	concret(T1,List1,List0,Seen),
+	concrete(T1,List1,List0,Seen),
 	concret_def(Def,List0,List2,Seen).
 
 addarg([],_,_,L,L).
@@ -185,8 +185,8 @@ buildarg([F|Prev],L,T,A,ListArg):-
 concret_arg(0,_,P,P,_,_).
 concret_arg(A,Term,Prev,List,List2,Seen):-
 	arg(A,Term,Arg1),
-	concret(Arg1,ListArg1,[],Seen),
-%	concret(Arg1,ListArg1,List2,Seen),
+	concrete(Arg1,ListArg1,[],Seen),
+%	concrete(Arg1,ListArg1,List2,Seen),
         buildarg(Prev,NewPrev,List2,A,ListArg1),
 	A1 is A -1,
 	concret_arg(A1,Term,NewPrev,List,List2,Seen).
@@ -199,7 +199,7 @@ defined_type_symbol(Type,Def):-
 	em_defined_type_symbol(Type1,Def).
 
 
-concret(Type,List1,List2,Seen):-
+concrete(Type,List1,List2,Seen):-
 	defined_type_symbol(Type,Def),!,
 	( 
 	    member(Type,Seen) ->
@@ -207,20 +207,20 @@ concret(Type,List1,List2,Seen):-
 	;
 	    concret_def(Def,List1,List2,[Type|Seen])
 	).
-concret(Type,List1,List2,Seen):-
+concrete(Type,List1,List2,Seen):-
 	compound_pure_type_term(Type,Term,F,A),!,
 	functor(Seed,F,A),
 	concret_arg(A,Term,[Seed|List2],List1,List2,Seen).
 %	append(List,List2,List1).
-concret(^(Term),[Term|List],List,_).
-concret(Term,[Term|List],List,_):- number(Term).
-concret(Term,[Term|List],List,_):- Term = [_|_].
-concret(Term,[Term|List],List,_):- Term = [].
+concrete(^(Term),[Term|List],List,_).
+concrete(Term,[Term|List],List,_):- number(Term).
+concrete(Term,[Term|List],List,_):- Term = [_|_].
+concrete(Term,[Term|List],List,_):- Term = [].
 	
 
-terms_concret(Var,ASub,List):-
+terms_concrete(Var,ASub,List):-
 	get_type(Var,ASub,Type),
-	concret(Type,List,[],[]).
+	concrete(Type,List,[],[]).
 	
 
 %------------------------------------------------------------------%

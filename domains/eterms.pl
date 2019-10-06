@@ -26,7 +26,7 @@
 	eterms_identical_abstract/2,
 	eterms_widen/3,
 	eterms_widencall/3,
-	eterms_concret/3,
+	eterms_concrete/3,
 	eterms_part_conc/4,
 	eterms_multi_part_conc/3,
 	get_type/3,
@@ -118,7 +118,7 @@ Type is a pure type term @cite{Dart-Zobel}.
 
 % DTM: types for assertions
 :- use_module(domain(gr), [extrainfo/1]).
-:- use_module(domain(termsd), [concret/4,	revert_types/4]).
+:- use_module(domain(termsd), [concrete/4,	revert_types/4]).
 
 :- use_module(library(hiordlib), [maplist/2, maplist/3]).
 :- use_module(library(messages)).
@@ -164,9 +164,9 @@ get_type(Var,[_|ASub],T):-
 	get_type(Var,ASub,T).
 
 
-eterms_concret(Var,ASub,List):-
+eterms_concrete(Var,ASub,List):-
 	get_type(Var,ASub,Type),
-	concret(Type,List,[],[]).
+	concrete(Type,List,[],[]).
 
 %------------------------------------------------------------------%
 
@@ -1662,7 +1662,7 @@ eterms_arg_call_to_success(Sg,Hv,arg(X,Y,Z),Sv,Call,Proj,Succ,TypeX,TypeY):-
 	insert_type_name(NZ,[],0),
 	sort([X:(NX,int),Y:(NY,term),Z:(NZ,term)],Prime1), % postcondition builtin
 	( 
-	    concret(TypeX,ValuesX,[],[]) -> 
+	    concrete(TypeX,ValuesX,[],[]) -> 
 	    (
 		getargtypes(TypeY,ValuesX,ValuesY,[],_,_) ->
 		resetunion,
@@ -1691,8 +1691,8 @@ eterms_call_to_success_builtin('functor/3',Sg,Sv,Call,Proj,Succ):- !,
 	get_type(Y,Entry,TypeY),
 	get_type(Z,Entry,TypeZ),
 	( getfunctors(TypeX,ValuesX) -> true ; true),
-	( concret(TypeY,ValuesY,[],[]) -> true ; true),
-	( concret(TypeZ,ValuesZ,[],[]) -> true ; true),
+	( concrete(TypeY,ValuesY,[],[]) -> true ; true),
+	( concrete(TypeZ,ValuesZ,[],[]) -> true ; true),
 	  new_type_name(NX),
 	  new_type_name(NY),
 	  new_type_name(NZ),
@@ -2129,7 +2129,7 @@ getvalues_comp_cond([V|Vars],Prime,[Val|Vals]):-
 getvaluescomp(X,Prime,X/Vals):-
 	member(Y:(_,Type),Prime),
 	X == Y, % TODO: cut if X is unique in Prime
-	concret(Type,Vals,[],[]).
+	concrete(Type,Vals,[],[]).
 
 
 getvaluescomp_cond(X,Prime,X/Vals):-
@@ -2138,7 +2138,7 @@ getvaluescomp_cond(X,Prime,X/Vals):-
 	( 
 	    Type = term -> Vals = [X]
 	;
-	    concret(Type,Vals,[],[])
+	    concrete(Type,Vals,[],[])
 	).
 
 
@@ -2152,7 +2152,7 @@ getvalues(X,Proj,X/Vals,Concr):-
 	X == Y, % TODO: cut if X is unique in Proj
 	(
 %	    member(Type,[int,flt,num,arithexpression]) ->
-	    concret(Type,Values,[],[]) -> 
+	    concrete(Type,Values,[],[]) -> 
 %	    get_type_definition(Type,Vals)
 	    Vals = Values
 	;
@@ -2347,14 +2347,14 @@ splitlist_([(T,S)|List],[T|Terms],Subs):-
 get_all_paths([],_,[]).
 get_all_paths([V|Vars_s],ASub,[VPaths|AllPaths]):-
 	get_type(V,ASub,Type),
-	partial_concret(Type,VPaths,[],[]),
+	partial_concrete(Type,VPaths,[],[]),
 	get_all_paths(Vars_s,ASub,AllPaths).
 
 
 
 partial_concret_def([],L,L,_).
 partial_concret_def([T1|Def],List1,List2,Seen):-
-	partial_concret(T1,List1,List0,Seen),
+	partial_concrete(T1,List1,List0,Seen),
 	partial_concret_def(Def,List0,List2,Seen).
 
 addarg([],_,_,_,L,L).
@@ -2373,7 +2373,7 @@ buildarg([(F,S)|Prev],L,T,A,ListArg):-
 partial_concret_arg(0,_,P,P,_,_) :- !.
 partial_concret_arg(A,Term,Prev,List,List2,Seen):-
 	arg(A,Term,Arg1),
-	partial_concret(Arg1,ListArg1,[],Seen),
+	partial_concrete(Arg1,ListArg1,[],Seen),
         buildarg(Prev,NewPrev,List2,A,ListArg1),
 	A1 is A -1,
 	partial_concret_arg(A1,Term,NewPrev,List,List2,Seen).
@@ -2387,7 +2387,7 @@ defined_type_symbol(Type,Def):-
 	em_defined_type_symbol(Type1,Def).
 
 
-partial_concret(Type,List1,List2,Seen):-
+partial_concrete(Type,List1,List2,Seen):-
 	defined_type_symbol(Type,Def),!,
 	( 
 	    member(Type,Seen) ->
@@ -2397,15 +2397,15 @@ partial_concret(Type,List1,List2,Seen):-
 	;
 	    partial_concret_def(Def,List1,List2,[Type|Seen])
 	).
-partial_concret(Type,List1,List2,Seen):-
+partial_concrete(Type,List1,List2,Seen):-
 	compound_pure_type_term(Type,Term,F,A),!,
 	functor(Seed,F,A),
 	partial_concret_arg(A,Term,[(Seed,[])|List2],List1,List2,Seen).
-partial_concret(^(Term),[(Term,[])|List],List,_) :- !.
-partial_concret(Term,[(Term,[])|List],List,_):- number(Term),!.
-partial_concret(Term,[(Term,[])|List],List,_):- Term = [_|_],!.
-partial_concret(Term,[(Term,[])|List],List,_):- Term = [],!.
-partial_concret(Type,[(A,[A:(N,Type)])|List],List,_):-
+partial_concrete(^(Term),[(Term,[])|List],List,_) :- !.
+partial_concrete(Term,[(Term,[])|List],List,_):- number(Term),!.
+partial_concrete(Term,[(Term,[])|List],List,_):- Term = [_|_],!.
+partial_concrete(Term,[(Term,[])|List],List,_):- Term = [],!.
+partial_concrete(Type,[(A,[A:(N,Type)])|List],List,_):-
 	    new_type_name(N),
 	    insert_type_name(N,[],0).
 
