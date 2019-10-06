@@ -143,12 +143,12 @@ shfrlin_extend(Prime,Sv,Call,(Succ_sh,Succ_fr,Succ_lin)):-
 %                            ABSTRACT AMGU                               %
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% sharefree_amgu(+,+,+,-)                                                %
-% sharefree_amgu(Sg,Head,ASub,AMGU)                                      %
+% shfrlin_amgu_amgu(+,+,+,-)                                             %
+% shfrlin_amgu_amgu(Sg,Head,ASub,AMGU)                                   %
 % @var{AMGU} is the abstract unification between @var{Sg} and @var{Head}.%
 %------------------------------------------------------------------------%
-:- export(shfrlin_amgu/4).
-shfrlin_amgu(Sg,Head,ASub,AMGU):-
+:- export(shfrlin_amgu_amgu/4).
+shfrlin_amgu_amgu(Sg,Head,ASub,AMGU):-
 	peel_equations_frl(Sg, Head,Eqs),
 	shfrlin_amgu_iterate(Eqs,ASub,AMGU),!.
 	

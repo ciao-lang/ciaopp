@@ -84,12 +84,12 @@ share_amgu_iterate([(X,Ts)|Eqs],Flag,ASub, ASub2):-
 %                            ABSTRACT AMGU                               %
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% share_amgu(+,+,+,-)                                                    %
-% share_amgu(Sg,Head,ASub,AMGU)                                          %
+% share_amgu_amgu(+,+,+,-)                                               %
+% share_amgu_amgu(Sg,Head,ASub,AMGU)                                     %
 % @var{AMGU} is the abstract unification between @var{Sg} and @var{Head}.%
 %------------------------------------------------------------------------%
-:- export(share_amgu/4).
-share_amgu(Sg,Head,ASub,AMGU):-
+:- export(share_amgu_amgu/4).
+share_amgu_amgu(Sg,Head,ASub,AMGU):-
 	peel_equations(Sg,Head,Eqs),
 	share_amgu_iterate(Eqs,star,ASub,AMGU),!.
 

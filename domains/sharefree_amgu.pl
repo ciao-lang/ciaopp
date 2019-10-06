@@ -112,12 +112,12 @@ sharefree_amgu_exit_to_prime(_Sg,_Hv,_Head,Sv,Exit,ExtraInfo,Prime):-
 %                            ABSTRACT AMGU                               %
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% sharefree_amgu(+,+,+,-)                                                %
-% sharefree_amgu(Sg,Head,ASub,AMGU)                                      %
+% sharefree_amgu_amgu(+,+,+,-)                                           %
+% sharefree_amgu_amgu(Sg,Head,ASub,AMGU)                                 %
 % @var{AMGU} is the abstract unification between @var{Sg} and @var{Head}.%
 %------------------------------------------------------------------------%
-:- export(sharefree_amgu/4).
-sharefree_amgu(Sg,Head,ASub,AMGU):-
+:- export(sharefree_amgu_amgu/4).
+sharefree_amgu_amgu(Sg,Head,ASub,AMGU):-
 	peel_equations_frl(Sg, Head,Eqs),
 	sharefree_amgu_iterate(Eqs,ASub,AMGU),!.
 	

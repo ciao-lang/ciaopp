@@ -12,16 +12,36 @@
 :- export(dom_sent/3).
 dom_sent((:- dom_def(AbsInt)), C2, _M) :- !,
         C2 = aidomain(AbsInt).
-dom_sent((:- dom_op(C)), C2, _M) :-
-	% check_dom_op(C), % (enable to check op)
-        C2 = C.
-
-check_dom_op(C) :-
-	nonvar(C),
-	( C = (H :- !, B) -> true
-	; err(wrong_op(C))
+dom_sent((:- dom_op(AbsInt,Spec)), C2, _M) :- !,
+	% AbsInt implements operation Spec
+	Spec = N/A,
+	functor(Op, N, A),
+	Op =.. [_|As],
+	atom_concat('_', N, ImplN0),
+	atom_concat(AbsInt, ImplN0, ImplN),
+	B =.. [ImplN|As],
+	H =.. [N,AbsInt|As],
+        C2 = (H :- !, B).
+dom_sent((:- dom_op(AbsInt,H,B0)), C2, _M) :-
+	H =.. [Nh|As],
+	( B0 = from(AbsIntB,B1) ->
+	    B1 =.. [Nb0|Bs],
+	    atom_concat('_', Nb0, Nb1),
+	    atom_concat(AbsIntB, Nb1, Nb),
+	    B =.. [Nb|Bs]
+	; B0 = ok(B1) ->
+	    B1 =.. [Nb0|Bs],
+	    atom_concat('_', Nb0, Nb1),
+	    atom_concat(AbsInt, Nb1, Nb),
+	    B =.. [Nb|Bs]
+	; B = B0
 	),
-	H =.. [Nh,AbsInt|As],
+	B2 = B,
+	% check_dom_op(Nh,AbsInt,As,B), % (enable to check op)
+	H2 =.. [Nh,AbsInt|As],
+        C2 = (H2 :- !, B2).
+
+check_dom_op(Nh,AbsInt,As,B) :-
 	B =.. [Nb|Bs],
 	( atom(AbsInt),
 	  atom_concat(AbsInt, Nb0, Nb),
