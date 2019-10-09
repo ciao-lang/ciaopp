@@ -69,7 +69,7 @@ main_(Args) :-
 	!,
 	ciaopp_cmd(Cmd, Flags).
 main_(_Args) :-
-	usage_message(Text),
+	short_usage_message(Text),
 	format(user_error,Text,[]).
 
 % ===========================================================================
@@ -79,6 +79,10 @@ ciaopp_banner :-
 	display('Ciao Preprocessor (integrated Alpha version)' ), nl,
 	display(' | This is an alpha distribution, meant only for testing. Please do let us '), nl,
 	display(' | know at ciaopp-bug<at>clip.dia.fi.upm.es any problems you may have.'), nl, nl.
+
+short_usage_message(
+"Use 'ciaopp --help' for help.
+").
 
 usage_message(
 "Usage 1: (batch mode)
@@ -134,6 +138,7 @@ Execution Examples:
   ciaopp -O myfile.pl
   ciaopp -A myfile.pl -ftypes=terms -f modes=pd
   ciaopp -T
+
 ").
 
 % ---------------------------------------------------------------------------
@@ -150,6 +155,12 @@ parse_opts([], Cmd, Flags) :- !,
 	),
 	Flags = [].
 % commands
+parse_opts(['-h'|_], Cmd, Flags) :- !,
+	Cmd = help,
+	Flags = [].
+parse_opts(['--help'|_], Cmd, Flags) :- !,
+	Cmd = help,
+	Flags = [].
 parse_opts(['-T'|ToplevelOpts], Cmd, Flags) :- !,
 	Cmd = toplevel(ToplevelOpts), % TODO: make behavior consistent with other ciao tools
 	Flags = [].
@@ -187,11 +198,10 @@ parse_opts([FV|Opts], Cmd, Flags) :- is_flag_value_p(FV, F, V), !,
 	Flags = [p(F,V)|Flags0],
 	parse_opts(Opts, Cmd, Flags0).
 % unknown argument
-parse_opts([F|Opts], Cmd, Flags) :-
+parse_opts([F|_Opts], _Cmd, _Flags) :-
 	display('Unrecognized option '),
-	displayq(F),
-	nl, % TODO: error, abort?
-	parse_opts(Opts, Cmd, Flags).
+	displayq(F), nl,
+	fail.
 
 is_flag_value(FV, F, V) :- atom_concat([F, '=', V], FV).
 
@@ -218,6 +228,9 @@ is_flag_value_p(FV, F, V) :- atom_concat(['-p', F, '=', V], FV).
 	get_menu_flag/3]).
 :- use_module(library(toplevel), [toplevel/1]).
 
+ciaopp_cmd(help, _Flags) :- !,
+	usage_message(Text),
+	format(user_error,Text,[]).
 ciaopp_cmd(toplevel(Opts), _Flags) :- !,
 	ciaopp_toplevel(Opts).
 ciaopp_cmd(customize_and_preprocess(File), _Flags) :- !,
