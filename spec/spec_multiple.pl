@@ -415,16 +415,16 @@ get_entry_numbers([(Parents,_)|Completes],Entries):-
 	append(L,More,Entries),
 	get_entry_numbers(Completes,More).
 
-% TODO: replace by is_entrykey and decode_entrykey
+% TODO: replace by is_entrykey and decode_entrykey, etc.
 get_entry_in_parents([],[]).
 get_entry_in_parents([(K,_N)|Parents],More):-
 	decode_litkey(K,_,_,_,_),!,
 	get_entry_in_parents(Parents,More).
 get_entry_in_parents([(Clause,_N)|Parents],[Name|More]):-
-	decode_entrykey(Clause,Name,_Arity,_),!,
+	decode_entrykey(Clause,Name,_Arity,_),!, % (for entry assertions)
 	get_entry_in_parents(Parents,More).
 get_entry_in_parents([(Pred,_N)|Parents],[Name|More]):-
-	decode_predkey(Pred,Name,_A),  % IG not possible?
+	decode_predkey(Pred,Name,_A), % (for exported)
  	get_entry_in_parents(Parents,More).
 
 assignments([(Completes,[])],[[]],_,[(Completes,Name)],_,Name,_Arity,[]):-!.

@@ -370,7 +370,7 @@ b_up_mark_prev_parents([Fs|Fss], Completes, AbsInt, SCCs) :-
 
 b_up_prev_literal([],[],_,_).
 b_up_prev_literal([(Clid, _)|Fs],Completes,AbsInt,SCCs) :-
-  is_entrykey(Clid), !,
+	is_entrykey(Clid), !,
 	b_up_prev_literal(Fs,Completes,AbsInt,SCCs).
 b_up_prev_literal([(Lit,Id)|Fs],Completes,AbsInt,SCCs):-
 	decode_litkey(Lit,N,A,_,_),

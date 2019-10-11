@@ -23,8 +23,9 @@
 	  decode_entrykey/4,
 	  decode_predkey/3,
 	  is_clkey/1,
-	  is_entrykey/1,
+	  %is_predkey/1,
 	  is_litkey/1,
+	  is_entrykey/1,
 	  is_directive/3,
           is_clause/4,
 	  orig_clause_id/2,
@@ -452,6 +453,7 @@ inverse_rewrite_source_body(A,A):- !,
 %% inverse_rewrite_source_body(indep(L),indep(L)):- !.
 
 %---------------------------------------------------------------------------
+% TODO: it may not work if predicates contain '/' characters, fix!
 
 :- pred is_litkey(Id):: atm 
 # "Succeeds if @var{Id} is a valid atom identifier. The predicate name
@@ -467,13 +469,20 @@ is_clkey(Id):-
 	\+ decode_litkey(Id,_,_,_,_),
 	decode_clkey(Id,_N,_A,_C).
 
+:- pred is_predkey(Id):: atm
+# "Succeeds if @var{Id} is a valid predicate identifier. The predicate
+  name must not contain '/' characters.".
 is_predkey(Id):-
 	\+ decode_litkey(Id,_,_,_,_),
 	\+ decode_clkey(Id,_N,_A,_C),
-  decode_predkey(Id,_,_).
+	decode_predkey(Id,_,_).
 
-is_entrykey(Id):-
-	is_clkey(Id).
+:- pred is_entrykey(Id):: atm
+# "Succeeds if @var{Id} is a valid @em{entry point} identifier
+  (predkey for exported predicates, clkey for entry assertions)".
+
+is_entrykey(Id):- is_clkey(Id), !.
+is_entrykey(Id):- is_predkey(Id).
 
 %---------------------------------------------------------------------------
 % Management of internal keys

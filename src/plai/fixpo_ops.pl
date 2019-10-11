@@ -679,10 +679,10 @@ collect_exported_completes(AbsInt,Initial_Comp):-
 
 filter_exported([],[]).
 filter_exported([(Fs,Id)|Completes],Initial_Comp):-
-	(contains_exported(Fs) ->
-	 Initial_Comp = [Id|More_Comp]
-	;
-	    Initial_Comp = More_Comp),
+	( contains_exported(Fs) ->
+	   Initial_Comp = [Id|More_Comp]
+	; Initial_Comp = More_Comp
+	),
 	filter_exported(Completes,More_Comp).
 
 contains_exported([(Key,_)|_]):-

@@ -181,7 +181,7 @@ subgraph_write_footer(S) :-
 write_edges(S, Scope, Id) :-
         ( % failure-driven loop
           edge(Scope,Id,PId,LitKey),
-            ( is_entrykey(LitKey) ->
+            ( is_entrykey(LitKey) -> % TODO: OK?
                 format(S, 'entry~w [shape=Mdiamond];~n', [PId]),
                 format(S, 'entry~w -> ~w;~n', [PId,Id])
             ;
