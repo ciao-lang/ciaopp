@@ -157,12 +157,12 @@ plai(Cls,Ds,Fixp,AbsInt,[TimeInfo,MemoryInfo|Info]):-
   dom_statistics(AbsInt, Info).
 
 do_plai(Cls,Ds,Fixp, AbsInt, TPre, TAna):-
-	init_fixpoint(Fixp),
-	init_unfold,
-	init_unfold_times,
-	cleanup_trans_clauses,
-	undo_errors,
-	stat_no_store(preprocess(Fixp,AbsInt,Cls,Ds,Ps), TPre),
+	init_fixpoint(Fixp), !, % TODO: fix, move cuts deeper
+	init_unfold, !, % TODO: fix, move cuts deeper
+	init_unfold_times, !, % TODO: fix, move cuts deeper
+	cleanup_trans_clauses, !, % TODO: fix, move cuts deeper
+	undo_errors, !, % TODO: fix, move cuts deeper
+	stat_no_store(preprocess(Fixp,AbsInt,Cls,Ds,Ps), TPre), !, % TODO: fix, move cuts deeper
 	message(inform, ['{preprocessed for the ', Fixp, ' fixpoint in ',TPre, ' msec.}\n']),
 	reset_mem_usage,
 	stat_no_store(topdown_analysis(Fixp,AbsInt,Ps),TAna).
@@ -390,11 +390,11 @@ mod_plai(Cls,Ds,Fixp,AbsInt,[Time|Info]):-
 	dom_statistics(AbsInt, Info).
 
 do_mod_plai(Cls,Ds,Fixp,AbsInt,Time):-
-	init_fixpoint(Fixp),
-	init_unfold,
-	cleanup_trans_clauses,
-	undo_errors,
-	stat_no_store(preprocess(Fixp,AbsInt,Cls,Ds,Ps), TPre),
+	init_fixpoint(Fixp), !, % TODO: fix, move cuts deeper
+	init_unfold, !, % TODO: fix, move cuts deeper
+	cleanup_trans_clauses, !, % TODO: fix, move cuts deeper
+	undo_errors, !, % TODO: fix, move cuts deeper
+	stat_no_store(preprocess(Fixp,AbsInt,Cls,Ds,Ps), TPre), !, % TODO: fix, move cuts deeper
   message(inform, ['{preprocessed for ', Fixp, ' in ', TPre, ' msec.}\n']),
 	stat_no_store(mod_topdown_analysis(AbsInt,Fixp,Ps), TAna),
 	message(inform, ['{analyzed by ', Fixp, ' using ', AbsInt, ' in ', TAna,
