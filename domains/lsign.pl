@@ -10,7 +10,7 @@
 	  lsign_input_user_interface/5,  
 	  lsign_input_interface/4,  
 	  lsign_asub_to_native/5,
-	  lsign_is_subset/2,
+	  lsign_abs_subset/2,
 	  lsign_less_or_equal/2,
 	  lsign_glb/3,
 	  lsign_project/4,    
@@ -1234,8 +1234,8 @@ may_be_var(X):- ( X=[] ; true ), !.
 lsign_less_or_equal(_ACons0,_ACons1):-
 	throw(not_implemented(lsign_less_or_equal)).
 
-lsign_is_subset(_LASub1,_LASub2):-
-	throw(not_implemented(lsign_is_subset)).
+lsign_abs_subset(_LASub1,_LASub2):-
+	throw(not_implemented(lsign_abs_subset)).
 
 lsign_eliminate_equivalent(LSucc0,LSucc):- !, sort(LSucc0,LSucc).
 lsign_eliminate_equivalent(_LSucc0,_LSucc):-

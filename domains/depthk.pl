@@ -14,7 +14,7 @@
 	  depthk_less_or_equal/2,  
 	  depthk_asub_to_native/5, 
 	  depthk_project/3,   
-	  depthk_sort/2,      
+	  depthk_abs_sort/2,      
 	  depthk_special_builtin/5,  
 	  depthk_success_builtin/5,
 	  depthk_unknown_call/4, 
@@ -72,7 +72,7 @@ depthk_call_to_entry(_Sv,Sg,_Hv,Head,_K,Fv,Proj,Entry,Flag):-
 	Flag = yes,
 	copy_term((Sg,Proj),(NewTerm,NewProj_u)),
 	Head = NewTerm,
-	depthk_sort(NewProj_u,NewProj),
+	depthk_abs_sort(NewProj_u,NewProj),
 	variables_are_variables(Fv,Free),
 	merge(Free,NewProj,Entry).
 depthk_call_to_entry(_Sv,_Sg,[],_Head,_K,Fv,_Proj,Entry,no):- !,
@@ -81,7 +81,7 @@ depthk_call_to_entry(_Sv,Sg,Hv,Head,_K,Fv,Proj,Entry,Unifiers):-
 	peel(Head,Sg,Unifiers,[]),
 	depthk_unify(Unifiers,Proj,Entry0), !,
 	depthk_bu_project(Entry0,Hv,Entry1),
-	depthk_sort(Entry1,Entry2),
+	depthk_abs_sort(Entry1,Entry2),
 	variables_are_variables(Fv,Tmp),
 	merge(Tmp,Entry2,Entry).
 depthk_call_to_entry(_Sv,_Sg,_Hv,_Head,_K,_Fv,_Proj,'$bottom',no).
@@ -116,13 +116,13 @@ depthk_exit_to_prime(Sg,Hv,Head,_Sv,Exit,yes,Prime):- !,
 	depthk_project(Hv,Exit,BPrime),
 	copy_term((Head,BPrime),(NewTerm,NewPrime)),
 	Sg = NewTerm,
-	depthk_sort(NewPrime,Prime).	
+	depthk_abs_sort(NewPrime,Prime).	
 depthk_exit_to_prime(_Sg,[],_Head,_Sv,_Exit,_ExtraInfo,Prime):- !,
 	Prime = [].
 depthk_exit_to_prime(_Sg,_Hv,_Head,Sv,Exit,Unifiers,Prime):-
 	depthk_unify(Unifiers,Exit,Prime0),
 	depthk_bu_project(Prime0,Sv,Prime1),
-	depthk_sort(Prime1,Prime).
+	depthk_abs_sort(Prime1,Prime).
 
 %-------------------------------------------------------------------------
 %-------------------------------------------------------------------------
@@ -166,13 +166,13 @@ depthk_project(Vars,ASub,Proj):-
 %                      ABSTRACT SORT
 %-------------------------------------------------------------------------
 %-------------------------------------------------------------------------
-% depthk_sort(+,-)                                                       %
-% depthk_sort(Asub_u,Asub)                                               %
+% depthk_abs_sort(+,-)                                                       %
+% depthk_abs_sort(Asub_u,Asub)                                               %
 % Sorts the list of equs.                                                %
 %-------------------------------------------------------------------------
 
-depthk_sort('$bottom','$bottom'):- !.
-depthk_sort(ASub_u,ASub):-
+depthk_abs_sort('$bottom','$bottom'):- !.
+depthk_abs_sort(ASub_u,ASub):-
 	sort(ASub_u,ASub).
 
 %------------------------------------------------------------------------%
@@ -247,7 +247,7 @@ depthk_call_to_success_fact(Sg,_Hv,Head,_K,Sv,Call,Proj,Prime,Succ):-
 	peel(Head,Sg,Unifiers,[]),
 	depthk_unify(Unifiers,Proj,Entry0), !,
 	depthk_bu_project(Entry0,Sv,Prime1),
-	depthk_sort(Prime1,Prime),
+	depthk_abs_sort(Prime1,Prime),
 	depthk_extend(Prime,Sv,Call,Succ).
 depthk_call_to_success_fact(_Sg,_Hv,_Head,_K,_Sv,_Call,_Proj,'$bottom','$bottom').
 

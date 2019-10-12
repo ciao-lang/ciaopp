@@ -70,7 +70,7 @@ shfrlin_call_to_entry(_Sv,Sg,_Hv,Head,_K,Fv,Proj,Entry,Flag):-
      Flag = yes,
      copy_term((Sg,Proj),(NewTerm,NewProj)),
      Head = NewTerm,
-     shfrlin_sort(NewProj,(Temp_sh,Temp_fr,Temp_lin)),
+     shfrlin_abs_sort(NewProj,(Temp_sh,Temp_fr,Temp_lin)),
      change_values_insert(Fv,Temp_fr,Entry_fr,f),	
      list_to_list_of_lists(Fv,Temp1),
      merge(Temp1,Temp_sh,Entry_sh),
@@ -104,7 +104,7 @@ shfrlin_exit_to_prime(Sg,Hv,Head,_Sv,Exit,yes,Prime):- !,
      shfrlin_project(Exit,Hv,(BPrime_sh,BPrime_fr,BPrime_lin)),
      copy_term((Head,(BPrime_sh,BPrime_fr,BPrime_lin)),(NewTerm,NewPrime)),
      Sg = NewTerm,
-     shfrlin_sort(NewPrime,Prime).	
+     shfrlin_abs_sort(NewPrime,Prime).	
 shfrlin_exit_to_prime(_Sg,[],_Head,Sv,_Exit,_ExtraInfo,Prime):- !,
      list_ground(Sv,Prime_fr),
      member_value_freeness(Prime_fr,Prime_lin,f),
@@ -181,11 +181,11 @@ shfrlin_project((Sh,F,L),Vars,(Sh_proj,F_proj,L_proj)):-
 %                      ABSTRACT Sort                                     |
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% shfrlin_sort(+,-)                                                      |
+% shfrlin_abs_sort(+,-)                                                  |
 %------------------------------------------------------------------------%
-:- export(shfrlin_sort/2).
-shfrlin_sort('$bottom','$bottom').
-shfrlin_sort((Sh,F,L),(Sh_s,F_s,L_s)):-
+:- export(shfrlin_abs_sort/2).
+shfrlin_abs_sort('$bottom','$bottom').
+shfrlin_abs_sort((Sh,F,L),(Sh_s,F_s,L_s)):-
 	shfr_abs_sort((Sh,F),(Sh_s,F_s)),
 	sort(L,L_s).
 

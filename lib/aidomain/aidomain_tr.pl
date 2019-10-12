@@ -12,52 +12,49 @@
 :- export(dom_sent/3).
 dom_sent((:- dom_def(AbsInt)), C2, _M) :- !,
         C2 = aidomain(AbsInt).
-dom_sent((:- dom_op(AbsInt,Spec)), C2, _M) :- !,
+dom_sent((:- dom_op(AbsInt,Spec)), C2, _M) :- nonvar(Spec), Spec = _/_, !,
+	emit_dom_op0(AbsInt,Spec,AbsInt, C2).
+dom_sent((:- dom_op(AbsInt,Spec,from(AbsIntB))), C2, _M) :- nonvar(Spec), Spec = _/_, !,
+	emit_dom_op0(AbsInt,Spec,AbsIntB, C2).
+dom_sent((:- dom_op(AbsInt,H,B1,from(AbsIntB))), C2, _M) :- !,
+	emit_dom_op(AbsInt,H,B1,AbsIntB, C2).
+dom_sent((:- dom_op(AbsInt,H,B1)), C2, _M) :-
+	emit_dom_op(AbsInt,H,B1,AbsInt, C2).
+
+emit_dom_op0(AbsInt,Spec,AbsIntB, C2) :-
 	% AbsInt implements operation Spec
-	Spec = N/A,
-	functor(Op, N, A),
+	Spec = OpName/A,
+	functor(Op, OpName, A),
 	Op =.. [_|As],
-	atom_concat('_', N, ImplN0),
-	atom_concat(AbsInt, ImplN0, ImplN),
+	atom_concat('_', OpName, ImplN0),
+	atom_concat(AbsIntB, ImplN0, ImplN),
 	B =.. [ImplN|As],
-	H =.. [N,AbsInt|As],
+	H =.. [OpName,AbsInt|As],
         C2 = (H :- !, B).
-dom_sent((:- dom_op(AbsInt,H,B0)), C2, _M) :-
+
+emit_dom_op(AbsInt,H,B1,AbsIntB, C2) :-
 	H =.. [Nh|As],
-	( B0 = from(AbsIntB,B1) ->
-	    B1 =.. [Nb0|Bs],
-	    atom_concat('_', Nb0, Nb1),
-	    atom_concat(AbsIntB, Nb1, Nb),
-	    B =.. [Nb|Bs]
-	; B0 = ok(B1) ->
-	    B1 =.. [Nb0|Bs],
-	    atom_concat('_', Nb0, Nb1),
-	    atom_concat(AbsInt, Nb1, Nb),
-	    B =.. [Nb|Bs]
-	; B = B0
-	),
+	B1 =.. [OpName|Bs],
+	atom_concat('_', OpName, ImplN0),
+	atom_concat(AbsIntB, ImplN0, ImplN),
+	B =.. [ImplN|Bs],
 	B2 = B,
-	% check_dom_op(Nh,AbsInt,As,B), % (enable to check op)
+%	check_dom_op(Nh,AbsInt,As,B1), % (enable to check op)
 	H2 =.. [Nh,AbsInt|As],
         C2 = (H2 :- !, B2).
 
-check_dom_op(Nh,AbsInt,As,B) :-
-	B =.. [Nb|Bs],
-	( atom(AbsInt),
-	  atom_concat(AbsInt, Nb0, Nb),
-	  atom_concat('_', OpName, Nb0) ->
-	    ( OpName == Nh ->
-	        ( As == Bs -> true
-		; ( numbervars(As,0,N0),
-		    numbervars(Bs,N0,_),
-		    message(user, [~~(bad_args(AbsInt, OpName, As, Bs))]),
-		    fail
-		  ; true
-		  )
-		)
-	    ; message(user, [~~(bad_opname(AbsInt, Nh, OpName))])
+check_dom_op(Nh,AbsInt,As,B1) :-
+	B1 =.. [OpName|Bs],
+	( OpName == Nh ->
+	    ( As == Bs -> true
+	    ; ( numbervars(As,0,N0),
+		numbervars(Bs,N0,_),
+		message(user, [~~(bad_args(AbsInt, OpName, As, Bs))]),
+		fail
+	      ; true
+	      )
 	    )
-	; message(user, [~~(bad_domname(AbsInt, Nb))])
+	; message(user, [~~(bad_opname(AbsInt, Nh, OpName))])
 	).
 
 err(wrong_op(C)) :-

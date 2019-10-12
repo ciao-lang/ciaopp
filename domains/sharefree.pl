@@ -609,27 +609,27 @@ shfr_asub_to_native_((Sh,Fr),Info):-
 % shfr_asub_to_native_('$bottom',[solutions(0)]).
 
 %------------------------------------------------------------------------%
-% shfr_obtain(+,+,+,-)                                                   %
-% shfr_obtain(Prop,Vars,ASub,Info)                                       %
+% shfr_obtain_info(+,+,+,-)                                              %
+% shfr_obtain_info(Prop,Vars,ASub,Info)                                  %
 % Prop holds for Info in ASub over Vars                                  %
 %------------------------------------------------------------------------%
-:- export(shfr_obtain/4).
-shfr_obtain(ground,Vars,(_,Fr),Info):-
+:- export(shfr_obtain_info/4).
+shfr_obtain_info(ground,Vars,(_,Fr),Info):-
 	member_value_freeness(Fr,Info0,g),
 	ord_intersection(Vars,Info0,Info).
-shfr_obtain(free,Vars,(_,Fr),Info):-
+shfr_obtain_info(free,Vars,(_,Fr),Info):-
 	member_value_freeness(Fr,Info0,f),
 	ord_intersection(Vars,Info0,Info).
 
 %------------------------------------------------------------------------%
-% shfr_obtain(+,+,-)                                                     %
-% shfr_obtain(Prop,ASub,Info)                                            %
+% shfr_obtain_info(+,+,-)                                                %
+% shfr_obtain_info(Prop,ASub,Info)                                       %
 % Prop holds for Info in ASub                                            %
 %------------------------------------------------------------------------%
-:- export(shfr_obtain/3).
-shfr_obtain(ground,(_,Fr),Info):-
+:- export(shfr_obtain_info/3).
+shfr_obtain_info(ground,(_,Fr),Info):-
 	member_value_freeness(Fr,Info,g).
-shfr_obtain(free,(_,Fr),Info):-
+shfr_obtain_info(free,(_,Fr),Info):-
 	member_value_freeness(Fr,Info,f).
 
 %------------------------------------------------------------------------%
