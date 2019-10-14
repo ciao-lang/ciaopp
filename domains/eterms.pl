@@ -16,6 +16,7 @@
 	eterms_special_builtin/5,
 	eterms_success_builtin/5,
 	eterms_call_to_success_builtin/6,
+	eterms_obtain_info/4,
 	eterms_input_interface/4,
 	eterms_input_user_interface/5,
 	eterms_output_interface/2,
@@ -1817,7 +1818,11 @@ eterms_call_to_success_builtin(key(Key,SubGoal),_Sg,Sv,Call,Proj,Succ):- !,
 % 	    Succ = '$bottom'
 % 	).
 
+%------------------------------------------------------------------------%
 
+:- use_module(ciaopp(plai/domains), [asub_to_info/5]).
+
+eterms_obtain_info(_Prop,Vars,ASub,Info) :- asub_to_info(eterms,ASub,Vars,Info,_CompProps).
 
 %------------------------------------------------------------------------%
 %			    USER INTERFACE

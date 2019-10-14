@@ -845,7 +845,6 @@
 :- dom_op(eterms, multi_part_conc/3).
 :- dom_op(eterms, collect_abstypes_abs/3).
 :- dom_op(eterms, rename_abstypes_abs(ASub,(Types,Names),RenASub), rename_abstypes_abs(ASub,Types,Names,RenASub)).
-eterms_obtain_info(_Prop,Vars,ASub,Info) :- !, asub_to_info(eterms,ASub,Vars,Info,_CompProps). % TODO: add pred
 %
 % ---------------------------------------------------------------------------
 :- use_module(domain(etermsvar)).
@@ -878,8 +877,6 @@ eterms_obtain_info(_Prop,Vars,ASub,Info) :- !, asub_to_info(eterms,ASub,Vars,Inf
 :- dom_op(etermsvar, multi_part_conc/3).
 :- dom_op(etermsvar, collect_abstypes_abs/3).
 :- dom_op(etermsvar, rename_abstypes_abs(ASub,(Types,Names),RenASub), rename_abstypes_abs(ASub,Types,Names,RenASub)).
-etermsvar_obtain_info(_Prop,Vars,ASub,Info) :- !, asub_to_info(etermsvar,ASub,Vars,Info,_CompProps). % TODO: add pred
-%
 % ---------------------------------------------------------------------------
 :- use_module(domain(svterms)).
 :- dom_def(svterms).
@@ -908,7 +905,6 @@ etermsvar_obtain_info(_Prop,Vars,ASub,Info) :- !, asub_to_info(etermsvar,ASub,Va
 :- dom_op(svterms, empty_entry/3).
 :- dom_op(svterms, collect_abstypes_abs/3).
 :- dom_op(svterms, rename_abstypes_abs(ASub,(Types,Names),RenASub), rename_abstypes_abs(ASub,Types,Names,RenASub)).
-%
 % ---------------------------------------------------------------------------
 :- use_module(domain(deftypes)).
 :- dom_def(deftypes).
@@ -1149,7 +1145,6 @@ etermsvar_obtain_info(_Prop,Vars,ASub,Info) :- !, asub_to_info(etermsvar,ASub,Va
 :- dom_op(nf, unknown_entry/3).
 :- dom_op(nf, empty_entry/3).
 :- dom_op(nf, dom_statistics/1).
-nf_fixpoint_covered(Prime0,Prime1) :- less_or_equal(nf,Prime0,Prime1). % TODO: add pred % TODO: use absub_fixpoint_covered?
 :- endif.
 % ---------------------------------------------------------------------------
 % determinism
@@ -1184,7 +1179,6 @@ nf_fixpoint_covered(Prime0,Prime1) :- less_or_equal(nf,Prime0,Prime1). % TODO: a
 :- dom_op(det, unknown_entry/3).
 :- dom_op(det, empty_entry/3).
 :- dom_op(det, dom_statistics/1).
-det_fixpoint_covered(Prime0,Prime1) :- less_or_equal(det,Prime0,Prime1). % TODO: add pred % TODO: use absub_fixpoint_covered?
 :- endif.
 % ===========================================================================
 :- doc(section, "Resources domains").
@@ -1221,7 +1215,6 @@ det_fixpoint_covered(Prime0,Prime1) :- less_or_equal(det,Prime0,Prime1). % TODO:
 :- dom_op(res_plai, empty_entry/3).
 :- dom_op(res_plai, collect_abstypes_abs/3).
 :- dom_op(res_plai, rename_abstypes_abs(ASub,(Types,Names),RenASub), rename_abstypes_abs(ASub,Types,Names,RenASub)).
-res_plai_obtain_info(_Prop,Vars,ASub,Info) :- !, asub_to_info(res_plai,ASub,Vars,_Info,Info). % TODO: add pred
 :- endif.
 % ---------------------------------------------------------------------------
 :- if(defined(has_ciaopp_extra)).
@@ -1254,7 +1247,6 @@ res_plai_obtain_info(_Prop,Vars,ASub,Info) :- !, asub_to_info(res_plai,ASub,Vars
 :- dom_op(res_plai_stprf, empty_entry/3).
 :- dom_op(res_plai_stprf, collect_abstypes_abs/3).
 :- dom_op(res_plai_stprf, rename_abstypes_abs(ASub,(Types,Names),RenASub), rename_abstypes_abs(ASub,Types,Names,RenASub)).
-res_plai_stprf_obtain_info(_Prop,Vars,ASub,Info) :- !, asub_to_info(res_plai_stprf,ASub,Vars,_Info,Info). % TODO: add pred
 :- endif.
 % ---------------------------------------------------------------------------
 :- if(defined(has_ciaopp_extra)).
@@ -1287,7 +1279,6 @@ res_plai_stprf_obtain_info(_Prop,Vars,ASub,Info) :- !, asub_to_info(res_plai_stp
 :- dom_op(sized_types, empty_entry/3).
 :- dom_op(sized_types, collect_abstypes_abs/3).
 :- dom_op(sized_types, rename_abstypes_abs(ASub,(Types,Names),RenASub), rename_abstypes_abs(ASub,Types,Names,RenASub)).
-sized_types_obtain_info(_Prop,Vars,ASub,Info) :- !, asub_to_info(sized_types,ASub,Vars,_Info,Info). % TODO: add pred
 :- endif.
 % ===========================================================================
 

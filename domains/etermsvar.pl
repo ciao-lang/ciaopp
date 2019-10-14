@@ -15,6 +15,7 @@
 	etermsvar_call_to_success_fact/9,
 	etermsvar_special_builtin/5,
 	etermsvar_success_builtin/5,
+	etermsvar_obtain_info/4,
 	etermsvar_call_to_success_builtin/6,
 	etermsvar_input_interface/4,
 	etermsvar_input_user_interface/5,
@@ -1909,6 +1910,12 @@ normalize_names([(X, Type)|T], [(X, Type_)|T_] ):-
 normalize_names([(X:(Type, Y))|T], [(X:(Type_, Y))|T_] ):-
 	get_canonical_name(Type, Type_),
 	normalize_names(T, T_).
+
+%------------------------------------------------------------------------%
+
+:- use_module(ciaopp(plai/domains), [asub_to_info/5]).
+
+etermsvar_obtain_info(_Prop,Vars,ASub,Info) :- asub_to_info(etermsvar,ASub,Vars,Info,_CompProps).
 
 %------------------------------------------------------------------------%
 %			    USER INTERFACE
