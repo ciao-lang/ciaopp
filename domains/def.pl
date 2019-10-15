@@ -124,7 +124,7 @@ def_handle_bottom_project(NewProj,Hv,Entry):-
 
 %-------------------------------------------------------------------------
 % def_exit_to_prime(+,+,+,+,+,+,-)                                       %
-% def_exit_to_prime(Exit,BothEntry,Hv,Sv,Head,Sg,Prime)                  %
+% def_exit_to_prime(Sg,Hv,Head,Sv,Exit,BothEntry,Prime)                  %
 % It computes the prime abstract constraint Prime, i.e.  the result of   %
 % going from the abstract constraint over the head variables (Exit), to  %
 % the abstract constraint over the variables in the subgoal.             %
@@ -135,14 +135,14 @@ def_handle_bottom_project(NewProj,Hv,Entry):-
 % variables in Sg and Head) and later projecting onto Sv                 %
 %-------------------------------------------------------------------------
 
-def_exit_to_prime('$bottom',_,_,_,_,_,Prime):- !,
+def_exit_to_prime(_,_,_,_,'$bottom',_,Prime):- !,
 	Prime = '$bottom'.
-def_exit_to_prime(Exit,yes,Hv,_,Head,Sg,Prime):- !,
+def_exit_to_prime(Sg,Hv,Head,_,Exit,yes,Prime):- !,
 	def_project(Exit,Hv,Beta),
 	copy_term((Head,Beta),(NewTerm,NewPrime)),
 	Sg = NewTerm,
 	def_abs_sort(NewPrime,Prime).
-def_exit_to_prime(Exit,BothEntry,Hv,Sv,_,_,Prime):-
+def_exit_to_prime(_,Hv,_,Sv,Exit,BothEntry,Prime):-
 	def_project(Exit,Hv,BetaPrime),
 	def_conjunct_constr(BetaPrime,BothEntry,TempPrime),
 	def_project(TempPrime,Sv,Prime).

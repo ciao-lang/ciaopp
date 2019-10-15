@@ -2,7 +2,7 @@
 	[ difflsign_call_to_entry/9,  
 	  difflsign_call_to_success_fact/9,
 	  difflsign_compute_lub/2,
-	  difflsign_exit_to_prime/6,  
+	  difflsign_exit_to_prime/7,  
 	  difflsign_extend/5,
 	  difflsign_input_user_interface/5,
 	  difflsign_input_interface/4,
@@ -64,13 +64,13 @@ difflsign_call_to_entry(Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo):-
 	Entry = p(Entry1,a(G,[],[]),Entry1).
 
 %------------------------------------------------------------------------%
-% difflsign_exit_to_prime(+,+,+,+,+,-)                                |
-% difflsign_exit_to_prime(Sg,Hv,Head,Exit,ExtraInfo,Prime)            |
+% difflsign_exit_to_prime(+,+,+,+,+,+,-)                                 |
+% difflsign_exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime)            |
 %------------------------------------------------------------------------%
 
-difflsign_exit_to_prime(_,_,_,'$bottom',_,'$bottom') :- !.
-difflsign_exit_to_prime(Sg,Hv,Head,p(_,Exit,_),ExtraInfo,Prime):-
-	lsign_exit_to_prime(Sg,Hv,Head,Exit,ExtraInfo,Prime).
+difflsign_exit_to_prime(_,_,_,_,'$bottom',_,'$bottom') :- !.
+difflsign_exit_to_prime(Sg,Hv,Head,Sv,p(_,Exit,_),ExtraInfo,Prime):-
+	lsign_exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime).
 
 %-------------------------------------------------------------------------
 % difflsign_extend(+,+,+,+,-)                                         %

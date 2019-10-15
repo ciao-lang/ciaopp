@@ -5,7 +5,7 @@
 	  lsign_compute_lub/2,
 	  lsign_extend/5,   
 	  lsign_eliminate_equivalent/2,
-	  lsign_exit_to_prime/6,
+	  lsign_exit_to_prime/7,
 	  lsign_global_info/5,
 	  lsign_input_user_interface/5,  
 	  lsign_input_interface/4,  
@@ -424,17 +424,17 @@ lsign_call_to_entry(_Sv,Sg,_Hv,Head,_K,_,_,_,_):-
 %                      ABSTRACT Exit To Prime
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% lsign_exit_to_prime(+,+,+,+,+,-)
-% lsign_exit_to_prime(Sg,Hv,Head,Exit,ExtraInfo,Prime) 
+% lsign_exit_to_prime(+,+,+,+,+,+,-)
+% lsign_exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime) 
 %------------------------------------------------------------------------%
 % Assumptions made:
 %   * the program is normalized
 %   * Hv and Exit and Fv within ExtraInfor are sorted
 %------------------------------------------------------------------------%
 
-lsign_exit_to_prime(_,_,_,'$bottom',_,Prime) :- !,
+lsign_exit_to_prime(_,_,_,_,'$bottom',_,Prime) :- !,
 	Prime = '$bottom'.
-lsign_exit_to_prime(Sg,Hv,Head,Exit,(yes,Fv),Prime):- 
+lsign_exit_to_prime(Sg,Hv,Head,_Sv,Exit,(yes,Fv),Prime):- 
 	lsign_project(Exit,Hv,Fv,BPrime),
 	copy_term((Head,BPrime),(NewTerm,NewPrime)),
 	Sg = NewTerm,

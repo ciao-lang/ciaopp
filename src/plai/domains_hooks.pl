@@ -131,7 +131,7 @@
 :- use_module(domain(fd)).
 :- dom_def(frdef).
 :- dom_op(frdef, call_to_entry/9).
-:- dom_op(frdef, exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime), exit_to_prime(Exit,Sg,Hv,Head,Sv,ExtraInfo,Prime)).
+:- dom_op(frdef, exit_to_prime/7).
 :- dom_op(frdef, project(_Sg,Vars,_HvFv,ASub,Proj), project(ASub,Vars,Proj)).
 :- dom_op(frdef, compute_lub/2).
 :- dom_op(frdef, identical_abstract/2).
@@ -154,7 +154,7 @@
 :- dom_def(lsign).
 :- dom_op(lsign, init_abstract_domain/1).
 :- dom_op(lsign, call_to_entry/9).
-:- dom_op(lsign, exit_to_prime(Sg,Hv,Head,_Sv,Exit,ExtraInfo,Prime), exit_to_prime(Sg,Hv,Head,Exit,ExtraInfo,Prime)).
+:- dom_op(lsign, exit_to_prime/7).
 :- dom_op(lsign, project(_Sg,Vars,HvFv,ASub,Proj), project(ASub,Vars,HvFv,Proj)).
 :- dom_op(lsign, compute_lub/2).
 :- dom_op(lsign, abs_sort/2).
@@ -177,7 +177,7 @@
 :- use_module(domain(lsigndiff)).
 :- dom_def(difflsign).
 :- dom_op(difflsign, call_to_entry/9).
-:- dom_op(difflsign, exit_to_prime(Sg,Hv,Head,_Sv,Exit,ExtraInfo,Prime), exit_to_prime(Sg,Hv,Head,Exit,ExtraInfo,Prime)).
+:- dom_op(difflsign, exit_to_prime/7).
 :- dom_op(difflsign, project/5).
 :- dom_op(difflsign, compute_lub/2).
 :- dom_op(difflsign, abs_sort/2).
@@ -223,7 +223,7 @@
 :- use_module(domain(def)).
 :- dom_def(def).
 :- dom_op(def, call_to_entry/9).
-:- dom_op(def, exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime), exit_to_prime(Exit,ExtraInfo,Hv,Sv,Head,Sg,Prime)).
+:- dom_op(def, exit_to_prime/7).
 :- dom_op(def, project(_Sg,Vars,_HvFv,ASub,Proj), project(ASub,Vars,Proj)).
 :- dom_op(def, compute_lub/2).
 :- dom_op(def, abs_sort/2).
@@ -673,7 +673,7 @@
 :- use_module(domain(aeq_top)).
 :- dom_def(aeq).
 :- dom_op(aeq, call_to_entry/9).
-:- dom_op(aeq, exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime), exit_to_prime(Exit,Sg,Hv,Head,Sv,ExtraInfo,Prime)).
+:- dom_op(aeq, exit_to_prime/7).
 :- dom_op(aeq, project(_Sg,Vars,_HvFv,ASub,Proj), project(ASub,Vars,Proj)).
 :- dom_op(aeq, compute_lub/2).
 :- dom_op(aeq, identical_abstract/2).

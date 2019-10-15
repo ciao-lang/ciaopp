@@ -84,7 +84,7 @@ sharefree_clique_def_call_to_entry(_,_,_,_,_,_,_,'$bottom',_):- !.
 sharefree_clique_def_exit_to_prime(_,_,_,_,'$bottom',_,'$bottom'):-!.
 sharefree_clique_def_exit_to_prime(Sg,Hv,Head,Sv,Exit,(BothEntry,ExtraInfo),Prime):-!,
 	Exit = (SHF_Exit,Def_Exit),
-	def_exit_to_prime(Def_Exit,BothEntry,Hv,Sv,Head,Sg,Def_prime),
+	def_exit_to_prime(Sg,Hv,Head,Sv,Def_Exit,BothEntry,Def_prime),
 	sharefree_clique_def_compose(SHF_Exit,Def_prime,NewSHF_Exit),
 	sharefree_clique_exit_to_prime(Sg,Hv,Head,Sv,NewSHF_Exit,ExtraInfo,(SH_Pr,Fr_Pr)),
 	Prime = ((SH_Pr,Fr_Pr),Def_prime).

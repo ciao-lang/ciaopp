@@ -118,15 +118,15 @@ aeq_call_to_entry(_Sv,Sgoal,Hv,Head,_K,Fvars,Proj,Entry,no):-
 %------------------------------------------------------------------------------
 
 %% :- mode aeq_exit_to_prime(+,+,+,+,+,+,-) .
-aeq_exit_to_prime('$bottom',_,_,_,_,_,'$bottom') :- !.
-aeq_exit_to_prime(Exit,Sg,Hv,Head,_,yes,Prime) :- !,
+aeq_exit_to_prime(_,_,_,_,'$bottom',_,'$bottom') :- !.
+aeq_exit_to_prime(Sg,Hv,Head,_,Exit,yes,Prime) :- !,
 	aeq_project(Exit,Hv,BetaPrime),
 	copy_term((Head,BetaPrime),(NewTerm,Prime_u)),
 	Sg = NewTerm,
 	aeq_abs_sort(Prime_u,Prime).
-aeq_exit_to_prime( Exit,Sg,_,Head, Sv,_, Prime) :-
-	aeq_parameter_passing_proj( Sg = Head, Sv, Exit, Init_aeqs),
-	aeq_solve( Init_aeqs, Prime ) .
+aeq_exit_to_prime(Sg,_,Head,Sv,Exit,_,Prime) :-
+	aeq_parameter_passing_proj(Sg=Head, Sv, Exit, Init_aeqs),
+	aeq_solve(Init_aeqs, Prime) .
 
 %------------------------------------------------------------------------------
 

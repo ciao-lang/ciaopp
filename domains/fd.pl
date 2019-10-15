@@ -73,9 +73,9 @@ frdef_decide_bottom(F_entry,D_entry,(F_entry,D_entry)).
 
 %------------------------------------------------------------------------------
 
-frdef_exit_to_prime('$bottom',_Sg,_Hv,_Head,_Sv,_ExtraInfo,'$bottom').
-frdef_exit_to_prime((F_exit,D_exit),Sg,Hv,Head,Sv,ExtraInfo,Prime):-
-        def_exit_to_prime(D_exit,ExtraInfo,Hv,Sv,Head,Sg,D_prime),
+frdef_exit_to_prime(_Sg,_Hv,_Head,_Sv,'$bottom',_ExtraInfo,'$bottom') :- !.
+frdef_exit_to_prime(Sg,Hv,Head,Sv,(F_exit,D_exit),ExtraInfo,Prime):-
+        def_exit_to_prime(Sg,Hv,Head,Sv,D_exit,ExtraInfo,D_prime),
         frdef_decide_continue_exit(D_prime,D_exit,F_exit,Sg,Hv,Head,Sv,F_prime),
         frdef_decide_bottom(F_prime,D_prime,Prime).
 
