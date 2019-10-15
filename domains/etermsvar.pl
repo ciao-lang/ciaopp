@@ -23,7 +23,7 @@
 	etermsvar_asub_to_native/5,
 	etermsvar_asub_to_native1/3,
 	etermsvar_collect_abstypes_abs/3,
-	etermsvar_rename_abstypes_abs/4,
+	etermsvar_rename_abstypes_abs/3,
 	etermsvar_identical_abstract/2,
 	etermsvar_widen/3,
 	etermsvar_widencall/3,
@@ -2056,8 +2056,9 @@ etermsvar_collect_abstypes_abs([_:(_,Type)|Abs],Types0,Types):-
 	insert(Types0,Type,Types1),
 	etermsvar_collect_abstypes_abs(Abs,Types1,Types).
 
-etermsvar_rename_abstypes_abs([],_,_,[]).
-etermsvar_rename_abstypes_abs([C|Call],Types,Names,[RenC|RenCall]):-
+etermsvar_rename_abstypes_abs([],_,[]).
+etermsvar_rename_abstypes_abs([C|Call],Dict,[RenC|RenCall]):-
+	Dict = (Types,_),
 	C = Var:(_Name,Type),
 	RenC = Var:(RenName,RenType),
 	get_value_(Types,Type,RenType),
@@ -2066,7 +2067,7 @@ etermsvar_rename_abstypes_abs([C|Call],Types,Names,[RenC|RenCall]):-
 	new_type_name(RenName),         % taken from obtain_Asub_user/2.
 	insert_type_name(RenName,[],0), % taken from obtain_Asub_user/2.
 %jcf-end
-	etermsvar_rename_abstypes_abs(Call,Types,Names,RenCall).
+	etermsvar_rename_abstypes_abs(Call,Dict,RenCall).
 
 get_value_(Rens,Type,RenType):-
 	assoc:get_assoc(Type,Rens,RenType), !.

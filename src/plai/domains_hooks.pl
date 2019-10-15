@@ -785,7 +785,7 @@
 :- dom_op(terms, unknown_entry/3).
 :- dom_op(terms, empty_entry/3).
 :- dom_op(terms, collect_abstypes_abs/3).
-:- dom_op(terms, rename_abstypes_abs(ASub,(Types,Names),RenASub), rename_abstypes_abs(ASub,Types,Names,RenASub)).
+:- dom_op(terms, rename_abstypes_abs/3).
 % ---------------------------------------------------------------------------
 :- use_module(domain(ptypes)).
 :- dom_def(ptypes).
@@ -812,7 +812,7 @@
 :- dom_op(ptypes, unknown_entry/3).
 :- dom_op(ptypes, empty_entry/3).
 :- dom_op(ptypes, collect_abstypes_abs/3).
-% :- dom_op(ptypes, rename_abstypes_abs(ASub,(Types,Names),RenASub), rename_abstypes_abs(ASub,Types,Names,RenASub)). % TODO: missing, why?
+% :- dom_op(ptypes, rename_abstypes_abs/3). % TODO: missing, why?
 %
 % ---------------------------------------------------------------------------
 :- use_module(domain(eterms)).
@@ -844,7 +844,7 @@
 :- dom_op(eterms, part_conc/4).
 :- dom_op(eterms, multi_part_conc/3).
 :- dom_op(eterms, collect_abstypes_abs/3).
-:- dom_op(eterms, rename_abstypes_abs(ASub,(Types,Names),RenASub), rename_abstypes_abs(ASub,Types,Names,RenASub)).
+:- dom_op(eterms, rename_abstypes_abs/3).
 %
 % ---------------------------------------------------------------------------
 :- use_module(domain(etermsvar)).
@@ -876,7 +876,7 @@
 :- dom_op(etermsvar, part_conc/4).
 :- dom_op(etermsvar, multi_part_conc/3).
 :- dom_op(etermsvar, collect_abstypes_abs/3).
-:- dom_op(etermsvar, rename_abstypes_abs(ASub,(Types,Names),RenASub), rename_abstypes_abs(ASub,Types,Names,RenASub)).
+:- dom_op(etermsvar, rename_abstypes_abs/3).
 % ---------------------------------------------------------------------------
 :- use_module(domain(svterms)).
 :- dom_def(svterms).
@@ -904,7 +904,7 @@
 :- dom_op(svterms, unknown_entry/3).
 :- dom_op(svterms, empty_entry/3).
 :- dom_op(svterms, collect_abstypes_abs/3).
-:- dom_op(svterms, rename_abstypes_abs(ASub,(Types,Names),RenASub), rename_abstypes_abs(ASub,Types,Names,RenASub)).
+:- dom_op(svterms, rename_abstypes_abs/3).
 % ---------------------------------------------------------------------------
 :- use_module(domain(deftypes)).
 :- dom_def(deftypes).
@@ -932,7 +932,7 @@
 :- dom_op(deftypes, unknown_entry/3).
 :- dom_op(deftypes, empty_entry/3).
 :- dom_op(deftypes, collect_abstypes_abs/3).
-:- dom_op(deftypes, rename_abstypes_abs(ASub,(Types,Names),RenASub), rename_abstypes_abs(ASub,Types,Names,RenASub)).
+:- dom_op(deftypes, rename_abstypes_abs/3).
 :- dom_op(deftypes, contains_parameters/1).
 %
 % ===========================================================================
@@ -1214,7 +1214,7 @@
 :- dom_op(res_plai, unknown_entry/3).
 :- dom_op(res_plai, empty_entry/3).
 :- dom_op(res_plai, collect_abstypes_abs/3).
-:- dom_op(res_plai, rename_abstypes_abs(ASub,(Types,Names),RenASub), rename_abstypes_abs(ASub,Types,Names,RenASub)).
+:- dom_op(res_plai, rename_abstypes_abs/3).
 :- endif.
 % ---------------------------------------------------------------------------
 :- if(defined(has_ciaopp_extra)).
@@ -1246,7 +1246,7 @@
 :- dom_op(res_plai_stprf, unknown_entry/3).
 :- dom_op(res_plai_stprf, empty_entry/3).
 :- dom_op(res_plai_stprf, collect_abstypes_abs/3).
-:- dom_op(res_plai_stprf, rename_abstypes_abs(ASub,(Types,Names),RenASub), rename_abstypes_abs(ASub,Types,Names,RenASub)).
+:- dom_op(res_plai_stprf, rename_abstypes_abs/3).
 :- endif.
 % ---------------------------------------------------------------------------
 :- if(defined(has_ciaopp_extra)).
@@ -1278,7 +1278,7 @@
 :- dom_op(sized_types, unknown_entry/3).
 :- dom_op(sized_types, empty_entry/3).
 :- dom_op(sized_types, collect_abstypes_abs/3).
-:- dom_op(sized_types, rename_abstypes_abs(ASub,(Types,Names),RenASub), rename_abstypes_abs(ASub,Types,Names,RenASub)).
+:- dom_op(sized_types, rename_abstypes_abs/3).
 :- endif.
 % ===========================================================================
 

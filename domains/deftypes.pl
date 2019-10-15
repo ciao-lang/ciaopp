@@ -25,7 +25,7 @@
 	deftypes_output_interface/2,
 	deftypes_input_user_interface/5,
 	deftypes_collect_abstypes_abs/3,
-	deftypes_rename_abstypes_abs/4,
+	deftypes_rename_abstypes_abs/3,
 	deftypes_identical_abstract/2,
 	deftypes_widen/3,
 	deftypes_widencall/3,
@@ -767,15 +767,16 @@ deftypes_collect_abstypes_abs([_:Type|Abs],Types0,Types):-
 	deftypes_collect_abstypes_abs(Abs,Types1,Types).
 
 % TODO: duplicated
-% deftypes_rename_abstypes_abs(ASub,Types,Names,RenASub) :- terms_rename_abstypes_abs(ASub,Types,Names,RenASub).
-deftypes_rename_abstypes_abs([],_,_,[]).
-deftypes_rename_abstypes_abs([C|Call],Types,Names,[RenC|RenCall]):-
+% deftypes_rename_abstypes_abs(ASub,Dict,RenASub) :- terms_rename_abstypes_abs(ASub,Dict,RenASub).
+deftypes_rename_abstypes_abs([],_,[]).
+deftypes_rename_abstypes_abs([C|Call],Dict,[RenC|RenCall]):-
+	Dict = (Types,_),
 	C = Var:Type,
 	RenC = Var:RenType,
 	get_value_(Types,Type,RenType),
 %	new_type_name(RenName),
 %	insert_type_name(RenName,[],0),
-	deftypes_rename_abstypes_abs(Call,Types,Names,RenCall).
+	deftypes_rename_abstypes_abs(Call,Dict,RenCall).
 
 get_value_(Rens,Type,RenType):-
 	assoc:get_assoc(Type,Rens,RenType), !.

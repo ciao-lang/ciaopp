@@ -22,7 +22,7 @@
 	svterms_asub_to_native/5,
 	svterms_asub_to_native1/3,
 	svterms_collect_abstypes_abs/3,
-	svterms_rename_abstypes_abs/4,
+	svterms_rename_abstypes_abs/3,
 	svterms_identical_abstract/2,
 	svterms_widen/3,
 	svterms_widencall/3,
@@ -676,17 +676,18 @@ svterms_collect_abstypes_([_:(_,Type)|Abs],Types0,Types):-
 	svterms_collect_abstypes_(Abs,Types1,Types).
 
 %% No renaming applicable.
-svterms_rename_abstypes_abs((T0,Rest),Types,Names,(T,Rest)):-  %% JCF: Y Rest que es?
-	svterms_rename_abs_(T0,Types,Names,T).
+svterms_rename_abstypes_abs((T0,Rest),Dict,(T,Rest)):-  %% JCF: Y Rest que es?
+	svterms_rename_abs_(T0,Dict,T).
 
-svterms_rename_abs_([],_,_,[]).
-svterms_rename_abs_([C|Call],Types,Names,[RenC|RenCall]):-
+svterms_rename_abs_([],_,[]).
+svterms_rename_abs_([C|Call],Dict,[RenC|RenCall]):-
+	Dict = (Types,_),
 	C = Var:(_Name,Type),
 	RenC = Var:(RenName,RenType),
 	get_value_(Types,Type,RenType),
 	new_type_name(RenName),
 	insert_type_name(RenName,[],0),
-	svterms_rename_abs_(Call,Types,Names,RenCall).
+	svterms_rename_abs_(Call,Dict,RenCall).
 
 get_value_(Rens,Type,RenType):-
 	assoc:get_assoc(Type,Rens,RenType), !.
