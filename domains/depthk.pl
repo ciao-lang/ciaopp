@@ -1,6 +1,6 @@
 :- module(depthk,
 	[ depthk_call_to_entry/9, 
-	  depthk_call_to_success_builtin/4, 
+	  depthk_call_to_success_builtin/6, 
 	  depthk_call_to_success_fact/9,
 	  depthk_compute_lub/2,
 	  depthk_glb/3,
@@ -418,14 +418,14 @@ depthk_success_builtin(instance,_Sv_uns,(X,Y),Call,Succ):-
 	).
 depthk_success_builtin(instance,_Sv_uns,_Args,Call,Call).
 
-depthk_call_to_success_builtin(Sg,Sv,Call,Succ):-
+depthk_call_to_success_builtin(_SgKey,Sg,Sv,Call,_Proj,Succ):-
 	depthk_call_to_prime_builtin(Sg,Sv,Call,Prime0),
 	varset(Prime0,Vars),
 	ord_subtract(Sv,Vars,Vars0),
 	depthk_project(Vars0,Call,Prime1),
 	merge_eqs(Prime0,Prime1,Prime),
 	depthk_extend(Prime,Sv,Call,Succ), !.
-depthk_call_to_success_builtin(_Sg,_Sv,_Call,'$bottom').
+depthk_call_to_success_builtin(_SgKey,_Sg,_Sv,_Call,_Proj,'$bottom').
 
 depthk_call_to_prime_builtin(Sg,Sv,Call,Prime):-
 	execute_builtin(Sg,Call,Eqs), !,

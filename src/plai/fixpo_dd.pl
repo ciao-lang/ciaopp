@@ -173,7 +173,7 @@ init_fixpoint_(SgKey,Call,Proj,Sg,Sv,AbsInt,F,N,Id,Prime):-
 proj_to_prime_nr(SgKey,Sg,Sv,Call,Proj,AbsInt,_ClId,LPrime,Id) :-
 	bagof(X, X^(trans_clause(SgKey,nr,X)),Clauses), !,
 	proj_to_prime(Clauses,SgKey,Sg,Sv,Call,Proj,AbsInt,LPrime,Id).
-%	compute_clauses_lub(AbsInt,Proj,LPrime1,LPrime).
+%	compute_clauses_lub(AbsInt,LPrime1,Proj,LPrime).
 proj_to_prime_nr(SgKey,Sg,Sv,_Call,Proj,AbsInt,_ClId,LPrime,_Id) :-
 	apply_assrt_no_source(SgKey,AbsInt,Sg,Sv,Proj,Prime), !,
 	get_singleton(Prime,LPrime).

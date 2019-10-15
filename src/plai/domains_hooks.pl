@@ -728,7 +728,7 @@
 :- dom_op(depthk, call_to_success_fact/9).
 :- dom_op(depthk, special_builtin/5).
 :- dom_op(depthk, success_builtin(Type,Sv_uns,Condvars,_HvFv_u,Call,Succ), success_builtin(Type,Sv_uns,Condvars,Call,Succ)).
-:- dom_op(depthk, call_to_success_builtin(_SgKey,Sg,Sv,Call,_Proj,Succ), call_to_success_builtin(Sg,Sv,Call,Succ)).
+:- dom_op(depthk, call_to_success_builtin/6).
 :- dom_op(depthk, input_interface/4).
 :- dom_op(depthk, input_user_interface/5).
 :- dom_op(depthk, asub_to_native/5).
@@ -1125,7 +1125,7 @@
 :- dom_op(nf, widencall/3).
 :- dom_op(nf, widen/3).
 :- dom_op(nf, compute_lub/2). 
-:- dom_op(nf, compute_clauses_lub(Proj,ASub,Lub), compute_clauses_lub(ASub,Proj,Lub)).
+:- dom_op(nf, compute_clauses_lub/3).
 :- dom_op(nf, identical_abstract/2).
 :- dom_op(nf, fixpoint_covered/2).
 :- dom_op(nf, abs_sort/2).
@@ -1158,7 +1158,7 @@
 :- dom_op(det, widencall/3).
 :- dom_op(det, widen/3).
 :- dom_op(det, compute_lub/2).
-:- dom_op(det, compute_clauses_lub(Proj,ASub,Lub), compute_clauses_lub(ASub,Proj,Lub)).
+:- dom_op(det, compute_clauses_lub/3).
 :- dom_op(det, identical_abstract/2).
 :- dom_op(det, fixpoint_covered/2).
 :- dom_op(det, abs_sort/2).
@@ -1192,8 +1192,8 @@
 % :- dom_op(res_plai, widencall/3).
 :- dom_op(res_plai, widen/3).
 :- dom_op(res_plai, compute_lub/2).
-:- dom_op(res_plai, compute_clauses_lub(Proj,ASub,Lub), compute_clauses_lub(ASub,Proj,Lub)).
-% :- dom_op(res_plai, compute_clauses_glb(Proj,ASub,Lub), compute_clauses_lub(ASub,Proj,Lub)).
+:- dom_op(res_plai, compute_clauses_lub/3).
+% :- dom_op(res_plai, compute_clauses_glb/3).
 :- dom_op(res_plai, identical_abstract/2).
 :- dom_op(res_plai, abs_sort/2).
 :- dom_op(res_plai, extend/5).
@@ -1226,7 +1226,7 @@
 :- dom_op(res_plai_stprf, project(Sg,Vars,_HvFv,ASub,Proj), project(ASub,Sg,Vars,Proj)).
 :- dom_op(res_plai_stprf, widen/3).
 :- dom_op(res_plai_stprf, compute_lub/2).
-:- dom_op(res_plai_stprf, compute_clauses_lub(Proj,ASub,Lub), compute_clauses_lub(ASub,Proj,Lub)).
+:- dom_op(res_plai_stprf, compute_clauses_lub/3).
 :- dom_op(res_plai_stprf, identical_abstract/2).
 :- dom_op(res_plai_stprf, abs_sort/2).
 :- dom_op(res_plai_stprf, extend/5).
@@ -1258,7 +1258,7 @@
 :- dom_op(sized_types, project(Sg,Vars,_HvFv,ASub,Proj), project(ASub,Sg,Vars,Proj)).
 :- dom_op(sized_types, widen/3).
 :- dom_op(sized_types, compute_lub/2).
-:- dom_op(sized_types, compute_clauses_lub(Proj,ASub,Lub), compute_clauses_lub(ASub,Proj,Lub)).
+:- dom_op(sized_types, compute_clauses_lub/3).
 :- dom_op(sized_types, identical_abstract/2).
 :- dom_op(sized_types, abs_sort/2).
 :- dom_op(sized_types, extend/5).
@@ -1345,8 +1345,8 @@ init_abstract_domain(_AbsInt,[variants]) :-
 %% 	compute_lub(AbsInt,[Prime0,Prime1],NewPrime).
 widen(AbsInt,Prime0,Prime1,NewPrime) :- % TODO: [IG] define in domain?
 	compute_lub(AbsInt,[Prime0,Prime1],NewPrime).
-compute_clauses_lub(_AbsInt,_Proj,Lub,Lub).
-compute_clauses_glb(_AbsInt,_Proj,Lub,Lub).
+compute_clauses_lub(_AbsInt,Lub,_Proj,Lub).
+compute_clauses_glb(_AbsInt,Lub,_Proj,Lub).
 identical_abstract(_AbsInt,ASub1,ASub2) :- ASub1==ASub2.
 fixpoint_covered(AbsInt,Prime0,Prime1) :-
 	absub_fixpoint_covered(AbsInt,Prime0,Prime1).

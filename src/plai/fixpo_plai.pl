@@ -677,7 +677,7 @@ not_modified([Id/N|List]):-
 proj_to_prime_nr(SgKey,Sg,Sv,Call,Proj,AbsInt,_ClId,LPrime,Id) :-
 	bagof(X, X^(trans_clause(SgKey,nr,X)),Clauses), !,
 	proj_to_prime(Clauses,SgKey,Sg,Sv,Call,Proj,AbsInt,LPrime1,Id),
-	compute_clauses_lub(AbsInt,Proj,LPrime1,LPrime).
+	compute_clauses_lub(AbsInt,LPrime1,Proj,LPrime).
 proj_to_prime_nr(SgKey,Sg,Sv,_Call,Proj,AbsInt,ClId,LPrime,_Id) :-
 	apply_trusted0(Proj,SgKey,Sg,Sv,AbsInt,ClId,Prime), !,
 	singleton(Prime,LPrime).
@@ -764,7 +764,7 @@ fixpoint_compute(Clauses,SgKey,Sg,Sv,Call,Proj,AbsInt,LEntryInf,
 	         Prime0,Prime,Id,List) :-
 	fixpoint_compute_(Clauses,SgKey,Sg,Sv,Call,Proj,AbsInt,LEntryInf,
 	                  Prime0,Prime1,Id,List),
-	compute_clauses_lub(AbsInt,Proj,Prime1,Prime).
+	compute_clauses_lub(AbsInt,Prime1,Proj,Prime).
 
 fixpoint_compute_(Clauses,SgKey,Sg,Sv,Call,Proj,AbsInt,LEntryInf,
 	         TempPrime,Prime,Id,List) :-
