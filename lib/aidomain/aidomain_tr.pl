@@ -39,14 +39,23 @@ emit_dom_op(AbsInt,H,B1,AbsIntB, C2) :-
 	atom_concat(AbsIntB, ImplN0, ImplN),
 	B =.. [ImplN|Bs],
 	B2 = B,
-%	check_dom_op(Nh,AbsInt,As,B1), % (enable to check op)
+	check_dom_op(Nh,AbsInt,As,B1), % (enable to check op)
 	H2 =.. [Nh,AbsInt|As],
         C2 = (H2 :- !, B2).
 
 check_dom_op(Nh,AbsInt,As,B1) :-
 	B1 =.. [OpName|Bs],
 	( OpName == Nh ->
-	    ( As == Bs -> true
+	    ( ( member(Va,As),nonvar(Va)
+	      ; member(Vb,Bs),nonvar(Vb)
+	      ) ->
+		( numbervars(As,0,N0),
+		  numbervars(Bs,N0,_),
+		  message(user, [~~(bad_args_nonvar(AbsInt, OpName, As, Bs))]),
+		  fail
+		; true
+		)
+	    ; As == Bs -> true
 	    ; ( numbervars(As,0,N0),
 		numbervars(Bs,N0,_),
 		message(user, [~~(bad_args(AbsInt, OpName, As, Bs))]),

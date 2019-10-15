@@ -296,7 +296,7 @@
 :- dom_op(shfr, special_builtin/5).
 :- dom_op(shfr, success_builtin(Type,Sv_uns,Condvars,_HvFv_u,Call,Succ), success_builtin(Type,Sv_uns,Condvars,Call,Succ)).
 :- dom_op(shfr, call_to_success_builtin/6).
-:- dom_op(shfr, obtain_info(Prop,Vars,ASub,Info), obtain_info(Prop,Vars,ASub,Info)).
+:- dom_op(shfr, obtain_info/4).
 :- dom_op(shfr, input_interface/4).
 :- dom_op(shfr, input_user_interface/5).
 :- dom_op(shfr, asub_to_native/5).
@@ -340,9 +340,9 @@
 :- dom_op(shfrnv, input_interface/4).
 :- dom_op(shfrnv, input_user_interface/5).
 :- dom_op(shfrnv, asub_to_native/5).
-:- dom_op(shfrnv, unknown_call(Sg,Vars,Call,Succ), unknown_call(Sg,Vars,Call,Succ), from(shfr)).
-:- dom_op(shfrnv, unknown_entry(Sg,Qv,Call), unknown_entry(Sg,Qv,Call), from(shfr)).
-:- dom_op(shfrnv, empty_entry(Sg,Qv,Call), empty_entry(Sg,Qv,Call), from(shfr)).
+:- dom_op(shfrnv, unknown_call/4, from(shfr)).
+:- dom_op(shfrnv, unknown_entry/3, from(shfr)).
+:- dom_op(shfrnv, empty_entry/3, from(shfr)).
 %
 % :- dom_op(shfrnv, propagate_downwards_closed(ASub1,ASub2,ASub), downwards_closed(ASub1,ASub2,ASub)).
 % :- dom_op(shfrnv, del_real_conjoin(ASub1,ASub2,ASub), real_conjoin(ASub1,ASub2,ASub)).
@@ -379,8 +379,8 @@
 :- dom_op(shfret, glb/3).
 :- dom_op(shfret, eliminate_equivalent/2).
 :- dom_op(shfret, call_to_success_fact/9).
-:- dom_op(shfret, combined_special_builtin0(SgKey,Domains), combined_special_builtin0(SgKey,Domains)).
-:- dom_op(shfret, split_combined_domain(ASub,ASubs,Doms), split_combined_domain(ASub,ASubs,Doms)).
+:- dom_op(shfret, combined_special_builtin0/2).
+:- dom_op(shfret, split_combined_domain/3).
 :- dom_op(shfret, input_interface/4).
 :- dom_op(shfret, input_user_interface/5).
 :- dom_op(shfret, asub_to_native/5).
@@ -400,7 +400,7 @@
 :- dom_op(shareson, glb/3).
 :- dom_op(shareson, call_to_success_fact/9).
 :- dom_op(shareson, special_builtin/5).
-:- dom_op(shareson, body_succ_builtin(Type,Sg,Condvs,Sv,HvFv_u,Call,Proj,Succ), body_succ_builtin(Type,Sg,Condvs,Sv,HvFv_u,Call,Proj,Succ)).
+:- dom_op(shareson, body_succ_builtin/8).
 :- dom_op(shareson, input_interface/4).
 :- dom_op(shareson, input_user_interface/5).
 :- dom_op(shareson, asub_to_native/5).
@@ -420,7 +420,7 @@
 :- dom_op(shfrson, glb/3).
 :- dom_op(shfrson, call_to_success_fact/9).
 :- dom_op(shfrson, special_builtin/5).
-:- dom_op(shfrson, body_succ_builtin(Type,Sg,Condvs,Sv,HvFv_u,Call,Proj,Succ), body_succ_builtin(Type,Sg,Condvs,Sv,HvFv_u,Call,Proj,Succ)).
+:- dom_op(shfrson, body_succ_builtin/8).
 :- dom_op(shfrson, input_interface/4).
 :- dom_op(shfrson, input_user_interface/5).
 :- dom_op(shfrson, asub_to_native/5).
@@ -458,21 +458,21 @@
 :- dom_op(share_amgu, call_to_entry/9).
 :- dom_op(share_amgu, exit_to_prime/7).
 :- dom_op(share_amgu, project(_Sg,Vars,_HvFv,ASub,Proj), project(Vars,ASub,Proj), from(share)).
-:- dom_op(share_amgu, compute_lub(ListAsub,LubASub), compute_lub(ListAsub,LubASub), from(share)).
+:- dom_op(share_amgu, compute_lub/2, from(share)).
 :- dom_op(share_amgu, abs_sort/2, from(share)).
 :- dom_op(share_amgu, extend(_Sg,Prime,Sv,Call,Succ), extend(Prime,Sv,Call,Succ), from(share)).
-:- dom_op(share_amgu, less_or_equal(ASub0,ASub1), less_or_equal(ASub0,ASub1), from(share)).
-:- dom_op(share_amgu, glb(ASub0,ASub1,ASub), glb(ASub0,ASub1,ASub), from(share)).
+:- dom_op(share_amgu, less_or_equal/2, from(share)).
+:- dom_op(share_amgu, glb/3, from(share)).
 :- dom_op(share_amgu, call_to_success_fact/9).
 :- dom_op(share_amgu, special_builtin/5).
 :- dom_op(share_amgu, success_builtin(Type,Sv_uns,Condvars,_HvFv_u,Call,Succ), success_builtin(Type,Sv_uns,Condvars,Call,Succ)).
 :- dom_op(share_amgu, call_to_success_builtin/6).
-:- dom_op(share_amgu, input_interface(InputUser,Kind,Struct0,Struct1), input_interface(InputUser,Kind,Struct0,Struct1), from(share)).
+:- dom_op(share_amgu, input_interface/4, from(share)).
 :- dom_op(share_amgu, input_user_interface/5, from(share)).
-:- dom_op(share_amgu, asub_to_native(ASub,Qv,OutFlag,OutputUser,Comps), asub_to_native(ASub,Qv,OutFlag,OutputUser,Comps), from(share)).
-:- dom_op(share_amgu, unknown_call(Sg,Vars,Call,Succ), unknown_call(Sg,Vars,Call,Succ), from(share)).
-:- dom_op(share_amgu, unknown_entry(Sg,Qv,Call), unknown_entry(Sg,Qv,Call), from(share)).
-:- dom_op(share_amgu, empty_entry(Sg,Qv,Call), empty_entry(Sg,Qv,Call), from(share)).
+:- dom_op(share_amgu, asub_to_native/5, from(share)).
+:- dom_op(share_amgu, unknown_call/4, from(share)).
+:- dom_op(share_amgu, unknown_entry/3, from(share)).
+:- dom_op(share_amgu, empty_entry/3, from(share)).
 % :- dom_op(share_amgu, compute_lub_el(ASub1,ASub2,ASub), lub(ASub1,ASub2,ASub), from(share)).
 % ----------
 :- use_module(domain(sharefree_amgu)).
@@ -482,46 +482,46 @@
 :- dom_op(sharefree_amgu, call_to_entry/9).
 :- dom_op(sharefree_amgu, exit_to_prime/7).
 :- dom_op(sharefree_amgu, project(_Sg,Vars,_HvFv,ASub,Proj), project(ASub,Vars,Proj), from(shfr)).
-:- dom_op(sharefree_amgu, compute_lub(ListAsub,LubASub), compute_lub(ListAsub,LubASub), from(shfr)).
+:- dom_op(sharefree_amgu, compute_lub/2, from(shfr)).
 :- dom_op(sharefree_amgu, abs_sort/2, from(shfr)).
 :- dom_op(sharefree_amgu, extend(_Sg,Prime,Sv,Call,Succ), extend(Prime,Sv,Call,Succ), from(shfr)).
-:- dom_op(sharefree_amgu, less_or_equal(ASub0,ASub1), less_or_equal(ASub0,ASub1), from(shfr)).
-:- dom_op(sharefree_amgu, glb(ASub0,ASub1,ASub), glb(ASub0,ASub1,ASub), from(shfr)).
+:- dom_op(sharefree_amgu, less_or_equal/2, from(shfr)).
+:- dom_op(sharefree_amgu, glb/3, from(shfr)).
 :- dom_op(sharefree_amgu, call_to_success_fact/9).
 :- dom_op(sharefree_amgu, special_builtin/5).
 :- dom_op(sharefree_amgu, success_builtin(Type,Sv_uns,Condvars,_HvFv_u,Call,Succ), success_builtin(Type,Sv_uns,Condvars,Call,Succ)).
 :- dom_op(sharefree_amgu, call_to_success_builtin/6).
-:- dom_op(sharefree_amgu, obtain_info(Prop,Vars,ASub,Info), obtain_info(Prop,Vars,ASub,Info), from(shfr)).
-:- dom_op(sharefree_amgu, input_interface(InputUser,Kind,Struct0,Struct1), input_interface(InputUser,Kind,Struct0,Struct1), from(shfr)).
+:- dom_op(sharefree_amgu, obtain_info/4, from(shfr)).
+:- dom_op(sharefree_amgu, input_interface/4, from(shfr)).
 :- dom_op(sharefree_amgu, input_user_interface/5, from(shfr)).
-:- dom_op(sharefree_amgu, asub_to_native(ASub,Qv,OutFlag,OutputUser,Comps), asub_to_native(ASub,Qv,OutFlag,OutputUser,Comps), from(shfr)).
-:- dom_op(sharefree_amgu, unknown_call(Sg,Vars,Call,Succ), unknown_call(Sg,Vars,Call,Succ), from(shfr)).
-:- dom_op(sharefree_amgu, unknown_entry(Sg,Qv,Call), unknown_entry(Sg,Qv,Call), from(shfr)).
-:- dom_op(sharefree_amgu, empty_entry(Sg,Qv,Call), empty_entry(Sg,Qv,Call), from(shfr)).
+:- dom_op(sharefree_amgu, asub_to_native/5, from(shfr)).
+:- dom_op(sharefree_amgu, unknown_call/4, from(shfr)).
+:- dom_op(sharefree_amgu, unknown_entry/3, from(shfr)).
+:- dom_op(sharefree_amgu, empty_entry/3, from(shfr)).
 % ----------
 :- use_module(domain(shfrlin_amgu)).
 :- dom_def(shfrlin_amgu).
 :- dom_op(shfrlin_amgu, amgu/4).
 :- dom_op(shfrlin_amgu, augment_asub/3, from(shfrlin)).
-:- dom_op(shfrlin_amgu, call_to_entry(Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo), call_to_entry(Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo), from(shfrlin)).
-:- dom_op(shfrlin_amgu, exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime), exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime), from(shfrlin)).
+:- dom_op(shfrlin_amgu, call_to_entry/9, from(shfrlin)).
+:- dom_op(shfrlin_amgu, exit_to_prime/7, from(shfrlin)).
 :- dom_op(shfrlin_amgu, project(_Sg,Vars,_HvFv,ASub,Proj), project(ASub,Vars,Proj), from(shfrlin)).
-:- dom_op(shfrlin_amgu, compute_lub(ListAsub,LubASub), compute_lub(ListAsub,LubASub), from(shfrlin)).
+:- dom_op(shfrlin_amgu, compute_lub/2, from(shfrlin)).
 :- dom_op(shfrlin_amgu, abs_sort/2, from(shfrlin)).
 :- dom_op(shfrlin_amgu, extend(_Sg,Prime,Sv,Call,Succ), extend(Prime,Sv,Call,Succ), from(shfrlin)).
-:- dom_op(shfrlin_amgu, less_or_equal(ASub0,ASub1), less_or_equal(ASub0,ASub1), from(shfrlin)).
-:- dom_op(shfrlin_amgu, glb(ASub0,ASub1,ASub), glb(ASub0,ASub1,ASub), from(shfrlin)).
-:- dom_op(shfrlin_amgu, call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ), call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ), from(shfrlin)).
+:- dom_op(shfrlin_amgu, less_or_equal/2, from(shfrlin)).
+:- dom_op(shfrlin_amgu, glb/3, from(shfrlin)).
+:- dom_op(shfrlin_amgu, call_to_success_fact/9, from(shfrlin)).
 :- dom_op(shfrlin_amgu, special_builtin/5, from(shfrlin)).
 :- dom_op(shfrlin_amgu, success_builtin(Type,Sv_uns,Condvars,_HvFv_u,Call,Succ), success_builtin(Type,Sv_uns,Condvars,Call,Succ), from(shfrlin)).
-:- dom_op(shfrlin_amgu, call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,Succ), call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,Succ), from(shfrlin)).
-:- dom_op(shfrlin_amgu, obtain_info(Prop,Vars,(Sh,Fr,_Lin),Info), obtain_info(Prop,Vars,(Sh,Fr),Info), from(shfr)).
-:- dom_op(shfrlin_amgu, input_interface(InputUser,Kind,Struct0,Struct1), input_interface(InputUser,Kind,Struct0,Struct1), from(shfrlin)).
+:- dom_op(shfrlin_amgu, call_to_success_builtin/6, from(shfrlin)).
+:- dom_op(shfrlin_amgu, obtain_info/4, from(shfrlin)).
+:- dom_op(shfrlin_amgu, input_interface/4, from(shfrlin)).
 :- dom_op(shfrlin_amgu, input_user_interface/5, from(shfrlin)).
-:- dom_op(shfrlin_amgu, asub_to_native(ASub,Qv,OutFlag,OutputUser,Comps), asub_to_native(ASub,Qv,OutFlag,OutputUser,Comps), from(shfrlin)).
-:- dom_op(shfrlin_amgu, unknown_call(Sg,Vars,Call,Succ), unknown_call(Sg,Vars,Call,Succ), from(shfrlin)).
-:- dom_op(shfrlin_amgu, unknown_entry(Sg,Qv,Call), unknown_entry(Sg,Qv,Call), from(shfrlin)).
-:- dom_op(shfrlin_amgu, empty_entry(Sg,Qv,Call), empty_entry(Sg,Qv,Call), from(shfrlin)).
+:- dom_op(shfrlin_amgu, asub_to_native/5, from(shfrlin)).
+:- dom_op(shfrlin_amgu, unknown_call/4, from(shfrlin)).
+:- dom_op(shfrlin_amgu, unknown_entry/3, from(shfrlin)).
+:- dom_op(shfrlin_amgu, empty_entry/3, from(shfrlin)).
 % ---------------------------------------------------------------------------
 :- use_module(domain(sharing_clique)).
 :- dom_def(share_clique).
@@ -570,7 +570,7 @@
 :- dom_op(share_clique_1, asub_to_native/5).
 :- dom_op(share_clique_1, unknown_call/4).
 :- dom_op(share_clique_1, unknown_entry/3).
-:- dom_op(share_clique_1, empty_entry(Sg,Qv,Call), empty_entry(Sg,Qv,Call), from(share_clique)).
+:- dom_op(share_clique_1, empty_entry/3, from(share_clique)).
 % :- dom_op(share_clique_1, compute_lub_el(ASub1,ASub2,ASub), lub_cl(ASub1,ASub2,ASub)).
 % ----------
 :- use_module(domain(sharefree_clique)).
@@ -591,7 +591,7 @@
 :- dom_op(sharefree_clique, special_builtin/5).
 :- dom_op(sharefree_clique, success_builtin(Type,Sv_uns,Condvars,_HvFv_u,Call,Succ), success_builtin(Type,Sv_uns,Condvars,Call,Succ)).
 :- dom_op(sharefree_clique, call_to_success_builtin/6).
-:- dom_op(sharefree_clique, obtain_info(Prop,Vars,ASub,Info), obtain_info(Prop,Vars,ASub,Info), from(shfr)).
+:- dom_op(sharefree_clique, obtain_info/4, from(shfr)).
 :- dom_op(sharefree_clique, input_interface/4).
 :- dom_op(sharefree_clique, input_user_interface/5).
 :- dom_op(sharefree_clique, asub_to_native/5).
@@ -614,8 +614,8 @@
 :- dom_op(share_clique_def, eliminate_equivalent/2).
 :- dom_op(share_clique_def, call_to_success_fact/9).
 :- dom_op(share_clique_def, special_builtin/5).
-:- dom_op(share_clique_def, body_succ_builtin(Type,Sg,Condvs,Sv,HvFv_u,Call,Proj,Succ), body_succ_builtin(Type,Sg,Condvs,Sv,HvFv_u,Call,Proj,Succ)).
-:- dom_op(share_clique_def, input_interface(InputUser,Kind,Struct0,Struct1), input_interface(InputUser,Kind,Struct0,Struct1), from(share_clique)).
+:- dom_op(share_clique_def, body_succ_builtin/8).
+:- dom_op(share_clique_def, input_interface/4, from(share_clique)).
 :- dom_op(share_clique_def, input_user_interface/5).
 :- dom_op(share_clique_def, asub_to_native/5).
 :- dom_op(share_clique_def, unknown_call/4).
@@ -638,8 +638,8 @@
 :- dom_op(sharefree_clique_def, eliminate_equivalent/2).
 :- dom_op(sharefree_clique_def, call_to_success_fact/9).
 :- dom_op(sharefree_clique_def, special_builtin/5).
-:- dom_op(sharefree_clique_def, body_succ_builtin(Type,Sg,Condvs,Sv,HvFv_u,Call,Proj,Succ), body_succ_builtin(Type,Sg,Condvs,Sv,HvFv_u,Call,Proj,Succ)).
-:- dom_op(sharefree_clique_def, input_interface(InputUser,Kind,Struct0,Struct1), input_interface(InputUser,Kind,Struct0,Struct1), from(sharefree_clique)).
+:- dom_op(sharefree_clique_def, body_succ_builtin/8).
+:- dom_op(sharefree_clique_def, input_interface/4, from(sharefree_clique)).
 :- dom_op(sharefree_clique_def, input_user_interface/5).
 :- dom_op(sharefree_clique_def, asub_to_native/5).
 :- dom_op(sharefree_clique_def, unknown_call/4).
@@ -724,7 +724,7 @@
 :- dom_op(depthk, less_or_equal/2).
 :- dom_op(depthk, glb/3).
 :- dom_op(depthk, eliminate_equivalent/2).
-:- dom_op(depthk, abs_subset(LASub1,LASub2), abs_subset(LASub1,LASub2)).
+:- dom_op(depthk, abs_subset/2).
 :- dom_op(depthk, call_to_success_fact/9).
 :- dom_op(depthk, special_builtin/5).
 :- dom_op(depthk, success_builtin(Type,Sv_uns,Condvars,_HvFv_u,Call,Succ), success_builtin(Type,Sv_uns,Condvars,Call,Succ)).
@@ -933,7 +933,7 @@
 :- dom_op(deftypes, empty_entry/3).
 :- dom_op(deftypes, collect_abstypes_abs/3).
 :- dom_op(deftypes, rename_abstypes_abs(ASub,(Types,Names),RenASub), rename_abstypes_abs(ASub,Types,Names,RenASub)).
-:- dom_op(deftypes, contains_parameters(Subst), contains_parameters(Subst)).
+:- dom_op(deftypes, contains_parameters/1).
 %
 % ===========================================================================
 :- doc(section, "Numeric domains").
@@ -948,9 +948,9 @@
 :- dom_op(nonrel_intervals, exit_to_prime/7).
 :- dom_op(nonrel_intervals, project/5).
 :- dom_op(nonrel_intervals, widencall/3).
-:- dom_op(nonrel_intervals, widen(Prime0, Prime1, NewPrime), widen(Prime0,Prime1,NewPrime)).
+:- dom_op(nonrel_intervals, widen/3).
 :- dom_op(nonrel_intervals, compute_lub/2).
-:- dom_op(nonrel_intervals, identical_abstract(ASub1, ASub2), identical_abstract(ASub1, ASub2)).
+:- dom_op(nonrel_intervals, identical_abstract/2).
 :- dom_op(nonrel_intervals, abs_sort/2).
 :- dom_op(nonrel_intervals, extend/5).
 :- dom_op(nonrel_intervals, less_or_equal/2).
@@ -1135,8 +1135,8 @@
 :- dom_op(nf, eliminate_equivalent/2).
 :- dom_op(nf, call_to_success_fact/9).
 :- dom_op(nf, special_builtin/5).
-:- dom_op(nf, combined_special_builtin0(SgKey,Domains), combined_special_builtin0(SgKey,Domains)).
-:- dom_op(nf, split_combined_domain(ASub,ASubs,Doms), split_combined_domain(ASub,ASubs,Doms)).
+:- dom_op(nf, combined_special_builtin0/2).
+:- dom_op(nf, split_combined_domain/3).
 :- dom_op(nf, success_builtin(Type,Sv_uns,Condvars,_HvFv_u,Call,Succ), success_builtin(Type,Sv_uns,Condvars,Call,Succ)).
 :- dom_op(nf, input_interface/4).
 :- dom_op(nf, input_user_interface/5).
@@ -1168,10 +1168,10 @@
 :- dom_op(det, eliminate_equivalent/2).
 :- dom_op(det, call_to_success_fact/9).
 :- dom_op(det, special_builtin/5).
-:- dom_op(det, combined_special_builtin0(SgKey,Domains), combined_special_builtin0(SgKey,Domains)).
-:- dom_op(det, split_combined_domain(ASub,ASubs,Doms), split_combined_domain(ASub,ASubs,Doms)).
+:- dom_op(det, combined_special_builtin0/2).
+:- dom_op(det, split_combined_domain/3).
 :- dom_op(det, success_builtin(Type,Sv_uns,Condvars,_HvFv_u,Call,Succ), success_builtin(Type,Sv_uns,Condvars,Call,Succ)).
-:- dom_op(det, obtain_info(Prop,Vars,ASub,Info), obtain_info(Prop,Vars,ASub,Info)).
+:- dom_op(det, obtain_info/4).
 :- dom_op(det, input_interface/4).
 :- dom_op(det, input_user_interface/5).
 :- dom_op(det, asub_to_native/5).
@@ -1202,8 +1202,8 @@
 :- dom_op(res_plai, eliminate_equivalent/2).
 :- dom_op(res_plai, call_to_success_fact/9).
 :- dom_op(res_plai, special_builtin/5).
-:- dom_op(res_plai, combined_special_builtin0(SgKey,Domains), combined_special_builtin0(SgKey,Domains)).
-:- dom_op(res_plai, split_combined_domain(ASub,ASubs,Doms), split_combined_domain(ASub,ASubs,Doms)).
+:- dom_op(res_plai, combined_special_builtin0/2).
+:- dom_op(res_plai, split_combined_domain/3).
 % :- dom_op(res_plai, success_builtin(Type,Sv_uns,Condvars,_HvFv_u,Call,Succ), success_builtin(Type,Sv_uns,Condvars,Call,Succ)).
 :- dom_op(res_plai, call_to_success_builtin/6).
 :- dom_op(res_plai, obtain_info/4).
@@ -1235,8 +1235,8 @@
 :- dom_op(res_plai_stprf, eliminate_equivalent/2).
 :- dom_op(res_plai_stprf, call_to_success_fact/9).
 :- dom_op(res_plai_stprf, special_builtin/5).
-:- dom_op(res_plai_stprf, combined_special_builtin0(SgKey,Domains), combined_special_builtin0(SgKey,Domains)).
-:- dom_op(res_plai_stprf, split_combined_domain(ASub,ASubs,Doms), split_combined_domain(ASub,ASubs,Doms)).
+:- dom_op(res_plai_stprf, combined_special_builtin0/2).
+:- dom_op(res_plai_stprf, split_combined_domain/3).
 :- dom_op(res_plai_stprf, call_to_success_builtin/6).
 :- dom_op(res_plai_stprf, obtain_info/4).
 :- dom_op(res_plai_stprf, input_interface/4).
@@ -1267,8 +1267,8 @@
 :- dom_op(sized_types, eliminate_equivalent/2).
 :- dom_op(sized_types, call_to_success_fact/9).
 :- dom_op(sized_types, special_builtin/5).
-:- dom_op(sized_types, combined_special_builtin0(SgKey,Domains), combined_special_builtin0(SgKey,Domains)).
-:- dom_op(sized_types, split_combined_domain(ASub,ASubs,Doms), split_combined_domain(ASub,ASubs,Doms)).
+:- dom_op(sized_types, combined_special_builtin0/2).
+:- dom_op(sized_types, split_combined_domain/3).
 :- dom_op(sized_types, call_to_success_builtin/6).
 :- dom_op(sized_types, obtain_info/4).
 :- dom_op(sized_types, input_interface/4).

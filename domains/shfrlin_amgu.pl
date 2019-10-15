@@ -26,6 +26,7 @@
 	shfr_empty_entry/3,
 	shfr_extend/4,
 	shfr_glb/3,
+	shfr_obtain_info/4,
 	shfr_input_interface/4,
 	shfr_input_user_interface/5,
 	shfr_less_or_equal/2,
@@ -457,6 +458,11 @@ shfrlin_less_or_equal((Sh0,Fr0,Lin0),(Sh1,Fr1,Lin1)):-
 shfrlin_input_user_interface((Sh,Vars,_),Qv,(Call_sh,Call_fr,Call_lin),Sg,MaybeCallASub):-
 	shfr_input_user_interface((Sh,Vars),Qv,(Call_sh,Call_fr),Sg,MaybeCallASub),
 	member_value_freeness(Call_fr,Call_lin,f).
+
+%------------------------------------------------------------------------%
+
+:- export(shfrlin_obtain_info/4).
+shfrlin_obtain_info(Prop,Vars,(Sh,Fr,_Lin),Info) :- shfr_obtain_info(Prop,Vars,(Sh,Fr),Info).
 
 %------------------------------------------------------------------------%
 % shfrlin_input_interface(+,+,+,-)                                       |
