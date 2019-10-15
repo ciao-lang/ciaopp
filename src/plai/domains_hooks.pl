@@ -502,26 +502,26 @@
 :- use_module(domain(shfrlin_amgu)).
 :- dom_def(shfrlin_amgu).
 :- dom_op(shfrlin_amgu, amgu/4).
-:- dom_op(shfrlin_amgu, augment_asub/3, from(shfrlin)).
-:- dom_op(shfrlin_amgu, call_to_entry/9, from(shfrlin)).
-:- dom_op(shfrlin_amgu, exit_to_prime/7, from(shfrlin)).
-:- dom_op(shfrlin_amgu, project(_Sg,Vars,_HvFv,ASub,Proj), project(ASub,Vars,Proj), from(shfrlin)).
-:- dom_op(shfrlin_amgu, compute_lub/2, from(shfrlin)).
-:- dom_op(shfrlin_amgu, abs_sort/2, from(shfrlin)).
-:- dom_op(shfrlin_amgu, extend(_Sg,Prime,Sv,Call,Succ), extend(Prime,Sv,Call,Succ), from(shfrlin)).
-:- dom_op(shfrlin_amgu, less_or_equal/2, from(shfrlin)).
-:- dom_op(shfrlin_amgu, glb/3, from(shfrlin)).
-:- dom_op(shfrlin_amgu, call_to_success_fact/9, from(shfrlin)).
-:- dom_op(shfrlin_amgu, special_builtin/5, from(shfrlin)).
-:- dom_op(shfrlin_amgu, success_builtin(Type,Sv_uns,Condvars,_HvFv_u,Call,Succ), success_builtin(Type,Sv_uns,Condvars,Call,Succ), from(shfrlin)).
-:- dom_op(shfrlin_amgu, call_to_success_builtin/6, from(shfrlin)).
-:- dom_op(shfrlin_amgu, obtain_info/4, from(shfrlin)).
-:- dom_op(shfrlin_amgu, input_interface/4, from(shfrlin)).
-:- dom_op(shfrlin_amgu, input_user_interface/5, from(shfrlin)).
-:- dom_op(shfrlin_amgu, asub_to_native/5, from(shfrlin)).
-:- dom_op(shfrlin_amgu, unknown_call/4, from(shfrlin)).
-:- dom_op(shfrlin_amgu, unknown_entry/3, from(shfrlin)).
-:- dom_op(shfrlin_amgu, empty_entry/3, from(shfrlin)).
+:- dom_op(shfrlin_amgu, augment_asub/3).
+:- dom_op(shfrlin_amgu, call_to_entry/9).
+:- dom_op(shfrlin_amgu, exit_to_prime/7).
+:- dom_op(shfrlin_amgu, project(_Sg,Vars,_HvFv,ASub,Proj), project(ASub,Vars,Proj)).
+:- dom_op(shfrlin_amgu, compute_lub/2).
+:- dom_op(shfrlin_amgu, abs_sort/2).
+:- dom_op(shfrlin_amgu, extend(_Sg,Prime,Sv,Call,Succ), extend(Prime,Sv,Call,Succ)).
+:- dom_op(shfrlin_amgu, less_or_equal/2).
+:- dom_op(shfrlin_amgu, glb/3).
+:- dom_op(shfrlin_amgu, call_to_success_fact/9).
+:- dom_op(shfrlin_amgu, special_builtin/5).
+:- dom_op(shfrlin_amgu, success_builtin(Type,Sv_uns,Condvars,_HvFv_u,Call,Succ), success_builtin(Type,Sv_uns,Condvars,Call,Succ)).
+:- dom_op(shfrlin_amgu, call_to_success_builtin/6).
+:- dom_op(shfrlin_amgu, obtain_info/4).
+:- dom_op(shfrlin_amgu, input_interface/4).
+:- dom_op(shfrlin_amgu, input_user_interface/5).
+:- dom_op(shfrlin_amgu, asub_to_native/5).
+:- dom_op(shfrlin_amgu, unknown_call/4).
+:- dom_op(shfrlin_amgu, unknown_entry/3).
+:- dom_op(shfrlin_amgu, empty_entry/3).
 % ---------------------------------------------------------------------------
 :- use_module(domain(sharing_clique)).
 :- dom_def(share_clique).

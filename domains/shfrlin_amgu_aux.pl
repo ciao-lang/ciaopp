@@ -1,5 +1,5 @@
 :- module(shfrlin_amgu_aux,
-        [shfrlin_amgu_iterate/3, shfrlin_update_fr_lin/3],
+        [shfrlin_amgu_iterate/3, shfrlin_amgu_update_fr_lin/3],
          [assertions, isomodes]).
 
 :- doc(author, "Jorge Navas").
@@ -33,10 +33,10 @@ shfrlin_amgu_iterate([(X,(Ts,Type,L))|Eqs],ASub,ASub2):-
 %                  UPDATE FREENESS+LINEARITY                             |
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% shfrlin_update_fr_lin(+,+,-)                                           |
-% shfrlin_update_fr_lin((Sh,F,L),Vars,(Sh',F',L')                        |
+% shfrlin_amgu_update_fr_lin(+,+,-)                                           |
+% shfrlin_amgu_update_fr_lin((Sh,F,L),Vars,(Sh',F',L')                        |
 %------------------------------------------------------------------------%
-shfrlin_update_fr_lin((Sh,F,L),Vars,(Sh,F1,L1)):-
+shfrlin_amgu_update_fr_lin((Sh,F,L),Vars,(Sh,F1,L1)):-
      shfr_update_freeness(Sh,F,Vars,F1),
      filter_ground(L,F1,L1).
 %------------------------------------------------------------------------%
