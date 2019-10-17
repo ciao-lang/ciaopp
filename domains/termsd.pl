@@ -17,7 +17,7 @@
 	terms_empty_entry/3,
 	terms_call_to_success_fact/9,
 	terms_special_builtin/5,
-	terms_success_builtin/5,
+	terms_success_builtin/6,
 	terms_call_to_success_builtin/6,
 	terms_input_interface/4,
 	terms_asub_to_native/5,
@@ -1266,17 +1266,17 @@ terms_special_builtin(Key,_Sg,_Subgoal,special(Key),[]):-
 terms_very_special_builtin('=/2').
 
 %------------------------------------------------------------------------%
-% terms_success_builtin(+Type,+Sv_uns,+Condvars,+Call,-Succ)             %
+% terms_success_builtin(+Type,+Sv_uns,+Condvars,+HvFv_u,+Call,-Succ)             %
 % Depending on Type it computes the abstraction of a builtin affecting   %
 % variables Condvars and having variables Sv_uns with call subs. Call.   %
 %------------------------------------------------------------------------%
 
-terms_success_builtin(id,_Sv_uns,_Condvars,Call,Call).
-terms_success_builtin(bot,_Sv_uns,_Condvars,_Call,'$bottom').
-terms_success_builtin(type(T),_Sv_uns,Condvars,Call,Succ):-
+terms_success_builtin(id,_Sv_uns,_Condvars,_HvFv_u,Call,Call).
+terms_success_builtin(bot,_Sv_uns,_Condvars,_HvFv_u,_Call,'$bottom').
+terms_success_builtin(type(T),_Sv_uns,Condvars,_HvFv_u,Call,Succ):-
 	keys_same_value(Condvars,T,Prime),
 	terms_extend(Prime,Condvars,Call,Succ).
-terms_success_builtin(Key,_Sv_uns,_Condvars,Call,Call):-
+terms_success_builtin(Key,_Sv_uns,_Condvars,_HvFv_u,Call,Call):-
 	warning_message("the builtin key ~q is not defined",[Key]).
 
 keys_same_value([K|Ks],V,[K:V|ASub]):-

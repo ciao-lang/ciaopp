@@ -49,7 +49,7 @@
 	shfr_project/3,
 	shfr_abs_sort/2,
 	shfr_special_builtin/5,
-	shfr_success_builtin/5]).
+	shfr_success_builtin/6]).
 :- use_module(domain(sharefree_amgu_aux)).
 
 %------------------------------------------------------------------------%
@@ -209,12 +209,12 @@ sharefree_amgu_special_builtin(SgKey,Sg,Subgoal,Type,Condvars):-
 	shfr_special_builtin(SgKey,Sg,Subgoal,Type,Condvars).
 	
 %------------------------------------------------------------------------%
-% sharefree_amgu_success_builtin(+,+,+,+,-)                              |
-% sharefree_amgu_success_builtin(Type,Sv_u,Condv,Call,Succ)              |
+% sharefree_amgu_success_builtin(+,+,+,+,+,-)                            |
+% sharefree_amgu_success_builtin(Type,Sv_u,Condv,HvFv_u,Call,Succ)              |
 %------------------------------------------------------------------------%
 
-:- export(sharefree_amgu_success_builtin/5).
-sharefree_amgu_success_builtin(arg,_,p(X,Y,Z),Call,Succ):-
+:- export(sharefree_amgu_success_builtin/6).
+sharefree_amgu_success_builtin(arg,_,p(X,Y,Z),_,Call,Succ):-
 	Call = (Call_sh,Call_fr),
 	varset(X,OldG),
 	update_lambda_non_free(OldG,Call_fr,Call_sh,Temp_fr,Temp_sh),
@@ -228,18 +228,18 @@ sharefree_amgu_success_builtin(arg,_,p(X,Y,Z),Call,Succ):-
 	TempASub = (Temp_sh,Temp_fr),
 	shfr_project(TempASub,Sv,Proj),
  	sharefree_amgu_call_to_success_fact(Sg,Hv,Head,not_provided,Sv,TempASub,Proj,_,Succ). % TODO: add some ClauseKey?
-sharefree_amgu_success_builtin(arg,_,_,_,'$bottom') :- !.
-sharefree_amgu_success_builtin(exp,_,Sg,Call,Succ):-
+sharefree_amgu_success_builtin(arg,_,_,_,_,'$bottom') :- !.
+sharefree_amgu_success_builtin(exp,_,Sg,_,Call,Succ):-
 	Head = p(A,f(A,_B)),
 	varset(Sg,Sv),
 	varset(Head,Hv),
 	shfr_project(Call,Sv,Proj),
 	sharefree_amgu_call_to_success_fact(Sg,Hv,Head,not_provided,Sv,Call,Proj,_,Succ), % TODO: add some ClauseKey?
 	!. % TODO: move cut somewhere else? (JF)
-sharefree_amgu_success_builtin(exp,_,_,_,'$bottom') :- !.
+sharefree_amgu_success_builtin(exp,_,_,_,_,'$bottom') :- !.
 % there is a new case (general case) in '../2' that should be implemented 
 % in this module because it calls call_to_success_builtin 
-sharefree_amgu_success_builtin(copy_term,_,p(X,Y),Call,Succ):-
+sharefree_amgu_success_builtin(copy_term,_,p(X,Y),_,Call,Succ):-
 	varset(X,VarsX),
 	shfr_project(Call,VarsX,ProjectedX),
 	copy_term((X,ProjectedX),(NewX,NewProjectedX)),
@@ -260,8 +260,8 @@ sharefree_amgu_success_builtin(copy_term,_,p(X,Y),Call,Succ):-
 	collect_vars_freeness(FrCall,VarsCall),
 	shfr_project(Temp_success,VarsCall,Succ),
 	!. % TODO: move cut somewhere else? (JF)
-sharefree_amgu_success_builtin(Type,Sv_u,Condv,Call,Succ):-
-	shfr_success_builtin(Type,Sv_u,Condv,Call,Succ).
+sharefree_amgu_success_builtin(Type,Sv_u,Condv,HvFv_u,Call,Succ):-
+	shfr_success_builtin(Type,Sv_u,Condv,HvFv_u,Call,Succ).
 
 %------------------------------------------------------------------------%
 % sharefree_amgu_call_to_success_builtin(+,+,+,+,+,-)                    |

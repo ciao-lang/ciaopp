@@ -81,7 +81,7 @@
 	powerset_with_empty_set/2,
 	share_clique_augment_asub/3,
 	share_clique_abs_sort/2,
-	share_clique_success_builtin/5,
+	share_clique_success_builtin/6,
 	share_clique_widen/4,
 	share_clique_widen/5,
 	sharing_part_less_or_equal/3,
@@ -589,8 +589,8 @@ share_clique_1_unknown_entry(_Sg,Qv,Call):-
 %                         HANDLING BUILTINS                              |
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%	
-% share_clique_1_success_builtin(+,+,+,+,-)                              |
-% share_clique_1_success_builtin(Type,Sv_u,Condv,Call,Succ)              |
+% share_clique_1_success_builtin(+,+,+,+,+,-)                            |
+% share_clique_1_success_builtin(Type,Sv_u,Condv,HvFv_u,Call,Succ)              |
 % Obtains the success for some particular builtins:                      |
 %  * If Type = ground, it updates Call making all vars in Sv_u ground    |
 %  * If Type = bottom, Succ = '$bottom'                                  |
@@ -600,17 +600,17 @@ share_clique_1_unknown_entry(_Sg,Qv,Call):-
 %    Succ is computed                                                    |
 %------------------------------------------------------------------------%
 
-:- export(share_clique_1_success_builtin/5).
-share_clique_1_success_builtin(ground,Sv_u,_,Call,Succ):-
+:- export(share_clique_1_success_builtin/6).
+share_clique_1_success_builtin(ground,Sv_u,_,_,Call,Succ):-
 	sort(Sv_u,Sv),
 	nrel_clique_1(Sv,Call,Succ).
-share_clique_1_success_builtin(bottom,_,_,_,'$bottom').
-share_clique_1_success_builtin(unchanged,_,_,Call,Call).
-share_clique_1_success_builtin(some,_,NewGround,Call,Succ):-
+share_clique_1_success_builtin(bottom,_,_,_,_,'$bottom').
+share_clique_1_success_builtin(unchanged,_,_,_,Call,Call).
+share_clique_1_success_builtin(some,_,NewGround,_,Call,Succ):-
 	nrel_clique_1(NewGround,Call,Succ).
 % TODO: almost like share_clique version
 % SPECIAL BUILTINS
-share_clique_1_success_builtin('=../2',_,p(X,Y),(Cl,Sh),Succ):-
+share_clique_1_success_builtin('=../2',_,p(X,Y),_,(Cl,Sh),Succ):-
 % All variables of X are ground. All variables of Y will be ground
 	varset(X,Varsx),
 	ord_union(Sh,Cl,All),
@@ -620,7 +620,7 @@ share_clique_1_success_builtin('=../2',_,p(X,Y),(Cl,Sh),Succ):-
 	ord_split_lists_from_list(Varsy,Sh,_Intersect,Sh1),
         take_ground_out_clique_1(Varsy,Cl,Cl1),
 	Succ = (Cl1,Sh1).
-share_clique_1_success_builtin('=../2',_,p(X,Y),(Cl,Sh),Succ):-
+share_clique_1_success_builtin('=../2',_,p(X,Y),_,(Cl,Sh),Succ):-
 % All variables of Y are ground. All variables of X will be ground
 	nonvar(Y),
 	Y = [Z|W],
@@ -632,14 +632,14 @@ share_clique_1_success_builtin('=../2',_,p(X,Y),(Cl,Sh),Succ):-
 	ord_split_lists_from_list(Varsx,Sh,_Intersect,Sh1),
 	take_ground_out_clique_1(Varsx,Cl,Cl1),
 	Succ = (Cl1,Sh1).
-share_clique_1_success_builtin('=../2',Sv_u,p(X,Y),Call,Succ):-
+share_clique_1_success_builtin('=../2',Sv_u,p(X,Y),_,Call,Succ):-
 % X and Y are variables. Therefore, all variables of X can 
 % share with all variables of Y
 	var(X), var(Y),!,
 	sort(Sv_u,Sv),
 	Prime = ([],[Sv]),
 	share_clique_1_extend(Prime,Sv,Call,Succ).
-share_clique_1_success_builtin('=../2',Sv_u,p(X,Y),Call,Succ):-
+share_clique_1_success_builtin('=../2',Sv_u,p(X,Y),_,Call,Succ):-
 % General case: Either X is f(t1,...,tn) or Y is [G|Something]. 
 % We must unify [f,t1,...,tn] = [G|Something]
 	( var(Y) -> G=g ; Y = [G|_] ), !,
@@ -647,11 +647,11 @@ share_clique_1_success_builtin('=../2',Sv_u,p(X,Y),Call,Succ):-
 	sort(Sv_u,Sv),
 	share_clique_1_project(Sv,Call,Proj),
 	share_clique_1_call_to_success_builtin('=/2','='(Term,Y),Sv,Call,Proj,Succ).
-share_clique_1_success_builtin('=../2',_Sv_u,_,_Call,'$bottom').
+share_clique_1_success_builtin('=../2',_Sv_u,_,_,_Call,'$bottom').
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% REVIEW !!
-share_clique_1_success_builtin('==/2',Sv_u,p(X,Y),Call,Succ):-
+share_clique_1_success_builtin('==/2',Sv_u,p(X,Y),_,Call,Succ):-
 % If X and Y are identical, we only need to propagate groundness
 	sh_peel(X,Y,Binds-[]),
 	sort(Sv_u,Sv),
@@ -671,7 +671,7 @@ share_clique_1_success_builtin('==/2',Sv_u,p(X,Y),Call,Succ):-
 	ord_split_lists_from_list(NewGround3,Sh0,_Intersect,Temp),
 	ord_subtract(Temp,Sets1,Succ_Sh),
 	Succ = (Succ_Cl,Succ_Sh).
-share_clique_1_success_builtin(copy_term,_Sv_u,p(X,Y),Call,Succ):-
+share_clique_1_success_builtin(copy_term,_Sv_u,p(X,Y),_,Call,Succ):-
 	varset(X,VarsX),
 	share_clique_1_project(VarsX,Call,ProjectedX),
 	copy_term((X,ProjectedX),(NewX,NewProjectedX)),
@@ -691,26 +691,26 @@ share_clique_1_success_builtin(copy_term,_Sv_u,p(X,Y),Call,Succ):-
 	share_clique_1_project(VarsCall,Temp_success,Succ).
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-share_clique_1_success_builtin(findall,_Sv_u,p(X,Z),Call,Succ):-
+share_clique_1_success_builtin(findall,_Sv_u,p(X,Z),_,Call,Succ):-
 	Call=(Cl,Sh),
 	ord_union(Sh,Cl,All),
 	varset(X,Varsx),
 	projected_gvars(All,Varsx,Vars),
 	Vars == Varsx,!,
 	varset(Z,Varsz),
-	share_clique_1_success_builtin(ground,Varsz,_any,Call,Succ).
-share_clique_1_success_builtin(findall,_Sv_u,_,Call,Call).
-share_clique_1_success_builtin('indep/2',_Sv,p(X,Y),(Cl,Sh),(Succ_Cl,Succ_Sh)):-
+	share_clique_1_success_builtin(ground,Varsz,_any,_,Call,Succ).
+share_clique_1_success_builtin(findall,_Sv_u,_,_,Call,Call).
+share_clique_1_success_builtin('indep/2',_Sv,p(X,Y),_,(Cl,Sh),(Succ_Cl,Succ_Sh)):-
 	varset(X,Xv),
 	varset(Y,Yv),
 	eliminate_couples_clique_1(Cl,Xv,Yv,Succ_Cl),
 	eliminate_couples(Sh,Xv,Yv,Succ_Sh).
-share_clique_1_success_builtin('indep/2',_Sv,_Condvars,_Call,'$bottom').
-share_clique_1_success_builtin('indep/1',_Sv,p(X),Call,Succ):- 
+share_clique_1_success_builtin('indep/2',_Sv,_Condvars,_,_Call,'$bottom').
+share_clique_1_success_builtin('indep/1',_Sv,p(X),_,Call,Succ):- 
 	nonvar(X),
 	handle_each_indep(X,share_clique_1,Call,Succ), !.  
-share_clique_1_success_builtin('indep/1',_,_,_,'$bottom').
-share_clique_1_success_builtin('recorded/3',Sv_u,p(Y,Z),Call,Succ):-
+share_clique_1_success_builtin('indep/1',_,_,_,_,'$bottom').
+share_clique_1_success_builtin('recorded/3',Sv_u,p(Y,Z),_,Call,Succ):-
 	varset(Z,Varsz),
 	nrel_clique_1(Varsz,Call,ASub),
 	varset(Y,Varsy),
@@ -719,8 +719,8 @@ share_clique_1_success_builtin('recorded/3',Sv_u,p(Y,Z),Call,Succ):-
 	sort(Sv_u,Sv),
 	share_clique_1_extend(Prime,Sv,Call,Succ).
 
-share_clique_1_success_builtin(var,_Sv,p(X),(Cl,Sh),Succ):-
-	share_clique_success_builtin(var,_,p(X),(Cl,Sh),Succ).
+share_clique_1_success_builtin(var,_Sv,p(X),HvFv_u,(Cl,Sh),Succ):-
+	share_clique_success_builtin(var,_,p(X),HvFv_u,(Cl,Sh),Succ).
 
 %------------------------------------------------------------------------%
 % share_clique_1_call_to_success_builtin(+,+,+,+,+,-)                    |

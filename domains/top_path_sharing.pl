@@ -14,7 +14,7 @@
 	  path_project/3,     
 	  path_abs_sort/2,        
 	  path_special_builtin/5,
-	  path_success_builtin/5,
+	  path_success_builtin/6,
 	  path_unknown_call/4,
 	  path_unknown_entry/3,
 	  path_empty_entry/3,
@@ -618,8 +618,8 @@ path_special_builtin('=/2','='(X,Y),_,'=/2',p(X,Y)).
 
 
 %-------------------------------------------------------------------------
-% path_success_builtin(+,+,+,+,-)                                        %
-% path_success_builtin(Type,Sv_u,Condv,Call,Succ)                        %
+% path_success_builtin(+,+,+,+,+,-)                                      %
+% path_success_builtin(Type,Sv_u,Condv,HvFv_u,Call,Succ)                        %
 % Obtains the success for some particular builtins:                      %
 %  * If Type = new_ground, it updates Call making all vars in Sv_u ground%
 %  * If Type = bottom, Succ = '$bottom'                                  %
@@ -632,25 +632,25 @@ path_special_builtin('=/2','='(X,Y),_,'=/2',p(X,Y)).
 %              it grounds all variables in NewG                          |
 %-------------------------------------------------------------------------
 
-path_success_builtin(new_ground,Sv_u,_,Call,Succ):-
+path_success_builtin(new_ground,Sv_u,_,_,Call,Succ):-
 	sort(Sv_u,Sv),
 	ord_split_paths_from_list(Sv,Call,_,Succ).
-path_success_builtin(bottom,_,_,_,'$bottom').
-path_success_builtin(unchanged,_,_,ASub,ASub).
-path_success_builtin(some,_Sv,NewGr,Call,Succ):-
+path_success_builtin(bottom,_,_,_,_,'$bottom').
+path_success_builtin(unchanged,_,_,_,ASub,ASub).
+path_success_builtin(some,_Sv,NewGr,_,Call,Succ):-
 	ord_split_paths_from_list(NewGr,Call,_,Succ).
-path_success_builtin(old_ground,Sv_u,_,Call,Succ):-
+path_success_builtin(old_ground,Sv_u,_,_,Call,Succ):-
 	sort(Sv_u,Sv),
 	can_be_ground(Call,Sv),!,
 	ord_split_paths_from_list(Sv,Call,_,Succ).
-path_success_builtin(old_ground,_,_,_,'$bottom').
-path_success_builtin(old_new_ground,_,(OldG,NewG),Call,Succ):-
+path_success_builtin(old_ground,_,_,_,_,'$bottom').
+path_success_builtin(old_new_ground,_,(OldG,NewG),_,Call,Succ):-
 	can_be_ground(Call,OldG),!,
 	merge(OldG,NewG,Vars),
 	ord_split_paths_from_list(Vars,Call,_,Succ).
-path_success_builtin(old_new_ground,_,_,_,'$bottom').
+path_success_builtin(old_new_ground,_,_,_,_,'$bottom').
 %------------------------------------------------------------------------%
-path_success_builtin('=/2',_Sv,p(X,Y),Call,Succ):-
+path_success_builtin('=/2',_Sv,p(X,Y),_,Call,Succ):-
 	simplify_equations(X,Y,Binds),
 %	mge(Binds,Call,Succ).
 	mge(Binds,Call,Succ0),

@@ -14,7 +14,7 @@
 	svterms_empty_entry/3,
 	svterms_call_to_success_fact/9,
 	svterms_special_builtin/5,
-	svterms_success_builtin/5,
+	svterms_success_builtin/6,
 	svterms_call_to_success_builtin/6,
 	svterms_input_interface/4,
 	svterms_input_user_interface/5,
@@ -581,9 +581,9 @@ svterms_special_builtin(SgKey,Sg,Subgoal,Type,Condvars):-
 
 
 %--------------------------------------------------------------%	
-svterms_success_builtin(id,_Sv_uns,_Condvars,Call,Call).
-svterms_success_builtin(bot,_Sv_uns,_Condvars,_Call,'$bottom').
-svterms_success_builtin(type(T),_Sv_uns,Condvars,Call,Succ):-
+svterms_success_builtin(id,_Sv_uns,_Condvars,_,Call,Call).
+svterms_success_builtin(bot,_Sv_uns,_Condvars,_,_Call,'$bottom').
+svterms_success_builtin(type(T),_Sv_uns,Condvars,_,Call,Succ):-
 	keys_same_value(Condvars,T,TPrime),
 	abssubst_b(Prime,TPrime,[]),	
 	svterms_extend(Prime,Condvars,Call,Succ).

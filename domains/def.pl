@@ -16,7 +16,7 @@
 	  def_handle_bottom_project/3,  % JN needed by sharedef.pl
 	  def_abs_sort/2,       
 	  def_special_builtin/5,
-	  def_success_builtin/4,
+	  def_success_builtin/6,
 	  def_unknown_call/4,
 	  def_unknown_entry/3,
 	  def_empty_entry/3
@@ -506,61 +506,61 @@ def_special_builtin('compare/3',compare(X,_,_),_,'$fd_ground',Vars):-
 	varset(X,Vars).
 def_special_builtin('number/1',Sg,_,'$fd_ground',Sg).
 %-------------------------------------------------------------------------
-% def_success_builtin(+,+,+,-)                                           %
-% def_success_builtin(Type,Term,Call,Succ)                               %
+% def_success_builtin(+,+,+,+,+,-)                                       %
+% def_success_builtin(Type,Sv_uns,Term,HvFv_u,Call,Succ)                 %
 % By now, it is tricky since it assumes the following things:            %
 %     - booleans are still not allowed                                   %
 %-------------------------------------------------------------------------
 
-def_success_builtin('$fd_fail',_Condvars,_Call,'$bottom').
-def_success_builtin('$fd_unchanged',_Condvars,Call,Call).
-def_success_builtin('$fd_#',_Condvars,Call,Call).
-def_success_builtin('$fd_comp',_Condvars,Call,Call).
-def_success_builtin('$fd_ground',GroundTerm,Call,Succ):-
+def_success_builtin('$fd_fail',_Sv_uns,_Condvars,_,_Call,'$bottom').
+def_success_builtin('$fd_unchanged',_Sv_uns,_Condvars,_,Call,Call).
+def_success_builtin('$fd_#',_Sv_uns,_Condvars,_,Call,Call).
+def_success_builtin('$fd_comp',_Sv_uns,_Condvars,_,Call,Call).
+def_success_builtin('$fd_ground',_Sv_uns,GroundTerm,_,Call,Succ):-
 	varset(GroundTerm,GroundVars),
 	def_conjunct_constr(a(GroundVars,[]),Call,Succ).
-def_success_builtin('$fd_free',Sg,a(G,S),Succ):-
+def_success_builtin('$fd_free',_Sv_uns,Sg,_,a(G,S),Succ):-
 	varset(Sg,Vars),
 	ord_intersection(Vars,G,Int),
 	( Int = [] ->
 	    Succ = a(G,S)
 	; Succ = '$bottom'
         ).
-def_success_builtin('$fd_=..','=..'(X,Y),Call,Succ):-
+def_success_builtin('$fd_=..',Sv_uns,'=..'(X,Y),HvFv_u,Call,Succ):-
 	var(Y),!,
-	def_success_builtin('$fd_=',X=Y,Call,Succ).
-def_success_builtin('$fd_=..','=..'(X,Y),Call,Succ):-
+	def_success_builtin('$fd_=',Sv_uns,X=Y,HvFv_u,Call,Succ).
+def_success_builtin('$fd_=..',Sv_uns,'=..'(X,Y),HvFv_u,Call,Succ):-
 	Y = [Z|W],!,
 	varset(Z,Vz),
 	def_conjunct_constr(a(Vz,[]),Call,Succ1),
-	def_success_builtin('$fd_=',X=W,Succ1,Succ).
-def_success_builtin('$fd_arg',arg(X,Y,Z),a(G,S),Succ):-
+	def_success_builtin('$fd_=',Sv_uns,X=W,HvFv_u,Succ1,Succ).
+def_success_builtin('$fd_arg',_Sv_uns,arg(X,Y,Z),_,a(G,S),Succ):-
 	var(Y),var(Z),!,
 	varset(X,Vars),
 	sort([Y,Z],Sorted),
 	ord_intersection(Sorted,G,Intersect),
 	def_decide_arg(Intersect,Vars,Y,Z,a(G,S),Succ).
-def_success_builtin('$fd_arg',_,_,'$bottom').
-def_success_builtin('$fd_$::','$::'(X,Y),a(G,S),Succ):-
+def_success_builtin('$fd_arg',_Sv_uns,_,_,_,'$bottom').
+def_success_builtin('$fd_$::',_Sv_uns,'$::'(X,Y),_,a(G,S),Succ):-
 	var(X),var(Y),!,
 	sort([X,Y],Sorted),
 	ord_intersection(Sorted,G,Intersect),
 	def_decide_arg(Intersect,[],X,Y,a(G,S),Succ).
-def_success_builtin('$fd_$::',_,Succ,Succ).
-def_success_builtin('$fd_=',=(X,Y),Call,Succ):- 
+def_success_builtin('$fd_$::',_Sv_uns,_,_,Succ,Succ).
+def_success_builtin('$fd_=',_Sv_uns,=(X,Y),_,Call,Succ):- 
 	def_abstract_equation(X,Y,Call,Succ),!.
-def_success_builtin('$fd_=',_,_Call,'$bottom').
-def_success_builtin('$fd_bound_mult',bound_mult(X,Y,Z),Call,Succ):- 
+def_success_builtin('$fd_=',_Sv_uns,_,_,_Call,'$bottom').
+def_success_builtin('$fd_bound_mult',_Sv_uns,bound_mult(X,Y,Z),_,Call,Succ):- 
 	varset(Z,Lin),
 	varset([X,Y],NonLin),
 	def_numerical_equation0(NonLin,Lin,Call,Succ).
 % meta
-def_success_builtin(findall,p(X,Z),a(G,S),Succ):-  %% added by JN
+def_success_builtin(findall,_Sv_uns,p(X,Z),HvFv_u,a(G,S),Succ):-  %% added by JN
 	varset(X,Varsx),
 	ord_subset(Varsx,G),!,
 	varset(Z,Varsz),
-	def_success_builtin('$fd_ground',Varsz,a(G,S),Succ).
-def_success_builtin(findall,_,Call,Call).  %% jcf
+	def_success_builtin('$fd_ground',_Sv_uns,Varsz,HvFv_u,a(G,S),Succ).
+def_success_builtin(findall,_Sv_uns,_,_,Call,Call).  %% jcf
 %-------------------------------------------------------------------------
 % def_input_user_interface(+,+,-,+,+)
 % It translate the query mode given by the user into the internal 

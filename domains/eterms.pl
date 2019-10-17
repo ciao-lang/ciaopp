@@ -14,7 +14,7 @@
 	eterms_empty_entry/3,
 	eterms_call_to_success_fact/9,
 	eterms_special_builtin/5,
-	eterms_success_builtin/5,
+	eterms_success_builtin/6,
 	eterms_call_to_success_builtin/6,
 	eterms_obtain_info/4,
 	eterms_input_interface/4,
@@ -1388,14 +1388,14 @@ eterms_very_special_builtin('</2','</2',_):- current_pp_flag(type_eval,on).
 
 
 %------------------------------------------------------------------------%
-% eterms_success_builtin(+Type,+Sv_uns,+Condvars,+Call,-Succ)             %
+% eterms_success_builtin(+Type,+Sv_uns,+Condvars,+HvFv_u,+Call,-Succ)             %
 % Depending on Type it computes the abstraction of a builtin affecting   %
 % variables Condvars and having variables Sv_uns with call subs. Call.   %
 %------------------------------------------------------------------------%
 
-eterms_success_builtin(id,_Sv_uns,_Condvars,Call,Call).
-eterms_success_builtin(bot,_Sv_uns,_Condvars,_Call,'$bottom').
-eterms_success_builtin(type(T),_Sv_uns,Condvars,Call,Succ):-
+eterms_success_builtin(id,_Sv_uns,_Condvars,_,Call,Call).
+eterms_success_builtin(bot,_Sv_uns,_Condvars,_,_Call,'$bottom').
+eterms_success_builtin(type(T),_Sv_uns,Condvars,_,Call,Succ):-
 	keys_same_value(Condvars,T,Prime),
 	eterms_extend(Prime,Condvars,Call,Succ).
 

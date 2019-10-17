@@ -16,7 +16,7 @@
 	  frdef_project/3,       
 	  frdef_abs_sort/2,          
 	  frdef_special_builtin/5,
-	  frdef_success_builtin/5,
+	  frdef_success_builtin/6,
 	  frdef_unknown_call/4,
 	  frdef_unknown_entry/3,
 	  frdef_empty_entry/3
@@ -168,8 +168,8 @@ frdef_special_builtin(SgKey,Sg,Subgoal,(TypeF,TypeD),(CondF,CondD)) :-
 
 %------------------------------------------------------------------------------
 
-frdef_success_builtin((F_type,D_type),Sv_u,(InfoF,InfoD),(F_call,D_call),Succ):-
-        def_success_builtin(D_type,InfoD,D_call,D_succ),
+frdef_success_builtin((F_type,D_type),Sv_u,(InfoF,InfoD),HvFv_u,(F_call,D_call),Succ):-
+        def_success_builtin(D_type,Sv_u,InfoD,HvFv_u,D_call,D_succ),
         frdef_decide_builtin(D_succ,F_type,Sv_u,InfoF,F_call,F_succ),
         frdef_decide_bottom(F_succ,D_succ,Succ).
 

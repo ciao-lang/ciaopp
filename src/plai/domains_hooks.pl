@@ -141,7 +141,7 @@
 :- dom_op(frdef, glb/3).
 :- dom_op(frdef, call_to_success_fact/9).
 :- dom_op(frdef, special_builtin/5).
-:- dom_op(frdef, success_builtin(Type,Sv_uns,Condvars,_HvFv_u,Call,Succ), success_builtin(Type,Sv_uns,Condvars,Call,Succ)).
+:- dom_op(frdef, success_builtin/6).
 :- dom_op(frdef, input_interface/4).
 :- dom_op(frdef, input_user_interface/5).
 :- dom_op(frdef, asub_to_native/5).
@@ -209,7 +209,7 @@
 :- dom_op(gr, glb/3).
 :- dom_op(gr, call_to_success_fact/9).
 :- dom_op(gr, special_builtin/5).
-:- dom_op(gr, success_builtin(Type,Sv_uns,Condvars,_HvFv_u,Call,Succ), success_builtin(Type,Sv_uns,Condvars,Call,Succ)).
+:- dom_op(gr, success_builtin/6).
 :- dom_op(gr, call_to_success_builtin/6).
 :- dom_op(gr, input_interface/4).
 :- dom_op(gr, input_user_interface/5).
@@ -232,7 +232,7 @@
 :- dom_op(def, glb/3).
 :- dom_op(def, call_to_success_fact/9).
 :- dom_op(def, special_builtin/5).
-:- dom_op(def, success_builtin(Type,_Sv_uns,Condvars,_HvFv_u,Call,Succ), success_builtin(Type,Condvars,Call,Succ)).
+:- dom_op(def, success_builtin/6).
 :- dom_op(def, input_interface/4).
 :- dom_op(def, input_user_interface/5).
 :- dom_op(def, asub_to_native/5).
@@ -270,7 +270,7 @@
 :- dom_op(share, glb/3).
 :- dom_op(share, call_to_success_fact/9).
 :- dom_op(share, special_builtin/5).
-:- dom_op(share, success_builtin(Type,Sv_uns,Condvars,_HvFv_u,Call,Succ), success_builtin(Type,Sv_uns,Condvars,Call,Succ)).
+:- dom_op(share, success_builtin/6).
 :- dom_op(share, call_to_success_builtin/6).
 :- dom_op(share, input_interface/4).
 :- dom_op(share, input_user_interface/5).
@@ -294,7 +294,7 @@
 :- dom_op(shfr, glb/3).
 :- dom_op(shfr, call_to_success_fact/9).
 :- dom_op(shfr, special_builtin/5).
-:- dom_op(shfr, success_builtin(Type,Sv_uns,Condvars,_HvFv_u,Call,Succ), success_builtin(Type,Sv_uns,Condvars,Call,Succ)).
+:- dom_op(shfr, success_builtin/6).
 :- dom_op(shfr, call_to_success_builtin/6).
 :- dom_op(shfr, obtain_info/4).
 :- dom_op(shfr, input_interface/4).
@@ -335,7 +335,7 @@
 :- dom_op(shfrnv, glb/3).
 :- dom_op(shfrnv, call_to_success_fact/9).
 :- dom_op(shfrnv, special_builtin/5, from(shfr)).
-:- dom_op(shfrnv, success_builtin(Type,Sv_uns,Condvars,_HvFv_u,Call,Succ), success_builtin(Type,Sv_uns,Condvars,Call,Succ)).
+:- dom_op(shfrnv, success_builtin/6).
 :- dom_op(shfrnv, call_to_success_builtin/6).
 :- dom_op(shfrnv, input_interface/4).
 :- dom_op(shfrnv, input_user_interface/5).
@@ -440,7 +440,7 @@
 :- dom_op(son, glb/3).
 :- dom_op(son, call_to_success_fact/9).
 :- dom_op(son, special_builtin/5).
-:- dom_op(son, success_builtin(Type,Sv_uns,Condvars,_HvFv_u,Call,Succ), success_builtin(Type,Sv_uns,Condvars,Call,Succ)).
+:- dom_op(son, success_builtin/6).
 :- dom_op(son, call_to_success_builtin/6).
 :- dom_op(son, input_interface/4).
 :- dom_op(son, input_user_interface/5).
@@ -465,7 +465,7 @@
 :- dom_op(share_amgu, glb/3, from(share)).
 :- dom_op(share_amgu, call_to_success_fact/9).
 :- dom_op(share_amgu, special_builtin/5).
-:- dom_op(share_amgu, success_builtin(Type,Sv_uns,Condvars,_HvFv_u,Call,Succ), success_builtin(Type,Sv_uns,Condvars,Call,Succ)).
+:- dom_op(share_amgu, success_builtin/6).
 :- dom_op(share_amgu, call_to_success_builtin/6).
 :- dom_op(share_amgu, input_interface/4, from(share)).
 :- dom_op(share_amgu, input_user_interface/5, from(share)).
@@ -489,7 +489,7 @@
 :- dom_op(sharefree_amgu, glb/3, from(shfr)).
 :- dom_op(sharefree_amgu, call_to_success_fact/9).
 :- dom_op(sharefree_amgu, special_builtin/5).
-:- dom_op(sharefree_amgu, success_builtin(Type,Sv_uns,Condvars,_HvFv_u,Call,Succ), success_builtin(Type,Sv_uns,Condvars,Call,Succ)).
+:- dom_op(sharefree_amgu, success_builtin/6).
 :- dom_op(sharefree_amgu, call_to_success_builtin/6).
 :- dom_op(sharefree_amgu, obtain_info/4, from(shfr)).
 :- dom_op(sharefree_amgu, input_interface/4, from(shfr)).
@@ -513,7 +513,7 @@
 :- dom_op(shfrlin_amgu, glb/3).
 :- dom_op(shfrlin_amgu, call_to_success_fact/9).
 :- dom_op(shfrlin_amgu, special_builtin/5).
-:- dom_op(shfrlin_amgu, success_builtin(Type,Sv_uns,Condvars,_HvFv_u,Call,Succ), success_builtin(Type,Sv_uns,Condvars,Call,Succ)).
+:- dom_op(shfrlin_amgu, success_builtin/6).
 :- dom_op(shfrlin_amgu, call_to_success_builtin/6).
 :- dom_op(shfrlin_amgu, obtain_info/4).
 :- dom_op(shfrlin_amgu, input_interface/4).
@@ -539,7 +539,7 @@
 :- dom_op(share_clique, eliminate_equivalent/2).
 :- dom_op(share_clique, call_to_success_fact/9).
 :- dom_op(share_clique, special_builtin/5).
-:- dom_op(share_clique, success_builtin(Type,Sv_uns,Condvars,_HvFv_u,Call,Succ), success_builtin(Type,Sv_uns,Condvars,Call,Succ)).
+:- dom_op(share_clique, success_builtin/6).
 :- dom_op(share_clique, call_to_success_builtin/6).
 :- dom_op(share_clique, input_interface/4).
 :- dom_op(share_clique, input_user_interface/5).
@@ -563,7 +563,7 @@
 :- dom_op(share_clique_1, eliminate_equivalent/2).
 :- dom_op(share_clique_1, call_to_success_fact/9).
 :- dom_op(share_clique_1, special_builtin/5, from(share_clique)).
-:- dom_op(share_clique_1, success_builtin(Type,Sv_uns,Condvars,_HvFv_u,Call,Succ), success_builtin(Type,Sv_uns,Condvars,Call,Succ)).
+:- dom_op(share_clique_1, success_builtin/6).
 :- dom_op(share_clique_1, call_to_success_builtin/6).
 :- dom_op(share_clique_1, input_interface/4).
 :- dom_op(share_clique_1, input_user_interface/5, from(share_clique)).
@@ -589,7 +589,7 @@
 :- dom_op(sharefree_clique, eliminate_equivalent/2).
 :- dom_op(sharefree_clique, call_to_success_fact/9).
 :- dom_op(sharefree_clique, special_builtin/5).
-:- dom_op(sharefree_clique, success_builtin(Type,Sv_uns,Condvars,_HvFv_u,Call,Succ), success_builtin(Type,Sv_uns,Condvars,Call,Succ)).
+:- dom_op(sharefree_clique, success_builtin/6).
 :- dom_op(sharefree_clique, call_to_success_builtin/6).
 :- dom_op(sharefree_clique, obtain_info/4, from(shfr)).
 :- dom_op(sharefree_clique, input_interface/4).
@@ -660,7 +660,7 @@
 :- dom_op(bshare, abs_sort/2).
 :- dom_op(bshare, call_to_success_fact/9).
 :- dom_op(bshare, special_builtin/5).
-:- dom_op(bshare, success_builtin(Type,Sv_uns,Condvars,_HvFv_u,Call,Succ), success_builtin(Type,Sv_uns,Condvars,Call,Succ)).
+:- dom_op(bshare, success_builtin/6).
 :- dom_op(bshare, call_to_success_builtin/6).
 :- dom_op(bshare, asub_to_native/5).
 :- dom_op(bshare, unknown_entry/3).
@@ -684,7 +684,7 @@
 :- dom_op(aeq, eliminate_equivalent/2).
 :- dom_op(aeq, call_to_success_fact/9).
 :- dom_op(aeq, special_builtin/5).
-:- dom_op(aeq, success_builtin(Type,Sv_uns,Condvars,_HvFv_u,Call,Succ), success_builtin(Type,Sv_uns,Condvars,Call,Succ)).
+:- dom_op(aeq, success_builtin/6).
 :- dom_op(aeq, input_interface/4).
 :- dom_op(aeq, input_user_interface/5).
 :- dom_op(aeq, asub_to_native/5).
@@ -727,7 +727,7 @@
 :- dom_op(depthk, abs_subset/2).
 :- dom_op(depthk, call_to_success_fact/9).
 :- dom_op(depthk, special_builtin/5).
-:- dom_op(depthk, success_builtin(Type,Sv_uns,Condvars,_HvFv_u,Call,Succ), success_builtin(Type,Sv_uns,Condvars,Call,Succ)).
+:- dom_op(depthk, success_builtin/6).
 :- dom_op(depthk, call_to_success_builtin/6).
 :- dom_op(depthk, input_interface/4).
 :- dom_op(depthk, input_user_interface/5).
@@ -749,7 +749,7 @@
 :- dom_op(path, glb/3).
 :- dom_op(path, call_to_success_fact/9).
 :- dom_op(path, special_builtin/5).
-:- dom_op(path, success_builtin(Type,Sv_uns,Condvars,_HvFv_u,Call,Succ), success_builtin(Type,Sv_uns,Condvars,Call,Succ)).
+:- dom_op(path, success_builtin/6).
 :- dom_op(path, input_interface/4).
 :- dom_op(path, input_user_interface/5).
 :- dom_op(path, asub_to_native/5).
@@ -775,7 +775,7 @@
 :- dom_op(terms, glb/3).
 :- dom_op(terms, call_to_success_fact/9).
 :- dom_op(terms, special_builtin/5).
-:- dom_op(terms, success_builtin(Type,Sv_uns,Condvars,_HvFv_u,Call,Succ), success_builtin(Type,Sv_uns,Condvars,Call,Succ)).
+:- dom_op(terms, success_builtin/6).
 :- dom_op(terms, call_to_success_builtin/6).
 :- dom_op(terms, input_interface/4).
 :- dom_op(terms, input_user_interface/5).
@@ -802,7 +802,7 @@
 :- dom_op(ptypes, glb/3).
 :- dom_op(ptypes, call_to_success_fact/9).
 :- dom_op(ptypes, special_builtin/5).
-:- dom_op(ptypes, success_builtin(Type,Sv_uns,Condvars,_HvFv_u,Call,Succ), success_builtin(Type,Sv_uns,Condvars,Call,Succ)).
+:- dom_op(ptypes, success_builtin/6).
 :- dom_op(ptypes, call_to_success_builtin/6).
 :- dom_op(ptypes, input_interface/4).
 :- dom_op(ptypes, input_user_interface/5).
@@ -831,7 +831,7 @@
 :- dom_op(eterms, glb/3).
 :- dom_op(eterms, call_to_success_fact/9).
 :- dom_op(eterms, special_builtin/5).
-:- dom_op(eterms, success_builtin(Type,Sv_uns,Condvars,_HvFv_u,Call,Succ), success_builtin(Type,Sv_uns,Condvars,Call,Succ)).
+:- dom_op(eterms, success_builtin/6).
 :- dom_op(eterms, call_to_success_builtin/6).
 :- dom_op(eterms, obtain_info/4).
 :- dom_op(eterms, input_interface/4).
@@ -863,7 +863,7 @@
 :- dom_op(etermsvar, glb/3).
 :- dom_op(etermsvar, call_to_success_fact/9).
 :- dom_op(etermsvar, special_builtin/5).
-:- dom_op(etermsvar, success_builtin(Type,Sv_uns,Condvars,_HvFv_u,Call,Succ), success_builtin(Type,Sv_uns,Condvars,Call,Succ)).
+:- dom_op(etermsvar, success_builtin/6).
 :- dom_op(etermsvar, call_to_success_builtin/6).
 :- dom_op(etermsvar, obtain_info/4).
 :- dom_op(etermsvar, input_interface/4).
@@ -894,7 +894,7 @@
 :- dom_op(svterms, glb/3).
 :- dom_op(svterms, call_to_success_fact/9).
 :- dom_op(svterms, special_builtin/5).
-:- dom_op(svterms, success_builtin(Type,Sv_uns,Condvars,_HvFv_u,Call,Succ), success_builtin(Type,Sv_uns,Condvars,Call,Succ)).
+:- dom_op(svterms, success_builtin/6).
 :- dom_op(svterms, call_to_success_builtin/6).
 :- dom_op(svterms, input_interface/4).
 :- dom_op(svterms, input_user_interface/5).
@@ -922,7 +922,7 @@
 :- dom_op(deftypes, glb/3).
 :- dom_op(deftypes, call_to_success_fact/9).
 :- dom_op(deftypes, special_builtin/5).
-:- dom_op(deftypes, success_builtin(Type,Sv_uns,Condvars,_HvFv_u,Call,Succ), success_builtin(Type,Sv_uns,Condvars,Call,Succ)).
+:- dom_op(deftypes, success_builtin/6).
 :- dom_op(deftypes, call_to_success_builtin/6).
 :- dom_op(deftypes, input_interface/4).
 :- dom_op(deftypes, input_user_interface/5).
@@ -984,7 +984,7 @@
 :- dom_op(polyhedra, eliminate_equivalent/2).
 :- dom_op(polyhedra, call_to_success_fact/9).
 :- dom_op(polyhedra, special_builtin/5).
-:- dom_op(polyhedra, success_builtin(Type,Sv_uns,Condvars,_HvFv_u,Call,Succ), success_builtin(Type,Sv_uns,Condvars,Call,Succ)).
+:- dom_op(polyhedra, success_builtin/6).
 :- dom_op(polyhedra, call_to_success_builtin/6).
 :- dom_op(polyhedra, input_interface/4).
 :- dom_op(polyhedra, input_user_interface/5).
@@ -1009,7 +1009,7 @@
 :- dom_op(java_nullity, glb/3).
 :- dom_op(java_nullity, call_to_success_fact/9).
 :- dom_op(java_nullity, special_builtin/5).
-:- dom_op(java_nullity, success_builtin(Type,Sv_uns,Condvars,_HvFv_u,Call,Succ), success_builtin(Type,Sv_uns,Condvars,Call,Succ)).
+:- dom_op(java_nullity, success_builtin/6).
 :- dom_op(java_nullity, input_interface/4).
 :- dom_op(java_nullity, input_user_interface/5).
 :- dom_op(java_nullity, asub_to_native/5).
@@ -1031,7 +1031,7 @@
 :- dom_op(oo_son, glb/3).
 :- dom_op(oo_son, call_to_success_fact/9).
 :- dom_op(oo_son, special_builtin/5).
-:- dom_op(oo_son, success_builtin(Type,Sv_uns,Condvars,_HvFv_u,Call,Succ), success_builtin(Type,Sv_uns,Condvars,Call,Succ)).
+:- dom_op(oo_son, success_builtin/6).
 :- dom_op(oo_son, call_to_success_builtin/6).
 :- dom_op(oo_son, input_interface/4).
 :- dom_op(oo_son, input_user_interface/5).
@@ -1056,7 +1056,7 @@
 :- dom_op(oo_shnltau, glb/3).
 :- dom_op(oo_shnltau, call_to_success_fact/9).
 :- dom_op(oo_shnltau, special_builtin/5).
-:- dom_op(oo_shnltau, success_builtin(Type,Sv_uns,Condvars,_HvFv_u,Call,Succ), success_builtin(Type,Sv_uns,Condvars,Call,Succ)).
+:- dom_op(oo_shnltau, success_builtin/6).
 :- dom_op(oo_shnltau, call_to_success_builtin/6).
 :- dom_op(oo_shnltau, input_interface/4).
 :- dom_op(oo_shnltau, input_user_interface/5).
@@ -1081,7 +1081,7 @@
 :- dom_op(oo_types, glb/3).
 :- dom_op(oo_types, call_to_success_fact/9).
 :- dom_op(oo_types, special_builtin/5).
-:- dom_op(oo_types, success_builtin(Type,Sv_uns,Condvars,_HvFv_u,Call,Succ), success_builtin(Type,Sv_uns,Condvars,Call,Succ)).
+:- dom_op(oo_types, success_builtin/6).
 :- dom_op(oo_types, call_to_success_builtin/6).
 :- dom_op(oo_types, input_interface/4).
 :- dom_op(oo_types, input_user_interface/5).
@@ -1104,7 +1104,7 @@
 :- dom_op(java_cha, glb/3).
 :- dom_op(java_cha, call_to_success_fact/9).
 :- dom_op(java_cha, special_builtin/5).
-:- dom_op(java_cha, success_builtin(Type,Sv_uns,Condvars,_HvFv_u,Call,Succ), success_builtin(Type,Sv_uns,Condvars,Call,Succ)).
+:- dom_op(java_cha, success_builtin/6).
 :- dom_op(java_cha, input_interface/4).
 :- dom_op(java_cha, input_user_interface/5).
 :- dom_op(java_cha, asub_to_native/5).
@@ -1137,7 +1137,7 @@
 :- dom_op(nf, special_builtin/5).
 :- dom_op(nf, combined_special_builtin0/2).
 :- dom_op(nf, split_combined_domain/3).
-:- dom_op(nf, success_builtin(Type,Sv_uns,Condvars,_HvFv_u,Call,Succ), success_builtin(Type,Sv_uns,Condvars,Call,Succ)).
+:- dom_op(nf, success_builtin/6).
 :- dom_op(nf, input_interface/4).
 :- dom_op(nf, input_user_interface/5).
 :- dom_op(nf, asub_to_native/5).
@@ -1170,7 +1170,7 @@
 :- dom_op(det, special_builtin/5).
 :- dom_op(det, combined_special_builtin0/2).
 :- dom_op(det, split_combined_domain/3).
-:- dom_op(det, success_builtin(Type,Sv_uns,Condvars,_HvFv_u,Call,Succ), success_builtin(Type,Sv_uns,Condvars,Call,Succ)).
+:- dom_op(det, success_builtin/6).
 :- dom_op(det, obtain_info/4).
 :- dom_op(det, input_interface/4).
 :- dom_op(det, input_user_interface/5).
@@ -1204,7 +1204,7 @@
 :- dom_op(res_plai, special_builtin/5).
 :- dom_op(res_plai, combined_special_builtin0/2).
 :- dom_op(res_plai, split_combined_domain/3).
-% :- dom_op(res_plai, success_builtin(Type,Sv_uns,Condvars,_HvFv_u,Call,Succ), success_builtin(Type,Sv_uns,Condvars,Call,Succ)).
+% :- dom_op(res_plai, success_builtin/6).
 :- dom_op(res_plai, call_to_success_builtin/6).
 :- dom_op(res_plai, obtain_info/4).
 :- dom_op(res_plai, input_interface/4).

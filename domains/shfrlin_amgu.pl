@@ -44,7 +44,7 @@
 	sharefree_amgu_call_to_success_builtin/6,
 	sharefree_amgu_augment_asub/3,
 	sharefree_amgu_special_builtin/5,
-	sharefree_amgu_success_builtin/5,
+	sharefree_amgu_success_builtin/6,
 	sharefree_delete_variables/3]).
 :- use_module(domain(share_aux), [if_not_nil/4,list_ground/2]).
 :- use_module(domain(sharefree_amgu_aux), [
@@ -267,11 +267,11 @@ shfrlin_amgu_special_builtin(SgKey,Sg,Subgoal,Type,Condvars):-
 	sharefree_amgu_special_builtin(SgKey,Sg,Subgoal,Type,Condvars).
 	
 %------------------------------------------------------------------------%
-% shfrlin_amgu_success_builtin(+,+,+,+,-)                                     |
-% shfrlin_amgu_success_builtin(Type,Sv_u,Condv,Call,Succ)                     |
+% shfrlin_amgu_success_builtin(+,+,+,+,+,-)                                   |
+% shfrlin_amgu_success_builtin(Type,Sv_u,Condv,HvFv_u,Call,Succ)                     |
 %------------------------------------------------------------------------%
-:- export(shfrlin_amgu_success_builtin/5).
-% shfrlin_amgu_success_builtin(arg,_,p(X,Y,Z),Call,Succ):-
+:- export(shfrlin_amgu_success_builtin/6).
+% shfrlin_amgu_success_builtin(arg,_,p(X,Y,Z),_,Call,Succ):-
 % 	Call = (Call_sh,Call_fr,Call_lin),
 % 	varset(X,OldG),
 % 	update_lambda_non_free(OldG,Call_fr,Call_sh,Temp_fr,Temp_sh),
@@ -285,14 +285,14 @@ shfrlin_amgu_special_builtin(SgKey,Sg,Subgoal,Type,Condvars):-
 % 	shfr_project(TempASub,Sv,Proj),
 %  	shfrlin_amgu_call_to_success_fact(Sg,Hv,Head,not_provided,Sv,TempASub,Proj,_,Succ). % TODO: add some ClauseKey?
 % shfrlin_amgu_success_builtin(arg,_,_,_,'$bottom').
-shfrlin_amgu_success_builtin(exp,_,Sg,Call,Succ):- !,
+shfrlin_amgu_success_builtin(exp,_,Sg,_,Call,Succ):- !,
 	Head = p(A,f(A,_B)),
 	varset(Sg,Sv),
 	varset(Head,Hv),
 	shfrlin_amgu_project(Call,Sv,Proj),
 	shfrlin_amgu_call_to_success_fact(Sg,Hv,Head,not_provided,Sv,Call,Proj,_,Succ). % TODO: add some ClauseKey?
-shfrlin_amgu_success_builtin(exp,_,_,_,'$bottom') :- !.
-% shfrlin_amgu_success_builtin(copy_term,_,p(X,Y),Call,Succ):-
+shfrlin_amgu_success_builtin(exp,_,_,_,_,'$bottom'):- !.
+% shfrlin_amgu_success_builtin(copy_term,_,p(X,Y),_,Call,Succ):-
 % 	varset(X,VarsX),
 % 	shfr_project(Call,VarsX,ProjectedX),
 % 	copy_term((X,ProjectedX),(NewX,NewProjectedX)),
@@ -312,10 +312,10 @@ shfrlin_amgu_success_builtin(exp,_,_,_,'$bottom') :- !.
 %                     (TempCallSh,TempCallFr),(TempSh,TempFr),Temp_success),
 % 	collect_vars_freeness(FrCall,VarsCall),
 % 	shfr_project(Temp_success,VarsCall,Succ).
-shfrlin_amgu_success_builtin(Type,Sv_u,Condv,Call,Succ):-
+shfrlin_amgu_success_builtin(Type,Sv_u,Condv,HvFv_u,Call,Succ):-
 	Call = (Sh,Fr,Lin),
 	ord_subtract(Lin,Sv_u,Lin_not_rel),	
-	sharefree_amgu_success_builtin(Type,Sv_u,Condv,(Sh,Fr),Succ0),
+	sharefree_amgu_success_builtin(Type,Sv_u,Condv,HvFv_u,(Sh,Fr),Succ0),
         ( Succ0 == '$bottom' 
         ->
 	  Succ = '$bottom'

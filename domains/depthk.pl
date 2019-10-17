@@ -16,7 +16,7 @@
 	  depthk_project/3,   
 	  depthk_abs_sort/2,      
 	  depthk_special_builtin/5,  
-	  depthk_success_builtin/5,
+	  depthk_success_builtin/6,
 	  depthk_unknown_call/4, 
 	  depthk_unknown_entry/3,  
 	  depthk_empty_entry/3
@@ -408,15 +408,15 @@ very_special_builtin('functor/3').
 very_special_builtin('is/2').
 very_special_builtin('name/2').
 
-depthk_success_builtin(nochange,_Sv_uns,[],Call,Call).
-depthk_success_builtin(instance,_Sv_uns,(X,Y),Call,Succ):-
+depthk_success_builtin(nochange,_Sv_uns,[],_,Call,Call).
+depthk_success_builtin(instance,_Sv_uns,(X,Y),_,Call,Succ):-
 	var(X), !,
 	discriminate_equs(Call,[X],[X=T],NonRelated,_Renamings),
 	( most_general_instance(T,Y,NewT)
 	-> merge_eqs([X=NewT],NonRelated,Succ)
 	 ; Succ='$bottom'
 	).
-depthk_success_builtin(instance,_Sv_uns,_Args,Call,Call).
+depthk_success_builtin(instance,_Sv_uns,_Args,_,Call,Call).
 
 depthk_call_to_success_builtin(_SgKey,Sg,Sv,Call,_Proj,Succ):-
 	depthk_call_to_prime_builtin(Sg,Sv,Call,Prime0),

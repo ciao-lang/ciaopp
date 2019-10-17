@@ -57,8 +57,8 @@ ptypes_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ) :- terms_call_
 :- export(ptypes_special_builtin/5).
 ptypes_special_builtin(SgKey,Sg,Subgoal,Type,Condvars) :- terms_special_builtin(SgKey,Sg,Subgoal,Type,Condvars).
 
-:- export(ptypes_success_builtin/5).
-ptypes_success_builtin(Type,Sv_uns,Condvars,Call,Succ) :- terms_success_builtin(Type,Sv_uns,Condvars,Call,Succ).
+:- export(ptypes_success_builtin/6).
+ptypes_success_builtin(Type,Sv_uns,Condvars,HvFv_u,Call,Succ):- terms_success_builtin(Type,Sv_uns,Condvars,HvFv_u,Call,Succ).
 
 :- export(ptypes_call_to_success_builtin/6).
 ptypes_call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,Succ) :- terms_call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,Succ).

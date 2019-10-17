@@ -16,7 +16,7 @@
 	  son_project/3,      
 	  son_abs_sort/2,         
 	  son_special_builtin/5,
-	  son_success_builtin/5,
+	  son_success_builtin/6,
 	  son_unknown_call/4,
 	  son_unknown_entry/3,
 	  son_empty_entry/3,
@@ -608,8 +608,8 @@ son_special_builtin('keysort/2',keysort(X,Y),_,'=/2',p(X,Y)).
 son_special_builtin('sort/2',sort(X,Y),_,'=/2',p(X,Y)).
 
 %-------------------------------------------------------------------------
-% son_success_builtin(+,+,+,-,-)                                         |
-% son_success_builtin(Type,Sv_u,Condv,Call,Succ)                         |
+% son_success_builtin(+,+,+,+,+,-)                                       |
+% son_success_builtin(Type,Sv_u,Condv,_HvFv_u,Call,Succ)                         |
 % Obtains the success for some particular builtins:                      |
 %  * If Type = ground, it updates Call making all vars in Sv_u ground    |
 %  * If Type = bottom, Succ = '$bottom'                                  |
@@ -619,28 +619,28 @@ son_special_builtin('sort/2',sort(X,Y),_,'=/2',p(X,Y)).
 %    Succ is computed                                                    |
 %-------------------------------------------------------------------------
 
-son_success_builtin(ground,Sv_u,_,(Gv,Sh),(Succ_gr,Succ_sh)):-
+son_success_builtin(ground,Sv_u,_,_,(Gv,Sh),(Succ_gr,Succ_sh)):-
 	sort(Sv_u,Sv),
 	merge(Sv,Gv,Succ_gr),
 	ord_split_lists_from_list(Sv,Sh,_Intersect,Succ_sh).
-son_success_builtin(bottom,_,_,_,'$bottom').
-son_success_builtin(unchanged,_,_,Call,Call).
-son_success_builtin(some,_,NewGround,(Gr,Sh),(Succ_gr,Succ_sh)):-
+son_success_builtin(bottom,_,_,_,_,'$bottom').
+son_success_builtin(unchanged,_,_,_,Call,Call).
+son_success_builtin(some,_,NewGround,_HvFv_u,(Gr,Sh),(Succ_gr,Succ_sh)):-
 	merge(Gr,NewGround,Succ_gr),
 	ord_split_lists_from_list(NewGround,Sh,_Intersect,Succ_sh).
-son_success_builtin('=../2',_,p(X,Y),(Call_gr,Call_sh),(Succ_gr,Succ_sh)):-
+son_success_builtin('=../2',_,p(X,Y),_HvFv_u,(Call_gr,Call_sh),(Succ_gr,Succ_sh)):-
 	varset(X,Varsx),
 	ord_subset(Varsx,Call_gr),!,
 	varset(Y,Varsy),
 	merge(Varsy,Call_gr,Succ_gr),
 	ord_split_lists_from_list(Varsy,Call_sh,_Intersect,Succ_sh).
-son_success_builtin('=../2',_,p(X,Y),(Call_gr,Call_sh),(Succ_gr,Succ_sh)):-
+son_success_builtin('=../2',_,p(X,Y),_HvFv_u,(Call_gr,Call_sh),(Succ_gr,Succ_sh)):-
 	varset(Y,Varsy),
 	ord_subset(Varsy,Call_gr),!,
 	varset(X,Varsx),
 	merge(Varsx,Call_gr,Succ_gr),
 	ord_split_lists_from_list(Varsx,Call_sh,_Intersect,Succ_sh).
-son_success_builtin('=../2',_,p(X,Y),(Call_gr,Call_sh),Succ):-
+son_success_builtin('=../2',_,p(X,Y),_HvFv_u,(Call_gr,Call_sh),Succ):-
 	var(X), var(Y),!,
 	sort([[X],[Y]],NonLinear),
 	( ord_intersect(NonLinear,Call_sh) ->
@@ -650,7 +650,7 @@ son_success_builtin('=../2',_,p(X,Y),(Call_gr,Call_sh),Succ):-
 	),
 	son_unify_each_exit(Prime,Call_sh,[],Succ_sh),
 	Succ = (Call_gr,Succ_sh).
-son_success_builtin('=../2',_,p(X,Y),(Call_gr,Call_sh),(Succ_gr,Succ_sh)):-
+son_success_builtin('=../2',_,p(X,Y),_HvFv_u,(Call_gr,Call_sh),(Succ_gr,Succ_sh)):-
 	var(X), !,
 	Y = [Z|R],
 	(var(Z) ->
@@ -662,7 +662,7 @@ son_success_builtin('=../2',_,p(X,Y),(Call_gr,Call_sh),(Succ_gr,Succ_sh)):-
 	son_abs_unify(X,R,Binds,_),
 	collect_singletons(Prime_sh,NonLinear),
 	unify_list_binds(Binds,Prime_sh,NonLinear,Succ_sh).
-son_success_builtin('recorded/3',_,p(Y,Z),(Call_gr,Call_sh),(Succ_gr,Succ_sh)):-
+son_success_builtin('recorded/3',_,p(Y,Z),_HvFv_u,(Call_gr,Call_sh),(Succ_gr,Succ_sh)):-
 	varset(Z,VarsZ),
 	ord_split_lists_from_list(VarsZ,Call_sh,_Intersect,Disjoint),
 	merge(VarsZ,Call_gr,Succ_gr),
@@ -670,19 +670,19 @@ son_success_builtin('recorded/3',_,p(Y,Z),(Call_gr,Call_sh),(Succ_gr,Succ_sh)):-
 	ord_subtract(Varsy,Succ_gr,NonGround),
 	couples_and_singletons(NonGround,Prime_sh,[]),
 	son_unify_each_exit(Prime_sh,Disjoint,[],Succ_sh).
-son_success_builtin('read/1',_,p(X),(Call_gr,Call_sh),(Call_gr,Succ_sh)):-
+son_success_builtin('read/1',_,p(X),_HvFv_u,(Call_gr,Call_sh),(Call_gr,Succ_sh)):-
 	varset(X,Varsx),
 	ord_subtract(Varsx,Call_gr,NonGround),
 	couples_and_singletons(NonGround,Prime_sh,[]),
 	son_unify_each_exit(Prime_sh,Call_sh,[],Succ_sh).
-son_success_builtin('read/2',_,p(X,Y),(Call_gr,Call_sh),(Succ_gr,Succ_sh)):-
+son_success_builtin('read/2',_,p(X,Y),_HvFv_u,(Call_gr,Call_sh),(Succ_gr,Succ_sh)):-
 	varset(X,Varsx),
 	merge(Varsx,Call_gr,Succ_gr),
 	varset(Y,Varsy),
 	ord_subtract(Varsy,Succ_gr,NonGround),
 	couples_and_singletons(NonGround,Prime_sh,[]),
 	son_unify_each_exit(Prime_sh,Call_sh,[],Succ_sh).
-son_success_builtin(copy_term,Sv_u,p(X,Y),Call,Succ):-
+son_success_builtin(copy_term,Sv_u,p(X,Y),HvFv_u,Call,Succ):-
 	copy_term(Y,NewY),
 	varset(NewY,Hv),
 	varset(X,Xv),
@@ -693,18 +693,18 @@ son_success_builtin(copy_term,Sv_u,p(X,Y),Call,Succ):-
 	merge(Call_sh,Entry_sh,TempCall_sh),
 	varset(Y,Yv),
 	merge(Hv,Yv,TempSv),
-	son_success_builtin('=/2',TempSv,p(NewY,Y),(TempCall_gr,TempCall_sh),
+	son_success_builtin('=/2',TempSv,p(NewY,Y),HvFv_u,(TempCall_gr,TempCall_sh),
 	                          TempSucc),
 	varset(Call,Callv),
 	sort(Sv_u,Sv),
 	merge(Callv,Sv,Vars),
 	son_project(Vars,TempSucc,Succ).
-son_success_builtin(var,_,p(X),(Call_gr,_),Succ):-
+son_success_builtin(var,_,p(X),_HvFv_u,(Call_gr,_),Succ):-
 	ord_member(X,Call_gr), !,
 	Succ = '$bottom'.
-son_success_builtin(var,_,p(X),(Call_gr,Call_sh),(Call_gr,Succ_sh)):-
+son_success_builtin(var,_,p(X),_HvFv_u,(Call_gr,Call_sh),(Call_gr,Succ_sh)):-
 	ord_subtract(Call_sh,[[X]],Succ_sh).
-son_success_builtin('indep/2',_,p(X,Y),(Call_gr,Call_sh),Succ):-
+son_success_builtin('indep/2',_,p(X,Y),_HvFv_u,(Call_gr,Call_sh),Succ):-
 	varset(X,Varsx),
 	varset(Y,Varsy),
 	setproduct(Varsx,Varsy,Dependent),
@@ -713,25 +713,25 @@ son_success_builtin('indep/2',_,p(X,Y),(Call_gr,Call_sh),Succ):-
 	ord_split_lists_from_list(Gv,Call_sh,_Intersect,TempSh),
 	ord_subtract(TempSh,Dependent,Succ_sh),
 	Succ = (Succ_gr,Succ_sh).
-son_success_builtin('indep/1',_,p(X),Call,Succ):- 
+son_success_builtin('indep/1',_,p(X),_HvFv_u,Call,Succ):- 
 	nonvar(X),
 	handle_each_indep(X,son,Call,Succ), !.
-son_success_builtin('indep/1',_,_,_,'$bottom').
-son_success_builtin('arg/3',_,p(X,Y,Z),(Call_gr,Call_sh),Succ):- 
+son_success_builtin('indep/1',_,_,_,_,'$bottom').
+son_success_builtin('arg/3',_,p(X,Y,Z),_HvFv_u,(Call_gr,Call_sh),Succ):- 
 	varset(Y,Varsy),
 	ord_subset(Varsy,Call_gr), !,
 	varset([X,Z],Vars),
 	ord_split_lists_from_list(Vars,Call_sh,_Intersect,Succ_sh),
 	merge(Vars,Call_gr,Succ_gr),
 	Succ = (Succ_gr,Succ_sh).
-son_success_builtin('arg/3',_,p(X,_,Z),(Call_gr,Call_sh),Succ):- 
+son_success_builtin('arg/3',_,p(X,_,Z),_HvFv_u,(Call_gr,Call_sh),Succ):- 
 	varset(Z,Varsz),
 	ord_subset(Varsz,Call_gr), !,
 	varset(X,Varsx),
 	ord_split_lists_from_list(Varsx,Call_sh,_Intersect,Succ_sh),
 	merge(Call_gr,Varsx,Succ_gr),
 	Succ = (Succ_gr,Succ_sh).
-son_success_builtin('arg/3',_,p(X,Y,Z),(Call_gr,Call_sh),(Succ_gr,Succ_sh)):- 
+son_success_builtin('arg/3',_,p(X,Y,Z),_HvFv_u,(Call_gr,Call_sh),(Succ_gr,Succ_sh)):- 
 	varset(X,Varsx),
 	merge(Call_gr,Varsx,Succ_gr),
 	ord_split_lists_from_list(Varsx,Call_sh,_Intersect,TempSh),
@@ -742,7 +742,7 @@ son_success_builtin('arg/3',_,p(X,Y,Z),(Call_gr,Call_sh),(Succ_gr,Succ_sh)):-
 	; couples(Vars,Prime,[])
 	),
 	son_unify_each_exit(Prime,Call_sh,[],Succ_sh).
-son_success_builtin('=/2',_,p(X,Y),(Call_gr,Call_sh),Succ):-
+son_success_builtin('=/2',_,p(X,Y),_HvFv_u,(Call_gr,Call_sh),Succ):-
 	son_abs_unify(X,Y,Binds,Gr1),
 	merge(Gr1,Call_gr,Gr2),
 	son_g_propagate(Gr2,Binds,Gr2,NewBinds,Succ_gr),
@@ -751,8 +751,8 @@ son_success_builtin('=/2',_,p(X,Y),(Call_gr,Call_sh),Succ):-
 	collect_singletons(Temp_Sh,NonLinear),
 	unify_list_binds(NewBinds,Temp_Sh,NonLinear,Succ_sh), !,
 	Succ = (Succ_gr,Succ_sh).
-son_success_builtin('=/2',_,_,_,'$bottom').
-son_success_builtin('==/2',_,p(X,Y),(Call_gr,Call_sh),Succ):-
+son_success_builtin('=/2',_,_,_,_,'$bottom').
+son_success_builtin('==/2',_,p(X,Y),_HvFv_u,(Call_gr,Call_sh),Succ):-
 %?	sh_peel(X,Y,Binds-[]),
 	son_peel(X,Y,Binds-[]),
 	son_make_reduction(Binds,(Call_gr,Call_sh),Ground,Eliminate), !,
@@ -762,7 +762,7 @@ son_success_builtin('==/2',_,p(X,Y),(Call_gr,Call_sh),Succ):-
 	ord_subtract(Call_sh,Eliminate1,TempSh),
 	ord_split_lists_from_list(Succ_gr,TempSh,_Intersect,Succ_sh),
 	Succ = (Succ_gr,Succ_sh).
-son_success_builtin('==/2',_,_,_,'$bottom').
+son_success_builtin('==/2',_,_,_,_,'$bottom').
 
 %-------------------------------------------------------------------------
 % son_call_to_success_builtin(+,+,+,+,+,-)                               |

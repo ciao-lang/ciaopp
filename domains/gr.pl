@@ -11,7 +11,7 @@
 	gr_abs_sort/2,
 	gr_call_to_success_fact/9,
 	gr_special_builtin/5,
-	gr_success_builtin/5,
+	gr_success_builtin/6,
 	gr_call_to_success_builtin/6,
 	gr_input_interface/4,
 	gr_input_user_interface/5,
@@ -705,8 +705,8 @@ gr_very_special_builtin('C/3').
 %gr_very_special_builtin('sort/2').
 
 %-------------------------------------------------------------------------
-% gr_success_builtin(+,+,+,+,-)                                          |
-% gr_success_builtin(Type,Sv_u,Condv,Call,Succ)                          |
+% gr_success_builtin(+,+,+,+,+,-)                                        |
+% gr_success_builtin(Type,Sv_u,Condv,HvFv_u,Call,Succ)                   |
 % Obtains the success for some particular builtins:                      |
 %  * If Type = new_ground, it updates Call making all vars in Sv_u ground|
 %  * If Type = bottom, Succ = '$bottom'                                  |
@@ -721,7 +721,7 @@ gr_very_special_builtin('C/3').
 %    Succ is computed                                                    |
 %-------------------------------------------------------------------------
 
-:- pred gr_success_builtin(+Type,+Sv_u,+Condv,+Call,-Succ): atm * list * term * absu * absu # 
+:- pred gr_success_builtin(+Type,+Sv_u,+Condv,+HvFv_u,+Call,-Succ): atm * list * term * list * absu * absu # 
 " Obtains the success for some particular builtins:                      
 @begin{itemize}
 @item  If Type = new_ground, it updates Call making all vars in Sv_u ground
@@ -739,33 +739,33 @@ gr_very_special_builtin('C/3').
 ".
 
 % TODO: Missing cuts in all the following clauses
-gr_success_builtin(new_ground,Sv_u,_,Call,Succ):-
+gr_success_builtin(new_ground,Sv_u,_,_,Call,Succ):-
 	sort(Sv_u,Sv),
 	gr_change_values_insert(Sv,Call,Succ,g).
 %
-gr_success_builtin(bottom,_,_,_,'$bottom').
+gr_success_builtin(bottom,_,_,_,_,'$bottom').
 %
-gr_success_builtin(unchanged,_,_,Succ,Succ).
+gr_success_builtin(unchanged,_,_,_,Succ,Succ).
 %
-gr_success_builtin(some,_Sv,NewGr_u,Call,Succ):-
+gr_success_builtin(some,_Sv,NewGr_u,_,Call,Succ):-
 	sort(NewGr_u,NewGr),
 	gr_change_values_insert(NewGr,Call,Succ,g).
 %
-gr_success_builtin(old_ground,Sv_u,_,Call,Succ):-
+gr_success_builtin(old_ground,Sv_u,_,_,Call,Succ):-
 	sort(Sv_u,Sv),
 	gr_values_notequal(Sv,Call,ng),!,
 	gr_change_values_insert(Sv,Call,Succ,g).
-gr_success_builtin(old_ground,_,_,_,'$bottom').
+gr_success_builtin(old_ground,_,_,_,_,'$bottom').
 %
-gr_success_builtin(old_new_ground,_,(OldG_u,NewG_u),Call,Succ):-
+gr_success_builtin(old_new_ground,_,(OldG_u,NewG_u),_,Call,Succ):-
 	sort(OldG_u,OldG),
 	gr_values_notequal(OldG,Call,ng),!,
 	gr_change_values_insert(OldG,Call,TempSucc,g),	
 	sort(NewG_u,NewG),
 	gr_change_values_insert(NewG,TempSucc,Succ,g).
-gr_success_builtin(old_new_ground,_,_,_,'$bottom').
+gr_success_builtin(old_new_ground,_,_,_,_,'$bottom').
 %
-gr_success_builtin(arg,_,p(X,Y,Z),Call,Succ):-
+gr_success_builtin(arg,_,p(X,Y,Z),_,Call,Succ):-
 	varset(X,OldG),
 	gr_values_notequal(OldG,Call,ng),!,  
 	gr_change_values_insert(OldG,Call,NCall,g),
@@ -775,33 +775,33 @@ gr_success_builtin(arg,_,p(X,Y,Z),Call,Succ):-
 	varset(Head,Hv),
 	gr_project(NCall,Sv,Proj),
 	gr_call_to_success_fact(Sg,Hv,Head,not_provided,Sv,NCall,Proj,_,Succ). % TODO: add some ClauseKey?
-gr_success_builtin(arg,_,_,_,'$bottom').
+gr_success_builtin(arg,_,_,_,_,'$bottom').
 %
-gr_success_builtin(exp,_,Sg,Call,Succ):-
+gr_success_builtin(exp,_,Sg,_,Call,Succ):-
 	Head = p(A,f(A,_B)),
 	varset(Sg,Sv),
 	varset(Head,Hv),
 	gr_project(Call,Sv,Proj),
 	gr_call_to_success_fact(Sg,Hv,Head,not_provided,Sv,Call,Proj,_,Succ). % TODO: add some ClauseKey?
-gr_success_builtin(exp,_,_,_,'$bottom').
+gr_success_builtin(exp,_,_,_,_,'$bottom').
 %
-gr_success_builtin('=../2',_,p(X,Y),Call,Succ):-
+gr_success_builtin('=../2',_,p(X,Y),_,Call,Succ):-
 	varset(X,Varsx),
 	gr_values_equal(Varsx,Call,g),!,
 	varset(Y,VarsY),
 	gr_change_values_insert(VarsY,Call,Succ,g).
-gr_success_builtin('=../2',_,p(X,Y),Call,Succ):-
+gr_success_builtin('=../2',_,p(X,Y),_,Call,Succ):-
 	varset(Y,VarsY),
 	gr_values_equal(VarsY,Call,g),!,
 	varset(X,VarsX),
 	gr_change_values_insert(VarsX,Call,Succ,g).
-gr_success_builtin('=../2',_,_,Succ,Succ). 
+gr_success_builtin('=../2',_,_,_,Succ,Succ). 
 %
-gr_success_builtin(recorded,_,p(_Y,Z),Call,Succ):-
+gr_success_builtin(recorded,_,p(_Y,Z),_,Call,Succ):-
         varset(Z,NewGr),
 	gr_change_values_insert(NewGr,Call,Succ,g).
 %
-gr_success_builtin(copy_term,_,p(X,Y),Call,Succ):-
+gr_success_builtin(copy_term,_,p(X,Y),_,Call,Succ):-
 	varset(X,VarsX),
 	gr_project(Call,VarsX,ProjectedX),
 	copy_term((X,ProjectedX),(NewX,NewProjectedX)),
@@ -818,51 +818,51 @@ gr_success_builtin(copy_term,_,p(X,Y),Call,Succ):-
 	collect_vars_gr(Call,VarsCall),
 	gr_project(Temp_success,VarsCall,Succ).
 %
-gr_success_builtin('current_key/2',_,p(X),Call,Succ):-
+gr_success_builtin('current_key/2',_,p(X),_,Call,Succ):-
 	varset(X,NewG),
 	gr_change_values_insert(NewG,Call,Succ,g).
 %
-gr_success_builtin('current_predicate/2',_,p(X,_Y),Call,Succ):- !,
+gr_success_builtin('current_predicate/2',_,p(X,_Y),_,Call,Succ):- !,
 	varset(X,NewG),
 	gr_change_values_insert(NewG,Call,Succ,g).
 %
-gr_success_builtin('functor/3',_,p(X,Y,Z),Call,Succ):-
+gr_success_builtin('functor/3',_,p(X,Y,Z),_,Call,Succ):-
 	varset(X,OldG),
 	gr_values_equal(OldG,Call,g),!,
 	varset([Y,Z],NewGr),	
 	gr_change_values_insert(NewGr,Call,Succ,g).
-gr_success_builtin('functor/3',_,_,Succ,Succ).
+gr_success_builtin('functor/3',_,_,_,Succ,Succ).
 %
-gr_success_builtin('name/2',_,p(X,Y),Call,Succ):-
+gr_success_builtin('name/2',_,p(X,Y),_,Call,Succ):-
         varset(X,OldG),
 	gr_values_notequal(OldG,Call,ng),!,
         varset(Y,NewG),
 	gr_change_values_insert(NewG,Call,Succ,g).
-gr_success_builtin('name/2',_,p(X,Y),Call,Succ):-
+gr_success_builtin('name/2',_,p(X,Y),_,Call,Succ):-
         varset(Y,OldG),
 	gr_values_notequal(OldG,Call,ng),!,
         varset(X,NewG),
 	gr_change_values_insert(NewG,Call,Succ,g).
-gr_success_builtin('name/2',_,_,_,'$bottom').
+gr_success_builtin('name/2',_,_,_,_,'$bottom').
 %
-gr_success_builtin('numbervars/3',_,p(X,Y,Z),Call,Succ):-
+gr_success_builtin('numbervars/3',_,p(X,Y,Z),_,Call,Succ):-
 	varset(Y,OldG),
 	gr_values_notequal(OldG,Call,ng),!,
 	varset(p(X,Z),NewG),
 	gr_change_values_insert(NewG,Call,Succ,g).
-gr_success_builtin('numbervars/3',_,_,_,'$bottom').
+gr_success_builtin('numbervars/3',_,_,_,_,'$bottom').
 %
-gr_success_builtin('compare/3',_,p(X),Call,Succ):- 
+gr_success_builtin('compare/3',_,p(X),_,Call,Succ):- 
         atom(X),!,
 	Succ = Call.
-gr_success_builtin('compare/3',_,p(X),Call,Succ):- 
+gr_success_builtin('compare/3',_,p(X),_,Call,Succ):- 
         var(X),!,
 	gr_change_values_insert([X],Call,Succ,g).
-gr_success_builtin('compare/3',_,_,_,'$bottom').
+gr_success_builtin('compare/3',_,_,_,_,'$bottom').
 %
-%gr_success_builtin(bag,_,(_From,_On,nofail),'$bottom',Succ):-
+%gr_success_builtin(bag,_,(_From,_On,nofail),_,'$bottom',Succ):-
 %
-gr_success_builtin(Key,_,_,Succ,Succ):-
+gr_success_builtin(Key,_,_,_,Succ,Succ):-
              warning_message("the builtin key ~q is not defined",[Key]).
 
 %-------------------------------------------------------------------------

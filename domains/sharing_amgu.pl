@@ -213,8 +213,8 @@ share_amgu_special_builtin(SgKey,Sg,Subgoal,Type,Condvars):-
 	
 
 %-------------------------------------------------------------------------
-% share_amgu_success_builtin(+,+,+,+,-)                                  |
-% share_amgu_success_builtin(Type,Sv_u,Condv,Call,Succ)                  |
+% share_amgu_success_builtin(+,+,+,+,+,-)                                |
+% share_amgu_success_builtin(Type,Sv_u,Condv,HvFv_u,Call,Succ)                  |
 % Obtains the success for some particular builtins:                      |
 %  * If Type = ground, it updates Call making all vars in Sv_u ground    |
 %  * If Type = bottom, Succ = '$bottom'                                  |
@@ -224,24 +224,24 @@ share_amgu_special_builtin(SgKey,Sg,Subgoal,Type,Condvars):-
 %    Succ is computed                                                    |
 %-------------------------------------------------------------------------
 
-:- export(share_amgu_success_builtin/5).
-share_amgu_success_builtin('=../2',_,p(X,Y),Call,Succ):-
+:- export(share_amgu_success_builtin/6).
+share_amgu_success_builtin('=../2',_,p(X,Y),_,Call,Succ):-
 	varset(X,Varsx),
 	projected_gvars(Call,Varsx,Vars),Vars == Varsx,!,
 	varset(Y,Varsy),
 	ord_split_lists_from_list(Varsy,Call,_Intersect,Succ).
-share_amgu_success_builtin('=../2',_,p(X,Y),Call,Succ):-
+share_amgu_success_builtin('=../2',_,p(X,Y),_,Call,Succ):-
 	nonvar(Y),
 	Y = [Z|W],
 	varset(W,Varsy),
 	projected_gvars(Call,Varsy,Vars),Vars == Varsy,!,
 	varset((X,Z),Varsx),
 	ord_split_lists_from_list(Varsx,Call,_Intersect,Succ).
-share_amgu_success_builtin('=../2',Sv_u,p(X,Y),Call,Succ):-
+share_amgu_success_builtin('=../2',Sv_u,p(X,Y),_,Call,Succ):-
 	var(X), var(Y),!,
 	sort(Sv_u,Sv),
 	share_extend([Sv],Sv,Call,Succ).
-share_amgu_success_builtin('=../2',Sv_u,p(X,Y),Call,Succ):-
+share_amgu_success_builtin('=../2',Sv_u,p(X,Y),_,Call,Succ):-
 %%	( var(Y) ; Y = [_|_] ), !,
 %%	( var(X) -> Term=[g|X] ; X=..Term ),
 	( var(Y) -> G=g ; Y = [G|_] ), !,
@@ -249,8 +249,8 @@ share_amgu_success_builtin('=../2',Sv_u,p(X,Y),Call,Succ):-
 	sort(Sv_u,Sv),
 	share_project(Sv,Call,Proj),
 	share_amgu_call_to_success_builtin('=/2','='(Term,Y),Sv,Call,Proj,Succ).
-share_amgu_success_builtin('=../2',_Sv_u,_,_Call,'$bottom') :- !.
-share_amgu_success_builtin(copy_term,_Sv_u,p(X,Y),Call,Succ):-
+share_amgu_success_builtin('=../2',_Sv_u,_,_,_Call,'$bottom'):- !.
+share_amgu_success_builtin(copy_term,_Sv_u,p(X,Y),_,Call,Succ):-
 	varset(X,VarsX),
 	share_project(VarsX,Call,ProjectedX),
 	copy_term((X,ProjectedX),(NewX,NewProjectedX)),
@@ -266,15 +266,15 @@ share_amgu_success_builtin(copy_term,_Sv_u,p(X,Y),Call,Succ):-
 	merge_list_of_lists(Call,VarsCall),
 	share_project(VarsCall,Temp_success,Succ),
 	!. % TODO: move cut somewhere else? (JF)
-share_amgu_success_builtin(findall,_Sv_u,p(X,Z),Call,Succ):-
+share_amgu_success_builtin(findall,_Sv_u,p(X,Z),HvFv_u,Call,Succ):-
 	varset(X,Varsx),
 	projected_gvars(Call,Varsx,Vars),Vars == Varsx,!,
 	varset(Z,Varsz),
-	share_amgu_success_builtin(ground,Varsz,_any,Call,Succ).
-share_amgu_success_builtin(findall,_Sv_u,_,Call,Call) :- !.
+	share_amgu_success_builtin(ground,Varsz,_any,HvFv_u,Call,Succ).
+share_amgu_success_builtin(findall,_Sv_u,_,_HvFv_u,Call,Call):- !.
 %
-share_amgu_success_builtin(Type,Sv_u,Condv,Call,Succ):-
-	share_success_builtin(Type,Sv_u,Condv,Call,Succ).
+share_amgu_success_builtin(Type,Sv_u,Condv,HvFv_u,Call,Succ):-
+	share_success_builtin(Type,Sv_u,Condv,HvFv_u,Call,Succ).
 
 %-------------------------------------------------------------------------
 % share_amgu_call_to_success_builtin(+,+,+,+,+,-)                        %

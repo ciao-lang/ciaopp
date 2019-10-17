@@ -779,43 +779,43 @@ shfrnv_glb(_ASub0,_ASub1,_ASub) :- compiler_error(op_not_implemented(glb)), fail
 %-------------------------------------------------------------------------
 
 %-------------------------------------------------------------------------
-% shfrnv_success_builtin(+,+,+,+,-)                                      |
-% shfrnv_success_builtin(Type,Sv_u,Condv,Call,Succ)                      |
+% shfrnv_success_builtin(+,+,+,+,+,-)                                    |
+% shfrnv_success_builtin(Type,Sv_u,Condv,HvFv_u,Call,Succ)                      |
 %-------------------------------------------------------------------------
 % Identical except for when it says %% CHANGED                           %
 %-------------------------------------------------------------------------
 
-:- export(shfrnv_success_builtin/5).
-shfrnv_success_builtin(new_ground,Sv_u,_,Call,Succ):-
+:- export(shfrnv_success_builtin/6).
+shfrnv_success_builtin(new_ground,Sv_u,_,_,Call,Succ):-
 	sort(Sv_u,Sv),
 	Call = (Lda_sh,Lda_fr),
 	update_lambda_sf(Sv,Lda_fr,Lda_sh,Succ_fr,Succ_sh), 
 	Succ = (Succ_sh,Succ_fr).
-shfrnv_success_builtin(bottom,_,_,_,'$bottom').
-shfrnv_success_builtin(unchanged,_,_,Lda,Lda).
-shfrnv_success_builtin(some,_Sv,NewGr,Call,Succ):-
+shfrnv_success_builtin(bottom,_,_,_,_,'$bottom').
+shfrnv_success_builtin(unchanged,_,_,_,Lda,Lda).
+shfrnv_success_builtin(some,_Sv,NewGr,_,Call,Succ):-
 	Call = (Call_sh,Call_fr),
 	update_lambda_sf(NewGr,Call_fr,Call_sh,Succ_fr,Succ_sh),
 	Succ = (Succ_sh,Succ_fr).
-shfrnv_success_builtin(old_ground,Sv_u,_,Call,Succ):-
+shfrnv_success_builtin(old_ground,Sv_u,_,_,Call,Succ):-
 	sort(Sv_u,Sv),
 	Call = (Call_sh,Call_fr),
 	update_lambda_non_free(Sv,Call_fr,Call_sh,Succ_fr,Succ_sh),!,
 	Succ = (Succ_sh,Succ_fr).
-shfrnv_success_builtin(old_ground,_,_,_,'$bottom').
-shfrnv_success_builtin(old_new_ground,_,(OldG,NewG),Call,Succ):-
+shfrnv_success_builtin(old_ground,_,_,_,_,'$bottom').
+shfrnv_success_builtin(old_new_ground,_,(OldG,NewG),_,Call,Succ):-
 	Call = (Call_sh,Call_fr),
 	update_lambda_non_free(OldG,Call_fr,Call_sh,Temp_fr,Temp_sh),!,
 	update_lambda_sf(NewG,Temp_fr,Temp_sh,Succ_fr,Succ_sh),
 	Succ = (Succ_sh,Succ_fr).
-shfrnv_success_builtin(old_new_ground,_,_,_,'$bottom').
-shfrnv_success_builtin(all_nonfree,Sv_u,_,Call,Succ):- !,
+shfrnv_success_builtin(old_new_ground,_,_,_,_,'$bottom').
+shfrnv_success_builtin(all_nonfree,Sv_u,_,_,Call,Succ):- !,
 	sort(Sv_u,Sv),
 	shfr_project(Call,Sv,(Proj_sh,Proj_fr)),
 	closure_under_union(Proj_sh,Prime_sh),
 	change_values_if_f(Sv,Proj_fr,Prime_fr,nf), 
 	shfrnv_extend((Prime_sh,Prime_fr),Sv,Call,Succ).
-shfrnv_success_builtin(arg,_,p(X,Y,Z),Call,Succ):-
+shfrnv_success_builtin(arg,_,p(X,Y,Z),_,Call,Succ):-
 	Call = (Call_sh,Call_fr),
 	varset(X,OldG),
 	update_lambda_non_free(OldG,Call_fr,Call_sh,Temp_fr,Temp_sh),
@@ -828,27 +828,27 @@ shfrnv_success_builtin(arg,_,p(X,Y,Z),Call,Succ):-
 	TempASub = (Temp_sh,Temp_fr),
 	shfr_project(TempASub,Sv,Proj),
 	shfrnv_call_to_success_fact(Sg,Hv,Head,not_provided,Sv,TempASub,Proj,_,Succ). % TODO: add some ClauseKey?
-shfrnv_success_builtin(arg,_,_,_,'$bottom').
-shfrnv_success_builtin(exp,_,Sg,Call,Succ):-
+shfrnv_success_builtin(arg,_,_,_,_,'$bottom').
+shfrnv_success_builtin(exp,_,Sg,_,Call,Succ):-
 	Head = p(A,f(A,_B)),
 	varset(Sg,Sv),
 	varset(Head,Hv),
 	shfr_project(Call,Sv,Proj),
 	shfrnv_call_to_success_fact(Sg,Hv,Head,not_provided,Sv,Call,Proj,_,Succ). % TODO: add some ClauseKey?
-shfrnv_success_builtin(exp,_,_,_,'$bottom').
-shfrnv_success_builtin('=../2',_,p(X,Y),(Call_sh,Call_fr),Succ):-
+shfrnv_success_builtin(exp,_,_,_,_,'$bottom').
+shfrnv_success_builtin('=../2',_,p(X,Y),_,(Call_sh,Call_fr),Succ):-
 	varset(X,Varsx),
 	values_equal(Varsx,Call_fr,g),!,
 	varset(Y,VarsY),
 	update_lambda_sf(VarsY,Call_fr,Call_sh,Succ_fr,Succ_sh),
 	Succ = (Succ_sh,Succ_fr).
-shfrnv_success_builtin('=../2',_,p(X,Y),(Call_sh,Call_fr),Succ):-
+shfrnv_success_builtin('=../2',_,p(X,Y),_,(Call_sh,Call_fr),Succ):-
 	varset(Y,VarsY),
 	values_equal(VarsY,Call_fr,g),!,
 	varset(X,VarsX),
 	update_lambda_sf(VarsX,Call_fr,Call_sh,Succ_fr,Succ_sh),
 	Succ = (Succ_sh,Succ_fr).
-shfrnv_success_builtin('=../2',Sv_uns,p(X,Y),Call,Succ):-
+shfrnv_success_builtin('=../2',Sv_uns,p(X,Y),_,Call,Succ):-
 	var(X), var(Y),!,
 	sort(Sv_uns,Sv),
 	Call = (_,Call_fr),
@@ -857,7 +857,7 @@ shfrnv_success_builtin('=../2',Sv_uns,p(X,Y),Call,Succ):-
 	    shfrnv_extend(([Sv],[A/nv,B/nv]),Sv,Call,Succ) %% CHANGED
 	; Succ = '$bottom'
         ).
-shfrnv_success_builtin('=../2',Sv_uns,p(X,Y),Call,Succ):-
+shfrnv_success_builtin('=../2',Sv_uns,p(X,Y),_,Call,Succ):-
 	var(X), !,
 	sort(Sv_uns,Sv),
 	Call = (Call_sh,Call_fr),	
@@ -879,7 +879,7 @@ shfrnv_success_builtin('=../2',Sv_uns,p(X,Y),Call,Succ):-
 	  shfrnv_product(ValueX,X,VarsY,Sv,Proj_sh,Proj_fr,Prime_sh,Prime_fr), %% CHANGED
 	  shfrnv_extend((Prime_sh,Prime_fr),Sv,Call,Succ)
         ).
-shfrnv_success_builtin(read2,Sv_u,p(X,Y),(Call_sh,Call_fr),Succ):- 
+shfrnv_success_builtin(read2,Sv_u,p(X,Y),_,(Call_sh,Call_fr),Succ):- 
 	varset(X,Varsx),
 	update_lambda_non_free(Varsx,Call_fr,Call_sh,Temp_fr,Temp_sh),
 	( var(Y) ->
@@ -891,7 +891,7 @@ shfrnv_success_builtin(read2,Sv_u,p(X,Y),(Call_sh,Call_fr),Succ):-
 	  sort(Sv_u,Sv),
 	  shfrnv_extend((Prime_sh,Prime_fr),Sv,(Call_sh,Call_fr),Succ)
 	).
-shfrnv_success_builtin(recorded,_,p(Y,Z),Call,Succ):-
+shfrnv_success_builtin(recorded,_,p(Y,Z),_,Call,Succ):-
         varset(Z,NewG),
 	varset(Y,VarsY),
 	merge(NewG,VarsY,Vars),
@@ -900,7 +900,7 @@ shfrnv_success_builtin(recorded,_,p(Y,Z),Call,Succ):-
 	make_dependence(TempPrime_sh,VarsY,TempPrime_fr,Prime_fr,Prime_sh),
 	Prime = (Prime_sh,Prime_fr),
 	shfrnv_extend(Prime,Vars,Call,Succ).
-shfrnv_success_builtin(copy_term,_,p(X,Y),Call,Succ):-
+shfrnv_success_builtin(copy_term,_,p(X,Y),_,Call,Succ):-
 	varset(X,VarsX),
 	shfr_project(Call,VarsX,ProjectedX),
 	copy_term((X,ProjectedX),(NewX,NewProjectedX)),
@@ -920,31 +920,31 @@ shfrnv_success_builtin(copy_term,_,p(X,Y),Call,Succ):-
                     (TempCallSh,TempCallFr),(TempSh,TempFr),Temp_success),
 	collect_vars_freeness(FrCall,VarsCall),
 	shfr_project(Temp_success,VarsCall,Succ).
-shfrnv_success_builtin('current_key/2',_,p(X),Call,Succ):-
+shfrnv_success_builtin('current_key/2',_,p(X),_,Call,Succ):-
 	varset(X,NewG),
 	Call = (Call_sh,Call_fr),
 	update_lambda_sf(NewG,Call_fr,Call_sh,Succ_fr,Succ_sh),
 	Succ = (Succ_sh,Succ_fr).
-shfrnv_success_builtin('current_predicate/2',_,p(X,Y),Call,Succ):-
+shfrnv_success_builtin('current_predicate/2',_,p(X,Y),_,Call,Succ):-
 	var(Y),!,
 	Call = (Call_sh,Call_fr),
 	change_values_if_f([Y],Call_fr,Temp_fr,nf), 
 	varset(X,NewG),
 	update_lambda_sf(NewG,Temp_fr,Call_sh,Succ_fr,Succ_sh),
 	Succ = (Succ_sh,Succ_fr).
-shfrnv_success_builtin('current_predicate/2',_,p(X,_Y),Call,Succ):- 
+shfrnv_success_builtin('current_predicate/2',_,p(X,_Y),_,Call,Succ):- 
 	Call = (Call_sh,Call_fr),
 	varset(X,NewG),
 	update_lambda_sf(NewG,Call_fr,Call_sh,Succ_fr,Succ_sh),
 	Succ = (Succ_sh,Succ_fr).
-shfrnv_success_builtin(findall,_,p(X,Z),(Call_sh,Call_fr),(Succ_sh,Succ_fr)):-
+shfrnv_success_builtin(findall,_,p(X,Z),_,(Call_sh,Call_fr),(Succ_sh,Succ_fr)):-
 	varset(X,Xs),
 	member_value_freeness(Call_fr,GVars,g),
 	ord_subset(Xs,GVars), !,
 	varset(Z,Zs),
 	update_lambda_sf(Zs,Call_fr,Call_sh,Succ_fr,Succ_sh).
-shfrnv_success_builtin(findall,_,_,Call,Call).
-shfrnv_success_builtin('functor/3',_,p(X,Y,Z),Call,Succ):-
+shfrnv_success_builtin(findall,_,_,_,Call,Call).
+shfrnv_success_builtin('functor/3',_,p(X,Y,Z),_,Call,Succ):-
 	var(X),
 	Call = (Call_sh,Call_fr),
 	var_value(Call_fr,X,f),!,
@@ -954,27 +954,27 @@ shfrnv_success_builtin('functor/3',_,p(X,Y,Z),Call,Succ):-
 	  Succ = (Succ_sh,Succ_fr)
 	; Succ = '$bottom'
 	).
-shfrnv_success_builtin('functor/3',_,p(_X,Y,Z),Call,Succ):- 
+shfrnv_success_builtin('functor/3',_,p(_X,Y,Z),_,Call,Succ):- 
 	Call = (Call_sh,Call_fr),
 	varset([Y,Z],NewG),
 	update_lambda_sf(NewG,Call_fr,Call_sh,Succ_fr,Succ_sh),
 	Succ = (Succ_sh,Succ_fr).
-shfrnv_success_builtin('name/2',_,p(X,Y),Call,Succ):-
+shfrnv_success_builtin('name/2',_,p(X,Y),_,Call,Succ):-
         varset(X,OldG),
 	Call = (Call_sh,Call_fr),
 	update_lambda_non_free(OldG,Call_fr,Call_sh,Temp_fr,Temp_sh),!,
         varset(Y,NewG),
 	update_lambda_sf(NewG,Temp_fr,Temp_sh,Succ_fr,Succ_sh),
 	Succ = (Succ_sh,Succ_fr).
-shfrnv_success_builtin('name/2',_,p(X,Y),Call,Succ):-
+shfrnv_success_builtin('name/2',_,p(X,Y),_,Call,Succ):-
         varset(Y,OldG),
 	Call = (Call_sh,Call_fr),
 	update_lambda_non_free(OldG,Call_fr,Call_sh,Temp_fr,Temp_sh),!,
         varset(X,NewG),
 	update_lambda_sf(NewG,Temp_fr,Temp_sh,Succ_fr,Succ_sh),
 	Succ = (Succ_sh,Succ_fr).
-shfrnv_success_builtin('name/2',_,_,_,'$bottom').
-shfrnv_success_builtin('nonvar/1',_,p(X),Call,Succ):-
+shfrnv_success_builtin('name/2',_,_,_,_,'$bottom').
+shfrnv_success_builtin('nonvar/1',_,p(X),_,Call,Succ):-
         var(X), !,
 	Call = (Call_sh,Call_fr),
 	var_value(Call_fr,X,Val),
@@ -983,28 +983,28 @@ shfrnv_success_builtin('nonvar/1',_,p(X),Call,Succ):-
 	; change_values_if_not_g([X],Call_fr,Succ_fr,nv),
 	  Succ = (Call_sh,Succ_fr)
 	).
-shfrnv_success_builtin('nonvar/1',_,_,Call,Call):- !.
-shfrnv_success_builtin('numbervars/3',_,p(X,Y,Z),Call,Succ):-
+shfrnv_success_builtin('nonvar/1',_,_,_,Call,Call):- !.
+shfrnv_success_builtin('numbervars/3',_,p(X,Y,Z),_,Call,Succ):-
 	Call = (Call_sh,Call_fr),
 	varset(Y,OldG),
 	update_lambda_non_free(OldG,Call_fr,Call_sh,Temp_fr,Temp_sh),!,
 	varset(p(X,Z),NewG),
 	update_lambda_sf(NewG,Temp_fr,Temp_sh,Succ_fr,Succ_sh),
 	Succ = (Succ_sh,Succ_fr).
-shfrnv_success_builtin('numbervars/3',_,_,_,'$bottom').
-shfrnv_success_builtin('compare/3',_,p(X),Call,Succ):- 
+shfrnv_success_builtin('numbervars/3',_,_,_,_,'$bottom').
+shfrnv_success_builtin('compare/3',_,p(X),_,Call,Succ):- 
         atom(X),!,
 	Succ = Call.
-shfrnv_success_builtin('compare/3',_,p(X),Call,Succ):- 
+shfrnv_success_builtin('compare/3',_,p(X),_,Call,Succ):- 
         var(X),!,
 	Call = (Call_sh,Call_fr),
 	update_lambda_sf([X],Call_fr,Call_sh,Succ_fr,Succ_sh),
 	Succ = (Succ_sh,Succ_fr).
-shfrnv_success_builtin('compare/3',_,_,_,'$bottom').
-shfrnv_success_builtin('indep/2',_,p(X,Y),Call,Succ):- 
+shfrnv_success_builtin('compare/3',_,_,_,_,'$bottom').
+shfrnv_success_builtin('indep/2',_,p(X,Y),_,Call,Succ):- 
 	( ground(X) ; ground(Y) ), !,
 	Succ = Call.
-shfrnv_success_builtin('indep/2',_,p(X,Y),Call,Succ):- 
+shfrnv_success_builtin('indep/2',_,p(X,Y),_,Call,Succ):- 
 	varset(X,Xv),
 	varset(Y,Yv),
 	Call = (Call_sh,Call_fr),
@@ -1013,25 +1013,25 @@ shfrnv_success_builtin('indep/2',_,p(X,Y),Call,Succ):-
 	projected_gvars(Succ_sh,Vars,Ground),
 	change_values_if_differ(Ground,Call_fr,Succ_fr,g,f),!,
 	Succ = (Succ_sh,Succ_fr).
-shfrnv_success_builtin('indep/2',_,_,_,'$bottom').
-shfrnv_success_builtin('indep/1',_,p(X),Call,Succ):- 
+shfrnv_success_builtin('indep/2',_,_,_,_,'$bottom').
+shfrnv_success_builtin('indep/1',_,p(X),_,Call,Succ):- 
 	nonvar(X),
 	handle_each_indep(X,shfrnv,Call,Succ), !.
-shfrnv_success_builtin('indep/1',_,_,_,'$bottom').
-shfrnv_success_builtin('length/2',_,p(X,Y),Call,Succ):-
+shfrnv_success_builtin('indep/1',_,_,_,_,'$bottom').
+shfrnv_success_builtin('length/2',_,p(X,Y),_,Call,Succ):-
         var(X),var(Y),!,
 	Call = (_,Call_fr),
 	var_value(Call_fr,X,Valuex),
 	var_value(Call_fr,Y,Valuey),
 	shfrnv_update_from_values(Valuex,Valuey,X,Y,Call,Succ). %% CHANGED
-shfrnv_success_builtin('length/2',_,p(X,_Y),Call,Succ):-
+shfrnv_success_builtin('length/2',_,p(X,_Y),_,Call,Succ):-
         var(X),!,
 	Call = (Call_sh,Call_fr),
 	take_coupled(Call_sh,[X],Coupled),
 	change_values_if_f(Coupled,Call_fr,Tmp_fr,nf),
 	change_values_if_not_g([X],Tmp_fr,Succ_fr,nv), %% CHANGED
 	Succ = (Call_sh,Succ_fr).
-shfrnv_success_builtin('length/2',_,p(X,Y),Call,Succ):-
+shfrnv_success_builtin('length/2',_,p(X,Y),_,Call,Succ):-
 	functor(X,'.',_),
 	varset0(X,[Z|_]),
 	Call = (Call_sh,Call_fr),
@@ -1040,7 +1040,7 @@ shfrnv_success_builtin('length/2',_,p(X,Y),Call,Succ):-
 	change_values_if_not_g([X],Temp_fr,Temp1_fr,nv),  %% CHANGED
 	update_lambda_sf([Y],Temp1_fr,Call_sh,Succ_fr,Succ_sh),
 	Succ = (Succ_sh,Succ_fr).
-shfrnv_success_builtin('var/1',[X],p(X),Call,Succ):- 
+shfrnv_success_builtin('var/1',[X],p(X),_,Call,Succ):- 
 	Call = (Call_sh,Call_fr),
 	var_value(Call_fr,X,Valuex),
 	Valuex \== g, Valuex \== nv, %% CHANGED
@@ -1048,7 +1048,7 @@ shfrnv_success_builtin('var/1',[X],p(X),Call,Succ):-
 	\+ (shfrnv_mynonvar([X],Call_sh,FreeVars)),
 	change_values([X],Call_fr,Succ_fr,f),
 	Succ = (Call_sh,Succ_fr).
-shfrnv_success_builtin('var/1',_,_,_,'$bottom').
+shfrnv_success_builtin('var/1',_,_,_,_,'$bottom').
 
 %-------------------------------------------------------------------------
 % shfrnv_call_to_success_builtin(+,+,+,+,+,-)                              %

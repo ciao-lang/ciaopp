@@ -18,7 +18,7 @@
 	deftypes_empty_entry/3,
 	deftypes_call_to_success_fact/9,
 	deftypes_special_builtin/5,
-	deftypes_success_builtin/5,
+	deftypes_success_builtin/6,
 	deftypes_call_to_success_builtin/6,
 	deftypes_input_interface/4,
 	deftypes_asub_to_native/5,
@@ -104,7 +104,7 @@ variable and Type is a pure type term @cite{Dart-Zobel}.
 	substitution/3,
 	variables_are_top_type/2,
 	terms_special_builtin/5,
-	terms_success_builtin/5,
+	terms_success_builtin/6,
 	terms_concrete/3,
 	terms_unknown_call/4]).
 
@@ -184,7 +184,7 @@ deftypes_abs_sort(ASub,ASub_s) :- terms_abs_sort(ASub,ASub_s).
 
 deftypes_special_builtin(SgKey,Sg,Subgoal,Type,Condvars) :- terms_special_builtin(SgKey,Sg,Subgoal,Type,Condvars).
 
-deftypes_success_builtin(Type,Sv_uns,Condvars,Call,Succ) :- terms_success_builtin(Type,Sv_uns,Condvars,Call,Succ).
+deftypes_success_builtin(Type,Sv_uns,Condvars,HvFv_u,Call,Succ):- terms_success_builtin(Type,Sv_uns,Condvars,HvFv_u,Call,Succ).
 
 deftypes_concrete(Var,ASub,List) :- terms_concrete(Var,ASub,List).
 

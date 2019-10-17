@@ -17,7 +17,7 @@
 	  aeq_project/3,      
 	  aeq_abs_sort/2,         
 	  aeq_special_builtin/5,
-	  aeq_success_builtin/5,
+	  aeq_success_builtin/6,
 	  aeq_unknown_call/4,
 	  aeq_unknown_entry/3,
 	  aeq_empty_entry/3
@@ -379,9 +379,9 @@ aeq_special_builtin( Key,   _Sg,_Subgoal, _, _) :-
 
 %------------------------------------------------------------------------------
 
-%% :- mode aeq_success_builtin(+,+,+,+,-) .
+%% :- mode aeq_success_builtin(+,+,+,+,+,-) .
 
-%%  aeq_success_builtin(Type,Sv_uns,Info_sg,Call,Succ).
+%%  aeq_success_builtin(Type,Sv_uns,Info_sg,HvFv_u,Call,Succ).
 
 %%  Abstract interpretation of builtins
 %%  (note: direct computation, not via projection and extension)
@@ -390,23 +390,23 @@ aeq_special_builtin( Key,   _Sg,_Subgoal, _, _) :-
 %%  REMARK %% : the Succ should be bounded; if necessary, use a call to
 %%		aeq_impose_depth_bound/2
 
-aeq_success_builtin( _Type,		_Sv_uns, _Info,'$bottom','$bottom') :- !.
-aeq_success_builtin( aeq_fail,		_Sv_uns, _Info,_Call,'$bottom') .
-aeq_success_builtin( aeq_unchanged,	_Sv_uns, _Info, Call, Call) .
-aeq_success_builtin( '=/2',		_Sv_uns,    Sg, Call, Succ) :-
+aeq_success_builtin( _Type,		_Sv_uns, _Info,_,'$bottom','$bottom'):- !.
+aeq_success_builtin( aeq_fail,		_Sv_uns, _Info,_,_Call,'$bottom') .
+aeq_success_builtin( aeq_unchanged,	_Sv_uns, _Info,_, Call, Call) .
+aeq_success_builtin( '=/2',		_Sv_uns,    Sg,_, Call, Succ):-
 	aeq_add_equation( Sg, Call, Init_aeqs),
 	aeq_solve( Init_aeqs, Succ ) .
 % SICStus3 (ISO)
-aeq_success_builtin( '\\==/2',		_Sv_uns, Left \== Right, Call, Succ) :-
+aeq_success_builtin( '\\==/2',		_Sv_uns, Left \== Right, _, Call, Succ):-
 % SICStus2.x
-% aeq_success_builtin( '\==/2',		_Sv_uns, Left \== Right, Call, Succ) :-
+% aeq_success_builtin( '\==/2',		_Sv_uns, Left \== Right, _, Call, Succ):-
 	get_Eqs_aeqs( Call, Eqs_sf),
 	aeq_substitute( Left, Eqs_sf, ALeft ),
 	aeq_substitute( Right, Eqs_sf, ARight ),
 	( ALeft == ARight, !, Succ = '$bottom'
 	; Call = Succ
 	) .
-aeq_success_builtin( aeq_is,		_Sv_uns, Left is Expr, Call, Succ) :-
+aeq_success_builtin( aeq_is,		_Sv_uns, Left is Expr, _, Call, Succ):-
 	( aeq_instantiated_Expr( Expr, Call, AVarExpr_ic, A_Expr ),
 	  aeq_var_or_number( Left, Call, AVarleft_ic ), !,
 	  ( % REMARK :
@@ -421,28 +421,28 @@ aeq_success_builtin( aeq_is,		_Sv_uns, Left is Expr, Call, Succ) :-
 	  )
 	; Succ = '$bottom'
 	) .
-aeq_success_builtin( aeq_var,		_Sv_uns, var(Term), Call, Succ) :-
+aeq_success_builtin( aeq_var,		_Sv_uns, var(Term), _, Call, Succ):-
 	get_Eqs_aeqs( Call, Eqs_sf),
 	aeq_substitute( Term, Eqs_sf, ATerm ),
 	( compound_aeqs( Call, ATerm ), !, Succ = '$bottom'
 	; aeq_make_free( ATerm, Call, Succ)
 	) .
-aeq_success_builtin( aeq_nonvar,	_Sv_uns, nonvar(Term), Call, Succ) :-
+aeq_success_builtin( aeq_nonvar,	_Sv_uns, nonvar(Term), _, Call, Succ):-
 	get_Eqs_aeqs( Call, Eqs_sf),
 	aeq_substitute( Term, Eqs_sf, ATerm ),
 	( free_aeqs( Call, ATerm ), !, Succ = '$bottom'
 	; Call = Succ	% REMARK : if the annotation mapping included 'c' (compound-
 			% ness information), we could do something more here.
 	) .
-aeq_success_builtin( aeq_ground,	_Sv_uns, 	Sg, Call, Succ) :-
+aeq_success_builtin( aeq_ground,	_Sv_uns, 	Sg, _, Call, Succ):-
 	get_Eqs_aeqs( Call, Eqs_sf),
 	avariables_ic_subst( Sg, Eqs_sf, AVars_ic ),
 	aeq_make_ground( AVars_ic, Call, Succ) .
-aeq_success_builtin( aeq_compare,	_Sv_uns, compare(X,_Y,_Z), Call, Succ) :-
+aeq_success_builtin( aeq_compare,	_Sv_uns, compare(X,_Y,_Z), _, Call, Succ):-
 	get_Eqs_aeqs( Call, Eqs_sf),
 	avariables_ic_subst( X, Eqs_sf, AVars_ic ),
 	aeq_make_ground( AVars_ic, Call, Succ) .
-aeq_success_builtin( aeq_comparison,	_Sv_uns, Sg, Call, Succ) :-
+aeq_success_builtin( aeq_comparison,	_Sv_uns, Sg, _, Call, Succ):-
 	Sg =.. [Op,Arg1,Arg2],
 	( aeq_instantiated_Expr( Arg1, Call, AVars1_ic, A_Arg1 ),
 	  aeq_instantiated_Expr( Arg2, Call, AVars2_ic, A_Arg2 ), !,
@@ -472,7 +472,7 @@ aeq_success_builtin( aeq_comparison,	_Sv_uns, Sg, Call, Succ) :-
 %% 	  aeq_make_ground( AVars_ic, Call, Succ)
 %% 	; Succ = '$bottom'
 %% 	) .
-aeq_success_builtin( aeq_cond_ground,	_Sv_uns, Sg - Varlist, Call, Succ) :-
+aeq_success_builtin( aeq_cond_ground,	_Sv_uns, Sg - Varlist, _, Call, Succ):-
 	get_Eqs_aeqs( Call, Eqs_sf),
 	aeq_substitute( Varlist, Eqs_sf, A_Varlist ),
 	( free_aeqs_list( A_Varlist, Call ), !, Succ = '$bottom'
@@ -480,7 +480,7 @@ aeq_success_builtin( aeq_cond_ground,	_Sv_uns, Sg - Varlist, Call, Succ) :-
 	  avariables_ic_subst( Sg, Eqs_sf, AVars_ic ),
 	  aeq_make_ground( AVars_ic, Call, Succ)
 	) .
-aeq_success_builtin( aeq_arg,	Sv_uns, Sg, Call, Succ) :- Sg = arg(Nb,Term,Arg),
+aeq_success_builtin( aeq_arg,	Sv_uns, Sg, _, Call, Succ):- Sg = arg(Nb,Term,Arg),
 	get_Eqs_aeqs( Call, Eqs_sf),
 	aeq_substitute( arg(Nb,Term,Arg), Eqs_sf, arg(A_Nb,A_Term,A_Arg) ),
 	( free_aeqs( Call, A_Term ), !, Succ = '$bottom'
@@ -503,7 +503,7 @@ aeq_success_builtin( aeq_arg,	Sv_uns, Sg, Call, Succ) :- Sg = arg(Nb,Term,Arg),
 	  )
 	; Succ = '$bottom'
 	) .
-aeq_success_builtin( 'aeq_=..',	_Sv_uns,    Sg, Call, Succ) :- 
+aeq_success_builtin( 'aeq_=..',	_Sv_uns,    Sg, _, Call, Succ):- 
 	get_Eqs_aeqs( Call, Eqs_sf),
 	aeq_substitute( Sg, Eqs_sf, A_L =.. A_R ),
 	( free_aeqs( Call, A_L ), free_aeqs( Call, A_R ), !,
@@ -514,7 +514,7 @@ aeq_success_builtin( 'aeq_=..',	_Sv_uns,    Sg, Call, Succ) :-
 	  aeq_add_equation( L_A_L = A_R, Call, Init_aeqs),
 	  aeq_solve( Init_aeqs, Succ)
 	) .
-aeq_success_builtin( aeq_sort,	Sv_uns,    Sg, Call, Succ) :- 
+aeq_success_builtin( aeq_sort,	Sv_uns,    Sg, _, Call, Succ):- 
 	get_Eqs_aeqs( Call, Eqs_sf),
 	aeq_substitute( Sg, Eqs_sf, sort(A_L,A_R) ),
 	( free_aeqs( Call, A_L ), !,
@@ -525,16 +525,16 @@ aeq_success_builtin( aeq_sort,	Sv_uns,    Sg, Call, Succ) :-
 	; aeq_warning( builtin_undef, aeq_sort ),
 	  aeq_unknown_call(Sg,Sv_uns,Call,Succ)
 	) .
-aeq_success_builtin( 'aeq_functor_=/2',	_Sv_uns, ( Eq, Vars ), Call, Succ) :- 
+aeq_success_builtin( 'aeq_functor_=/2',	_Sv_uns, ( Eq, Vars ), _, Call, Succ):- 
 	aeq_parameter_passing_rem( Eq, Vars, Call, Init_aeqs),
 	aeq_solve( Init_aeqs, Succ ) .
-aeq_success_builtin( aeq_functor,	_Sv_uns, functor(T,F,A), Call, Succ) :- 
+aeq_success_builtin( aeq_functor,	_Sv_uns, functor(T,F,A), _, Call, Succ):- 
 	get_Eqs_aeqs( Call, Eqs_sf),
 	aeq_substitute( functor(T,F,A), Eqs_sf, functor(A_T,A_F,A_A) ),
 	( aeq_functor_succ(A_T, A_F, A_A, Call, Succ), !
 	; Succ = '$bottom'
 	) .
-aeq_success_builtin( aeq_top,	        Sv_uns, 	Sg, Call, Succ) :-
+aeq_success_builtin( aeq_top,	        Sv_uns, 	Sg, _, Call, Succ):-
 	aeq_unknown_call(Sg,Sv_uns,Call,Succ) .
 
 %------------------------------------------------------------------------------

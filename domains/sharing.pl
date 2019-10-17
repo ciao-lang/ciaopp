@@ -953,8 +953,8 @@ share_not_that_special_builtin('keysort/2').
 share_not_that_special_builtin('sort/2').
 
 %-------------------------------------------------------------------------
-% share_success_builtin(+,+,+,+,-)                                       |
-% share_success_builtin(Type,Sv_u,Condv,Call,Succ)                       |
+% share_success_builtin(+,+,+,+,+,-)                                     |
+% share_success_builtin(Type,Sv_u,Condv,HvFv_u,Call,Succ)                       |
 % Obtains the success for some particular builtins:                      |
 %  * If Type = ground, it updates Call making all vars in Sv_u ground    |
 %  * If Type = bottom, Succ = '$bottom'                                  |
@@ -964,32 +964,32 @@ share_not_that_special_builtin('sort/2').
 %    Succ is computed                                                    |
 %-------------------------------------------------------------------------
 
-:- export(share_success_builtin/5).
-share_success_builtin(ground,Sv_u,_,Call,Succ):-
+:- export(share_success_builtin/6).
+share_success_builtin(ground,Sv_u,_,_,Call,Succ):-
 	sort(Sv_u,Sv),
 	ord_split_lists_from_list(Sv,Call,_Intersect,Succ).
-share_success_builtin(bottom,_,_,_,'$bottom').
-share_success_builtin(unchanged,_,_,Call,Call).
-share_success_builtin(some,_,NewGround,Call,Succ):-
+share_success_builtin(bottom,_,_,_,_,'$bottom').
+share_success_builtin(unchanged,_,_,_,Call,Call).
+share_success_builtin(some,_,NewGround,_,Call,Succ):-
 	ord_split_lists_from_list(NewGround,Call,_Intersect,Succ).
 %
-share_success_builtin('=../2',_,p(X,Y),Call,Succ):-
+share_success_builtin('=../2',_,p(X,Y),_,Call,Succ):-
 	varset(X,Varsx),
 	projected_gvars(Call,Varsx,Vars),Vars == Varsx,!,
 	varset(Y,Varsy),
 	ord_split_lists_from_list(Varsy,Call,_Intersect,Succ).
-share_success_builtin('=../2',_,p(X,Y),Call,Succ):-
+share_success_builtin('=../2',_,p(X,Y),_,Call,Succ):-
 	nonvar(Y),
 	Y = [Z|W],
 	varset(W,Varsy),
 	projected_gvars(Call,Varsy,Vars),Vars == Varsy,!,
 	varset((X,Z),Varsx),
 	ord_split_lists_from_list(Varsx,Call,_Intersect,Succ).
-share_success_builtin('=../2',Sv_u,p(X,Y),Call,Succ):-
+share_success_builtin('=../2',Sv_u,p(X,Y),_,Call,Succ):-
 	var(X), var(Y),!,
 	sort(Sv_u,Sv),
 	share_extend([Sv],Sv,Call,Succ).
-share_success_builtin('=../2',Sv_u,p(X,Y),Call,Succ):-
+share_success_builtin('=../2',Sv_u,p(X,Y),_,Call,Succ):-
 %%	( var(Y) ; Y = [_|_] ), !,
 %%	( var(X) -> Term=[g|X] ; X=..Term ),
 	( var(Y) -> G=g ; Y = [G|_] ), !,
@@ -997,8 +997,8 @@ share_success_builtin('=../2',Sv_u,p(X,Y),Call,Succ):-
 	sort(Sv_u,Sv),
 	share_project(Sv,Call,Proj),
 	share_call_to_success_builtin('=/2','='(Term,Y),Sv,Call,Proj,Succ).
-share_success_builtin('=../2',_Sv_u,_,_Call,'$bottom').
-share_success_builtin('==/2',Sv_u,p(X,Y),Call,Succ):-
+share_success_builtin('=../2',_Sv_u,_,_,_Call,'$bottom').
+share_success_builtin('==/2',Sv_u,p(X,Y),_,Call,Succ):-
 	sh_peel(X,Y,Binds-[]),
 	sort(Sv_u,Sv),
 	projected_gvars(Call,Sv,Ground),
@@ -1007,7 +1007,7 @@ share_success_builtin('==/2',Sv_u,p(X,Y),Call,Succ):-
 	sort_list_of_lists(Sets,Sets1),
 	ord_split_lists_from_list(NewGround1,Call,_Intersect,Temp),
 	ord_subtract(Temp,Sets1,Succ).
-share_success_builtin(copy_term,_Sv_u,p(X,Y),Call,Succ):-
+share_success_builtin(copy_term,_Sv_u,p(X,Y),_,Call,Succ):-
 	varset(X,VarsX),
 	share_project(VarsX,Call,ProjectedX),
 	copy_term((X,ProjectedX),(NewX,NewProjectedX)),
@@ -1022,22 +1022,22 @@ share_success_builtin(copy_term,_Sv_u,p(X,Y),Call,Succ):-
                                 TempCall,TempProjected,Temp_success),
 	merge_list_of_lists(Call,VarsCall),
 	share_project(VarsCall,Temp_success,Succ).
-share_success_builtin(findall,_Sv_u,p(X,Z),Call,Succ):-
+share_success_builtin(findall,_Sv_u,p(X,Z),HvFv_u,Call,Succ):-
 	varset(X,Varsx),
 	projected_gvars(Call,Varsx,Vars),Vars == Varsx,!,
 	varset(Z,Varsz),
-	share_success_builtin(ground,Varsz,_any,Call,Succ).
-share_success_builtin(findall,_Sv_u,_,Call,Call).
-share_success_builtin('indep/2',_Sv,p(X,Y),Call,Succ):-
+	share_success_builtin(ground,Varsz,_any,HvFv_u,Call,Succ).
+share_success_builtin(findall,_Sv_u,_,_,Call,Call).
+share_success_builtin('indep/2',_Sv,p(X,Y),_,Call,Succ):-
 	varset(X,Xv),
 	varset(Y,Yv),
 	eliminate_couples(Call,Xv,Yv,Succ).
-share_success_builtin('indep/2',_Sv,_Condvars,_Call,'$bottom').
-share_success_builtin('indep/1',_Sv,p(X),Call,Succ):- 
+share_success_builtin('indep/2',_Sv,_Condvars,_,_Call,'$bottom').
+share_success_builtin('indep/1',_Sv,p(X),_,Call,Succ):- 
 	nonvar(X),
 	handle_each_indep(X,share,Call,Succ), !.
-share_success_builtin('indep/1',_,_,_,'$bottom').
-share_success_builtin('recorded/3',Sv_u,p(Y,Z),Call,Succ):-
+share_success_builtin('indep/1',_,_,_,_,'$bottom').
+share_success_builtin('recorded/3',Sv_u,p(Y,Z),_,Call,Succ):-
 	varset(Z,Varsz),
 	ord_split_lists_from_list(Varsz,Call,_,ASub),
 	varset(Y,Varsy),
@@ -1045,11 +1045,11 @@ share_success_builtin('recorded/3',Sv_u,p(Y,Z),Call,Succ):-
 	closure_under_union(ASub1,Prime),
 	sort(Sv_u,Sv),
 	share_extend(Prime,Sv,Call,Succ).
-share_success_builtin(var,_Sv,p(X),Call,Succ):-
+share_success_builtin(var,_Sv,p(X),_,Call,Succ):-
 	var(X),
 	ord_member_list_of_lists(X,Call),!,
 	Succ = Call.
-share_success_builtin(var,_Sv,_Condvars,_Call,'$bottom').
+share_success_builtin(var,_Sv,_Condvars,_,_Call,'$bottom').
 
 %-------------------------------------------------------------------------
 % share_call_to_success_builtin(+,+,+,+,+,-)                             %
