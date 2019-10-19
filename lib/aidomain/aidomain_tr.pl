@@ -39,7 +39,7 @@ emit_dom_op(AbsInt,H,B1,AbsIntB, C2) :-
 	atom_concat(AbsIntB, ImplN0, ImplN),
 	B =.. [ImplN|Bs],
 	B2 = B,
-	check_dom_op(Nh,AbsInt,As,B1), % (enable to check op)
+	%check_dom_op(Nh,AbsInt,As,B1), % (enable to check op)
 	H2 =.. [Nh,AbsInt|As],
         C2 = (H2 :- !, B2).
 
