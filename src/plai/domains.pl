@@ -335,22 +335,7 @@ identical_proj_1(AbsInt,Sg,Proj,Sg1,Proj1,Prime1,Prime2) :-
         #"@var{ASub} is the result of sorting abstract substitution
          @var{ASub_u}.".
 
-% TODO:[new-resources] compatibility with extend/5 (unbound Sg!)
-:- export(extend/5).
-:- pred extend(+AbsInt,+Prime,+Sv,+Call,-Succ) : atm(AbsInt) + not_fails
-        #"@var{Succ} is the extension the information given by @var{Prime}
-          (success abstract substitution over the goal variables @var{Sv}) to
-          the rest of the variables of the clause in which the goal occurs
-          (those over which abstract substitution @var{Call} is defined on).
-          I.e., it is like a conjunction of the information in @var{Prime} and
-          @var{Call}, except that they are defined over different sets of
-          variables, and that @var{Prime} is a successor substitution to
-          @var{Call} in the execution of the program.".
-extend(AbsInt,Prime,Sv,Call,Prime) :-
-	extend(AbsInt,_,Prime,Sv,Call,Prime).
-
-% TODO:[new-resources] version with Sg, really needed?
-:- export(extend/6). % TODO:[new-resources] (extra)
+:- export(extend/6). % TODO:[new-resources] can Sg be avoided?
 :- pred extend(+AbsInt,+Sg,+Prime,+Sv,+Call,-Succ) : atm(AbsInt) + not_fails
    #"@var{Succ} is the extension the information given by @var{Prime} (success
     abstract substitution over the goal variables @var{Sv}) to the rest of the
