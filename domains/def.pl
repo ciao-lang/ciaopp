@@ -7,7 +7,7 @@
 	  def_compute_lub/2,
 	  def_compute_lub_el/3,
 	  def_exit_to_prime/7,
-	  def_extend/3,     
+	  def_extend/5,
 	  def_glb/3,      
 	  def_input_user_interface/5,  
 	  def_input_interface/4,  
@@ -332,8 +332,8 @@ def_sort_list_of_lists([X|Xs],[Y|Ys]):-
 	def_sort_list_of_lists(Xs,Ys).
 
 %-------------------------------------------------------------------------
-% def_extend(+,+,-)                                                      %
-% def_extend(Prime,Call,Succ)                                            %
+% def_extend(+,+,+,+,-)                                                  %
+% def_extend(Sg,Prime,Sv,Call,Succ)                                      %
 % It extends the information given by the new abstract constraint on the %
 % subgoal Prime (first argument) to the original information about all   %
 % the clause variables which is contained in Call, obtaining Succ        %
@@ -342,8 +342,8 @@ def_sort_list_of_lists([X|Xs],[Y|Ys]):-
 %    abstract constraint Prime with Call                                 %
 %-------------------------------------------------------------------------
 
-def_extend('$bottom',_,'$bottom'):- !.
-def_extend(Prime,Call,Succ):-
+def_extend(_Sg,'$bottom',_Sv,_Call,'$bottom'):- !.
+def_extend(_Sg,Prime,_Sv,Call,Succ):-
 	def_conjunct_constr(Prime,Call,Succ).
 
 %-------------------------------------------------------------------------

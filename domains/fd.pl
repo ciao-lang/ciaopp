@@ -137,8 +137,8 @@ frdef_abs_sort((F,D),(F_s,D_s)):-
 %------------------------------------------------------------------------------
 
 frdef_extend(_Sg,'$bottom',_,_Call,'$bottom') :- !.
-frdef_extend(_Sg,(F_prime,D_prime),Sv,(F_call,D_call),Succ):-
-        def_extend(D_prime,D_call,D_succ),
+frdef_extend(Sg,(F_prime,D_prime),Sv,(F_call,D_call),Succ):-
+        def_extend(Sg,D_prime,Sv,D_call,D_succ),
         frdef_decide_continue_extend(D_succ,F_prime,F_call,Sv,F_succ),
         frdef_decide_bottom(F_succ,D_succ,Succ).
 

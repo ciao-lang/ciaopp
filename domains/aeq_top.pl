@@ -6,7 +6,7 @@
 	  aeq_call_to_success_fact/9,
 	  aeq_compute_lub/2,  
 	  aeq_exit_to_prime/7,
-	  aeq_extend/3,       
+	  aeq_extend/5,       
 	  aeq_identical_abstract/2, 
 	  aeq_input_user_interface/5, 
 	  aeq_input_interface/4,
@@ -212,11 +212,11 @@ aeq_abs_sort(aeqs(Eqs,Ann,Shr,AVars,NGrAVars),aeqs(Eqs_s,Ann,Shr,AVars,NGrAVars)
 
 %------------------------------------------------------------------------------
 
-%% :- mode aeq_extend(+,+,-) .
-aeq_extend('$bottom', _Call,'$bottom') :- !.
-aeq_extend( Prime, Call, Succ) :-
-	aeq_union( Prime, Call, AEqs_union),
-	aeq_solve( AEqs_union, Succ ) .
+%% :- mode aeq_extend(+,+,+,+,-) .
+aeq_extend(_Sg, '$bottom', _Sv, _Call, '$bottom') :- !.
+aeq_extend(_Sg, Prime, _Sv, Call, Succ) :-
+	aeq_union(Prime, Call, AEqs_union),
+	aeq_solve(AEqs_union, Succ).
 
 %------------------------------------------------------------------------------
 
@@ -585,10 +585,10 @@ aeq_asub_to_native_(ASub,OutputUser):-
 
 %% :- mode aeq_unknown_call(+,+,+,-).
 aeq_unknown_call(_Sg,_Vars_uns,'$bottom','$bottom') :- ! .
-aeq_unknown_call(_Sg,Vars_uns,Call,Succ) :-
-	sort( Vars_uns, Vars),
-	aeq_top( Vars, Top_aeqs ),
-	aeq_extend( Top_aeqs, Call, Succ ) .
+aeq_unknown_call(Sg,Vars_uns,Call,Succ) :-
+	sort(Vars_uns, Vars),
+	aeq_top(Vars, Top_aeqs),
+	aeq_extend(Sg, Top_aeqs, not_provided_Sv, Call, Succ).
 
 %------------------------------------------------------------------------------
 

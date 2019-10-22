@@ -36,7 +36,7 @@
 	def_call_to_success_fact/9,
 	def_compute_lub_el/3,
 	def_exit_to_prime/7,
-	def_extend/3,
+	def_extend/5,
 	def_glb/3,
 	def_project/5,
 	def_abs_sort/2,
@@ -98,7 +98,7 @@ share_clique_def_exit_to_prime(_,_,_,_,_,_,'$bottom').
 :- export(share_clique_def_extend/4).
 share_clique_def_extend('$bottom',_Hv,_Call,'$bottom').
 share_clique_def_extend((SH_Prime,Def_Prime),Sv,(SH_Call,Def_Call),Succ):-
-	def_extend(Def_Prime,Def_Call,Def_Succ),
+	def_extend(not_provided_Sg,Def_Prime,Sv,Def_Call,Def_Succ),
 	share_clique_def_compose((SH_Prime,Def_Succ),NewSH_Prime),
 	share_clique_def_compose((SH_Call,Def_Succ),NewSH_Call),
         share_clique_extend(NewSH_Prime,Sv,NewSH_Call,(Cl_Succ,Sh_Succ)),

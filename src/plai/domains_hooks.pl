@@ -227,7 +227,7 @@
 :- dom_op(def, project/5).
 :- dom_op(def, compute_lub/2).
 :- dom_op(def, abs_sort/2).
-:- dom_op(def, extend(_Sg,Prime,_Sv,Call,Succ), extend(Prime,Call,Succ)).
+:- dom_op(def, extend/5).
 :- dom_op(def, less_or_equal/2).
 :- dom_op(def, glb/3).
 :- dom_op(def, call_to_success_fact/9).
@@ -678,7 +678,7 @@
 :- dom_op(aeq, compute_lub/2).
 :- dom_op(aeq, identical_abstract/2).
 :- dom_op(aeq, abs_sort/2).
-:- dom_op(aeq, extend(_Sg,Prime,_Sv,Call,Succ), extend(Prime,Call,Succ)).
+:- dom_op(aeq, extend/5).
 :- dom_op(aeq, less_or_equal/2).
 :- dom_op(aeq, glb/3).
 :- dom_op(aeq, eliminate_equivalent/2).

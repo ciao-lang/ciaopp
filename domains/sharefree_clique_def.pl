@@ -96,7 +96,7 @@ sharefree_clique_def_exit_to_prime(Sg,Hv,Head,Sv,Exit,(BothEntry,ExtraInfo),Prim
 :- export(sharefree_clique_def_extend/4).
 sharefree_clique_def_extend('$bottom',_Hv,_Call,'$bottom').
 sharefree_clique_def_extend((SHF_Prime,Def_Prime),Sv,(SHF_Call,Def_Call),Succ):-
-	def_extend(Def_Prime,Def_Call,Def_succ),
+	def_extend(not_provided_Sg,Def_Prime,Sv,Def_Call,Def_succ),
 	sharefree_clique_def_compose(SHF_Prime,Def_succ,NewSHF_Prime),
 	sharefree_clique_def_compose(SHF_Call,Def_succ,NewSHF_Call),
         sharefree_clique_extend(NewSHF_Prime,Sv,NewSHF_Call,(SH_Succ,Fr_Succ)),
