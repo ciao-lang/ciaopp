@@ -1,7 +1,7 @@
 :- module(gr,[
 	gr_call_to_entry/9,
 	gr_exit_to_prime/7,
-	gr_project/3,
+	gr_project/5,
 	gr_extend/4,
 	gr_compute_lub/2,
 	gr_glb/3,
@@ -193,17 +193,17 @@ gr_abs_sort(Asub,Asub_s):-
 %                      ABSTRACT PROJECTION
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% gr_project(+,+,-)                                                      %
-% gr_project(ASub,Vars,Proj)                                             %
+% gr_project(+,+,+,+,-)                                                  %
+% gr_project(Sg,Vars,HvFv_u,ASub,Proj)                                   %
 % Proj is the result of                                                  %
 % eliminating from ASub all X/Value such that X not in Vars              %
 %------------------------------------------------------------------------%
-:- pred gr_project(+Asub,+Vars,-Proj): absu * list * absu # 
+:- pred gr_project(+Sg,+Vars,+HvFv_u,+Asub,-Proj): term * list * list * absu * absu # 
 "@var{Proj} is the result of eliminating from @var{Asub} all @var{X}/@var{Value} such that @var{X} is  not in  @var{Vars}".
 
-gr_project('$bottom',_,Proj):- !,
+gr_project(_Sg,_Vars,_HvFv_u,'$bottom',Proj):- !,
 	Proj = '$bottom'.
-gr_project(ASub,Vars,Proj) :- 
+gr_project(_Sg,Vars,_HvFv_u,ASub,Proj) :- 
 	project_aux(Vars,ASub,Proj).
 
 %------------------------------------------------------------------------%
@@ -298,8 +298,8 @@ gr_call_to_entry(Sv,Sg,Hv,Head,_K,Fv,Proj,Entry,ExtraInfo):-
 	abs_gunify(Temp1,Binds,Temp2,NewBinds),
 	gr_change_values_insert(Fv,Temp2,Temp3,any),
 	merge(Hv,Fv,HvFv),
-	gr_project(Temp3,HvFv,Entry),
-	gr_project(Temp3,Sv,NewProj),
+	gr_project(Sg,HvFv,not_provided_HvFv_u,Temp3,Entry),
+	gr_project(Sg,Sv,not_provided_HvFv_u,Temp3,NewProj),
 	ExtraInfo= (NewProj,NewBinds),!.
 % (*) See why it is not ng in comment below the lattice sketch
 
@@ -345,18 +345,18 @@ renaming Exit                                            %
 gr_exit_to_prime(_Sg,_Hv,_Head,_Sv,'$bottom',_Flag,Prime) :- !,
 	Prime = '$bottom'.
 gr_exit_to_prime(Sg,Hv,Head,_Sv,Exit,yes,Prime):- !,
-	gr_project(Exit,Hv,BPrime),
+	gr_project(Sg,Hv,not_provided_HvFv_u,Exit,BPrime),
 	copy_term((Head,BPrime),(NewTerm,NewPrime)),
 	Sg = NewTerm,
 	gr_abs_sort(NewPrime,Prime).	
 gr_exit_to_prime(_Sg,[],_Head,Sv,_Exit,_ExtraInfo,Prime):- !,
 	gr_create_values(Sv,Prime,g).
-gr_exit_to_prime(_Sg,Hv,_Head,Sv,Exit,ExtraInfo,Prime):-
+gr_exit_to_prime(Sg,Hv,_Head,Sv,Exit,ExtraInfo,Prime):-
 	ExtraInfo = (Proj,Binds),
- 	gr_project(Exit,Hv,BPrime),
+ 	gr_project(Sg,Hv,not_provided_HvFv_u,Exit,BPrime),
  	merge(Proj,BPrime,TempPrime),
 	abs_gunify(TempPrime,Binds,NewTempPrime,_),
-	gr_project(NewTempPrime,Sv,Prime),!.
+	gr_project(Sg,Sv,not_provided_HvFv_u,NewTempPrime,Prime),!.
 
 %-------------------------------------------------------------------------
 %-------------------------------------------------------------------------
@@ -469,7 +469,7 @@ gr_call_to_success_fact(Sg,Hv,Head,_K,Sv,Call,Proj,Prime,Succ):-
 	gr_simplify_equations(Sg,Head,Binds),!,
 	gr_change_values_insert(Hv,Proj,Temp1,any),
 	abs_gunify(Temp1,Binds,Temp2,_NewBinds),
-	gr_project(Temp2,Sv,Prime),
+	gr_project(Sg,Sv,not_provided_HvFv_u,Temp2,Prime),
 	gr_extend(Prime,Sv,Call,Succ).
 gr_call_to_success_fact(_Sg,_Hv,_Head,_K,_Sv,_Call,_Proj,'$bottom','$bottom').
 
@@ -765,7 +765,7 @@ gr_success_builtin(old_new_ground,_,(OldG_u,NewG_u),_,Call,Succ):-
 	gr_change_values_insert(NewG,TempSucc,Succ,g).
 gr_success_builtin(old_new_ground,_,_,_,_,'$bottom').
 %
-gr_success_builtin(arg,_,p(X,Y,Z),_,Call,Succ):-
+gr_success_builtin(arg,_,Sg,_,Call,Succ):- Sg=p(X,Y,Z),
 	varset(X,OldG),
 	gr_values_notequal(OldG,Call,ng),!,  
 	gr_change_values_insert(OldG,Call,NCall,g),
@@ -773,7 +773,7 @@ gr_success_builtin(arg,_,p(X,Y,Z),_,Call,Succ):-
 	Head = p(f(A,_B),A),
 	varset(Sg,Sv),
 	varset(Head,Hv),
-	gr_project(NCall,Sv,Proj),
+	gr_project(Sg,Sv,not_provided_HvFv_u,NCall,Proj),
 	gr_call_to_success_fact(Sg,Hv,Head,not_provided,Sv,NCall,Proj,_,Succ). % TODO: add some ClauseKey?
 gr_success_builtin(arg,_,_,_,_,'$bottom').
 %
@@ -781,7 +781,7 @@ gr_success_builtin(exp,_,Sg,_,Call,Succ):-
 	Head = p(A,f(A,_B)),
 	varset(Sg,Sv),
 	varset(Head,Hv),
-	gr_project(Call,Sv,Proj),
+	gr_project(Sg,Sv,not_provided_HvFv_u,Call,Proj),
 	gr_call_to_success_fact(Sg,Hv,Head,not_provided,Sv,Call,Proj,_,Succ). % TODO: add some ClauseKey?
 gr_success_builtin(exp,_,_,_,_,'$bottom').
 %
@@ -801,22 +801,22 @@ gr_success_builtin(recorded,_,p(_Y,Z),_,Call,Succ):-
         varset(Z,NewGr),
 	gr_change_values_insert(NewGr,Call,Succ,g).
 %
-gr_success_builtin(copy_term,_,p(X,Y),_,Call,Succ):-
+gr_success_builtin(copy_term,_,Sg,_,Call,Succ):- Sg=p(X,Y),
 	varset(X,VarsX),
-	gr_project(Call,VarsX,ProjectedX),
+	gr_project(Sg,VarsX,not_provided_HvFv_u,Call,ProjectedX),
 	copy_term((X,ProjectedX),(NewX,NewProjectedX)),
 	gr_abs_sort(NewProjectedX,ProjectedNewX),
 	varset(NewX,VarsNewX),
 	varset(Y,VarsY),
 	merge(VarsNewX,VarsY,TempSv),
-	gr_project(Call,VarsY,ProjectedY),
+	gr_project(Sg,VarsY,not_provided_HvFv_u,Call,ProjectedY),
 	merge(ProjectedY,ProjectedNewX,TempAbs),
 	merge(ProjectedNewX,Call,TempCall),
 	gr_call_to_success_builtin('=/2','='(NewX,Y),TempSv,
                     TempCall,TempAbs,Temp_success),
 
 	collect_vars_gr(Call,VarsCall),
-	gr_project(Temp_success,VarsCall,Succ).
+	gr_project(Sg,VarsCall,not_provided_HvFv_u,Temp_success,Succ).
 %
 gr_success_builtin('current_key/2',_,p(X),_,Call,Succ):-
 	varset(X,NewG),
@@ -870,7 +870,7 @@ gr_success_builtin(Key,_,_,_,Succ,Succ):-
 % gr_call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,Succ)                 %
 % Handles those builtins for which computing Proj is easier than Succ    %
 %-------------------------------------------------------------------------
-:- pred gr_call_to_success_builtin(+SgKey,+Sh,+Sv,+Call,+Proj,-Succ): predname * callable * list * absu * absu * absu # 
+:- pred gr_call_to_success_builtin(+SgKey,+Sg,+Sv,+Call,+Proj,-Succ): predname * callable * list * absu * absu * absu # 
 "Handles those builtins for which computing @var{Proj} is easier than @var{Succ}".
 
 gr_comp([],Proj,Proj).
@@ -887,9 +887,9 @@ gr_comp([(X,_,Tv)|Binds],Proj,Exit):-
 	),
 	gr_comp(Binds,Proj1,Exit).
 
-gr_call_to_success_builtin('==/2','=='(X,Y),Sv,Call,Proj,Succ):-
+gr_call_to_success_builtin('==/2',Sg,Sv,Call,Proj,Succ):- Sg='=='(X,Y),
 	gr_simplify_equations(X,Y,Binds),
-	gr_project(Call,Sv,Proj),
+	gr_project(Sg,Sv,not_provided_HvFv_u,Call,Proj),
 	gr_comp(Binds,Proj,Exit),!,
 	gr_extend(Exit,Sv,Call,Succ).
 gr_call_to_success_builtin('==/2',_,_,_call,_,'$bottom').

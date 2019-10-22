@@ -2,7 +2,7 @@
 	[ shfret_init_abstract_domain/1,
 	  shfret_call_to_entry/9,
 	  shfret_exit_to_prime/7,
-	  shfret_project/3,
+	  shfret_project/5,
 	  shfret_extend/4,
 	  shfret_widen/3,
 	  shfret_widencall/3,
@@ -73,13 +73,13 @@ shfret_exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime):-
 	).
 
 %------------------------------------------------------------------------%
-% shfret_project(+,+,-)                                                      %
-% shfret_project(ASub,Vars,Proj)                                             %
+% shfret_project(+,+,+,+,-)                                              %
+% shfret_project(Sg,Vars,HvFv_u,ASub,Proj)                               %
 %------------------------------------------------------------------------%
-shfret_project('$bottom',_Vars,'$bottom'):- !.
-shfret_project(ASub,Vars,Proj):-
+shfret_project(_Sg,_Vars,_HvFv_u,'$bottom','$bottom'):- !.
+shfret_project(Sg,Vars,HvFv_u,ASub,Proj):-
 	asub(ASub,ATypes,AModes),
-	shfr_project(AModes,Vars,PModes),
+	shfr_project(Sg,Vars,HvFv_u,AModes,PModes),
 	eterms_project(Vars,ATypes,PTypes),
 	asub(Proj,PTypes,PModes).
 

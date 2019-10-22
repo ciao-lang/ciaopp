@@ -30,7 +30,7 @@
 	shfr_input_interface/4,
 	shfr_input_user_interface/5,
 	shfr_less_or_equal/2,
-	shfr_project/3,
+	shfr_project/5,
 	shfr_abs_sort/2,
 	shfr_unknown_call/4,
 	shfr_unknown_entry/3,
@@ -88,7 +88,7 @@ shfrlin_amgu_call_to_entry(_Sv,Sg,Hv,Head,_K,Fv,Project,Entry,ExtraInfo):-
      shfrlin_amgu_augment_asub(Project,Hv,ASub),     
      shfrlin_amgu_iterate(Equations,ASub,ASub0),
      shfrlin_amgu_update_fr_lin(ASub0,Hv,ASub1),
-     shfrlin_amgu_project(ASub1,Hv,Entry0),
+     shfrlin_amgu_project(Sg,Hv,not_provided_HvFv_u,ASub1,Entry0),
      shfrlin_amgu_augment_asub(Entry0,Fv,Entry),
      ExtraInfo = (Equations,F2),!.
 shfrlin_amgu_call_to_entry(_Sv,_Sg,_Hv,_Head,_K,_Fv,_Proj,'$bottom',_).
@@ -102,7 +102,7 @@ shfrlin_amgu_call_to_entry(_Sv,_Sg,_Hv,_Head,_K,_Fv,_Proj,'$bottom',_).
 :- export(shfrlin_amgu_exit_to_prime/7).
 shfrlin_amgu_exit_to_prime(_,_,_,_,'$bottom',_,'$bottom'):-!.
 shfrlin_amgu_exit_to_prime(Sg,Hv,Head,_Sv,Exit,yes,Prime):- !,
-     shfrlin_amgu_project(Exit,Hv,(BPrime_sh,BPrime_fr,BPrime_lin)),
+     shfrlin_amgu_project(Sg,Hv,not_provided_HvFv_u,Exit,(BPrime_sh,BPrime_fr,BPrime_lin)),
      copy_term((Head,(BPrime_sh,BPrime_fr,BPrime_lin)),(NewTerm,NewPrime)),
      Sg = NewTerm,
      shfrlin_amgu_abs_sort(NewPrime,Prime).	
@@ -110,13 +110,13 @@ shfrlin_amgu_exit_to_prime(_Sg,[],_Head,Sv,_Exit,_ExtraInfo,Prime):- !,
      list_ground(Sv,Prime_fr),
      member_value_freeness(Prime_fr,Prime_lin,f),
      Prime = ([],Prime_fr,Prime_lin).
-shfrlin_amgu_exit_to_prime(_Sg,_Hv,_Head,Sv,Exit,ExtraInfo,Prime):-
+shfrlin_amgu_exit_to_prime(Sg,_Hv,_Head,Sv,Exit,ExtraInfo,Prime):-
      ExtraInfo = (Equations,Freeness_Call),	
      filter_freeness_with_call(Sv,Freeness_Call,New_Sv),
      shfrlin_amgu_augment_asub(Exit,New_Sv,ASub),     
      shfrlin_amgu_iterate(Equations,ASub,ASub0),
      shfrlin_amgu_update_fr_lin(ASub0,Sv,ASub1),
-     shfrlin_amgu_project(ASub1,Sv,Prime).
+     shfrlin_amgu_project(Sg,Sv,not_provided_HvFv_u,ASub1,Prime).
 %------------------------------------------------------------------------%
 %                      ABSTRACT Extend                                   |
 %------------------------------------------------------------------------%
@@ -170,12 +170,12 @@ shfrlin_amgu_augment_asub((Sh,F,L),Vars,(NewSh,NewF,NewL)):-
 %                      ABSTRACT Project                                  |
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% shfrlin_amgu_project(+,+,-)                                                 |
+% shfrlin_amgu_project(+,+,+,+,-)                                        |
 %------------------------------------------------------------------------%
-:- export(shfrlin_amgu_project/3).
-shfrlin_amgu_project('$bottom',_,'$bottom').
-shfrlin_amgu_project((Sh,F,L),Vars,(Sh_proj,F_proj,L_proj)):-
-	shfr_project((Sh,F),Vars,(Sh_proj,F_proj)),
+:- export(shfrlin_amgu_project/5).
+shfrlin_amgu_project(_Sg,_Vars,_HvFv_u,'$bottom','$bottom') :- !.
+shfrlin_amgu_project(Sg,Vars,HvFv_u,(Sh,F,L),(Sh_proj,F_proj,L_proj)):-
+	shfr_project(Sg,Vars,HvFv_u,(Sh,F),(Sh_proj,F_proj)),
 	ord_intersection(L,Vars,L_proj).
 
 %------------------------------------------------------------------------%
@@ -223,7 +223,7 @@ shfrlin_amgu_call_to_success_fact(Sg,Hv,Head,_K,Sv,Call,_Proj,Prime,Succ) :-
 	ASub = (_,Vars,_),        
 	unmap_freeness_list(Vars,Vars0),
 	shfrlin_amgu_update_fr_lin(ASub0,Vars0,ASub1),
-	shfrlin_amgu_project(ASub1,Sv,Prime),
+	shfrlin_amgu_project(Sg,Sv,not_provided_HvFv_u,ASub1,Prime),
 % extend    --------------------------------------------------------------
 	shfrlin_amgu_delete_variables(Hv,ASub1,Succ),!.
 shfrlin_amgu_call_to_success_fact(_Sg,_Hv,_Head,_K,_Sv,_Call,_Proj, '$bottom','$bottom').
@@ -282,25 +282,25 @@ shfrlin_amgu_special_builtin(SgKey,Sg,Subgoal,Type,Condvars):-
 % 	varset(Sg,Sv),
 % 	varset(Head,Hv),
 % 	TempASub = (Temp_sh,Temp_fr),
-% 	shfr_project(TempASub,Sv,Proj),
+% 	shfr_project(not_provided_Sg,Sv,not_provided_HvFv_u,TempASub,Proj),
 %  	shfrlin_amgu_call_to_success_fact(Sg,Hv,Head,not_provided,Sv,TempASub,Proj,_,Succ). % TODO: add some ClauseKey?
 % shfrlin_amgu_success_builtin(arg,_,_,_,'$bottom').
 shfrlin_amgu_success_builtin(exp,_,Sg,_,Call,Succ):- !,
 	Head = p(A,f(A,_B)),
 	varset(Sg,Sv),
 	varset(Head,Hv),
-	shfrlin_amgu_project(Call,Sv,Proj),
+	shfrlin_amgu_project(Sg,Sv,not_provided_HvFv_u,Call,Proj),
 	shfrlin_amgu_call_to_success_fact(Sg,Hv,Head,not_provided,Sv,Call,Proj,_,Succ). % TODO: add some ClauseKey?
 shfrlin_amgu_success_builtin(exp,_,_,_,_,'$bottom'):- !.
 % shfrlin_amgu_success_builtin(copy_term,_,p(X,Y),_,Call,Succ):-
 % 	varset(X,VarsX),
-% 	shfr_project(Call,VarsX,ProjectedX),
+% 	shfr_project(not_provided_Sg,VarsX,not_provided_HvFv_u,Call,ProjectedX),
 % 	copy_term((X,ProjectedX),(NewX,NewProjectedX)),
 % 	shfr_abs_sort(NewProjectedX,ProjectedNewX),
 % 	varset(NewX,VarsNewX),
 % 	varset(Y,VarsY),
 % 	merge(VarsNewX,VarsY,TempSv),
-% 	shfr_project(Call,VarsY,ProjectedY),
+% 	shfr_project(not_provided_Sg,VarsY,not_provided_HvFv_u,Call,ProjectedY),
 % 	ProjectedY = (ShY,FrY),
 % 	ProjectedNewX = (ShNewX,FrNewX),
 % 	merge(ShY,ShNewX,TempSh),
@@ -311,7 +311,7 @@ shfrlin_amgu_success_builtin(exp,_,_,_,_,'$bottom'):- !.
 % 	shfrlin_amgu_call_to_success_builtin('=/2','='(NewX,Y),TempSv,
 %                     (TempCallSh,TempCallFr),(TempSh,TempFr),Temp_success),
 % 	collect_vars_freeness(FrCall,VarsCall),
-% 	shfr_project(Temp_success,VarsCall,Succ).
+% 	shfr_project(not_provided_Sg,VarsCall,not_provided_HvFv_u,Temp_success,Succ).
 shfrlin_amgu_success_builtin(Type,Sv_u,Condv,HvFv_u,Call,Succ):-
 	Call = (Sh,Fr,Lin),
 	ord_subtract(Lin,Sv_u,Lin_not_rel),	

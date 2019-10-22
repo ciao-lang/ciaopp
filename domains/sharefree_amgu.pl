@@ -46,7 +46,7 @@
 :- use_module(domain(sharefree), [
 	shfr_call_to_success_builtin/6,
 	shfr_extend/4,
-	shfr_project/3,
+	shfr_project/5,
 	shfr_abs_sort/2,
 	shfr_special_builtin/5,
 	shfr_success_builtin/6]).
@@ -79,7 +79,7 @@ sharefree_amgu_call_to_entry(_Sv,Sg,Hv,Head,_K,Fv,Project,Entry,ExtraInfo):-
      sharefree_amgu_augment_asub(Project,Hv,ASub),     
      sharefree_amgu_iterate(Equations,ASub,(Sh,F)),
      shfr_update_freeness(Sh,F,Hv,F1),
-     shfr_project((Sh,F1),Hv,Entry0),
+     shfr_project(Sg,Hv,not_provided_HvFv_u,(Sh,F1),Entry0),
      sharefree_amgu_augment_asub(Entry0,Fv,Entry),
      ExtraInfo = (Equations,F2),!.
 sharefree_amgu_call_to_entry(_Sv,_Sg,_Hv,_Head,_K,_Fv,_Proj,'$bottom',_).
@@ -93,20 +93,20 @@ sharefree_amgu_call_to_entry(_Sv,_Sg,_Hv,_Head,_K,_Fv,_Proj,'$bottom',_).
 :- export(sharefree_amgu_exit_to_prime/7).
 sharefree_amgu_exit_to_prime(_,_,_,_,'$bottom',_,'$bottom'):-!.
 sharefree_amgu_exit_to_prime(Sg,Hv,Head,_Sv,Exit,yes,Prime):- !,
-     shfr_project(Exit,Hv,(BPrime_sh,BPrime_fr)),
+     shfr_project(Sg,Hv,not_provided_HvFv_u,Exit,(BPrime_sh,BPrime_fr)),
      copy_term((Head,(BPrime_sh,BPrime_fr)),(NewTerm,NewPrime)),
      Sg = NewTerm,
      shfr_abs_sort(NewPrime,Prime).	
 sharefree_amgu_exit_to_prime(_Sg,[],_Head,Sv,_Exit,_ExtraInfo,Prime):- !,
      list_ground(Sv,Prime_fr),
      Prime = ([],Prime_fr).
-sharefree_amgu_exit_to_prime(_Sg,_Hv,_Head,Sv,Exit,ExtraInfo,Prime):-
+sharefree_amgu_exit_to_prime(Sg,_Hv,_Head,Sv,Exit,ExtraInfo,Prime):-
      ExtraInfo = (Equations,Freeness_Call),	
      filter_freeness_with_call(Sv,Freeness_Call,New_Sv),
      sharefree_amgu_augment_asub(Exit,New_Sv,ASub),     
      sharefree_amgu_iterate(Equations,ASub,(Sh,F)),
      shfr_update_freeness(Sh,F,Sv,F1),
-     shfr_project((Sh,F1),Sv,Prime).
+     shfr_project(Sg,Sv,not_provided_HvFv_u,(Sh,F1),Prime).
 
 %------------------------------------------------------------------------%
 %                            ABSTRACT AMGU                               %
@@ -161,7 +161,7 @@ sharefree_amgu_call_to_success_fact(Sg,Hv,Head,_K,Sv,Call,_Proj,Prime,Succ) :-
 	unmap_freeness_list(Vars,Vars0),
 	shfr_update_freeness(Sh,F,Vars0,F1),
 	ASub1= (Sh,F1),
-	shfr_project(ASub1,Sv,Prime),
+	shfr_project(Sg,Sv,not_provided_HvFv_u,ASub1,Prime),
 % extend   ---------------------------------------------------------------
 	sharefree_delete_variables(Hv,ASub1,Succ),!.
 sharefree_amgu_call_to_success_fact(_Sg,_Hv,_Head,_K,_Sv,_Call,_Proj, '$bottom','$bottom').
@@ -214,7 +214,7 @@ sharefree_amgu_special_builtin(SgKey,Sg,Subgoal,Type,Condvars):-
 %------------------------------------------------------------------------%
 
 :- export(sharefree_amgu_success_builtin/6).
-sharefree_amgu_success_builtin(arg,_,p(X,Y,Z),_,Call,Succ):-
+sharefree_amgu_success_builtin(arg,_,Sg,_,Call,Succ):- Sg=p(X,Y,Z),
 	Call = (Call_sh,Call_fr),
 	varset(X,OldG),
 	update_lambda_non_free(OldG,Call_fr,Call_sh,Temp_fr,Temp_sh),
@@ -226,28 +226,28 @@ sharefree_amgu_success_builtin(arg,_,p(X,Y,Z),_,Call,Succ):-
 	varset(Sg,Sv),
 	varset(Head,Hv),
 	TempASub = (Temp_sh,Temp_fr),
-	shfr_project(TempASub,Sv,Proj),
+	shfr_project(Sg,Sv,not_provided_HvFv_u,TempASub,Proj),
  	sharefree_amgu_call_to_success_fact(Sg,Hv,Head,not_provided,Sv,TempASub,Proj,_,Succ). % TODO: add some ClauseKey?
 sharefree_amgu_success_builtin(arg,_,_,_,_,'$bottom') :- !.
 sharefree_amgu_success_builtin(exp,_,Sg,_,Call,Succ):-
 	Head = p(A,f(A,_B)),
 	varset(Sg,Sv),
 	varset(Head,Hv),
-	shfr_project(Call,Sv,Proj),
+	shfr_project(Sg,Sv,not_provided_HvFv_u,Call,Proj),
 	sharefree_amgu_call_to_success_fact(Sg,Hv,Head,not_provided,Sv,Call,Proj,_,Succ), % TODO: add some ClauseKey?
 	!. % TODO: move cut somewhere else? (JF)
 sharefree_amgu_success_builtin(exp,_,_,_,_,'$bottom') :- !.
 % there is a new case (general case) in '../2' that should be implemented 
 % in this module because it calls call_to_success_builtin 
-sharefree_amgu_success_builtin(copy_term,_,p(X,Y),_,Call,Succ):-
+sharefree_amgu_success_builtin(copy_term,_,Sg,_,Call,Succ):- Sg=p(X,Y),
 	varset(X,VarsX),
-	shfr_project(Call,VarsX,ProjectedX),
+	shfr_project(Sg,VarsX,not_provided_HvFv_u,Call,ProjectedX),
 	copy_term((X,ProjectedX),(NewX,NewProjectedX)),
 	shfr_abs_sort(NewProjectedX,ProjectedNewX),
 	varset(NewX,VarsNewX),
 	varset(Y,VarsY),
 	merge(VarsNewX,VarsY,TempSv),
-	shfr_project(Call,VarsY,ProjectedY),
+	shfr_project(Sg,VarsY,not_provided_HvFv_u,Call,ProjectedY),
 	ProjectedY = (ShY,FrY),
 	ProjectedNewX = (ShNewX,FrNewX),
 	merge(ShY,ShNewX,TempSh),
@@ -258,7 +258,7 @@ sharefree_amgu_success_builtin(copy_term,_,p(X,Y),_,Call,Succ):-
 	sharefree_amgu_call_to_success_builtin('=/2','='(NewX,Y),TempSv,
                     (TempCallSh,TempCallFr),(TempSh,TempFr),Temp_success),
 	collect_vars_freeness(FrCall,VarsCall),
-	shfr_project(Temp_success,VarsCall,Succ),
+	shfr_project(Sg,VarsCall,not_provided_HvFv_u,Temp_success,Succ),
 	!. % TODO: move cut somewhere else? (JF)
 sharefree_amgu_success_builtin(Type,Sv_u,Condv,HvFv_u,Call,Succ):-
 	shfr_success_builtin(Type,Sv_u,Condv,HvFv_u,Call,Succ).

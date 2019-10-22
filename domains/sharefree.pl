@@ -104,16 +104,16 @@
 %                      ABSTRACT PROJECTION
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% shfr_project(+,+,-)                                                    %
-% shfr_project(ASub,Vars,Proj)                                           %
+% shfr_project(+,+,+,+,-)                                                %
+% shfr_project(Sg,Vars,HvFv_u,ASub,Proj)                                 %
 % Proj_sh is obtained as in the sharing domain. Proj_fr is the result of %
 % eliminating from Fr all X/Value such that X not int Vars               %
 %------------------------------------------------------------------------%
 
-:- export(shfr_project/3).     
-shfr_project('$bottom',_,Proj):- 
+:- export(shfr_project/5).
+shfr_project(_Sg,_Vars,_HvFv_u,'$bottom',Proj) :- !,
 	Proj = '$bottom'.
-shfr_project((Sh,Fr),Vars,Proj) :- 
+shfr_project(_Sg,Vars,_HvFv_u,(Sh,Fr),Proj) :- 
 	project_share(Vars,Sh,Proj_sh),
 	project_freeness(Vars,Fr,Proj_fr),
 	Proj = (Proj_sh,Proj_fr).
@@ -237,7 +237,7 @@ shfr_call_to_entry(_Sv,Sg,Hv,Head,_K,Fv,(Proj_sh,Proj_fr),Entry,ExtraInfo):-
 shfr_exit_to_prime(_Sg,_Hv,_Head,_Sv,'$bottom',_Flag,Prime) :- !,
 	Prime = '$bottom'.
 shfr_exit_to_prime(Sg,Hv,Head,_Sv,Exit,yes,Prime):- !,
-	shfr_project(Exit,Hv,(BPrime_sh,BPrime_fr)),
+	shfr_project(Sg,Hv,not_provided_HvFv_u,Exit,(BPrime_sh,BPrime_fr)),
 	copy_term((Head,(BPrime_sh,BPrime_fr)),(NewTerm,NewPrime)),
 	Sg = NewTerm,
 	shfr_abs_sort(NewPrime,Prime).	
@@ -246,7 +246,7 @@ shfr_exit_to_prime(_Sg,[],_Head,Sv,_Exit,_ExtraInfo,Prime):- !,
 	Prime = ([],Prime_fr).
 shfr_exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime):-
 	ExtraInfo = ((Lda_sh,Lda_fr),Binds),
- 	shfr_project(Exit,Hv,(BPrime_sh,BPrime_fr)),
+ 	shfr_project(Sg,Hv,not_provided_HvFv_u,Exit,(BPrime_sh,BPrime_fr)),
  	merge(Lda_fr,BPrime_fr,TempFr),
  	abs_unify_exit(TempFr,Binds,NewTempFr,NewBinds),
 	member_value_freeness(NewTempFr,Gv,g),
@@ -950,9 +950,9 @@ shfr_success_builtin(old_new_ground,_,(OldG,NewG),_,Call,Succ):-
 	update_lambda_sf(NewG,Temp_fr,Temp_sh,Succ_fr,Succ_sh),
 	Succ = (Succ_sh,Succ_fr).
 shfr_success_builtin(old_new_ground,_,_,_,_,'$bottom').
-shfr_success_builtin(all_nonfree,Sv_u,_,_,Call,Succ):- !,
+shfr_success_builtin(all_nonfree,Sv_u,Sg,_,Call,Succ):- !,
 	sort(Sv_u,Sv),
-	shfr_project(Call,Sv,(Proj_sh,Proj_fr)),
+	shfr_project(Sg,Sv,not_provided_HvFv_u,Call,(Proj_sh,Proj_fr)),
 	closure_under_union(Proj_sh,Prime_sh),
 	change_values_if_f(Sv,Proj_fr,Prime_fr,nf),
 	shfr_extend((Prime_sh,Prime_fr),Sv,Call,Succ).
@@ -984,7 +984,7 @@ shfr_success_builtin(exp,_,Sg,_,Call,Succ):-
 	Head = p(A,f(A,_B)),
 	varset(Sg,Sv),
 	varset(Head,Hv),
-	shfr_project(Call,Sv,Proj),
+	shfr_project(Sg,Sv,not_provided_HvFv_u,Call,Proj),
 	shfr_call_to_success_fact(Sg,Hv,Head,not_provided,Sv,Call,Proj,_,Succ). % TODO: add some ClauseKey?
 shfr_success_builtin(exp,_,_,_,_,'$bottom').
 shfr_success_builtin('=../2',_,p(X,Y),_,(Call_sh,Call_fr),Succ):-
@@ -1030,12 +1030,12 @@ shfr_success_builtin('=../2',Sv_uns,p(X,Y),_,Call,Succ):-
 	  product(ValueX,X,VarsY,Sv,Proj_sh,Proj_fr,Prime_sh,Prime_fr),
 	  shfr_extend((Prime_sh,Prime_fr),Sv,Call,Succ)
         ).
-shfr_success_builtin('=../2',Sv_uns,p(X,Y),_,Call,Succ):-
+shfr_success_builtin('=../2',Sv_uns,Sg,_,Call,Succ):- Sg=p(X,Y),
 	X =.. T,
 	sort(Sv_uns,Sv),
-	shfr_project(Call,Sv,Proj),
+	shfr_project(Sg,Sv,not_provided_HvFv_u,Call,Proj),
 	shfr_call_to_success_builtin('=/2','='(T,Y),Sv,Call,Proj,Succ).
-shfr_success_builtin(read2,Sv_u,p(X,Y),_,Call,Succ):- 
+shfr_success_builtin(read2,Sv_u,Sg,_,Call,Succ):- Sg=p(X,Y),
 	varset(X,Varsx),
 	Call = (Call_sh,Call_fr),
 	update_lambda_non_free(Varsx,Call_fr,Call_sh,Temp_fr,Temp_sh),
@@ -1043,29 +1043,29 @@ shfr_success_builtin(read2,Sv_u,p(X,Y),_,Call,Succ):-
 	  change_values_if_f([Y],Temp_fr,Succ_fr,nf),
 	  Succ = (Temp_sh,Succ_fr)
 	; varset(Y,Varsy),
-	  shfr_project((Temp_sh,Temp_fr),Varsy,(Proj_sh,Prime_fr)),
+	  shfr_project(Sg,Varsy,not_provided_HvFv_u,(Temp_sh,Temp_fr),(Proj_sh,Prime_fr)),
 	  closure_under_union(Proj_sh,Prime_sh),
 	  sort(Sv_u,Sv),
 	  shfr_extend((Prime_sh,Prime_fr),Call,Sv,Succ)
 	).
-shfr_success_builtin(recorded,_,p(Y,Z),_,Call,Succ):-
+shfr_success_builtin(recorded,_,Sg,_,Call,Succ):- Sg=p(Y,Z),
         varset(Z,NewG),
 	varset(Y,VarsY),
 	merge(NewG,VarsY,Vars),
-	shfr_project(Call,Vars,(Sh,Fr)),
+	shfr_project(Sg,Vars,not_provided_HvFv_u,Call,(Sh,Fr)),
 	update_lambda_sf(NewG,Fr,Sh,TempPrime_fr,TempPrime_sh),
 	make_dependence(TempPrime_sh,VarsY,TempPrime_fr,Prime_fr,Prime_sh),
 	Prime = (Prime_sh,Prime_fr),
 	shfr_extend(Prime,Vars,Call,Succ).
-shfr_success_builtin(copy_term,_,p(X,Y),_,Call,Succ):-
+shfr_success_builtin(copy_term,_,Sg,_,Call,Succ):- Sg=p(X,Y),
 	varset(X,VarsX),
-	shfr_project(Call,VarsX,ProjectedX),
+	shfr_project(Sg,VarsX,not_provided_HvFv_u,Call,ProjectedX),
 	copy_term((X,ProjectedX),(NewX,NewProjectedX)),
 	shfr_abs_sort(NewProjectedX,ProjectedNewX),
 	varset(NewX,VarsNewX),
 	varset(Y,VarsY),
 	merge(VarsNewX,VarsY,TempSv),
-	shfr_project(Call,VarsY,ProjectedY),
+	shfr_project(Sg,VarsY,not_provided_HvFv_u,Call,ProjectedY),
 	ProjectedY = (ShY,FrY),
 	ProjectedNewX = (ShNewX,FrNewX),
 	merge(ShY,ShNewX,TempSh),
@@ -1076,7 +1076,7 @@ shfr_success_builtin(copy_term,_,p(X,Y),_,Call,Succ):-
 	shfr_call_to_success_builtin('=/2','='(NewX,Y),TempSv,
                     (TempCallSh,TempCallFr),(TempSh,TempFr),Temp_success),
 	collect_vars_freeness(FrCall,VarsCall),
-	shfr_project(Temp_success,VarsCall,Succ).
+	shfr_project(Sg,VarsCall,not_provided_HvFv_u,Temp_success,Succ).
 shfr_success_builtin('current_key/2',_,p(X),_,Call,Succ):-
 	varset(X,NewG),
 	Call = (Call_sh,Call_fr),
@@ -1231,7 +1231,7 @@ any_arg_var(Y,Z,Head,TempASub,Succ):-
 	Sg = p(Y,Z),
 	varset(Sg,Sv),
 	varset(Head,Hv),
-	shfr_project(TempASub,Sv,Proj),
+	shfr_project(Sg,Sv,not_provided_HvFv_u,TempASub,Proj),
 	shfr_call_to_success_fact(Sg,Hv,Head,not_provided,Sv,TempASub,Proj,_,Succ). % TODO: add some ClauseKey?
 
 any_arg_all_args(0,_,_,_ASub,Succs):- !, Succs=[].
@@ -2558,7 +2558,7 @@ add_environment_vars(<,Y/Vy,Fr1,El,[X/V|Fr2],[El|NewFr]):-
 %% 	; Flag0 = diff),
 %% 	( var(Flag0) ->
 %% 	    shfr_check_eq(Eq,AllGr,Free,NewFr,NewSh,Sv,Flag)
-%% 	; shfr_project((NewSh,NewFr),Sv,Flag)).
+%% 	; shfr_project(not_provided_Sg,Sv,not_provided_HvFv_u,(NewSh,NewFr),Flag)).
 %% 	  
 %% shfr_check_eq(Eq,AllGr,_,_,NewSh,_,Flag):-
 %% 	shfr_satisf_eq(Eq,AllGr,NewSh),!,
@@ -2567,7 +2567,7 @@ add_environment_vars(<,Y/Vy,Fr1,El,[X/V|Fr2],[El|NewFr]):-
 %% 	shfr_fail_eq(Eq,Free,NewSh),!,
 %% 	fail.
 %% shfr_check_eq(_,_,_,NewFr,NewSh,Sv,Flag):-
-%% 	shfr_project((NewSh,NewFr),Sv,Flag).
+%% 	shfr_project(not_provided_Sg,Sv,not_provided_HvFv_u,(NewSh,NewFr),Flag).
 %% 
 %% :- push_prolog_flag(multi_arity_warnings,off).
 %% 
@@ -2681,7 +2681,7 @@ add_environment_vars(<,Y/Vy,Fr1,El,[X/V|Fr2],[El|NewFr]):-
 %% shfr_impose_cond([],_,_,[]).
 %% shfr_impose_cond([(Gr,_,_)|Rest],Sv,(Sh,Fr),[ASub1|LASub]):-
 %% 	update_lambda_sf(Gr,Fr,Sh,Fr1,Sh1),
-%% 	shfr_project((Sh1,Fr1),Sv,ASub1),
+%% 	shfr_project(not_provided_Sg,Sv,not_provided_HvFv_u,(Sh1,Fr1),ASub1),
 %% 	shfr_impose_cond(Rest,Sv,(Sh,Fr),LASub).
 %% 
 %% %-------------------------------------------------------------------------

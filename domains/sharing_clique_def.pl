@@ -38,7 +38,7 @@
 	def_exit_to_prime/7,
 	def_extend/3,
 	def_glb/3,
-	def_project/3,
+	def_project/5,
 	def_abs_sort/2,
 	def_special_builtin/5,
 	def_unknown_entry/3]).
@@ -112,7 +112,7 @@ share_clique_def_extend(_Prime,_Sv,_Call,'$bottom').
 :- export(share_clique_def_project/3).
 share_clique_def_project(_,'$bottom','$bottom'):- !.
 share_clique_def_project(Vars,(SH_ASub,Def_ASub),Proj) :-
-	def_project(Def_ASub,Vars,Def_Proj),
+	def_project(not_provided_Sg,Vars,not_provided_HvFv_u,Def_ASub,Def_Proj),
 	share_clique_project(Vars,SH_ASub,SH_Proj),
 	Proj = (SH_Proj,Def_Proj).
 

@@ -13,7 +13,7 @@
 	  frdef_less_or_equal/2,
 	  frdef_glb/3,
 	  frdef_asub_to_native/5,
-	  frdef_project/3,       
+	  frdef_project/5,
 	  frdef_abs_sort/2,          
 	  frdef_special_builtin/5,
 	  frdef_success_builtin/6,
@@ -85,9 +85,9 @@ frdef_decide_continue_exit(a(G_prime,_R),a(G_exit,_),F_exit,Sg,Hv,Head,Sv,F_prim
 
 %------------------------------------------------------------------------------
 
-frdef_project('$bottom',_,'$bottom'):- !.
-frdef_project((F_call,D_call),Vars,(F_proj,D_proj)):-
-        def_project(D_call,Vars,D_proj),
+frdef_project(_Sg,_Vars,_HvFv_u,'$bottom','$bottom'):- !.
+frdef_project(Sg,Vars,HvFv_u,(F_call,D_call),(F_proj,D_proj)):-
+        def_project(Sg,Vars,HvFv_u,D_call,D_proj),
         vero_project(F_call,Vars,F_proj).
 
 %------------------------------------------------------------------------------

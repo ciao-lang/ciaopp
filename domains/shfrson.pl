@@ -157,7 +157,7 @@ shfrson_project([],_,Proj) :- !,
 	Proj = (([],[]),([],[])).
 shfrson_project(Vars,(Call_son,Call_shfr),(Proj_son,Proj_shfr)):-
 	son_project(Vars,Call_son,Proj_son),
-	shfr_project(Call_shfr,Vars,Proj_shfr).
+	shfr_project(not_provided_Sg,Vars,not_provided_HvFv_u,Call_shfr,Proj_shfr).
 
 %-------------------------------------------------------------------------
 

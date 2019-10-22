@@ -49,7 +49,7 @@
 	sharefree_clique_call_to_entry/9,
 	sharefree_clique_exit_to_prime/7,
 	sharefree_clique_extend/4,
-	sharefree_clique_project/3,
+	sharefree_clique_project/5,
 	sharefree_clique_abs_sort/2,
 	sharefree_clique_glb/3,
 	sharefree_clique_identical_abstract/2,
@@ -109,8 +109,8 @@ sharefree_clique_def_extend((SHF_Prime,Def_Prime),Sv,(SHF_Call,Def_Call),Succ):-
 :- export(sharefree_clique_def_project/3).
 sharefree_clique_def_project(_,'$bottom','$bottom'):- !.
 sharefree_clique_def_project(Vars,(SHF_ASub,Def_ASub),Proj) :-
-	def_project(Def_ASub,Vars,Def_Proj),
-	sharefree_clique_project(SHF_ASub,Vars,SHF_Proj),
+	def_project(not_provided_Sg,Vars,not_provided_HvFv_u,Def_ASub,Def_Proj),
+	sharefree_clique_project(not_provided_Sg,Vars,not_provided_HvFv_u,SHF_ASub,SHF_Proj),
 	Proj = (SHF_Proj,Def_Proj).
 
 %------------------------------------------------------------------------%

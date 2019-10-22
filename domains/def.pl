@@ -12,7 +12,7 @@
 	  def_input_user_interface/5,  
 	  def_input_interface/4,  
 	  def_less_or_equal/2,
-	  def_project/3,    
+	  def_project/5,
 	  def_handle_bottom_project/3,  % JN needed by sharedef.pl
 	  def_abs_sort/2,       
 	  def_special_builtin/5,
@@ -120,7 +120,7 @@ def_call_to_entry(_Sv,Sg,Hv,Head,_K,_Fv,Proj,Entry,BothEntry):-
 def_handle_bottom_project('$bottom',_Hv,Entry):- !,
 	Entry = '$bottom'.
 def_handle_bottom_project(NewProj,Hv,Entry):- 
-	def_project(NewProj,Hv,Entry).
+	def_project(not_provided_Sg,Hv,not_provided_HvFv_u,NewProj,Entry).
 
 %-------------------------------------------------------------------------
 % def_exit_to_prime(+,+,+,+,+,+,-)                                       %
@@ -138,18 +138,18 @@ def_handle_bottom_project(NewProj,Hv,Entry):-
 def_exit_to_prime(_,_,_,_,'$bottom',_,Prime):- !,
 	Prime = '$bottom'.
 def_exit_to_prime(Sg,Hv,Head,_,Exit,yes,Prime):- !,
-	def_project(Exit,Hv,Beta),
+	def_project(Sg,Hv,not_provided_HvFv_u,Exit,Beta),
 	copy_term((Head,Beta),(NewTerm,NewPrime)),
 	Sg = NewTerm,
 	def_abs_sort(NewPrime,Prime).
-def_exit_to_prime(_,Hv,_,Sv,Exit,BothEntry,Prime):-
-	def_project(Exit,Hv,BetaPrime),
+def_exit_to_prime(Sg,Hv,_,Sv,Exit,BothEntry,Prime):-
+	def_project(Sg,Hv,not_provided_HvFv_u,Exit,BetaPrime),
 	def_conjunct_constr(BetaPrime,BothEntry,TempPrime),
-	def_project(TempPrime,Sv,Prime).
+	def_project(Sg,Sv,not_provided_HvFv_u,TempPrime,Prime).
 
 %-------------------------------------------------------------------------
-% def_project(+,+,-)                                                     %
-% def_project(Constr,Vars,Projected)                                     %
+% def_project(+,+,+,+,-)                                                 %
+% def_project(Sg,Vars,HvFv_u,Constr,Projected)                           %
 % It projects the ordered abstract subtitution given in the first        %
 % argument on the ordered list of variables Vars in the second argument. %
 % All the variables in the second argument are assumed to appear also    %
@@ -165,8 +165,8 @@ def_exit_to_prime(_,Hv,_,Sv,Exit,BothEntry,Prime):-
 %         Note that if NewSS is [], (X,NewSS) will not be in PSet        %
 %-------------------------------------------------------------------------
 
-def_project('$bottom',_Vars,'$bottom').
-def_project(a(Ground,Set),Vars,Projected):-
+def_project(_Sg,_Vars,_HvFv_u,'$bottom','$bottom') :- !.
+def_project(_Sg,Vars,_HvFv_u,a(Ground,Set),Projected):-
 	ord_intersection(Ground,Vars,PGround),	
 	def_project_vars(Vars,Set,Vars,PSet),
 	Projected = a(PGround,PSet).
@@ -735,7 +735,7 @@ def_each_subset0([_|SS1],S0):-
 %% 	WConds = [(Gr,Nv,Eq)].
 %% def_check_cond_([(Gr,Nv,Eq)|RestV],CAsub,Sv,RestW,Flag,WConds0,WConds):-
 %% 	def_conjunct_constr(a(Gr,[]),CAsub,WACns1),
-%% 	def_project(WACns1,Sv,WACns),
+%% 	def_project(not_provided_Sg,Sv,not_provided_HvFv_u,WACns1,WACns),
 %% 	def_check_cond_(RestV,CAsub,Sv,[WACns|RestW],Flag,[(Gr,Nv,Eq)|WConds0],WConds).
 %% 
 %% def_satif_eq([],_,_).
@@ -815,7 +815,7 @@ def_each_subset0([_|SS1],S0):-
 %% def_impose_cond([],_,_,[]).
 %% def_impose_cond([(Gr,_,_)|Rest],Sv,ASub,[ASub1|LASub]):-
 %% 	def_conjunct_constr(a(Gr,[]),ASub,ASub0),
-%% 	def_project(ASub0,Sv,ASub1),
+%% 	def_project(not_provided_Sg,Sv,not_provided_HvFv_u,ASub0,ASub1),
 %% 	def_impose_cond(Rest,Sv,ASub,LASub).
 %% 
 %% %-------------------------------------------------------------------------

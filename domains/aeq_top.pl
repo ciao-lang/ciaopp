@@ -14,7 +14,7 @@
 	  aeq_glb/3,
 	  aeq_eliminate_equivalent/2,	  
 	  aeq_asub_to_native/5,
-	  aeq_project/3,      
+	  aeq_project/5,
 	  aeq_abs_sort/2,         
 	  aeq_special_builtin/5,
 	  aeq_success_builtin/6,
@@ -120,7 +120,7 @@ aeq_call_to_entry(_Sv,Sgoal,Hv,Head,_K,Fvars,Proj,Entry,no):-
 %% :- mode aeq_exit_to_prime(+,+,+,+,+,+,-) .
 aeq_exit_to_prime(_,_,_,_,'$bottom',_,'$bottom') :- !.
 aeq_exit_to_prime(Sg,Hv,Head,_,Exit,yes,Prime) :- !,
-	aeq_project(Exit,Hv,BetaPrime),
+	aeq_project(Sg,Hv,not_provided_HvFv_u,Exit,BetaPrime),
 	copy_term((Head,BetaPrime),(NewTerm,Prime_u)),
 	Sg = NewTerm,
 	aeq_abs_sort(Prime_u,Prime).
@@ -137,11 +137,11 @@ aeq_exit_to_prime(Sg,_,Head,Sv,Exit,_,Prime) :-
 %% This is one way to ensure termination of the analysis and
 %% reduce the number of call specifications.
 
-%% :- mode aeq_project(+,+,-) .
-aeq_project('$bottom',_Vars,'$bottom') :- !.
-aeq_project(ASub, Vars, ASub_proj ) :-
-	aeq_project_nb(Vars, ASub, ASub_proj_tmp ),
-	aeq_impose_depth_bound_proj( ASub_proj_tmp, ASub_proj ) .
+%% :- mode aeq_project(+,+,+,+,-) .
+aeq_project(_Sg, _Vars, _HvFv_u, '$bottom', '$bottom') :- !.
+aeq_project(_Sg, Vars, _HvFv_u, ASub, ASub_proj) :-
+	aeq_project_nb(Vars, ASub, ASub_proj_tmp),
+	aeq_impose_depth_bound_proj(ASub_proj_tmp, ASub_proj).
 
 %  (tested alternative but less efficient code)
 %	aeq_depth_bound(Depth,Type),
