@@ -54,7 +54,7 @@
 	]).
 :- use_module(domain(share_aux)).
 :- use_module(domain(sharing), [
-	share_project/3, 
+	share_project/5, 
 	share_less_or_equal/2,
 	share_glb/3,
 	share_input_user_interface/5,
@@ -1973,7 +1973,7 @@ obtain_prime_var_var([X/_,Y/_],Call,Succ):-
 mynonvar([],_Sh,_Free).
 mynonvar([F|Rest],Sh,Free):-
 	insert(Free,F,Vars),
-	share_project(Vars,Sh,NewSh),
+	share_project(not_provided_Sg,Vars,not_provided_HvFv_u,Sh,NewSh),
 	impossible(NewSh,NewSh,Vars),!,
 	mynonvar(Rest,Sh,Free).
 	

@@ -11,7 +11,7 @@
 	  shfrson_less_or_equal/2,  
 	  shfrson_glb/3,
 	  shfrson_asub_to_native/5,
-	  shfrson_project/3,  
+	  shfrson_project/5,  
 	  shfrson_abs_sort/2,     
 	  shfrson_unknown_call/4,
 	  shfrson_unknown_entry/3,  
@@ -151,13 +151,13 @@ shfrson_empty_entry(Sg,Qv,Call):-
 
 %-------------------------------------------------------------------------
 
-shfrson_project(_,'$bottom',Proj):- !,
+shfrson_project(_,_,_,'$bottom',Proj):- !,
 	Proj = '$bottom'.
-shfrson_project([],_,Proj) :- !,
+shfrson_project(_Sg,[],_HvFv_u,_,Proj) :- !,
 	Proj = (([],[]),([],[])).
-shfrson_project(Vars,(Call_son,Call_shfr),(Proj_son,Proj_shfr)):-
-	son_project(Vars,Call_son,Proj_son),
-	shfr_project(not_provided_Sg,Vars,not_provided_HvFv_u,Call_shfr,Proj_shfr).
+shfrson_project(Sg,Vars,HvFv_u,(Call_son,Call_shfr),(Proj_son,Proj_shfr)):-
+	son_project(Sg,Vars,HvFv_u,Call_son,Proj_son),
+	shfr_project(Sg,Vars,HvFv_u,Call_shfr,Proj_shfr).
 
 %-------------------------------------------------------------------------
 

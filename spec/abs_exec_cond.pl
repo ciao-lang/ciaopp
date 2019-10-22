@@ -30,7 +30,7 @@
 	    identical_abstract/3
  	]).
 
-:- use_module(domain(sharing), [share_project/3]).
+:- use_module(domain(sharing), [share_project/5]).
 
 :- use_module(domain(s_grshfr), 
  	[ 
@@ -422,7 +422,7 @@ test_not_free(nv,_,_).
 test_not_free(nf,X,(SharingComponent,FreeComponent)):-
         member_value_freeness(FreeComponent,FreeVars,f),
         insert(FreeVars,X,AssumedFree),
-        share_project(AssumedFree,SharingComponent,NewSh),
+        share_project(not_provided_Sg,AssumedFree,not_provided_HvFv_u,SharingComponent,NewSh),
         impossible(NewSh,NewSh,AssumedFree).
 
 %-------------------------------------------------------------------%

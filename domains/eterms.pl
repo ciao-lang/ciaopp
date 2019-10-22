@@ -2,7 +2,7 @@
 	eterms_init_abstract_domain/1,
 	eterms_call_to_entry/9,
 	eterms_exit_to_prime/7,
-	eterms_project/3,
+	eterms_project/5,
 	eterms_compute_lub/2,
 	eterms_compute_lub_el/3,
 	eterms_abs_sort/2,
@@ -681,7 +681,7 @@ eterms_call_to_entry(_Sv,Sg,Hv,Head,_K,Fv,Proj,Entry,(yes,Proj)):-
 	copy_term((Sg,Proj),(NewTerm,NewProj_u)),
 	Head = NewTerm,
 	eterms_abs_sort(NewProj_u,NewProj),
-	eterms_project(Hv,NewProj,NewProj1),
+	eterms_project(Sg,Hv,not_provided_HvFv_u,NewProj,NewProj1),
 	variables_are_variable_type(Fv,Free),
 	merge(Free,NewProj1,Entry).
 eterms_call_to_entry(_Sv,Sg,Hv,Head,_K,Fv,Proj,Entry,(no,Proj)):-
@@ -728,13 +728,13 @@ renaming Exit                                            %
 eterms_exit_to_prime(_Sg,_Hv,_Head,_Sv,'$bottom',_ExtraInfo,Prime) :- !,
 	Prime = '$bottom'.
 eterms_exit_to_prime(Sg,Hv,Head,_Sv,Exit,(yes,Proj),Prime):- !,
-	eterms_project(Hv,Exit,BPrime),
+	eterms_project(Sg,Hv,not_provided_HvFv_u,Exit,BPrime),
 	copy_term((Head,BPrime),(NewTerm,NewPrime)),
 	Sg = NewTerm,
 	eterms_abs_sort(NewPrime,Prime1),
 	replace_names(Proj,Prime1,Prime).	
 eterms_exit_to_prime(Sg,Hv,Head,Sv,Exit,(no,ExtraInfo),Prime):- 
-	eterms_project(Hv,Exit,BPrime),
+	eterms_project(Sg,Hv,not_provided_HvFv_u,Exit,BPrime),
 	unify_term_and_type_term_exit(Sg,Sv,Head,BPrime,ExtraInfo,Prime), !. %,!, %change
   % TODO: cut was disabled here
 %
@@ -997,7 +997,7 @@ unify_term_and_type_term_exit(Term1,Tv,Term2,ASub,Proj,NewASub):-
 	    sort(TypeNameAss,TypeNameAss_s),
 	    generate_subs_exit(ASub1,Proj_s,TypeNameAss_s,Subs),
 
-	    eterms_project(Tv,Subs,NASub),
+	    eterms_project(not_provided_Sg,Tv,not_provided_HvFv_u,Subs,NASub),
 	    normal_asub(NASub,NewASub)
 	).
 
@@ -1021,7 +1021,7 @@ unify_term_and_type_term(Term1,Tv,Term2,ASub,NewASub):-
 	    obtains_names(Args,HeadArg,Subs,TypeNameAss2),
 	    sort(TypeNameAss2,TypeNameAss2_s),
 	    update_names(TypeNameAss2_s,ASub_s),
-	    eterms_project(Tv,Subs,NASub),
+	    eterms_project(not_provided_Sg,Tv,not_provided_HvFv_u,Subs,NASub),
 	    normal_asub(NASub,NewASub)
 	).
 
@@ -1123,15 +1123,15 @@ apply([]).
 
 
 %------------------------------------------------------------------%
-:- pred eterms_project(+Vars,+Asub,-Proj): list * absu * absu # 
+:- pred eterms_project(+Sg,+Vars,+HvFv_u,+Asub,-Proj): term * list * list * absu * absu # 
 "@var{Proj} is the result of eliminating from @var{Asub} all
 @var{X}:@var{Value} such that @var{X} is not in @var{Vars}".
 
 
 
-eterms_project(_,'$bottom',Proj):-  !,
+eterms_project(_,_,_,'$bottom',Proj):-  !,
 	Proj = '$bottom'.
-eterms_project(Vars,ASub,Proj) :- 
+eterms_project(_Sg,Vars,_HvFv_u,ASub,Proj) :- 
 	eterms_project_aux(Vars,ASub,Proj).
 
 eterms_project_aux([],_,Proj):- !,
@@ -1763,7 +1763,7 @@ eterms_call_to_success_builtin('is/2',(X is Y),Sv,Call,Proj,Succ):- !,
 	    new_type_name(NY),
 	    insert_type_name(NY,[],0),
 	    varset(Y,Svy),
-	    eterms_project(Svy,Proj,Projy),
+	    eterms_project(not_provided_Sg,Svy,not_provided_HvFv_u,Proj,Projy),
 	    eterms_exit_to_prime(p(Y),[Y1],p(Y1),Svy,[Y1:(NY,TY)],(no,Projy),Primey),
 	    eterms_glb(Projy,Primey,Primey2),
 	    (
@@ -1774,7 +1774,7 @@ eterms_call_to_success_builtin('is/2',(X is Y),Sv,Call,Proj,Succ):- !,
 		get_list_names_is(Projy,NameSelec),
 		insert_type_name(NX,NameSelec,0),
 		varset(X,Svx),
-		eterms_project(Svx,Proj,Projx),
+		eterms_project(not_provided_Sg,Svx,not_provided_HvFv_u,Proj,Projx),
 		eterms_exit_to_prime(p(X),[X1],p(X1),Svx,[X1:(NX,TX)],(no,Projx),Primex),
 		eterms_glb(Projx,Primex,Primex2),
 		(

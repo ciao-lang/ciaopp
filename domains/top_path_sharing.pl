@@ -11,7 +11,7 @@
 	  path_less_or_equal/2,
 	  path_glb/3,
 	  path_asub_to_native/5,  
-	  path_project/3,     
+	  path_project/5,     
 	  path_abs_sort/2,        
 	  path_special_builtin/5,
 	  path_success_builtin/6,
@@ -94,8 +94,8 @@ path_call_to_entry(_Sv,Sg,Hv,Head,_K,Fv,Proj,Entry,ExtraInfo):-
 	list_to_free_abstraction(Hv,TmpASub),
 	merge(TmpASub,Proj,NewProj),
 	mge(Binds,NewProj,TotalASub),
-%	path_project(Hv,TotalASub,TmpEntry),
-	path_project(Hv,TotalASub,TmpEntry0),
+%	path_project(Sg,Hv,not_provided_HvFv_u,TotalASub,TmpEntry),
+	path_project(Sg,Hv,not_provided_HvFv_u,TotalASub,TmpEntry0),
 	path_transitive_closure(TmpEntry0,TmpEntry_u),
 	sort_list_of_lists(TmpEntry_u,TmpEntry),
 	list_to_free_abstraction(Fv,TmpFv),
@@ -135,24 +135,24 @@ path_transitive_closure(ASub0,ASub):-
 path_exit_to_prime(_Sg,_Hv,_Head,_Sv,'$bottom',_Flag,Prime) :- !,
 	Prime = '$bottom'.
 path_exit_to_prime(Sg,Hv,Head,_Sv,Exit,yes,Prime):- !,
-	path_project(Hv,Exit,BPrime),
+	path_project(Sg,Hv,not_provided_HvFv_u,Exit,BPrime),
 	copy_term((Head,BPrime),(NewTerm,NewPrime)),
 	Sg = NewTerm,
 	sort_list_of_lists(NewPrime,Prime).	
 path_exit_to_prime(_Sg,[],_Head,_Sv,_Exit,_ExtraInfo,Prime):- !,
 	Prime = [].
-path_exit_to_prime(_Sg,Hv,_Head,Sv,Exit,ExtraInfo,Prime):-
+path_exit_to_prime(Sg,Hv,_Head,Sv,Exit,ExtraInfo,Prime):-
 	ExtraInfo = (_Binds,TotalASub),
 	varset(Exit,NonGrExit),
 	ord_subtract(Hv,NonGrExit,NewGr),
 	ord_split_paths_from_list(NewGr,TotalASub,_,Disjoint),		
 	path_extend(Exit,Hv,Disjoint,TmpPrime),
-	path_project(Sv,TmpPrime,Prime).
+	path_project(Sg,Sv,not_provided_HvFv_u,TmpPrime,Prime).
 %% 
 %% 
 %% 	merge(Disjoint,Exit,TmpASub),
 %% 	mge(Binds,TmpASub,TmpPrime),
-%% 	path_project(Sv,TmpPrime,Prime).
+%% 	path_project(Sg,Sv,not_provided_HvFv_u,TmpPrime,Prime).
 
 %-------------------------------------------------------------------------
 %-------------------------------------------------------------------------
@@ -228,13 +228,13 @@ path_add_suffix([p(X,P)|Occ],Su,K,[p(X,PSu)|NewOcc]):-
 %                      ABSTRACT PROJECTION
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% path_project(+,+,-)                                                    %
-% path_project(Vars,ASub,Proj)                                           %
+% path_project(+,+,+,+,-)                                                %
+% path_project(Sg,Vars,HvFv_u,ASub,Proj)                                 %
 %------------------------------------------------------------------------%
-path_project(_,'$bottom',Proj):- !,
+path_project(_,_,_,'$bottom',Proj):- !,
 	Proj = '$bottom'.
-path_project([],_ASub,[]):- !.
-path_project(Vars,ASub,Entry):-
+path_project(_Sg,[],_HvFv_u,_ASub,[]):- !.
+path_project(_Sg,Vars,_HvFv_u,ASub,Entry):-
 	path_project1(ASub,Vars,TmpEntry),
 	sort(TmpEntry,Entry).
 
@@ -301,10 +301,10 @@ path_call_to_success_fact(Sg,Hv,Head,_K,Sv,Call,Proj,Prime,Succ) :-
 	merge(TmpASub,Proj,NewProj),
 	mge(Binds,NewProj,TmpSucc),
 	varset(Call,Vars),
-%	path_project(Vars,TmpSucc,Succ),
-	path_project(Vars,TmpSucc,Succ0),
+%	path_project(Sg,Vars,not_provided_HvFv_u,TmpSucc,Succ),
+	path_project(Sg,Vars,not_provided_HvFv_u,TmpSucc,Succ0),
 	path_transitive_closure(Succ0,Succ),
-	path_project(Sv,Succ,Prime).
+	path_project(Sg,Sv,not_provided_HvFv_u,Succ,Prime).
 
 %-------------------------------------------------------------------------
 % path_unknown_call(+,+,+,-)                                               |

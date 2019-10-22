@@ -71,17 +71,17 @@
 %                      ABSTRACT PROJECTION
 %------------------------------------------------------------------------%
 %-------------------------------------------------------------------------
-% share_project(+,+,-)                                                   |
-% share_project(Vars,ASub,Proj)                                          |
+% share_project(+,+,+,+,-)                                               |
+% share_project(Sg,Vars,HvFv_u,ASub,Proj)                                |
 % Eliminates from each element of the list of lists of variables given as|
 % second argument any variable which is not an element of the first      |
 % argument. Both ordered.                                                |
 % i.e. Proj = {Ys | Xs in ASub, Ys = Xs intersect Vars }                 |
 %------------------------------------------------------------------------%
 
-:- export(share_project/3).    
-share_project(_,'$bottom','$bottom'):- !.
-share_project(Vars,ASub,Proj) :-
+:- export(share_project/5).    
+share_project(_,_,_,'$bottom','$bottom'):- !.
+share_project(_Sg,Vars,_HvFv_u,ASub,Proj) :-
 	project_share(Vars,ASub,Proj).
 
 :- export(project_share/3).    
@@ -197,13 +197,13 @@ share_call_to_entry(Sv,Sg,Hv,Head,_K,Fv,Proj,Entry,ExtraInfo) :-
 share_exit_to_prime(_Sg,_Hv,_Head,_Sv,'$bottom',_Flag,'$bottom') :- !.
 share_exit_to_prime(Sg,Hv,Head,_Sv,Exit,Flag,Prime):-  
 	Flag == yes, !,
-	share_project(Hv,Exit,BPrime),
+	share_project(Sg,Hv,not_provided_HvFv_u,Exit,BPrime),
 	copy_term((Head,BPrime),(NewHead,NewPrime)),
 	Sg = NewHead,
 	share_abs_sort(NewPrime,Prime).
 share_exit_to_prime(_,[],_,_,_,_,[]):- !.
 share_exit_to_prime(Sg,Hv,Head,Sv,Exit,(Gv,NewBinds,NewProj,Partition),Prime):-
-	share_project(Hv,Exit,BPrime),
+	share_project(Sg,Hv,not_provided_HvFv_u,Exit,BPrime),
 	ord_subtract(Hv,Gv,Hv_rem),
 	projected_gvars(BPrime,Hv_rem,NewGv_Hv),
 	( NewGv_Hv = [] ->
@@ -359,7 +359,7 @@ share_call_to_prime_fact(Sg,Hv,Head,Sv,Call,Prime) :-
 	varset_in_args(Head,Head_args),
 	compute_entry(H_partition,Head_args,ShareArgsSgStar,[],Entry),
 %       -------------------------------------------------
-	share_project(Sv,Partition,S_partition),
+	share_project(Sg,Sv,not_provided_HvFv_u,Partition,S_partition),
 	script_p(Head,Entry,ShareArgsHeadStar),
 	varset_in_args(Sg,Sg_args),
 	closure_under_union(Call,Star),
@@ -503,7 +503,7 @@ pd_graph(Sv,Hv,SvGv,HvGv,NewProj,Binds,Partition,Proj_Partition) :-
 	transitive_closure_lists(NewProj,Partition0,Partition1),
 	transitive_closure_binds(Binds,Partition1,Partition_u),
 	sort(Partition_u,Partition),
-	share_project(Hv,Partition,Proj_Partition).
+	share_project(not_provided_Sg,Hv,not_provided_HvFv_u,Partition,Proj_Partition).
 
 %-------------------------------------------------------------------------
 % ng_vars(+,+,+,-)                                                       |
@@ -995,7 +995,7 @@ share_success_builtin('=../2',Sv_u,p(X,Y),_,Call,Succ):-
 	( var(Y) -> G=g ; Y = [G|_] ), !,
 	( var(X) -> Term=[G|X] ; X=..Term ),
 	sort(Sv_u,Sv),
-	share_project(Sv,Call,Proj),
+	share_project(not_provided_Sg,Sv,not_provided_HvFv_u,Call,Proj),
 	share_call_to_success_builtin('=/2','='(Term,Y),Sv,Call,Proj,Succ).
 share_success_builtin('=../2',_Sv_u,_,_,_Call,'$bottom').
 share_success_builtin('==/2',Sv_u,p(X,Y),_,Call,Succ):-
@@ -1009,19 +1009,19 @@ share_success_builtin('==/2',Sv_u,p(X,Y),_,Call,Succ):-
 	ord_subtract(Temp,Sets1,Succ).
 share_success_builtin(copy_term,_Sv_u,p(X,Y),_,Call,Succ):-
 	varset(X,VarsX),
-	share_project(VarsX,Call,ProjectedX),
+	share_project(not_provided_Sg,VarsX,not_provided_HvFv_u,Call,ProjectedX),
 	copy_term((X,ProjectedX),(NewX,NewProjectedX)),
 	sort_list_of_lists(NewProjectedX,ProjectedNewX),
 	varset(NewX,VarsNewX),
 	varset(Y,VarsY),
 	merge(VarsNewX,VarsY,TempSv),
-	share_project(VarsY,Call,ProjectedY),
+	share_project(not_provided_Sg,VarsY,not_provided_HvFv_u,Call,ProjectedY),
 	merge(ProjectedY,ProjectedNewX,TempProjected),
 	merge(ProjectedNewX,Call,TempCall),
 	share_call_to_success_builtin('=/2','='(NewX,Y),TempSv,
                                 TempCall,TempProjected,Temp_success),
 	merge_list_of_lists(Call,VarsCall),
-	share_project(VarsCall,Temp_success,Succ).
+	share_project(not_provided_Sg,VarsCall,not_provided_HvFv_u,Temp_success,Succ).
 share_success_builtin(findall,_Sv_u,p(X,Z),HvFv_u,Call,Succ):-
 	varset(X,Varsx),
 	projected_gvars(Call,Varsx,Vars),Vars == Varsx,!,
@@ -1041,7 +1041,7 @@ share_success_builtin('recorded/3',Sv_u,p(Y,Z),_,Call,Succ):-
 	varset(Z,Varsz),
 	ord_split_lists_from_list(Varsz,Call,_,ASub),
 	varset(Y,Varsy),
-	share_project(Varsy,ASub,ASub1),
+	share_project(not_provided_Sg,Varsy,not_provided_HvFv_u,ASub,ASub1),
 	closure_under_union(ASub1,Prime),
 	sort(Sv_u,Sv),
 	share_extend(Prime,Sv,Call,Succ).
@@ -1078,7 +1078,7 @@ share_call_to_success_builtin('arg/3',arg(X,Y,Z),_,Call,Proj,Succ):-
 	ord_split_lists_from_list(OldG,Call,_Intersect,TempCall),
 	Sg = p(Y,Z),
 	varset(Sg,Sv),
-	share_project(Sv,TempCall,Proj),
+	share_project(not_provided_Sg,Sv,not_provided_HvFv_u,TempCall,Proj),
 	( var(Y)
 	-> sh_any_arg_var(Sg,Sv,TempCall,Proj,Succ)
 	 ; functor(Y,_,N),
@@ -1098,7 +1098,7 @@ sh_any_arg_all_args(N,Y,Z,Call,Proj0,[Succ|Succs]):-
 	arg(N,Y,NY),
 	Sg = p(NY,Z),
 	varset(Sg,Sv),
-	share_project(Sv,Proj0,Proj),
+	share_project(not_provided_Sg,Sv,not_provided_HvFv_u,Proj0,Proj),
 	sh_any_arg_var(Sg,Sv,Call,Proj,Succ),
 	N1 is N-1,
 	sh_any_arg_all_args(N1,Y,Z,Call,Proj0,Succs).

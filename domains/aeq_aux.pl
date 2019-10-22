@@ -256,7 +256,7 @@ aeq_input_to_extern((Sh,Eqs_u,Lin_u,Free_u),Qv,AEqs,Ann,Shr):-
 	copy_term(t(ShASub,Pairs),t(Share0,Pairs_sh)),
 	apply(Pairs_sh),
 	flatten_lists(Share0,Share1),
-	share_project(NumVarSet,Share1,Share2),
+	share_project(not_provided_Sg,NumVarSet,not_provided_HvFv_u,Share1,Share2),
 	share_abs_sort(Share2,Shr),
 %
 	aeq_input_to_annot(Lin_u,Pairs,l,Ann_u,Ann0),

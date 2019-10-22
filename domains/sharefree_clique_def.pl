@@ -103,14 +103,14 @@ sharefree_clique_def_extend((SHF_Prime,Def_Prime),Sv,(SHF_Call,Def_Call),Succ):-
 	Succ = ((SH_Succ,Fr_Succ),Def_succ),!.
 
 %------------------------------------------------------------------------%
-% sharefree_clique_def_project(+,+,-)                                    |
-% sharefree_clique_def_project(Vars,ASub,Proj)                           |
+% sharefree_clique_def_project(+,+,+,+,-)                                |
+% sharefree_clique_def_project(Sg,Vars,HvFv_u,ASub,Proj)                 |
 %------------------------------------------------------------------------%
-:- export(sharefree_clique_def_project/3).
-sharefree_clique_def_project(_,'$bottom','$bottom'):- !.
-sharefree_clique_def_project(Vars,(SHF_ASub,Def_ASub),Proj) :-
-	def_project(not_provided_Sg,Vars,not_provided_HvFv_u,Def_ASub,Def_Proj),
-	sharefree_clique_project(not_provided_Sg,Vars,not_provided_HvFv_u,SHF_ASub,SHF_Proj),
+:- export(sharefree_clique_def_project/5).
+sharefree_clique_def_project(_Sg,_Vars,_HvFv_u,'$bottom','$bottom'):- !.
+sharefree_clique_def_project(Sg,Vars,HvFv_u,(SHF_ASub,Def_ASub),Proj) :-
+	def_project(Sg,Vars,HvFv_u,Def_ASub,Def_Proj),
+	sharefree_clique_project(Sg,Vars,HvFv_u,SHF_ASub,SHF_Proj),
 	Proj = (SHF_Proj,Def_Proj).
 
 %------------------------------------------------------------------------%

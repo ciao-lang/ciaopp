@@ -45,7 +45,7 @@
 :- use_module(domain(sharing),
 	[ project_share/3,
 	  share_less_or_equal/2,
-	  share_project/3,
+	  share_project/5,
 	  % TODO: move to other shared module?
 	  script_p_star/3,
 	  script_p/3
@@ -1278,7 +1278,7 @@ shfrnv_obtain_prime_var_var([X/VX,Y/VY],Call,Succ):-
 shfrnv_mynonvar([],_Sh,_Free).
 shfrnv_mynonvar([F|Rest],Sh,Free):-
 	insert(Free,F,Vars),
-	share_project(Vars,Sh,NewSh),
+	share_project(not_provided_Sg,Vars,not_provided_HvFv_u,Sh,NewSh),
 	shfrnv_impossible(NewSh,NewSh,Vars),!,
 	shfrnv_mynonvar(Rest,Sh,Free).
 	

@@ -13,7 +13,7 @@
 	  depthk_input_interface/4,
 	  depthk_less_or_equal/2,  
 	  depthk_asub_to_native/5, 
-	  depthk_project/3,   
+	  depthk_project/5,   
 	  depthk_abs_sort/2,      
 	  depthk_special_builtin/5,  
 	  depthk_success_builtin/6,
@@ -113,7 +113,7 @@ variables_are_variables([],[]).
 depthk_exit_to_prime(_Sg,_Hv,_Head,_Sv,'$bottom',_Flag,Prime) :- !,
 	Prime = '$bottom'.
 depthk_exit_to_prime(Sg,Hv,Head,_Sv,Exit,yes,Prime):- !,
-	depthk_project(Hv,Exit,BPrime),
+	depthk_project(Sg,Hv,not_provided_HvFv_u,Exit,BPrime),
 	copy_term((Head,BPrime),(NewTerm,NewPrime)),
 	Sg = NewTerm,
 	depthk_abs_sort(NewPrime,Prime).	
@@ -142,7 +142,7 @@ depthk_extend(_Prime,[],Call,Succ):- !,
 depthk_extend(Prime,Sv,Call,Succ):-
 	variables_are_variables(Cv,Call),
 	ord_subtract(Cv,Sv,Nv),
-	depthk_project(Nv,Call,Succ0),
+	depthk_project(not_provided_Sg,Nv,not_provided_HvFv_u,Call,Succ0),
 	merge(Succ0,Prime,Succ).
 
 %------------------------------------------------------------------------%
@@ -150,15 +150,15 @@ depthk_extend(Prime,Sv,Call,Succ):-
 %                      ABSTRACT PROJECTION
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% depthk_project(+,+,-)                                                  %
-% depthk_project(Vars,ASub,Proj)                                         %
+% depthk_project(+,+,+,+,-)                                              %
+% depthk_project(Sg,Vars,HvFv_u,ASub,Proj)                               %
 % Leave in Proj only equs. related to Vars                               %
 %------------------------------------------------------------------------%
 
-depthk_project(_,'$bottom',Proj):- !,
+depthk_project(_,_,_,'$bottom',Proj):- !,
 	Proj = '$bottom'.
-depthk_project([],_ASub,[]):- !.
-depthk_project(Vars,ASub,Proj):-
+depthk_project(_Sg,[],_HvFv_u,_ASub,[]):- !.
+depthk_project(_Sg,Vars,_HvFv_u,ASub,Proj):-
 	discriminate_equs(ASub,Vars,Proj,_,_).
 
 %-------------------------------------------------------------------------
@@ -422,7 +422,7 @@ depthk_call_to_success_builtin(_SgKey,Sg,Sv,Call,_Proj,Succ):-
 	depthk_call_to_prime_builtin(Sg,Sv,Call,Prime0),
 	varset(Prime0,Vars),
 	ord_subtract(Sv,Vars,Vars0),
-	depthk_project(Vars0,Call,Prime1),
+	depthk_project(Sg,Vars0,not_provided_HvFv_u,Call,Prime1),
 	merge_eqs(Prime0,Prime1,Prime),
 	depthk_extend(Prime,Sv,Call,Succ), !.
 depthk_call_to_success_builtin(_SgKey,_Sg,_Sv,_Call,_Proj,'$bottom').
@@ -467,7 +467,7 @@ build_a_copy(Y,Call,Y0):-
 	copy_term(Y,Y0),
 	varset(Y,YVars),
 	varset(Y0,YVars0),
-	depthk_project(YVars,Call,ProjY),
+	depthk_project(not_provided_Sg,YVars,not_provided_HvFv_u,Call,ProjY),
 	rename_domain(YVars,YVars0,ProjY,ProjY0),
 	apply(ProjY0).
 
@@ -491,7 +491,7 @@ rename_domain([],[],[],[]).
 depthk_bu_unify(Eqs,Vars,Proj,ASub):-
 	unify_eqs(Eqs,Unifiers),
 	depthk_unify(Unifiers,Proj,ASub0),
-	depthk_project(Vars,ASub0,ASub).
+	depthk_project(not_provided_Sg,Vars,not_provided_HvFv_u,ASub0,ASub).
 
 unify_eqs([X=Y|Eqs],Unifiers):-
 	peel(X,Y,Unifiers,Tail),

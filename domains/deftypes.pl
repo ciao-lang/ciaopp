@@ -6,7 +6,7 @@
 	deftypes_init_abstract_domain/1,
 	deftypes_call_to_entry/9,
 	deftypes_exit_to_prime/7,
-	deftypes_project/3,
+	deftypes_project/5,
 	deftypes_compute_lub/2,
 	deftypes_compute_lub_el/3,
 	deftypes_abs_sort/2,
@@ -337,12 +337,12 @@ renaming Exit                                            %
 deftypes_exit_to_prime(_Sg,_Hv,_Head,_Sv,'$bottom',_ExtraInfo,Prime) :- !,
 	Prime = '$bottom'.
 deftypes_exit_to_prime(Sg,Hv,Head,_Sv,Exit,yes,Prime):- !,
-	deftypes_project(Hv,Exit,BPrime),
+	deftypes_project(Sg,Hv,not_provided_HvFv_u,Exit,BPrime),
 	copy_term((Head,BPrime),(NewTerm,NewPrime)),
 	Sg = NewTerm,
 	terms_abs_sort(NewPrime,Prime).	
 deftypes_exit_to_prime(Sg,Hv,Head,Sv,Exit,_ExtraInfo,Prime):- 
-	deftypes_project(Hv,Exit,BPrime),
+	deftypes_project(Sg,Hv,not_provided_HvFv_u,Exit,BPrime),
 	unify_term_and_type_term(Sg,Sv,Head,BPrime,Prime).
 deftypes_exit_to_prime(_Sg,_Hv,_Head,_Sv,_Exit,_ExtraInfo,'$bottom').
 
@@ -366,7 +366,7 @@ unify_term_and_type_term(Term1,Tv,Term2,ASub,NewASub):-
 	    member(_:bot,TypeAss) -> fail
 	;
 	    terms_abs_sort(TypeAss,ASub1),
-	    deftypes_project(Tv,ASub1,NASub),
+	    deftypes_project(not_provided_Sg,Tv,not_provided_HvFv_u,ASub1,NASub),
 	    normal_asub(NASub,NewASub)
 	).
 
@@ -507,13 +507,13 @@ intersec_type_list_2(Type_List, InType, OutType):-
 
 
 %------------------------------------------------------------------%
-:- pred deftypes_project(+Vars,+Asub,-Proj): list * absu * absu # 
+:- pred deftypes_project(+Sg,+Vars,+HvFv_u,+Asub,-Proj): term * list * list * absu * absu # 
 "@var{Proj} is the result of eliminating from @var{Asub} all
 @var{X}:@var{Value} such that @var{X} is not in @var{Vars}".
 
-deftypes_project(_,'$bottom',Proj):- 
+deftypes_project(_,_,_,'$bottom',Proj):- !,
 	Proj = '$bottom'.
-deftypes_project(Vars,ASub,Proj) :- 
+deftypes_project(_Sg,Vars,_HvFv_u,ASub,Proj) :- 
 	deftypes_project_aux(Vars,ASub,Proj).
 
 deftypes_project_aux([],_,Proj):- !,

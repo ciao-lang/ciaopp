@@ -5,7 +5,7 @@
 	%
 	terms_call_to_entry/9,
 	terms_exit_to_prime/7,
-	terms_project/3,
+	terms_project/5,
 	terms_compute_lub/2,
 	terms_compute_lub_el/3,
 	terms_abs_sort/2,
@@ -991,12 +991,12 @@ renaming Exit                                            %
 terms_exit_to_prime(_Sg,_Hv,_Head,_Sv,'$bottom',_ExtraInfo,Prime) :- !,
 	Prime = '$bottom'.
 terms_exit_to_prime(Sg,Hv,Head,_Sv,Exit,yes,Prime):- !,
-	terms_project(Hv,Exit,BPrime),
+	terms_project(Sg,Hv,not_provided_HvFv_u,Exit,BPrime),
 	copy_term((Head,BPrime),(NewTerm,NewPrime)),
 	Sg = NewTerm,
 	terms_abs_sort(NewPrime,Prime).	
 terms_exit_to_prime(Sg,Hv,Head,Sv,Exit,_ExtraInfo,Prime):- 
-	terms_project(Hv,Exit,BPrime),
+	terms_project(Sg,Hv,not_provided_HvFv_u,Exit,BPrime),
 	unify_term_and_type_term(Sg,Sv,Head,BPrime,Prime).
 terms_exit_to_prime(_Sg,_Hv,_Head,_Sv,_Exit,_ExtraInfo,'$bottom').
 
@@ -1020,7 +1020,7 @@ unify_term_and_type_term(Term1,Tv,Term2,ASub,NewASub):-
 	    member(_:bot,TypeAss) -> fail
 	;
 	    terms_abs_sort(TypeAss,ASub1),
-	    terms_project(Tv,ASub1,NASub),
+	    terms_project(not_provided_Sg,Tv,not_provided_HvFv_u,ASub1,NASub),
 	    normal_asub(NASub,NewASub)
 	).
 
@@ -1054,13 +1054,13 @@ apply([]).
 
 
 %------------------------------------------------------------------%
-:- pred terms_project(+Vars,+Asub,-Proj): list * absu * absu # 
+:- pred terms_project(+Sg,+Vars,+HvFv_u,+Asub,-Proj): term * list * list * absu * absu # 
 "@var{Proj} is the result of eliminating from @var{Asub} all
 @var{X}:@var{Value} such that @var{X} is not in @var{Vars}".
 
-terms_project(_,'$bottom',Proj):- 
+terms_project(_Sg,_Vars,_HvFv_u,'$bottom',Proj):- !,
 	Proj = '$bottom'.
-terms_project(Vars,ASub,Proj) :- 
+terms_project(_Sg,Vars,_HvFv_u,ASub,Proj) :- 
 	terms_project_aux(Vars,ASub,Proj).
 %	displayq(proj(Proj)),nl.
 

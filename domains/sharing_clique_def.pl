@@ -53,7 +53,7 @@
 	share_clique_input_user_interface/5,
 	share_clique_less_or_equal/2,
 	share_clique_lub_cl/3,
-	share_clique_project/3,
+	share_clique_project/5,
 	share_clique_abs_sort/2,
 	share_clique_special_builtin/5,
 	share_clique_unknown_call/4]).
@@ -106,14 +106,14 @@ share_clique_def_extend((SH_Prime,Def_Prime),Sv,(SH_Call,Def_Call),Succ):-
 share_clique_def_extend(_Prime,_Sv,_Call,'$bottom').
 
 %------------------------------------------------------------------------%
-% share_clique_def_project(+,+,-)                                        |
-% share_clique_def_project(Vars,ASub,Proj)                               |
+% share_clique_def_project(+,+,+,+,-)                                    |
+% share_clique_def_project(Sg,Vars,HvFv_u,ASub,Proj)                     |
 %------------------------------------------------------------------------%
-:- export(share_clique_def_project/3).
-share_clique_def_project(_,'$bottom','$bottom'):- !.
-share_clique_def_project(Vars,(SH_ASub,Def_ASub),Proj) :-
-	def_project(not_provided_Sg,Vars,not_provided_HvFv_u,Def_ASub,Def_Proj),
-	share_clique_project(Vars,SH_ASub,SH_Proj),
+:- export(share_clique_def_project/5).
+share_clique_def_project(_,_,_,'$bottom','$bottom'):- !.
+share_clique_def_project(Sg,Vars,HvFv_u,(SH_ASub,Def_ASub),Proj) :-
+	def_project(Sg,Vars,HvFv_u,Def_ASub,Def_Proj),
+	share_clique_project(Sg,Vars,HvFv_u,SH_ASub,SH_Proj),
 	Proj = (SH_Proj,Def_Proj).
 
 %------------------------------------------------------------------------%

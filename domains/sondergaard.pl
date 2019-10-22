@@ -13,7 +13,7 @@
 	  son_less_or_equal/2,
 	  son_lub/3,        
 	  son_asub_to_native/5,
-	  son_project/3,      
+	  son_project/5,      
 	  son_abs_sort/2,         
 	  son_special_builtin/5,
 	  son_success_builtin/6,
@@ -91,17 +91,17 @@
 %------------------------------------------------------------------------%
 %                      ABSTRACT PROJECTION
 %------------------------------------------------------------------------%
-% son_project(+,+,-)                                                     |
-% son_project(Vars,ASub,Proj)                                            |
+% son_project(+,+,+,+,-)                                                 |
+% son_project(Sg,Vars,HvFv_u,ASub,Proj)                                  |
 % Proj_gr will the the intersection among Vars and Gv. Proj_sh will      |
 % be { Xs in Sh| Xs \subseteq Vars}                                      |
 %-------------------------------------------------------------------------
 
-son_project(_,'$bottom',Proj):- !,
+son_project(_Sg,_Vars,_HvFv_u,'$bottom',Proj):- !,
 	Proj = '$bottom'.
-son_project([],_,Proj):- !,
+son_project(_Sg,[],_HvFv_u,_,Proj):- !,
 	Proj = ([],[]).
-son_project(Vars,(Gr,Sh),(Proj_gr,Proj_sh)):-
+son_project(_Sg,Vars,_HvFv_u,(Gr,Sh),(Proj_gr,Proj_sh)):-
 	ord_intersection(Gr,Vars,Proj_gr),
 	son_project_subst(Sh,Vars,Proj_sh).
 
@@ -190,13 +190,13 @@ son_call_to_entry(_Sv,Sg,Hv,Head,_K,_Fv,(Proj_gr,Proj_sh),Entry,(NewBinds,GvAll)
 son_exit_to_prime(_,_,_,_,'$bottom',_,'$bottom') :- !.
 son_exit_to_prime(Sg,Hv,Head,_,Exit,Flag,Prime):- 
 	Flag == yes, !,
-	son_project(Hv,Exit,BPrime),
+	son_project(Sg,Hv,not_provided_HvFv_u,Exit,BPrime),
 	copy_term((Head,BPrime),(NewTerm,NewPrime)),
 	Sg = NewTerm,
 	son_abs_sort(NewPrime,Prime).
 son_exit_to_prime(_,[],_,Sv,_,_,(Sv,[])):- !.
-son_exit_to_prime(_,Hv,_,Sv,Exit,(Binds,Gv_1),Prime):-
-	son_project(Hv,Exit,(Gv,Sh)),
+son_exit_to_prime(Sg,Hv,_,Sv,Exit,(Binds,Gv_1),Prime):-
+	son_project(Sg,Hv,not_provided_HvFv_u,Exit,(Gv,Sh)),
 	son_groundness_propagate(Binds,Gv,Gv_1,Sh,NewBinds,TempSh,GvAll),
 	ord_intersection(GvAll,Sv,Gv_prime),
 	collect_singletons(TempSh,NonLinear),
@@ -686,7 +686,7 @@ son_success_builtin(copy_term,Sv_u,p(X,Y),HvFv_u,Call,Succ):-
 	copy_term(Y,NewY),
 	varset(NewY,Hv),
 	varset(X,Xv),
-	son_project(Xv,Call,Proj),
+	son_project(not_provided_Sg,Xv,not_provided_HvFv_u,Call,Proj),
 	son_call_to_entry(Xv,X,Hv,NewY,not_provided,[],Proj,(Entry_gr,Entry_sh),_), % TODO: add some ClauseKey?
 	Call = (Call_gr,Call_sh),
 	merge(Call_gr,Entry_gr,TempCall_gr),
@@ -698,7 +698,7 @@ son_success_builtin(copy_term,Sv_u,p(X,Y),HvFv_u,Call,Succ):-
 	varset(Call,Callv),
 	sort(Sv_u,Sv),
 	merge(Callv,Sv,Vars),
-	son_project(Vars,TempSucc,Succ).
+	son_project(not_provided_Sg,Vars,not_provided_HvFv_u,TempSucc,Succ).
 son_success_builtin(var,_,p(X),_HvFv_u,(Call_gr,_),Succ):-
 	ord_member(X,Call_gr), !,
 	Succ = '$bottom'.

@@ -12,7 +12,7 @@
 	  shareson_less_or_equal/2, 
 	  shareson_glb/3,
 	  shareson_asub_to_native/5,
-	  shareson_project/3, 
+	  shareson_project/5, 
 	  shareson_abs_sort/2,    
 	  shareson_unknown_call/4,  
 	  shareson_unknown_entry/3, 
@@ -146,13 +146,13 @@ shareson_empty_entry(Sg,Qv,Call):-
 
 %-------------------------------------------------------------------------
 
-shareson_project(_,'$bottom',Proj):- !,
+shareson_project(_Sg,_Vars,_HvFv_u,'$bottom',Proj):- !,
 	Proj = '$bottom'.
-shareson_project([],_,Proj):- !,
+shareson_project(_Sg,[],_HvFv_u,_,Proj):- !,
 	Proj = (([],[]),[]).
-shareson_project(Vars,(Call_son,Call_sh),(Proj_son,Proj_sh)):-
-	son_project(Vars,Call_son,Proj_son),
-	share_project(Vars,Call_sh,Proj_sh).
+shareson_project(Sg,Vars,HvFv_u,(Call_son,Call_sh),(Proj_son,Proj_sh)):-
+	son_project(Sg,Vars,HvFv_u,Call_son,Proj_son),
+	share_project(Sg,Vars,HvFv_u,Call_sh,Proj_sh).
 
 %-------------------------------------------------------------------------
 

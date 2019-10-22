@@ -43,7 +43,7 @@
 	share_clique_input_user_interface/5,
 	share_clique_less_or_equal/2,
 	share_clique_lub_cl/3,
-	share_clique_project/3,
+	share_clique_project/5,
 	share_clique_abs_sort/2,
 	share_clique_widen/4,
 	may_be_var/2,
@@ -235,8 +235,8 @@ sharefree_clique_extend((Prime_SH,Prime_fr),Sv,(Call_SH,Call_fr),(Succ_SH_N,Succ
 %------------------------------------------------------------------------%
 :- export(sharefree_clique_project/5).
 sharefree_clique_project(_Sg,_,_HvFv_u,'$bottom','$bottom'):- !.
-sharefree_clique_project(_Sg,Vars,_HvFv_u,(SH,F),(Proj_SH,Proj_F)) :-
-	share_clique_project(Vars,SH,Proj_SH),
+sharefree_clique_project(Sg,Vars,HvFv_u,(SH,F),(Proj_SH,Proj_F)) :-
+	share_clique_project(Sg,Vars,HvFv_u,SH,Proj_SH),
 	project_freeness(Vars,F,Proj_F).
 
 %------------------------------------------------------------------------%
@@ -671,12 +671,12 @@ sharefree_clique_success_builtin('=../2',Sv_uns,p(X,Y),_,Call,Succ):-
 	    ( ValueZ = f , ValueX = f ->
 		Succ = '$bottom'
 	    ; ord_subtract(Sv,[Z],NewVars),
-	      share_clique_project(NewVars,Call_SH,Proj_SH),
+	      share_clique_project(not_provided_Sg,NewVars,not_provided_HvFv_u,Call_SH,Proj_SH),
 	      ord_subtract(NewVars,[X],VarsY),
 	      product_clique(ValueX,X,VarsY,Sv,Proj_SH,Proj_fr,Prime_SH,Prime_fr),
 	      sharefree_clique_extend((Prime_SH,Prime_fr),Sv,Call,Succ)
 	    )
-	; share_clique_project(Sv,Call_SH,Proj_SH),
+	; share_clique_project(not_provided_Sg,Sv,not_provided_HvFv_u,Call_SH,Proj_SH),
 	  ord_subtract(Sv,[X],VarsY),
 	  product_clique(ValueX,X,VarsY,Sv,Proj_SH,Proj_fr,Prime_SH,Prime_fr),
 	  sharefree_clique_extend((Prime_SH,Prime_fr),Sv,Call,Succ)
@@ -974,7 +974,7 @@ update_lambda_cf(Gv,Fr,SH,Fr1,SH1):-
 %% mynonvar([],_Sh,_Free).
 %% mynonvar([F|Rest],Sh,Free):-
 %% 	insert(Free,F,Vars),
-%% 	share_project(Vars,Sh,NewSh),
+%% 	share_project(not_provided_Sg,Vars,not_provided_HvFv_u,Sh,NewSh),
 %% 	impossible(NewSh,NewSh,Vars),!,
 %% 	mynonvar(Rest,Sh,Free).
 
@@ -1081,13 +1081,13 @@ propagate_clique_non_freeness(Vars,NonFv,(Cl,Sh),Fr,NewFr):-
 	  compute_lub_fr(NewFr1,NewFr2,NewFr).
 
 product_clique(f,X,VarsY,_,SH,Lda_fr,Prime_SH,Prime_fr):-
-	share_clique_project(VarsY,SH,Temp),
+	share_clique_project(not_provided_Sg,VarsY,not_provided_HvFv_u,SH,Temp),
 	bin_union_w(Temp,([],[[X]]),Temp1),
 	share_clique_abs_sort(Temp1,Prime_SH),
 	take_clique_coupled(SH,[X],Coupled),
 	change_values_if_f(Coupled,Lda_fr,Prime_fr,nf).
 product_clique(nf,X,VarsY,Sv,SH,Lda_fr,Prime_SH,Prime_fr):-
-	share_clique_project(VarsY,SH,Temp),
+	share_clique_project(not_provided_Sg,VarsY,not_provided_HvFv_u,SH,Temp),
 	star_w(Temp,Temp1),
 	bin_union_w(Temp1,([],[[X]]),Temp2),
 	share_clique_abs_sort(Temp2,Prime_SH),

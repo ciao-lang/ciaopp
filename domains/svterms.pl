@@ -2,7 +2,7 @@
 	svterms_init_abstract_domain/1,
 	svterms_call_to_entry/9,
 	svterms_exit_to_prime/7,
-	svterms_project/3,
+	svterms_project/5,
 	svterms_compute_lub/2,
 	svterms_compute_lub_el/3,
 	svterms_abs_sort/2,
@@ -50,7 +50,7 @@
 	[                             
 	    eterms_call_to_entry/9,
 	    eterms_exit_to_prime/7,
-	    eterms_project/3,
+	    eterms_project/5,
 	    eterms_compute_lub_el/3,
 	    eterms_abs_sort/2,
 	    eterms_extend/4,
@@ -431,9 +431,9 @@ sv_exit_to_prime(_Sg,_Hv,_Head,Sv,SV_Exit,no(SV_s),SV_Prime):-
 	
 
 %------------------------------------------------------------------%
-svterms_project(Vars,ASub,Proj):-
+svterms_project(Sg,Vars,HvFv_u,ASub,Proj):-
 	abssubst(ASub,TypesASub,SV),
-	eterms_project(Vars,TypesASub,TypesProj),
+	eterms_project(Sg,Vars,HvFv_u,TypesASub,TypesProj),
         sv_project(Vars,SV,SVProj),
 	abssubst_b(Proj,TypesProj,SVProj).
 

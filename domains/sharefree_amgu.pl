@@ -41,7 +41,7 @@
 	  change_values_insert/4]).
 :- use_module(domain(share_aux), [list_ground/2]).
 
-:- use_module(domain(sharing), [share_project/3]).
+:- use_module(domain(sharing), [share_project/5]).
 :- use_module(domain(sharing_amgu), [share_amgu_augment_asub/3]).
 :- use_module(domain(sharefree), [
 	shfr_call_to_success_builtin/6,
@@ -351,13 +351,13 @@ sharefree_amgu_call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,Succ):-
 %-------------------------------------------------------------------------
 
 product(f,X,VarsY,_,Sh,Lda_fr,Prime_sh,Prime_fr):-
-	share_project(VarsY,Sh,Temp), % TODO: why not project_share/3 like in sharefree.pl?
+	share_project(not_provided_Sg,VarsY,not_provided_HvFv_u,Sh,Temp), % TODO: why not project_share/3 like in sharefree.pl?
 	insert_each(Temp,X,Temp1),
 	sort_list_of_lists(Temp1,Prime_sh),
 	take_coupled(Sh,[X],Coupled),
 	change_values_if_f(Coupled,Lda_fr,Prime_fr,nf).
 product(nf,X,VarsY,Sv,Sh,Lda_fr,Prime_sh,Prime_fr):-
-	share_project(VarsY,Sh,Temp), % TODO: why not project_share/3 like in sharefree.pl?
+	share_project(not_provided_Sg,VarsY,not_provided_HvFv_u,Sh,Temp), % TODO: why not project_share/3 like in sharefree.pl?
 	closure_under_union(Temp,Temp1),
 	merge_each([X],Temp1,Temp2),
 	sort(Temp2,Prime_sh),

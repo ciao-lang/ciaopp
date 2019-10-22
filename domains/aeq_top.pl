@@ -31,7 +31,7 @@
 :- use_module(domain(s_eqs), [apply/1, keys_and_values/3]).
 :- use_module(domain(sharing), 
 	[ share_input_interface/4, share_input_user_interface/5,
-	  share_project/3, share_abs_sort/2
+	  share_project/5, share_abs_sort/2
 	]).
 %
 :- use_module(library(idlists), [memberchk/2, union_idlists/3]).

@@ -262,7 +262,7 @@
 :- dom_op(share, augment_two_asub/3, from(share_amgu)).
 :- dom_op(share, call_to_entry/9).
 :- dom_op(share, exit_to_prime/7).
-:- dom_op(share, project(_Sg,Vars,_HvFv,ASub,Proj), project(Vars,ASub,Proj)).
+:- dom_op(share, project/5).
 :- dom_op(share, compute_lub/2).
 :- dom_op(share, abs_sort/2).
 :- dom_op(share, extend(_Sg,Prime,Sv,Call,Succ), extend(Prime,Sv,Call,Succ)).
@@ -392,7 +392,7 @@
 :- dom_def(shareson).
 :- dom_op(shareson, call_to_entry/9).
 :- dom_op(shareson, exit_to_prime/7).
-:- dom_op(shareson, project(_Sg,Vars,_HvFv,ASub,Proj), project(Vars,ASub,Proj)).
+:- dom_op(shareson, project/5).
 :- dom_op(shareson, compute_lub/2).
 :- dom_op(shareson, abs_sort/2).
 :- dom_op(shareson, extend(_Sg,Prime,Sv,Call,Succ), extend(Prime,Sv,Call,Succ)).
@@ -412,7 +412,7 @@
 :- dom_def(shfrson).
 :- dom_op(shfrson, call_to_entry/9).
 :- dom_op(shfrson, exit_to_prime/7).
-:- dom_op(shfrson, project(_Sg,Vars,_HvFv,ASub,Proj), project(Vars,ASub,Proj)).
+:- dom_op(shfrson, project/5).
 :- dom_op(shfrson, compute_lub/2).
 :- dom_op(shfrson, abs_sort/2).
 :- dom_op(shfrson, extend(_Sg,Prime,Sv,Call,Succ), extend(Prime,Sv,Call,Succ)).
@@ -432,7 +432,7 @@
 :- dom_def(son).
 :- dom_op(son, call_to_entry/9).
 :- dom_op(son, exit_to_prime/7).
-:- dom_op(son, project(_Sg,Vars,_HvFv,ASub,Proj), project(Vars,ASub,Proj)).
+:- dom_op(son, project/5).
 :- dom_op(son, compute_lub/2).
 :- dom_op(son, abs_sort/2).
 :- dom_op(son, extend(_Sg,Prime,Sv,Call,Succ), extend(Prime,Sv,Call,Succ)).
@@ -457,7 +457,7 @@
 :- dom_op(share_amgu, augment_two_asub/3).
 :- dom_op(share_amgu, call_to_entry/9).
 :- dom_op(share_amgu, exit_to_prime/7).
-:- dom_op(share_amgu, project(_Sg,Vars,_HvFv,ASub,Proj), project(Vars,ASub,Proj), from(share)).
+:- dom_op(share_amgu, project/5, from(share)).
 :- dom_op(share_amgu, compute_lub/2, from(share)).
 :- dom_op(share_amgu, abs_sort/2, from(share)).
 :- dom_op(share_amgu, extend(_Sg,Prime,Sv,Call,Succ), extend(Prime,Sv,Call,Succ), from(share)).
@@ -529,7 +529,7 @@
 :- dom_op(share_clique, augment_asub/3).
 :- dom_op(share_clique, call_to_entry/9).
 :- dom_op(share_clique, exit_to_prime/7).
-:- dom_op(share_clique, project(_Sg,Vars,_HvFv,ASub,Proj), project(Vars,ASub,Proj)).
+:- dom_op(share_clique, project/5).
 :- dom_op(share_clique, compute_lub/2).
 :- dom_op(share_clique, identical_abstract/2).
 :- dom_op(share_clique, abs_sort/2).
@@ -553,7 +553,7 @@
 :- dom_def(share_clique_1).
 :- dom_op(share_clique_1, call_to_entry/9).
 :- dom_op(share_clique_1, exit_to_prime/7).
-:- dom_op(share_clique_1, project(_Sg,Vars,_HvFv,ASub,Proj), project(Vars,ASub,Proj)).
+:- dom_op(share_clique_1, project/5).
 :- dom_op(share_clique_1, compute_lub/2).
 :- dom_op(share_clique_1, identical_abstract/2).
 :- dom_op(share_clique_1, abs_sort/2, from(share_clique)).
@@ -604,7 +604,7 @@
 :- dom_def(share_clique_def).
 :- dom_op(share_clique_def, call_to_entry/9).
 :- dom_op(share_clique_def, exit_to_prime/7).
-:- dom_op(share_clique_def, project(_Sg,Vars,_HvFv,ASub,Proj), project(Vars,ASub,Proj)).
+:- dom_op(share_clique_def, project/5).
 :- dom_op(share_clique_def, compute_lub/2).
 :- dom_op(share_clique_def, identical_abstract/2).
 :- dom_op(share_clique_def, abs_sort/2).
@@ -628,7 +628,7 @@
 :- dom_def(sharefree_clique_def).
 :- dom_op(sharefree_clique_def, call_to_entry/9).
 :- dom_op(sharefree_clique_def, exit_to_prime/7).
-:- dom_op(sharefree_clique_def, project(_Sg,Vars,_HvFv,ASub,Proj), project(Vars,ASub,Proj)).
+:- dom_op(sharefree_clique_def, project/5).
 :- dom_op(sharefree_clique_def, compute_lub/2).
 :- dom_op(sharefree_clique_def, identical_abstract/2).
 :- dom_op(sharefree_clique_def, abs_sort/2).
@@ -654,7 +654,7 @@
 :- dom_op(bshare, augment_asub/3).
 :- dom_op(bshare, augment_two_asub/3).
 :- dom_op(bshare, call_to_entry/9).
-:- dom_op(bshare, project(_Sg,Vars,_HvFv,ASub,Proj), project(Vars,ASub,Proj)).
+:- dom_op(bshare, project/5).
 :- dom_op(bshare, compute_lub/2).
 :- dom_op(bshare, identical_abstract/2).
 :- dom_op(bshare, abs_sort/2).
@@ -716,7 +716,7 @@
 :- dom_def(depthk).
 :- dom_op(depthk, call_to_entry/9).
 :- dom_op(depthk, exit_to_prime/7).
-:- dom_op(depthk, project(_Sg,Vars,_HvFv,ASub,Proj), project(Vars,ASub,Proj)).
+:- dom_op(depthk, project/5).
 :- dom_op(depthk, compute_lub/2).
 :- dom_op(depthk, identical_abstract/2).
 :- dom_op(depthk, abs_sort/2).
@@ -741,7 +741,7 @@
 :- dom_op(path, init_abstract_domain/1).
 :- dom_op(path, call_to_entry/9).
 :- dom_op(path, exit_to_prime/7).
-:- dom_op(path, project(_Sg,Vars,_HvFv,ASub,Proj), project(Vars,ASub,Proj)).
+:- dom_op(path, project/5).
 :- dom_op(path, compute_lub/2).
 :- dom_op(path, abs_sort/2).
 :- dom_op(path, extend(_Sg,Prime,Sv,Call,Succ), extend(Prime,Sv,Call,Succ)).
@@ -764,7 +764,7 @@
 :- dom_op(terms, init_abstract_domain/1).
 :- dom_op(terms, call_to_entry/9).
 :- dom_op(terms, exit_to_prime/7).
-:- dom_op(terms, project(_Sg,Vars,_HvFv,ASub,Proj), project(Vars,ASub,Proj)).
+:- dom_op(terms, project/5).
 :- dom_op(terms, widencall/3).
 :- dom_op(terms, widen/3).
 :- dom_op(terms, compute_lub/2).
@@ -820,7 +820,7 @@
 :- dom_op(eterms, init_abstract_domain/1).
 :- dom_op(eterms, call_to_entry/9).
 :- dom_op(eterms, exit_to_prime/7).
-:- dom_op(eterms, project(_Sg,Vars,_HvFv,ASub,Proj), project(Vars,ASub,Proj)).
+:- dom_op(eterms, project/5).
 :- dom_op(eterms, widencall/3).
 :- dom_op(eterms, widen/3).
 :- dom_op(eterms, compute_lub/2).
@@ -852,7 +852,7 @@
 :- dom_op(etermsvar, init_abstract_domain/1).
 :- dom_op(etermsvar, call_to_entry/9).
 :- dom_op(etermsvar, exit_to_prime/7).
-:- dom_op(etermsvar, project(_Sg,Vars,_HvFv,ASub,Proj), project(Vars,ASub,Proj)).
+:- dom_op(etermsvar, project/5).
 :- dom_op(etermsvar, widencall/3).
 :- dom_op(etermsvar, widen/3).
 :- dom_op(etermsvar, compute_lub/2).
@@ -883,7 +883,7 @@
 :- dom_op(svterms, init_abstract_domain/1).
 :- dom_op(svterms, call_to_entry/9).
 :- dom_op(svterms, exit_to_prime/7).
-:- dom_op(svterms, project(_Sg,Vars,_HvFv,ASub,Proj), project(Vars,ASub,Proj)).
+:- dom_op(svterms, project/5).
 :- dom_op(svterms, widencall/3).
 :- dom_op(svterms, widen/3).
 :- dom_op(svterms, compute_lub/2).
@@ -911,7 +911,7 @@
 :- dom_op(deftypes, init_abstract_domain/1).
 :- dom_op(deftypes, call_to_entry/9).
 :- dom_op(deftypes, exit_to_prime/7).
-:- dom_op(deftypes, project(_Sg,Vars,_HvFv,ASub,Proj), project(Vars,ASub,Proj)).
+:- dom_op(deftypes, project/5).
 :- dom_op(deftypes, widencall/3).
 :- dom_op(deftypes, widen/3).
 :- dom_op(deftypes, compute_lub/2).

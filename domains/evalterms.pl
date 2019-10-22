@@ -11,7 +11,7 @@
 	    eterms_compute_lub_el/3,
 	    eterms_identical_abstract/2,
 	    eterms_call_to_success_fact/9,
-	    eterms_project/3,
+	    eterms_project/5,
 	    eterms_exit_to_prime/7,
 	    eterms_call_to_entry/9,
 	    eterms_glb/3,
@@ -605,7 +605,7 @@ evalterms_call_to_success_builtin('is/2',(X is Y),Sv,Call,Proj,Succ):-
 	    new_type_name(NY),
 	    insert_type_name(NY,[],0),
 	    varset(Y,Svy),
-	    eterms_project(Svy,Proj,Projy),
+	    eterms_project(not_provided_Sg,Svy,not_provided_HvFv_u,Proj,Projy),
 	    eterms_exit_to_prime(p(Y),[Y1],p(Y1),Svy,[Y1:(NY,TY)],(no,Projy),Primey),
 	    eterms_glb(Projy,Primey,Primey2),
 	    (
@@ -616,7 +616,7 @@ evalterms_call_to_success_builtin('is/2',(X is Y),Sv,Call,Proj,Succ):-
 		get_list_names_is(Projy,NameSelec),
 		insert_type_name(NX,NameSelec,0),
 		varset(X,Svx),
-		eterms_project(Svx,Proj,Projx),
+		eterms_project(not_provided_Sg,Svx,not_provided_HvFv_u,Proj,Projx),
 		eterms_exit_to_prime(p(X),[X1],p(X1),Svx,[X1:(NX,TX)],(no,Projx),Primex),
 		eterms_glb(Projx,Primex,Primex2),
 		(

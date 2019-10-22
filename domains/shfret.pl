@@ -80,7 +80,7 @@ shfret_project(_Sg,_Vars,_HvFv_u,'$bottom','$bottom'):- !.
 shfret_project(Sg,Vars,HvFv_u,ASub,Proj):-
 	asub(ASub,ATypes,AModes),
 	shfr_project(Sg,Vars,HvFv_u,AModes,PModes),
-	eterms_project(Vars,ATypes,PTypes),
+	eterms_project(Sg,Vars,HvFv_u,ATypes,PTypes),
 	asub(Proj,PTypes,PModes).
 
 %------------------------------------------------------------------------%
