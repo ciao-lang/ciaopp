@@ -46,8 +46,8 @@
 % difflsign_project(Sg,Vars,HvFv_u,ACons,Proj)                        |
 %-------------------------------------------------------------------------
 
-difflsign_project(_Sg,Vars,HvFv_u,p(_,_,Tot),Proj):-
-	lsign_project(Tot,Vars,HvFv_u,Proj).
+difflsign_project(Sg,Vars,HvFv_u,p(_,_,Tot),Proj):-
+	lsign_project(Sg,Vars,HvFv_u,Tot,Proj).
 
 %------------------------------------------------------------------------%
 

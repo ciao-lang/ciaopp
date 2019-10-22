@@ -13,7 +13,7 @@
 	  lsign_abs_subset/2,
 	  lsign_less_or_equal/2,
 	  lsign_glb/3,
-	  lsign_project/4,    
+	  lsign_project/5,    
 	  lsign_abs_sort/2,       
 	  lsign_special_builtin/5,
 	  lsign_success_builtin/6,
@@ -435,7 +435,7 @@ lsign_call_to_entry(_Sv,Sg,_Hv,Head,_K,_,_,_,_):-
 lsign_exit_to_prime(_,_,_,_,'$bottom',_,Prime) :- !,
 	Prime = '$bottom'.
 lsign_exit_to_prime(Sg,Hv,Head,_Sv,Exit,(yes,Fv),Prime):- 
-	lsign_project(Exit,Hv,Fv,BPrime),
+	lsign_project(Sg,Hv,Fv,Exit,BPrime),
 	copy_term((Head,BPrime),(NewTerm,NewPrime)),
 	Sg = NewTerm,
 	lsign_abs_sort(NewPrime,Prime).
@@ -695,8 +695,8 @@ lsign_sum_op_less(less,less).
 %------------------------------------------------------------------------%
 %                      ABSTRACT PROJECTION
 %------------------------------------------------------------------------%
-% lsign_project(+,+,+,-) 
-% lsign_project(ACons,Vars,HvFv_u,Proj)
+% lsign_project(+,+,+,+,-) 
+% lsign_project(Sg,Vars,HvFv_u,ACons,Proj)
 %------------------------------------------------------------------------%
 % This predicate projects the abstract constraint ACons onto the 
 % variables in the sorted list Vars, obtaining Proj, as follows. If Vars
@@ -718,11 +718,11 @@ lsign_sum_op_less(less,less).
 %   - Vars and ACons are sorted
 %------------------------------------------------------------------------%
 
-lsign_project('$bottom',_,_,Proj):- !,
+lsign_project(_Sg,_,_,'$bottom',Proj):- !,
 	Proj = '$bottom'.
-lsign_project(_,[],_,Proj):- !,
+lsign_project(_Sg,[],_,_,Proj):- !,
 	Proj = a([],[],[]).
-lsign_project(ACons,Vars,HvFv_u,Proj):-
+lsign_project(_Sg,Vars,HvFv_u,ACons,Proj):-
 	sort(HvFv_u,HvFv),
 	ord_subtract(HvFv,Vars,OutVars),
 	lsign_project_(OutVars,Vars,ACons,Proj).
@@ -2616,7 +2616,7 @@ lsign_global_info(Abs,HvFv,Pos,Neg,Imp):-
 
 lsign_project_each([],_,_,NewS,[],NewS).
 lsign_project_each([X|PossibleNonGround],Abs,HvFv,S0,NonGround,NewS):-
-	lsign_project(Abs,[X],HvFv,Proj),
+	lsign_project(sg_not_provided,[X],HvFv,Abs,Proj), % TODO: add Sg
 	Proj = a(S,AEqIn,Non), % What to do if Proj = '$bottom'?
 	( S = [], AEqIn = [], Non = [] ->
 	    NonGround = [X|NonGround0]

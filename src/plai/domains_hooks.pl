@@ -155,7 +155,7 @@
 :- dom_op(lsign, init_abstract_domain/1).
 :- dom_op(lsign, call_to_entry/9).
 :- dom_op(lsign, exit_to_prime/7).
-:- dom_op(lsign, project(_Sg,Vars,HvFv,ASub,Proj), project(ASub,Vars,HvFv,Proj)).
+:- dom_op(lsign, project/5).
 :- dom_op(lsign, compute_lub/2).
 :- dom_op(lsign, abs_sort/2).
 :- dom_op(lsign, extend/5).
