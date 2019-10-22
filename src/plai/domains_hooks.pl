@@ -1188,7 +1188,7 @@
 :- dom_op(res_plai, init_abstract_domain/1).
 :- dom_op(res_plai, call_to_entry/9).
 :- dom_op(res_plai, exit_to_prime/7).
-:- dom_op(res_plai, project(Sg,Vars,_HvFv,ASub,Proj), project(ASub,Sg,Vars,Proj)).
+:- dom_op(res_plai, project/5).
 % :- dom_op(res_plai, widencall/3).
 :- dom_op(res_plai, widen/3).
 :- dom_op(res_plai, compute_lub/2).
@@ -1223,7 +1223,7 @@
 :- dom_op(res_plai_stprf, init_abstract_domain/1).
 :- dom_op(res_plai_stprf, call_to_entry/9).
 :- dom_op(res_plai_stprf, exit_to_prime/7).
-:- dom_op(res_plai_stprf, project(Sg,Vars,_HvFv,ASub,Proj), project(ASub,Sg,Vars,Proj)).
+:- dom_op(res_plai_stprf, project/5).
 :- dom_op(res_plai_stprf, widen/3).
 :- dom_op(res_plai_stprf, compute_lub/2).
 :- dom_op(res_plai_stprf, compute_clauses_lub/3).
@@ -1255,7 +1255,7 @@
 :- dom_op(sized_types, init_abstract_domain/1).
 :- dom_op(sized_types, call_to_entry/9).
 :- dom_op(sized_types, exit_to_prime/7).
-:- dom_op(sized_types, project(Sg,Vars,_HvFv,ASub,Proj), project(ASub,Sg,Vars,Proj)).
+:- dom_op(sized_types, project/5).
 :- dom_op(sized_types, widen/3).
 :- dom_op(sized_types, compute_lub/2).
 :- dom_op(sized_types, compute_clauses_lub/3).
