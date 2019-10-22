@@ -24,7 +24,7 @@
 :- use_module(domain(sharefree), [
 	shfr_compute_lub_el/3,
 	shfr_empty_entry/3,
-	shfr_extend/4,
+	shfr_extend/5,
 	shfr_glb/3,
 	shfr_obtain_info/4,
 	shfr_input_interface/4,
@@ -121,19 +121,19 @@ shfrlin_amgu_exit_to_prime(Sg,_Hv,_Head,Sv,Exit,ExtraInfo,Prime):-
 %                      ABSTRACT Extend                                   |
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% shfrlin_amgu_extend(+,+,+,-)                                                |
-% shfrlin_amgu_extend(Prime,Sv,Call,Succ)                                     |
+% shfrlin_amgu_extend(+,+,+,+,-)                                         |
+% shfrlin_amgu_extend(Sg,Prime,Sv,Call,Succ)                             |
 %------------------------------------------------------------------------%
-:- export(shfrlin_amgu_extend/4).
-shfrlin_amgu_extend('$bottom',_Sv,_Call,Succ):- !,
+:- export(shfrlin_amgu_extend/5).
+shfrlin_amgu_extend(_Sg,'$bottom',_Sv,_Call,Succ):- !,
 	Succ = '$bottom'.
-shfrlin_amgu_extend(_Prime,[],Call,Succ):- !,
+shfrlin_amgu_extend(_Sg,_Prime,[],Call,Succ):- !,
 	Call = Succ.
-shfrlin_amgu_extend(Prime,Sv,Call,(Succ_sh,Succ_fr,Succ_lin)):-
+shfrlin_amgu_extend(Sg,Prime,Sv,Call,(Succ_sh,Succ_fr,Succ_lin)):-
 	Call = (Call_sh,Call_fr,Call_lin),
 	Prime = (Prime_sh,Prime_fr,Prime_lin),
         %% sharing + freeeness
-	shfr_extend((Prime_sh,Prime_fr),Sv,(Call_sh,Call_fr),(Succ_sh,Succ_fr)),
+	shfr_extend(Sg,(Prime_sh,Prime_fr),Sv,(Call_sh,Call_fr),(Succ_sh,Succ_fr)),
         %% linearity
         ord_subtract(Call_lin,Sv,Call_lin_not_rel),
 	member_value_freeness(Succ_fr,Succ_gr,g),
@@ -366,7 +366,7 @@ shfrlin_amgu_call_to_success_builtin('=/2','='(X,_Y),Sv,Call,Proj,Succ):-
 	var_value(Proj_fr,X,ValueX),
 	product(ValueX,X,VarsY,Sv,Proj_sh,Proj_fr,Prime_sh,Prime_fr),
         member_value_freeness(Prime_fr,Prime_lin,f),
-	shfrlin_amgu_extend((Prime_sh,Prime_fr,Prime_lin),Sv,Call,Succ).
+	shfrlin_amgu_extend(not_provided_Sg,(Prime_sh,Prime_fr,Prime_lin),Sv,Call,Succ).
 shfrlin_amgu_call_to_success_builtin('=/2','='(X,Y),Sv,Call,Proj,Succ):-
 	copy_term(X,Xterm),
 	copy_term(Y,Yterm),

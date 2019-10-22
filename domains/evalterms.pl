@@ -15,7 +15,7 @@
 	    eterms_exit_to_prime/7,
 	    eterms_call_to_entry/9,
 	    eterms_glb/3,
-	    eterms_extend/4,
+	    eterms_extend/5,
 	    resetunion/0,
 	    type_union/3,
 	    make_determ_wide_rules/1,
@@ -549,7 +549,7 @@ evalterms_call_to_success_builtin('arg/3',Sg,Sv,Call,Proj,Succ):-
 	),
 	eterms_glb(Prime2,Entry,Prime3),
 	eterms_exit_to_prime(Sg,Hv,Head,Sv,Prime3,ExtraInfo,Prime),
-	eterms_extend(Prime,Sv,Call,Succ).
+	eterms_extend(Sg,Prime,Sv,Call,Succ).
 
 evalterms_call_to_success_builtin('functor/3',Sg,Sv,Call,Proj,Succ):-
 	sort([X,Y,Z],Hv),
@@ -592,7 +592,7 @@ evalterms_call_to_success_builtin('functor/3',Sg,Sv,Call,Proj,Succ):-
 	),
 	eterms_glb(Prime2,Entry,Prime3),
 	eterms_exit_to_prime(Sg,Hv,Head,Sv,Prime3,ExtraInfo,Prime),
-	eterms_extend(Prime,Sv,Call,Succ).
+	eterms_extend(Sg,Prime,Sv,Call,Succ).
 
 	    
 evalterms_call_to_success_builtin('=/2',X=Y,Sv,Call,Proj,Succ):-
@@ -623,7 +623,7 @@ evalterms_call_to_success_builtin('is/2',(X is Y),Sv,Call,Proj,Succ):-
 		    Primex2 \== '$bottom' ->
 		    append(Primex2,Primey2,Prime_u),
 		    sort(Prime_u,Prime),
-		    eterms_extend(Prime,Sv,Call,Succ)
+		    eterms_extend(not_provided_Sg,Prime,Sv,Call,Succ)
 		;
 		    Succ = '$bottom'
 		)
@@ -642,7 +642,7 @@ evalterms_call_to_success_builtin(Key,Sg,Sv,Call,Proj,Succ):-
 	    postcondition_builtin(Key,Bg,Bv,Exit),
 	    eterms_exit_to_prime(Sg,Bv,Bg,Sv,Exit,(no,Proj),Prime1),
 	    eterms_glb(Proj,Prime1,Prime),
-	    eterms_extend(Prime,Sv,Call,Succ)
+	    eterms_extend(Sg,Prime,Sv,Call,Succ)
 	;
 	    Succ = '$bottom'
 	).

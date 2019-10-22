@@ -6,7 +6,7 @@
 	  shareson_body_succ_builtin/8,
 	  shareson_compute_lub/2,
 	  shareson_exit_to_prime/7,  
-	  shareson_extend/4,  
+	  shareson_extend/5,  
 	  shareson_input_user_interface/5,
 	  shareson_input_interface/4,
 	  shareson_less_or_equal/2, 
@@ -77,11 +77,11 @@ shareson_exit_to_prime(Sg,Hv,Head,Sv,(Exit_son,Exit_sh),ExtraInfo,Prime):-
 	
 %-------------------------------------------------------------------------
 
-shareson_extend('$bottom',_,_,Succ):- !,Succ = '$bottom'.
-shareson_extend(_Prime,[],Call,Succ):- !, Call = Succ.
-shareson_extend((Prime_son,Prime_sh),Sv,(Call_son,Call_sh),Succ):-
-	share_extend(Prime_sh,Sv,Call_sh,Succ_sh),
-	son_extend(Prime_son,Sv,Call_son,Succ_son),
+shareson_extend(_Sg,'$bottom',_,_,Succ):- !,Succ = '$bottom'.
+shareson_extend(_Sg,_Prime,[],Call,Succ):- !, Call = Succ.
+shareson_extend(Sg,(Prime_son,Prime_sh),Sv,(Call_son,Call_sh),Succ):-
+	share_extend(Sg,Prime_sh,Sv,Call_sh,Succ_sh),
+	son_extend(Sg,Prime_son,Sv,Call_son,Succ_son),
 	merge_list_of_lists(Call_sh,Vars),
 	compose(Succ_son,Succ_sh,Vars,Succ).
 
@@ -92,7 +92,7 @@ shareson_call_to_success_fact(Sg,Hv,Head,_K,Sv,Call,Proj,Prime,Succ):-
 	son_call_to_prime_fact(Sg,Hv,Head,Sv,Proj_son,Prime_son),
 	share_call_to_prime_fact(Sg,Hv,Head,Sv,Proj_sh,Prime_sh),
 	compose(Prime_son,Prime_sh,Sv,Prime),
-	shareson_extend(Prime,Sv,Call,Succ).
+	shareson_extend(Sg,Prime,Sv,Call,Succ).
 
 %-------------------------------------------------------------------------
 

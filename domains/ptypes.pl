@@ -42,8 +42,8 @@ ptypes_identical_abstract(ASub1,ASub2) :- terms_identical_abstract(ASub1,ASub2).
 :- export(ptypes_abs_sort/2).
 ptypes_abs_sort(ASub,ASub_s) :- terms_abs_sort(ASub,ASub_s).
 
-:- export(ptypes_extend/4).
-ptypes_extend(Prime,Sv,Call,Succ) :- terms_extend(Prime,Sv,Call,Succ).
+:- export(ptypes_extend/5).
+ptypes_extend(Sg,Prime,Sv,Call,Succ) :- terms_extend(Sg,Prime,Sv,Call,Succ).
 
 :- export(ptypes_less_or_equal/2).
 ptypes_less_or_equal(ASub0,ASub1) :- terms_less_or_equal(ASub0,ASub1).

@@ -45,7 +45,7 @@
 :- use_module(domain(sharing_amgu), [share_amgu_augment_asub/3]).
 :- use_module(domain(sharefree), [
 	shfr_call_to_success_builtin/6,
-	shfr_extend/4,
+	shfr_extend/5,
 	shfr_project/5,
 	shfr_abs_sort/2,
 	shfr_special_builtin/5,
@@ -292,7 +292,7 @@ sharefree_amgu_call_to_success_builtin('=/2','='(X,_Y),Sv,Call,Proj,Succ):-
 	var_value(Proj_fr,X,ValueX),
 	product(ValueX,X,VarsY,Sv,Proj_sh,Proj_fr,Prime_sh,Prime_fr),
 	Prime= (Prime_sh,Prime_fr),
-	shfr_extend(Prime,Sv,Call,Succ).
+	shfr_extend(not_provided_Sg,Prime,Sv,Call,Succ).
 sharefree_amgu_call_to_success_builtin('=/2','='(X,Y),Sv,Call,Proj,Succ):-
 	copy_term(X,Xterm),
 	copy_term(Y,Yterm),

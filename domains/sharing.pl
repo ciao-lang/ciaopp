@@ -289,8 +289,8 @@ share_glb(ASub0,ASub1,Glb):-
 %                      ABSTRACT EXTEND                                   %
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% share_extend(+,+,+,-)                                                  %
-% share_extend(Prime,Sv,Call,Succ)                                       %
+% share_extend(+,+,+,+,-)                                                %
+% share_extend(Sg,Prime,Sv,Call,Succ)                                    %
 % If Prime = bottom, Succ = bottom. If Sv = [], Call = Succ. Otherwise,  %
 % it splits Call into two sets of sets: Intersect (those sets containing %
 % at least a variabe in Sv) and Disjunct (the rest). Then is obtains     %
@@ -298,12 +298,12 @@ share_glb(ASub0,ASub1,Glb):-
 % with the information in Prime adding, at the end, Disjunct.            %
 %------------------------------------------------------------------------%
 
-:- export(share_extend/4).     
-share_extend('$bottom',_Hv,_Call,Succ):- !,
+:- export(share_extend/5).     
+share_extend(_Sg,'$bottom',_Hv,_Call,Succ):- !,
 	Succ = '$bottom'.
-share_extend(_Prime,[],Call,Succ):- !,
+share_extend(_Sg,_Prime,[],Call,Succ):- !,
 	Call = Succ.
-share_extend(Prime,Sv,Call,Succ) :-
+share_extend(_Sg,Prime,Sv,Call,Succ) :-
 	ord_split_lists_from_list(Sv,Call,Intersect,Disjunct),
 	closure_under_union(Intersect,Star),
 	prune_success(Star,Prime,Sv,Disjunct,Succ).
@@ -335,7 +335,7 @@ share_call_to_success_fact(Sg,Hv,Head,_K,Sv,Call,Proj,Prime,Succ) :-
 	closure_under_union(Proj,ProjStar),
 	compute_success_proj(S_partition,Sg_args,ShareArgsHead,ProjStar,[],
                                                                     Prime),
-	share_extend(Prime,Sv,Call,Succ).
+	share_extend(Sg,Prime,Sv,Call,Succ).
 share_call_to_success_fact(_Sg,_Hv,_Head,_K,_Sv,_Call,_Proj, '$bottom','$bottom').
 
 %-------------------------------------------------------------------------
@@ -988,7 +988,7 @@ share_success_builtin('=../2',_,p(X,Y),_,Call,Succ):-
 share_success_builtin('=../2',Sv_u,p(X,Y),_,Call,Succ):-
 	var(X), var(Y),!,
 	sort(Sv_u,Sv),
-	share_extend([Sv],Sv,Call,Succ).
+	share_extend(not_provided_Sg,[Sv],Sv,Call,Succ).
 share_success_builtin('=../2',Sv_u,p(X,Y),_,Call,Succ):-
 %%	( var(Y) ; Y = [_|_] ), !,
 %%	( var(X) -> Term=[g|X] ; X=..Term ),
@@ -1044,7 +1044,7 @@ share_success_builtin('recorded/3',Sv_u,p(Y,Z),_,Call,Succ):-
 	share_project(not_provided_Sg,Varsy,not_provided_HvFv_u,ASub,ASub1),
 	closure_under_union(ASub1,Prime),
 	sort(Sv_u,Sv),
-	share_extend(Prime,Sv,Call,Succ).
+	share_extend(not_provided_Sg,Prime,Sv,Call,Succ).
 share_success_builtin(var,_Sv,p(X),_,Call,Succ):-
 	var(X),
 	ord_member_list_of_lists(X,Call),!,

@@ -7,7 +7,7 @@
 	  depthk_eliminate_equivalent/2,
 	  depthk_abs_subset/2,
 	  depthk_exit_to_prime/7,
-	  depthk_extend/4,    
+	  depthk_extend/5,    
 	  depthk_identical_abstract/2, 
 	  depthk_input_user_interface/5,
 	  depthk_input_interface/4,
@@ -129,20 +129,20 @@ depthk_exit_to_prime(_Sg,_Hv,_Head,Sv,Exit,Unifiers,Prime):-
 %                      ABSTRACT Extend
 %-------------------------------------------------------------------------
 %------------------------------------------------------------------------%
-% depthk_extend(+,+,+,-)                                                 %
-% depthk_extend(Prime,Sv,Call,Succ)                                      %
+% depthk_extend(+,+,+,+,-)                                               %
+% depthk_extend(Sg,Prime,Sv,Call,Succ)                                   %
 % If Prime = bottom, Succ = bottom. If Sv = [], Call = Succ. Otherwise,  %
 % just add to Prime equs. for variables in Call and not in Prime.        %
 %------------------------------------------------------------------------%
 
-depthk_extend('$bottom',_Sv,_Call,Succ):- !,
+depthk_extend(_Sg,'$bottom',_Sv,_Call,Succ):- !,
 	Succ = '$bottom'.
-depthk_extend(_Prime,[],Call,Succ):- !,
+depthk_extend(_Sg,_Prime,[],Call,Succ):- !,
 	Call = Succ.
-depthk_extend(Prime,Sv,Call,Succ):-
+depthk_extend(Sg,Prime,Sv,Call,Succ):-
 	variables_are_variables(Cv,Call),
 	ord_subtract(Cv,Sv,Nv),
-	depthk_project(not_provided_Sg,Nv,not_provided_HvFv_u,Call,Succ0),
+	depthk_project(Sg,Nv,not_provided_HvFv_u,Call,Succ0),
 	merge(Succ0,Prime,Succ).
 
 %------------------------------------------------------------------------%
@@ -248,7 +248,7 @@ depthk_call_to_success_fact(Sg,_Hv,Head,_K,Sv,Call,Proj,Prime,Succ):-
 	depthk_unify(Unifiers,Proj,Entry0), !,
 	depthk_bu_project(Entry0,Sv,Prime1),
 	depthk_abs_sort(Prime1,Prime),
-	depthk_extend(Prime,Sv,Call,Succ).
+	depthk_extend(Sg,Prime,Sv,Call,Succ).
 depthk_call_to_success_fact(_Sg,_Hv,_Head,_K,_Sv,_Call,_Proj,'$bottom','$bottom').
 
 %------------------------------------------------------------------------%
@@ -424,7 +424,7 @@ depthk_call_to_success_builtin(_SgKey,Sg,Sv,Call,_Proj,Succ):-
 	ord_subtract(Sv,Vars,Vars0),
 	depthk_project(Sg,Vars0,not_provided_HvFv_u,Call,Prime1),
 	merge_eqs(Prime0,Prime1,Prime),
-	depthk_extend(Prime,Sv,Call,Succ), !.
+	depthk_extend(Sg,Prime,Sv,Call,Succ), !.
 depthk_call_to_success_builtin(_SgKey,_Sg,_Sv,_Call,_Proj,'$bottom').
 
 depthk_call_to_prime_builtin(Sg,Sv,Call,Prime):-

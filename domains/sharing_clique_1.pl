@@ -185,16 +185,16 @@ share_clique_1_iterate([(X,Ts)|Eqs],ASub, ASub2):-
 %                      ABSTRACT Extend                                   %
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% share_clique_1_extend(+,+,+,-)                                         |
-% share_clique_1_extend(Prime,Sv,Call,Succ)                              |
+% share_clique_1_extend(+,+,+,+,-)                                       |
+% share_clique_1_extend(Sg,Prime,Sv,Call,Succ)                           |
 %------------------------------------------------------------------------%
 
-:- export(share_clique_1_extend/4).                   
-share_clique_1_extend('$bottom',_Hv,_Call,Succ):- !,
+:- export(share_clique_1_extend/5).
+share_clique_1_extend(_Sg,'$bottom',_Hv,_Call,Succ):- !,
      Succ = '$bottom'.
-share_clique_1_extend(_Prime,[],Call,Succ):- !,
+share_clique_1_extend(_Sg,_Prime,[],Call,Succ):- !,
      Call = Succ.
-share_clique_1_extend(Prime,Sv,Call,Succ):-
+share_clique_1_extend(_Sg,Prime,Sv,Call,Succ):-
 %open('clsh.pl',append,Fd),
      % explicit groundness propagation	
      projected_gvars_clique(Prime,Sv,Gv),
@@ -638,7 +638,7 @@ share_clique_1_success_builtin('=../2',Sv_u,p(X,Y),_,Call,Succ):-
 	var(X), var(Y),!,
 	sort(Sv_u,Sv),
 	Prime = ([],[Sv]),
-	share_clique_1_extend(Prime,Sv,Call,Succ).
+	share_clique_1_extend(not_provided_Sg,Prime,Sv,Call,Succ).
 share_clique_1_success_builtin('=../2',Sv_u,p(X,Y),_,Call,Succ):-
 % General case: Either X is f(t1,...,tn) or Y is [G|Something]. 
 % We must unify [f,t1,...,tn] = [G|Something]
@@ -717,7 +717,7 @@ share_clique_1_success_builtin('recorded/3',Sv_u,p(Y,Z),_,Call,Succ):-
 	share_clique_1_project(not_provided_Sg,Varsy,not_provided_HvFv_u,ASub,ASub1),!,
 	star_clique_1(ASub1,Prime),
 	sort(Sv_u,Sv),
-	share_clique_1_extend(Prime,Sv,Call,Succ).
+	share_clique_1_extend(not_provided_Sg,Prime,Sv,Call,Succ).
 
 share_clique_1_success_builtin(var,_Sv,p(X),HvFv_u,(Cl,Sh),Succ):-
 	share_clique_success_builtin(var,_,p(X),HvFv_u,(Cl,Sh),Succ).

@@ -204,7 +204,7 @@
 :- dom_op(gr, project/5).
 :- dom_op(gr, compute_lub/2).
 :- dom_op(gr, abs_sort/2).
-:- dom_op(gr, extend(_Sg,Prime,Sv,Call,Succ), extend(Prime,Sv,Call,Succ)).
+:- dom_op(gr, extend/5).
 :- dom_op(gr, less_or_equal/2).
 :- dom_op(gr, glb/3).
 :- dom_op(gr, call_to_success_fact/9).
@@ -265,7 +265,7 @@
 :- dom_op(share, project/5).
 :- dom_op(share, compute_lub/2).
 :- dom_op(share, abs_sort/2).
-:- dom_op(share, extend(_Sg,Prime,Sv,Call,Succ), extend(Prime,Sv,Call,Succ)).
+:- dom_op(share, extend/5).
 :- dom_op(share, less_or_equal/2).
 :- dom_op(share, glb/3).
 :- dom_op(share, call_to_success_fact/9).
@@ -289,7 +289,7 @@
 :- dom_op(shfr, project/5).
 :- dom_op(shfr, compute_lub/2).
 :- dom_op(shfr, abs_sort/2).
-:- dom_op(shfr, extend(_Sg,Prime,Sv,Call,Succ), extend(Prime,Sv,Call,Succ)).
+:- dom_op(shfr, extend/5).
 :- dom_op(shfr, less_or_equal/2).
 :- dom_op(shfr, glb/3).
 :- dom_op(shfr, call_to_success_fact/9).
@@ -330,7 +330,7 @@
 :- dom_op(shfrnv, project/5, from(shfr)).
 :- dom_op(shfrnv, compute_lub/2).
 :- dom_op(shfrnv, abs_sort/2, from(shfr)).
-:- dom_op(shfrnv, extend(_Sg,Prime,Sv,Call,Succ), extend(Prime,Sv,Call,Succ)).
+:- dom_op(shfrnv, extend/5).
 :- dom_op(shfrnv, less_or_equal/2).
 :- dom_op(shfrnv, glb/3).
 :- dom_op(shfrnv, call_to_success_fact/9).
@@ -374,7 +374,7 @@
 :- dom_op(shfret, compute_lub/2).
 :- dom_op(shfret, identical_abstract/2).
 :- dom_op(shfret, abs_sort/2).
-:- dom_op(shfret, extend(_Sg,Prime,Sv,Call,Succ), extend(Prime,Sv,Call,Succ)).
+:- dom_op(shfret, extend/5).
 :- dom_op(shfret, less_or_equal/2).
 :- dom_op(shfret, glb/3).
 :- dom_op(shfret, eliminate_equivalent/2).
@@ -395,7 +395,7 @@
 :- dom_op(shareson, project/5).
 :- dom_op(shareson, compute_lub/2).
 :- dom_op(shareson, abs_sort/2).
-:- dom_op(shareson, extend(_Sg,Prime,Sv,Call,Succ), extend(Prime,Sv,Call,Succ)).
+:- dom_op(shareson, extend/5).
 :- dom_op(shareson, less_or_equal/2).
 :- dom_op(shareson, glb/3).
 :- dom_op(shareson, call_to_success_fact/9).
@@ -415,7 +415,7 @@
 :- dom_op(shfrson, project/5).
 :- dom_op(shfrson, compute_lub/2).
 :- dom_op(shfrson, abs_sort/2).
-:- dom_op(shfrson, extend(_Sg,Prime,Sv,Call,Succ), extend(Prime,Sv,Call,Succ)).
+:- dom_op(shfrson, extend/5).
 :- dom_op(shfrson, less_or_equal/2).
 :- dom_op(shfrson, glb/3).
 :- dom_op(shfrson, call_to_success_fact/9).
@@ -435,7 +435,7 @@
 :- dom_op(son, project/5).
 :- dom_op(son, compute_lub/2).
 :- dom_op(son, abs_sort/2).
-:- dom_op(son, extend(_Sg,Prime,Sv,Call,Succ), extend(Prime,Sv,Call,Succ)).
+:- dom_op(son, extend/5).
 :- dom_op(son, less_or_equal/2).
 :- dom_op(son, glb/3).
 :- dom_op(son, call_to_success_fact/9).
@@ -460,7 +460,7 @@
 :- dom_op(share_amgu, project/5, from(share)).
 :- dom_op(share_amgu, compute_lub/2, from(share)).
 :- dom_op(share_amgu, abs_sort/2, from(share)).
-:- dom_op(share_amgu, extend(_Sg,Prime,Sv,Call,Succ), extend(Prime,Sv,Call,Succ), from(share)).
+:- dom_op(share_amgu, extend/5, from(share)).
 :- dom_op(share_amgu, less_or_equal/2, from(share)).
 :- dom_op(share_amgu, glb/3, from(share)).
 :- dom_op(share_amgu, call_to_success_fact/9).
@@ -484,7 +484,7 @@
 :- dom_op(sharefree_amgu, project/5, from(shfr)).
 :- dom_op(sharefree_amgu, compute_lub/2, from(shfr)).
 :- dom_op(sharefree_amgu, abs_sort/2, from(shfr)).
-:- dom_op(sharefree_amgu, extend(_Sg,Prime,Sv,Call,Succ), extend(Prime,Sv,Call,Succ), from(shfr)).
+:- dom_op(sharefree_amgu, extend/5, from(shfr)).
 :- dom_op(sharefree_amgu, less_or_equal/2, from(shfr)).
 :- dom_op(sharefree_amgu, glb/3, from(shfr)).
 :- dom_op(sharefree_amgu, call_to_success_fact/9).
@@ -508,7 +508,7 @@
 :- dom_op(shfrlin_amgu, project/5).
 :- dom_op(shfrlin_amgu, compute_lub/2).
 :- dom_op(shfrlin_amgu, abs_sort/2).
-:- dom_op(shfrlin_amgu, extend(_Sg,Prime,Sv,Call,Succ), extend(Prime,Sv,Call,Succ)).
+:- dom_op(shfrlin_amgu, extend/5).
 :- dom_op(shfrlin_amgu, less_or_equal/2).
 :- dom_op(shfrlin_amgu, glb/3).
 :- dom_op(shfrlin_amgu, call_to_success_fact/9).
@@ -533,7 +533,7 @@
 :- dom_op(share_clique, compute_lub/2).
 :- dom_op(share_clique, identical_abstract/2).
 :- dom_op(share_clique, abs_sort/2).
-:- dom_op(share_clique, extend(_Sg,Prime,Sv,Call,Succ), extend(Prime,Sv,Call,Succ)).
+:- dom_op(share_clique, extend/5).
 :- dom_op(share_clique, less_or_equal/2).
 :- dom_op(share_clique, glb/3).
 :- dom_op(share_clique, eliminate_equivalent/2).
@@ -557,7 +557,7 @@
 :- dom_op(share_clique_1, compute_lub/2).
 :- dom_op(share_clique_1, identical_abstract/2).
 :- dom_op(share_clique_1, abs_sort/2, from(share_clique)).
-:- dom_op(share_clique_1, extend(_Sg,Prime,Sv,Call,Succ), extend(Prime,Sv,Call,Succ)).
+:- dom_op(share_clique_1, extend/5).
 :- dom_op(share_clique_1, less_or_equal/2).
 :- dom_op(share_clique_1, glb/3).
 :- dom_op(share_clique_1, eliminate_equivalent/2).
@@ -583,7 +583,7 @@
 :- dom_op(sharefree_clique, compute_lub/2).
 :- dom_op(sharefree_clique, identical_abstract/2).
 :- dom_op(sharefree_clique, abs_sort/2).
-:- dom_op(sharefree_clique, extend(_Sg,Prime,Sv,Call,Succ), extend(Prime,Sv,Call,Succ)).
+:- dom_op(sharefree_clique, extend/5).
 :- dom_op(sharefree_clique, less_or_equal/2).
 :- dom_op(sharefree_clique, glb/3).
 :- dom_op(sharefree_clique, eliminate_equivalent/2).
@@ -608,7 +608,7 @@
 :- dom_op(share_clique_def, compute_lub/2).
 :- dom_op(share_clique_def, identical_abstract/2).
 :- dom_op(share_clique_def, abs_sort/2).
-:- dom_op(share_clique_def, extend(_Sg,Prime,Sv,Call,Succ), extend(Prime,Sv,Call,Succ)).
+:- dom_op(share_clique_def, extend/5).
 :- dom_op(share_clique_def, less_or_equal/2).
 :- dom_op(share_clique_def, glb/3).
 :- dom_op(share_clique_def, eliminate_equivalent/2).
@@ -632,7 +632,7 @@
 :- dom_op(sharefree_clique_def, compute_lub/2).
 :- dom_op(sharefree_clique_def, identical_abstract/2).
 :- dom_op(sharefree_clique_def, abs_sort/2).
-:- dom_op(sharefree_clique_def, extend(_Sg,Prime,Sv,Call,Succ), extend(Prime,Sv,Call,Succ)).
+:- dom_op(sharefree_clique_def, extend/5).
 :- dom_op(sharefree_clique_def, less_or_equal/2).
 :- dom_op(sharefree_clique_def, glb/3).
 :- dom_op(sharefree_clique_def, eliminate_equivalent/2).
@@ -720,7 +720,7 @@
 :- dom_op(depthk, compute_lub/2).
 :- dom_op(depthk, identical_abstract/2).
 :- dom_op(depthk, abs_sort/2).
-:- dom_op(depthk, extend(_Sg,Prime,Sv,Call,Succ), extend(Prime,Sv,Call,Succ)).
+:- dom_op(depthk, extend/5).
 :- dom_op(depthk, less_or_equal/2).
 :- dom_op(depthk, glb/3).
 :- dom_op(depthk, eliminate_equivalent/2).
@@ -744,7 +744,7 @@
 :- dom_op(path, project/5).
 :- dom_op(path, compute_lub/2).
 :- dom_op(path, abs_sort/2).
-:- dom_op(path, extend(_Sg,Prime,Sv,Call,Succ), extend(Prime,Sv,Call,Succ)).
+:- dom_op(path, extend/5).
 :- dom_op(path, less_or_equal/2).
 :- dom_op(path, glb/3).
 :- dom_op(path, call_to_success_fact/9).
@@ -770,7 +770,7 @@
 :- dom_op(terms, compute_lub/2).
 :- dom_op(terms, identical_abstract/2).
 :- dom_op(terms, abs_sort/2).
-:- dom_op(terms, extend(_Sg,Prime,Sv,Call,Succ), extend(Prime,Sv,Call,Succ)).
+:- dom_op(terms, extend/5).
 :- dom_op(terms, less_or_equal/2).
 :- dom_op(terms, glb/3).
 :- dom_op(terms, call_to_success_fact/9).
@@ -797,7 +797,7 @@
 :- dom_op(ptypes, compute_lub/2).
 :- dom_op(ptypes, identical_abstract/2).
 :- dom_op(ptypes, abs_sort/2).
-:- dom_op(ptypes, extend(_Sg,Prime,Sv,Call,Succ), extend(Prime,Sv,Call,Succ)).
+:- dom_op(ptypes, extend/5).
 :- dom_op(ptypes, less_or_equal/2).
 :- dom_op(ptypes, glb/3).
 :- dom_op(ptypes, call_to_success_fact/9).
@@ -826,7 +826,7 @@
 :- dom_op(eterms, compute_lub/2).
 :- dom_op(eterms, identical_abstract/2).
 :- dom_op(eterms, abs_sort/2).
-:- dom_op(eterms, extend(_Sg,Prime,Sv,Call,Succ), extend(Prime,Sv,Call,Succ)).
+:- dom_op(eterms, extend/5).
 :- dom_op(eterms, less_or_equal/2).
 :- dom_op(eterms, glb/3).
 :- dom_op(eterms, call_to_success_fact/9).
@@ -858,7 +858,7 @@
 :- dom_op(etermsvar, compute_lub/2).
 :- dom_op(etermsvar, identical_abstract/2).
 :- dom_op(etermsvar, abs_sort/2).
-:- dom_op(etermsvar, extend(_Sg,Prime,Sv,Call,Succ), extend(Prime,Sv,Call,Succ)).
+:- dom_op(etermsvar, extend/5).
 :- dom_op(etermsvar, less_or_equal/2).
 :- dom_op(etermsvar, glb/3).
 :- dom_op(etermsvar, call_to_success_fact/9).
@@ -889,7 +889,7 @@
 :- dom_op(svterms, compute_lub/2).
 :- dom_op(svterms, identical_abstract/2).
 :- dom_op(svterms, abs_sort/2).
-:- dom_op(svterms, extend(_Sg,Prime,Sv,Call,Succ), extend(Prime,Sv,Call,Succ)).
+:- dom_op(svterms, extend/5).
 :- dom_op(svterms, less_or_equal/2).
 :- dom_op(svterms, glb/3).
 :- dom_op(svterms, call_to_success_fact/9).
@@ -917,7 +917,7 @@
 :- dom_op(deftypes, compute_lub/2).
 :- dom_op(deftypes, identical_abstract/2).
 :- dom_op(deftypes, abs_sort/2).
-:- dom_op(deftypes, extend(_Sg,Prime,Sv,Call,Succ), extend(Prime,Sv,Call,Succ)).
+:- dom_op(deftypes, extend/5).
 :- dom_op(deftypes, less_or_equal/2).
 :- dom_op(deftypes, glb/3).
 :- dom_op(deftypes, call_to_success_fact/9).
@@ -978,7 +978,7 @@
 :- dom_op(polyhedra, compute_lub/2).
 :- dom_op(polyhedra, identical_abstract/2).
 :- dom_op(polyhedra, abs_sort/2).
-:- dom_op(polyhedra, extend(_Sg,Prime,Sv,Call,Succ), extend(Prime,Sv,Call,Succ)).
+:- dom_op(polyhedra, extend/5).
 :- dom_op(polyhedra, less_or_equal/2).
 :- dom_op(polyhedra, glb/3).
 :- dom_op(polyhedra, eliminate_equivalent/2).
@@ -1004,7 +1004,7 @@
 :- dom_op(java_nullity, project/5).
 :- dom_op(java_nullity, compute_lub/2).
 :- dom_op(java_nullity, abs_sort/2).
-:- dom_op(java_nullity, extend(_Sg,Prime,Sv,Call,Succ), extend(Prime,Sv,Call,Succ)).
+:- dom_op(java_nullity, extend/5).
 :- dom_op(java_nullity, less_or_equal/2).
 :- dom_op(java_nullity, glb/3).
 :- dom_op(java_nullity, call_to_success_fact/9).
@@ -1026,7 +1026,7 @@
 :- dom_op(oo_son, compute_lub/2).
 :- dom_op(oo_son, identical_abstract/2).
 :- dom_op(oo_son, abs_sort/2).
-:- dom_op(oo_son, extend(_Sg,Prime,Sv,Call,Succ), extend(Prime,Sv,Call,Succ)).
+:- dom_op(oo_son, extend/5).
 :- dom_op(oo_son, less_or_equal/2).
 :- dom_op(oo_son, glb/3).
 :- dom_op(oo_son, call_to_success_fact/9).
@@ -1051,7 +1051,7 @@
 :- dom_op(oo_shnltau, project/5).
 :- dom_op(oo_shnltau, compute_lub/2).
 :- dom_op(oo_shnltau, abs_sort/2).
-:- dom_op(oo_shnltau, extend(_Sg,Prime,Sv,Call,Succ), extend(Prime,Sv,Call,Succ)).
+:- dom_op(oo_shnltau, extend/5).
 :- dom_op(oo_shnltau, less_or_equal/2).
 :- dom_op(oo_shnltau, glb/3).
 :- dom_op(oo_shnltau, call_to_success_fact/9).
@@ -1076,7 +1076,7 @@
 :- dom_op(oo_types, project/5).
 :- dom_op(oo_types, compute_lub/2).
 :- dom_op(oo_types, abs_sort/2).
-:- dom_op(oo_types, extend(_Sg,Prime,Sv,Call,Succ), extend(Prime,Sv,Call,Succ)).
+:- dom_op(oo_types, extend/5).
 :- dom_op(oo_types, less_or_equal/2).
 :- dom_op(oo_types, glb/3).
 :- dom_op(oo_types, call_to_success_fact/9).
@@ -1099,7 +1099,7 @@
 :- dom_op(java_cha, project/5).
 :- dom_op(java_cha, compute_lub/2).
 :- dom_op(java_cha, abs_sort/2).
-:- dom_op(java_cha, extend(_Sg,Prime,Sv,Call,Succ), extend(Prime,Sv,Call,Succ)).
+:- dom_op(java_cha, extend/5).
 :- dom_op(java_cha, less_or_equal/2).
 :- dom_op(java_cha, glb/3).
 :- dom_op(java_cha, call_to_success_fact/9).
@@ -1129,7 +1129,7 @@
 :- dom_op(nf, identical_abstract/2).
 :- dom_op(nf, fixpoint_covered/2).
 :- dom_op(nf, abs_sort/2).
-:- dom_op(nf, extend(_Sg,Prime,Sv,Call,Succ), extend(Prime,Sv,Call,Succ)).
+:- dom_op(nf, extend/5).
 :- dom_op(nf, less_or_equal/2).
 :- dom_op(nf, glb/3).
 :- dom_op(nf, eliminate_equivalent/2).
@@ -1162,7 +1162,7 @@
 :- dom_op(det, identical_abstract/2).
 :- dom_op(det, fixpoint_covered/2).
 :- dom_op(det, abs_sort/2).
-:- dom_op(det, extend(_Sg,Prime,Sv,Call,Succ), extend(Prime,Sv,Call,Succ)).
+:- dom_op(det, extend/5).
 :- dom_op(det, less_or_equal/2).
 :- dom_op(det, glb/3).
 :- dom_op(det, eliminate_equivalent/2).

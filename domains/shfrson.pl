@@ -5,7 +5,7 @@
 	  shfrson_body_succ_builtin/8,
 	  shfrson_compute_lub/2,
 	  shfrson_exit_to_prime/7,
-	  shfrson_extend/4,   
+	  shfrson_extend/5,   
 	  shfrson_input_user_interface/5, 
 	  shfrson_input_interface/4, 
 	  shfrson_less_or_equal/2,  
@@ -81,11 +81,11 @@ shfrson_exit_to_prime(Sg,Hv,Head,Sv,(Exit_son,Exit_shfr),ExtraInfo,Prime):-
 
 %-------------------------------------------------------------------------
 
-shfrson_extend('$bottom',_,_,Succ):- !,Succ = '$bottom'.
-shfrson_extend((_,_),[],Call,Succ):- !, Call = Succ.
-shfrson_extend((Prime_son,Prime_shfr),Sv,(Call_son,Call_shfr),Succ):-
-	shfr_extend(Prime_shfr,Sv,Call_shfr,Succ_shfr),
-	son_extend(Prime_son,Sv,Call_son,Succ_son),
+shfrson_extend(_Sg,'$bottom',_,_,Succ):- !,Succ = '$bottom'.
+shfrson_extend(_Sg,(_,_),[],Call,Succ):- !, Call = Succ.
+shfrson_extend(Sg,(Prime_son,Prime_shfr),Sv,(Call_son,Call_shfr),Succ):-
+	shfr_extend(Sg,Prime_shfr,Sv,Call_shfr,Succ_shfr),
+	son_extend(Sg,Prime_son,Sv,Call_son,Succ_son),
 	Call_shfr = (_,Fr),
 	collect_vars_freeness(Fr,Vars),
 	compose(Succ_son,Succ_shfr,Vars,Succ).
@@ -97,7 +97,7 @@ shfrson_call_to_success_fact(Sg,Hv,Head,_K,Sv,Call,Proj,Prime,Succ):-
 	son_call_to_prime_fact(Sg,Hv,Head,Sv,Proj_son,Prime_son),
 	shfr_call_to_prime_fact(Sg,Hv,Head,Sv,Proj_shfr,Prime_shfr),
 	compose(Prime_son,Prime_shfr,Sv,Prime),
-	shfrson_extend(Prime,Sv,Call,Succ).
+	shfrson_extend(Sg,Prime,Sv,Call,Succ).
 
 % ---------------------------------------------------------------------------
 

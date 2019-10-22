@@ -10,7 +10,7 @@
 	deftypes_compute_lub/2,
 	deftypes_compute_lub_el/3,
 	deftypes_abs_sort/2,
-	deftypes_extend/4,
+	deftypes_extend/5,
 	deftypes_less_or_equal/2,
 	deftypes_glb/3,
 	deftypes_unknown_call/4,
@@ -541,14 +541,14 @@ terms_abs_sort('$bottom','$bottom'):- !.
 terms_abs_sort(ASub,ASub_s):- sort(ASub,ASub_s).
 
 %------------------------------------------------------------------%
-:- pred deftypes_extend(+Prime,+Sv,+Call,-Succ): absu * list * absu * absu # 
+:- pred deftypes_extend(+Sg,+Prime,+Sv,+Call,-Succ): term * absu * list * absu * absu # 
 "
 If @var{Prime} = '$bottom', @var{Succ} = '$bottom' otherwise,
  @var{Succ} is computed updating the values of @var{Call} with those
  in @var{Prime}".
 
-deftypes_extend('$bottom',_Sv,_Call,'$bottom'):- !.
-deftypes_extend(Prime,Sv,Call,Succ):-
+deftypes_extend(_Sg,'$bottom',_Sv,_Call,'$bottom'):- !.
+deftypes_extend(_Sg,Prime,Sv,Call,Succ):-
 	subtract_keys(Call,Sv,RestCall),
 	merge(RestCall,Prime,Succ).
 
@@ -628,7 +628,7 @@ list * callable * term * list * absu * absu * absu * absu #
 deftypes_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ):-
 	deftypes_call_to_entry(Sv,Sg,Hv,Head,K,[],Proj,Entry,ExtraInfo),
 	deftypes_exit_to_prime(Sg,Hv,Head,Sv,Entry,ExtraInfo,Prime),
-	deftypes_extend(Prime,Sv,Call,Succ).
+	deftypes_extend(Sg,Prime,Sv,Call,Succ).
 
 %------------------------------------------------------------------------%
 %			    USER INTERFACE
@@ -808,12 +808,11 @@ deftypes_call_to_success_builtin('=/2',X=Y,Sv,Call,Proj,Succ):-
 	deftypes_call_to_success_fact(p(X,Y),[W],p(W,W),not_provided,Sv,Call,Proj,_Prime,Succ). % TODO: add some ClauseKey?
 
 deftypes_call_to_success_builtin(Key,Sg,Sv,Call,Proj,Succ):-
-	(
-	    precondition_builtin(Key,Sg) ->
+	( precondition_builtin(Key,Sg) ->
 	    postcondition_builtin(Key,Bg,Bv,Exit),
 	    deftypes_exit_to_prime(Sg,Bv,Bg,Sv,Exit,no,Prime1),
 	    deftypes_glb(Proj,Prime1,Prime),
-	    deftypes_extend(Prime,Sv,Call,Succ)
+	    deftypes_extend(Sg,Prime,Sv,Call,Succ)
 	;
 	    Succ = '$bottom'
 	).

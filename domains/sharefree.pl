@@ -367,10 +367,10 @@ shfr_glb((Sh1,Fr1),(Sh2,Fr2),Glb):-
 %                      ABSTRACT Extend                                   |
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% shfr_extend(+,+,+,-)                                                   %
-% shfr_extend(Prime,Sv,Call,Succ)                                        %
+% shfr_extend(+,+,+,+,-)                                                 %
+% shfr_extend(Sg,Prime,Sv,Call,Succ)                                     %
 % If Prime = bottom, Succ = bottom. If Sv = [], Call = Succ.             %
-% Otherwise, Succ_sh is computed as in share_extend/4, i.e. it splits    %
+% Otherwise, Succ_sh is computed as in share_extend/5, i.e. it splits    %
 % Call_sh into two set of sets: Intersect (those sets containing         %
 % at least a variabe in Sv) and Disjunct (the rest). Then it obtains     %
 % in Star the closure under union of Intersect. Finally, it prunes Star  %
@@ -386,12 +386,12 @@ shfr_glb((Sh1,Fr1),(Sh2,Fr2),Glb):-
 %     for the rest of variables in BVars                                 %
 %   * If BVarsf = [],                                                    %
 %------------------------------------------------------------------------%
-:- export(shfr_extend/4).      
-shfr_extend('$bottom',_Sv,_Call,Succ):- !,
+:- export(shfr_extend/5).      
+shfr_extend(_Sg,'$bottom',_Sv,_Call,Succ):- !,
 	Succ = '$bottom'.
-shfr_extend(_Prime,[],Call,Succ):- !,
+shfr_extend(_Sg,_Prime,[],Call,Succ):- !,
 	Call = Succ.
-shfr_extend((Prime_sh,Prime_fr),Sv,(Call_sh,Call_fr),Succ):-
+shfr_extend(_Sg,(Prime_sh,Prime_fr),Sv,(Call_sh,Call_fr),Succ):-
 %-extend_sh
 	ord_split_lists_from_list(Sv,Call_sh,Intersect,Disjunct),
 	closure_under_union(Intersect,Star),
@@ -449,7 +449,7 @@ shfr_call_to_success_fact(Sg,Hv,Head,_K,Sv,Call,(Sg_sh,Lda_fr),Prime,Succ) :-
 	merge(Intersect,AlsoPossible,Lda_sh_temp),
 	prune(Lda_sh_temp,Sg_args,ShareArgs,Prime_sh),
 	Prime = (Prime_sh,Prime_fr),
-	shfr_extend(Prime,Sv,Call,Succ).
+	shfr_extend(Sg,Prime,Sv,Call,Succ).
 shfr_call_to_success_fact(_Sg,_Hv,_Head,_K,_Sv,_Call,_Proj,'$bottom','$bottom').
 
 %-------------------------------------------------------------------------
@@ -955,7 +955,7 @@ shfr_success_builtin(all_nonfree,Sv_u,Sg,_,Call,Succ):- !,
 	shfr_project(Sg,Sv,not_provided_HvFv_u,Call,(Proj_sh,Proj_fr)),
 	closure_under_union(Proj_sh,Prime_sh),
 	change_values_if_f(Sv,Proj_fr,Prime_fr,nf),
-	shfr_extend((Prime_sh,Prime_fr),Sv,Call,Succ).
+	shfr_extend(Sg,(Prime_sh,Prime_fr),Sv,Call,Succ).
 shfr_success_builtin(arg,_,p(X,Y,Z),_,Call,Succ):-
 %% %% PBC: don't understand this... (only if var(Y)?)
 %% 	Call = (Call_sh,Call_fr),
@@ -1005,7 +1005,7 @@ shfr_success_builtin('=../2',Sv_uns,p(X,Y),_,Call,Succ):-
 	Call = (_,Call_fr),
 	project_freeness(Sv,Call_fr,[A/Val1,B/Val2]),
 	( obtain_freeness(Val1,Val2) ->
-	    shfr_extend(([Sv],[A/nf,B/nf]),Sv,Call,Succ)
+	    shfr_extend(not_provided_Sg,([Sv],[A/nf,B/nf]),Sv,Call,Succ)
 	; Succ = '$bottom'
         ).
 shfr_success_builtin('=../2',Sv_uns,p(X,Y),_,Call,Succ):-
@@ -1023,12 +1023,12 @@ shfr_success_builtin('=../2',Sv_uns,p(X,Y),_,Call,Succ):-
 	      project_share(NewVars,Call_sh,Proj_sh),
 	      ord_subtract(NewVars,[X],VarsY),
 	      product(ValueX,X,VarsY,Sv,Proj_sh,Proj_fr,Prime_sh,Prime_fr),
-	      shfr_extend((Prime_sh,Prime_fr),Sv,Call,Succ)
+	      shfr_extend(not_provided_Sg,(Prime_sh,Prime_fr),Sv,Call,Succ)
 	    )
 	; project_share(Sv,Call_sh,Proj_sh),
 	  ord_subtract(Sv,[X],VarsY),
 	  product(ValueX,X,VarsY,Sv,Proj_sh,Proj_fr,Prime_sh,Prime_fr),
-	  shfr_extend((Prime_sh,Prime_fr),Sv,Call,Succ)
+	  shfr_extend(not_provided_Sg,(Prime_sh,Prime_fr),Sv,Call,Succ)
         ).
 shfr_success_builtin('=../2',Sv_uns,Sg,_,Call,Succ):- Sg=p(X,Y),
 	X =.. T,
@@ -1046,7 +1046,7 @@ shfr_success_builtin(read2,Sv_u,Sg,_,Call,Succ):- Sg=p(X,Y),
 	  shfr_project(Sg,Varsy,not_provided_HvFv_u,(Temp_sh,Temp_fr),(Proj_sh,Prime_fr)),
 	  closure_under_union(Proj_sh,Prime_sh),
 	  sort(Sv_u,Sv),
-	  shfr_extend((Prime_sh,Prime_fr),Call,Sv,Succ)
+	  shfr_extend(Sg,(Prime_sh,Prime_fr),Call,Sv,Succ)
 	).
 shfr_success_builtin(recorded,_,Sg,_,Call,Succ):- Sg=p(Y,Z),
         varset(Z,NewG),
@@ -1056,7 +1056,7 @@ shfr_success_builtin(recorded,_,Sg,_,Call,Succ):- Sg=p(Y,Z),
 	update_lambda_sf(NewG,Fr,Sh,TempPrime_fr,TempPrime_sh),
 	make_dependence(TempPrime_sh,VarsY,TempPrime_fr,Prime_fr,Prime_sh),
 	Prime = (Prime_sh,Prime_fr),
-	shfr_extend(Prime,Vars,Call,Succ).
+	shfr_extend(Sg,Prime,Vars,Call,Succ).
 shfr_success_builtin(copy_term,_,Sg,_,Call,Succ):- Sg=p(X,Y),
 	varset(X,VarsX),
 	shfr_project(Sg,VarsX,not_provided_HvFv_u,Call,ProjectedX),
@@ -1287,7 +1287,7 @@ shfr_call_to_success_builtin('=/2','='(X,_Y),Sv,Call,Proj,Succ):-
 	var_value(Proj_fr,X,ValueX),
 	product(ValueX,X,VarsY,Sv,Proj_sh,Proj_fr,Prime_sh,Prime_fr),
 	Prime= (Prime_sh,Prime_fr),
-	shfr_extend(Prime,Sv,Call,Succ).
+	shfr_extend(not_provided_Sg,Prime,Sv,Call,Succ).
 shfr_call_to_success_builtin('=/2','='(X,Y),Sv,Call,Proj,Succ):-
 	copy_term(X,Xterm),
 	copy_term(Y,Yterm),
@@ -1963,7 +1963,7 @@ obtain_prime_var_var([X/f,Y/f],(Call_sh,Call_fr),Succ):- !,
 	Succ = (Succ_sh,Call_fr).
 obtain_prime_var_var([X/_,Y/_],Call,Succ):-
 	Prime = ([[X,Y]],[X/nf,Y/nf]),
-	shfr_extend(Prime,[X,Y],Call,Succ).
+	shfr_extend(not_provided_Sg,Prime,[X,Y],Call,Succ).
 
 %-------------------------------------------------------------------------
 % mynonvar(+,+,+)                                                        |

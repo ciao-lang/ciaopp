@@ -240,7 +240,7 @@ share_amgu_success_builtin('=../2',_,p(X,Y),_,Call,Succ):-
 share_amgu_success_builtin('=../2',Sv_u,p(X,Y),_,Call,Succ):-
 	var(X), var(Y),!,
 	sort(Sv_u,Sv),
-	share_extend([Sv],Sv,Call,Succ).
+	share_extend(not_provided_Sg,[Sv],Sv,Call,Succ).
 share_amgu_success_builtin('=../2',Sv_u,p(X,Y),_,Call,Succ):-
 %%	( var(Y) ; Y = [_|_] ), !,
 %%	( var(X) -> Term=[g|X] ; X=..Term ),

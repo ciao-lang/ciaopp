@@ -3,7 +3,7 @@
 	  shfret_call_to_entry/9,
 	  shfret_exit_to_prime/7,
 	  shfret_project/5,
-	  shfret_extend/4,
+	  shfret_extend/5,
 	  shfret_widen/3,
 	  shfret_widencall/3,
 	  shfret_compute_lub/2,
@@ -84,15 +84,15 @@ shfret_project(Sg,Vars,HvFv_u,ASub,Proj):-
 	asub(Proj,PTypes,PModes).
 
 %------------------------------------------------------------------------%
-% shfret_extend(+,+,+,-)                                                     %
-% shfret_extend(Prime,Sv,Call,Succ)                                          %
+% shfret_extend(+,+,+,+,-)                                               %
+% shfret_extend(Sg,Prime,Sv,Call,Succ)                                   %
 %------------------------------------------------------------------------%
-shfret_extend('$bottom',_Sv,_Call,'$bottom'):- !.
-shfret_extend(Prime,Sv,Call,Succ):-
+shfret_extend(_Sg,'$bottom',_Sv,_Call,'$bottom'):- !.
+shfret_extend(Sg,Prime,Sv,Call,Succ):-
 	asub(Prime,PTypes,PModes),
 	asub(Call,CTypes,CModes),
-	shfr_extend(PModes,Sv,CModes,SModes),
-	eterms_extend(PTypes,Sv,CTypes,STypes),
+	shfr_extend(Sg,PModes,Sv,CModes,SModes),
+	eterms_extend(Sg,PTypes,Sv,CTypes,STypes),
 	asub(Succ,STypes,SModes).
 
 %------------------------------------------------------------------------%

@@ -6,7 +6,7 @@
 	etermsvar_compute_lub/2,
 	etermsvar_compute_lub_el/3,
 	etermsvar_abs_sort/2,
-	etermsvar_extend/4,
+	etermsvar_extend/5,
 	etermsvar_less_or_equal/2,
 	etermsvar_glb/3,
 	etermsvar_unknown_call/4,
@@ -1202,28 +1202,30 @@ etermsvar_abs_sort('$bottom','$bottom'):- !.
 etermsvar_abs_sort(ASub,ASub_s):- sort(ASub,ASub_s).
 
 %------------------------------------------------------------------%
-:- pred etermsvar_extend(+Prime,+Sv,+Call,-Succ): absu * list * absu * absu # 
-"
-If @var{Prime} = '$bottom', @var{Succ} = '$bottom' otherwise,
+:- pred etermsvar_extend(+Sg,+Prime,+Sv,+Call,-Succ): term * absu * list * absu * absu # 
+"If @var{Prime} = '$bottom', @var{Succ} = '$bottom' otherwise,
  @var{Succ} is computed updating the values of @var{Call} with those
  in @var{Prime}".
 
-etermsvar_extend('$bottom',_Sv,_Call,'$bottom'):- !.
-etermsvar_extend([],_Sv,Call,Call):- !.
-etermsvar_extend(Prime,_Sv,[],Prime):- !.
-etermsvar_extend([X:(N_e,T)|Prime],Sv,[Y:(N1_e,_T1)|Call],[X:(N,T)|Succ]):-
+etermsvar_extend(_Sg,Prime,_Sv,Call,Succ) :-
+	etermsvar_extend_(Prime,Call,Succ).
+
+etermsvar_extend_('$bottom',_Call,'$bottom'):- !.
+etermsvar_extend_([],Call,Call):- !.
+etermsvar_extend_(Prime,[],Prime):- !.
+etermsvar_extend_([X:(N_e,T)|Prime],[Y:(N1_e,_T1)|Call],[X:(N,T)|Succ]):-
 	X == Y,!,
 	get_canonical_name(N_e,N),
 	get_canonical_name(N1_e,N1),
 	lab_intersect(N,N1), % equival_names
-	etermsvar_extend(Prime,Sv,Call,Succ).
-etermsvar_extend([X:(N_e,T)|Prime],Sv,[Y:(N1,T1)|Call],[X:(N,T)|Succ]):-
+	etermsvar_extend_(Prime,Call,Succ).
+etermsvar_extend_([X:(N_e,T)|Prime],[Y:(N1,T1)|Call],[X:(N,T)|Succ]):-
 	X @< Y,!,
 	get_canonical_name(N_e,N),
-	etermsvar_extend(Prime,Sv,[Y:(N1,T1)|Call],Succ).
-etermsvar_extend([X:(N,T)|Prime],Sv,[Y:(N1,T1)|Call],[Y:(N1,T1)|Succ]):-
+	etermsvar_extend_(Prime,[Y:(N1,T1)|Call],Succ).
+etermsvar_extend_([X:(N,T)|Prime],[Y:(N1,T1)|Call],[Y:(N1,T1)|Succ]):-
         X @> Y,!,
-	etermsvar_extend([X:(N,T)|Prime],Sv,Call,Succ).
+	etermsvar_extend_([X:(N,T)|Prime],Call,Succ).
 
 
 %------------------------------------------------------------------%
@@ -1390,7 +1392,7 @@ list * callable * term * list * absu * absu * absu * absu #
 etermsvar_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ):-
 	etermsvar_call_to_entry(Sv,Sg,Hv,Head,K,[],Proj,Entry,ExtraInfo),
 	etermsvar_exit_to_prime(Sg,Hv,Head,Sv,Entry,ExtraInfo,Prime),
-	etermsvar_extend(Prime,Sv,Call,Succ).
+	etermsvar_extend(Sg,Prime,Sv,Call,Succ).
 
 %------------------------------------------------------------------------%
 %			       BUILTINS
@@ -1470,7 +1472,7 @@ etermsvar_success_builtin(id,_Sv_uns,_Condvars,_,Call,Call).
 etermsvar_success_builtin(bot,_Sv_uns,_Condvars,_,_Call,'$bottom').
 etermsvar_success_builtin(type(T),_Sv_uns,Condvars,_,Call,Succ):-
 	keys_same_value(Condvars,T,Prime),
-	etermsvar_extend(Prime,Condvars,Call,Succ).
+	etermsvar_extend(not_provided_Sg,Prime,Condvars,Call,Succ).
 
 
 keys_same_value([K|Ks],V,[K:(Name,V)|ASub]):-
@@ -1756,7 +1758,7 @@ etermsvar_arg_call_to_success(Sg,Hv,arg(X,Y,Z),Sv,Call,Proj,Succ,TypeX,TypeY):-
 	),
 	etermsvar_glb(Prime2,Entry,Prime3),
 	etermsvar_exit_to_prime(Sg,Hv,arg(X,Y,Z),Sv,Prime3,ExtraInfo,Prime),
-	etermsvar_extend(Prime,Sv,Call,Succ).
+	etermsvar_extend(Sg,Prime,Sv,Call,Succ).
 
 etermsvar_call_to_success_builtin('arg/3',Sg,Sv,Call,Proj,Succ):-
 	sort([X,Y,Z],Hv),
@@ -1803,7 +1805,7 @@ etermsvar_call_to_success_builtin('functor/3',Sg,Sv,Call,Proj,Succ):-
 	),
 	etermsvar_glb(Prime2,Entry,Prime3),
 	etermsvar_exit_to_prime(Sg,Hv,Head,Sv,Prime3,ExtraInfo,Prime),
-	etermsvar_extend(Prime,Sv,Call,Succ).
+	etermsvar_extend(Sg,Prime,Sv,Call,Succ).
 
 
 etermsvar_call_to_success_builtin('=/2',X=Y,Sv,Call,Proj,Succ):-
@@ -1834,7 +1836,7 @@ etermsvar_call_to_success_builtin(Key,Sg,Sv,Call,Proj,Succ):-
 	    ;
 		Prime = '$bottom'
 	    ),
-	    etermsvar_extend(Prime,Sv,Call,Succ).
+	    etermsvar_extend(Sg,Prime,Sv,Call,Succ).
 
 
 etermsvar_call_to_success_builtin('is/2',(X is Y),Sv,Call,Proj,Succ):-
@@ -1864,7 +1866,7 @@ etermsvar_call_to_success_builtin('is/2',(X is Y),Sv,Call,Proj,Succ):-
 		    Primex2 \== '$bottom' ->
 		    append(Primex2,Primey2,Prime_u),
 		    sort(Prime_u,Prime),
-		    etermsvar_extend(Prime,Sv,Call,Succ)
+		    etermsvar_extend(not_provided_Sg,Prime,Sv,Call,Succ)
 		;
 		    Succ = '$bottom'
 		)
@@ -1876,7 +1878,7 @@ etermsvar_call_to_success_builtin('is/2',(X is Y),Sv,Call,Proj,Succ):-
 	).
 	    
 
-etermsvar_call_to_success_builtin(key(Key,SubGoal),_Sg,Sv,Call,Proj,Succ):-
+etermsvar_call_to_success_builtin(key(Key,SubGoal),Sg,Sv,Call,Proj,Succ):-
 	(
 	    getvalues_comp_cond(Sv,Proj,Vals)->
 	    (
@@ -1887,7 +1889,7 @@ etermsvar_call_to_success_builtin(key(Key,SubGoal),_Sg,Sv,Call,Proj,Succ):-
 	;
 	    apply_trusted0(Proj,Key,SubGoal,Sv,eterms,_,Prime)
 	),
-	etermsvar_extend(Prime,Sv,Call,Succ).
+	etermsvar_extend(Sg,Prime,Sv,Call,Succ).
 
 
 
@@ -1897,7 +1899,7 @@ etermsvar_call_to_success_builtin(key(Key,SubGoal),_Sg,Sv,Call,Proj,Succ):-
 % 	    postcondition_builtin(Key,Bg,Bv,Exit),
 % 	    etermsvar_exit_to_prime(Sg,Bv,Bg,Sv,Exit,(no,Proj),Prime1),
 % 	    etermsvar_glb(Proj,Prime1,Prime),
-% 	    etermsvar_extend(Prime,Sv,Call,Succ)
+% 	    etermsvar_extend(Sg,Prime,Sv,Call,Succ)
 % 	;
 % 	    Succ = '$bottom'
 % 	).

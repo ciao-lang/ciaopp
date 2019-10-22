@@ -9,7 +9,7 @@
 	terms_compute_lub/2,
 	terms_compute_lub_el/3,
 	terms_abs_sort/2,
-	terms_extend/4,
+	terms_extend/5,
 	terms_less_or_equal/2,
 	terms_glb/3,
 	terms_unknown_call/4,
@@ -1089,14 +1089,13 @@ terms_abs_sort('$bottom','$bottom'):- !.
 terms_abs_sort(ASub,ASub_s):- sort(ASub,ASub_s).
 
 %------------------------------------------------------------------%
-:- pred terms_extend(+Prime,+Sv,+Call,-Succ): absu * list * absu * absu # 
-"
-If @var{Prime} = '$bottom', @var{Succ} = '$bottom' otherwise,
+:- pred terms_extend(+Sg,+Prime,+Sv,+Call,-Succ): term * absu * list * absu * absu # 
+"If @var{Prime} = '$bottom', @var{Succ} = '$bottom' otherwise,
  @var{Succ} is computed updating the values of @var{Call} with those
  in @var{Prime}".
 
-terms_extend('$bottom',_Sv,_Call,'$bottom'):- !.
-terms_extend(Prime,Sv,Call,Succ):-
+terms_extend(_Sg,'$bottom',_Sv,_Call,'$bottom'):- !.
+terms_extend(_Sg,Prime,Sv,Call,Succ):-
 	subtract_keys(Call,Sv,RestCall),
 	merge(RestCall,Prime,Succ).
 
@@ -1204,7 +1203,7 @@ list * callable * term * list * absu * absu * absu * absu #
 terms_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ):-
 	terms_call_to_entry(Sv,Sg,Hv,Head,K,[],Proj,Entry,ExtraInfo),
 	terms_exit_to_prime(Sg,Hv,Head,Sv,Entry,ExtraInfo,Prime),
-	terms_extend(Prime,Sv,Call,Succ).
+	terms_extend(Sg,Prime,Sv,Call,Succ).
 
 %------------------------------------------------------------------------%
 %			       BUILTINS
@@ -1275,7 +1274,7 @@ terms_success_builtin(id,_Sv_uns,_Condvars,_HvFv_u,Call,Call).
 terms_success_builtin(bot,_Sv_uns,_Condvars,_HvFv_u,_Call,'$bottom').
 terms_success_builtin(type(T),_Sv_uns,Condvars,_HvFv_u,Call,Succ):-
 	keys_same_value(Condvars,T,Prime),
-	terms_extend(Prime,Condvars,Call,Succ).
+	terms_extend(not_provided_Sg,Prime,Condvars,Call,Succ).
 terms_success_builtin(Key,_Sv_uns,_Condvars,_HvFv_u,Call,Call):-
 	warning_message("the builtin key ~q is not defined",[Key]).
 
@@ -1464,19 +1463,13 @@ terms_call_to_success_builtin('=/2',X=Y,Sv,Call,Proj,Succ):-
 	terms_call_to_success_fact(p(X,Y),[W],p(W,W),not_provided,Sv,Call,Proj,_Prime,Succ). % TODO: add some ClauseKey?
 
 terms_call_to_success_builtin(Key,Sg,Sv,Call,Proj,Succ):-
-	(
-	    precondition_builtin(Key,Sg) ->
+	( precondition_builtin(Key,Sg) ->
 	    postcondition_builtin(Key,Bg,Bv,Exit),
 	    terms_exit_to_prime(Sg,Bv,Bg,Sv,Exit,no,Prime1),
 	    terms_glb(Proj,Prime1,Prime),
-	    terms_extend(Prime,Sv,Call,Succ)
-	;
-	    Succ = '$bottom'
+	    terms_extend(Sg,Prime,Sv,Call,Succ)
+	; Succ = '$bottom'
 	).
-	    
-
-
-
 
 %------------------------------------------------------------------------%
 %			    USER INTERFACE

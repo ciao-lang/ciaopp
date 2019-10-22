@@ -6,7 +6,7 @@
 	  son_call_to_prime_fact/6, 
 	  son_compute_lub/2,  
 	  son_exit_to_prime/7,
-	  son_extend/4,       
+	  son_extend/5,       
 	  son_glb/3,        
 	  son_input_user_interface/5, 
 	  son_input_interface/4, 
@@ -266,8 +266,8 @@ son_glb((Gx,Shx),(Gy,Shy),(Gz,Shz)) :-
 %                      ABSTRACT Extend
 %-------------------------------------------------------------------------
 %------------------------------------------------------------------------%
-% shon_extend(+,+,+,-)                                                   %
-% shon_extend(Prime,Sv,Call,Succ)                                        %
+% son_extend(+,+,+,+,-)                                                  %
+% son_extend(Sg,Prime,Sv,Call,Succ)                                      %
 % If Prime = bottom, Succ = bottom. If Sv = [], Call = Succ.             %
 % Otherwise:                                                             %
 %  * Succ_gr is the result of merging Prime_gr and Call_gr               %
@@ -276,10 +276,10 @@ son_glb((Gx,Shx),(Gy,Shy),(Gz,Shz)) :-
 %  * Projects Temp_sh onto Sv and obtaining Temp1                        %
 %------------------------------------------------------------------------%
 
-son_extend('$bottom',_,_,'$bottom'):- !.
-son_extend(_,[],Call,Succ):- !,
+son_extend(_Sg,'$bottom',_,_,'$bottom'):- !.
+son_extend(_Sg,_,[],Call,Succ):- !,
 	Succ = Call.
-son_extend((Prime_gr,Prime_sh),Sv,(Call_gr,Call_sh),(Succ_gr,Succ_sh)):-
+son_extend(_Sg,(Prime_gr,Prime_sh),Sv,(Call_gr,Call_sh),(Succ_gr,Succ_sh)):-
 	merge(Prime_gr,Call_gr,Succ_gr),
 	ord_split_lists_from_list(Prime_gr,Call_sh,_Intersect,Temp_Sh),
 	son_project_subst(Temp_Sh,Sv,Temp1),
@@ -307,7 +307,7 @@ son_call_to_success_fact(Sg,_,Head,_K,Sv,Call,(Gv,Sh),(Prime_gr,Prime_sh),Succ):
 	unify_list_binds(NewBinds,TempSh,NonLinear,NewSh),
 	son_project_subst(NewSh,Sv,Prime_sh),
 	ord_intersection(GvAll,Sv,Prime_gr),
-	son_extend((Prime_gr,Prime_sh),Sv,Call,Succ).
+	son_extend(Sg,(Prime_gr,Prime_sh),Sv,Call,Succ).
 
 %------------------------------------------------------------------------- |
 % son_call_to_prime_fact/6 obtains the abstract prime substitution         |

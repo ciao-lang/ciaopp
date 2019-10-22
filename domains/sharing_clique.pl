@@ -185,15 +185,15 @@ share_clique_iterate([(X,Ts)|Eqs],Flag,ASub, ASub2):-
 %                      ABSTRACT Extend                                   %
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% share_clique_extend(+,+,+,-)                                           |
-% share_clique_extend(Prime,Sv,Call,Succ)                                |
+% share_clique_extend(+,+,+,+,-)                                         |
+% share_clique_extend(Sg,Prime,Sv,Call,Succ)                             |
 %------------------------------------------------------------------------%
-:- export(share_clique_extend/4).                   
-share_clique_extend('$bottom',_Hv,_Call,Succ):- !,
+:- export(share_clique_extend/5).
+share_clique_extend(_Sg,'$bottom',_Hv,_Call,Succ):- !,
      Succ = '$bottom'.
-share_clique_extend(_Prime,[],Call,Succ):- !,
+share_clique_extend(_Sg,_Prime,[],Call,Succ):- !,
      Call = Succ.
-share_clique_extend(Prime,Sv,Call,Succ):-!,
+share_clique_extend(_Sg,Prime,Sv,Call,Succ):-!,
 %open('clsh.pl',append,Fd),
      Call = (Call_Cl,Call_Sh),
      split_list_of_lists(Sv,Call_Cl,Call_Cl_g,_),	
@@ -964,7 +964,7 @@ share_clique_success_builtin('=../2',Sv_u,p(X,Y),_,Call,Succ):-
 	var(X), var(Y),!,
 	sort(Sv_u,Sv),
 	Prime = ([],[Sv]),
-	share_clique_extend(Prime,Sv,Call,Succ).
+	share_clique_extend(not_provided_Sg,Prime,Sv,Call,Succ).
 share_clique_success_builtin('=../2',Sv_u,p(X,Y),_,Call,Succ):-
 % General case: Either X is f(t1,...,tn) or Y is [G|Something]. 
 % We must unify [f,t1,...,tn] = [G|Something]
@@ -1039,7 +1039,7 @@ share_clique_success_builtin('recorded/3',Sv_u,p(Y,Z),_,Call,Succ):-
 	share_clique_project(not_provided_Sg,Varsy,not_provided_HvFv_u,ASub,ASub1),!,
 	star_w(ASub1,Prime),
 	sort(Sv_u,Sv),
-	share_clique_extend(Prime,Sv,Call,Succ).
+	share_clique_extend(not_provided_Sg,Prime,Sv,Call,Succ).
 
 share_clique_success_builtin(var,_Sv,p(X),_,(Cl,Sh),Succ):-
 	var(X),

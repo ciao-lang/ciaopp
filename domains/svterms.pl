@@ -6,7 +6,7 @@
 	svterms_compute_lub/2,
 	svterms_compute_lub_el/3,
 	svterms_abs_sort/2,
-	svterms_extend/4,
+	svterms_extend/5,
 	svterms_less_or_equal/2,
 	svterms_glb/3,
 	svterms_unknown_call/4,
@@ -53,7 +53,7 @@
 	    eterms_project/5,
 	    eterms_compute_lub_el/3,
 	    eterms_abs_sort/2,
-	    eterms_extend/4,
+	    eterms_extend/5,
 	    eterms_less_or_equal/2,
 	    eterms_glb/3,
 	    eterms_unknown_call/4,
@@ -466,10 +466,10 @@ sv_sort(SV,SV_s):-
 %------------------------------------------------------------------%
 
 %--------------------------------------------------------------%	
-svterms_extend(Prime,Sv,Call,Succ):-
+svterms_extend(Sg,Prime,Sv,Call,Succ):-
 	abssubst(Prime,TPrime,SVPrime),
 	abssubst(Call,TCall,SVCall),
-	eterms_extend(TPrime,Sv,TCall,TSucc1),
+	eterms_extend(Sg,TPrime,Sv,TCall,TSucc1),
 	sv_extend(SVPrime,SVCall,Sv,TSucc1,TSucc,SVSucc),
 	abssubst_b(Succ,TSucc,SVSucc).
 
@@ -573,7 +573,7 @@ svterms_unknown_call(Sg,Vars,Call,Succ):-
 svterms_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ):-
 	svterms_call_to_entry(Sv,Sg,Hv,Head,K,[],Proj,Entry,ExtraInfo),
 	svterms_exit_to_prime(Sg,Hv,Head,Sv,Entry,ExtraInfo,Prime),
-	svterms_extend(Prime,Sv,Call,Succ).
+	svterms_extend(Sg,Prime,Sv,Call,Succ).
 
 %--------------------------------------------------------------%	
 svterms_special_builtin(SgKey,Sg,Subgoal,Type,Condvars):-
@@ -586,7 +586,7 @@ svterms_success_builtin(bot,_Sv_uns,_Condvars,_,_Call,'$bottom').
 svterms_success_builtin(type(T),_Sv_uns,Condvars,_,Call,Succ):-
 	keys_same_value(Condvars,T,TPrime),
 	abssubst_b(Prime,TPrime,[]),	
-	svterms_extend(Prime,Condvars,Call,Succ).
+	svterms_extend(not_provided_Sg,Prime,Condvars,Call,Succ).
 
 %--------------------------------------------------------------%	
 svterms_call_to_success_builtin('=/2',X=Y,Sv,Call,Proj,Succ):-

@@ -47,7 +47,7 @@
 	share_clique_call_to_success_fact/9,
 	share_clique_empty_entry/3,
 	share_clique_exit_to_prime/7,
-	share_clique_extend/4,
+	share_clique_extend/5,
 	share_clique_glb/3,
 	share_clique_identical_abstract/2,
 	share_clique_input_user_interface/5,
@@ -92,18 +92,18 @@ share_clique_def_exit_to_prime(Sg,Hv,Head,Sv,Exit,(BothEntry,ExtraInfo),Prime):-
 share_clique_def_exit_to_prime(_,_,_,_,_,_,'$bottom').
 
 %------------------------------------------------------------------------%
-% share_clique_def_extend(+,+,+,-)                                       |
-% share_clique_def_extend(Prime,Sv,Call,Succ)                            |
+% share_clique_def_extend(+,+,+,+,-)                                     |
+% share_clique_def_extend(Sg,Prime,Sv,Call,Succ)                         |
 %------------------------------------------------------------------------%
-:- export(share_clique_def_extend/4).
-share_clique_def_extend('$bottom',_Hv,_Call,'$bottom').
-share_clique_def_extend((SH_Prime,Def_Prime),Sv,(SH_Call,Def_Call),Succ):-
-	def_extend(not_provided_Sg,Def_Prime,Sv,Def_Call,Def_Succ),
+:- export(share_clique_def_extend/5).
+share_clique_def_extend(_Sg,'$bottom',_Hv,_Call,'$bottom').
+share_clique_def_extend(Sg,(SH_Prime,Def_Prime),Sv,(SH_Call,Def_Call),Succ):-
+	def_extend(Sg,Def_Prime,Sv,Def_Call,Def_Succ),
 	share_clique_def_compose((SH_Prime,Def_Succ),NewSH_Prime),
 	share_clique_def_compose((SH_Call,Def_Succ),NewSH_Call),
-        share_clique_extend(NewSH_Prime,Sv,NewSH_Call,(Cl_Succ,Sh_Succ)),
+        share_clique_extend(Sg,NewSH_Prime,Sv,NewSH_Call,(Cl_Succ,Sh_Succ)),
 	Succ = ((Cl_Succ,Sh_Succ),Def_Succ),!.
-share_clique_def_extend(_Prime,_Sv,_Call,'$bottom').
+share_clique_def_extend(_Sg,_Prime,_Sv,_Call,'$bottom').
 
 %------------------------------------------------------------------------%
 % share_clique_def_project(+,+,+,+,-)                                    |

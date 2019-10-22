@@ -2,7 +2,7 @@
 	gr_call_to_entry/9,
 	gr_exit_to_prime/7,
 	gr_project/5,
-	gr_extend/4,
+	gr_extend/5,
 	gr_compute_lub/2,
 	gr_glb/3,
 	gr_less_or_equal/2,
@@ -421,23 +421,22 @@ compute_lub_gr([X/_|ASub1],[X/_|ASub2],[X/any|Lub_Cont]):-
 %                      ABSTRACT Extend
 %-------------------------------------------------------------------------
 %------------------------------------------------------------------------%
-% gr_extend(+,+,+,-)                                                     %
-% gr_extend(Prime,Sv,Call,Succ)                                          %
+% gr_extend(+,+,+,+,-)                                                   %
+% gr_extend(Sg,Prime,Sv,Call,Succ)                                       %
 % If Prime = bottom, Succ = bottom. If Sv = [], Call = Succ.             %
 % Otherwise, Succ is computed updating the values of Call with those in  %
 % Prime                                                                  %
 %------------------------------------------------------------------------%
 
-:- pred gr_extend(+Prime,+Sv,+Call,-Succ): absu * list * absu * absu # 
-"
-If @var{Prime} = '$bottom', @var{Succ} = '$bottom'. If @var{Sv} = [], @var{Call} = @var{Succ}.  
+:- pred gr_extend(+Sg,+Prime,+Sv,+Call,-Succ): term * absu * list * absu * absu # 
+"If @var{Prime} = '$bottom', @var{Succ} = '$bottom'. If @var{Sv} = [], @var{Call} = @var{Succ}.  
 Otherwise, @var{Succ} is computed updating the values of @var{Call} with those in  
  @var{Prime}".                                                                  
-gr_extend('$bottom',_Sv,_Call,Succ):- !,
+gr_extend(_Sg,'$bottom',_Sv,_Call,Succ):- !,
 	Succ = '$bottom'.
-gr_extend(_Prime,[],Call,Succ):- !,
+gr_extend(_Sg,_Prime,[],Call,Succ):- !,
 	Call = Succ.
-gr_extend(Prime,_Sv,Call,Succ):-
+gr_extend(_Sg,Prime,_Sv,Call,Succ):-
 	update_Call(Call,Prime,Succ).
 
 update_Call([],_,[]) :- !.
@@ -462,15 +461,15 @@ update_Call_(<,ElemC,Call,ElemP,Prime,[ElemC|Succ]):-
 :- pred gr_call_to_success_fact(+Sg,+Hv,+Head,+K,+Sv,+Call,+Proj,-Prime,-Succ): callable * list * callable * term * list * absu * absu * absu * absu # 
 "Specialized version of call_to_entry + exit_to_prime + extend for facts".
 
-gr_call_to_success_fact(_Sg,[],_Head,_K,Sv,Call,_Proj,Prime,Succ) :- !,
+gr_call_to_success_fact(Sg,[],_Head,_K,Sv,Call,_Proj,Prime,Succ) :- !,
 	gr_create_values(Sv,Prime,g),
-	gr_extend(Prime,Sv,Call,Succ).	
+	gr_extend(Sg,Prime,Sv,Call,Succ).	
 gr_call_to_success_fact(Sg,Hv,Head,_K,Sv,Call,Proj,Prime,Succ):-
 	gr_simplify_equations(Sg,Head,Binds),!,
 	gr_change_values_insert(Hv,Proj,Temp1,any),
 	abs_gunify(Temp1,Binds,Temp2,_NewBinds),
 	gr_project(Sg,Sv,not_provided_HvFv_u,Temp2,Prime),
-	gr_extend(Prime,Sv,Call,Succ).
+	gr_extend(Sg,Prime,Sv,Call,Succ).
 gr_call_to_success_fact(_Sg,_Hv,_Head,_K,_Sv,_Call,_Proj,'$bottom','$bottom').
 
 %------------------------------------------------------------------------%
@@ -891,7 +890,7 @@ gr_call_to_success_builtin('==/2',Sg,Sv,Call,Proj,Succ):- Sg='=='(X,Y),
 	gr_simplify_equations(X,Y,Binds),
 	gr_project(Sg,Sv,not_provided_HvFv_u,Call,Proj),
 	gr_comp(Binds,Proj,Exit),!,
-	gr_extend(Exit,Sv,Call,Succ).
+	gr_extend(Sg,Exit,Sv,Call,Succ).
 gr_call_to_success_builtin('==/2',_,_,_call,_,'$bottom').
 %
 gr_call_to_success_builtin('=/2','='(X,_Y),Sv,Call,Proj,Succ):-

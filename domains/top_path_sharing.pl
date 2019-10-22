@@ -5,7 +5,7 @@
 	  path_call_to_success_fact/9,
 	  path_compute_lub/2, 
 	  path_exit_to_prime/7,
-	  path_extend/4,      
+	  path_extend/5,      
 	  path_input_user_interface/5,
 	  path_input_interface/4,
 	  path_less_or_equal/2,
@@ -146,7 +146,7 @@ path_exit_to_prime(Sg,Hv,_Head,Sv,Exit,ExtraInfo,Prime):-
 	varset(Exit,NonGrExit),
 	ord_subtract(Hv,NonGrExit,NewGr),
 	ord_split_paths_from_list(NewGr,TotalASub,_,Disjoint),		
-	path_extend(Exit,Hv,Disjoint,TmpPrime),
+	path_extend(Sg,Exit,Hv,Disjoint,TmpPrime),
 	path_project(Sg,Sv,not_provided_HvFv_u,TmpPrime,Prime).
 %% 
 %% 
@@ -159,15 +159,15 @@ path_exit_to_prime(Sg,Hv,_Head,Sv,Exit,ExtraInfo,Prime):-
 %                      ABSTRACT Extend
 %-------------------------------------------------------------------------
 %------------------------------------------------------------------------%
-% path_extend(+,+,+,-)                                                   %
-% path_extend(Prime,Sv,Call,Succ)                                        %
+% path_extend(+,+,+,+,-)                                                 %
+% path_extend(Sg,Prime,Sv,Call,Succ)                                     %
 % If Prime = bottom, Succ = bottom. If Sv = [], Call = Succ.             %
 %------------------------------------------------------------------------%
-path_extend('$bottom',_Sv,_Call,Succ):- !,
+path_extend(_Sg,'$bottom',_Sv,_Call,Succ):- !,
 	Succ = '$bottom'.
-path_extend(_Prime,[],Call,Succ):- !,
+path_extend(_Sg,_Prime,[],Call,Succ):- !,
 	Call = Succ.
-path_extend(Prime,Sv,Call,Succ):-
+path_extend(_Sg,Prime,Sv,Call,Succ):-
 	depth_k(K),
 %	depth_k(K0), K is K0+1,
 	ord_split_paths_from_list(Sv,Call,Int,Disjoint),	
