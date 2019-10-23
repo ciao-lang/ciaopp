@@ -7,7 +7,7 @@
    AI domains.").
 
 :- use_module(engine(messages_basic), [message/2]).
-:- use_module(library(write), [numbervars/3]).
+%:- use_module(library(write), [numbervars/3]).
 
 :- export(dom_sent/3).
 dom_sent((:- dom_def(AbsInt)), C2, _M) :- !,
@@ -16,10 +16,6 @@ dom_sent((:- dom_op(AbsInt,Spec)), C2, _M) :- nonvar(Spec), Spec = _/_, !,
 	emit_dom_op0(AbsInt,Spec,AbsInt, C2).
 dom_sent((:- dom_op(AbsInt,Spec,from(AbsIntB))), C2, _M) :- nonvar(Spec), Spec = _/_, !,
 	emit_dom_op0(AbsInt,Spec,AbsIntB, C2).
-dom_sent((:- dom_op(AbsInt,H,B1,from(AbsIntB))), C2, _M) :- !,
-	emit_dom_op(AbsInt,H,B1,AbsIntB, C2).
-dom_sent((:- dom_op(AbsInt,H,B1)), C2, _M) :-
-	emit_dom_op(AbsInt,H,B1,AbsInt, C2).
 
 emit_dom_op0(AbsInt,Spec,AbsIntB, C2) :-
 	% AbsInt implements operation Spec
@@ -32,40 +28,6 @@ emit_dom_op0(AbsInt,Spec,AbsIntB, C2) :-
 	H =.. [OpName,AbsInt|As],
         C2 = (H :- !, B).
 
-emit_dom_op(AbsInt,H,B1,AbsIntB, C2) :-
-	H =.. [Nh|As],
-	B1 =.. [OpName|Bs],
-	atom_concat('_', OpName, ImplN0),
-	atom_concat(AbsIntB, ImplN0, ImplN),
-	B =.. [ImplN|Bs],
-	B2 = B,
-	%check_dom_op(Nh,AbsInt,As,B1), % (enable to check op)
-	H2 =.. [Nh,AbsInt|As],
-        C2 = (H2 :- !, B2).
-
-check_dom_op(Nh,AbsInt,As,B1) :-
-	B1 =.. [OpName|Bs],
-	( OpName == Nh ->
-	    ( ( member(Va,As),nonvar(Va)
-	      ; member(Vb,Bs),nonvar(Vb)
-	      ) ->
-		( numbervars(As,0,N0),
-		  numbervars(Bs,N0,_),
-		  message(user, [~~(bad_args_nonvar(AbsInt, OpName, As, Bs))]),
-		  fail
-		; true
-		)
-	    ; As == Bs -> true
-	    ; ( numbervars(As,0,N0),
-		numbervars(Bs,N0,_),
-		message(user, [~~(bad_args(AbsInt, OpName, As, Bs))]),
-		fail
-	      ; true
-	      )
-	    )
-	; message(user, [~~(bad_opname(AbsInt, Nh, OpName))])
-	).
-
-err(wrong_op(C)) :-
-	message(error, ['Wrong dom_op: ', ~~(C)]),
-	fail.
+% err(wrong_op(C)) :-
+% 	message(error, ['Wrong dom_op: ', ~~(C)]),
+% 	fail.
