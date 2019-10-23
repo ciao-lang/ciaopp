@@ -4,6 +4,7 @@
 
 :- doc(author,"Maria Garcia de la Banda").
 :- doc(author,"Francisco Bueno").
+:- doc(author,"Jose F. Morales (aidomain package)").
 
 :- doc(module,"This module contains the predicates for selecting
    the abstract operations that correspond to an analysis domain. The
@@ -678,3 +679,49 @@ abstract_instance(AbsInt,Sg1,Proj1,Sg2,Proj2) :-
 % ===========================================================================
 
 :- include(ciaopp(plai/domains_hooks)).
+
+% ===========================================================================
+% (common)
+
+:- use_module(library(lists), [member/2]).
+:- use_module(library(messages), [warning_message/2]).
+:- use_module(ciaopp(preprocess_flags), [current_pp_flag/2]).
+
+:- export(absub_eliminate_equivalent/3).
+absub_eliminate_equivalent([],_AbsInt,[]).
+absub_eliminate_equivalent([ASub],_AbsInt,[ASub]) :- !.
+absub_eliminate_equivalent([ASub|LASub],AbsInt,[ASub|NLASub]) :-
+	take_equivalent_out(LASub,ASub,AbsInt,TmpLASub),
+	absub_eliminate_equivalent(TmpLASub,AbsInt,NLASub).
+
+take_equivalent_out([],_ASub,_AbsInt,[]).
+take_equivalent_out([ASub0|LASub],ASub,AbsInt,NLASub) :-
+	equivalent_or_not(ASub0,ASub,AbsInt,NLASub,Tail),
+	take_equivalent_out(LASub,ASub,AbsInt,Tail).
+
+equivalent_or_not(ASub0,ASub,AbsInt,NLASub,Tail) :-
+	identical_abstract(AbsInt,ASub0,ASub), !,
+	NLASub=Tail.
+equivalent_or_not(ASub0,_ASub,_AbsInt,[ASub0|Tail],Tail).
+
+absub_fixpoint_covered(AbsInt,Prime0,Prime1) :-
+	( current_pp_flag(multi_call,on) ->
+	    identical_abstract(AbsInt,Prime0,Prime1)
+	; current_pp_flag(multi_call,off) ->
+	    less_or_equal(AbsInt,Prime0,Prime1)
+	; fail % TODO: anything else?
+	).
+
+:- export(body_builtin/9).
+body_builtin(AbsInt,special(SgKey),Sg,_Condvs,Sv,_HvFv_u,Call,Proj,Succ) :- !,
+	call_to_success_builtin(AbsInt,SgKey,Sg,Sv,Call,Proj,Succ).
+body_builtin(AbsInt,Type,_Sg,Condvs,Sv,HvFv_u,Call,_Proj,Succ) :-
+	success_builtin(AbsInt,Type,Sv,Condvs,HvFv_u,Call,Succ), !.
+body_builtin(AbsInt,Type,_Sg,_Condvs,_Sv,_HvFv_u,_Call,_Proj,'$bottom') :-
+	warning_message("body_builtin: the builtin key ~q is not defined in domain ~w",
+	                [Type,AbsInt]).
+
+undef_call_to_success_builtin(AbsInt,SgKey) :-
+        warning_message("call_to_success_builtin: the builtin key ~q is not defined in domain ~w",
+	                [special(SgKey),AbsInt]).
+
