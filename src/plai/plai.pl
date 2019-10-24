@@ -147,7 +147,7 @@ plai(Cls,Ds,Fixp,AbsInt,[TimeInfo,MemoryInfo|Info]):-
 	-> Header = 'certificate checked by'
 	;  Header = 'analyzed by'),
         message(inform, ['{', Header, ' ', Fixp, ' using ', AbsInt, 
-                     ' with local-control ', LC,' in ', TAna, ' msec.}\n']),
+                     ' with local-control ', LC,' in ', TAna, ' msec.}']),
 	TimeInfo = time(Total,[(prep,TPre),(ana,TAna)|Local_C_Info]),
   % TODO: Total time is wrong, Local_C_Info not added!!!
 	java_statistics(AbsInt),
@@ -163,7 +163,7 @@ do_plai(Cls,Ds,Fixp, AbsInt, TPre, TAna):-
 	cleanup_trans_clauses, !, % TODO: fix, move cuts deeper
 	undo_errors, !, % TODO: fix, move cuts deeper
 	stat_no_store(preprocess(Fixp,AbsInt,Cls,Ds,Ps), TPre), !, % TODO: fix, move cuts deeper
-	message(inform, ['{preprocessed for the ', Fixp, ' fixpoint in ',TPre, ' msec.}\n']),
+	message(inform, ['{preprocessed for the ', Fixp, ' fixpoint in ',TPre, ' msec.}']),
 	reset_mem_usage,
 	stat_no_store(topdown_analysis(Fixp,AbsInt,Ps),TAna).
 
@@ -395,12 +395,12 @@ do_mod_plai(Cls,Ds,Fixp,AbsInt,Time):-
 	cleanup_trans_clauses, !, % TODO: fix, move cuts deeper
 	undo_errors, !, % TODO: fix, move cuts deeper
 	stat_no_store(preprocess(Fixp,AbsInt,Cls,Ds,Ps), TPre), !, % TODO: fix, move cuts deeper
-  message(inform, ['{preprocessed for ', Fixp, ' in ', TPre, ' msec.}\n']),
+	message(inform, ['{preprocessed for ', Fixp, ' in ', TPre, ' msec.}']),
 	stat_no_store(mod_topdown_analysis(AbsInt,Fixp,Ps), TAna),
 	message(inform, ['{analyzed by ', Fixp, ' using ', AbsInt, ' in ', TAna,
-	' msec.}\n']),
+	  ' msec.}']),
 	Total is TPre + TAna,
-  Time = time(Total,[(prep,TPre),(ana,TAna)]).
+	Time = time(Total,[(prep,TPre),(ana,TAna)]).
 
 %------------------------------------------------------------------------%
 
