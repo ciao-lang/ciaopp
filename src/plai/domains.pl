@@ -704,6 +704,7 @@ equivalent_or_not(ASub0,ASub,AbsInt,NLASub,Tail) :-
 	NLASub=Tail.
 equivalent_or_not(ASub0,_ASub,_AbsInt,[ASub0|Tail],Tail).
 
+:- export(absub_fixpoint_covered/3).
 absub_fixpoint_covered(AbsInt,Prime0,Prime1) :-
 	( current_pp_flag(multi_call,on) ->
 	    identical_abstract(AbsInt,Prime0,Prime1)
@@ -721,6 +722,7 @@ body_builtin(AbsInt,Type,_Sg,_Condvs,_Sv,_HvFv_u,_Call,_Proj,'$bottom') :-
 	warning_message("body_builtin: the builtin key ~q is not defined in domain ~w",
 	                [Type,AbsInt]).
 
+:- export(undef_call_to_success_builtin/2).
 undef_call_to_success_builtin(AbsInt,SgKey) :-
         warning_message("call_to_success_builtin: the builtin key ~q is not defined in domain ~w",
 	                [special(SgKey),AbsInt]).

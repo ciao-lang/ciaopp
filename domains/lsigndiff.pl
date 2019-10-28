@@ -18,6 +18,28 @@
 	  difflsign_empty_entry/3
 	], [assertions]).
 
+:- doc(title, "lsigndiff domain").
+
+:- include(ciaopp(plai/plai_domain)).
+:- dom_def(difflsign).
+:- dom_impl(difflsign, call_to_entry/9).
+:- dom_impl(difflsign, exit_to_prime/7).
+:- dom_impl(difflsign, project/5).
+:- dom_impl(difflsign, compute_lub/2).
+:- dom_impl(difflsign, abs_sort/2).
+:- dom_impl(difflsign, extend/5).
+:- dom_impl(difflsign, less_or_equal/2).
+:- dom_impl(difflsign, glb/3).
+:- dom_impl(difflsign, call_to_success_fact/9).
+:- dom_impl(difflsign, special_builtin/5).
+:- dom_impl(difflsign, success_builtin/6).
+:- dom_impl(difflsign, input_interface/4).
+:- dom_impl(difflsign, input_user_interface/5).
+:- dom_impl(difflsign, asub_to_native/5).
+:- dom_impl(difflsign, unknown_call/4).
+:- dom_impl(difflsign, unknown_entry/3).
+:- dom_impl(difflsign, empty_entry/3).
+
 % simple lsign domain
 
 %------------------------------------------------------------------------%

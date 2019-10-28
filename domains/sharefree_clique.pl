@@ -4,6 +4,36 @@
 :- doc(author, "Jorge Navas").
 % Copyright (C) 2004-2019 The Ciao Development Team
 
+:- use_module(domain(sharefree), [
+	shfr_obtain_info/4
+   ]).
+:- include(ciaopp(plai/plai_domain)).
+:- dom_def(sharefree_clique).
+:- dom_impl(sharefree_clique, amgu/4).
+:- dom_impl(sharefree_clique, augment_asub/3).
+:- dom_impl(sharefree_clique, call_to_entry/9).
+:- dom_impl(sharefree_clique, exit_to_prime/7).
+:- dom_impl(sharefree_clique, project/5).
+:- dom_impl(sharefree_clique, compute_lub/2).
+:- dom_impl(sharefree_clique, identical_abstract/2).
+:- dom_impl(sharefree_clique, abs_sort/2).
+:- dom_impl(sharefree_clique, extend/5).
+:- dom_impl(sharefree_clique, less_or_equal/2).
+:- dom_impl(sharefree_clique, glb/3).
+:- dom_impl(sharefree_clique, eliminate_equivalent/2).
+:- dom_impl(sharefree_clique, call_to_success_fact/9).
+:- dom_impl(sharefree_clique, special_builtin/5).
+:- dom_impl(sharefree_clique, success_builtin/6).
+:- dom_impl(sharefree_clique, call_to_success_builtin/6).
+:- dom_impl(sharefree_clique, obtain_info/4, from(sharefree:shfr)).
+:- dom_impl(sharefree_clique, input_interface/4).
+:- dom_impl(sharefree_clique, input_user_interface/5).
+:- dom_impl(sharefree_clique, asub_to_native/5).
+:- dom_impl(sharefree_clique, unknown_call/4).
+:- dom_impl(sharefree_clique, unknown_entry/3).
+:- dom_impl(sharefree_clique, empty_entry/3).
+% :- dom_impl(sharefree_clique, compute_lub_el(ASub1,ASub2,ASub), compute_lub_el(ASub1,ASub2,ASub)).
+
 %------------------------------------------------------------------------%
 % This file contains an extension (freeness) of the domain dependent     |
 % abstract functions for the clique-sharing domain.                      |

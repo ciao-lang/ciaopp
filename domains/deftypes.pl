@@ -57,6 +57,35 @@ variable and Type is a pure type term @cite{Dart-Zobel}.
 
 ").
 
+:- include(ciaopp(plai/plai_domain)).
+:- dom_def(deftypes).
+:- dom_impl(deftypes, init_abstract_domain/1).
+:- dom_impl(deftypes, call_to_entry/9).
+:- dom_impl(deftypes, exit_to_prime/7).
+:- dom_impl(deftypes, project/5).
+:- dom_impl(deftypes, widencall/3).
+:- dom_impl(deftypes, widen/3).
+:- dom_impl(deftypes, compute_lub/2).
+:- dom_impl(deftypes, identical_abstract/2).
+:- dom_impl(deftypes, abs_sort/2).
+:- dom_impl(deftypes, extend/5).
+:- dom_impl(deftypes, less_or_equal/2).
+:- dom_impl(deftypes, glb/3).
+:- dom_impl(deftypes, call_to_success_fact/9).
+:- dom_impl(deftypes, special_builtin/5).
+:- dom_impl(deftypes, success_builtin/6).
+:- dom_impl(deftypes, call_to_success_builtin/6).
+:- dom_impl(deftypes, input_interface/4).
+:- dom_impl(deftypes, input_user_interface/5).
+:- dom_impl(deftypes, asub_to_native/5).
+:- dom_impl(deftypes, concrete/3).
+:- dom_impl(deftypes, unknown_call/4).
+:- dom_impl(deftypes, unknown_entry/3).
+:- dom_impl(deftypes, empty_entry/3).
+:- dom_impl(deftypes, collect_abstypes_abs/3).
+:- dom_impl(deftypes, rename_abstypes_abs/3).
+:- dom_impl(deftypes, contains_parameters/1).
+
 :- use_module(ciaopp(p_unit), [new_internal_predicate/3]).
 % type operations from Pedro's library
 :- use_module(typeslib(typeslib), 

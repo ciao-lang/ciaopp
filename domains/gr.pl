@@ -23,13 +23,6 @@
 	extrainfo/1
    ], [assertions,regtypes,basicmodes,datafacts]).
 
-:- use_module(engine(io_basic)).
-:- use_module(library(messages), [warning_message/2]).
-:- use_module(library(sort)).
-:- use_module(library(terms_vars), [varset/2]).
-:- use_module(library(terms_check), [variant/2]).
-:- use_module(library(sets), [merge/3, ord_subtract/3]).
-
 :- doc(title,"Simple groundness abstract domain").
 :- doc(author, "Claudio Vaucheret").
 
@@ -89,6 +82,35 @@ The abstract domain lattice is:
 % introduced for a variable, but unnecessary code for handling 'ng'
 % varibles might remain.
 
+:- include(ciaopp(plai/plai_domain)).
+:- dom_def(gr).
+:- dom_impl(gr, call_to_entry/9).
+:- dom_impl(gr, exit_to_prime/7).
+:- dom_impl(gr, project/5).
+:- dom_impl(gr, compute_lub/2).
+:- dom_impl(gr, abs_sort/2).
+:- dom_impl(gr, extend/5).
+:- dom_impl(gr, less_or_equal/2).
+:- dom_impl(gr, glb/3).
+:- dom_impl(gr, call_to_success_fact/9).
+:- dom_impl(gr, special_builtin/5).
+:- dom_impl(gr, success_builtin/6).
+:- dom_impl(gr, call_to_success_builtin/6).
+:- dom_impl(gr, input_interface/4).
+:- dom_impl(gr, input_user_interface/5).
+:- dom_impl(gr, asub_to_native/5).
+:- dom_impl(gr, unknown_call/4).
+:- dom_impl(gr, unknown_entry/3).
+:- dom_impl(gr, empty_entry/3).
+% :- dom_impl(gr, compute_lub_el(ASub1,ASub2,ASub), compute_lub_el(ASub1,ASub2,ASub)).
+% :- dom_impl(gr, extend_free(ASub1,Vars,ASub), extend_free(ASub1,Vars,ASub)).
+
+:- use_module(engine(io_basic)).
+:- use_module(library(messages), [warning_message/2]).
+:- use_module(library(sort)).
+:- use_module(library(terms_vars), [varset/2]).
+:- use_module(library(terms_check), [variant/2]).
+:- use_module(library(sets), [merge/3, ord_subtract/3]).
 
 :- doc(doinclude,absu/1).
 :- doc(doinclude,absu_elem/1).

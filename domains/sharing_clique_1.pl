@@ -4,6 +4,34 @@
 :- doc(author, "Jorge Navas").
 % Copyright (C) 2004-2019 The Ciao Development Team
 
+:- use_module(domain(sharing_clique), [
+	share_clique_special_builtin/5,
+	share_clique_input_user_interface/5,
+	share_clique_empty_entry/3]).
+:- include(ciaopp(plai/plai_domain)).
+:- dom_def(share_clique_1).
+:- dom_impl(share_clique_1, call_to_entry/9).
+:- dom_impl(share_clique_1, exit_to_prime/7).
+:- dom_impl(share_clique_1, project/5).
+:- dom_impl(share_clique_1, compute_lub/2).
+:- dom_impl(share_clique_1, identical_abstract/2).
+:- dom_impl(share_clique_1, abs_sort/2, from(sharing_clique:share_clique)).
+:- dom_impl(share_clique_1, extend/5).
+:- dom_impl(share_clique_1, less_or_equal/2).
+:- dom_impl(share_clique_1, glb/3).
+:- dom_impl(share_clique_1, eliminate_equivalent/2).
+:- dom_impl(share_clique_1, call_to_success_fact/9).
+:- dom_impl(share_clique_1, special_builtin/5, from(sharing_clique:share_clique)).
+:- dom_impl(share_clique_1, success_builtin/6).
+:- dom_impl(share_clique_1, call_to_success_builtin/6).
+:- dom_impl(share_clique_1, input_interface/4).
+:- dom_impl(share_clique_1, input_user_interface/5, from(sharing_clique:share_clique)).
+:- dom_impl(share_clique_1, asub_to_native/5).
+:- dom_impl(share_clique_1, unknown_call/4).
+:- dom_impl(share_clique_1, unknown_entry/3).
+:- dom_impl(share_clique_1, empty_entry/3, from(sharing_clique:share_clique)).
+% :- dom_impl(share_clique_1, compute_lub_el(ASub1,ASub2,ASub), lub_cl(ASub1,ASub2,ASub)).
+
 %------------------------------------------------------------------------%
 % This file contains the domain dependent abstract functions for the     |
 % clique-sharing domain with an extension that allows to capture         |

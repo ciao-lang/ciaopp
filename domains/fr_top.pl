@@ -22,6 +22,28 @@
 	  get_free_vars/3
 	], [datafacts]).
 
+:- include(ciaopp(plai/plai_domain)).
+:- dom_def(fr).
+:- dom_impl(fr, call_to_entry/9).
+:- dom_impl(fr, exit_to_prime/7).
+:- dom_impl(fr, project/5).
+:- dom_impl(fr, compute_lub/2).
+:- dom_impl(fr, identical_abstract/2).
+:- dom_impl(fr, abs_sort/2).
+:- dom_impl(fr, extend/5).
+:- dom_impl(fr, less_or_equal/2).
+:- dom_impl(fr, glb/3).
+:- dom_impl(fr, call_to_success_fact/9).
+:- dom_impl(fr, special_builtin/5).
+:- dom_impl(fr, success_builtin/6).
+:- dom_impl(fr, input_interface/4).
+:- dom_impl(fr, input_user_interface/5).
+:- dom_impl(fr, asub_to_native/5).
+:- dom_impl(fr, unknown_call/4).
+:- dom_impl(fr, unknown_entry/3).
+:- dom_impl(fr, empty_entry/3).
+% TODO: body_succ_builtin/9: (old comment) these do not have special(_), so ok: AbsInt \== def, AbsInt \== fr, AbsInt \== frdef
+
 :- use_module(ciaopp(p_unit), [language/1]).
 :- use_module(ciaopp(plai/plai_errors), [compiler_error/1]).
 

@@ -1,4 +1,3 @@
-
 :- module(shareson,
 	[ shareson_call_to_entry/9,
 	  shareson_call_to_success_fact/9, 
@@ -21,6 +20,26 @@
 	  shareson_compose/4
 	],
 	[ ]).
+
+:- include(ciaopp(plai/plai_domain)).
+:- dom_def(shareson).
+:- dom_impl(shareson, call_to_entry/9).
+:- dom_impl(shareson, exit_to_prime/7).
+:- dom_impl(shareson, project/5).
+:- dom_impl(shareson, compute_lub/2).
+:- dom_impl(shareson, abs_sort/2).
+:- dom_impl(shareson, extend/5).
+:- dom_impl(shareson, less_or_equal/2).
+:- dom_impl(shareson, glb/3).
+:- dom_impl(shareson, call_to_success_fact/9).
+:- dom_impl(shareson, special_builtin/5).
+:- dom_impl(shareson, body_succ_builtin/8).
+:- dom_impl(shareson, input_interface/4).
+:- dom_impl(shareson, input_user_interface/5).
+:- dom_impl(shareson, asub_to_native/5).
+:- dom_impl(shareson, unknown_call/4).
+:- dom_impl(shareson, unknown_entry/3).
+:- dom_impl(shareson, empty_entry/3).
 
 :- use_module(domain(sharing)).
 :- use_module(domain(sondergaard)).

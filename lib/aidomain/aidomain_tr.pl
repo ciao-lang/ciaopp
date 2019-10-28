@@ -15,10 +15,14 @@
 
 :- data dom_def/2.
 :- data dom_base/3.
+:- data dom_op/3.
+:- data dom_itf/1.
 
 clean_db_pass1(Mod) :-
 	retractall_fact(dom_def(_,Mod)),
-	retractall_fact(dom_base(_,_,Mod)).
+	retractall_fact(dom_base(_,_,Mod)),
+	retractall_fact(dom_op(_,_,Mod)),
+	retractall_fact(dom_itf(Mod)).
 
 % ---------------------------------------------------------------------------
 
@@ -33,20 +37,45 @@ treat_sent(end_of_file, Cs2, Mod) :- !,
 treat_sent((:- dom_def(AbsInt)), C2, M) :- !,
 	assertz_fact(dom_def(AbsInt,M)),
         C2 = aidomain(AbsInt).
+treat_sent((:- dom_itf), C2, M) :- !,
+	C2 = [],
+	assertz_fact(dom_itf(M)).
 treat_sent((:- dom_base(Spec)), C2, M) :- nonvar(Spec), Spec = F/A, !,
 	C2 = [],
 	assertz_fact(dom_base(F,A,M)).
-treat_sent((:- dom_op(Spec)), C2, _M) :- nonvar(Spec), Spec = F/A, !,
+treat_sent((:- dom_op(Spec)), Cs, M) :- nonvar(Spec), Spec = F/A, !,
+	% Declare operation and define wrapper to multifile % TODO: C1 and C2
+% 	A1 is A+1,
+% 	mprefix(F, Fm),
+% 	functor(Hm,Fm,A1),
+% 	Hm =.. [_|Xs],
+% 	H =.. [F|Xs],
+% 	C1 = (H :- Hm),
+%	Cs = [C1, (:- discontiguous(Fm/A1)), (:- multifile(Fm/A1))].
+	assertz_fact(dom_op(F,A,M)),
 	A1 is A+1,
-	C2 = [(:- discontiguous(F/A1))].
-treat_sent((:- dom_impl(AbsInt,Spec)), C2, _M) :- nonvar(Spec), Spec = _/_, !,
-	emit_dom_impl0(AbsInt,Spec,AbsInt, C2).
-treat_sent((:- dom_impl(AbsInt,Spec,from(AbsIntB))), C2, _M) :- nonvar(Spec), Spec = _/_, !,
-	emit_dom_impl0(AbsInt,Spec,AbsIntB, C2).
+	mprefix(F, Fm),
+	Cs = [(:- discontiguous(Fm/A1)), (:- multifile(Fm/A1))].
+treat_sent((:- dom_impl(AbsInt,Spec)), C2, M) :- nonvar(Spec), Spec = _/_, !,
+	emit_dom_impl0(AbsInt,Spec,AbsInt,M,C2).
+treat_sent((:- dom_impl(AbsInt,Spec,from(MAbsIntB))), C2, _M) :- nonvar(Spec), nonvar(MAbsIntB), Spec = _/_, !,
+	( MAbsIntB = MB:AbsIntB -> % different module name
+	    true
+	; % same module name
+	  MB = MAbsIntB, AbsIntB = MAbsIntB
+	),
+	emit_dom_impl0(AbsInt,Spec,AbsIntB,MB,C2).
 
 emit_sents(Mod,Cs) :- % TODO: complete
+	% Add default definitions
 	findall(Impl, dom_def(Impl, Mod), Impls),
-	emit_base_hooks_all(Impls, Mod, Cs, []).
+	emit_base_hooks_all(Impls, Mod, Cs, Cs1),
+	( dom_itf(Mod) ->
+	    % Add itf methods (non-multifile wrappers for multifile)
+	    findall(m(F/A), dom_op(F, A, Mod), Meths),
+	    emit_imeths(Meths, Cs1, [])
+	; Cs1 = []
+	).
 
 emit_base_hooks_all([],_M,Cs,Cs).
 emit_base_hooks_all([Impl|Impls],M,Cs,Cs0) :-
@@ -55,15 +84,30 @@ emit_base_hooks_all([Impl|Impls],M,Cs,Cs0) :-
 
 emit_base_hooks(Impl,M,Cs,Cs0) :-
 	findall(m(F/A), dom_base(F,A,M), Meths),
-	emit_meths(Meths,Impl,Cs,Cs0).
+	emit_meths(Meths,Impl,M,Cs,Cs0).
 
-emit_meths([],_Impl,Cs,Cs).
-emit_meths([m(Spec)|Meths],Impl,Cs,Cs0) :-
-	emit_dom_impl1(Impl,Spec,basedom,C), % TODO: basedom hardwired
+emit_meths([],_Impl,_M,Cs,Cs).
+emit_meths([m(Spec)|Meths],Impl,M,Cs,Cs0) :-
+	emit_dom_impl1(Impl,Spec,basedom,M,C), % TODO: basedom hardwired
 	Cs = [C|Cs1],
-	emit_meths(Meths,Impl,Cs1,Cs0).
+	emit_meths(Meths,Impl,M,Cs1,Cs0).
 
-emit_dom_impl0(AbsInt,Spec,AbsIntB, C2) :-
+emit_imeths([],Cs,Cs).
+emit_imeths([m(F/A)|Meths],Cs,Cs0) :-
+	% Wrappers to multifile preds
+	A1 is A+1,
+	mprefix(F, Fm),
+	functor(Hm,Fm,A1),
+	Hm =.. [_|Xs],
+	H =.. [F|Xs],
+	C1 = (H :- Hm),
+	Cs = [C1|Cs1],
+	emit_imeths(Meths,Cs1,Cs0).
+
+mprefix(F, Fm) :-
+	atom_concat('aidom.', F, Fm).
+
+emit_dom_impl0(AbsInt,Spec,AbsIntB,M,C2) :-
 	% AbsInt implements operation Spec
 	Spec = OpName/A,
 	functor(Op, OpName, A),
@@ -71,10 +115,11 @@ emit_dom_impl0(AbsInt,Spec,AbsIntB, C2) :-
 	atom_concat('_', OpName, ImplN0),
 	atom_concat(AbsIntB, ImplN0, ImplN),
 	B =.. [ImplN|As],
-	H =.. [OpName,AbsInt|As],
-        C2 = (H :- !, B).
+	mprefix(OpName, OpNameM),
+	H =.. [OpNameM,AbsInt|As],
+        C2 = (H :- !, M:B).
 
-emit_dom_impl1(AbsInt,Spec,AbsIntB, C2) :-
+emit_dom_impl1(AbsInt,Spec,AbsIntB,M,C2) :-
 	% AbsInt implements operation Spec (AbsInt still an arg) 
 	Spec = OpName/A,
 	functor(Op, OpName, A),
@@ -82,8 +127,9 @@ emit_dom_impl1(AbsInt,Spec,AbsIntB, C2) :-
 	atom_concat('_', OpName, ImplN0),
 	atom_concat(AbsIntB, ImplN0, ImplN),
 	B =.. [ImplN,AbsInt|As],
-	H =.. [OpName,AbsInt|As],
-        C2 = (H :- !, B).
+	mprefix(OpName, OpNameM),
+	H =.. [OpNameM,AbsInt|As],
+        C2 = (H :- !, M:B).
 
 % err(wrong_impl(C)) :-
 % 	message(error, ['Wrong dom_impl: ', ~~(C)]),

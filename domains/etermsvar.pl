@@ -86,6 +86,37 @@ Type is a pure type term @cite{Dart-Zobel}.
           This may lose precision, but otherwise type_eval produces wrong
           results").
 
+:- include(ciaopp(plai/plai_domain)).
+:- dom_def(etermsvar).
+:- dom_impl(etermsvar, init_abstract_domain/1).
+:- dom_impl(etermsvar, call_to_entry/9).
+:- dom_impl(etermsvar, exit_to_prime/7).
+:- dom_impl(etermsvar, project/5).
+:- dom_impl(etermsvar, widencall/3).
+:- dom_impl(etermsvar, widen/3).
+:- dom_impl(etermsvar, compute_lub/2).
+:- dom_impl(etermsvar, identical_abstract/2).
+:- dom_impl(etermsvar, abs_sort/2).
+:- dom_impl(etermsvar, extend/5).
+:- dom_impl(etermsvar, less_or_equal/2).
+:- dom_impl(etermsvar, glb/3).
+:- dom_impl(etermsvar, call_to_success_fact/9).
+:- dom_impl(etermsvar, special_builtin/5).
+:- dom_impl(etermsvar, success_builtin/6).
+:- dom_impl(etermsvar, call_to_success_builtin/6).
+:- dom_impl(etermsvar, obtain_info/4).
+:- dom_impl(etermsvar, input_interface/4).
+:- dom_impl(etermsvar, input_user_interface/5).
+:- dom_impl(etermsvar, asub_to_native/5).
+% :- dom_impl(etermsvar, concrete/3).
+:- dom_impl(etermsvar, unknown_call/4).
+:- dom_impl(etermsvar, unknown_entry/3).
+:- dom_impl(etermsvar, empty_entry/3).
+:- dom_impl(etermsvar, part_conc/4).
+:- dom_impl(etermsvar, multi_part_conc/3).
+:- dom_impl(etermsvar, collect_abstypes_abs/3).
+:- dom_impl(etermsvar, rename_abstypes_abs/3).
+
 % type operations from Pedro's library
 :- use_module(typeslib(typeslib), 
 	[

@@ -25,6 +25,31 @@
 	[ assertions,regtypes,basicmodes
 	]).
 
+:- include(ciaopp(plai/plai_domain)).
+:- dom_def(shfret).
+:- dom_impl(shfret, init_abstract_domain/1).
+:- dom_impl(shfret, call_to_entry/9).
+:- dom_impl(shfret, exit_to_prime/7).
+:- dom_impl(shfret, project/5).
+:- dom_impl(shfret, widencall/3).
+:- dom_impl(shfret, widen/3).
+:- dom_impl(shfret, compute_lub/2).
+:- dom_impl(shfret, identical_abstract/2).
+:- dom_impl(shfret, abs_sort/2).
+:- dom_impl(shfret, extend/5).
+:- dom_impl(shfret, less_or_equal/2).
+:- dom_impl(shfret, glb/3).
+:- dom_impl(shfret, eliminate_equivalent/2).
+:- dom_impl(shfret, call_to_success_fact/9).
+:- dom_impl(shfret, combined_special_builtin0/2).
+:- dom_impl(shfret, split_combined_domain/3).
+:- dom_impl(shfret, input_interface/4).
+:- dom_impl(shfret, input_user_interface/5).
+:- dom_impl(shfret, asub_to_native/5).
+:- dom_impl(shfret, unknown_call/4).
+:- dom_impl(shfret, unknown_entry/3).
+:- dom_impl(shfret, empty_entry/3).
+
 :- use_module(domain(eterms)).
 :- use_module(domain(sharefree)).
 

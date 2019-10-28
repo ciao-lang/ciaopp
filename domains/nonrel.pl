@@ -571,6 +571,33 @@ nonrel_call_to_success_builtin0(nonrel_intervals,SgKey,Sg,Sv,Call,Proj,Succ) :- 
 % ---------------------------------------------------------------------------
 % impl domain
 % TODO: (use traits)
+
+:- include(ciaopp(plai/plai_domain)).
+:- dom_def(nonrel_intervals).
+:- dom_impl(nonrel_intervals, init_abstract_domain/1).
+:- dom_impl(nonrel_intervals, amgu/4).
+:- dom_impl(nonrel_intervals, call_to_entry/9).
+:- dom_impl(nonrel_intervals, exit_to_prime/7).
+:- dom_impl(nonrel_intervals, project/5).
+:- dom_impl(nonrel_intervals, widencall/3).
+:- dom_impl(nonrel_intervals, widen/3).
+:- dom_impl(nonrel_intervals, compute_lub/2).
+:- dom_impl(nonrel_intervals, identical_abstract/2).
+:- dom_impl(nonrel_intervals, abs_sort/2).
+:- dom_impl(nonrel_intervals, extend/5).
+:- dom_impl(nonrel_intervals, less_or_equal/2).
+:- dom_impl(nonrel_intervals, glb/3).
+:- dom_impl(nonrel_intervals, call_to_success_fact/9).
+:- dom_impl(nonrel_intervals, special_builtin/5).
+:- dom_impl(nonrel_intervals, success_builtin/6).
+:- dom_impl(nonrel_intervals, call_to_success_builtin/6).
+:- dom_impl(nonrel_intervals, input_interface/4).
+:- dom_impl(nonrel_intervals, input_user_interface/5).
+:- dom_impl(nonrel_intervals, asub_to_native/5).
+:- dom_impl(nonrel_intervals, unknown_call/4).
+:- dom_impl(nonrel_intervals, unknown_entry/3).
+:- dom_impl(nonrel_intervals, empty_entry/3).
+
 :- export(nonrel_intervals_init_abstract_domain/1).
 nonrel_intervals_init_abstract_domain(PushedFlags) :- nonrel_init_abstract_domain(nonrel_intervals, PushedFlags).
 :- export(nonrel_intervals_amgu/4).

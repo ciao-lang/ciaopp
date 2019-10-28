@@ -23,6 +23,41 @@
 	],
 	[assertions, datafacts]).
 
+:- include(ciaopp(plai/plai_domain)).
+:- dom_def(def).
+:- dom_impl(def, call_to_entry/9).
+:- dom_impl(def, exit_to_prime/7).
+:- dom_impl(def, project/5).
+:- dom_impl(def, compute_lub/2).
+:- dom_impl(def, abs_sort/2).
+:- dom_impl(def, extend/5).
+:- dom_impl(def, less_or_equal/2).
+:- dom_impl(def, glb/3).
+:- dom_impl(def, call_to_success_fact/9).
+:- dom_impl(def, special_builtin/5).
+:- dom_impl(def, success_builtin/6).
+:- dom_impl(def, input_interface/4).
+:- dom_impl(def, input_user_interface/5).
+:- dom_impl(def, asub_to_native/5).
+:- dom_impl(def, unknown_call/4).
+:- dom_impl(def, unknown_entry/3).
+:- dom_impl(def, empty_entry/3).
+% :- dom_impl(def, propagate_downwards_closed(ASub1,ASub2,ASub), downwards_closed(ASub1,ASub2,ASub)).
+% :- dom_impl(def, del_real_conjoin(ASub1,ASub2,ASub), real_conjoin(ASub1,ASub2,ASub)).
+% :- dom_impl(def, del_hash(ASub,Vars,N), hash(ASub,Vars,N)).
+% :- dom_impl(def, more_instantiate(ASub1,ASub2), less_or_equal(ASub2,ASub1)).
+% :- dom_impl(def, convex_hull(Old,_,Old)).
+% :- dom_impl(def, compute_lub_el(ASub1,ASub2,ASub), compute_lub_el(ASub1,ASub2,ASub)).
+% :- dom_impl(def, del_check_cond(Cond,ASub,Sv,Flag,WConds), check_cond(Cond,ASub,Sv,Flag,WConds)).
+% :- dom_impl(def, del_impose_cond(LCond,Sv,ASub,LASub), impose_cond(LCond,Sv,ASub,LASub)).
+%
+%% def_check_cond(_,_,_,_,_). 
+%% def_downwards_closed(_,_,_).
+%% def_hash(_,_,_).
+%% def_impose_cond(_,_,_,_).
+%% def_real_conjoin(_,_,_).
+% TODO: body_succ_builtin/9: (old comment) these do not have special(_), so ok: AbsInt \== def, AbsInt \== fr, AbsInt \== frdef
+
 %% :- doc(bug,"1. length/2 is not working properly.").
 
 % -------------------------------------------------------------------------------

@@ -5,6 +5,52 @@
 :- doc(author, "Maria Garcia de la Banda").
 :- doc(author, "Francisco Bueno").
 
+:- use_module(domain(sharefree_amgu), [
+	sharefree_amgu_amgu/4,
+	sharefree_amgu_augment_asub/3]).
+:- include(ciaopp(plai/plai_domain)).
+:- dom_def(shfr).
+:- dom_impl(shfr, amgu/4, from(sharefree_amgu)).
+:- dom_impl(shfr, augment_asub/3, from(sharefree_amgu)).
+:- dom_impl(shfr, call_to_entry/9).
+:- dom_impl(shfr, exit_to_prime/7).
+:- dom_impl(shfr, project/5).
+:- dom_impl(shfr, compute_lub/2).
+:- dom_impl(shfr, abs_sort/2).
+:- dom_impl(shfr, extend/5).
+:- dom_impl(shfr, less_or_equal/2).
+:- dom_impl(shfr, glb/3).
+:- dom_impl(shfr, call_to_success_fact/9).
+:- dom_impl(shfr, special_builtin/5).
+:- dom_impl(shfr, success_builtin/6).
+:- dom_impl(shfr, call_to_success_builtin/6).
+:- dom_impl(shfr, obtain_info/4).
+:- dom_impl(shfr, input_interface/4).
+:- dom_impl(shfr, input_user_interface/5).
+:- dom_impl(shfr, asub_to_native/5).
+:- dom_impl(shfr, unknown_call/4).
+:- dom_impl(shfr, unknown_entry/3).
+:- dom_impl(shfr, empty_entry/3).
+% :- dom_impl(shfr, propagate_downwards_closed(ASub1,ASub2,ASub), downwards_closed(ASub1,ASub2,ASub)).
+% :- dom_impl(shfr, del_real_conjoin(ASub1,ASub2,ASub), real_conjoin(ASub1,ASub2,ASub)).
+% :- dom_impl(shfr, del_hash(ASub,Vars,N), hash(ASub,Vars,N)).
+% :- dom_impl(shfr, more_instantiate(ASub1,ASub2), more_instantiate(ASub1,ASub2)).
+% :- dom_impl(shfr, convex_hull(Old,New,Hull), convex_hull(Old,New,Hull)).
+% :- dom_impl(shfr, compute_lub_el(ASub1,ASub2,ASub), compute_lub_el(ASub1,ASub2,ASub)).
+% :- dom_impl(shfr, extend_free(ASub1,Vars,ASub), extend_free(ASub1,Vars,ASub)).
+% :- dom_impl(shfr, del_check_cond(Cond,ASub,Sv,Flag,WConds), check_cond(Cond,ASub,Sv,Flag,WConds)).
+% :- dom_impl(shfr, del_impose_cond(LCond,Sv,ASub,LASub), impose_cond(LCond,Sv,ASub,LASub)).
+%
+%% shfr_check_cond(_,_,_,_,_).
+%% % shfr_compute_lub_el(_,_,_). %% commented out by JNL
+%% shfr_convex_hull(_,_,_).
+%% shfr_downwards_closed(_,_,_).
+%% shfr_extend_free(_,_,_).
+%% shfr_hash(_,_,_).
+%% shfr_impose_cond(_,_,_,_).
+%% shfr_more_instantiate(_,_).
+%% shfr_real_conjoin(_,_,_).
+
 %------------------------------------------------------------------------%
 %                    Meanning of the Program Variables                   %
 %                                                                        %

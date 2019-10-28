@@ -22,6 +22,31 @@
 	  lsign_empty_entry/3
 	], [assertions]).
 
+:- doc(title, "lsign domain").
+
+:- include(ciaopp(plai/plai_domain)).
+:- dom_def(lsign).
+:- dom_impl(lsign, init_abstract_domain/1).
+:- dom_impl(lsign, call_to_entry/9).
+:- dom_impl(lsign, exit_to_prime/7).
+:- dom_impl(lsign, project/5).
+:- dom_impl(lsign, compute_lub/2).
+:- dom_impl(lsign, abs_sort/2).
+:- dom_impl(lsign, extend/5).
+:- dom_impl(lsign, less_or_equal/2).
+:- dom_impl(lsign, glb/3).
+:- dom_impl(lsign, eliminate_equivalent/2).
+:- dom_impl(lsign, abs_subset/2).
+:- dom_impl(lsign, call_to_success_fact/9).
+:- dom_impl(lsign, special_builtin/5).
+:- dom_impl(lsign, success_builtin/6).
+:- dom_impl(lsign, input_interface/4).
+:- dom_impl(lsign, input_user_interface/5).
+:- dom_impl(lsign, asub_to_native/5).
+:- dom_impl(lsign, unknown_call/4).
+:- dom_impl(lsign, unknown_entry/3).
+:- dom_impl(lsign, empty_entry/3).
+
 :- use_module(engine(io_basic)).
 :- use_module(domain(deftools), [find_type/2]).
 :- use_module(domain(s_grshfr), 

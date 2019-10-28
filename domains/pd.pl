@@ -1,7 +1,28 @@
 :- module(pd, [], [assertions,regtypes,basicmodes]).
 
+:- doc(title, "PD domain").
 :- doc(module, "This abstract domain is the domain with one value,
    top. PD stands for Partial Deduction.").
+
+:- include(ciaopp(plai/plai_domain)).
+:- dom_def(pd).
+:- dom_impl(pd, call_to_entry/9).
+:- dom_impl(pd, exit_to_prime/7).
+:- dom_impl(pd, project/5).
+:- dom_impl(pd, compute_lub/2).
+:- dom_impl(pd, abs_sort/2).
+:- dom_impl(pd, extend/5).
+:- dom_impl(pd, less_or_equal/2).
+:- dom_impl(pd, glb/3).
+:- dom_impl(pd, call_to_success_fact/9).
+:- dom_impl(pd, special_builtin/5).
+:- dom_impl(pd, success_builtin/6).
+:- dom_impl(pd, call_to_success_builtin/6).
+:- dom_impl(pd, input_user_interface/5).
+:- dom_impl(pd, asub_to_native/5).
+:- dom_impl(pd, unknown_call/4).
+:- dom_impl(pd, unknown_entry/3).
+:- dom_impl(pd, empty_entry/3).
 
 :- use_module(domain(sharefree), [shfr_special_builtin/5]).
 

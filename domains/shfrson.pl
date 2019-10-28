@@ -21,6 +21,26 @@
 	],
 	[ ]).
 
+:- include(ciaopp(plai/plai_domain)).
+:- dom_def(shfrson).
+:- dom_impl(shfrson, call_to_entry/9).
+:- dom_impl(shfrson, exit_to_prime/7).
+:- dom_impl(shfrson, project/5).
+:- dom_impl(shfrson, compute_lub/2).
+:- dom_impl(shfrson, abs_sort/2).
+:- dom_impl(shfrson, extend/5).
+:- dom_impl(shfrson, less_or_equal/2).
+:- dom_impl(shfrson, glb/3).
+:- dom_impl(shfrson, call_to_success_fact/9).
+:- dom_impl(shfrson, special_builtin/5).
+:- dom_impl(shfrson, body_succ_builtin/8).
+:- dom_impl(shfrson, input_interface/4).
+:- dom_impl(shfrson, input_user_interface/5).
+:- dom_impl(shfrson, asub_to_native/5).
+:- dom_impl(shfrson, unknown_call/4).
+:- dom_impl(shfrson, unknown_entry/3).
+:- dom_impl(shfrson, empty_entry/3).
+
 %------------------------------------------------------------------------%
 %                                                                        %
 %                          Started: 22/10/92                             %

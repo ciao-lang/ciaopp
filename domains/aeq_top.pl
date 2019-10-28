@@ -25,6 +25,48 @@
 
 :- use_package(hiord). % TODO: See aeq_success_builtin(aeq_comparison,...)! Do in other way?
 
+:- include(ciaopp(plai/plai_domain)).
+:- dom_def(aeq).
+:- dom_impl(aeq, call_to_entry/9).
+:- dom_impl(aeq, exit_to_prime/7).
+:- dom_impl(aeq, project/5).
+:- dom_impl(aeq, compute_lub/2).
+:- dom_impl(aeq, identical_abstract/2).
+:- dom_impl(aeq, abs_sort/2).
+:- dom_impl(aeq, extend/5).
+:- dom_impl(aeq, less_or_equal/2).
+:- dom_impl(aeq, glb/3).
+:- dom_impl(aeq, eliminate_equivalent/2).
+:- dom_impl(aeq, call_to_success_fact/9).
+:- dom_impl(aeq, special_builtin/5).
+:- dom_impl(aeq, success_builtin/6).
+:- dom_impl(aeq, input_interface/4).
+:- dom_impl(aeq, input_user_interface/5).
+:- dom_impl(aeq, asub_to_native/5).
+:- dom_impl(aeq, unknown_call/4).
+:- dom_impl(aeq, unknown_entry/3).
+:- dom_impl(aeq, empty_entry/3).
+%
+% :- dom_impl(aeq, propagate_downwards_closed(ASub1,ASub2,ASub), downwards_closed(ASub1,ASub2,ASub)).
+% :- dom_impl(aeq, del_real_conjoin(ASub1,ASub2,ASub), real_conjoin(ASub1,ASub2,ASub)).
+% :- dom_impl(aeq, del_hash(ASub,Vars,N), hash(ASub,Vars,N)).
+% :- dom_impl(aeq, more_instantiate(ASub1,ASub2), more_instantiate(ASub1,ASub2)).
+% :- dom_impl(aeq, convex_hull(Old,New,Hull), convex_hull(Old,New,Hull)).
+% :- dom_impl(aeq, compute_lub_el(ASub1,ASub2,ASub), lub(ASub1,ASub2,ASub)).
+% :- dom_impl(aeq, extend_free(ASub1,Vars,ASub), extend_free(ASub1,Vars,ASub)).
+% :- dom_impl(aeq, del_check_cond(Cond,ASub,Sv,Flag,WConds), check_cond(Cond,ASub,Sv,Flag,WConds)).
+% :- dom_impl(aeq, del_impose_cond(LCond,Sv,ASub,LASub), impose_cond(LCond,Sv,ASub,LASub)).
+%
+%% aeq_check_cond(_,_,_,_,_). 
+%% aeq_convex_hull(_,_,_).
+%% aeq_downwards_closed(_,_,_).
+%% aeq_extend_free(_,_,_).
+%% aeq_hash(_,_,_).       
+%% aeq_impose_cond(_,_,_,_).
+%% aeq_lub(_,_,_).        
+%% aeq_more_instantiate(_,_). 
+%% aeq_real_conjoin(_,_,_).
+
 :- use_module(engine(io_basic)).
 
 :- use_module(ciaopp(preprocess_flags), [current_pp_flag/2]).

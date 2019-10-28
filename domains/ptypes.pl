@@ -23,6 +23,33 @@
 
 :- use_module(ciaopp(preprocess_flags), [push_pp_flag/2]).
 
+:- include(ciaopp(plai/plai_domain)).
+:- dom_def(ptypes).
+:- dom_impl(ptypes, init_abstract_domain/1).
+:- dom_impl(ptypes, call_to_entry/9).
+:- dom_impl(ptypes, exit_to_prime/7).
+:- dom_impl(ptypes, widencall/3).
+:- dom_impl(ptypes, widen/3).
+:- dom_impl(ptypes, compute_lub/2).
+:- dom_impl(ptypes, identical_abstract/2).
+:- dom_impl(ptypes, abs_sort/2).
+:- dom_impl(ptypes, extend/5).
+:- dom_impl(ptypes, less_or_equal/2).
+:- dom_impl(ptypes, glb/3).
+:- dom_impl(ptypes, call_to_success_fact/9).
+:- dom_impl(ptypes, special_builtin/5).
+:- dom_impl(ptypes, success_builtin/6).
+:- dom_impl(ptypes, call_to_success_builtin/6).
+:- dom_impl(ptypes, input_interface/4).
+:- dom_impl(ptypes, input_user_interface/5).
+:- dom_impl(ptypes, asub_to_native/5).
+:- dom_impl(ptypes, concrete/3).
+:- dom_impl(ptypes, unknown_call/4).
+:- dom_impl(ptypes, unknown_entry/3).
+:- dom_impl(ptypes, empty_entry/3).
+:- dom_impl(ptypes, collect_abstypes_abs/3).
+% :- dom_impl(ptypes, rename_abstypes_abs/3). % TODO: missing, why?
+
 :- export(ptypes_init_abstract_domain/1).
 ptypes_init_abstract_domain([widen]) :-
 	push_pp_flag(widen,on).

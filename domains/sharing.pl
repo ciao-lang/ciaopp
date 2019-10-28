@@ -5,6 +5,35 @@
 :- doc(author, "Maria Garcia de la Banda").
 :- doc(author, "Francisco Bueno").
 
+:- use_module(domain(sharing_amgu), [
+	share_amgu_amgu/4,
+	share_amgu_augment_asub/3,
+	share_amgu_augment_two_asub/3]).
+:- include(ciaopp(plai/plai_domain)).
+:- dom_def(share).
+:- dom_impl(share, amgu/4, from(sharing_amgu:share_amgu)).
+:- dom_impl(share, augment_asub/3, from(sharing_amgu:share_amgu)).
+:- dom_impl(share, augment_two_asub/3, from(sharing_amgu:share_amgu)).
+:- dom_impl(share, call_to_entry/9).
+:- dom_impl(share, exit_to_prime/7).
+:- dom_impl(share, project/5).
+:- dom_impl(share, compute_lub/2).
+:- dom_impl(share, abs_sort/2).
+:- dom_impl(share, extend/5).
+:- dom_impl(share, less_or_equal/2).
+:- dom_impl(share, glb/3).
+:- dom_impl(share, call_to_success_fact/9).
+:- dom_impl(share, special_builtin/5).
+:- dom_impl(share, success_builtin/6).
+:- dom_impl(share, call_to_success_builtin/6).
+:- dom_impl(share, input_interface/4).
+:- dom_impl(share, input_user_interface/5).
+:- dom_impl(share, asub_to_native/5).
+:- dom_impl(share, unknown_call/4).
+:- dom_impl(share, unknown_entry/3).
+:- dom_impl(share, empty_entry/3).
+% :- dom_impl(share, compute_lub_el(ASub1,ASub2,ASub), lub(ASub1,ASub2,ASub)).
+
 %------------------------------------------------------------------------%
 %                    Meanning of the Program Variables                   %
 %                                                                        %

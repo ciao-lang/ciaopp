@@ -105,6 +105,37 @@ Type is a pure type term @cite{Dart-Zobel}.
 	    unfold_type_union_1/4
 	]).
 
+:- include(ciaopp(plai/plai_domain)).
+:- dom_def(eterms).
+:- dom_impl(eterms, init_abstract_domain/1).
+:- dom_impl(eterms, call_to_entry/9).
+:- dom_impl(eterms, exit_to_prime/7).
+:- dom_impl(eterms, project/5).
+:- dom_impl(eterms, widencall/3).
+:- dom_impl(eterms, widen/3).
+:- dom_impl(eterms, compute_lub/2).
+:- dom_impl(eterms, identical_abstract/2).
+:- dom_impl(eterms, abs_sort/2).
+:- dom_impl(eterms, extend/5).
+:- dom_impl(eterms, less_or_equal/2).
+:- dom_impl(eterms, glb/3).
+:- dom_impl(eterms, call_to_success_fact/9).
+:- dom_impl(eterms, special_builtin/5).
+:- dom_impl(eterms, success_builtin/6).
+:- dom_impl(eterms, call_to_success_builtin/6).
+:- dom_impl(eterms, obtain_info/4).
+:- dom_impl(eterms, input_interface/4).
+:- dom_impl(eterms, input_user_interface/5).
+:- dom_impl(eterms, asub_to_native/5).
+:- dom_impl(eterms, concrete/3).
+:- dom_impl(eterms, unknown_call/4).
+:- dom_impl(eterms, unknown_entry/3).
+:- dom_impl(eterms, empty_entry/3).
+:- dom_impl(eterms, part_conc/4).
+:- dom_impl(eterms, multi_part_conc/3).
+:- dom_impl(eterms, collect_abstypes_abs/3).
+:- dom_impl(eterms, rename_abstypes_abs/3).
+
 % CiaoPP library
 :- use_module(ciaopp(preprocess_flags), [current_pp_flag/2]).
 

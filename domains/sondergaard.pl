@@ -1,4 +1,3 @@
-
 :- module(sondergaard,
 	[ son_call_to_entry/9,
 	  son_call_to_success_builtin/6, 
@@ -28,6 +27,28 @@
 	  son_to_share/4
 	],
 	[ assertions ] ).
+
+:- include(ciaopp(plai/plai_domain)).
+:- dom_def(son).
+:- dom_impl(son, call_to_entry/9).
+:- dom_impl(son, exit_to_prime/7).
+:- dom_impl(son, project/5).
+:- dom_impl(son, compute_lub/2).
+:- dom_impl(son, abs_sort/2).
+:- dom_impl(son, extend/5).
+:- dom_impl(son, less_or_equal/2).
+:- dom_impl(son, glb/3).
+:- dom_impl(son, call_to_success_fact/9).
+:- dom_impl(son, special_builtin/5).
+:- dom_impl(son, success_builtin/6).
+:- dom_impl(son, call_to_success_builtin/6).
+:- dom_impl(son, input_interface/4).
+:- dom_impl(son, input_user_interface/5).
+:- dom_impl(son, asub_to_native/5).
+:- dom_impl(son, unknown_call/4).
+:- dom_impl(son, unknown_entry/3).
+:- dom_impl(son, empty_entry/3).
+% :- dom_impl(son, compute_lub_el(ASub1,ASub2,ASub), lub(ASub1,ASub2,ASub)).
 
 :- use_module(domain(sharing), 
 	[ share_input_interface/4,

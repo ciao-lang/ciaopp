@@ -23,6 +23,27 @@
 	],
 	[ ] ).
 
+:- include(ciaopp(plai/plai_domain)).
+:- dom_def(frdef).
+:- dom_impl(frdef, call_to_entry/9).
+:- dom_impl(frdef, exit_to_prime/7).
+:- dom_impl(frdef, project/5).
+:- dom_impl(frdef, compute_lub/2).
+:- dom_impl(frdef, identical_abstract/2).
+:- dom_impl(frdef, abs_sort/2).
+:- dom_impl(frdef, extend/5).
+:- dom_impl(frdef, less_or_equal/2).
+:- dom_impl(frdef, glb/3).
+:- dom_impl(frdef, call_to_success_fact/9).
+:- dom_impl(frdef, special_builtin/5).
+:- dom_impl(frdef, success_builtin/6).
+:- dom_impl(frdef, input_interface/4).
+:- dom_impl(frdef, input_user_interface/5).
+:- dom_impl(frdef, asub_to_native/5).
+:- dom_impl(frdef, unknown_call/4).
+:- dom_impl(frdef, unknown_entry/3).
+:- dom_impl(frdef, empty_entry/3).
+
 :- use_module(domain(def)).
 :- use_module(domain(fr_sets)).
 :- use_module(domain(fr_shared)).

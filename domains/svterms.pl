@@ -45,6 +45,33 @@
 % 
 % ").
 
+:- include(ciaopp(plai/plai_domain)).
+:- dom_def(svterms).
+:- dom_impl(svterms, init_abstract_domain/1).
+:- dom_impl(svterms, call_to_entry/9).
+:- dom_impl(svterms, exit_to_prime/7).
+:- dom_impl(svterms, project/5).
+:- dom_impl(svterms, widencall/3).
+:- dom_impl(svterms, widen/3).
+:- dom_impl(svterms, compute_lub/2).
+:- dom_impl(svterms, identical_abstract/2).
+:- dom_impl(svterms, abs_sort/2).
+:- dom_impl(svterms, extend/5).
+:- dom_impl(svterms, less_or_equal/2).
+:- dom_impl(svterms, glb/3).
+:- dom_impl(svterms, call_to_success_fact/9).
+:- dom_impl(svterms, special_builtin/5).
+:- dom_impl(svterms, success_builtin/6).
+:- dom_impl(svterms, call_to_success_builtin/6).
+:- dom_impl(svterms, input_interface/4).
+:- dom_impl(svterms, input_user_interface/5).
+:- dom_impl(svterms, asub_to_native/5).
+:- dom_impl(svterms, concrete/3).
+:- dom_impl(svterms, unknown_call/4).
+:- dom_impl(svterms, unknown_entry/3).
+:- dom_impl(svterms, empty_entry/3).
+:- dom_impl(svterms, collect_abstypes_abs/3).
+:- dom_impl(svterms, rename_abstypes_abs/3).
 
 :- use_module(domain(eterms), 
 	[                             

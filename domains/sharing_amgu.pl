@@ -4,6 +4,31 @@
 :- doc(author, "Jorge Navas").
 % Copyright (C) 2004-2019 The Ciao Development Team
 
+:- include(ciaopp(plai/plai_domain)).
+:- dom_def(share_amgu).
+:- dom_impl(share_amgu, amgu/4).
+:- dom_impl(share_amgu, augment_asub/3).
+:- dom_impl(share_amgu, augment_two_asub/3).
+:- dom_impl(share_amgu, call_to_entry/9).
+:- dom_impl(share_amgu, exit_to_prime/7).
+:- dom_impl(share_amgu, project/5, from(sharing:share)).
+:- dom_impl(share_amgu, compute_lub/2, from(sharing:share)).
+:- dom_impl(share_amgu, abs_sort/2, from(sharing:share)).
+:- dom_impl(share_amgu, extend/5, from(sharing:share)).
+:- dom_impl(share_amgu, less_or_equal/2, from(sharing:share)).
+:- dom_impl(share_amgu, glb/3, from(sharing:share)).
+:- dom_impl(share_amgu, call_to_success_fact/9).
+:- dom_impl(share_amgu, special_builtin/5).
+:- dom_impl(share_amgu, success_builtin/6).
+:- dom_impl(share_amgu, call_to_success_builtin/6).
+:- dom_impl(share_amgu, input_interface/4, from(sharing:share)).
+:- dom_impl(share_amgu, input_user_interface/5, from(sharing:share)).
+:- dom_impl(share_amgu, asub_to_native/5, from(sharing:share)).
+:- dom_impl(share_amgu, unknown_call/4, from(sharing:share)).
+:- dom_impl(share_amgu, unknown_entry/3, from(sharing:share)).
+:- dom_impl(share_amgu, empty_entry/3, from(sharing:share)).
+% :- dom_impl(share_amgu, compute_lub_el(ASub1,ASub2,ASub), lub(ASub1,ASub2,ASub), from(sharing:share)).
+
 %------------------------------------------------------------------------%
 % This file implements the same functions than sharing.pl but the        |
 % functions call_to_entry and exit_to_prime are developed based on the   |

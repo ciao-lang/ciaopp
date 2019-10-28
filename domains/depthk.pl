@@ -23,6 +23,30 @@
         ],
 	[ assertions ] ).
 
+:- include(ciaopp(plai/plai_domain)).
+:- dom_def(depthk).
+:- dom_impl(depthk, call_to_entry/9).
+:- dom_impl(depthk, exit_to_prime/7).
+:- dom_impl(depthk, project/5).
+:- dom_impl(depthk, compute_lub/2).
+:- dom_impl(depthk, identical_abstract/2).
+:- dom_impl(depthk, abs_sort/2).
+:- dom_impl(depthk, extend/5).
+:- dom_impl(depthk, less_or_equal/2).
+:- dom_impl(depthk, glb/3).
+:- dom_impl(depthk, eliminate_equivalent/2).
+:- dom_impl(depthk, abs_subset/2).
+:- dom_impl(depthk, call_to_success_fact/9).
+:- dom_impl(depthk, special_builtin/5).
+:- dom_impl(depthk, success_builtin/6).
+:- dom_impl(depthk, call_to_success_builtin/6).
+:- dom_impl(depthk, input_interface/4).
+:- dom_impl(depthk, input_user_interface/5).
+:- dom_impl(depthk, asub_to_native/5).
+:- dom_impl(depthk, unknown_call/4).
+:- dom_impl(depthk, unknown_entry/3).
+:- dom_impl(depthk, empty_entry/3).
+
 :- use_module(ciaopp(preprocess_flags), [current_pp_flag/2]).
 :- use_module(domain(s_eqs), 
 	[ apply/1, eqs_ranges/6, keys_and_values/3, peel/4, subtract_keys/3 ]).
@@ -188,12 +212,12 @@ depthk_abs_sort(ASub_u,ASub):-
 depthk_compute_lub([ASub],Lub):- !,
 	Lub = ASub.
 depthk_compute_lub([ASub1,ASub2|ListASub],Lub):-
-	compute_lub(ASub1,ASub2,Lub0),
+	depthk_compute_lub_(ASub1,ASub2,Lub0),
 	depthk_compute_lub([Lub0|ListASub],Lub).
 
-compute_lub('$bottom',ASub,Lub):- !, Lub = ASub.
-compute_lub(ASub,'$bottom',Lub):- !, Lub = ASub.
-compute_lub(ASub1,ASub2,Lub):-
+depthk_compute_lub_('$bottom',ASub,Lub):- !, Lub = ASub.
+depthk_compute_lub_(ASub,'$bottom',Lub):- !, Lub = ASub.
+depthk_compute_lub_(ASub1,ASub2,Lub):-
 	lub_each_eq(ASub1,ASub2,Lub).
 
 lub_each_eq([],[],[]).

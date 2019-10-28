@@ -23,6 +23,27 @@
 	],
 	[ assertions ] ).
 
+:- include(ciaopp(plai/plai_domain)).
+:- dom_def(path).
+:- dom_impl(path, init_abstract_domain/1).
+:- dom_impl(path, call_to_entry/9).
+:- dom_impl(path, exit_to_prime/7).
+:- dom_impl(path, project/5).
+:- dom_impl(path, compute_lub/2).
+:- dom_impl(path, abs_sort/2).
+:- dom_impl(path, extend/5).
+:- dom_impl(path, less_or_equal/2).
+:- dom_impl(path, glb/3).
+:- dom_impl(path, call_to_success_fact/9).
+:- dom_impl(path, special_builtin/5).
+:- dom_impl(path, success_builtin/6).
+:- dom_impl(path, input_interface/4).
+:- dom_impl(path, input_user_interface/5).
+:- dom_impl(path, asub_to_native/5).
+:- dom_impl(path, unknown_call/4).
+:- dom_impl(path, unknown_entry/3).
+:- dom_impl(path, empty_entry/3).
+
 :- use_module(ciaopp(preprocess_flags), [current_pp_flag/2]).
 :- use_module(domain(s_eqs), [keys_and_values/3, simplify_equations/3]).
 :- use_module(domain(share_aux), [if_not_nil/4]).
@@ -278,11 +299,11 @@ path_abs_sort(ASub_u,ASub):-
 %% 	share_compute_lub(ListASub,Lub).
 path_compute_lub([],[]).
 path_compute_lub([ASub|ListASub],Lub):-
-	compute_lub(ASub,Lub,Lub0),
+	path_compute_lub_(ASub,Lub,Lub0),
 	path_compute_lub(ListASub,Lub0).
 
-compute_lub('$bottom',Lub,Lub):- !.
-compute_lub(ASub,[ASub|Lub],Lub).
+path_compute_lub_('$bottom',Lub,Lub):- !.
+path_compute_lub_(ASub,[ASub|Lub],Lub).
 
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%

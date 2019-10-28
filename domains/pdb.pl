@@ -1,10 +1,31 @@
 :- module(pdb,[],[assertions,regtypes,basicmodes]).
 
+:- doc(title, "PD domain with bottom").
 :- doc(module, "This abstract domain is the domain with only two
    values, top and bottom. This simple improvement over the @tt{pd}
    domain provides improvements, both in specialization time and
    quality of the specialized program if abstract specialization is
    then performed. PDB stands for Partial Deduction + Bottom.").
+
+:- include(ciaopp(plai/plai_domain)).
+:- dom_def(pdb).
+:- dom_impl(pdb, call_to_entry/9).
+:- dom_impl(pdb, exit_to_prime/7).
+:- dom_impl(pdb, project/5).
+:- dom_impl(pdb, compute_lub/2).
+:- dom_impl(pdb, abs_sort/2).
+:- dom_impl(pdb, extend/5).
+:- dom_impl(pdb, less_or_equal/2).
+:- dom_impl(pdb, glb/3).
+:- dom_impl(pdb, call_to_success_fact/9).
+:- dom_impl(pdb, special_builtin/5).
+:- dom_impl(pdb, success_builtin/6).
+:- dom_impl(pdb, call_to_success_builtin/6).
+:- dom_impl(pdb, input_user_interface/5).
+:- dom_impl(pdb, asub_to_native/5).
+:- dom_impl(pdb, unknown_call/4).
+:- dom_impl(pdb, unknown_entry/3).
+:- dom_impl(pdb, empty_entry/3).
 
 :- use_module(domain(sharefree), [shfr_special_builtin/5]).
 

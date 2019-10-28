@@ -4,6 +4,30 @@
 :- doc(author, "Jorge Navas").
 % Copyright (C) 2006-2019 The Ciao Development Team
 
+:- include(ciaopp(plai/plai_domain)).
+:- dom_def(shfrlin_amgu).
+:- dom_impl(shfrlin_amgu, amgu/4).
+:- dom_impl(shfrlin_amgu, augment_asub/3).
+:- dom_impl(shfrlin_amgu, call_to_entry/9).
+:- dom_impl(shfrlin_amgu, exit_to_prime/7).
+:- dom_impl(shfrlin_amgu, project/5).
+:- dom_impl(shfrlin_amgu, compute_lub/2).
+:- dom_impl(shfrlin_amgu, abs_sort/2).
+:- dom_impl(shfrlin_amgu, extend/5).
+:- dom_impl(shfrlin_amgu, less_or_equal/2).
+:- dom_impl(shfrlin_amgu, glb/3).
+:- dom_impl(shfrlin_amgu, call_to_success_fact/9).
+:- dom_impl(shfrlin_amgu, special_builtin/5).
+:- dom_impl(shfrlin_amgu, success_builtin/6).
+:- dom_impl(shfrlin_amgu, call_to_success_builtin/6).
+:- dom_impl(shfrlin_amgu, obtain_info/4).
+:- dom_impl(shfrlin_amgu, input_interface/4).
+:- dom_impl(shfrlin_amgu, input_user_interface/5).
+:- dom_impl(shfrlin_amgu, asub_to_native/5).
+:- dom_impl(shfrlin_amgu, unknown_call/4).
+:- dom_impl(shfrlin_amgu, unknown_entry/3).
+:- dom_impl(shfrlin_amgu, empty_entry/3).
+
 %------------------------------------------------------------------------%
 % This file implements the domain dependent abstract functions           |
 % sharing+freeness+linearity. The functions call2entry and exit2prime are|

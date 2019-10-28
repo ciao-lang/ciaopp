@@ -54,6 +54,34 @@ variable and Type is a pure type term @cite{Dart-Zobel}.
 
 ").
 
+:- include(ciaopp(plai/plai_domain)).
+:- dom_def(terms).
+:- dom_impl(terms, init_abstract_domain/1).
+:- dom_impl(terms, call_to_entry/9).
+:- dom_impl(terms, exit_to_prime/7).
+:- dom_impl(terms, project/5).
+:- dom_impl(terms, widencall/3).
+:- dom_impl(terms, widen/3).
+:- dom_impl(terms, compute_lub/2).
+:- dom_impl(terms, identical_abstract/2).
+:- dom_impl(terms, abs_sort/2).
+:- dom_impl(terms, extend/5).
+:- dom_impl(terms, less_or_equal/2).
+:- dom_impl(terms, glb/3).
+:- dom_impl(terms, call_to_success_fact/9).
+:- dom_impl(terms, special_builtin/5).
+:- dom_impl(terms, success_builtin/6).
+:- dom_impl(terms, call_to_success_builtin/6).
+:- dom_impl(terms, input_interface/4).
+:- dom_impl(terms, input_user_interface/5).
+:- dom_impl(terms, asub_to_native/5).
+:- dom_impl(terms, concrete/3).
+:- dom_impl(terms, unknown_call/4).
+:- dom_impl(terms, unknown_entry/3).
+:- dom_impl(terms, empty_entry/3).
+:- dom_impl(terms, collect_abstypes_abs/3).
+:- dom_impl(terms, rename_abstypes_abs/3).
+
 :- use_module(ciaopp(p_unit), [new_internal_predicate/3]).
 % type operations from Pedro's library
 :- use_module(typeslib(typeslib), 
