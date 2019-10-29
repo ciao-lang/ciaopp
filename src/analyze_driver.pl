@@ -218,7 +218,7 @@ analyze1(Analysis,Info):-
         trace_end, !. % TODO: remove cut
 :- endif. % with_fullpp
 analyze1(Analysis,_Info):-
-        message(inform, ['{Not a valid analysis: ',~~(Analysis),'}']),
+        message(error0, ['{Not a valid analysis: ',~~(Analysis),'}']),
         fail.
 
 % Analyzes the program for the domains in the list
@@ -233,7 +233,7 @@ analyze1_several_domains([AbsInt|As], TotalInfo0, TotalInfo):-
 
 not_intermod(AbsInt) :-
         ( \+ current_pp_flag(intermod, off) ->
-            message(inform, ['{Not implemented in modular analysis yet: ',~~(AbsInt),'}']),
+            message(error0, ['{Not implemented in modular analysis yet: ',~~(AbsInt),'}']),
             fail
         ; true
         ).

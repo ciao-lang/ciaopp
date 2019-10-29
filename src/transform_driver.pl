@@ -99,7 +99,7 @@ transform(Trans,Info):-
 	transform_(Trans,Cls,Ds,Info),
 	message(inform, ['}']).
 transform(Trans,_Info):-
-	message(inform, ['{Not a valid program transformation: ',~~(Trans),'}']),
+	message(error0, ['{Not a valid program transformation: ',~~(Trans),'}']),
 	fail.
 
 :- if(defined(with_fullpp)).

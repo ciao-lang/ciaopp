@@ -237,7 +237,7 @@ valid_mod_analysis([A|As]):-
 valid_mod_analysis(Analysis):-
 	aidomain(Analysis), !.
 valid_mod_analysis(Analysis):-
-	message(inform, ['{Not a valid modular analysis: ',~~(Analysis),'}']),
+	message(error0, ['{Not a valid modular analysis: ',~~(Analysis),'}']),
 	fail.
 
 :- multifile aidomain/1.  % This predicate is defined in domains.pl.
@@ -957,7 +957,7 @@ filter_completes(_AbsInt,_Module).
 valid_transformation(Trans):-
 	transformation(Trans), !.
 valid_transformation(Trans):-
-	message(inform, ['{Not a valid transformation: ',~~(Trans),'}']),
+	message(error0, ['{Not a valid transformation: ',~~(Trans),'}']),
 	fail.
 
 %%------------------------------------------------------------------
