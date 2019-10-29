@@ -1440,8 +1440,8 @@ close_asr(Stream, CI) :-
 
 %% ---------------------------------------------------------------------------
 
-verb_message(verbose, Message) :- messages_basic:message(user, Message).
-verb_message(debug,   Message) :- messages_basic:message(user, Message).
+verb_message(verbose, Message) :- messages_basic:message(inform, Message).
+verb_message(debug,   Message) :- messages_basic:message(inform, Message).
 verb_message(quiet,   _Message).
 
 %% ---------------------------------------------------------------------------

@@ -2151,9 +2151,9 @@ key_or_id_complete(_SgKey0,AbsInt,Sg,Proj,Succ,Id,Ref,SgKey):-
 	current_fact(complete(SgKey,AbsInt,Sg,Proj,Succ,Id,Ref)), !.
 
 verb_message(verbose,Message) :-
-	messages_basic:message(user, Message).
+	messages_basic:message(inform, Message).
 verb_message(debug,Message) :-
-	messages_basic:message(user, Message).
+	messages_basic:message(inform, Message).
 verb_message(quiet,_Message).
 
 :- pred get_module_from_sg(+Sg, ?Module) :: term * atm
