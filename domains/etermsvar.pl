@@ -42,7 +42,7 @@
 	determinate_sel/3,
 	getargtypes/6,
 	etermsvar_arg_call_to_success/9
-   ], [assertions,regtypes,basicmodes,datafacts]).
+   ], [assertions,regtypes,basicmodes,datafacts,hiord_old]).
 
 :- doc(title,"Types (with variables) Abstract Domain").
 :- doc(author, "Claudio Vaucheret").

@@ -3,7 +3,7 @@
 	  native_prop_map/3, native_prop_term/1,
 	  native_builtin/2, native_property/2,
 	  wam_builtin/2],
-	[assertions, regtypes, nortchecks, ciaopp(ciaopp_options)]).
+	[assertions, regtypes, hiord_old, nortchecks, ciaopp(ciaopp_options)]).
 
 :- use_module(library(lists), [member/2, append/3]).
 :- use_module(engine(runtime_control), [module_split/3]).

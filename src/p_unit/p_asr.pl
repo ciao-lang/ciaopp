@@ -18,6 +18,7 @@
 		basicmodes,
 		regtypes,
 		datafacts,
+		hiord_old,
 		ciaopp(ciaopp_options)
 	    ]).
 

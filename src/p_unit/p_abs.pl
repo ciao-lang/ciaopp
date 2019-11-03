@@ -39,7 +39,7 @@
 	registry_is_empty/3,
 %%%Resource intermodule-analysis (JNL)
 	get_imported_calls/1 % used only in resources/intermod
- ],[assertions,regtypes,basicmodes,isomodes,datafacts]).
+ ],[assertions,regtypes,basicmodes,isomodes,datafacts,hiord_old]).
 
 :- use_module(engine(hiord_rt), [call/1]). % TODO: review uses here
 
