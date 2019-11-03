@@ -647,7 +647,7 @@ sharefree_clique_success_builtin(all_nonfree,Sv_u,Sg,_,Call,Succ):- !,
 	change_values_if_f(Sv,Proj_fr,Prime_fr,nf),
 	sharefree_clique_extend(Sg,(Prime_SH,Prime_fr),Sv,Call,Succ).
 % special builtins
-sharefree_clique_success_builtin(arg,_,Sg,_,Call,Succ):- Sg=p(X,Y,Z),
+sharefree_clique_success_builtin(arg,_,Sg0,_,Call,Succ):- Sg0=p(X,Y,Z),
 	Call = (Call_SH,Call_fr),
 	varset(X,OldG),
 	update_lambda_clique_non_free(OldG,Call_fr,Call_SH,Temp_fr,Temp_SH),

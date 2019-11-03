@@ -860,7 +860,7 @@ shfrnv_success_builtin(all_nonfree,Sv_u,Sg,_,Call,Succ):- !,
 	closure_under_union(Proj_sh,Prime_sh),
 	change_values_if_f(Sv,Proj_fr,Prime_fr,nf), 
 	shfrnv_extend(Sg,(Prime_sh,Prime_fr),Sv,Call,Succ).
-shfrnv_success_builtin(arg,_,Sg,_,Call,Succ):- Sg=p(X,Y,Z),
+shfrnv_success_builtin(arg,_,Sg0,_,Call,Succ):- Sg0=p(X,Y,Z),
 	Call = (Call_sh,Call_fr),
 	varset(X,OldG),
 	update_lambda_non_free(OldG,Call_fr,Call_sh,Temp_fr,Temp_sh),

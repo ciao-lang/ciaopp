@@ -786,7 +786,7 @@ gr_success_builtin(old_new_ground,_,(OldG_u,NewG_u),_,Call,Succ):-
 	gr_change_values_insert(NewG,TempSucc,Succ,g).
 gr_success_builtin(old_new_ground,_,_,_,_,'$bottom').
 %
-gr_success_builtin(arg,_,Sg,_,Call,Succ):- Sg=p(X,Y,Z),
+gr_success_builtin(arg,_,Sg0,_,Call,Succ):- Sg0=p(X,Y,Z),
 	varset(X,OldG),
 	gr_values_notequal(OldG,Call,ng),!,  
 	gr_change_values_insert(OldG,Call,NCall,g),

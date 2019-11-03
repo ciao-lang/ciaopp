@@ -249,7 +249,7 @@ sharefree_amgu_special_builtin(SgKey,Sg,Subgoal,Type,Condvars):-
 %------------------------------------------------------------------------%
 
 :- export(sharefree_amgu_success_builtin/6).
-sharefree_amgu_success_builtin(arg,_,Sg,_,Call,Succ):- Sg=p(X,Y,Z),
+sharefree_amgu_success_builtin(arg,_,Sg0,_,Call,Succ):- Sg0=p(X,Y,Z),
 	Call = (Call_sh,Call_fr),
 	varset(X,OldG),
 	update_lambda_non_free(OldG,Call_fr,Call_sh,Temp_fr,Temp_sh),
