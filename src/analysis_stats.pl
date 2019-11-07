@@ -7,6 +7,7 @@
 :- doc(author, "Isabel Garcia-Contreras").
 
 :- use_module(library(lists), [member/2]).
+:- use_module(library(format), [format/2]).
 :- use_module(library(aggregates), [findall/3]).
 :- use_module(engine(runtime_control), [statistics/2]).
 :- use_module(engine(stream_basic)).
@@ -54,6 +55,17 @@ add_stat(What, Stat) :-
 with a phase of analysis of ciaopp.".
 gather_stats(Operation, Stats) :-
 	findall(S, operation_stat(Operation, S), Stats).
+
+:- export(pretty_print_stats/1).
+:- pred pretty_print_stats(Stats) : list.
+pretty_print_stats(Stats) :-
+        ( % failure-driven loop
+          member(S,Stats),
+            S =.. [SName,Time],
+            format('~w ~t ~3f msec.~n', [SName,Time]),
+            fail
+        ; format('~n', [])
+        ).
 
 :- pred operation_stat(+Operation, -Stat).
 operation_stat(Operation, Stat) :-

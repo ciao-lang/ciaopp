@@ -123,7 +123,6 @@ generated when transforming the code can be modified.
 :- doc(bug, "Call compiler to avoid reloading a source that did not change.").
 % This checking could be controlled by a flag
 
-:- use_module(engine(io_basic)).
 :- use_module(engine(messages_basic), [message/2]).
 :- use_module(library(lists), [member/2, append/3]).
 :- use_module(library(aggregates), [findall/3]).
@@ -144,7 +143,8 @@ generated when transforming the code can be modified.
 :- use_module(ciaopp(plai/incanal/tarjan_inc), [inc_add_source_clauses/3]).
 :- use_module(ciaopp(plai/apply_assertions_inc)).
 
-:- use_module(ciaopp(analysis_stats), [stat/2, gather_stats/2]).
+:- use_module(ciaopp(analysis_stats),
+        [stat/2, gather_stats/2, pretty_print_stats/1]).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 :- pred reset_incremental_analysis_info/0 #"Resets incremental and regular ciaopp
@@ -399,7 +399,7 @@ incremental_analyze(AbsInt, Stats) :-
         save_persistent_analysis,
         store_change_list(Context),
         gather_stats(analysis, Stats),
-        display(Stats), nl. % TODO: show in a nicer way
+        pretty_print_stats(Stats). % TODO: show in a nicer way
 
 :- data local_change_list/3.
 store_change_list(Context) :-

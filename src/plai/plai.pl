@@ -260,62 +260,61 @@ topdown_analysis(poly_spec,_AbsInt,_Ps):-!,
 topdown_analysis(bu,AbsInt,_):- !,
 	tp(AbsInt).
 topdown_analysis(Fixp,AbsInt,Ps):-
-	entry_point(AbsInt,Goal,Gv,Call,Name),
-  ( analyze(Fixp,AbsInt,Ps,Goal,Gv,Call,Name) -> true ),
+  entry_point(AbsInt,Goal,Gv,Call,Name),
+  functor(Goal,F,A),
+  determine_r_flag(Ps,F/A,RFlag),
+  ( analyze(Fixp,AbsInt,RFlag,Goal,Gv,Call,Name) -> true ),
 	fail.
 topdown_analysis(_Fixp,_AbsInt,_Ps).
 
-analyze(plai,AbsInt,Ps,Goal,Gv,Call,Name):-
+analyze(plai,AbsInt,RFlag,Goal,Gv,Call,Name):-
 	functor(Goal,F,A),
 	get_predkey(F,A,K),
-	determine_r_flag(Ps,F/A,RFlag),
 	fixpo_plai:query(AbsInt,K,Goal,Gv,RFlag,Name,Call,_Succ).
-% analyze(plai_sp,AbsInt,Ps,Goal,Gv,Call,Name):-
+% analyze(plai_sp,AbsInt,RFlag,Goal,Gv,Call,Name):-
 % 	functor(Goal,F,A),
 % 	get_predkey(F,A,K),
 % 	determine_r_flag(Ps,F/A,RFlag),
 % 	fixpo_plai_with_static_profiling_info:query(AbsInt,K,Goal,Gv,RFlag,Name,Call,_Succ).
-analyze(plai_gfp,AbsInt,Ps,Goal,Gv,Call,Name):-
+analyze(plai_gfp,AbsInt,RFlag,Goal,Gv,Call,Name):-
 	functor(Goal,F,A),
 	get_predkey(F,A,K),
-	determine_r_flag(Ps,F/A,RFlag),
 	fixpo_plai_gfp:query(AbsInt,K,Goal,Gv,RFlag,Name,Call,_Succ).
-analyze(dd,AbsInt,Ps,Goal,Gv,Call,Name):-
+analyze(dd,AbsInt,RFlag,Goal,Gv,Call,Name):-
 	functor(Goal,F,A),
 	get_predkey(F,A,K),
-	determine_r_flag(Ps,F/A,RFlag),
-	fixpo_dd:query(AbsInt,K,Goal,Gv,RFlag,Name,Call,_Succ).
-analyze(di,AbsInt,_Ps,Goal,Gv,Call,Name):-
+  fixpo_dd:query(AbsInt,K,Goal,Gv,RFlag,Name,Call,_Succ).
+analyze(di,AbsInt,_RFlag,Goal,Gv,Call,Name):-
 	predkey_from_sg(Goal,K),
 	fixpo_di:query(AbsInt,K,Goal,Gv,_,Name,Call,_Succ).
-analyze(check_di,AbsInt,_Ps,Goal,Gv,Call,Name):-
+analyze(check_di,AbsInt,_RFlag,Goal,Gv,Call,Name):-
 	push_pp_flag(reuse_fixp_id,on),
 	predkey_from_sg(Goal,K),
 	fixpo_check_di:query(AbsInt,K,Goal,Gv,_,Name,Call,_Succ),
 	pop_pp_flag(reuse_fixp_id).
-analyze(check_di2,AbsInt,_Ps,Goal,Gv,Call,Name):-
+analyze(check_di2,AbsInt,_RFlag,Goal,Gv,Call,Name):-
 	push_pp_flag(reuse_fixp_id,on),
 	predkey_from_sg(Goal,K),
 	fixpo_check_di2:query(AbsInt,K,Goal,Gv,_,Name,Call,_Succ),
 	pop_pp_flag(reuse_fixp_id).
-analyze(check_di3,AbsInt,_Ps,Goal,Gv,Call,Name):-
+analyze(check_di3,AbsInt,_RFlag,Goal,Gv,Call,Name):-
 	push_pp_flag(reuse_fixp_id,on),
 	predkey_from_sg(Goal,K),
 	fixpo_check_di3:query(AbsInt,K,Goal,Gv,_,Name,Call,_Succ),
 	pop_pp_flag(reuse_fixp_id).
-analyze(check_reduc_di,AbsInt,_Ps,Goal,Gv,Call,Name):-
+analyze(check_reduc_di,AbsInt,_RFlag,Goal,Gv,Call,Name):-
 	push_pp_flag(reuse_fixp_id,on),
 	predkey_from_sg(Goal,K),
 	fixpo_check_reduced_di:query(AbsInt,K,Goal,Gv,_,Name,Call,_Succ),
 	pop_pp_flag(reuse_fixp_id).
-analyze(check_di4,AbsInt,_Ps,Goal,Gv,Call,Name):-
+analyze(check_di4,AbsInt,_RFlag,Goal,Gv,Call,Name):-
 	push_pp_flag(reuse_fixp_id,on),
 %	push_pp_flag(widencall,off),
 	predkey_from_sg(Goal,K),
 	fixpo_check_di4:query(AbsInt,K,Goal,Gv,_,Name,Call,_Succ),
 %	pop_pp_flag(widencall),
 	pop_pp_flag(reuse_fixp_id).
-analyze(check_di5,AbsInt,_Ps,Goal,Gv,Call,Name):-
+analyze(check_di5,AbsInt,_RFlag,Goal,Gv,Call,Name):-
 	push_pp_flag(reuse_fixp_id,on),
 	predkey_from_sg(Goal,K),
 	fixpo_check_di5:query(AbsInt,K,Goal,Gv,_,Name,Call,_Succ),
@@ -412,7 +411,8 @@ mod_topdown_analysis(AbsInt,Fixp,Ps):-
 	functor(Goal,F,A),
 	inccounter(1,C),
 	make_atom([F,A,C],Name),
-	( analyze(Fixp,AbsInt,Ps,Goal,Gv,Call,Name) -> true ),
+  determine_r_flag(Ps,F/A,RFlag),
+	( analyze(Fixp,AbsInt,RFlag,Goal,Gv,Call,Name) -> true ),
 	fail.
 mod_topdown_analysis(_AbsInt,_Fixp,_Ps).
 
