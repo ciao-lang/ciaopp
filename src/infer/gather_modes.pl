@@ -108,7 +108,7 @@ remove_dead_code(Cls0, Ds0, Cls, Ds) :-
 	    findall(F/A, (entry_assertion(Goal, _, _), functor(Goal, F, A)),
 		Exports, Exports1),
 	    curr_module(Module),
-	    maplist((''(F0/A, F/A) :- module_concat(Module,F0,F)),
+	    maplist(([Module] -> ''(F0/A, F/A) :- module_concat(Module,F0,F)),
 	            Exports0, 
 		    Exports1),
 	    clauses_to_deps(Cls0, Deps0, []),
