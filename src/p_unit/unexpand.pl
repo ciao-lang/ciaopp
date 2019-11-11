@@ -482,7 +482,10 @@ unexpand_meta_calls_in_term((A0,B0),(A,B)):- !,
 unexpand_meta_calls_in_term(A0,A):-
 	unexpand_meta_calls(A0,A).
 
-meta_term_abstraction('PA'(_Term,Abs,Call),Prop):-
+% TODO: fix PAEnv and PA support in CiaoPP
+meta_term_abstraction('PAEnv'(_,PA),Prop):- !,
+        meta_term_abstraction(PA,Prop).
+meta_term_abstraction('PA'(_Term,Abs,Call),Prop):- !,
 	Call=..[F|Args],
 	Abs=..[''|NonArgs],
 	subtract(Args,NonArgs,PropArgs),
