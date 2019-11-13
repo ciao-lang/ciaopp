@@ -65,7 +65,7 @@ filter_args([TArg|TermArgs],[MArg|MaskArgs],Acu,FilteredArgs,ResAcu,Res) :-
 %	MArg =..[;|Cases],member(Case,Cases),
 %	filter_args([TArg|TermArgs],[Case|MaskArgs],Acu,FilteredArgs,ResAcu,Res).
 % New version -> It handles dynamic polymorphic lists. It needs testing. 
-%   So, for the moment I won´t activate it, until needed.
+%   So, for the moment I won't activate it, until needed.
 filter_args([TArg|TermArgs],[MArg|MaskArgs],Acu,FilteredArgs,ResAcu,Res) :- 
 	MArg =..[;|Cases],
 	rest_adjustment([MArg|MaskArgs],TermArgs,NewMaskArgs),
