@@ -100,22 +100,22 @@
 % TODO: This should be done with traits
 
 :- export(nonrel_init_abstract_domain/2).
-:- comment(doinclude, nonrel_init_abstract_domain/2).
+:- doc(doinclude, nonrel_init_abstract_domain/2).
 :- pred nonrel_init_abstract_domain(AbsInt, PushedFlags) #
    "Initializes abstract domain @var{AbsInt}. Tells the list of
    modified (pushed) PP flags to pop afterwards.".
 
-:- comment(doinclude, nonrel_top/2).
+:- doc(doinclude, nonrel_top/2).
 :- pred nonrel_top(AbsInt, X) # "@var{X} is the representation of
    ``top'' in the abstract domain.@begin{alert}This predicate needs to
    be implemented by the user.@end{alert}".
 
-:- comment(doinclude, nonrel_bot/2).
+:- doc(doinclude, nonrel_bot/2).
 :- pred nonrel_bot(AbsInt, X) # "@var{X} is the representation of
    ``bot'' in the abstract domain. @begin{alert}This predicate needs
    to be implemented by the user.@end{alert}".
 
-:- comment(doinclude, nonrel_var/2).
+:- doc(doinclude, nonrel_var/2).
 :- pred nonrel_var(AbsInt, X) # "@var{X} is the abstraction of a free
    variable in the abstract domain.@begin{alert}This predicate needs
    to be implemented by the user.@end{alert}".
@@ -129,25 +129,25 @@
 % TODO: The abstract unification could be simplified even more if domains are
 % non relational
 
-:- comment(doinclude, nonrel_less_or_equal_elem/3).
+:- doc(doinclude, nonrel_less_or_equal_elem/3).
 :- pred nonrel_less_or_equal_elem(+AbsInt,+E1,+E2) #"
         Succeeds if @var{E1} is smaller than @var{E2}.
         @begin{alert}This predicate needs to be implemented by the
         user.@end{alert}".
 
-:- comment(doinclude, nonrel_compute_glb_elem/4).
+:- doc(doinclude, nonrel_compute_glb_elem/4).
 :- pred nonrel_compute_glb_elem(+AbsInt,+E1,+E2,EG) #"
         @var{EG} is the @em{greatest lower bound} of @var{E1} and @var{E2}.
         @begin{alert}This predicate needs to be implemented by the
         user.@end{alert}".
 
-:- comment(doinclude, nonrel_compute_lub_elem/4).
+:- doc(doinclude, nonrel_compute_lub_elem/4).
 :- pred nonrel_compute_lub_elem(+AbsInt,+E1,+E2,EL) #"
         @var{EL} is the @em{least upper bound} of @var{E1} and @var{E2}.
         @begin{alert}This predicate needs to be implemented by the
         user.@end{alert}".
 
-:- comment(doinclude, nonrel_widen_elem/4).
+:- doc(doinclude, nonrel_widen_elem/4).
 :- pred nonrel_widen_elem(+AbsInt,+E1,+E2,EW) #"
         @var{EW} is the @em{widening} of @var{E1} and @var{E2}.
         @begin{alert}This predicate needs to be implemented by the
