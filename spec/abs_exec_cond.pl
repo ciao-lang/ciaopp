@@ -1,17 +1,17 @@
 :- module(abs_exec_cond,
-	[cond/4,
-	 not_cond/4,
-	 indep/4,
-	 not_independent/4,
-	 ground/3,
-	 not_ground/3,
-	 free/3,
-	 not_free/3,
-	 abs_exec_reg_type_with_post_info/4,
-	 abs_exec_reg_type_with_post_info_one_version/5,
-	 abs_exec_conj_props/3
-	],
-	[assertions, isomodes, datafacts, ciaopp(ciaopp_options)]).
+    [cond/4,
+     not_cond/4,
+     indep/4,
+     not_independent/4,
+     ground/3,
+     not_ground/3,
+     free/3,
+     not_free/3,
+     abs_exec_reg_type_with_post_info/4,
+     abs_exec_reg_type_with_post_info_one_version/5,
+     abs_exec_conj_props/3
+    ],
+    [assertions, isomodes, datafacts, ciaopp(ciaopp_options)]).
 
 :- doc(title,"Abstract Execution of Conditions").
 :- doc(author, "Germ@'{a}n Puebla").
@@ -22,41 +22,41 @@
 :- use_module(spec(abs_exec), [abs_exec/4]).
 
 :- use_module(ciaopp(plai/domains), 
- 	[ 
-	    concrete/4,
-	    less_or_equal_proj/5,
-	    abs_sort/3,
-	    project/6,
-	    identical_abstract/3
- 	]).
+    [ 
+        concrete/4,
+        less_or_equal_proj/5,
+        abs_sort/3,
+        project/6,
+        identical_abstract/3
+    ]).
 
 :- use_module(domain(sharing), [share_project/5]).
 
 :- use_module(domain(s_grshfr), 
- 	[ 
-	    change_values_if_differ/5,
-	    impossible/3,
-	    member_value_freeness/3,
-	    projected_gvars/3,
-	    var_value/3
-	]).
- 	 
+    [ 
+        change_values_if_differ/5,
+        impossible/3,
+        member_value_freeness/3,
+        projected_gvars/3,
+        var_value/3
+    ]).
+     
 :- use_module(library(lsets), [ord_split_lists/4]).
  
 :- use_module(library(lists), [member/2]).
 :- use_module(library(terms_vars), [varset/2]).
 :- use_module(library(sets), 
- 	[ 
-	    insert/3,
-	    ord_subtract/3, 
-	    ord_member/2, 
-	    merge/3
-	]).
+    [ 
+        insert/3,
+        ord_subtract/3, 
+        ord_member/2, 
+        merge/3
+    ]).
 :- use_module(typeslib(typeslib), 
- 	[dz_type_included/2,
- 	 type_intersection_2/3,
- 	 is_ground_type/1
- 	]).
+    [dz_type_included/2,
+     type_intersection_2/3,
+     is_ground_type/1
+    ]).
  
 :- use_module(typeslib(typeslib), [is_empty_type/1]). % DTM: was regtype_basic_lattice
 
@@ -78,75 +78,75 @@
 %-------------------------------------------------------------------%
 cond(true,_,_,_).
 cond(type_incl(N,Type),Abs,Goal,Info):-
-	arg(N,Goal,ArgN),
-	type_of(Abs,ArgN,Info,T),
-	dz_type_included(T,Type).
+    arg(N,Goal,ArgN),
+    type_of(Abs,ArgN,Info,T),
+    dz_type_included(T,Type).
 cond(incomp_type(N,Type),Abs,Goal,Info):-
-	arg(N,Goal,ArgN),
-	type_of(Abs,ArgN,Info,T),
- 	type_intersection_2(T,Type,T3),
- 	is_empty_type(T3).
-%	types_are_incompatible(RealType,T).
+    arg(N,Goal,ArgN),
+    type_of(Abs,ArgN,Info,T),
+    type_intersection_2(T,Type,T3),
+    is_empty_type(T3).
+%       types_are_incompatible(RealType,T).
 cond(notvartype(N),Abs,Goal,Info):-
-	arg(N,Goal,Var),
-	( var(Var) -> 
-	  \+ type_of(Abs,Var,Info,term)
-	;
-	    true
-	).
+    arg(N,Goal,Var),
+    ( var(Var) -> 
+      \+ type_of(Abs,Var,Info,term)
+    ;
+        true
+    ).
 cond(all_ground_types,Abs,Goal,Info):-
-	varset(Goal,Vars),
-	all_ground_with_types(Vars,Abs,Info).
+    varset(Goal,Vars),
+    all_ground_with_types(Vars,Abs,Info).
 cond(one_concr_nequal,Abs,A = B,Info):-
-	varset(A = B,Vars),
-	each_concret_one(Vars,Abs,Info,Infoconcr),
-	copy_term((A = B,Infoconcr),(A1 = B1,Info2concr)),
-	apply(Info2concr),
-	A1 \== B1.
+    varset(A = B,Vars),
+    each_concret_one(Vars,Abs,Info,Infoconcr),
+    copy_term((A = B,Infoconcr),(A1 = B1,Info2concr)),
+    apply(Info2concr),
+    A1 \== B1.
 cond(one_concr_equal,Abs,A = B,Info):-
-	varset(A = B,Vars),
-	each_concret_one(Vars,Abs,Info,Infoconcr),
-	copy_term((A = B,Infoconcr),(A1 = B1,Info2concr)),
-	apply(Info2concr),
-	A1 == B1.
+    varset(A = B,Vars),
+    each_concret_one(Vars,Abs,Info,Infoconcr),
+    copy_term((A = B,Infoconcr),(A1 = B1,Info2concr)),
+    apply(Info2concr),
+    A1 == B1.
 % cond(one_concr_nequal,Abs,Goal,Info):-
-% 	arg(1,Goal,Arg1),
-% 	arg(2,Goal,Arg2),
-% 	concrete(Abs,Arg1,Info,[One]),
-% 	concrete(Abs,Arg2,Info,[Two]),
-% 	One \== Two.
+%       arg(1,Goal,Arg1),
+%       arg(2,Goal,Arg2),
+%       concrete(Abs,Arg1,Info,[One]),
+%       concrete(Abs,Arg2,Info,[Two]),
+%       One \== Two.
 cond(ground(N),Abs,Goal,Info):-
-        arg(N,Goal,ArgN),
-	varset(ArgN,L),
-	all_ground(L,Abs,Info).
+    arg(N,Goal,ArgN),
+    varset(ArgN,L),
+    all_ground(L,Abs,Info).
 cond(free(N),Abs,Goal,Info):-
-        arg(N,Goal,ArgN),
-        free(Abs,ArgN,Info).
+    arg(N,Goal,ArgN),
+    free(Abs,ArgN,Info).
 cond(free(N,M),Abs,Goal,Info):-
-        arg(N,Goal,ArgN),
-        arg(M,Goal,ArgM),
-        free(Abs,ArgN,Info),
-        free(Abs,ArgM,Info).
+    arg(N,Goal,ArgN),
+    arg(M,Goal,ArgM),
+    free(Abs,ArgN,Info),
+    free(Abs,ArgM,Info).
 cond(indep(N,M),Abs,Goal,Info):-
-        arg(N,Goal,ArgN),
-        arg(M,Goal,ArgM),
-        indep(Abs,ArgN,ArgM,Info).
+    arg(N,Goal,ArgN),
+    arg(M,Goal,ArgM),
+    indep(Abs,ArgN,ArgM,Info).
 cond(frgr(N,M),Abs,Goal,Info):-
-        arg(N,Goal,ArgN),
-        arg(M,Goal,ArgM),
-        free(Abs,ArgN,Info),
-        ground(Abs,ArgM,Info).
+    arg(N,Goal,ArgN),
+    arg(M,Goal,ArgM),
+    free(Abs,ArgN,Info),
+    ground(Abs,ArgM,Info).
 cond(frindep(N,M),Abs,Goal,Info):-
-        arg(N,Goal,ArgN),
-        arg(M,Goal,ArgM),
-        free(Abs,ArgN,Info),
-        free(Abs,ArgM,Info),
-        indep(Abs,ArgN,ArgM,Info).
+    arg(N,Goal,ArgN),
+    arg(M,Goal,ArgM),
+    free(Abs,ArgN,Info),
+    free(Abs,ArgM,Info),
+    indep(Abs,ArgN,ArgM,Info).
 cond(freerec(N),Abs,Goal,Info):-
-        arg(N,Goal,ArgN),
-	varset(ArgN,Vars),
-	member(Var,Vars),
-	free(Abs,Var,Info).
+    arg(N,Goal,ArgN),
+    varset(ArgN,Vars),
+    member(Var,Vars),
+    free(Abs,Var,Info).
 %        f_rec(ArgN,Abs,Info).
 %% GP nonground/3 undefined!
 %% cond(nonground(N),Abs,Goal,Info):-
@@ -154,47 +154,47 @@ cond(freerec(N),Abs,Goal,Info):-
 %%         nonground(Abs,ArgN,Info).
 %% GP unlinked/4 undefined!
 %% cond(unlinked(N,M),Abs,Goal,Info):-
-%% 	arg(N,Goal,ArgN),
+%%      arg(N,Goal,ArgN),
 %%         arg(M,Goal,ArgM),
-%% 	unlinked(Abs,ArgN,ArgM,Info).
+%%      unlinked(Abs,ArgN,ArgM,Info).
 cond(nonvar(N),Abs,Goal,Info):-
-	arg(N,Goal,ArgN),
-%% MGB	nonvar(Abs,ArgN,Info).
-	not_free(Abs,ArgN,Info).
+    arg(N,Goal,ArgN),
+%% MGB  nonvar(Abs,ArgN,Info).
+    not_free(Abs,ArgN,Info).
 cond(not_indep(N,M),Abs,Goal,Info):-
-        not_cond(indep(N,M),Abs,Goal,Info).
+    not_cond(indep(N,M),Abs,Goal,Info).
 cond(not_ground(N),Abs,Goal,Info):-
-	not_cond(ground(N),Abs,Goal,Info).
+    not_cond(ground(N),Abs,Goal,Info).
 cond([Cond|_],Abs,Goal,Info):-
-        cond(Cond,Abs,Goal,Info).
+    cond(Cond,Abs,Goal,Info).
 cond([_|Conds],Abs,Goal,Info):-
-        cond(Conds,Abs,Goal,Info).
+    cond(Conds,Abs,Goal,Info).
 %jcf
 cond(leq(Sg,Proj),Abs,Goal,Info):-
-	abs_sort(Abs,Proj,SortedProj),
-	varset(Goal,Gv),
-	project(Abs,Goal,Gv,_,Info,Entry),
-	abs_sort(Abs,Entry,SortedEntry),
-	less_or_equal_proj(Abs,Goal,SortedEntry,Sg,SortedProj).
+    abs_sort(Abs,Proj,SortedProj),
+    varset(Goal,Gv),
+    project(Abs,Goal,Gv,_,Info,Entry),
+    abs_sort(Abs,Entry,SortedEntry),
+    less_or_equal_proj(Abs,Goal,SortedEntry,Sg,SortedProj).
 %jcf
 %
 :- if(defined(has_ciaopp_extra)).
 cond(polyhedra_constraint,Abs,Goal,Info) :-
-        % TODO: REWRITE!!! (e.g, using domain operations)
-        Abs = polyhedra,
-        Info = (_Addr, Vars),
-        Goal = 'native_props:constraint'(Cons_Sys),
-        polyhedra_input_user_interface(Cons_Sys, Vars, GoalASub, Goal, no), % TODO: check that last 2 args are OK
-        polyhedra_less_or_equal(Info, GoalASub).
+    % TODO: REWRITE!!! (e.g, using domain operations)
+    Abs = polyhedra,
+    Info = (_Addr, Vars),
+    Goal = 'native_props:constraint'(Cons_Sys),
+    polyhedra_input_user_interface(Cons_Sys, Vars, GoalASub, Goal, no), % TODO: check that last 2 args are OK
+    polyhedra_less_or_equal(Info, GoalASub).
 :- endif.
 
 :- if(defined(has_ciaopp_extra)).
 % TODO: move above, make it modular, etc.
 :- use_module(domain(polyhedra),
-        [
-            polyhedra_input_user_interface/5,
-            polyhedra_less_or_equal/2
-        ]).
+    [
+        polyhedra_input_user_interface/5,
+        polyhedra_less_or_equal/2
+    ]).
 :- endif.
 
  %% %-------------------------------------------------------------------%
@@ -227,41 +227,41 @@ cond(polyhedra_constraint,Abs,Goal,Info) :-
 % X is a variable. The predicate suceeds if X is ground w.r.t. Info %
 %-------------------------------------------------------------------%
 ground(son,X,(GroundComponent,_)):-
-        ord_member(X,GroundComponent).
+    ord_member(X,GroundComponent).
 ground(share,X,Sharing):-
-        ord_split_lists(Sharing,X,[],_Disjoint).
+    ord_split_lists(Sharing,X,[],_Disjoint).
 ground(shfr,X,ac(d((_SharingComponent,FreeComponent),_DelComponent),_)):- !,
-        var_value(FreeComponent,X,g).
+    var_value(FreeComponent,X,g).
 ground(shfr,X,(_SharingComponent,FreeComponent)):-
-        var_value(FreeComponent,X,g).
+    var_value(FreeComponent,X,g).
 ground(shfrnv,X,ac(d((_SharingComponent,FreeComponent),_DelComponent),_)):- !,
-        var_value(FreeComponent,X,g).
+    var_value(FreeComponent,X,g).
 ground(shfrnv,X,(_SharingComponent,FreeComponent)):-
-        var_value(FreeComponent,X,g).
+    var_value(FreeComponent,X,g).
 % GPS These domains are not active yet in 1.0
 %% ground(aeq,X,ac(d(aeqs(Eqs,_,_,_,NGr),_DelComponent),_)):- !,
-%% 	avariables_ic_subst(X,Eqs,X_ic),
-%% 	bitset_intersect(X_ic,NGr,0) .
+%%      avariables_ic_subst(X,Eqs,X_ic),
+%%      bitset_intersect(X_ic,NGr,0) .
 %% ground(aeq,X,aeqs(Eqs,_,_,_,NGr)):- !,
-%% 	avariables_ic_subst(X,Eqs,X_ic),
-%% 	bitset_intersect(X_ic,NGr,0) .
+%%      avariables_ic_subst(X,Eqs,X_ic),
+%%      bitset_intersect(X_ic,NGr,0) .
 ground(def,X,a(GroundComponent,_DepComponent)):- !,
-	ord_member(X,GroundComponent).
+    ord_member(X,GroundComponent).
 ground(def,X,ac(d(a(GroundComponent,_DepComponent),_DelComponent),_)):- 
-	ord_member(X,GroundComponent).
+    ord_member(X,GroundComponent).
 %% ground(shareson,X,((GroundComponent,_),_SharingComponent)):-
 %%         ord_member(X,GroundComponent).
 %% ground(shfrson,X,((GroundComponent,_),_SharingComponent,_FreeComp)):-
 %%         ord_member(X,GroundComponent).
 %% ground(fd,X,(_F,D)):-
-%% 	ground(def,X,D).
+%%      ground(def,X,D).
 
 
 
 all_ground([],_Abs,_Info).
 all_ground([V|Vs],Abs,Info):-
-        ground(Abs,V,Info),
-	all_ground(Vs,Abs,Info).
+    ground(Abs,V,Info),
+    all_ground(Vs,Abs,Info).
 
 %-------------------------------------------------------------------%
 % free(+,+,+)                                                       %
@@ -269,26 +269,26 @@ all_ground([V|Vs],Abs,Info):-
 %  Term can be shown to be free with Abs and Info.                  %
 %-------------------------------------------------------------------%
 free(shfr,X,(_,FreeComponent)):- !,
-        var_value(FreeComponent,X,f).
+    var_value(FreeComponent,X,f).
 free(shfr,X,ac(d((_,FreeComponent),_DelComponent),_)):-
-        var_value(FreeComponent,X,f).
+    var_value(FreeComponent,X,f).
 free(shfrnv,X,(_,FreeComponent)):- !,
-        var_value(FreeComponent,X,f).
+    var_value(FreeComponent,X,f).
 free(shfrnv,X,ac(d((_,FreeComponent),_DelComponent),_)):-
-        var_value(FreeComponent,X,f).
+    var_value(FreeComponent,X,f).
 %% free(aeq,X,aeqs(Eqs,Ann,_,_,_)):- !,
-%% 	member_key(X,Eqs,'@'(X_ec)),
-%% 	aref(X_ec,Ann,f).
+%%      member_key(X,Eqs,'@'(X_ec)),
+%%      aref(X_ec,Ann,f).
 %% free(aeq,X,ac(d(aeqs(Eqs,Ann,_,_,_),_DelComponent),_)):- !,
-%% 	member_key(X,Eqs,'@'(X_ec)),
-%% 	aref(X_ec,Ann,f).
+%%      member_key(X,Eqs,'@'(X_ec)),
+%%      aref(X_ec,Ann,f).
 %% free(shfrson,X,(_,_,FreeComponent)):-
 %%         var_value(FreeComponent,X,f).
 %% free(fr,X,as(Old,New)):-
 %%         ord_split_lists(Old,X,[],_DisjointO),
 %%         ord_split_lists(New,X,[],_DisjointN).
 %% free(fd,X,(_D,as(_G1,Old,_G2,New))):-
-%% 	free(fr,X,as(Old,New)).
+%%      free(fr,X,as(Old,New)).
 %% 
 %-------------------------------------------------------------------%
 % indep(+,+,+,+)                                                    %
@@ -296,33 +296,33 @@ free(shfrnv,X,ac(d((_,FreeComponent),_DelComponent),_)):-
 %  Term1 and Term2 can be shown to be independent from each other   %
 %-------------------------------------------------------------------%
 indep(son,X,Y,(_,DepComponent)):-
-        sort([X,Y],Couple),
-        \+ord_member(Couple,DepComponent).
+    sort([X,Y],Couple),
+    \+ord_member(Couple,DepComponent).
 
 indep(share,X,Y,Sharing):-
-        ord_split_lists(Sharing,X,IntersectX,_DisjointX),
-        ord_split_lists(IntersectX,Y,[],_DisjointY).
+    ord_split_lists(Sharing,X,IntersectX,_DisjointX),
+    ord_split_lists(IntersectX,Y,[],_DisjointY).
 
 indep(shfr,X,Y,(SharingComponent,_)):-
-        ord_split_lists(SharingComponent,X,IntersectX,_DisjointX),
-        ord_split_lists(IntersectX,Y,[],_DisjointY).
+    ord_split_lists(SharingComponent,X,IntersectX,_DisjointX),
+    ord_split_lists(IntersectX,Y,[],_DisjointY).
 indep(shfr,X,Y,ac(d((SharingComponent,_),_DelComponent),_)):-
-        ord_split_lists(SharingComponent,X,IntersectX,_DisjointX),
-        ord_split_lists(IntersectX,Y,[],_DisjointY).
+    ord_split_lists(SharingComponent,X,IntersectX,_DisjointX),
+    ord_split_lists(IntersectX,Y,[],_DisjointY).
 indep(shareson,X,Y,((_,DepComponent),_)):-
-        sort([X,Y],Couple),
-        \+ord_member(Couple,DepComponent).
+    sort([X,Y],Couple),
+    \+ord_member(Couple,DepComponent).
 indep(shfrson,X,Y,((_,DepComponent),_,_)):-
-        sort([X,Y],Couple),
-        \+ord_member(Couple,DepComponent).
+    sort([X,Y],Couple),
+    \+ord_member(Couple,DepComponent).
 indep(fr,X,_,as(Old,New)):-
-        ord_split_lists(Old,X,[],_DisjointO),
-        ord_split_lists(New,X,[],_DisjointN),!.
+    ord_split_lists(Old,X,[],_DisjointO),
+    ord_split_lists(New,X,[],_DisjointN),!.
 indep(fr,_,X,as(Old,New)):-
-        ord_split_lists(Old,X,[],_DisjointO),
-        ord_split_lists(New,X,[],_DisjointN).
+    ord_split_lists(Old,X,[],_DisjointO),
+    ord_split_lists(New,X,[],_DisjointN).
 indep(fd,X,Y,(_D,as(_G1,Old,_G2,New))):-
-	indep(fr,X,Y,as(Old,New)).
+    indep(fr,X,Y,as(Old,New)).
 
 %% %-------------------------------------------------------------------%
 %% % nonvar(+,+,+)                                                     %
@@ -340,42 +340,42 @@ indep(fd,X,Y,(_D,as(_G1,Old,_G2,New))):-
 %  Term can be shown not to be ground with Abs and Info.            %
 %-------------------------------------------------------------------%
 not_ground(shfr,X,(SharingComponent,FreeComponent)):-
-        var_value(FreeComponent,X,Value),
-        test_not_ground(Value,X,(SharingComponent,FreeComponent)).
+    var_value(FreeComponent,X,Value),
+    test_not_ground(Value,X,(SharingComponent,FreeComponent)).
 not_ground(shfr,X,ac(d((SharingComponent,FreeComponent),_DelComponent),_)):-
-        var_value(FreeComponent,X,Value),
-        test_not_ground(Value,X,(SharingComponent,FreeComponent)).
+    var_value(FreeComponent,X,Value),
+    test_not_ground(Value,X,(SharingComponent,FreeComponent)).
 not_ground(shfrnv,X,(SharingComponent,FreeComponent)):-
-        var_value(FreeComponent,X,Value),
-        test_not_ground(Value,X,(SharingComponent,FreeComponent)).
+    var_value(FreeComponent,X,Value),
+    test_not_ground(Value,X,(SharingComponent,FreeComponent)).
 not_ground(shfrnv,X,ac(d((SharingComponent,FreeComponent),_DelComponent),_)):-
-        var_value(FreeComponent,X,Value),
-        test_not_ground(Value,X,(SharingComponent,FreeComponent)).
+    var_value(FreeComponent,X,Value),
+    test_not_ground(Value,X,(SharingComponent,FreeComponent)).
 %% not_ground(aeq,X,AEqs):- 
-%% 	AEqs = aeqs(Eqs,_,_,_,_),!,
-%% 	member_key(X,Eqs,ATerm),
-%% 	get_ann_aterm(AEqs,ATerm,AnnT),
-%% 	ann_non_ground(AnnT).
+%%      AEqs = aeqs(Eqs,_,_,_,_),!,
+%%      member_key(X,Eqs,ATerm),
+%%      get_ann_aterm(AEqs,ATerm,AnnT),
+%%      ann_non_ground(AnnT).
 %% not_ground(aeq,X,ac(d(AEqs,_DelComponent),_)):-
-%% 	AEqs = aeqs(Eqs,_,_,_,_),!,
-%% 	member_key(X,Eqs,ATerm),
-%% 	get_ann_aterm(AEqs,ATerm,AnnT),
-%% 	ann_non_ground(AnnT).
+%%      AEqs = aeqs(Eqs,_,_,_,_),!,
+%%      member_key(X,Eqs,ATerm),
+%%      get_ann_aterm(AEqs,ATerm,AnnT),
+%%      ann_non_ground(AnnT).
 %% not_ground(shfrson,X,(_Son,SharingComponent,FreeComponent)):-   
 %%         not_ground(shfr,X,(SharingComponent,FreeComponent)).
 %% not_ground(fr,X,as(Old,New)):-
-%% 	ord_test_member(Old,[X],no),
-%% 	ord_test_member(New,[X],no).
+%%      ord_test_member(Old,[X],no),
+%%      ord_test_member(New,[X],no).
 %% not_ground(fd,X,(_D,as(_G1,Old,_G2,New))):-
-%% 	not_ground(fr,X,as(Old,New)).
+%%      not_ground(fr,X,as(Old,New)).
 
 test_not_ground(f,_,_):-!.
 test_not_ground(_,X,(SharingComponent,FreeComponent)):-
-        ord_split_lists(SharingComponent,X,Intersect,L1),
-        varset(Intersect,Coupled),
-        varset(L1,Not_Coupled),
-        ord_subtract(Coupled,Not_Coupled,New_Ground),
-        \+change_values_if_differ(New_Ground,FreeComponent,_,g,f).
+    ord_split_lists(SharingComponent,X,Intersect,L1),
+    varset(Intersect,Coupled),
+    varset(L1,Not_Coupled),
+    ord_subtract(Coupled,Not_Coupled,New_Ground),
+    \+change_values_if_differ(New_Ground,FreeComponent,_,g,f).
  
 %-------------------------------------------------------------------%
 % not_free(+,+,+)                                                   %
@@ -383,35 +383,35 @@ test_not_ground(_,X,(SharingComponent,FreeComponent)):-
 %  Term can be shown not to be free with Abs and Info.              %
 %-------------------------------------------------------------------%
 not_free(def,X,a(G,_)):- !,
-        ord_member(X,G).
+    ord_member(X,G).
 not_free(def,X,ac(d(a(G,_),_),_)):- 
-        ord_member(X,G).
+    ord_member(X,G).
 not_free(son,X,(GroundComponent,_)):-
-        ord_member(X,GroundComponent).
+    ord_member(X,GroundComponent).
 not_free(share,X,Sharing):-
-        ord_split_lists(Sharing,X,[],_Disjoint).
+    ord_split_lists(Sharing,X,[],_Disjoint).
 not_free(shfr,X,(SharingComponent,FreeComponent)):-
-        var_value(FreeComponent,X,Value),
-        test_not_free(Value,X,(SharingComponent,FreeComponent)).
+    var_value(FreeComponent,X,Value),
+    test_not_free(Value,X,(SharingComponent,FreeComponent)).
 not_free(shfr,X,ac(d((SharingComponent,FreeComponent),_DelComponent),_)):-
-        var_value(FreeComponent,X,Value),
-        test_not_free(Value,X,(SharingComponent,FreeComponent)).
+    var_value(FreeComponent,X,Value),
+    test_not_free(Value,X,(SharingComponent,FreeComponent)).
 not_free(shfrnv,X,(SharingComponent,FreeComponent)):-
-        var_value(FreeComponent,X,Value),
-        test_not_free(Value,X,(SharingComponent,FreeComponent)).
+    var_value(FreeComponent,X,Value),
+    test_not_free(Value,X,(SharingComponent,FreeComponent)).
 not_free(shfrnv,X,ac(d((SharingComponent,FreeComponent),_DelComponent),_)):-
-        var_value(FreeComponent,X,Value),
-        test_not_free(Value,X,(SharingComponent,FreeComponent)).
+    var_value(FreeComponent,X,Value),
+    test_not_free(Value,X,(SharingComponent,FreeComponent)).
 %% not_free(aeq,X,AEqs):- 
-%% 	AEqs = aeqs(Eqs,_,_,_,_),!,
-%% 	member_key(X,Eqs,ATerm),
-%% 	get_ann_aterm(AEqs,ATerm,AnnT),
-%% 	ann_non_free(AnnT).
+%%      AEqs = aeqs(Eqs,_,_,_,_),!,
+%%      member_key(X,Eqs,ATerm),
+%%      get_ann_aterm(AEqs,ATerm,AnnT),
+%%      ann_non_free(AnnT).
 %% not_free(aeq,X,ac(d(AEqs,_DelComponent),_)):-
-%% 	AEqs = aeqs(Eqs,_,_,_,_),!,
-%% 	member_key(X,Eqs,ATerm),
-%% 	get_ann_aterm(AEqs,ATerm,AnnT),
-%% 	ann_non_free(AnnT).
+%%      AEqs = aeqs(Eqs,_,_,_,_),!,
+%%      member_key(X,Eqs,ATerm),
+%%      get_ann_aterm(AEqs,ATerm,AnnT),
+%%      ann_non_free(AnnT).
 %% not_free(shareson,X,((GroundComponent,_),_SharingC)):-
 %%         ord_member(X,GroundComponent).
 %% not_free(shfrson,X,(_Son,SharingComponent,FreeComponent)):-
@@ -420,10 +420,10 @@ not_free(shfrnv,X,ac(d((SharingComponent,FreeComponent),_DelComponent),_)):-
 test_not_free(g,_,_).
 test_not_free(nv,_,_).
 test_not_free(nf,X,(SharingComponent,FreeComponent)):-
-        member_value_freeness(FreeComponent,FreeVars,f),
-        insert(FreeVars,X,AssumedFree),
-        share_project(not_provided_Sg,AssumedFree,not_provided_HvFv_u,SharingComponent,NewSh),
-        impossible(NewSh,NewSh,AssumedFree).
+    member_value_freeness(FreeComponent,FreeVars,f),
+    insert(FreeVars,X,AssumedFree),
+    share_project(not_provided_Sg,AssumedFree,not_provided_HvFv_u,SharingComponent,NewSh),
+    impossible(NewSh,NewSh,AssumedFree).
 
 %-------------------------------------------------------------------%
 % not_independent(+,+,+,+)                                          %
@@ -431,24 +431,24 @@ test_not_free(nf,X,(SharingComponent,FreeComponent)):-
 %  Term1 and Term2 can be shown to be not independent               %
 %-------------------------------------------------------------------%
 not_independent(shfr,X,Y,(SharingComponent,FreeComponent)):-
-        ord_split_lists(SharingComponent,X,IntersectX,DisjointX),
-        ord_split_lists(IntersectX,Y,IntersectXY,DisjointY),
-        IntersectXY \== [],
-        varset(FreeComponent,Vars),
-        merge(DisjointX,DisjointY,NewSh),
-        projected_gvars(NewSh,Vars,Ground),
-        \+ change_values_if_differ(Ground,FreeComponent,_Succ_fr,g,f).
+    ord_split_lists(SharingComponent,X,IntersectX,DisjointX),
+    ord_split_lists(IntersectX,Y,IntersectXY,DisjointY),
+    IntersectXY \== [],
+    varset(FreeComponent,Vars),
+    merge(DisjointX,DisjointY,NewSh),
+    projected_gvars(NewSh,Vars,Ground),
+    \+ change_values_if_differ(Ground,FreeComponent,_Succ_fr,g,f).
 not_independent(shfr,X,Y,ac(d((SharingComponent,FreeComponent),_DelComponent),_)):-
-        ord_split_lists(SharingComponent,X,IntersectX,DisjointX),
-        ord_split_lists(IntersectX,Y,IntersectXY,DisjointY),
-        IntersectXY \== [],
-        varset(FreeComponent,Vars),
-        merge(DisjointX,DisjointY,NewSh),
-        projected_gvars(NewSh,Vars,Ground),
-        \+ change_values_if_differ(Ground,FreeComponent,_Succ_fr,g,f).
+    ord_split_lists(SharingComponent,X,IntersectX,DisjointX),
+    ord_split_lists(IntersectX,Y,IntersectXY,DisjointY),
+    IntersectXY \== [],
+    varset(FreeComponent,Vars),
+    merge(DisjointX,DisjointY,NewSh),
+    projected_gvars(NewSh,Vars,Ground),
+    \+ change_values_if_differ(Ground,FreeComponent,_Succ_fr,g,f).
 
 not_independent(shfrson,X,Y,(_Son,SharingComponent,FreeComponent)):-
-        not_independent(shfr,X,Y,(SharingComponent,FreeComponent)).
+    not_independent(shfr,X,Y,(SharingComponent,FreeComponent)).
 
 %-------------------------------------------------------------------%
 % not_cond(+,+,+,+)                                                 %
@@ -457,98 +457,98 @@ not_independent(shfrson,X,Y,(_Son,SharingComponent,FreeComponent)):-
 %  and abstract call substitution Info                              %
 %-------------------------------------------------------------------%
 not_cond([L|R],Abs,Goal,Info):-
-        not_cond(L,Abs,Goal,Info),
-        not_cond(R,Abs,Goal,Info).
+    not_cond(L,Abs,Goal,Info),
+    not_cond(R,Abs,Goal,Info).
 not_cond(type_incl(N,Type),Abs,Goal,Info):-
-	arg(N,Goal,ArgN),
-	type_of(Abs,ArgN,Info,T),
- 	type_intersection_2(T,Type,T3),
- 	is_empty_type(T3).
-% 	types_are_incompatible(T,Type).
+    arg(N,Goal,ArgN),
+    type_of(Abs,ArgN,Info,T),
+    type_intersection_2(T,Type,T3),
+    is_empty_type(T3).
+%       types_are_incompatible(T,Type).
 not_cond(incomp_type(N,Type),Abs,Goal,Info):-
-	arg(N,Goal,ArgN),
-	type_of(Abs,ArgN,Info,T),
-	dz_type_included(T,Type).
+    arg(N,Goal,ArgN),
+    type_of(Abs,ArgN,Info,T),
+    dz_type_included(T,Type).
 not_cond(ground(N),Abs,Goal,Info):-
-        arg(N,Goal,ArgN),
-	varset(ArgN,Variables),
-	member(Var,Variables),
-        not_ground(Abs,Var,Info).
+    arg(N,Goal,ArgN),
+    varset(ArgN,Variables),
+    member(Var,Variables),
+    not_ground(Abs,Var,Info).
 not_cond(free(N),Abs,Goal,Info):-
-        arg(N,Goal,ArgN),
-        not_free(Abs,ArgN,Info).
+    arg(N,Goal,ArgN),
+    not_free(Abs,ArgN,Info).
 not_cond(freerec(N),Abs,Goal,Info):-
-        arg(N,Goal,ArgN),
-        ground(Abs,ArgN,Info).
+    arg(N,Goal,ArgN),
+    ground(Abs,ArgN,Info).
 not_cond(frgr(N,M),Abs,Goal,Info):-
-        cond(Abs,free(N),Goal,Info),
-        cond(Abs,free(M),Goal,Info).
+    cond(Abs,free(N),Goal,Info),
+    cond(Abs,free(M),Goal,Info).
 not_cond(frgr(N,M),Abs,Goal,Info):-
-        cond(Abs,ground(N),Goal,Info),
-        cond(Abs,ground(M),Goal,Info).
+    cond(Abs,ground(N),Goal,Info),
+    cond(Abs,ground(M),Goal,Info).
 not_cond(free(N,_),Abs,Goal,Info):-
-        arg(N,Goal,ArgN),
-        not_free(Abs,ArgN,Info).
+    arg(N,Goal,ArgN),
+    not_free(Abs,ArgN,Info).
 not_cond(free(_,N),Abs,Goal,Info):-
-        arg(N,Goal,ArgN),
-        not_free(Abs,ArgN,Info).
+    arg(N,Goal,ArgN),
+    not_free(Abs,ArgN,Info).
 not_cond(frindep(N,_),Abs,Goal,Info):-
-        arg(N,Goal,ArgN),
-        not_free(Abs,ArgN,Info).
+    arg(N,Goal,ArgN),
+    not_free(Abs,ArgN,Info).
 not_cond(frindep(_,N),Abs,Goal,Info):-
-        arg(N,Goal,ArgN),
-        not_free(Abs,ArgN,Info).
+    arg(N,Goal,ArgN),
+    not_free(Abs,ArgN,Info).
 not_cond(frindep(N,M),Abs,Goal,Info):-
-        arg(N,Goal,ArgN),
-        arg(M,Goal,ArgM),
-        not_independent(Abs,ArgN,ArgM,Info).
+    arg(N,Goal,ArgN),
+    arg(M,Goal,ArgM),
+    not_independent(Abs,ArgN,ArgM,Info).
 not_cond(indep(N,M),shfr,Goal,Info):-
-        arg(N,Goal,ArgN),
-        arg(M,Goal,ArgM),
-        not_independent(shfr,ArgN,ArgM,Info).
+    arg(N,Goal,ArgN),
+    arg(M,Goal,ArgM),
+    not_independent(shfr,ArgN,ArgM,Info).
 not_cond(not_indep(N,M),shfr,Goal,Info):-
-        cond(indep(N,M),shfr,Goal,Info).
+    cond(indep(N,M),shfr,Goal,Info).
 not_cond(nonvar(N),Abs,Goal,Info):-
-        arg(N,Goal,ArgN),
-        free(Abs,ArgN,Info).
+    arg(N,Goal,ArgN),
+    free(Abs,ArgN,Info).
 
 
 all_ground_with_types([],_,_).
 all_ground_with_types([Var|Vars],Abs,Info):- 
-	type_of(Abs,Var,Info,T),
-	is_ground_type(T),
-	all_ground_with_types(Vars,Abs,Info).
+    type_of(Abs,Var,Info,T),
+    is_ground_type(T),
+    all_ground_with_types(Vars,Abs,Info).
 
-	
+    
 
 type_of(eterms,X,Sust,T):-
-	member(Y:(_N,T),Sust),
-	X == Y,!.
+    member(Y:(_N,T),Sust),
+    X == Y,!.
 type_of(etermsvar,X,Sust,T):-
-	member(Y:(_N,T),Sust),
-	X == Y,!.
+    member(Y:(_N,T),Sust),
+    X == Y,!.
 type_of(svterms,X,(Sust,_),T):-
-	member(Y:(_N,T),Sust),
-	X == Y,!.
+    member(Y:(_N,T),Sust),
+    X == Y,!.
 type_of(evalterms,X,Sust,T):-
-	member(Y:(_N,T),Sust),
-	X == Y,!.
+    member(Y:(_N,T),Sust),
+    X == Y,!.
 type_of(ptypes,X,Sust,T):-
-	member(Y:T,Sust),
-	X == Y,!.
+    member(Y:T,Sust),
+    X == Y,!.
 type_of(terms,X,Sust,T):-
-	member(Y:T,Sust),
-	X == Y,!.
+    member(Y:T,Sust),
+    X == Y,!.
 
 each_concret_one([],_Abs,_Info,[]).
 each_concret_one([Var|Vars],Abs,Info,[Var:A|InfoConcr]):-
-	concrete(Abs,Var,Info,C),
-	C = [A],
-	each_concret_one(Vars,Abs,Info,InfoConcr).
+    concrete(Abs,Var,Info,C),
+    C = [A],
+    each_concret_one(Vars,Abs,Info,InfoConcr).
 
 apply([X:Term|ASub]):-
-	X=Term,
-	apply(ASub).
+    X=Term,
+    apply(ASub).
 apply([]).
 
 
@@ -572,14 +572,14 @@ apply([]).
       analysis information for the literal}".
 
 abs_exec_reg_type_with_post_info(K_Pre,K_Post,Abs,Sense):-
-	get_memo_lub(K_Post,Vars,Abs,yes,Info1),
-	(Info1 == '$bottom' ->
-	    Sense = fail
-	;
-	    get_memo_lub(K_Pre,Vars,Abs,yes,Info0),
-	    identical_abstract(Abs,Info0,Info1),
-	    Sense = true
-	).
+    get_memo_lub(K_Post,Vars,Abs,yes,Info1),
+    (Info1 == '$bottom' ->
+        Sense = fail
+    ;
+        get_memo_lub(K_Pre,Vars,Abs,yes,Info0),
+        identical_abstract(Abs,Info0,Info1),
+        Sense = true
+    ).
 
 :- pred abs_exec_reg_type_with_post_info_one_version(Num,K_Pre,K_Post,Abs,Sense)
 
@@ -591,16 +591,16 @@ abs_exec_reg_type_with_post_info(K_Pre,K_Post,Abs,Sense):-
       multi variant specialization is to be performed.".
 
 abs_exec_reg_type_with_post_info_one_version(Num,K_Pre,K_Post,Abs,Sense):-
-	current_fact(memo_table(K_Post,Abs,Num,_,Vars,[Info_Post_u])),
-	(Info_Post_u == '$bottom' ->
-	    Sense = fail
-	;
-	    current_fact(memo_table(K_Pre,Abs,Num,_,Vars,[Info_Pre_u])),
-	    abs_sort(Abs,Info_Post_u, Info_Post),
-	    abs_sort(Abs,Info_Pre_u, Info_Pre),
-	    identical_abstract(Abs,Info_Pre,Info_Post),
-	    Sense = true
-	).
+    current_fact(memo_table(K_Post,Abs,Num,_,Vars,[Info_Post_u])),
+    (Info_Post_u == '$bottom' ->
+        Sense = fail
+    ;
+        current_fact(memo_table(K_Pre,Abs,Num,_,Vars,[Info_Pre_u])),
+        abs_sort(Abs,Info_Post_u, Info_Post),
+        abs_sort(Abs,Info_Pre_u, Info_Pre),
+        identical_abstract(Abs,Info_Pre,Info_Post),
+        Sense = true
+    ).
 
 :- pred abs_exec_conj_props(+Conj,+Abs,+Info)
    # "This predicate succeeds if it can prove that the conjuntion of
@@ -610,10 +610,10 @@ abs_exec_reg_type_with_post_info_one_version(Num,K_Pre,K_Post,Abs,Sense):-
 
 abs_exec_conj_props([],_,_).
 abs_exec_conj_props([Prop|Props],Abs,Info):-
-	abs_exec_prop(Prop,Abs,Info),
-	abs_exec_conj_props(Props,Abs,Info).
+    abs_exec_prop(Prop,Abs,Info),
+    abs_exec_conj_props(Props,Abs,Info).
 
 abs_exec_prop(Prop,Abs,Info):-
-	functor(Prop,F,A),
-	abs_exec(Abs,F/A,true,Condition),
-	cond(Condition,Abs,Prop,Info).
+    functor(Prop,F,A),
+    abs_exec(Abs,F/A,true,Condition),
+    cond(Condition,Abs,Prop,Info).

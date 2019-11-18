@@ -21,7 +21,7 @@ is_not_a_type_symbol(Type):- \+ rule_type_symbol(Type).
 %%         % simplify_no_auto_rules(no_simplify, No_Simp_NoAutoRules, NoAutoRules),
 %%         % debug_message("Done checking of no auto empty types."),
 %%         %
-%% 	%% PBC: put the code in here as a separate (exported) predicate
+%%      %% PBC: put the code in here as a separate (exported) predicate
 %%         debug_message("sintactically_simplify_typedefs_0(~q, ~q)", [AutoTypes, NewSimAutoRules]),
 %%         sintactically_simplify_typedefs_0(AutoTypes, NewSimAutoRules),
 %%         debug_message("sintactically_simplify_typedefs_0(~q, ~q)", [AutoTypes, NewSimAutoRules]),
@@ -29,7 +29,7 @@ is_not_a_type_symbol(Type):- \+ rule_type_symbol(Type).
 %%         put_par_type_renamings_first(NoAutoRules, NoAutoRules1),
 %%         % Keep rules -PLG 29-March-94
 %% %%jcf%        asserta_fact(pgm_types_used_to_colapse_others(NoAutoRules1)),
-%% 	add_types_used_to_colapse_others(NoAutoRules1),
+%%      add_types_used_to_colapse_others(NoAutoRules1),
 %%         %debug_message("delete_and_colapse_rules(~q, ~q, ~q)", [NoAutoRules1, 
 %%         %                                        NewSimAutoRules, AutoRules1]),
 %%         delete_and_colapse_rules(NoAutoRules1, NewSimAutoRules, AutoRules1),
@@ -84,7 +84,7 @@ is_not_a_type_symbol(Type):- \+ rule_type_symbol(Type).
 %%         simplify_some_typedefs(RuleList, TypeRuleList).
 
 type_rule_diff(TypeRules, NoAutoRules, NoAutoRules1):-
-        subtract(TypeRules, NoAutoRules, NoAutoRules1).
+    subtract(TypeRules, NoAutoRules, NoAutoRules1).
 
 :- data types_used_to_colapse_others/1.     %% both user and library types!!
 :- data lib_types_used_to_colapse_others/1. %% only library types.
@@ -94,49 +94,49 @@ type_rule_diff(TypeRules, NoAutoRules, NoAutoRules1):-
 %% It is assumed that L contains the list with *all* types
 %% obtained from the user program.
 add_types_used_to_colapse_others(L):-
-	lib_types_used_to_colapse_others(LLib0),
-	!,
-	append(L,LLib0,LLib),
-	set_fact(types_used_to_colapse_others(LLib)).
+    lib_types_used_to_colapse_others(LLib0),
+    !,
+    append(L,LLib0,LLib),
+    set_fact(types_used_to_colapse_others(LLib)).
 add_types_used_to_colapse_others(L):-
-	set_fact(types_used_to_colapse_others(L)).
+    set_fact(types_used_to_colapse_others(L)).
 
 %% It is assumed that L contains the list with *all* types
 %% obtained from the user program.
 add_type_symbols_used_to_colapse_others(L):-
-	lib_type_symbols_used_to_colapse_others(LLib0),
-	!,
-	append(L,LLib0,LLib),
-	set_fact(type_symbols_used_to_colapse_others(LLib)).
+    lib_type_symbols_used_to_colapse_others(LLib0),
+    !,
+    append(L,LLib0,LLib),
+    set_fact(type_symbols_used_to_colapse_others(LLib)).
 add_type_symbols_used_to_colapse_others(L):-
-	set_fact(type_symbols_used_to_colapse_others(L)).
+    set_fact(type_symbols_used_to_colapse_others(L)).
 
 %Rev
 :- doc(simplify_step1,"Simplifies types in the database and records
-	them to later use them to collapse other types to them.").
+    them to later use them to collapse other types to them.").
 
 simplify_step1:-
-        get_type_rules_pgm(No_Simp_NoAutoRules), % gets all typedef's
-        simplify_no_auto_rules(simplify, No_Simp_NoAutoRules, NoAutoRules),
-        % asserta_fact(module_types(NoAutoRules)), % PLG
-        partition_par_type_renamings(NoAutoRules, _RenamingRules, NoAutoRules2),
-        % put_par_type_renamings_first(NoAutoRules, NoAutoRules1),
-	put_user_types_first(NoAutoRules2, NoAutoRules1),
+    get_type_rules_pgm(No_Simp_NoAutoRules), % gets all typedef's
+    simplify_no_auto_rules(simplify, No_Simp_NoAutoRules, NoAutoRules),
+    % asserta_fact(module_types(NoAutoRules)), % PLG
+    partition_par_type_renamings(NoAutoRules, _RenamingRules, NoAutoRules2),
+    % put_par_type_renamings_first(NoAutoRules, NoAutoRules1),
+    put_user_types_first(NoAutoRules2, NoAutoRules1),
 
-        add_types_used_to_colapse_others(NoAutoRules1),
-        get_type_symbols(NoAutoRules1, NoAutoTypes1),
-	add_type_symbols_used_to_colapse_others(NoAutoTypes1).
-%	retractall(pgm_typedef(_,_)).
+    add_types_used_to_colapse_others(NoAutoRules1),
+    get_type_symbols(NoAutoRules1, NoAutoTypes1),
+    add_type_symbols_used_to_colapse_others(NoAutoTypes1).
+%       retractall(pgm_typedef(_,_)).
 
 
 :- doc(simplify_step2, "If @verb{type_output} flag value is
-	@verb{all}, then simplifies types in the database by creating
-	classes of equivalent types. All types in a class can then be
-	collapsed to the canonical representative of the class. This
-	one is chosen as follows: first, a parametric type, if there
-	is one in the class; second, one of the types resulting from
-	step1 of simplification, if there is one in the class; third,
-	any type in the class.").
+    @verb{all}, then simplifies types in the database by creating
+    classes of equivalent types. All types in a class can then be
+    collapsed to the canonical representative of the class. This
+    one is chosen as follows: first, a parametric type, if there
+    is one in the class; second, one of the types resulting from
+    step1 of simplification, if there is one in the class; third,
+    any type in the class.").
 
 % Old version
  %% simplify_step2 :- 
@@ -149,11 +149,11 @@ simplify_step2 :- tabling_simplify_step2. % tabling version. PLG
 % tabling version. PLG
 tabling_simplify_step2 :-
     (current_pp_flag(type_output,defined) ->
-        simplify_some_typedefs_user
-        ; 
-        get_analysis_types(TypeRules),
-        % get_required_types(TypeRules), % PLG
-        select_simplify_some_typedefs(TypeRules, _NewRules)
+    simplify_some_typedefs_user
+    ; 
+    get_analysis_types(TypeRules),
+    % get_required_types(TypeRules), % PLG
+    select_simplify_some_typedefs(TypeRules, _NewRules)
     ).
 
 %% % cache + tabling version. PLG 
@@ -171,60 +171,60 @@ tabling_simplify_step2 :-
 % Simplification with cache. % PLG
 % select_simplify_some_typedefs([], []):-!.
 select_simplify_some_typedefs(TypeRules, NewRules):-
-        get_preprocessing_unit_type_rules(NoAutoRules),
-        simplify_some_typedefs_(NoAutoRules, TypeRules, NewRules).
+    get_preprocessing_unit_type_rules(NoAutoRules),
+    simplify_some_typedefs_(NoAutoRules, TypeRules, NewRules).
 
 get_preprocessing_unit_type_rules(NoAutoRules):-
-        types_used_to_colapse_others(NoAutoRules1),
-        findall(typedef(NPartyp, Def),
-                (param_type_symbol_renaming(_ParTyp, NPartyp),
-                typedef(NPartyp, Def)),    
-                NoAutoRules0),
-        append(NoAutoRules0, NoAutoRules1, NoAutoRules).
+    types_used_to_colapse_others(NoAutoRules1),
+    findall(typedef(NPartyp, Def),
+            (param_type_symbol_renaming(_ParTyp, NPartyp),
+            typedef(NPartyp, Def)),    
+            NoAutoRules0),
+    append(NoAutoRules0, NoAutoRules1, NoAutoRules).
 
 simplify_some_typedefs(TypeRules, NewRules):-
-        get_preprocessing_unit_type_rules(NoAutoRules),
-        type_rule_diff(TypeRules, NoAutoRules, NewSimAutoRules),
-        simplify_some_typedefs_(NoAutoRules, NewSimAutoRules, NewRules).
+    get_preprocessing_unit_type_rules(NoAutoRules),
+    type_rule_diff(TypeRules, NoAutoRules, NewSimAutoRules),
+    simplify_some_typedefs_(NoAutoRules, NewSimAutoRules, NewRules).
  
 simplify_some_typedefs_(NoAutoRules, NewSimAutoRules, NewRules):-
-        delete_and_colapse_rules(NoAutoRules, NewSimAutoRules, AutoRules1),
-        delete_and_colapse_rules_1(AutoRules1, AutoRules4),
-        retract_and_assert_rules(AutoRules4),
-        remove_redundant_simplification(AutoRules4, SimpRules4),
-        replace_all_single_types(SimpRules4, Rules5),
-        selective_retract_rules(NewSimAutoRules),
-        asserta_type_rule_list(Rules5),
-        get_parametric_type_rules(ParRules),
-        rewrite_as_parametric_rules(Rules5, ParRules, TypeSymbols),
-        select_rules(Rules5, TypeSymbols, Rules6), 
-        replace_all_equiv_types_in_rules(Rules6, RenRules6),
-        selective_retract_rules(Rules5),
-        asserta_type_rule_list(RenRules6),
-        % Treatment of renaming rules. 
-        get_all_renaming_rules(RenamingRules),
-        replace_all_equiv_types_in_rules(RenamingRules, NewRenamingRules),
-        selective_retract_rules(RenamingRules),
-        asserta_type_rule_list(NewRenamingRules),
-        %
-        replace_all_equiv_types_in_renamings,
-        unfold_all_types_in_renamings,
-        replace_all_non_par_types_in_rules(RenRules6, NewRules).
-        % This is not necessary since it is supposed that the non-parametric 
-        % which are a renaming of a parametric type rule instance are at the beginning 
-        % in the list of non-parametric type rules.
-        % actualize_parametric_type_renamings.
+    delete_and_colapse_rules(NoAutoRules, NewSimAutoRules, AutoRules1),
+    delete_and_colapse_rules_1(AutoRules1, AutoRules4),
+    retract_and_assert_rules(AutoRules4),
+    remove_redundant_simplification(AutoRules4, SimpRules4),
+    replace_all_single_types(SimpRules4, Rules5),
+    selective_retract_rules(NewSimAutoRules),
+    asserta_type_rule_list(Rules5),
+    get_parametric_type_rules(ParRules),
+    rewrite_as_parametric_rules(Rules5, ParRules, TypeSymbols),
+    select_rules(Rules5, TypeSymbols, Rules6), 
+    replace_all_equiv_types_in_rules(Rules6, RenRules6),
+    selective_retract_rules(Rules5),
+    asserta_type_rule_list(RenRules6),
+    % Treatment of renaming rules. 
+    get_all_renaming_rules(RenamingRules),
+    replace_all_equiv_types_in_rules(RenamingRules, NewRenamingRules),
+    selective_retract_rules(RenamingRules),
+    asserta_type_rule_list(NewRenamingRules),
+    %
+    replace_all_equiv_types_in_renamings,
+    unfold_all_types_in_renamings,
+    replace_all_non_par_types_in_rules(RenRules6, NewRules).
+    % This is not necessary since it is supposed that the non-parametric 
+    % which are a renaming of a parametric type rule instance are at the beginning 
+    % in the list of non-parametric type rules.
+    % actualize_parametric_type_renamings.
 
 %-----------------------------------------------------------------------------------------
 % Collapse types only to user types. PLG
  
 simplify_some_typedefs_user :-
-        get_module_types(P_Unit_Types),
-        get_analysis_types(TypeRuleList),
-        delete_and_colapse_rules_user(TypeRuleList, P_Unit_Types),
-        selective_retract_rules(TypeRuleList),
-        replace_all_equiv_types_in_renamings,
-        unfold_all_types_in_renamings.
+    get_module_types(P_Unit_Types),
+    get_analysis_types(TypeRuleList),
+    delete_and_colapse_rules_user(TypeRuleList, P_Unit_Types),
+    selective_retract_rules(TypeRuleList),
+    replace_all_equiv_types_in_renamings,
+    unfold_all_types_in_renamings.
 %        replace_all_non_par_types_in_rules(RenRules6, NewRules).
 
 :- pred delete_and_colapse_rules_user(+Rules, +Types)
@@ -278,7 +278,7 @@ get_preprocessing_unit_types(P_Unit_Types):-
 %% 
 %% sintactically_simplify_typedefs_0(AutoTypes, NewRules):-
 %%         simplify_predicate_type_table(AutoTypes, SimAutoTypes, EquivSymbols),
-%% 	% Asserta type equivalences. 
+%%      % Asserta type equivalences. 
 %%         recorda_equiv_types(EquivSymbols),
 %%         translate_predicates_to_type_rules(SimAutoTypes, SimAutoRules),
 %%         % Replace type symbols by the representative of the
@@ -297,7 +297,7 @@ simplify_no_auto_rules(simplify, No_Simp_NoAutoRules, NoAutoRules):-
       get_type_rules_pgm(AutoRules_2),
       remove_redundant_simplification(AutoRules_2, NoAutoRules),
       actualize_rules(NoAutoRules). % Retract all the existing rules (typedef's) and 
-                                    % assert the rules in NoAutoRules.
+                                % assert the rules in NoAutoRules.
       % get_type_rules(NoAutoRules).
 simplify_no_auto_rules(no_simplify, Rules, Rules).
 
@@ -364,8 +364,8 @@ select_rules([NonParRule|Rules], TypeSymbols, [NonParRule|OutRules]):-
 
 get_all_renaming_rules(Rules):-
     findall(typedef(NPartyp, Def),
-            (param_type_symbol_renaming(_ParTyp, NPartyp), typedef(NPartyp, Def)) ,
-            Rules).       
+        (param_type_symbol_renaming(_ParTyp, NPartyp), typedef(NPartyp, Def)) ,
+        Rules).       
 
 %% actualize_parametric_type_renamings:-
 %%        findall(pgm_param_type_symbol_renaming(ParTyp, NPartyp),
@@ -382,8 +382,8 @@ get_all_renaming_rules(Rules):-
 
 replace_all_equiv_types_in_renamings:-
        findall(pgm_param_type_symbol_renaming(ParTyp, NPartyp),
-               pgm_param_type_symbol_renaming(ParTyp, NPartyp),    
-               Renamings),
+           pgm_param_type_symbol_renaming(ParTyp, NPartyp),    
+           Renamings),
        replace_equivs_in_renamings(Renamings).
 
 replace_equivs_in_renamings([]).  
@@ -405,8 +405,8 @@ replace_equivs_in_renamings([pgm_param_type_symbol_renaming(ParTyp, NPartyp)|Ren
 
 unfold_all_types_in_renamings:-
        findall(pgm_param_type_symbol_renaming(ParTyp, NPartyp),
-               pgm_param_type_symbol_renaming(ParTyp, NPartyp),    
-               Renamings),
+           pgm_param_type_symbol_renaming(ParTyp, NPartyp),    
+           Renamings),
        unfold_types_in_renamings(Renamings). 
 
 
@@ -423,9 +423,9 @@ unfold_one_type_in_renaming(ParTyp, Seen, NewParTyp):-
      compound_unfold_renaming(A, ParTyp, Seen, RParTyp, NewSeen, Flag),
      %unfold_renaming(ParTyp, Seen, RParTyp, NewSeen, Flag),
      (var(Flag) -> 
-         NewParTyp = RParTyp
-         ; 
-         unfold_one_type_in_renaming(RParTyp, NewSeen, NewParTyp)).
+     NewParTyp = RParTyp
+     ; 
+     unfold_one_type_in_renaming(RParTyp, NewSeen, NewParTyp)).
 
  %% unfold_one_type_in_renaming(ParTyp, NoPartyp, Seen, NewParTyp):-
  %%      functor(ParTyp, F, A),
@@ -479,13 +479,13 @@ compound_unfold_renaming(ArgNum, Comp, Seen, NComp, NewSeen, Flag):-
 :- regtype type_rule_list/1.
 
 type_rule_list(A) :-
-	list(A, type_rule).
+    list(A, type_rule).
 
 :- regtype type_rule/1.
 
 type_rule(typedef(A,B)) :-
-	gnd(A),
-	gnd(B).
+    gnd(A),
+    gnd(B).
 
 delete_and_colapse_rules(RuleList, Rules, NewRuleList):-
    compare_and_simplify_rule_list(RuleList, Rules, Rules1),
@@ -510,8 +510,8 @@ compare_and_simplify_rule_list([Rule|RestRul], Rules, OuRules):-
      @verb{equiv_type(Type2, Type1)}).".  
 
 delete_and_colapse_rules_1(AutoRules2, AutoRules4):-
-        simplify_equiv_types(AutoRules2, AutoRules3),
-        replace_all_equiv_types_in_rules(AutoRules3, AutoRules4).
+    simplify_equiv_types(AutoRules2, AutoRules3),
+    replace_all_equiv_types_in_rules(AutoRules3, AutoRules4).
 
 simplify_equiv_types([], []).
 simplify_equiv_types([Rule|RestRul], [Rule|OuRestRul]):-
@@ -530,12 +530,12 @@ simplify_equiv_types([Rule|RestRul], [Rule|OuRestRul]):-
 compare_and_delete_rule([], _, []).
 compare_and_delete_rule([Rule1|Rest], Rule, SimpRules):-
   (dz_equivalent_rules(Rule1, Rule) -> 
-           SimpRules = TemSimpRules,
-           get_rule_type_predicate(Rule1, Pred1),
-           get_rule_type_predicate(Rule, Pred),
-           assert_and_propagate_type_equivalence(Pred1, Pred)
-           ;
-           SimpRules = [Rule1|TemSimpRules]),
+       SimpRules = TemSimpRules,
+       get_rule_type_predicate(Rule1, Pred1),
+       get_rule_type_predicate(Rule, Pred),
+       assert_and_propagate_type_equivalence(Pred1, Pred)
+       ;
+       SimpRules = [Rule1|TemSimpRules]),
    compare_and_delete_rule(Rest, Rule, TemSimpRules).
 
 :- doc(bug, "Warning: check that the transitive closure is
@@ -558,19 +558,19 @@ assert_equivalence_type([],_, _).
 %%   # "Asserta type equivalences in @var{EquivSymbols}.".
 %% 
 %% recorda_equiv_types([st(Equiv,Types)|EquivSymbols]):-
-%% 	recorda_equiv_types_table(Types,Equiv),
-%% 	recorda_equiv_types(EquivSymbols).
+%%      recorda_equiv_types_table(Types,Equiv),
+%%      recorda_equiv_types(EquivSymbols).
 %% recorda_equiv_types([]).
 %% 
 %% 
 %% recorda_equiv_types_table([Type|Types],Equiv):-
-%% 	asserta_(equiv_type(Type,Equiv)),
-%% 	recorda_equiv_types_table(Types,Equiv).
+%%      asserta_(equiv_type(Type,Equiv)),
+%%      recorda_equiv_types_table(Types,Equiv).
 %% recorda_equiv_types_table([],_Equiv).
 
 asserta_(equiv_type(Type,Type)):- !.
 asserta_(equiv_type(Type,Equiv)):-
-	asserta_fact(pgm_equiv_type(Type,Equiv)).
+    asserta_fact(pgm_equiv_type(Type,Equiv)).
 
 :- pred replace_all_equiv_types_in_rules(+Rules, -NewRules)
    :  type_rule_list * var
@@ -586,7 +586,7 @@ replace_all_equiv_types_in_rules([Rule|Rest], [NewRule|Tail]):-
    replace_all_equiv_types_in_rules(Rest, Tail).
 
 replace_equiv_types_in_rule(typedef(TypSymbol, Defin), 
-                            typedef(TypSymbol, NewDefin)):-
+                        typedef(TypSymbol, NewDefin)):-
        replace_equiv_types_in_union(Defin, NewDefin).
 
 replace_equiv_types_in_union([], []):-!.
@@ -646,7 +646,7 @@ select_single_rules([Rule|Rest], SingleRules, [Rule|OtherRules]):-
 
 unfold_single_types([], []).  
 unfold_single_types([typedef(TypeSymb, [Type])|Rules],
-                    [typedef(TypeSymb, [NewType])| Rest]):-
+                [typedef(TypeSymb, [NewType])| Rest]):-
      unfold_one_single_type(Type, [TypeSymb], NewType),
      retractall_fact(pgm_typedef(TypeSymb, _)),
      %% Commented 30-March-99 -PLG
@@ -664,10 +664,10 @@ unfold_single_types([typedef(TypeSymb, [Type])|Rules],
 unfold_one_single_type(Type, Seen, OutType):-
      find_one_single_type(Type, Seen, SingleTypeSymbol, OneDisjunct, Found),
      (Found == true ->
-          replace_one_type_by_defin(Type, SingleTypeSymbol, OneDisjunct, NType, _Flag),
-          unfold_one_single_type(NType, [SingleTypeSymbol|Seen], OutType)
-          ; 
-          OutType = Type).
+      replace_one_type_by_defin(Type, SingleTypeSymbol, OneDisjunct, NType, _Flag),
+      unfold_one_single_type(NType, [SingleTypeSymbol|Seen], OutType)
+      ; 
+      OutType = Type).
 
 %% unfold_single_type(Type, Seen, NType, [Type|Seen], true):-
 %%    non_par_rule_type_symbol(Type),
@@ -722,10 +722,10 @@ compound_find_one_single_type(ArgNum, Comp, Seen, SingleTypeSymbol, OneDisjunct,
        arg(ArgNum, Comp, Arg),
        find_one_single_type(Arg, Seen, SingleTypeSymbol, OneDisjunct, Found),
        (Found == true -> 
-            true
-            ;
-            NArgNum is ArgNum - 1,
-            compound_find_one_single_type(NArgNum, Comp, Seen, SingleTypeSymbol, OneDisjunct, Found)).
+        true
+        ;
+        NArgNum is ArgNum - 1,
+        compound_find_one_single_type(NArgNum, Comp, Seen, SingleTypeSymbol, OneDisjunct, Found)).
 
 
 :- pred replace_single_types(SingleRules, DisjunctionRules, ReplacedRules, Flag)
@@ -743,7 +743,7 @@ replace_single_types([Rule|Rules], InRules, OutRules, Flag):-
 
 replace_one_type_in_rules([], _TypSymbol, _D, [], _Flag):-!.
 replace_one_type_in_rules([Rule|InRules], TypSymbol, D,
-                          [ReRule|OutRules], Flag):-
+                      [ReRule|OutRules], Flag):-
        Rule = typedef(TypSym, Defin),
        replace_type_by_defin(Defin, TypSymbol, D, NDefin, Flag),
        ReRule = typedef(TypSym, NDefin),
@@ -821,7 +821,7 @@ compound_replace_single_types(ArgNum, Comp, TypSymbol, D, NComp, Flag):-
 
 % End
  %% replace_equiv_type0(X, Y):- 
- %%    arg(1, X, A),	
+ %%    arg(1, X, A),    
  %%    (equiv_type(A, B)
  %%      -> arg(1, Y, B)
  %%       ; arg(1, Y, A)).
@@ -859,20 +859,20 @@ replace_equiv_rule_type_symbol(InType, OuType):-
 %% :- regtype type_table/1.
 %% 
 %% type_table(st(A, C, N)) :-
-%% 	predname(A),
-%% 	list(C,gnd),
-%% 	equiv_symb_list(N).
+%%      predname(A),
+%%      list(C,gnd),
+%%      equiv_symb_list(N).
 %% 
 %% :- regtype equiv_symb_list/1.
 %% 
 %% equiv_symb_list(A) :-
-%% 	list(A, equiv_symb).
+%%      list(A, equiv_symb).
 %% 
 %% :- regtype equiv_symb/1.
 %% 
 %% equiv_symb(eq(A, B)) :-
-%% 	gnd(A),
-%% 	gnd(B).
+%%      gnd(A),
+%%      gnd(B).
 %% 
 %% simplify_predicate_type_table(Table, Sim_Tab, EquivSymbols):-
 %%        remove_duplicated_clauses_in_table(Table, TemTable),
@@ -970,12 +970,12 @@ replace_equiv_rule_type_symbol(InType, OuType):-
 %% :- regtype type_clause_list/1.
 %% 
 %% type_clause_list(A) :-
-%% 	list(A, type_clause).
+%%      list(A, type_clause).
 %% 
 %% :- regtype type_clause/1.
 %% 
 %% type_clause(A) :-
-%% 	gnd(A).
+%%      gnd(A).
 %% 
 %% replace_predicate_name_arity([], _, _, []).
 %% replace_predicate_name_arity([Clause|Rest], Pred1, Pred2, 
@@ -1017,7 +1017,7 @@ replace_equiv_rule_type_symbol(InType, OuType):-
 
 remove_redundant_simplification([], []).
 remove_redundant_simplification([typedef(TypSymbol, Defin)|RuList], 
-                                [typedef(TypSymbol, OuDefin)|OutRules]):-
+                            [typedef(TypSymbol, OuDefin)|OutRules]):-
        remove_redundant_types(Defin, OuDefin),
        remove_redundant_simplification(RuList, OutRules).
 
@@ -1038,9 +1038,9 @@ remove_redundant_types(Types, Outypes):-
 remove_redundant_types_3([], L, L).
 remove_redundant_types_3([Type|ResTypes], SeenTypes, OuTypes):-
       (included_in_some_type(ResTypes, Type) ->
-            SeenTypes1 = SeenTypes
-            ;
-            SeenTypes1 = [Type|SeenTypes]),
+        SeenTypes1 = SeenTypes
+        ;
+        SeenTypes1 = [Type|SeenTypes]),
       remove_redundant_types_3(ResTypes, SeenTypes1, OuTypes).        
 
  %% Not used. 22-Dec-98 PLG
@@ -1073,9 +1073,9 @@ included_in_some_type([_|ResTypes], Type2):-
    assert the definitions in @var{Rules}.".
 
 retract_and_assert_rules([typedef(TypSymbol, Defin)|Types]):-
-        retract_fact(pgm_typedef(TypSymbol, _)),
-  	assertz_fact(pgm_typedef(TypSymbol, Defin)),
- 	retract_and_assert_rules(Types).
+    retract_fact(pgm_typedef(TypSymbol, _)),
+    assertz_fact(pgm_typedef(TypSymbol, Defin)),
+    retract_and_assert_rules(Types).
 retract_and_assert_rules([]).
 
 
@@ -1107,23 +1107,23 @@ get_necessary_rules(TypeSymbolList, TypeRuleList):-
 
 compute_transitive_closure([], Seen, Seen):-!.
 compute_transitive_closure([TypeSymbol|TypeSymbolList], 
-                            Seen, TransClosure):-
+                        Seen, TransClosure):-
   compute_one_type_closure([TypeSymbol|TypeSymbolList], 
-                            Seen, NewSeen, NewTypSymList),
+                        Seen, NewSeen, NewTypSymList),
   compute_transitive_closure(NewTypSymList, NewSeen, TransClosure).
 
 compute_one_type_closure([TypeSymbol|TypeSymbolList], 
-                          Seen, NewSeen, NewTypSymList):-
+                      Seen, NewSeen, NewTypSymList):-
   ((member_0(TypeSymbol, Seen); is_not_a_type_symbol(TypeSymbol))  
      -> Seen = NewSeen,
-        NewTypSymList = TypeSymbolList
+    NewTypSymList = TypeSymbolList
      ; 
      (get_type_definition(TypeSymbol, Def) ->
-        type_symbols_in_def(Def, [TypeSymbol|TypeSymbolList], NewTypSymList),
-        NewSeen = [TypeSymbol|Seen]
-        ; 
-        compiler_error(req_type_undefined(TypeSymbol)),
-        Seen = NewSeen, NewTypSymList = TypeSymbolList)).
+    type_symbols_in_def(Def, [TypeSymbol|TypeSymbolList], NewTypSymList),
+    NewSeen = [TypeSymbol|Seen]
+    ; 
+    compiler_error(req_type_undefined(TypeSymbol)),
+    Seen = NewSeen, NewTypSymList = TypeSymbolList)).
 
 type_symbols_in_def([], Types, Types):-!.
 type_symbols_in_def([Type|Def], InTypes, DefSymb):-
@@ -1153,39 +1153,39 @@ add_type_not_duplicates(Type, List, OuList):-
       OuList = List ; OuList = [Type|List].
    
 %% replace_equiv_types_in_body((Type,Types),(Type1,Types1)):-!,
-%% 	equiv_type0(Type,Type1),
-%% 	replace_equiv_types_in_body(Types,Types1).
+%%      equiv_type0(Type,Type1),
+%%      replace_equiv_types_in_body(Types,Types1).
 %% replace_equiv_types_in_body(Lit, Lit1):- 
 %%         equiv_type0(Lit, Lit1).
 
 equiv_types([Type|Types],[Type1|Types1]):-
-	non_par_equiv_type(Type,Type1),
-	equiv_types(Types,Types1).
+    non_par_equiv_type(Type,Type1),
+    equiv_types(Types,Types1).
 equiv_types([],[]).
 
 %% % PBC: changed to lists of lists of ...
 %% par_equiv_types([Type|Types],[Type1|Types1]):-
-%% 	equiv_type0(Type,Type1),
-%% 	par_equiv_types(Types,Types1).
+%%      equiv_type0(Type,Type1),
+%%      par_equiv_types(Types,Types1).
 %% par_equiv_types([],[]).
 
 %% par_equiv_types([Type|Types],[Type1|Types1]):-
-%% 	par_equiv_types0(Type,Type1),
-%% 	par_equiv_types(Types,Types1).
+%%      par_equiv_types0(Type,Type1),
+%%      par_equiv_types(Types,Types1).
 %% par_equiv_types([],[]).
 %% 
 %% par_equiv_types0(Type,Type1):-
-%% 	functor(Type,'.',2), !,
-%% 	par_equiv_types(Type,Type1).
+%%      functor(Type,'.',2), !,
+%%      par_equiv_types(Type,Type1).
 %% par_equiv_types0(Type,Type1):-
-%% 	equiv_type0(Type,Type1).
+%%      equiv_type0(Type,Type1).
 
 non_par_equiv_type(Type,Type1):- 
-	functor(Type,F,1),
-	equiv_type(F,F1), !,
-	functor(Type1,F1,1),
-	arg(1,Type,A),
-	arg(1,Type1,A).
+    functor(Type,F,1),
+    equiv_type(F,F1), !,
+    functor(Type1,F1,1),
+    arg(1,Type,A),
+    arg(1,Type1,A).
 non_par_equiv_type(Type,Type).
 
 %% equiv_type0(Type, Type1):-
@@ -1201,7 +1201,7 @@ non_par_equiv_type(Type,Type).
 %% 
 %% 
 %% equiv_type_1(Type, Type1):- 
-%% 	equiv_type(Type, Type1), !.
+%%      equiv_type(Type, Type1), !.
 %% equiv_type_1(Type, Type).
 %% 
 %% param_rename_type(NonParTypeSymb, ParTypeSymb):-
@@ -1209,11 +1209,11 @@ non_par_equiv_type(Type,Type).
 %% param_rename_type(Type, Type).
 %% 
 %%  %% equiv_type0(Type,Type1):- 
-%%  %% 	functor(Type,F,1),
-%%  %% 	equiv_type(F,F1), !,
-%%  %% 	functor(Type1,F1,1),
-%%  %% 	arg(1,Type,A),
-%%  %% 	arg(1,Type1,A).
+%%  %%  functor(Type,F,1),
+%%  %%  equiv_type(F,F1), !,
+%%  %%  functor(Type1,F1,1),
+%%  %%  arg(1,Type,A),
+%%  %%  arg(1,Type1,A).
 %%  %% equiv_type0(Type,Type).
 %% 
 %% replace_predicate_in_list([], _, _, []).
@@ -1252,7 +1252,7 @@ select_rules_3([], []).
 select_rules_3([TypSymbol|List], ReqRules):-
     (em_defined_type_symbol(TypSymbol, Def)
        -> non_parametric_type_rule_symbol_def(Rule1, TypSymbol, Def), 
-          ReqRules = [Rule1|Rules]
+      ReqRules = [Rule1|Rules]
        ;  ReqRules = Rules),
     select_rules_3(List, Rules).
 
@@ -1260,8 +1260,8 @@ select_rules_2([], []).
 select_rules_2([TypSymbol|List], ReqRules):-
     (selected_type(TypSymbol)
        -> get_NO_par_type_definition(TypSymbol, Def),
-          non_parametric_type_rule_symbol_def(Rule1, TypSymbol, Def), 
-          ReqRules = [Rule1|Rules]
+      non_parametric_type_rule_symbol_def(Rule1, TypSymbol, Def), 
+      ReqRules = [Rule1|Rules]
        ;  ReqRules = Rules),
     select_rules_2(List, Rules).
 
@@ -1424,19 +1424,19 @@ check_and_remove_empty_types_1(TypeRuleList):-
  retracted as datafacts).".
 
 check_and_remove_empty_types([Rule|RuleList], OutRules):-
-        Rule = typedef(TypSymbol, _Defin),
-        % debug_message("Checking if type ~q is empty (~q)", [TypSymbol, Rule]),
-        is_empty_type(TypSymbol),
-        !, 
-        %% Commented out warning message -PLG Oct, 18, 2004
-        %% warning_message("The type ~q IS EMPTY. Its type rule is retracted", [TypSymbol]), 
-        set_computed_empty_type(TypSymbol), % Any type rule which is retracted 
-        retract_rule(TypSymbol),            % is asserted as computed_empty_type(Type). 
-        check_and_remove_empty_types(RuleList, OutRules).
+    Rule = typedef(TypSymbol, _Defin),
+    % debug_message("Checking if type ~q is empty (~q)", [TypSymbol, Rule]),
+    is_empty_type(TypSymbol),
+    !, 
+    %% Commented out warning message -PLG Oct, 18, 2004
+    %% warning_message("The type ~q IS EMPTY. Its type rule is retracted", [TypSymbol]), 
+    set_computed_empty_type(TypSymbol), % Any type rule which is retracted 
+    retract_rule(TypSymbol),            % is asserted as computed_empty_type(Type). 
+    check_and_remove_empty_types(RuleList, OutRules).
 check_and_remove_empty_types([Rule|RuleList], [Rule|OutRules]):-
-        !,
-        % debug_message("The type ~q is NOT empty", [TypSymbol]),
-        check_and_remove_empty_types(RuleList, OutRules).
+    !,
+    % debug_message("The type ~q is NOT empty", [TypSymbol]),
+    check_and_remove_empty_types(RuleList, OutRules).
 check_and_remove_empty_types([], []).
 %Rev
 :- pred remove_empty_types(+RuleList)
@@ -1447,14 +1447,14 @@ check_and_remove_empty_types([], []).
    asserted.".
 
 remove_empty_types([Rule|RuleList]):-
-        !,
-        Rule = typedef(TypSymbol, Defin),
-        % debug_message("Removing empty types in rule: ~q", [Rule]),
-        remove_empty_types_from_union(Defin, OuDefin),
-        % debug_message("Done. Simplified definition: ~q", [OuDefin]),
-        retract_rule(TypSymbol),
-        insert_rule(TypSymbol, OuDefin),        
-        remove_empty_types(RuleList).
+    !,
+    Rule = typedef(TypSymbol, Defin),
+    % debug_message("Removing empty types in rule: ~q", [Rule]),
+    remove_empty_types_from_union(Defin, OuDefin),
+    % debug_message("Done. Simplified definition: ~q", [OuDefin]),
+    retract_rule(TypSymbol),
+    insert_rule(TypSymbol, OuDefin),        
+    remove_empty_types(RuleList).
 remove_empty_types([]).
 %Rev
 remove_empty_types_from_union([Type|TypUnion], OutUnion):-
@@ -1467,25 +1467,25 @@ remove_empty_types_from_union([Type|TypUnion], [Type|OutUnion]):-
 remove_empty_types_from_union([], []).        
 %Rev
 contains_an_empty_type(Type):- 
-        bot_type(Type), 
-        !.
+    bot_type(Type), 
+    !.
 contains_an_empty_type(Type):-
-        non_par_rule_type_symbol(Type), %<- This is redundant because all types in
-        computed_empty_type(Type),      %   computed_empty_type(Type) are 
-        !.                              %   non_par_rule_type_symbol. PLG Dec-6-2003 
+    non_par_rule_type_symbol(Type), %<- This is redundant because all types in
+    computed_empty_type(Type),      %   computed_empty_type(Type) are 
+    !.                              %   non_par_rule_type_symbol. PLG Dec-6-2003 
 contains_an_empty_type(Type):-
-        compound_pure_type_term(Type, Comp, _Name, Arity), 
-        !,
-        contains_an_empty_type_arg(Arity, Comp).
+    compound_pure_type_term(Type, Comp, _Name, Arity), 
+    !,
+    contains_an_empty_type_arg(Arity, Comp).
 %Rev
 contains_an_empty_type_arg(Arg_Num, Comp):-
       Arg_Num > 0,  
       arg(Arg_Num, Comp, Arg),
      (contains_an_empty_type(Arg) -> 
-          true
-          ; 
-          NArg_Num is Arg_Num - 1,
-          contains_an_empty_type_arg(NArg_Num, Comp)).
+      true
+      ; 
+      NArg_Num is Arg_Num - 1,
+      contains_an_empty_type_arg(NArg_Num, Comp)).
 
 %% :- pred del_bot_rules(+TypSymbol_List)
 %% 
@@ -1665,12 +1665,12 @@ unfold_type_union_1([Type|Defin], Seen, InDefin, OuDefin):-
 
 replace_all_non_par_types_in_rules([], []).
 replace_all_non_par_types_in_rules([Rule|Rest], [ParRule|Tail]):-
-        replace_non_par_types_in_rule(Rule, NewRule),
-        internal_rule_translate(NewRule, ParRule),
-        replace_all_non_par_types_in_rules(Rest, Tail).
+    replace_non_par_types_in_rule(Rule, NewRule),
+    internal_rule_translate(NewRule, ParRule),
+    replace_all_non_par_types_in_rules(Rest, Tail).
 
 replace_non_par_types_in_rule(typedef(TypSymbol, Defin), 
-                              typedef(NewTypSymbol, NewDefin)):-
+                          typedef(NewTypSymbol, NewDefin)):-
        replace_non_par_rule_type_symbol(TypSymbol, NewTypSymbol), 
        replace_non_par_types_in_union(Defin, NewDefin).
 
@@ -1708,16 +1708,16 @@ replace_non_par_rule_type_symbol(NonParType, OuType):-
 
 
 put_user_types_first(AllTypes,Sorted) :-
-	partition_user_lib(AllTypes,UserTypes,LibTypes),
-	append(UserTypes,LibTypes,Sorted).
+    partition_user_lib(AllTypes,UserTypes,LibTypes),
+    append(UserTypes,LibTypes,Sorted).
 
 partition_user_lib([],[],[]).
 partition_user_lib([typedef(T,Def)|Ts],User,Lib) :-
-	atom_concat(Module,Post,T),
-	atom_concat(':',_,Post),
-	current_itf(defines_module,Module,Base),
-	( is_library(Base) -> 
-	  Lib = [typedef(T,Def)|Lib1], User = User1
-	; Lib = Lib1, User = [typedef(T,Def)|User1]
-	),
-	partition_user_lib(Ts,User1,Lib1).
+    atom_concat(Module,Post,T),
+    atom_concat(':',_,Post),
+    current_itf(defines_module,Module,Base),
+    ( is_library(Base) -> 
+      Lib = [typedef(T,Def)|Lib1], User = User1
+    ; Lib = Lib1, User = [typedef(T,Def)|User1]
+    ),
+    partition_user_lib(Ts,User1,Lib1).

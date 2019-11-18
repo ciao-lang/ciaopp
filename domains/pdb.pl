@@ -66,18 +66,18 @@ pdb_empty_entry(_Sg,_Qv,'top').
 
 :- export(pdb_extend/5).
 pdb_extend(_Sg,'$bottom',_Hv,_Call,Succ):- !,
-	Succ = '$bottom'.
+    Succ = '$bottom'.
 pdb_extend(_Sg,_Prime,_Hv,_Call,Succ):- 
-	Succ = top.
+    Succ = top.
 
 :- export(pdb_compute_lub/2).
 pdb_compute_lub([ASub1,ASub2|Rest],Lub) :-
-	pdb_lub(ASub1,ASub2,ASub3),
-	pdb_compute_lub([ASub3|Rest],Lub).
+    pdb_lub(ASub1,ASub2,ASub3),
+    pdb_compute_lub([ASub3|Rest],Lub).
 pdb_compute_lub([ASub],ASub).
 
 pdb_lub('$bottom','$bottom',ALub):-!,
-	ALub = '$bottom'.
+    ALub = '$bottom'.
 pdb_lub(_ASub1,_ASub2,top).
 
 :- export(pdb_less_or_equal/2).
@@ -86,9 +86,9 @@ pdb_less_or_equal(top,top).
 
 :- export(pdb_special_builtin/5).
 pdb_special_builtin(SgKey,Sg,Subgoal,Type,Condvars) :-
-	shfr_special_builtin(SgKey,Sg,Subgoal,Type,Condvars), !. % TODO: why?
+    shfr_special_builtin(SgKey,Sg,Subgoal,Type,Condvars), !. % TODO: why?
 pdb_special_builtin(Key,_Sg,_Subgoal,special(Key),[]):-
-	pdb_very_special_builtin(Key).
+    pdb_very_special_builtin(Key).
 
 pdb_very_special_builtin('=/2').
 pdb_very_special_builtin('\==/2').

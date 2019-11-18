@@ -58,8 +58,8 @@ assert_param_type_rule_instance(TypeInstance, NonParSymbol):-
 %% Added definition PLG 17-Dec-2002
 %% retractall_and_assert_rules([typedef(TypSymbol, Defin)|Types]):-
 %%         retractall(typedef(TypSymbol, _)),
-%%   	assertz(typedef(TypSymbol, Defin)),
-%%  	retractall_and_assert_rules(Types).
+%%      assertz(typedef(TypSymbol, Defin)),
+%%      retractall_and_assert_rules(Types).
 %% retractall_and_assert_rules([]).
 
 
@@ -82,7 +82,7 @@ assert_param_type_rule_instance(TypeInstance, NonParSymbol):-
 %%         ^(Type1) = PureType1,
 %%  %%         construct_compound_pure_type_term(Type0, PureType0),
 %%  %%         construct_compound_pure_type_term(Type1, PureType1),
-%% 	types_are_incompatible(PureType0, PureType1).
+%%      types_are_incompatible(PureType0, PureType1).
 %% 
 %% type_terms_included(Type0, Type1):-
 %%         ^(Type0) = PureType0,
@@ -96,19 +96,19 @@ assert_param_type_rule_instance(TypeInstance, NonParSymbol):-
 %%         ^(Type1) = PureType1,
 %%  %%         construct_compound_pure_type_term(Type0, PureType0),
 %%  %%         construct_compound_pure_type_term(Type1, PureType1),
-%% 	types_are_incompatible(PureType0, PureType1).
+%%      types_are_incompatible(PureType0, PureType1).
 
 types_are_incompatible(Typ1, Typ2):-
      init_before_type_intersection,
      typeslib:type_intersection(Typ1, Typ2, Intersec), 
      !,  
-     debug_message("between here",[]),	
+     debug_message("between here",[]),  
      (is_empty_type(Intersec) -> 
-            debug_message("and here",[]),
-	    after_type_intersection
-          ; 
-	 debug_message("and here",[]),
-	 after_type_intersection, !, fail),
+        debug_message("and here",[]),
+        after_type_intersection
+      ; 
+     debug_message("and here",[]),
+     after_type_intersection, !, fail),
      debug_message("or even here",[]).
 
 %% types_are_included(Type1, Type0):-
@@ -133,7 +133,7 @@ types_are_incompatible(Typ1, Typ2):-
 %% get_types_of_vars((Lit,Body), Types):- !,
 %%         get_type_of_one_var(Lit, Var, Type),
 %%         insert_type(Types, Var, Type),
-%% 	get_types_of_vars(Body, Types).
+%%      get_types_of_vars(Body, Types).
 %% get_types_of_vars(Lit, Types):-
 %%         get_type_of_one_var(Lit, Var, Type),
 %%         insert_type(Types, Var, Type).
@@ -148,13 +148,13 @@ types_are_incompatible(Typ1, Typ2):-
 %% get_types_of_vars_l([Lit|Body], Types):- !,
 %%         get_type_of_one_var(Lit, Var, Type),
 %%         insert_type(Types, Var, Type),
-%% 	get_types_of_vars_l(Body, Types).
+%%      get_types_of_vars_l(Body, Types).
 %% get_types_of_vars_l([], _Types).
 %% 
 %% get_type_of_one_var(Lit, Var, Type1):-
-%% 	functor(Lit, Type, 1),
+%%      functor(Lit, Type, 1),
 %%         arg(1, Lit, Var),
-%% 	internal_type_translate(Type1, Type).
+%%      internal_type_translate(Type1, Type).
 %% 
 %% % Variables which do not have type are assigned the top type.
 %% intersec_types_1(Var_List, _Var_Types, OTypeAss, OTypeAss):-

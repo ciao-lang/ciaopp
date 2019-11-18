@@ -63,10 +63,10 @@
 :- use_module(library(sort), [sort/2]).
 :- use_module(ciaopp(preprocess_flags), [push_pp_flag/2]).
 :- use_module(ciaopp(plai/domains), [
-	compute_lub/3,
-	absub_fixpoint_covered/3,
-	body_builtin/9,
-	undef_call_to_success_builtin/2]).
+    compute_lub/3,
+    absub_fixpoint_covered/3,
+    body_builtin/9,
+    undef_call_to_success_builtin/2]).
 
 % NOTE: keep dom_base definitions as short as possible (they are
 % duplicated for each implementation)
@@ -74,8 +74,8 @@
 
 :- dom_base(init_abstract_domain/1).
 basedom_init_abstract_domain(_AbsInt,[variants]) :-
-        % TODO: [IG] for all domains variants=off??
-        push_pp_flag(variants,off).
+    % TODO: [IG] for all domains variants=off??
+    push_pp_flag(variants,off).
 
 %:- dom_base(amgu/4).
 %basedom_amgu(_AbsInt,_T0,_T1,_ASub,_NewASub):- throw(not_implemented(amgu)).
@@ -88,11 +88,11 @@ basedom_init_abstract_domain(_AbsInt,[variants]) :-
 
 %:- dom_base(widencall/3).
 % basedom_widencall(AbsInt,Prime0,Prime1,NewPrime) :- % TODO: [IG] why is this commented?
-% 	domains:compute_lub(AbsInt,[Prime0,Prime1],NewPrime).
+%       domains:compute_lub(AbsInt,[Prime0,Prime1],NewPrime).
 
 :- dom_base(widen/3).
 basedom_widen(AbsInt,Prime0,Prime1,NewPrime) :- % TODO: [IG] define in domain?
-	domains:compute_lub(AbsInt,[Prime0,Prime1],NewPrime).
+    domains:compute_lub(AbsInt,[Prime0,Prime1],NewPrime).
 
 :- dom_base(compute_clauses_lub/3).
 basedom_compute_clauses_lub(_AbsInt,Lub,_Proj,Lub).
@@ -105,26 +105,26 @@ basedom_identical_abstract(_AbsInt,ASub1,ASub2) :- ASub1==ASub2.
 
 :- dom_base(fixpoint_covered/2).
 basedom_fixpoint_covered(AbsInt,Prime0,Prime1) :-
-	domains:absub_fixpoint_covered(AbsInt,Prime0,Prime1).
+    domains:absub_fixpoint_covered(AbsInt,Prime0,Prime1).
 
 :- dom_base(fixpoint_covered_gfp/2).
 basedom_fixpoint_covered_gfp(AbsInt,Prime0,Prime1) :-
-	domains:absub_fixpoint_covered(AbsInt,Prime0,Prime1).
+    domains:absub_fixpoint_covered(AbsInt,Prime0,Prime1).
 
 :- dom_base(eliminate_equivalent/2).
 basedom_eliminate_equivalent(_AbsInt,TmpLSucc,LSucc) :- sort(TmpLSucc,LSucc). % TODO: valid if ASub1==ASub2 means equivalent
 
 :- dom_base(abs_subset/2).
 basedom_abs_subset(_AbsInt,LASub1,LASub2) :-
-	ord_subset(LASub1,LASub2).
+    ord_subset(LASub1,LASub2).
 
 :- dom_base(body_succ_builtin/8).
 basedom_body_succ_builtin(AbsInt,Type,Sg,Condvs,Sv,HvFv_u,Call,Proj,Succ) :-
-	domains:body_builtin(AbsInt,Type,Sg,Condvs,Sv,HvFv_u,Call,Proj,Succ).
+    domains:body_builtin(AbsInt,Type,Sg,Condvs,Sv,HvFv_u,Call,Proj,Succ).
 
 :- dom_base(call_to_success_builtin/6).
 basedom_call_to_success_builtin(AbsInt,SgKey,_Sg,_Sv,_Call,_Proj,'$bottom') :-
-	domains:undef_call_to_success_builtin(AbsInt,SgKey).
+    domains:undef_call_to_success_builtin(AbsInt,SgKey).
 
 :- dom_base(part_conc/4).
 basedom_part_conc(_AbsInt,Sg,Subs,Sg,Subs).

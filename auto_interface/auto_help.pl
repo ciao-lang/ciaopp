@@ -9,12 +9,12 @@
 :- multifile program_help/2.
 
 help :- 
-	help( _ ),
-	fail.
+    help( _ ),
+    fail.
 
 help( X ) :-
-	program_help( X , T ),
-	note_message( T ).
+    program_help( X , T ),
+    note_message( T ).
 
 
 program_help( ciaopp , " 
@@ -37,21 +37,21 @@ a) The action-based, menu-driven interface:
    a module and its related modules). This is done as follows:
 
     customize_and_preprocess( +File ) : enter a menu to select the
-          preprocessing action (analysis / assertion checking /
-          transformations / optimizations / ...)  to be performed on
-          file F (or F and its related modules), select the different
-          options, and then perform the action. 
+      preprocessing action (analysis / assertion checking /
+      transformations / optimizations / ...)  to be performed on
+      file F (or F and its related modules), select the different
+      options, and then perform the action. 
 
     again : perform again the last actions selected for customize_and_preprocess
-          on the same file (useful for reprocessing after changing a file). 
+      on the same file (useful for reprocessing after changing a file). 
 
     customize( all ) : only select values for the different options
-         (do not perform any action).
+     (do not perform any action).
 
   After setting up :
 
     auto_check_assert( +File ) : Check assertions in F with the currently 
-                                 active options.
+                             active options.
     auto_optimize( +File ) : Optimize F with the currently active options.
     auto_analyze( +File ) : Analyze F with the currently active options.
 
@@ -75,8 +75,8 @@ b) Alternatively, things can be done manually. In this case the user
     transform( +T ) : perform transformation T on the loaded module.
 
     output : output a file with the current program state (i.e., the output 
-             includes transformations, analysis info, assertion checking, etc.
-             as controlled by the flags set and the actions performed).
+         includes transformations, analysis info, assertion checking, etc.
+         as controlled by the flags set and the actions performed).
     output( +File ) : same as output/0 but output to File.
 
   The analyses and transformations are controlled by preprocessor flags. 

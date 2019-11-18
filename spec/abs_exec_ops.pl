@@ -1,10 +1,10 @@
 :- module(abs_exec_ops, 
-	[ unify_if_it_is_instance/2,
-	  unify_if_it_is_variant/2,
-	  adapt_info_to_assrt_head/6,
-	  abs_exec_regtype/3,
-	  abs_exec_regtype_in_clause/8
-	],[assertions, isomodes]).
+    [ unify_if_it_is_instance/2,
+      unify_if_it_is_variant/2,
+      adapt_info_to_assrt_head/6,
+      abs_exec_regtype/3,
+      abs_exec_regtype_in_clause/8
+    ],[assertions, isomodes]).
 
 :- doc(title,"Auxiliary Operations for Abstract Execution").
 
@@ -26,14 +26,14 @@
 :- use_module(library(assertions/assrt_lib), [denorm_goal_prop/3]).
 
 unify_if_it_is_instance(Goal,NGoal):-
-	copy_term(Goal,Copy),
-	Copy = NGoal,
-	instance(Goal,Copy),
-	Goal = NGoal.
+    copy_term(Goal,Copy),
+    Copy = NGoal,
+    instance(Goal,Copy),
+    Goal = NGoal.
 
 unify_if_it_is_variant(Goal,NGoal):-
-	variant(Goal,NGoal),
-	Goal = NGoal.
+    variant(Goal,NGoal),
+    Goal = NGoal.
 
 :- pred adapt_info_to_assrt_head(+Abs,+Goal,Vars,+Info,+Head,-NewInfo) 
    # "This predicate allows adapting the analysis info available at a
@@ -46,14 +46,14 @@ unify_if_it_is_variant(Goal,NGoal):-
      normalized.".
 
 adapt_info_to_assrt_head(_Abs,Goal,_Vars,Info,Head,NewInfo):-
-	unify_if_it_is_variant(Goal,Head),!,
-	NewInfo = Info.
+    unify_if_it_is_variant(Goal,Head),!,
+    NewInfo = Info.
 adapt_info_to_assrt_head(Abs,Goal,Vars,Info,Head,NewInfo):-
-	instance(Goal,Head),!,
-	varset(Goal,Sv),
-	varset(Head,Hv),
-	project(Abs,Goal,Sv,Vars,Info,InfoProj),   
-	call_to_entry(Abs,Sv,Goal,Hv,Head,not_provided,[],InfoProj,NewInfo,_Info). % TODO: add some ClauseKey? (JF)
+    instance(Goal,Head),!,
+    varset(Goal,Sv),
+    varset(Head,Hv),
+    project(Abs,Goal,Sv,Vars,Info,InfoProj),   
+    call_to_entry(Abs,Sv,Goal,Hv,Head,not_provided,[],InfoProj,NewInfo,_Info). % TODO: add some ClauseKey? (JF)
 
 :- pred abs_exec_regtype(TypeSymbol,Sense,Cond) # "Calls to regular
    types can be abstractly executed to true or false assuming type
@@ -62,7 +62,7 @@ adapt_info_to_assrt_head(Abs,Goal,Vars,Info,Head,NewInfo):-
 abs_exec_regtype(TypeSymbol, true , type_incl(1,TypeSymbol)).
 abs_exec_regtype(TypeSymbol, fail , incomp_type(1,TypeSymbol)).
 abs_exec_regtype(TypeSymbol, fail, free(1)):-
-	TypeSymbol \== term.
+    TypeSymbol \== term.
 
 :- pred abs_exec_regtype_in_clause/8 # "This predicate tries to
    abstractly execute a call to a regtype appearing in a clause to
@@ -71,14 +71,14 @@ abs_exec_regtype(TypeSymbol, fail, free(1)):-
    whereas in program code the default is compatibility!".
 
 abs_exec_regtype_in_clause(Abs,SPred,F,A,Goal,Vars,Info,Sense):-
-	denorm_goal_prop(SPred,TypeSymbol,_),
-	functor(NHead,F,A),
-	adapt_info_to_assrt_head(Abs,Goal,Vars,Info,NHead,NewInfo),
-	regtype_exec_in_clause(TypeSymbol,NHead,NewInfo,Abs,Sense).
+    denorm_goal_prop(SPred,TypeSymbol,_),
+    functor(NHead,F,A),
+    adapt_info_to_assrt_head(Abs,Goal,Vars,Info,NHead,NewInfo),
+    regtype_exec_in_clause(TypeSymbol,NHead,NewInfo,Abs,Sense).
 
 regtype_exec_in_clause(SPred,NHead,NewInfo,Abs,Sense):-
-	cond(type_incl(1,SPred),Abs,NHead,NewInfo),!,
-	Sense = true.
+    cond(type_incl(1,SPred),Abs,NHead,NewInfo),!,
+    Sense = true.
 regtype_exec_in_clause(SPred,NHead,NewInfo,Abs,Sense):-
-	cond(incomp_type(1,SPred),Abs,NHead,NewInfo),!,
-	Sense = fail.
+    cond(incomp_type(1,SPred),Abs,NHead,NewInfo),!,
+    Sense = fail.

@@ -1,21 +1,21 @@
 %% :- module(basic_type_operations,
-%% 	[ belongs_to_type/2,
-%% 	  dz_equivalent_types/2,
-%% 	  dz_type_included/2,
-%% 	  %init_before_type_intersection/0
-%% 	  intersec_types/4,
-%% 	  is_empty_type/1,
-%% 	  is_ground_type/1,
-%% 	  is_infinite_type/1
-%% 	  %after_type_intersection/0,
-%% 	  %replace_vars_by_types/3,
-%% 	  %create_new_type_rule/2,
-%% 	  %find_type_functor/5,
-%% 	  %equivalent_to_numeric/1,
-%% 	  %functor_pure_type_term/1,
-%% 	  %equiv_type/2
-%% 	],
-%% 	[ assertions, basicmodes ]).
+%%      [ belongs_to_type/2,
+%%        dz_equivalent_types/2,
+%%        dz_type_included/2,
+%%        %init_before_type_intersection/0
+%%        intersec_types/4,
+%%        is_empty_type/1,
+%%        is_ground_type/1,
+%%        is_infinite_type/1
+%%        %after_type_intersection/0,
+%%        %replace_vars_by_types/3,
+%%        %create_new_type_rule/2,
+%%        %find_type_functor/5,
+%%        %equivalent_to_numeric/1,
+%%        %functor_pure_type_term/1,
+%%        %equiv_type/2
+%%      ],
+%%      [ assertions, basicmodes ]).
 %% 
 %% :- use_module(typeslib(regtype_rules)).
 
@@ -63,9 +63,9 @@ write_all_computed_type_inclusion :-
 :- data(lib_computed_type_inclusion/2).  %% computed type inclusions for libraries.
 
 computed_type_inclusion(A,B):-
-	pgm_computed_type_inclusion(A,B).
+    pgm_computed_type_inclusion(A,B).
 computed_type_inclusion(A,B):-
-	lib_computed_type_inclusion(A,B).
+    lib_computed_type_inclusion(A,B).
 
 % =======================================================================
 % EQUIVALENCE AND INCLUSION OF TYPES
@@ -125,9 +125,9 @@ dz_type_included_tabling(Type1, Type2):-
    it is used to ensure termination.". 
 
 dz_pair(TypSymb, TypSet):-
-	pgm_dz_pair(TypSymb, TypSet).
+    pgm_dz_pair(TypSymb, TypSet).
 dz_pair(TypSymb, TypSet):-
-	lib_dz_pair(TypSymb, TypSet).
+    lib_dz_pair(TypSymb, TypSet).
 
 :- data(pgm_dz_pair/2). %% For user programs.
 :- data(lib_dz_pair/2). %% For libraries.
@@ -253,8 +253,8 @@ set_ty_subset([Set1|Residue], Set) :-
 
 ty_subset([], _):-!.
 ty_subset([Element|Residue], Set) :-
-	member_0(Element, Set),
-	ty_subset(Residue, Set).
+    member_0(Element, Set),
+    ty_subset(Residue, Set).
 
 
 dz_tails([], []).
@@ -379,7 +379,7 @@ dz_opens([Seq|Rest], Type, [OuSeq|OuRest]):-
 
 dz_selects([[Type1|Seq]|Rest], Type, Sel):-
    (dz_type_selects(Type, Type1) -> 
-        Sel = [[Type1|Seq]|SRest] ; Sel = SRest),
+    Sel = [[Type1|Seq]|SRest] ; Sel = SRest),
     dz_selects(Rest, Type, SRest).
 dz_selects([], _Type, []).   
 
@@ -400,7 +400,7 @@ dz_selects([], _Type, []).
 % Type1 is equivalent to bottom (Type2).
   
 is_empty_type(Type):- 
-        empty_type(Type, []).
+    empty_type(Type, []).
 
 :- pred  empty_type(+Type, +Seen)
 
@@ -412,40 +412,40 @@ is_empty_type(Type):-
    empty.".
 
 empty_type(Type, _Seen):- 
-        bot_type(Type), 
-        !.
+    bot_type(Type), 
+    !.
 empty_type(Type, Seen):-
-        rule_type_symbol(Type),
-        !,
-        empty_rule_type_symbol(Type, Seen).
+    rule_type_symbol(Type),
+    !,
+    empty_rule_type_symbol(Type, Seen).
 empty_type(Type,  Seen):-
-        compound_pure_type_term(Type, Comp, _Name, Arity), 
-        type_arg_empty(Arity, Comp, Seen).
+    compound_pure_type_term(Type, Comp, _Name, Arity), 
+    type_arg_empty(Arity, Comp, Seen).
 
 empty_rule_type_symbol(Type, _Seen):- 
-        computed_empty_type(Type), 
-        !.
+    computed_empty_type(Type), 
+    !.
 empty_rule_type_symbol(Type, Seen):-
-        member_0(Type, Seen), 
-        !.
-        % set_computed_empty_type(Type). % DO NOT DECOMMENT THIS IS WRONG!!! PLG
+    member_0(Type, Seen), 
+    !.
+    % set_computed_empty_type(Type). % DO NOT DECOMMENT THIS IS WRONG!!! PLG
 empty_rule_type_symbol(Type, Seen):-
-        % get_type_definition(Type, TypUnion),
-        % debug_message("get_NP_typedef_default_bot(~q, ~q)", [Type, TypUnion]),
-        %% get_NP_typedef_default_bot(Type, TypUnion), %% 14-4-99 PLG
-        get_NO_par_type_definition(Type, TypUnion), % Now a type not found is assumed bottom.
-        % debug_message("get_NP_typedef_default_bot(~q, ~q)", [Type, TypUnion]),
-        empty_type_union(TypUnion, [Type|Seen]).
-        % DO NOT DECOMMENT THIS IS WRONG!!! PLG
-        % ckeck_empty_type_union_and_assert(TypUnion, Type, [Type|Seen]).
+    % get_type_definition(Type, TypUnion),
+    % debug_message("get_NP_typedef_default_bot(~q, ~q)", [Type, TypUnion]),
+    %% get_NP_typedef_default_bot(Type, TypUnion), %% 14-4-99 PLG
+    get_NO_par_type_definition(Type, TypUnion), % Now a type not found is assumed bottom.
+    % debug_message("get_NP_typedef_default_bot(~q, ~q)", [Type, TypUnion]),
+    empty_type_union(TypUnion, [Type|Seen]).
+    % DO NOT DECOMMENT THIS IS WRONG!!! PLG
+    % ckeck_empty_type_union_and_assert(TypUnion, Type, [Type|Seen]).
 
 type_arg_empty(Arg_Num, Comp,  Seen):-
       Arg_Num > 0,  
       arg(Arg_Num, Comp, Arg),
      (empty_type(Arg,  Seen) 
-         -> true
-          ; NArg_Num is Arg_Num - 1,
-            type_arg_empty(NArg_Num, Comp,  Seen)).
+     -> true
+      ; NArg_Num is Arg_Num - 1,
+        type_arg_empty(NArg_Num, Comp,  Seen)).
 
 % DO NOT DECOMMENT THIS IS WRONG!!! PLG
  %% ckeck_empty_type_union_and_assert(TypUnion, Type, Seen):- 
@@ -599,12 +599,12 @@ type_intersection(Typ1, Typ2, TypeInter):-
     compound_pure_type_term(Typ2, Comp2, Name2, Arity2),
     !,
     ((Name1 == Name2, Arity1 == Arity2) 
-        ->
-        functor(CompInter, Name2, Arity2),
-        arg_typ_inter(Arity2, CompInter, Comp1, Comp2),
-        construct_compound_pure_type_term(CompInter, TypeInter)
-        ;  
-        set_bottom_type(TypeInter)).
+    ->
+    functor(CompInter, Name2, Arity2),
+    arg_typ_inter(Arity2, CompInter, Comp1, Comp2),
+    construct_compound_pure_type_term(CompInter, TypeInter)
+    ;  
+    set_bottom_type(TypeInter)).
 type_intersection(Typ1, Typ2, TypeInter):-
     compound_pure_type_term(Typ1, _Comp1, _Name1, _Arity1), 
     !,
@@ -780,8 +780,8 @@ type_arg_infinite(Arg_Num, Type,  Seen):-
       Arg_Num > 0,  
       arg(Arg_Num, Type, Arg),
      (infinite_type(Arg,  Seen) -> true;
-         NArg_Num is Arg_Num - 1,
-         type_arg_infinite(NArg_Num, Type,  Seen)).
+     NArg_Num is Arg_Num - 1,
+     type_arg_infinite(NArg_Num, Type,  Seen)).
 
 % g_is_infinite_type(Type)
 % Succeeds iff the type Type is infinite, i.e., the same as 
@@ -888,7 +888,7 @@ find_type_functor(TermFun/TermAri, Type, Seen, Type1, RestTypes):-
    RestTypes).
 
 find_type_funct_in_list([Type|TypUnion], TermFun/TermAri, Seen, Type1,
-                        RestTypes):-
+                    RestTypes):-
   find_type_functor(TermFun/TermAri, Type, Seen, Type1, RTypes)
     -> append(RTypes, TypUnion, RestTypes)  
     ;  find_type_funct_in_list(TypUnion, TermFun/TermAri, Seen, Type1,
@@ -1072,7 +1072,7 @@ dz_equivalent_rules(Rule1, Rule):-
 %% replace_equiv_type_symbol(X, Y):- 
 %%    functor(X, F, Ar),
 %%    functor(Y, F, Ar),
-%%    arg(1, X, A),	
+%%    arg(1, X, A),     
 %%    (equiv_type(A, B)
 %%      -> arg(1, Y, B)
 %%       ; arg(1, Y, A)).
@@ -1100,8 +1100,8 @@ dz_equivalent_rules(Rule1, Rule):-
 %% 
 %% reverse_and_actualize_rules([], Ac, Ac).
 %% reverse_and_actualize_rules([typedef(Type,Def)|Rules], Ac, OuRules):-
-%%  	asserta_fact(typedef(Type,Def)),
-%%  	reverse_and_actualize_rules(Rules, [typedef(Type,Def)|Ac], OuRules).
+%%      asserta_fact(typedef(Type,Def)),
+%%      reverse_and_actualize_rules(Rules, [typedef(Type,Def)|Ac], OuRules).
 %% 
 %% 
 %% %------------------------------------------------------------------------%
@@ -1110,24 +1110,24 @@ dz_equivalent_rules(Rule1, Rule):-
 %% replace_vars_by_types([], InTerm, InTerm):- !.
 %% replace_vars_by_types([ReplaceVar:Type|TypAss], InTerm, OuTerm):-
 %%         replace_var_by_term(InTerm, ReplaceVar, Type, OuTerm1),
-%% 	replace_vars_by_types(TypAss, OuTerm1, OuTerm).
+%%      replace_vars_by_types(TypAss, OuTerm1, OuTerm).
 %% 
 %% %------------------------------------------------------------------------
 %% replace_vars_in_term((A,Body),InTerm,OuTerm):- !,
-%% 	replace_one_term(A,InTerm,OuTerm1),
-%% 	replace_vars_in_term(Body,OuTerm1,OuTerm).
+%%      replace_one_term(A,InTerm,OuTerm1),
+%%      replace_vars_in_term(Body,OuTerm1,OuTerm).
 %% replace_vars_in_term(A,InTerm,OuTerm):-
-%% 	replace_one_term(A,InTerm,OuTerm).
+%%      replace_one_term(A,InTerm,OuTerm).
 %% 
 %% replace_one_term(A,InTerm,OuTerm):-
-%% 	functor(A,Type,1),
-%% 	arg(1,A,ReplaceVar),
-%% 	internal_type_translate(ByTerm, Type),
-%% 	replace_var_by_term(InTerm, ReplaceVar, ByTerm, OuTerm).
+%%      functor(A,Type,1),
+%%      arg(1,A,ReplaceVar),
+%%      internal_type_translate(ByTerm, Type),
+%%      replace_var_by_term(InTerm, ReplaceVar, ByTerm, OuTerm).
 %% 
 %% replace_vars_in_term_l([T|TypesL],Head,Type):-
 %%         list_to_conj(TypesL,TypeBody,T),
-%% 	replace_vars_in_term(TypeBody,Head,Type).
+%%      replace_vars_in_term(TypeBody,Head,Type).
 %% replace_vars_in_term_l([],Head,Head).
 
 

@@ -1,5 +1,5 @@
 :- module(equiv_type, [equiv_type/2, pgm_equiv_type/2, lib_equiv_type/2],
-	    [assertions, basicmodes, regtypes, datafacts]).
+        [assertions, basicmodes, regtypes, datafacts]).
 
 :- use_module(typeslib(regtype_rules_)).
 
@@ -10,6 +10,6 @@
 :- data lib_equiv_type/2. %% For libraries.
 
 equiv_type(T1, T2) :-
-	pgm_equiv_type(T1, T2).
+    pgm_equiv_type(T1, T2).
 equiv_type(T1, T2) :-
-	lib_equiv_type(T1, T2).
+    lib_equiv_type(T1, T2).

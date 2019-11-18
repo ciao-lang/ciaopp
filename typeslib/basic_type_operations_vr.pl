@@ -50,12 +50,12 @@ type_intersection_special_var(Typ1, Typ2, TypeInter):-
     compound_pure_type_term(Typ2, Comp2, Name2, Arity2),
     !,
     ((Name1 == Name2, Arity1 == Arity2) 
-        ->
-        functor(CompInter, Name2, Arity2),
-        arg_typ_inter_special_var(Arity2, CompInter, Comp1, Comp2),
-        construct_compound_pure_type_term(CompInter, TypeInter)
-        ;  
-        set_bottom_type(TypeInter)).
+    ->
+    functor(CompInter, Name2, Arity2),
+    arg_typ_inter_special_var(Arity2, CompInter, Comp1, Comp2),
+    construct_compound_pure_type_term(CompInter, TypeInter)
+    ;  
+    set_bottom_type(TypeInter)).
 type_intersection_special_var(Typ1, Typ2, TypeInter):-
     compound_pure_type_term(Typ1, _Comp1, _Name1, _Arity1), 
     !,

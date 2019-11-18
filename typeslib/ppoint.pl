@@ -9,10 +9,10 @@
  %% Purpose: finds the type Type of variable Var in TypeAss.
 
 find_type([Var:Type | _Rest], IVar, OutType) :- 
-        Var == IVar,!, OutType = Type.
+    Var == IVar,!, OutType = Type.
 find_type([Var:_Type | Rest], IVar, OutType) :- 
-        Var \== IVar, 
-        find_type(Rest, IVar, OutType).
+    Var \== IVar, 
+    find_type(Rest, IVar, OutType).
 %%
 
 :- pred compute_types(+Var_List, +Term_List, +Type_Ass, -Types)
@@ -63,9 +63,9 @@ compute_type(Term, Type, Types):-
     get_compatible_types(F/A, Type, [], CompTypes),
     \+ (CompTypes = []),
     (there_are_only_one_compa_type(CompTypes, CompTerm) -> 
-        compute_args_type(A, Term, CompTerm, Types)
-        ;
-        insert_top_type(Term, Types)).
+    compute_args_type(A, Term, CompTerm, Types)
+    ;
+    insert_top_type(Term, Types)).
 
 there_are_only_one_compa_type(CompTypes, CompTerm):-
   CompTypes = [CType],
@@ -83,8 +83,8 @@ compute_args_type(A, Term, CompType, Types):-
 
 % A type is equivalent to top, either if it is top, or is defined as top.  
 equivalent_to_top_type(Type):- 
-	type_parameter(Type),!,
-	fail.
+    type_parameter(Type),!,
+    fail.
 equivalent_to_top_type(Type):- 
    top_type(Type),
    !.
@@ -118,25 +118,25 @@ insert_top_type_3(A, Term, Types):-
   ).
 
 insert_type(NVarList, Var, NVar):- 
-	insert_list_entry(NVarList, Var, vt(Var, VList)),
-	ins_without_dup(VList, NVar).
+    insert_list_entry(NVarList, Var, vt(Var, VList)),
+    ins_without_dup(VList, NVar).
 
 insert_list_entry(VT, Var, Entry) :- 
-	var(VT), !,
-	Entry = vt(Var, _),
-	VT = [Entry|_].
+    var(VT), !,
+    Entry = vt(Var, _),
+    VT = [Entry|_].
 insert_list_entry(VT, Var, Entry) :- 
-	nonvar(VT),
-	VT = [E|_],
-	E = vt(EVar, _),
-        EVar == Var, !,
-        Entry = E.
+    nonvar(VT),
+    VT = [E|_],
+    E = vt(EVar, _),
+    EVar == Var, !,
+    Entry = E.
 insert_list_entry(VT, Var, Entry) :- 
-	nonvar(VT),
-	VT = [E|S],
-        E = vt(EVar, _),
-	EVar \== Var,
-	insert_list_entry(S, Var, Entry).
+    nonvar(VT),
+    VT = [E|S],
+    E = vt(EVar, _),
+    EVar \== Var,
+    insert_list_entry(S, Var, Entry).
 
 %% %% Operations on type assignments.
 %% 
@@ -241,8 +241,8 @@ intersec_types_2([], _Var_Types, OTypeAss, OTypeAss):-
 intersec_types_2([Var|List], Var_Types, ITypeAss, OTypeAss):-
    find_list_entry(Var_Types, Var, Entry),
    (var(Entry) -> Types = _
-                  ;
-                  Entry = vt(_, Types)),
+              ;
+              Entry = vt(_, Types)),
    set_top_type(Top),
    intersec_type_list_2(Types, Top, LType),
    % \+ bot_type(LType),
@@ -279,11 +279,11 @@ pp_type_intersection(Typ1, Typ2, Inter):-
      typeslib:type_intersection(Typ1, Typ2, Intersec), 
      !, 
      (is_empty_type(Intersec) -> 
-            clean_after_empty_pp_type_intersection,
-            set_bottom_type(Inter)
-            ; 
-            simplify_types_after_pp_type_intersection,
-            replace_one_equiv_type(Intersec, Inter)).
+        clean_after_empty_pp_type_intersection,
+        set_bottom_type(Inter)
+        ; 
+        simplify_types_after_pp_type_intersection,
+        replace_one_equiv_type(Intersec, Inter)).
 
 generate_a_type_assigment(Type_List, Term_List, TypeAss):- 
       varset(Term_List, Term_Vars),

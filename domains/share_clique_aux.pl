@@ -1,32 +1,32 @@
 :- module(share_clique_aux,
-	[amgu_clique/5,
-	 bin_union_w/3,
-	 star_w/2,
-	 self_w/2,
-	 ord_union_w/3,
-	 ord_intersection_w/3,
-	 rel_w/3,
-	 irrel_w/3,
-	 amgu_rel_non_rel_info/7,
-	 amgu_sharing_part/4,
-	 share_clique_normalize/2,
-	 share_clique_normalize/4,
-	 eliminate_redundancies/2,
+    [amgu_clique/5,
+     bin_union_w/3,
+     star_w/2,
+     self_w/2,
+     ord_union_w/3,
+     ord_intersection_w/3,
+     rel_w/3,
+     irrel_w/3,
+     amgu_rel_non_rel_info/7,
+     amgu_sharing_part/4,
+     share_clique_normalize/2,
+     share_clique_normalize/4,
+     eliminate_redundancies/2,
 % auxiliary predicates for normalization
-	 move_clique_to_sharing/4,
-	 regularize/2,
-	 minimize/3,
-	 minimum_cardinality/1,
-	 check_threshold/2,
-	 longest_candidate/5,
-	 smallest_candidate/5,
-	 comb/3,
-	 update_clique/4,
-	 intersect_all/2,
-	 number_of_subsets/2,
-	 list_if_not_nil/2
-        ],
-	[assertions, isomodes]).
+     move_clique_to_sharing/4,
+     regularize/2,
+     minimize/3,
+     minimum_cardinality/1,
+     check_threshold/2,
+     longest_candidate/5,
+     smallest_candidate/5,
+     comb/3,
+     update_clique/4,
+     intersect_all/2,
+     number_of_subsets/2,
+     list_if_not_nil/2
+    ],
+    [assertions, isomodes]).
 
 :- doc(author, "Jorge Navas").
 % Copyright (C) 2004-2019 The Ciao Development Team
@@ -43,25 +43,25 @@
 :- use_module(library(sort), [sort/2]).
 :- use_module(library(sets), [ord_union/3, ord_subset/2, ord_intersection/3]).
 :- use_module(library(lsets),
-        [merge_list_of_lists/2, ord_intersect_all/2, sort_list_of_lists/2]).
+    [merge_list_of_lists/2, ord_intersect_all/2, sort_list_of_lists/2]).
 :- use_module(library(lists), [length/2, select/3]).
 :- use_module(domain(sharing_clique), 
- 	[share_clique_abs_sort/2,
-	 share_clique_widen/4      % amgu&star 
-        ]).               
+    [share_clique_abs_sort/2,
+     share_clique_widen/4      % amgu&star 
+    ]).               
 :- use_module(domain(share_amgu_sets), 
-	[delete_vars_from_list_of_lists/3,
-	 intersection_list_of_lists/3,
-	 delete_list_of_lists/3,
-	 ord_subset_lists_with_list/2,
-	 sublist_list_of_lists/4,
-	 nosublist_list_of_lists/3,
-	 intersection_lists_with_list/3,
-	 split_list_of_lists/4]).
+    [delete_vars_from_list_of_lists/3,
+     intersection_list_of_lists/3,
+     delete_list_of_lists/3,
+     ord_subset_lists_with_list/2,
+     sublist_list_of_lists/4,
+     nosublist_list_of_lists/3,
+     intersection_lists_with_list/3,
+     split_list_of_lists/4]).
 :- use_module(library(aggregates), 
-	[bagof/3]).
+    [bagof/3]).
 :- use_module(library(between), 
-	[between/3]).
+    [between/3]).
 :- use_module(domain(share_amgu_aux)).
 
 %------------------------------------------------------------------------%
@@ -130,9 +130,9 @@ type_widening_condition(bamgu).
 % Otherwise, it performs the "self-union" amgu (non-redundant)           |   
 %------------------------------------------------------------------------%
 amgu_clique(X,T,star,ASub,ASub0):- !,        
-	amgu_clique_opt(X,T,ASub,ASub0).
+    amgu_clique_opt(X,T,ASub,ASub0).
 amgu_clique(X,T,self,ASub,ASub0):-           
-	amgu_s_clique(X,T,ASub,ASub0).
+    amgu_s_clique(X,T,ASub,ASub0).
 
 %------------------------------------------------------------------------%
 %                OPTIMIZED UNIFICATION FOR CLIQUE-SHARING                |
@@ -153,79 +153,79 @@ amgu_clique(X,T,self,ASub,ASub0):-
 :- push_prolog_flag(multi_arity_warnings,off).
 :- push_prolog_flag(discontiguous_warnings,off).
 amgu_clique_opt(X,T,ASub,AMGU):-           
-	widen(amgu),!,
-	amgu_clique_opt(X,T,ASub,not,AMGU).
+    widen(amgu),!,
+    amgu_clique_opt(X,T,ASub,not,AMGU).
 amgu_clique_opt(X,T,(Cl,Sh),NewCall,AMGU):-
-	amgu_rel_non_rel_info(X,T,V_xt,(Cl,Sh),(Cl_x,Sh_x),(Cl_t,Sh_t),
-	                      Irrel_Sh_xt),!,
-	( (Cl_x = [], Cl_t = []) ->
-	   ( NewCall == not ->
-	     ExtraInfo = (Irrel_Sh_xt,Sh_x,Sh_t),
-	     share_clique_widen(amgu,(Cl,Sh),ExtraInfo,New_ASub),
-	     amgu_clique_opt(X,T,New_ASub,yes,New_AMGU),
-	     AMGU = New_AMGU
-	   ; 	     
-	     amgu_sharing_part(Irrel_Sh_xt,Sh_x,Sh_t,AMGU_sh),
-             AMGU = (Cl,AMGU_sh)
-	   )           
-        ;
-	   ( ((Cl_x = [], Sh_x = []) ; (Cl_t = [], Sh_t = [])) -> 
-	       delete_vars_from_list_of_lists(V_xt,Cl,Irrel_Cl_xt),
-	       AMGU = (Irrel_Cl_xt,Irrel_Sh_xt)
-	   ;
-	       ord_union(Cl_x,Cl_t,Cl_xt),
-	       ord_union(Sh_x,Sh_t,Sh_xt),
-	       merge_list_of_lists(Cl_xt,Cl_var),
-	       merge_list_of_lists(Sh_xt,Sh_var),
-	       ord_union(Cl_var,Sh_var,ClSh_var),
-	       list_if_not_nil(ClSh_var,ClSh0_var),
-	       split_list_of_lists(V_xt,Cl,_,Irrel_Cl0_xt),
-	       ord_union(Irrel_Cl0_xt,ClSh0_var,AMGU_Cl),
-	       AMGU = (AMGU_Cl,Irrel_Sh_xt)            
-           )
+    amgu_rel_non_rel_info(X,T,V_xt,(Cl,Sh),(Cl_x,Sh_x),(Cl_t,Sh_t),
+                          Irrel_Sh_xt),!,
+    ( (Cl_x = [], Cl_t = []) ->
+       ( NewCall == not ->
+         ExtraInfo = (Irrel_Sh_xt,Sh_x,Sh_t),
+         share_clique_widen(amgu,(Cl,Sh),ExtraInfo,New_ASub),
+         amgu_clique_opt(X,T,New_ASub,yes,New_AMGU),
+         AMGU = New_AMGU
+       ;         
+         amgu_sharing_part(Irrel_Sh_xt,Sh_x,Sh_t,AMGU_sh),
+         AMGU = (Cl,AMGU_sh)
+       )           
+    ;
+       ( ((Cl_x = [], Sh_x = []) ; (Cl_t = [], Sh_t = [])) -> 
+           delete_vars_from_list_of_lists(V_xt,Cl,Irrel_Cl_xt),
+           AMGU = (Irrel_Cl_xt,Irrel_Sh_xt)
+       ;
+           ord_union(Cl_x,Cl_t,Cl_xt),
+           ord_union(Sh_x,Sh_t,Sh_xt),
+           merge_list_of_lists(Cl_xt,Cl_var),
+           merge_list_of_lists(Sh_xt,Sh_var),
+           ord_union(Cl_var,Sh_var,ClSh_var),
+           list_if_not_nil(ClSh_var,ClSh0_var),
+           split_list_of_lists(V_xt,Cl,_,Irrel_Cl0_xt),
+           ord_union(Irrel_Cl0_xt,ClSh0_var,AMGU_Cl),
+           AMGU = (AMGU_Cl,Irrel_Sh_xt)            
+       )
        ).
 % \+(widen(amgu))
 amgu_clique_opt(X,T,(Cl,Sh),AMGU):- !,     
 
-	amgu_rel_non_rel_info(X,T,V_xt,(Cl,Sh),(Cl_x,Sh_x),(Cl_t,Sh_t),Irrel_Sh_xt),!,
-	( (Cl_x = [], Cl_t = []) ->
-	    amgu_sharing_part(Irrel_Sh_xt,Sh_x,Sh_t,AMGU_sh),
-	    AMGU = (Cl,AMGU_sh)
-	;
-	   ( ((Cl_x = [], Sh_x = []) ; (Cl_t = [], Sh_t = [])) -> 
-	     delete_vars_from_list_of_lists(V_xt,Cl,Irrel_Cl_xt),
-	     AMGU = (Irrel_Cl_xt,Irrel_Sh_xt)
-	   ;
-	     ord_union(Cl_x,Cl_t,Cl_xt),
-	     ord_union(Sh_x,Sh_t,Sh_xt),
-	     merge_list_of_lists(Cl_xt,Cl_var),
-	     merge_list_of_lists(Sh_xt,Sh_var),
-	     ord_union(Cl_var,Sh_var,ClSh_var),
-	     list_if_not_nil(ClSh_var,ClSh0_var),
-	     split_list_of_lists(V_xt,Cl,_,Irrel_Cl0_xt),
-	     ord_union(Irrel_Cl0_xt,ClSh0_var,AMGU_Cl),
-	     AMGU = (AMGU_Cl,Irrel_Sh_xt)            
-	   )
-	).
+    amgu_rel_non_rel_info(X,T,V_xt,(Cl,Sh),(Cl_x,Sh_x),(Cl_t,Sh_t),Irrel_Sh_xt),!,
+    ( (Cl_x = [], Cl_t = []) ->
+        amgu_sharing_part(Irrel_Sh_xt,Sh_x,Sh_t,AMGU_sh),
+        AMGU = (Cl,AMGU_sh)
+    ;
+       ( ((Cl_x = [], Sh_x = []) ; (Cl_t = [], Sh_t = [])) -> 
+         delete_vars_from_list_of_lists(V_xt,Cl,Irrel_Cl_xt),
+         AMGU = (Irrel_Cl_xt,Irrel_Sh_xt)
+       ;
+         ord_union(Cl_x,Cl_t,Cl_xt),
+         ord_union(Sh_x,Sh_t,Sh_xt),
+         merge_list_of_lists(Cl_xt,Cl_var),
+         merge_list_of_lists(Sh_xt,Sh_var),
+         ord_union(Cl_var,Sh_var,ClSh_var),
+         list_if_not_nil(ClSh_var,ClSh0_var),
+         split_list_of_lists(V_xt,Cl,_,Irrel_Cl0_xt),
+         ord_union(Irrel_Cl0_xt,ClSh0_var,AMGU_Cl),
+         AMGU = (AMGU_Cl,Irrel_Sh_xt)            
+       )
+    ).
 
 :- pop_prolog_flag(discontiguous_warnings).
 :- pop_prolog_flag(multi_arity_warnings).
 
 amgu_rel_non_rel_info(X,T,V_xt,ASub,(Cl_x,Sh_x),(Cl_t,Sh_t),Irrel_Sh_xt):-
-	sort(T,V_t),
-	ord_union([X],T,V_xt),
-	share_clique_abs_sort(ASub,(Cl,Sh)),
-	split_list_of_lists([X],Cl,Cl_x,_),
-	split_list_of_lists(V_t,Cl,Cl_t,_),
-	split_list_of_lists([X],Sh,Sh_x,_),
-	split_list_of_lists(V_t,Sh,Sh_t,_),
-	split_list_of_lists(V_xt,Sh,_,Irrel_Sh_xt).
+    sort(T,V_t),
+    ord_union([X],T,V_xt),
+    share_clique_abs_sort(ASub,(Cl,Sh)),
+    split_list_of_lists([X],Cl,Cl_x,_),
+    split_list_of_lists(V_t,Cl,Cl_t,_),
+    split_list_of_lists([X],Sh,Sh_x,_),
+    split_list_of_lists(V_t,Sh,Sh_t,_),
+    split_list_of_lists(V_xt,Sh,_,Irrel_Sh_xt).
 
 amgu_sharing_part(Irrel_Sh_xt,Sh_x,Sh_t,AMGU_sh):-
-	star(Sh_x,S_Sh_x),
-	star(Sh_t,S_Sh_t),
-	bin_union(S_Sh_x,S_Sh_t,BinUnion_xt),
-	ord_union(Irrel_Sh_xt,BinUnion_xt,AMGU_sh).
+    star(Sh_x,S_Sh_x),
+    star(Sh_t,S_Sh_t),
+    bin_union(S_Sh_x,S_Sh_t,BinUnion_xt),
+    ord_union(Irrel_Sh_xt,BinUnion_xt,AMGU_sh).
 
 %------------------------------------------------------------------------%
 %          ABSTRACT UNIFICATION with SELF UNION FOR CLIQUES              | 
@@ -240,17 +240,17 @@ amgu_sharing_part(Irrel_Sh_xt,Sh_x,Sh_t,AMGU_sh):-
 %------------------------------------------------------------------------%
 amgu_s_clique(X,T,ASub,AMGU):-           
 % Both clique and sharing part are computed together
-	sort(T,V_t),
-	share_clique_abs_sort(ASub,SASub),
-	ord_union([X],V_t,Vxt), 
-	irrel_w(Vxt,SASub,Irrel),
-	rel_w([X],SASub,Rel_x),
-	rel_w(V_t,SASub,Rel_t),
-	self_w(Rel_x,Self_Rel_x),
-	self_w(Rel_t,Self_Rel_t),
-	bin_union_w(Self_Rel_x,Self_Rel_t,SH0),
-	ord_union_w(Irrel,SH0,AMGU).
-	
+    sort(T,V_t),
+    share_clique_abs_sort(ASub,SASub),
+    ord_union([X],V_t,Vxt), 
+    irrel_w(Vxt,SASub,Irrel),
+    rel_w([X],SASub,Rel_x),
+    rel_w(V_t,SASub,Rel_t),
+    self_w(Rel_x,Self_Rel_x),
+    self_w(Rel_t,Self_Rel_t),
+    bin_union_w(Self_Rel_x,Self_Rel_t,SH0),
+    ord_union_w(Irrel,SH0,AMGU).
+    
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
 %                      BINARY UNION FOR CLIQUE SETS                      %
@@ -260,17 +260,17 @@ amgu_s_clique(X,T,ASub,AMGU):-
 % bin_union_w(SH1,SH2,Cl)                                                |
 % bin_union_w((cl1,sh1),(cl2,sh2)) = (bin_union(cl1,cl2) U               |
 %                                     bin_union(cl1,sh2) U               |
-% 				bin_union(sh1,cl2),bin_union(sh1,sh2))   |
+%                               bin_union(sh1,cl2),bin_union(sh1,sh2))   |
 %------------------------------------------------------------------------%
 bin_union_w((Cl1,Sh1),(Cl2,Sh2),Bin):-
-	bin_union(Cl1,Cl2,Cl3),
-	bin_union(Cl1,Sh2,Cl4),
-	bin_union(Sh1,Cl2,Cl5),
-	ord_union(Cl3,Cl4,Cl6),
-	ord_union(Cl5,Cl6,Cl7),
-	bin_union(Sh1,Sh2,Sh3),
-	Bin = (Cl7,Sh3).
-	
+    bin_union(Cl1,Cl2,Cl3),
+    bin_union(Cl1,Sh2,Cl4),
+    bin_union(Sh1,Cl2,Cl5),
+    ord_union(Cl3,Cl4,Cl6),
+    ord_union(Cl5,Cl6,Cl7),
+    bin_union(Sh1,Sh2,Sh3),
+    Bin = (Cl7,Sh3).
+    
 %------------------------------------------------------------------------%
 %                      STAR UNION FOR CLIQUE SETS                        % 
 %------------------------------------------------------------------------%
@@ -286,40 +286,40 @@ bin_union_w((Cl1,Sh1),(Cl2,Sh2),Bin):-
 
 
 star_w(SH,SH_s):-
-	widen(amgu),!,
-	star_w(SH,not,SH_s).
+    widen(amgu),!,
+    star_w(SH,not,SH_s).
 star_w(([],Sh),NewCall,SH_s):-!,
-	(  NewCall == not ->
-	   ExtraInfo = ([],Sh,[[_]]),
-	   share_clique_widen(amgu,([],Sh),ExtraInfo,New_ASub),	   
-  	   star_w(New_ASub,yes,SH_s)
-        ;  
-	   star(Sh,Sh_s),
-	   SH_s = ([],Sh_s)
-        ).
+    (  NewCall == not ->
+       ExtraInfo = ([],Sh,[[_]]),
+       share_clique_widen(amgu,([],Sh),ExtraInfo,New_ASub),    
+       star_w(New_ASub,yes,SH_s)
+    ;  
+       star(Sh,Sh_s),
+       SH_s = ([],Sh_s)
+    ).
 star_w((Cl,Sh),_,SSH):-!,
-	merge_list_of_lists(Cl,Cl_Vars),
-	merge_list_of_lists(Sh,Sh_Vars),
-	ord_union(Cl_Vars,Sh_Vars,Vars),
-	list_if_not_nil(Vars,New_Cl),
-	SSH = (New_Cl,[]).
+    merge_list_of_lists(Cl,Cl_Vars),
+    merge_list_of_lists(Sh,Sh_Vars),
+    ord_union(Cl_Vars,Sh_Vars,Vars),
+    list_if_not_nil(Vars,New_Cl),
+    SSH = (New_Cl,[]).
 
 % \+(widen(amgu))
 star_w(([],[]),([],[])):-!.
 star_w((Cl,[]),(S_Cl,[])):-!,
-	merge_list_of_lists(Cl,S_Cl0),
-	list_if_not_nil(S_Cl0,S_Cl).
+    merge_list_of_lists(Cl,S_Cl0),
+    list_if_not_nil(S_Cl0,S_Cl).
 star_w(([],Sh),SH):-
-	star(Sh,SSh),
-	% for correctness (extend)
-	 share_clique_normalize(([],SSh),SH).
-	%SH= ([],SSh).
+    star(Sh,SSh),
+    % for correctness (extend)
+     share_clique_normalize(([],SSh),SH).
+    %SH= ([],SSh).
 star_w((Cl,Sh),SSH):-!,
-	merge_list_of_lists(Cl,Cl_Vars),
-	merge_list_of_lists(Sh,Sh_Vars),
-	ord_union(Cl_Vars,Sh_Vars,Vars),
-	list_if_not_nil(Vars,New_Cl),
-	SSH = (New_Cl,[]).
+    merge_list_of_lists(Cl,Cl_Vars),
+    merge_list_of_lists(Sh,Sh_Vars),
+    ord_union(Cl_Vars,Sh_Vars,Vars),
+    list_if_not_nil(Vars,New_Cl),
+    SSH = (New_Cl,[]).
 
 :- pop_prolog_flag(discontiguous_warnings).
 :- pop_prolog_flag(multi_arity_warnings).
@@ -339,10 +339,10 @@ list_if_not_nil(X,[X]).
 % sel_bin_w((Cl,Sh)) = (Cl^+ U bin_union(Cl,Sh),Sh^+)                    |
 %------------------------------------------------------------------------%
 self_w((Cl,Sh),(Cl1,Sh0)):- 
-	self(Cl,Cl0),
-	self(Sh,Sh0),
-	bin_union(Cl,Sh,BU),
-	ord_union(Cl0,BU,Cl1).
+    self(Cl,Cl0),
+    self(Sh,Sh0),
+    bin_union(Cl,Sh,BU),
+    ord_union(Cl0,BU,Cl1).
 
 %------------------------------------------------------------------------%
 %                        UNION FOR CLIQUE SETS                           % 
@@ -352,8 +352,8 @@ self_w((Cl,Sh),(Cl1,Sh0)):-
 % ord_union_w((Cl1,Sh1),(Cl2,Sh2)) = (Cl1 U Cl2,Sh1 U Sh2)               |
 %------------------------------------------------------------------------%
 ord_union_w((Cl1,Sh1),(Cl2,Sh2),(Cl0,Sh0)):-
-	ord_union(Sh1,Sh2,Sh0),
-	ord_union(Cl1,Cl2,Cl0).
+    ord_union(Sh1,Sh2,Sh0),
+    ord_union(Cl1,Cl2,Cl0).
 
 %------------------------------------------------------------------------%
 %                 INTERSECTION FOR CLIQUE SETS                           % 
@@ -363,12 +363,12 @@ ord_union_w((Cl1,Sh1),(Cl2,Sh2),(Cl0,Sh0)):-
 %                                            U Cl2 /\^w Sh1 U Sh1 /\ Sh2)|
 %------------------------------------------------------------------------%
 ord_intersection_w((Cl1,Sh1),(Cl2,Sh2),(Cl0,Sh0)):-
-	intersection_list_of_lists(Cl1,Cl2,Cl0),
- 	intersection_list_of_lists(Cl1,Sh2,Int0),
- 	intersection_list_of_lists(Cl2,Sh1,Int1),
-	ord_intersection(Sh1,Sh2,Int2),
- 	ord_union(Int0,Int1,Int3),
- 	ord_union(Int2,Int3,Sh0).
+    intersection_list_of_lists(Cl1,Cl2,Cl0),
+    intersection_list_of_lists(Cl1,Sh2,Int0),
+    intersection_list_of_lists(Cl2,Sh1,Int1),
+    ord_intersection(Sh1,Sh2,Int2),
+    ord_union(Int0,Int1,Int3),
+    ord_union(Int2,Int3,Sh0).
 
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
@@ -390,13 +390,13 @@ ord_intersection_w((Cl1,Sh1),(Cl2,Sh2),(Cl0,Sh0)):-
 %------------------------------------------------------------------------%
 rel_w(_,'$bottom','$bottom').
 rel_w(Vars,(Cl,Sh),(Cl0,Sh0)):- 
- 	split_list_of_lists(Vars,Sh,Sh0,_),
- 	split_list_of_lists(Vars,Cl,Cl0,_).
+    split_list_of_lists(Vars,Sh,Sh0,_),
+    split_list_of_lists(Vars,Cl,Cl0,_).
 
 irrel_w(_,'$bottom','$bottom').
 irrel_w(Vars,(Cl,Sh),(Cl0,Sh0)):-
-	split_list_of_lists(Vars,Sh,_,Sh0),
-	delete_vars_from_list_of_lists(Vars,Cl,Cl0).
+    split_list_of_lists(Vars,Sh,_,Sh0),
+    delete_vars_from_list_of_lists(Vars,Cl,Cl0).
 
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
@@ -414,9 +414,9 @@ irrel_w(Vars,(Cl,Sh),(Cl0,Sh0)):-
 %------------------------------------------------------------------------%
 :- push_prolog_flag(multi_arity_warnings,off).
 share_clique_normalize(CL,NCL):-
-	widen(off),!,
- 	minimum_cardinality(M),
- 	share_clique_normalize(CL,100,M,NCL).
+    widen(off),!,
+    minimum_cardinality(M),
+    share_clique_normalize(CL,100,M,NCL).
 share_clique_normalize(CL,CL):- !.
 
 %------------------------------------------------------------------------%
@@ -426,8 +426,8 @@ share_clique_normalize(CL,CL):- !.
 %------------------------------------------------------------------------%
 share_clique_normalize('$bottom',_,_,'$bottom').
 share_clique_normalize((Cl,Sh),T,M,(Cl2,Sh2)):-
-	eliminate_redundancies((Cl,Sh),(Cl1,Sh1)),
-	normalize((Cl1,Sh1),T,M,(Cl2,Sh2)).
+    eliminate_redundancies((Cl,Sh),(Cl1,Sh1)),
+    normalize((Cl1,Sh1),T,M,(Cl2,Sh2)).
 :- pop_prolog_flag(multi_arity_warnings).
 
 %------------------------------------------------------------------------%
@@ -443,11 +443,11 @@ share_clique_normalize((Cl,Sh),T,M,(Cl2,Sh2)):-
 %------------------------------------------------------------------------%
 eliminate_redundancies('$bottom','$bottom'):-!.
 eliminate_redundancies((Cl,Sh),(Cl2,Sh2)):-!,
-	% this reduce # program points
-%	move_clique_to_sharing(Cl,Sh,Cl1,Sh1), 
-	Cl = Cl1, Sh = Sh1,
-	regularize(Cl1,Cl2),                 
-	minimize(Sh1,Cl2,Sh2).
+    % this reduce # program points
+%       move_clique_to_sharing(Cl,Sh,Cl1,Sh1), 
+    Cl = Cl1, Sh = Sh1,
+    regularize(Cl1,Cl2),                 
+    minimize(Sh1,Cl2,Sh2).
 
 %------------------------------------------------------------------------%
 % move_clique_to_sharing(+,+,-,-)                                        |
@@ -456,47 +456,47 @@ eliminate_redundancies((Cl,Sh),(Cl2,Sh2)):-!,
 % and moves them to the sharing compoonent.                              |
 %------------------------------------------------------------------------%
 move_clique_to_sharing(Cl,Sh,NewCl,NewSh):-
-	move_clique_to_sharing_(Cl,NewCl,Sh1),
-	add_one(Sh1,Sh,NewSh).
+    move_clique_to_sharing_(Cl,NewCl,Sh1),
+    add_one(Sh1,Sh,NewSh).
 
 move_clique_to_sharing_([],[],[]).
 move_clique_to_sharing_([C|Cs],NewCl,[C|Sel1]):-
-	one(C),!,
-	move_clique_to_sharing_(Cs,NewCl,Sel1).
+    one(C),!,
+    move_clique_to_sharing_(Cs,NewCl,Sel1).
 move_clique_to_sharing_([C|Cs],[C|NewCl],Sel1):-!,
-	move_clique_to_sharing_(Cs,NewCl,Sel1).
+    move_clique_to_sharing_(Cs,NewCl,Sel1).
 
 % move_clique_to_sharing(Cl,Sh,NewCl,NewSh):-
-% 	move_clique_to_sharing_(Cl,NewCl,Sh1,Sh2),
-% 	add_one(Sh1,Sh,NewSh1),
-% 	add_two(Sh2,NewSh1,NewSh).
+%       move_clique_to_sharing_(Cl,NewCl,Sh1,Sh2),
+%       add_one(Sh1,Sh,NewSh1),
+%       add_two(Sh2,NewSh1,NewSh).
 
 % move_clique_to_sharing_([],[],[],[]).
 % move_clique_to_sharing_([C|Cs],NewCl,[C|Sel1],Sel2):-
-% 	one(C),!,
-% 	move_clique_to_sharing_(Cs,NewCl,Sel1,Sel2).
+%       one(C),!,
+%       move_clique_to_sharing_(Cs,NewCl,Sel1,Sel2).
 % move_clique_to_sharing_([C|Cs],NewCl,Sel1,[C|Sel2]):-
-% 	two(C),!,
-% 	move_clique_to_sharing_(Cs,NewCl,Sel1,Sel2).
+%       two(C),!,
+%       move_clique_to_sharing_(Cs,NewCl,Sel1,Sel2).
 % move_clique_to_sharing_([C|Cs],[C|NewCl],Sel1,Sel2):-!,
-% 	move_clique_to_sharing_(Cs,NewCl,Sel1,Sel2).
+%       move_clique_to_sharing_(Cs,NewCl,Sel1,Sel2).
 
 one([_]):- !.
 %two([_,_]):- !.
 
 add_one(Xs,Ys,Zs):-
-	ord_union(Xs,Ys,Zs).
+    ord_union(Xs,Ys,Zs).
 % add_two(Xs,Ys,Zs):-
-% 	powerset_lists(Xs,Xss,Ys),
-% 	sort_list_of_lists(Xss,Zs).
+%       powerset_lists(Xs,Xss,Ys),
+%       sort_list_of_lists(Xss,Zs).
 
 % powerset_2([X,Y],[[X],[X,Y],[Y]]).
 
 % powerset_lists([],Res,Res).
 % powerset_lists([X|Xs],NewTemp,Res):-
-% 	powerset_2(X,XP),
-% 	powerset_lists(Xs,Tem,Res),
-% 	ord_union(XP,Tem,NewTemp).
+%       powerset_2(X,XP),
+%       powerset_lists(Xs,Tem,Res),
+%       ord_union(XP,Tem,NewTemp).
 
 %------------------------------------------------------------------------%
 % regularize(+,-)                                                        |
@@ -506,26 +506,26 @@ add_one(Xs,Ys,Zs):-
 %------------------------------------------------------------------------%
 
 :- push_prolog_flag(multi_arity_warnings,off).
-regularize(Cl,Cl_Reg_s):-	
-	neg_length_list_of_lists(Cl,1,Cl_list),
-	sort(Cl_list,Cl_list_s), % eliminate duplicates
-	regularize(Cl_list_s,[],Cl_Reg),
-	sort_list_of_lists(Cl_Reg,Cl_Reg_s).
+regularize(Cl,Cl_Reg_s):-       
+    neg_length_list_of_lists(Cl,1,Cl_list),
+    sort(Cl_list,Cl_list_s), % eliminate duplicates
+    regularize(Cl_list_s,[],Cl_Reg),
+    sort_list_of_lists(Cl_Reg,Cl_Reg_s).
 
 regularize([],Reg,Reg).
 regularize([_-X|Xs],Temp,Reg  ):-
-	( set_included_set_of_sets(Temp,X) ->   
-	  regularize(Xs,Temp,Reg)
-        ;
-	  regularize(Xs,[X|Temp],Reg)  
-        ). 
-:- pop_prolog_flag(multi_arity_warnings).	  
+    ( set_included_set_of_sets(Temp,X) ->   
+      regularize(Xs,Temp,Reg)
+    ;
+      regularize(Xs,[X|Temp],Reg)  
+    ). 
+:- pop_prolog_flag(multi_arity_warnings).         
 
 set_included_set_of_sets([],_):- !,fail.
 set_included_set_of_sets([X|_],S):-
-	ord_subset(S,X),!.
+    ord_subset(S,X),!.
 set_included_set_of_sets([_|Xs],S):-
-	set_included_set_of_sets(Xs,S).
+    set_included_set_of_sets(Xs,S).
 
 %------------------------------------------------------------------------%
 % minimize(+,-)                                                          |
@@ -535,12 +535,12 @@ set_included_set_of_sets([_|Xs],S):-
 %------------------------------------------------------------------------%
 minimize([],_,[]).
 minimize([Sh|Shs],Cl,Sh1):-
-	( ord_subset_lists_with_list(Cl,Sh) ->
-	  minimize(Shs,Cl,Sh1)
-        ;
-	  minimize(Shs,Cl,Sh0),	  
-	  Sh1 = [Sh|Sh0]
-        ).
+    ( ord_subset_lists_with_list(Cl,Sh) ->
+      minimize(Shs,Cl,Sh1)
+    ;
+      minimize(Shs,Cl,Sh0),   
+      Sh1 = [Sh|Sh0]
+    ).
 
 %------------------------------------------------------------------------%
 % normalize(+,+,+,-)                                                     |
@@ -554,49 +554,49 @@ minimize([Sh|Shs],Cl,Sh1):-
 % :- data norma_done/0.
 
 :- push_prolog_flag(multi_arity_warnings,off).
-	
+    
 % normalize/4: Th is between [0,100]
 normalize(SH,T,M,SH1):-
-	check_threshold(T,NT),
-	normalize(SH,NT,M,SH1,_).
+    check_threshold(T,NT),
+    normalize(SH,NT,M,SH1,_).
 
 % normalize_/5: Th is between [0.0,1.0]
-normalize((Cl,Sh),Th,M,SH1,Continue):-	
-	process_candidate((Cl,Sh),Th,M,SH,Continue),!,
-	( var(Continue) ->   % It there may be more candidates	  
-%	    asserta_fact(norma_done),
-	    normalize(SH,Th,M,SH1,Continue)
-        ; 
-	  Continue = not,    % there are not more candidates
-          SH1 = (Cl,Sh)
-        ).
+normalize((Cl,Sh),Th,M,SH1,Continue):-  
+    process_candidate((Cl,Sh),Th,M,SH,Continue),!,
+    ( var(Continue) ->   % It there may be more candidates    
+%           asserta_fact(norma_done),
+        normalize(SH,Th,M,SH1,Continue)
+    ; 
+      Continue = not,    % there are not more candidates
+      SH1 = (Cl,Sh)
+    ).
 :- pop_prolog_flag(multi_arity_warnings).
 
-process_candidate((Cl,Sh),Th,M,SH,_):-	
-	longest_candidate(Sh,M,CardCand,Cand,Info),
-	Info = yes,
-	sublist_list_of_lists(Sh,Cand,CardCandSh,CandSh),
-	number_sets_in_cliques(Cl,Cand,CardCandCl),
-	( is_powerset(CardCand,CardCandSh,CardCandCl,Th) ->
-          update_clique(Cand,(Cl,Sh),CandSh,SH)	
-	;
-          fail % provoke backtraking in order to obtain other candidate
-	       % if the previous candidate is not correct
-	).
+process_candidate((Cl,Sh),Th,M,SH,_):-  
+    longest_candidate(Sh,M,CardCand,Cand,Info),
+    Info = yes,
+    sublist_list_of_lists(Sh,Cand,CardCandSh,CandSh),
+    number_sets_in_cliques(Cl,Cand,CardCandCl),
+    ( is_powerset(CardCand,CardCandSh,CardCandCl,Th) ->
+      update_clique(Cand,(Cl,Sh),CandSh,SH) 
+    ;
+      fail % provoke backtraking in order to obtain other candidate
+           % if the previous candidate is not correct
+    ).
 process_candidate(SH,_,_,SH,not).  % there are not more candidates
 
 update_clique(Cand,(Cl,Sh),CandSh,SH):-
-	% Removes set-sharing included in the new clique	
-        delete_list_of_lists(Sh,CandSh,Sh1),
-	% Removes subcliques of the new clique (regularize in the algorithm) 
-	nosublist_list_of_lists(Cl,Cand,Cl1), 
-	share_clique_abs_sort(([Cand|Cl1],Sh1),SH).
+    % Removes set-sharing included in the new clique        
+    delete_list_of_lists(Sh,CandSh,Sh1),
+    % Removes subcliques of the new clique (regularize in the algorithm) 
+    nosublist_list_of_lists(Cl,Cand,Cl1), 
+    share_clique_abs_sort(([Cand|Cl1],Sh1),SH).
 
 is_powerset(CardCand,CardCandSh,CardCandCl,Threshold):- 
-	number_of_subsets(CardCand,CardPws),
-	Limit is Threshold * CardPws,
-	TotalSubsets is CardCandSh + CardCandCl,
-	TotalSubsets >= Limit.
+    number_of_subsets(CardCand,CardPws),
+    Limit is Threshold * CardPws,
+    TotalSubsets is CardCandSh + CardCandCl,
+    TotalSubsets >= Limit.
 
 %------------------------------------------------------------------------%
 % number_sets_in_cliques(CL,Cand,J)                                      |
@@ -604,9 +604,9 @@ is_powerset(CardCand,CardCandSh,CardCandCl,Threshold):-
 % they are already represented in cl.                                    |
 %------------------------------------------------------------------------%
 number_sets_in_cliques(CL,Cand,J):-
-	intersection_lists_with_list(CL,Cand,I),
-	length(I,End),
-	compute_inc_exc(I,1,End,plus,0,J).
+    intersection_lists_with_list(CL,Cand,I),
+    length(I,End),
+    compute_inc_exc(I,1,End,plus,0,J).
 
 %------------------------------------------------------------------------%
 % Principle of inclusion-exclusion                                       |
@@ -614,22 +614,22 @@ number_sets_in_cliques(CL,Cand,J):-
 %  Sum_1=<i_1 =<i_2=<p |A_i1 /\ A_i2|+...+(-1)^p-1 | A_1 /\ A_2 /\...A_n||
 %------------------------------------------------------------------------%
 compute_inc_exc(_,Start,End,_,J,J):-
-	Start > End, !.
+    Start > End, !.
 compute_inc_exc(I,Start,End,Sig,Acc,J):-
-	bagof(S,
-	      comb(Start,I,S),
-	      Combs),
-	intersect_all(Combs,Int),
-	sum_cliques(Int,0,Val),
-	( Sig = plus ->
-	  NSig = minus,
-	  NAcc is  Acc + Val
-        ;
-	  NSig = plus,
-	  NAcc is  Acc - Val
-        ),
-	Next is Start + 1,
-	compute_inc_exc(I,Next,End,NSig,NAcc,J).
+    bagof(S,
+          comb(Start,I,S),
+          Combs),
+    intersect_all(Combs,Int),
+    sum_cliques(Int,0,Val),
+    ( Sig = plus ->
+      NSig = minus,
+      NAcc is  Acc + Val
+    ;
+      NSig = plus,
+      NAcc is  Acc - Val
+    ),
+    Next is Start + 1,
+    compute_inc_exc(I,Next,End,NSig,NAcc,J).
 
 % comb(L,K,Combs)
 % Combs is all possible combinations of the list L taken K at the same time
@@ -639,26 +639,26 @@ comb(N,[_|T],Comb):-N>0,comb(N,T,Comb).
 
 sum_cliques([],Acc,Acc).
 sum_cliques([C|Cs],Acc,Res):-
-	card_clique(C,N),
-	NAcc is Acc + N,
-	sum_cliques(Cs,NAcc,Res).
+    card_clique(C,N),
+    NAcc is Acc + N,
+    sum_cliques(Cs,NAcc,Res).
 
 card_clique(S,N1):-
-	length(S,N),!,
-	number_of_subsets(N,N1).
+    length(S,N),!,
+    number_of_subsets(N,N1).
 
 number_of_subsets(N,N1):-
-	N0 is 2**N,
-	N1 is N0 - 1.
+    N0 is 2**N,
+    N1 is N0 - 1.
 
 intersect_all(Xss,Int):-
-	sort_list_of_lists(Xss,Xss1),
-	intersect_all_(Xss1,Int).
+    sort_list_of_lists(Xss,Xss1),
+    intersect_all_(Xss1,Int).
 
 intersect_all_([],[]).
 intersect_all_([Xs|Xss],[Int|Res]):-
-	ord_intersect_all(Xs,Int),
-	intersect_all_(Xss,Res).
+    ord_intersect_all(Xs,Int),
+    intersect_all_(Xss,Res).
 
 %------------------------------------------------------------------------%
 % longest_candidate(S,LB,Card,Max,Info)                                  |
@@ -668,51 +668,51 @@ intersect_all_([Xs|Xss],[Int|Res]):-
 % complexity: |Sh| log (|Sh|)
 %------------------------------------------------------------------------%
 longest_candidate(Sh,LB,Card,Max,Info):-
-	neg_length_list_of_lists(Sh,LB,PairList),
-	PairList \== [],!,
-	Info = yes,
-	sort(PairList,PairList_s),
-	select(NegCard-Max,PairList_s,_),
-	Card is 0 - NegCard.
+    neg_length_list_of_lists(Sh,LB,PairList),
+    PairList \== [],!,
+    Info = yes,
+    sort(PairList,PairList_s),
+    select(NegCard-Max,PairList_s,_),
+    Card is 0 - NegCard.
 longest_candidate(_,_,_,_,Info):-
-	Info = not.
+    Info = not.
 
 %------------------------------------------------------------------------%
 % smallest_candidate(S,UB,Card,Min,Info)                                 |
 % smallest_candidate(+,+,-,-,-)                                          |
 %------------------------------------------------------------------------%
 smallest_candidate(Sh,LB,Card,Min,Info):-
-	pos_length_list_of_lists(Sh,LB,PairList),
-	PairList \== [],!,
-	Info = yes,
-	sort(PairList,PairList_s),
-	select(Card-Min,PairList_s,_).
+    pos_length_list_of_lists(Sh,LB,PairList),
+    PairList \== [],!,
+    Info = yes,
+    sort(PairList,PairList_s),
+    select(Card-Min,PairList_s,_).
 smallest_candidate(_,_,_,_,Info):-
-	Info = not.
+    Info = not.
 
 % complexity: |Sh|
 neg_length_list_of_lists([],_,[]).
 neg_length_list_of_lists([S|Ss],M,Ss1):-
-	length(S,L0),!,
-	( L0 >= M ->   
-	  L is 0 - L0,
-	  neg_length_list_of_lists(Ss,M,R),
-	  Ss1= [L-S|R]
-	;
-	  neg_length_list_of_lists(Ss,M,R),
-	  Ss1= R
-        ).
+    length(S,L0),!,
+    ( L0 >= M ->   
+      L is 0 - L0,
+      neg_length_list_of_lists(Ss,M,R),
+      Ss1= [L-S|R]
+    ;
+      neg_length_list_of_lists(Ss,M,R),
+      Ss1= R
+    ).
 
 pos_length_list_of_lists([],_,[]).
 pos_length_list_of_lists([S|Ss],M,Ss1):-
-	length(S,L),!,
-	( L >= M ->   
-	  pos_length_list_of_lists(Ss,M,R),
-	  Ss1= [L-S|R]
-	;
-	  pos_length_list_of_lists(Ss,M,R),
-	  Ss1= R
-        ).
+    length(S,L),!,
+    ( L >= M ->   
+      pos_length_list_of_lists(Ss,M,R),
+      Ss1= [L-S|R]
+    ;
+      pos_length_list_of_lists(Ss,M,R),
+      Ss1= R
+    ).
 
 %------------------------------------------------------------------------%
 % minimum_cardinality(+).                                                |
@@ -723,27 +723,27 @@ pos_length_list_of_lists([S|Ss],M,Ss1):-
 minimum_cardinality(3).
 
 check_threshold(T,Res):-
-	between(0,100,T),
-	Res is T /100.
+    between(0,100,T),
+    Res is T /100.
 
 % ---------------------------------------------------------------------------
 % (for running benchmarks)
 
 % :- use_module(library(aggregates), [findall/3]). % for number_of_norma/1
-% 	
+%       
 % :- export(card_cliques/2).
 % % This predicate is used for tests. For this, it is necessary to 
 % % export it. 
 % card_cliques(Cl,J):-
-% 	length(Cl,End),
-% 	compute_inc_exc(Cl,1,End,plus,0,J).
+%       length(Cl,End),
+%       compute_inc_exc(Cl,1,End,plus,0,J).
 % 
 % :- export(number_of_norma/1).
 % number_of_norma(N):-
-% 	findall(norma_done,norma_done,L),
-% 	length(L,N),
-% 	retractall_fact(norma_done).
+%       findall(norma_done,norma_done,L),
+%       length(L,N),
+%       retractall_fact(norma_done).
 % 
 % :- export(clean_number_of_norma/0).
 % clean_number_of_norma:-
-% 	retractall_fact(norma_done).
+%       retractall_fact(norma_done).

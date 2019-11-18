@@ -1,23 +1,23 @@
 :- module(auto_interface, [
-	auto_analyze/1,
-	auto_optimize/1,
-	auto_check_assert/1,
-	auto_analyze/2,
-	auto_optimize/2,
-	auto_check_assert/2,
-	customize/0,
-	customize/1,
-	customize_and_preprocess/0,
-	customize_and_preprocess/1,
-	customize_but_dont_save/1,
-	set_menu_level/1,
-	current_menu_level/1,
-	again/0,
-	set_last_file/1,
-	get_last_file/1,
-	clean_aux_files/1
-	%			  ,opt_menu_branch/2
-	%			  ,all_menu_branch/2
+    auto_analyze/1,
+    auto_optimize/1,
+    auto_check_assert/1,
+    auto_analyze/2,
+    auto_optimize/2,
+    auto_check_assert/2,
+    customize/0,
+    customize/1,
+    customize_and_preprocess/0,
+    customize_and_preprocess/1,
+    customize_but_dont_save/1,
+    set_menu_level/1,
+    current_menu_level/1,
+    again/0,
+    set_last_file/1,
+    get_last_file/1,
+    clean_aux_files/1
+    %                         ,opt_menu_branch/2
+    %                         ,all_menu_branch/2
   ], [assertions, fsyntax, dcg, datafacts, ciaopp(ciaopp_options)]).
 
 :- use_package(menu).
@@ -37,8 +37,8 @@
 
 %% For modular checking
 :- use_module(ciaopp(plai/intermod),
-        [inductive_ctcheck_summary/3, auto_ctcheck_summary/3, modular_analyze/2,
-         valid_mod_analysis/1, cleanreg/1, get_modules_analyzed/1]).
+    [inductive_ctcheck_summary/3, auto_ctcheck_summary/3, modular_analyze/2,
+     valid_mod_analysis/1, cleanreg/1, get_modules_analyzed/1]).
 
 :- use_module(ciaopp(infer/infer_db),        [domain/1]).
 :- use_module(ciaopp(p_unit/assrt_db),      [assertion_read/9, assertion_body/7]).
@@ -55,14 +55,14 @@
 :- use_module(library(system),        [file_exists/2]).
 :- use_module(library(messages)).
 :- reexport(library(menu/menu_generator), [
-	get_menu_configs/1,
-	save_menu_config/1,
-	remove_menu_config/1,
-	restore_menu_config/1,
-	show_menu_configs/0,
-	show_menu_config/1,
-	get_menu_flag/3,
-	set_menu_flag/3
+    get_menu_configs/1,
+    save_menu_config/1,
+    remove_menu_config/1,
+    restore_menu_config/1,
+    show_menu_configs/0,
+    show_menu_config/1,
+    get_menu_flag/3,
+    set_menu_flag/3
    ]).
 :- use_module(library(prompt),[prompt_for_default/2]).
 :- use_module(library(pathnames), [path_splitext/3]).
@@ -70,10 +70,10 @@
 :- use_module(engine(runtime_control), [current_prolog_flag/2]). % TODO: do not define main_module as a prolog flag
 
 :- doc(bug, "1 commented out the question for error file since we
-	are generating it in any case (not yet implemented)").
+    are generating it in any case (not yet implemented)").
 
 :- doc(bug, "2 when auto_cthecks has the value 'on' (instead of 'auto'),
-	the result of compile_time checking is not fully handled yet").
+    the result of compile_time checking is not fully handled yet").
 
 % HOW TO ADD A MENU QUESTION
 % --------------------------
@@ -116,12 +116,12 @@
 % between the different branches is the predicate customize/1:
 %
 % customize(optimize) :-
-% 	!,
-% 	menu(opt, false),
-% 	get_menu_flag(opt, inter_optimize, NM),
-% 	menu_level(L),
-% 	NO =.. [NM, L],
-% 	customize(NO).
+%       !,
+%       menu(opt, false),
+%       get_menu_flag(opt, inter_optimize, NM),
+%       menu_level(L),
+%       NO =.. [NM, L],
+%       customize(NO).
 %
 % (NOTE: The predicate menu/2 is the one which reads the menu
 % declarations and prints the questions on the screen). So the
@@ -166,8 +166,8 @@
 % For this reason guards are like:
 %
 % guard cct(X) :-
-% 	member(assert_ctcheck=Y, X),
-% 	Y == on.
+%       member(assert_ctcheck=Y, X),
+%       Y == on.
 %
 % (NOTE the == !!!)
 %
@@ -303,35 +303,35 @@
 % menu HOOKS-GLUE with pp_flags
 
 :- use_module(ciaopp(preprocess_flags), [
-	current_pp_flag/2,
-	pp_flag/2,
-	set_pp_flag/2
+    current_pp_flag/2,
+    pp_flag/2,
+    set_pp_flag/2
    ]).
 :- use_module(ciaopp(preprocess_flags), [
-	valid_flag_values/2,
-	valid_flag_value/2
+    valid_flag_values/2,
+    valid_flag_value/2
    ]).
 
 % (hook)
 hook_menu_flag_values(_, Flag, ask(F)) :-
-	valid_flag_values(Flag, X),
-	functor(X, F, _),
-	( F == int ; F == nnegint ; F == atom ; F == atm ),
-	!.
+    valid_flag_values(Flag, X),
+    functor(X, F, _),
+    ( F == int ; F == nnegint ; F == atom ; F == atm ),
+    !.
 hook_menu_flag_values(_, O, alist(OptsList)) :-
-	findall(F, valid_flag_value(O, F), OptsList).
+    findall(F, valid_flag_value(O, F), OptsList).
 
 % (hook)
 hook_menu_default_option(_, O, Def) :-
-	current_pp_flag(O, Def).
+    current_pp_flag(O, Def).
 
 % (hook)
 hook_menu_flag_help(_, O, Help) :-
-	pp_flag(O, Help).
+    pp_flag(O, Help).
 
 % (hook)
 hook_menu_check_flag_value(_, F, V) :-
-	valid_flag_value(F, V).
+    valid_flag_value(F, V).
 
 % ---------------------------------------------------------------------------
 
@@ -348,18 +348,18 @@ menu_level_tr(naive, 0).
 menu_level_tr(expert, 1).
 
 set_menu_level(L) :-
-	set_menu_level(~menu_level_tr(L)),
-	!.
+    set_menu_level(~menu_level_tr(L)),
+    !.
 set_menu_level(X) :-
-	int(X), % TODO: integer/1?
-	!,
-	retract_fact(menu_level(_)),
-	asserta_fact(menu_level(X)).
+    int(X), % TODO: integer/1?
+    !,
+    retract_fact(menu_level(_)),
+    asserta_fact(menu_level(X)).
 set_menu_level(X) :-
-	error_message("~w should be an non-negative integer", [X]).
+    error_message("~w should be an non-negative integer", [X]).
 
 current_menu_level(X) :-
-	menu_level(X).
+    menu_level(X).
 
 % (This override the default menu options)
 % (hook)
@@ -374,12 +374,12 @@ all_tr(check_assertions, check).
 all_tr(A, A).
 
 all_menu_branch(A, B) :-
-	member(inter_all=Br, A),
-	member(menu_level=L, A),
-	all_tr(Br, BrT),
-	( BrT = check_certificate -> A = B
-	; menu_branch(A, BrT, ~menu_level_tr(L), B)
-	).
+    member(inter_all=Br, A),
+    member(menu_level=L, A),
+    all_tr(Br, BrT),
+    ( BrT = check_certificate -> A = B
+    ; menu_branch(A, BrT, ~menu_level_tr(L), B)
+    ).
 
 :- if(defined(has_ciaopp_extra)).
 opt_tr(parallelize, para).
@@ -390,10 +390,10 @@ opt_tr(poly_spec, sp_poly).
 opt_tr(A, A).
 
 opt_menu_branch(A, B) :-
-	member(menu_level=L, A),
-	member(inter_optimize=Br, A),
-	opt_tr(Br, BrT),
-	menu_branch(A, BrT, ~menu_level_tr(L), B).
+    member(menu_level=L, A),
+    member(inter_optimize=Br, A),
+    opt_tr(Br, BrT),
+    menu_branch(A, BrT, ~menu_level_tr(L), B).
 
 %% ana, atm_title # flag - option : pre_action :: post_action <- guard.
 
@@ -509,191 +509,191 @@ para     , 'Select Granularity Analysis'   # para_grain       - none.
 ~mtype   , 'Select Output Language'        # output_lang      - source <- ana_b.
 
 guard cct2(X) :-
-	( member(assert_ctcheck=Y, X) ->
-	    Y \== off
-	;
-	    member(inter_all=A, X),
-	    A  == check_assertions,
-	    member(menu_level=A1, X),
-	    A1 == naive
-	).
+    ( member(assert_ctcheck=Y, X) ->
+        Y \== off
+    ;
+        member(inter_all=A, X),
+        A  == check_assertions,
+        member(menu_level=A1, X),
+        A1 == naive
+    ).
 
 guard cct(X) :-
-	member(assert_ctcheck=Y, X),
-	Y \== off.
+    member(assert_ctcheck=Y, X),
+    Y \== off.
 
 guard cct_manual(X) :-
-	member(assert_ctcheck=Y, X),
-	Y == manual.
+    member(assert_ctcheck=Y, X),
+    Y == manual.
 
 % guard cct1(X) :-
-% 	cct(X),
-% 	member(menu_level=A1,X),
-% 	( A1 == naive ->
-% 	  member(ct_modular=E,X),
-% 	  ( E == all ->
-% 	    set_menu_flag(check,ct_ext_policy,registry),
-% 	    set_menu_flag(check,mnu_modules_to_analyze,all),
-% 	    set_menu_flag(check,ext_policy,registry)
-% 	  ; set_menu_flag(check,ct_ext_policy,assertions),
-% 	    set_menu_flag(check,mnu_modules_to_analyze,current),
-% 	    set_menu_flag(check,ext_policy,assertions)
-% 	  )
-% 	; true
-% 	).
+%       cct(X),
+%       member(menu_level=A1,X),
+%       ( A1 == naive ->
+%         member(ct_modular=E,X),
+%         ( E == all ->
+%           set_menu_flag(check,ct_ext_policy,registry),
+%           set_menu_flag(check,mnu_modules_to_analyze,all),
+%           set_menu_flag(check,ext_policy,registry)
+%         ; set_menu_flag(check,ct_ext_policy,assertions),
+%           set_menu_flag(check,mnu_modules_to_analyze,current),
+%           set_menu_flag(check,ext_policy,assertions)
+%         )
+%       ; true
+%       ).
 
 mod_check(X,X) :-
-	member(menu_level=A1,X),
-	( A1 == naive ->
-	  member(ct_modular=E,X),
-	  ( E == all ->
-	    % set_menu_flag(check,ct_ext_policy,registry),
-	    set_menu_flag(check,mnu_modules_to_analyze,all),
-	    % set_menu_flag(check,ext_policy,registry),
-	    set_menu_flag(check,ct_regen_reg,on)
-	  ; % set_menu_flag(check,ct_ext_policy,assertions),
-	    set_menu_flag(check,mnu_modules_to_analyze,current)
-	    % set_menu_flag(check,ext_policy,assertions)
-	  )
-	; true
-	).
+    member(menu_level=A1,X),
+    ( A1 == naive ->
+      member(ct_modular=E,X),
+      ( E == all ->
+        % set_menu_flag(check,ct_ext_policy,registry),
+        set_menu_flag(check,mnu_modules_to_analyze,all),
+        % set_menu_flag(check,ext_policy,registry),
+        set_menu_flag(check,ct_regen_reg,on)
+      ; % set_menu_flag(check,ct_ext_policy,assertions),
+        set_menu_flag(check,mnu_modules_to_analyze,current)
+        % set_menu_flag(check,ext_policy,assertions)
+      )
+    ; true
+    ).
 
 mod_ana(X,X):-
-	member(menu_level=A1,X),
-	( A1 == naive ->
-	  member(mnu_modules_to_analyze=E,X),
-	  member(inter_all=MenuType,X),
-	  ( E == all ->
-	    Ext_policy = registry
-	  ; Ext_policy = assertions
-	  ),
-	  ( MenuType == analyze ->
-	    set_menu_flag(ana,ext_policy,Ext_policy)
-	  ; set_menu_flag(check,ext_policy,Ext_policy)
-	  )
-	; true
-	).
+    member(menu_level=A1,X),
+    ( A1 == naive ->
+      member(mnu_modules_to_analyze=E,X),
+      member(inter_all=MenuType,X),
+      ( E == all ->
+        Ext_policy = registry
+      ; Ext_policy = assertions
+      ),
+      ( MenuType == analyze ->
+        set_menu_flag(ana,ext_policy,Ext_policy)
+      ; set_menu_flag(check,ext_policy,Ext_policy)
+      )
+    ; true
+    ).
 
 post_iter(X,X) :-
-	member(ct_mod_iterate=A,X),
-	( A == on ->
-	  set_menu_flag(check,ct_ext_policy,registry),
-	  set_menu_flag(check,ext_policy,registry),
-	  set_menu_flag(check,mnu_modules_to_analyze,all),
-	  member(menu_level=A1,X),
-	  ( A1 == naive ->  % PP: should be ok in most cases
-	    set_menu_flag(check,types,terms)
-	  ; true
-	  )
-	; set_menu_flag(check,ct_ext_policy,assertions),
-	  set_menu_flag(check,ext_policy,assertions),
-	  set_menu_flag(check,mnu_modules_to_analyze,current)
-	).
+    member(ct_mod_iterate=A,X),
+    ( A == on ->
+      set_menu_flag(check,ct_ext_policy,registry),
+      set_menu_flag(check,ext_policy,registry),
+      set_menu_flag(check,mnu_modules_to_analyze,all),
+      member(menu_level=A1,X),
+      ( A1 == naive ->  % PP: should be ok in most cases
+        set_menu_flag(check,types,terms)
+      ; true
+      )
+    ; set_menu_flag(check,ct_ext_policy,assertions),
+      set_menu_flag(check,ext_policy,assertions),
+      set_menu_flag(check,mnu_modules_to_analyze,current)
+    ).
 
 reg_reg(X,X):-
-	member(ct_regen_reg=A,X),
-	( A==on ->
-	  set_menu_flag(check,mnu_modules_to_analyze,all),
-	  set_menu_flag(check,ext_policy,registry)
-	; true
-	).
+    member(ct_regen_reg=A,X),
+    ( A==on ->
+      set_menu_flag(check,mnu_modules_to_analyze,all),
+      set_menu_flag(check,ext_policy,registry)
+    ; true
+    ).
 
 guard cct_mod_reg(X) :-
-	cct_mod(X),
-	member(ct_ext_policy=Y, X),
-	Y == registry,
-	member(ct_mod_iterate=Y1, X),
-	Y1 == on.
+    cct_mod(X),
+    member(ct_ext_policy=Y, X),
+    Y == registry,
+    member(ct_mod_iterate=Y1, X),
+    Y1 == on.
 
 guard cct_mod(X) :-
-	cct(X),
-	member(ct_modular=Y, X),
-	Y == all.
+    cct(X),
+    member(ct_modular=Y, X),
+    Y == all.
 
 % True if assert_ctcheck is on (has been selected) OR % it has not
 % % been selected (native menu!) and flag value is on.
 % guard cct2(X) :-
-% 	member(assert_ctcheck=Y, X),
-% 	!,
-% 	Y == on.
+%       member(assert_ctcheck=Y, X),
+%       !,
+%       Y == on.
 % guard cct2(_) :-
-% 	get_menu_flag(check, assert_ctcheck, on).
+%       get_menu_flag(check, assert_ctcheck, on).
 
 % guard cct_mod(X) :-
-% 	member(ct_mod_ana=Y, X),
-% 	( Y == monolithic ->
-% 	  set_pp_flag(ct_modular,all),
-% 	  fail
-% 	; true
-% 	).
+%       member(ct_mod_ana=Y, X),
+%       ( Y == monolithic ->
+%         set_pp_flag(ct_modular,all),
+%         fail
+%       ; true
+%       ).
 
 guard ana_b(X)  :-
-	member(inter_all=I, X),
-	(
-	    I == check_assertions,
-	    member(check_config_ana=Y, X),
-	    Y == on
-	;
-	    I == analyze
-	).
+    member(inter_all=I, X),
+    (
+        I == check_assertions,
+        member(check_config_ana=Y, X),
+        Y == on
+    ;
+        I == analyze
+    ).
 
 guard nf_not_selected(X) :-
-	(
-	    member(ana_nf=NF, X)
-	->
-	    NF == none
-	;
-	    true
-	).
+    (
+        member(ana_nf=NF, X)
+    ->
+        NF == none
+    ;
+        true
+    ).
 
 % Almost everything have this preconditions
 ana_b2(X)  :-
-	ana_b(X),
-	nf_not_selected(X).
+    ana_b(X),
+    nf_not_selected(X).
 
 
 guard ana_g1(X)  :-
-	ana_b2(X),
-	member(types=Y, X),
-	(
-	    Y == eterms
-	;
-	    Y == svterms
-	).
+    ana_b2(X),
+    member(types=Y, X),
+    (
+        Y == eterms
+    ;
+        Y == svterms
+    ).
 
 % like ana_g1 but for all types
 guard ana_g2(X)  :-
-	ana_b2(X),
-	member(types=Y, X),
-	Y \== none.
+    ana_b2(X),
+    member(types=Y, X),
+    Y \== none.
 
 guard ana_gto(X) :-
-	ana_b2(X),
-	member(local_control=Y, X),
-	Y == off.
+    ana_b2(X),
+    member(local_control=Y, X),
+    Y == off.
 
 guard ana_gc(X)  :-
-	ana_g1(X),
-	member(local_control=Y, X),
-	Y \== off.
+    ana_g1(X),
+    member(local_control=Y, X),
+    Y \== off.
 
 guard ana_lc(X)  :-
-	ana_b(X),
-	member(types=T, X),
-	T  \== none,
-	!.
+    ana_b(X),
+    member(types=T, X),
+    T  \== none,
+    !.
 
 guard ana_lc(X)  :-
-	ana_b(X),
-	member(modes=M, X),
-	M \== none.
+    ana_b(X),
+    member(modes=M, X),
+    M \== none.
 
 :- if(defined(has_ciaopp_extra)).
 guard para_menu(X) :-
-	member(inter_all=I, X),
-	member(inter_optimize=I2, X),
-	I  == optimize,
-	I2 == parallelize.
+    member(inter_all=I, X),
+    member(inter_optimize=I2, X),
+    I  == optimize,
+    I2 == parallelize.
 :- endif.
 
 guard ana_pp(X) :- ana_b(X).
@@ -702,108 +702,108 @@ guard ana_pp(X) :- para_menu(X).
 :- endif.
 
 guard ana_pp1(X) :-
-	ana_b(X).
+    ana_b(X).
 :- if(defined(has_ciaopp_extra)).
 guard ana_pp1(X) :-
-	para_menu(X),
-	member(para_ann=Y, X),
-	(Y == uoudg).  %  ; Y == uudg ; Y == disjwait).
+    para_menu(X),
+    member(para_ann=Y, X),
+    (Y == uoudg).  %  ; Y == uudg ; Y == disjwait).
 :- endif.
 
 guard ana_pp2(X) :-
-	ana_b(X).
+    ana_b(X).
 :- if(defined(has_ciaopp_extra)).
 guard ana_pp2(X) :-
-	para_menu(X),
-	member(para_grain = Y, X),
-	Y == gr.
+    para_menu(X),
+    member(para_grain = Y, X),
+    Y == gr.
 :- endif.
 
 guard spec_lc(X)   :-
-	member(local_control=Y, X),
-	Y \== off.
+    member(local_control=Y, X),
+    Y \== off.
 
 guard spec_lcd(X)  :-
-	member(local_control=Y, X),
-	( Y == depth
-	; Y == first_sol_d
-	; Y == det_la
-	).
+    member(local_control=Y, X),
+    ( Y == depth
+    ; Y == first_sol_d
+    ; Y == det_la
+    ).
 
 guard spec_fn(X)   :-
-	member(global_control=Y, X),
-	Y == hom_emb.
+    member(global_control=Y, X),
+    Y == hom_emb.
 
 guard spec_hn(X)   :-
-	member(local_control=Y, X),
-	Y == df_hom_emb_as.
+    member(local_control=Y, X),
+    Y == df_hom_emb_as.
 
 guard spec_pif(X)  :-
-	member(spec_poly=Y, X),
-	Y \== off.
+    member(spec_poly=Y, X),
+    Y \== off.
 
 guard gencert(X) :-
-	member(gen_certificate=Y, X),
-	Y == on.
+    member(gen_certificate=Y, X),
+    Y == on.
 
 % guard shpre(X) :-
-% 	vmember(modes=Y, X),
-% 	( Y == share_amgu       ;
-% 	  Y == share_clique     ;
+%       vmember(modes=Y, X),
+%       ( Y == share_amgu       ;
+%         Y == share_clique     ;
 %         Y == sharefree_amgu   ;
-% 	  Y == shfrlin_amgu     ;
-% 	  Y == sharefree_clique ).
+%         Y == shfrlin_amgu     ;
+%         Y == sharefree_clique ).
 
 guard clipre(X)  :-
-	member(modes=Y, X),
-	( Y == share_clique
-	; Y == sharefree_clique
-	).
+    member(modes=Y, X),
+    ( Y == share_clique
+    ; Y == sharefree_clique
+    ).
 
 % :- if(defined(has_ciaopp_extra)).
 % guard para_d1(X)  :-
-% 	member(para_ann=Y, X),
-% 	(Y == uoudg).  %  ; Y == uudg ; Y == disjwait).
+%       member(para_ann=Y, X),
+%       (Y == uoudg).  %  ; Y == uudg ; Y == disjwait).
 % 
 % %guard para_t1(X)  :-
-% %	member(para_grain=Y, X),
-% %	Y == gr.
+% %     member(para_grain=Y, X),
+% %     Y == gr.
 % 
 % guard para_n1(X)  :-
-% 	member(para_grain=Y, X),
-% 	Y == gr.
+%       member(para_grain=Y, X),
+%       Y == gr.
 % :- endif.
 
 :- if(defined(has_ciaopp_extra)).
 guard para_c1(X)  :-
-	member(para_grain=Y, X),
-	Y == gr.
+    member(para_grain=Y, X),
+    Y == gr.
 :- endif.
 
 :- if(defined(has_ciaopp_extra)).
 guard polystrat(X)  :-
-	member(poly_strategy=Y, X),
-	Y == all_sols.
+    member(poly_strategy=Y, X),
+    Y == all_sols.
 
 guard polybounded(X)  :-
-	member(poly_fitness=F, X),
-	F == bounded_size.
+    member(poly_fitness=F, X),
+    F == bounded_size.
 
 
 guard polyheur(X)  :-
-	member(poly_pruning=Y, X),
-	( Y == heuristic
-	; Y == both
-	).
+    member(poly_pruning=Y, X),
+    ( Y == heuristic
+    ; Y == both
+    ).
 
 guard polyvar(X)  :-
-	member(polyvar_pcpe=Y, X),
-	Y == modes.
+    member(polyvar_pcpe=Y, X),
+    Y == modes.
 
 guard polydepth(X)  :-
-	member(poly_pruning=Y, X),
-	(Y == bnb;
-	 Y == both).
+    member(poly_pruning=Y, X),
+    (Y == bnb;
+     Y == both).
 :- endif.
 
 :- push_prolog_flag(multi_arity_warnings, off).
@@ -840,59 +840,59 @@ lt(X, ana(X)).
 lt(X, check(X)).
 
 p_nf(L, LS) :-
-	uni_type(L, Z),
-	vmember(ana_nf=Y, L),
-	(
-	    eq(Z, Y, none),
-%	->
-	    L = LS
-	;
-	    remove_from_list(L, modes=_, L1),
-	    remove_from_list(L1, types=_, L2),
+    uni_type(L, Z),
+    vmember(ana_nf=Y, L),
+    (
+        eq(Z, Y, none),
+%       ->
+        L = LS
+    ;
+        remove_from_list(L, modes=_, L1),
+        remove_from_list(L1, types=_, L2),
 
-	    append(L2, [ modes          = shfr   ,
-	                 types          = eterms ,
-			 type_precision = all    ,
-			 type_output    = all    ,
-			 widencall      = onlyfixp ], LS)
-        ).
+        append(L2, [ modes          = shfr   ,
+                     types          = eterms ,
+                     type_precision = all    ,
+                     type_output    = all    ,
+                     widencall      = onlyfixp ], LS)
+    ).
 
 % :- if(defined(has_ciaopp_extra)).
 % para_post_g1(L, LS) :-
-% 	uni_type(L, Z),
-% 	vmember(para_ann=Y, L),
-% 	(
-% 	    neq(Z, Y, urlp),
-% 	    L = LS
-% 	;
-% 	    remove_from_list(L, para_iap=_, L1 ),
-% 	    append(L1, [ para_iap = post ], LS )
+%       uni_type(L, Z),
+%       vmember(para_ann=Y, L),
+%       (
+%           neq(Z, Y, urlp),
+%           L = LS
+%       ;
+%           remove_from_list(L, para_iap=_, L1 ),
+%           append(L1, [ para_iap = post ], LS )
 %         ).
 % :- endif.
 
 % TODO: rewrite!!!
 remove_from_list(A, B, C) :-
-	remove_from_list_(A, B, C),
-	( C = [V|_], var(V) ->
-	    !,
-	    fail
-	; true
-	).
+    remove_from_list_(A, B, C),
+    ( C = [V|_], var(V) ->
+        !,
+        fail
+    ; true
+    ).
 
 remove_from_list_([], _, []).
 remove_from_list_([X|Xs], X, Ys) :-
-	remove_from_list(Xs, X, Ys), !.
+    remove_from_list(Xs, X, Ys), !.
 remove_from_list_([Y|Xs], X, [Y|Ys]) :- !,
-	remove_from_list(Xs, X, Ys).
+    remove_from_list(Xs, X, Ys).
 
 % ---------------------------------------------------------------------------
 
 show_mcfg :-
-	get_menu_configs(C),
-	% Note: make sure that this message goes to standard output
-	%   (required by ciao-widgets.el)
-	note_message("Current Saved Menu Configurations: ~w", [ C ]).
-%	message(note, ['Current Saved Menu Configurations: ', C ]).
+    get_menu_configs(C),
+    % Note: make sure that this message goes to standard output
+    %   (required by ciao-widgets.el)
+    note_message("Current Saved Menu Configurations: ~w", [ C ]).
+%       message(note, ['Current Saved Menu Configurations: ', C ]).
 
 % :- set_prolog_flag(multi_arity_warnings, off).
 
@@ -911,8 +911,8 @@ show_mcfg :-
       customize_and_preprocess, to allow @pred{again/0} to work.".
 
 set_last_file(File) :-
-	retractall_fact(customize__last_file(_)),
-	asserta_fact(customize__last_file(File)).
+    retractall_fact(customize__last_file(_)),
+    asserta_fact(customize__last_file(File)).
 
 :- pred get_last_file(File) : var(File) => atom(File)
    # "@var{File} is the current value of @pred{last_file/1} used by
@@ -920,7 +920,7 @@ set_last_file(File) :-
       @pred{customize_and_preprocess/0}.".
 
 get_last_file(File) :-
-	current_fact(customize__last_file(File)).
+    current_fact(customize__last_file(File)).
 
 :- pred customize_and_preprocess/0
    # "Select options using @tt{customize/0}, and then call
@@ -931,16 +931,16 @@ get_last_file(File) :-
       on the default file.".
 
 customize_and_preprocess :-
-	display('(Main) file to be processed:     ('),
-	( get_last_file(File) -> display(File)
-	; display(none), File = ''
-	),
-	display(') ? '),
-	prompt_for_default(NewFile,File),
-	(  file_exists(NewFile,4)
-	-> customize_and_preprocess(NewFile)
-	;  error_message("~w does not exist or cannot be read", [NewFile] )
-	).
+    display('(Main) file to be processed:     ('),
+    ( get_last_file(File) -> display(File)
+    ; display(none), File = ''
+    ),
+    display(') ? '),
+    prompt_for_default(NewFile,File),
+    (  file_exists(NewFile,4)
+    -> customize_and_preprocess(NewFile)
+    ;  error_message("~w does not exist or cannot be read", [NewFile] )
+    ).
 
 :- pred customize_and_preprocess(File)
    # "Select options using @tt{customize/0}, and then call
@@ -950,19 +950,19 @@ customize_and_preprocess :-
       the default file.".
 
 customize_and_preprocess(File) :-
-	atom(File),
-	customize,
-	set_last_file(File),
-	again.
+    atom(File),
+    customize,
+    set_last_file(File),
+    again.
 
 :- pred customize_but_dont_save(Option)
    # "Same as customize(@var{Option}), but menu flags will not be
       modified.".
 
 customize_but_dont_save(Option) :-
-	get_menu_flags(L),
-	customize(Option),
-	restore_menu_flags_list(L).
+    get_menu_flags(L),
+    customize(Option),
+    restore_menu_flags_list(L).
 
 :- pred again/0
    # "Performs the last actions done by
@@ -970,21 +970,21 @@ customize_but_dont_save(Option) :-
       analyzed, checked, or optimized".
 
 again :-
-	get_last_file(File),
-	get_menu_flag(all, inter_all, NM),
-	exec_auto(NM, File).
+    get_last_file(File),
+    get_menu_flag(all, inter_all, NM),
+    exec_auto(NM, File).
 
 exec_auto(optimize, F) :- !,
-	auto_optimize(F).
+    auto_optimize(F).
 exec_auto(analyze, F) :- !,
-	auto_interface:auto_analyze(F).
+    auto_interface:auto_analyze(F).
 exec_auto(check_assertions, F) :- !,
-	auto_check_assert(F).
+    auto_check_assert(F).
 exec_auto(check_certificate, F) :- !,
-	auto_check_certificate(F).
+    auto_check_certificate(F).
 exec_auto(none, _) :- !.
 exec_auto(U, _F) :-
-	error_message("Unknown option ~w while executing customize_and_preprocess", [U]).
+    error_message("Unknown option ~w while executing customize_and_preprocess", [U]).
 
 :- pred customize/0
    # "Enter an interactive menu to select the preprocessing action
@@ -993,7 +993,7 @@ exec_auto(U, _F) :-
       (i.e., setting the preprocessor flags).".
 
 customize :-
-	customize(all).
+    customize(all).
 
 :- pred customize(X)
    # "Customize is used for changing the values of the flags used
@@ -1004,58 +1004,58 @@ customize :-
       @tt{all} (which allows choosing among the previous three).".
 
 customize(all) :-
-	!,
-	ask_use_config(USE_CONFIG, Bool),
-	( USE_CONFIG == none ->
-	    menu(all, Bool),
-%	    get_menu_flag(all, inter_all, NM),
-%	    get_menu_flag(all, menu_level, ML),
-%	    set_menu_level(ML),
-%	    customize(NM),
-	    ask_save_menu
-	; note_message("Restoring ~w Menu Configuration...", [USE_CONFIG]),
-	  restore_menu_config(USE_CONFIG)
-	).
+    !,
+    ask_use_config(USE_CONFIG, Bool),
+    ( USE_CONFIG == none ->
+        menu(all, Bool),
+%           get_menu_flag(all, inter_all, NM),
+%           get_menu_flag(all, menu_level, ML),
+%           set_menu_level(ML),
+%           customize(NM),
+        ask_save_menu
+    ; note_message("Restoring ~w Menu Configuration...", [USE_CONFIG]),
+      restore_menu_config(USE_CONFIG)
+    ).
 %
 % customize(optimize) :- !,
-% 	menu(opt, false),
-% 	get_menu_flag(opt, inter_optimize, NM),
-% 	customize(NM).
+%       menu(opt, false),
+%       get_menu_flag(opt, inter_optimize, NM),
+%       customize(NM).
 % customize(analyze) :- !,
-% 	menu_level(L),
-% 	menu(ana, L, false).
+%       menu_level(L),
+%       menu(ana, L, false).
 % customize(slice) :- !,
-% 	menu_level(L),
-% 	menu(slice, L, false).
+%       menu_level(L),
+%       menu(slice, L, false).
 % % customize(parallelize) :- !,
-% % 	menu_level(L),
-% % 	menu(para, L, false).
+% %     menu_level(L),
+% %     menu(para, L, false).
 % :- if(defined(has_ciaopp_extra)).
 % customize(poly_spec) :- !.
 % :- endif.
 % customize(check_assertions) :- !,
-% 	menu_level(L),
-% 	menu(check, L, false).
+%       menu_level(L),
+%       menu(check, L, false).
 %
 customize(check_certificate) :- !.
 customize(none) :- !.
 customize(X) :-
-	atom(X),
-	all_tr(X, XT),
-	( X == XT ->
-	    opt_tr(X, XT2),
-	    X \= XT2
-	; XT2 = XT
-	),
-	menu_level(L),
-	menu_level_tr(LT, L),
-	menu(XT2, L, false, [menu_level=LT,inter_all=X]),
-	!.
+    atom(X),
+    all_tr(X, XT),
+    ( X == XT ->
+        opt_tr(X, XT2),
+        X \= XT2
+    ; XT2 = XT
+    ),
+    menu_level(L),
+    menu_level_tr(LT, L),
+    menu(XT2, L, false, [menu_level=LT,inter_all=X]),
+    !.
 customize(X) :-
-	menu(X, false),
-	!.
+    menu(X, false),
+    !.
 customize(A) :-
-	error_message("Option ~w not customizable", [A]).
+    error_message("Option ~w not customizable", [A]).
 
 % ---------------------------------------------------------------------------
 % Auxiliary
@@ -1067,22 +1067,22 @@ customize(A) :-
   use more menus.".
 
 ask_use_config(USE_CONFIG, false) :-
-	findall(F, valid_flag_value(menu_last_config, F), OptsList),
-	OptsList = [_,_|_],
-	set_menu_flag(use_cfg, menu_last_config, none),
-	menu(use_cfg),
-	get_menu_flag(use_cfg, menu_last_config, USE_CONFIG),
-	!.
+    findall(F, valid_flag_value(menu_last_config, F), OptsList),
+    OptsList = [_,_|_],
+    set_menu_flag(use_cfg, menu_last_config, none),
+    menu(use_cfg),
+    get_menu_flag(use_cfg, menu_last_config, USE_CONFIG),
+    !.
 ask_use_config(none, true).
 
 ask_save_menu :-
-	set_menu_flag(save_cfg, menu_config_name, none),
-	menu(save_cfg, false),
-	get_menu_flag(save_cfg, menu_config_name, CONFIG),
-	( CONFIG \== none ->
-	    save_menu_config(CONFIG)
-	; true
-	).
+    set_menu_flag(save_cfg, menu_config_name, none),
+    menu(save_cfg, false),
+    get_menu_flag(save_cfg, menu_config_name, CONFIG),
+    ( CONFIG \== none ->
+        save_menu_config(CONFIG)
+    ; true
+    ).
 
 % ---------------------------------------------------------------------------
 
@@ -1098,42 +1098,42 @@ ask_save_menu :-
 % Additionally, it shows an error message if Goal fails.
 
 with_menu_flags(Menu, Goal) :-
-	save_flags(Menu),
-	once_port_reify(Goal, Port),
-	restore_flags(Menu),
-	( port_call(Port) -> true
-	; error_message("INTERNAL ERROR: Unexpected error when executing ~w", [Goal]) % TODO: exception?
-	).
+    save_flags(Menu),
+    once_port_reify(Goal, Port),
+    restore_flags(Menu),
+    ( port_call(Port) -> true
+    ; error_message("INTERNAL ERROR: Unexpected error when executing ~w", [Goal]) % TODO: exception?
+    ).
 
 % TODO: rename (call it: set flags from menu)
 save_flags(Menu) :-
-	get_flag_list(Menu, L),
-	save_flags_list(L, Menu).
+    get_flag_list(Menu, L),
+    save_flags_list(L, Menu).
 
 get_flag_list(Menu, L) :-
-	findall(A, (menu_opt${ menu => MM, flag => A }, functor(MM, Menu, _)), L).
+    findall(A, (menu_opt${ menu => MM, flag => A }, functor(MM, Menu, _)), L).
 
 save_flags_list([A|As], Menu) :- !,
-	get_menu_flag(Menu, A, V),
-	push_pp_flag(A, V),
-	save_flags_list(As, Menu).
+    get_menu_flag(Menu, A, V),
+    push_pp_flag(A, V),
+    save_flags_list(As, Menu).
 save_flags_list([], _Menu).
 
 % TODO: rename (undo flags from menu)
 restore_flags(Menu) :-
-	get_flag_list(Menu, L),
-	restore_auto_flags_list(L).
+    get_flag_list(Menu, L),
+    restore_auto_flags_list(L).
 
 restore_auto_flags_list([A|As]) :- !,
-	pop_pp_flag(A),
-	restore_auto_flags_list(As).
+    pop_pp_flag(A),
+    restore_auto_flags_list(As).
 restore_auto_flags_list([]).
 
 % ---------------------------------------------------------------------------
 
 :- use_module(ciaopp(preprocess_flags), [
-	push_pp_flag/2,
-	pop_pp_flag/1
+    push_pp_flag/2,
+    pop_pp_flag/1
    ]).
 
 :- use_module(library(lists), [reverse/2]).
@@ -1144,11 +1144,11 @@ restore_auto_flags_list([]).
 % status of Goal (success, failure, or exception).
 
 with_pp_flags(Flags, Goal) :-
-	push_flags(Flags),
-	once_port_reify(Goal, Port),
-	reverse(Flags, RFlags),
-	pop_flags(RFlags),
-	port_call(Port).
+    push_flags(Flags),
+    once_port_reify(Goal, Port),
+    reverse(Flags, RFlags),
+    pop_flags(RFlags),
+    port_call(Port).
 
 push_flags([A=V|As]) :- !, push_pp_flag(A, V), push_flags(As).
 push_flags([]).
@@ -1168,44 +1168,44 @@ do_output(OFile) :- ( var(OFile) -> output ; output(OFile) ).
       (use @tt{customize(analyze)} to change these options).".
 
 auto_analyze(File) :-
-	auto_interface:auto_analyze(File, _).
+    auto_interface:auto_analyze(File, _).
 
 :- pred auto_analyze(F, OFile)
    # "Same as @pred{auto_analyze/1} but the output file will be
       @var{OFile}.".
 
 auto_analyze(File, OFile) :-
-	\+ (
-	    get_menu_flag(ana, mnu_modules_to_analyze, current),
-	    get_menu_flag(ana, ext_policy, assertions)
-	),
-	!,
-	with_menu_flags(ana, auto_analyze_intermod(File, OFile)).
+    \+ (
+        get_menu_flag(ana, mnu_modules_to_analyze, current),
+        get_menu_flag(ana, ext_policy, assertions)
+    ),
+    !,
+    with_menu_flags(ana, auto_analyze_intermod(File, OFile)).
 auto_analyze(File, OFile) :-
-	with_menu_flags(ana, auto_analyze_(File, OFile)).
+    with_menu_flags(ana, auto_analyze_(File, OFile)).
 
 auto_analyze_(File, OFile) :-
-	module(File),
-	get_menu_flag(ana, inter_ana, LIST) ,
-	exec_analysis_list(LIST, ana),
-	%
-	get_menu_flag(ana, vers, VERS) ,
-	( VERS == on -> transform(vers) ; true ),
-	%
-	do_output(OFile),
-	set_last_file(File).
+    module(File),
+    get_menu_flag(ana, inter_ana, LIST) ,
+    exec_analysis_list(LIST, ana),
+    %
+    get_menu_flag(ana, vers, VERS) ,
+    ( VERS == on -> transform(vers) ; true ),
+    %
+    do_output(OFile),
+    set_last_file(File).
 
 auto_analyze_intermod(File, OFile) :-
-	get_menu_flag(ana, inter_ana, LIST) ,
-	exec_mod_analysis_list(LIST, File, ana),
-	%% After the analysis, the current module must be analyzed again to do output/0-1.
-	module(File),
-	push_pp_flag(intermod,on),
-        exec_analysis_list(LIST, ana),
-	pop_pp_flag(intermod),
-	do_output(OFile),
-	%%
-	set_last_file(File).
+    get_menu_flag(ana, inter_ana, LIST) ,
+    exec_mod_analysis_list(LIST, File, ana),
+    %% After the analysis, the current module must be analyzed again to do output/0-1.
+    module(File),
+    push_pp_flag(intermod,on),
+    exec_analysis_list(LIST, ana),
+    pop_pp_flag(intermod),
+    do_output(OFile),
+    %%
+    set_last_file(File).
 
 :- pred auto_check_assert(F)
    # "Check the assertions in file @var{F}, with the current options,
@@ -1213,46 +1213,46 @@ auto_analyze_intermod(File, OFile) :-
       @tt{customize(check_assertions)} to change these options).".
 
 auto_check_assert(File) :-
-	auto_check_assert(File, _).
+    auto_check_assert(File, _).
 
 :- pred auto_check_assert(F, OFile)
    # "Same as @pred{auto_check_assrt/1} but the output file will be
       @var{OFile}.".
 
 auto_check_assert(File, OFile) :-
-	with_menu_flags(check, auto_check_assert_(File, OFile)).
+    with_menu_flags(check, auto_check_assert_(File, OFile)).
 
 auto_check_assert_(File, OFile) :-
-	get_menu_flag(check, assert_ctcheck, CTCHECKS),
-	( CTCHECKS == auto ->
-	    auto_sel_dom(File)
-	; true
-	),
-	%
-	get_menu_flag(check, gen_certificate, GENCERT),
-	( GENCERT==manual ->
-	   % TODO: *** This needs to be revised... MH
-	   set_pp_flag(dump_pred,nodep),
-  	   set_pp_flag(dump_pp,off),
-	   set_pp_flag(fixpoint,di)
-	; true
-	),
-	%
-	get_menu_flag(check, assert_ctcheck, CTCHECKS),
-	( ( CTCHECKS == manual
-	  ; CTCHECKS == auto 
-	  ) ->
-	    get_menu_flag(ana, inter_ana, LIST),
-	    exec_analysis_list_acheck(File,LIST,ANYERROR),
-	    ctcheck_open_module_if_not_ctchecked(File,LIST,ANYERROR)
-% %% 	    get_menu_flag(check, verbose_ctchecks, VCT ),
-% %% 	    push_pp_flag(verbose_ctchecks, VCT),
-%	    acheck
+    get_menu_flag(check, assert_ctcheck, CTCHECKS),
+    ( CTCHECKS == auto ->
+        auto_sel_dom(File)
+    ; true
+    ),
+    %
+    get_menu_flag(check, gen_certificate, GENCERT),
+    ( GENCERT==manual ->
+       % TODO: *** This needs to be revised... MH
+       set_pp_flag(dump_pred,nodep),
+       set_pp_flag(dump_pp,off),
+       set_pp_flag(fixpoint,di)
+    ; true
+    ),
+    %
+    get_menu_flag(check, assert_ctcheck, CTCHECKS),
+    ( ( CTCHECKS == manual
+      ; CTCHECKS == auto 
+      ) ->
+        get_menu_flag(ana, inter_ana, LIST),
+        exec_analysis_list_acheck(File,LIST,ANYERROR),
+        ctcheck_open_module_if_not_ctchecked(File,LIST,ANYERROR)
+% %%        get_menu_flag(check, verbose_ctchecks, VCT ),
+% %%        push_pp_flag(verbose_ctchecks, VCT),
+%           acheck
 % %, pop_pp_flag(verbose_ctchecks)
-	; module(File)
-	),
-	continue_auto_assert_ctchecks(ANYERROR, File, OFile, GENCERT),
-	set_last_file(File).
+    ; module(File)
+    ),
+    continue_auto_assert_ctchecks(ANYERROR, File, OFile, GENCERT),
+    set_last_file(File).
 
 :- pop_prolog_flag(multi_arity_warnings).
 
@@ -1261,208 +1261,208 @@ auto_check_assert_(File, OFile) :-
 %% checking the whole program (incremental modular ctchecking).
 %% In that case, checks it in order to show the resulting buffer.
 ctcheck_open_module_if_not_ctchecked(File,LIST,ANYERROR):-
-	( current_pp_flag(mnu_modules_to_analyze,all)
-	; current_pp_flag(ct_modular,all)
-	),
-	path_splitext(File,Base,_),
-	get_modules_analyzed(ModList),
-	\+ member(Base,ModList),
-	!,
-	push_pp_flag(mnu_modules_to_analyze,current),
-	push_pp_flag(ct_modular,curr_mod),
-	exec_analysis_list_acheck(File,LIST,ANYERROR),
-	pop_pp_flag(mnu_modules_to_analyze),
-	pop_pp_flag(ct_modular).
+    ( current_pp_flag(mnu_modules_to_analyze,all)
+    ; current_pp_flag(ct_modular,all)
+    ),
+    path_splitext(File,Base,_),
+    get_modules_analyzed(ModList),
+    \+ member(Base,ModList),
+    !,
+    push_pp_flag(mnu_modules_to_analyze,current),
+    push_pp_flag(ct_modular,curr_mod),
+    exec_analysis_list_acheck(File,LIST,ANYERROR),
+    pop_pp_flag(mnu_modules_to_analyze),
+    pop_pp_flag(ct_modular).
 ctcheck_open_module_if_not_ctchecked(_File,_LIST,_ANYERROR).
 
 continue_auto_assert_ctchecks(Err,_,OFile,_):-
-	Err == error, !,
-	error_message("Errors detected. Further preprocessing aborted."),
-	decide_output(OFile).
+    Err == error, !,
+    error_message("Errors detected. Further preprocessing aborted."),
+    decide_output(OFile).
 continue_auto_assert_ctchecks(_ANYERROR,File,OFile,GENCERT):-
-	( GENCERT==on ->
-	   atom_concat(File,'.cert',Cert_Name),
-	   message(inform, ['{Generating certificate ',~~(Cert_Name)]),
-	   pp_statistics(runtime,_),
-	   ( current_pp_flag(reduced_cert,on) -> remove_irrelevant_entries ; true ),
-  	   dump(Cert_Name),
-	   pp_statistics(runtime,[_,T]),
-	   message(inform, ['{certificate saved in ', ~~(T), ' msec.}\n}'])
-	; true
-	),
-	decide_output(OFile).
-%	get_menu_flag(check, optim_comp, OPTIMCOMP),
-%	( OPTIMCOMP == none ->
-%	    decide_output(OFile)
-%	; optim_comp(OPTIMCOMP)
-%	).
+    ( GENCERT==on ->
+       atom_concat(File,'.cert',Cert_Name),
+       message(inform, ['{Generating certificate ',~~(Cert_Name)]),
+       pp_statistics(runtime,_),
+       ( current_pp_flag(reduced_cert,on) -> remove_irrelevant_entries ; true ),
+       dump(Cert_Name),
+       pp_statistics(runtime,[_,T]),
+       message(inform, ['{certificate saved in ', ~~(T), ' msec.}\n}'])
+    ; true
+    ),
+    decide_output(OFile).
+%       get_menu_flag(check, optim_comp, OPTIMCOMP),
+%       ( OPTIMCOMP == none ->
+%           decide_output(OFile)
+%       ; optim_comp(OPTIMCOMP)
+%       ).
 
 decide_output(OFile) :-
-	current_pp_flag(ctchecks_output, on), !,
-	do_output(OFile).
+    current_pp_flag(ctchecks_output, on), !,
+    do_output(OFile).
 decide_output(_).
 
 % ana = current module, ct check = current module
 exec_analysis_list_acheck(File,LIST,ANYERROR) :-
-	current_pp_flag(mnu_modules_to_analyze,current),
-	current_pp_flag(ct_modular,curr_mod),!,
-	( current_pp_flag(assert_ctcheck,auto) ->
-	    true
-	; module(File)
-	),
-	current_pp_flag(ct_ext_policy, CT_ext_policy),
-	exec_analysis_list_acheck_11(LIST, CT_ext_policy ,ANYERROR).
+    current_pp_flag(mnu_modules_to_analyze,current),
+    current_pp_flag(ct_modular,curr_mod),!,
+    ( current_pp_flag(assert_ctcheck,auto) ->
+        true
+    ; module(File)
+    ),
+    current_pp_flag(ct_ext_policy, CT_ext_policy),
+    exec_analysis_list_acheck_11(LIST, CT_ext_policy ,ANYERROR).
 % ana = current module, ct check = all
 exec_analysis_list_acheck(File,LIST,ANYERROR) :-
-	current_pp_flag(mnu_modules_to_analyze,current),
-	current_pp_flag(ct_modular,all),!,
-	current_pp_flag(ct_ext_policy, CT_ext_policy),
-	exec_analysis_list_acheck_1n(File, LIST, CT_ext_policy,ANYERROR).
+    current_pp_flag(mnu_modules_to_analyze,current),
+    current_pp_flag(ct_modular,all),!,
+    current_pp_flag(ct_ext_policy, CT_ext_policy),
+    exec_analysis_list_acheck_1n(File, LIST, CT_ext_policy,ANYERROR).
 % ana = all, ct checking = all
 exec_analysis_list_acheck(File,LIST,ANYERROR) :-
-	current_pp_flag(mnu_modules_to_analyze,all),
-	current_pp_flag(ct_modular,all),!,
-	push_pp_flag(intermod,on),
-	current_pp_flag(ct_ext_policy, CT_ext_policy),
-	exec_mod_ct_x(LIST,File,auto,CT_ext_policy,ANYERROR),
-	get_concrete_analyses(LIST,Anals),
-	( current_pp_flag(interleave_an_check,off) ->
-	    auto_ctcheck_summary(Anals,~maybe_main(File),ANYERROR)
-	; true
-	),
-        pop_pp_flag(intermod).
+    current_pp_flag(mnu_modules_to_analyze,all),
+    current_pp_flag(ct_modular,all),!,
+    push_pp_flag(intermod,on),
+    current_pp_flag(ct_ext_policy, CT_ext_policy),
+    exec_mod_ct_x(LIST,File,auto,CT_ext_policy,ANYERROR),
+    get_concrete_analyses(LIST,Anals),
+    ( current_pp_flag(interleave_an_check,off) ->
+        auto_ctcheck_summary(Anals,~maybe_main(File),ANYERROR)
+    ; true
+    ),
+    pop_pp_flag(intermod).
 % Intermodular analysis (all), but CT one module
 exec_analysis_list_acheck(File,LIST,ANYERROR) :-
-	current_pp_flag(mnu_modules_to_analyze,all),
-	current_pp_flag(ct_modular,curr_mod),
-	current_pp_flag(ct_ext_policy, CT_ext_policy),
-	exec_mod_ct_x(LIST,File,auto,CT_ext_policy,ANYERROR),
-	module(File),
-	exec_analysis_list_acheck_11(LIST, CT_ext_policy,ANYERROR).
+    current_pp_flag(mnu_modules_to_analyze,all),
+    current_pp_flag(ct_modular,curr_mod),
+    current_pp_flag(ct_ext_policy, CT_ext_policy),
+    exec_mod_ct_x(LIST,File,auto,CT_ext_policy,ANYERROR),
+    module(File),
+    exec_analysis_list_acheck_11(LIST, CT_ext_policy,ANYERROR).
 
 % one module analysis and one module checking.
 exec_analysis_list_acheck_11(LIST, assertions,ANYERROR):- !,
-	push_pp_flag(intermod,off),
-	exec_analysis_list(LIST, check),
-	acheck_summary(ANYERROR),
-	pop_pp_flag(intermod).
+    push_pp_flag(intermod,off),
+    exec_analysis_list(LIST, check),
+    acheck_summary(ANYERROR),
+    pop_pp_flag(intermod).
 exec_analysis_list_acheck_11(LIST, registry, ANYERROR):-
-	push_pp_flag(intermod,on),
-	push_pp_flag(entry_policy,force),
-	push_pp_flag(success_policy,over_all), % !!! all/botall ?
-	exec_analysis_list(LIST, check),
-	acheck_summary(ANYERROR),
-	pop_pp_flag(entry_policy),
-	pop_pp_flag(success_policy),
-	pop_pp_flag(intermod).
+    push_pp_flag(intermod,on),
+    push_pp_flag(entry_policy,force),
+    push_pp_flag(success_policy,over_all), % !!! all/botall ?
+    exec_analysis_list(LIST, check),
+    acheck_summary(ANYERROR),
+    pop_pp_flag(entry_policy),
+    pop_pp_flag(success_policy),
+    pop_pp_flag(intermod).
 
 % one module analysis and all modules checking.
 exec_analysis_list_acheck_1n(File, LIST, assertions,ANYERROR) :- !,
-	exec_mod_ct_x(LIST,File,ind,_,ANYERROR).  % inductive
+    exec_mod_ct_x(LIST,File,ind,_,ANYERROR).  % inductive
 exec_analysis_list_acheck_1n(File, LIST, EP,ANYERROR):-
-	exec_mod_ct_x(LIST,File,curr_auto,EP,ANYERROR).
+    exec_mod_ct_x(LIST,File,curr_auto,EP,ANYERROR).
 
 exec_mod_ct_x(Ds,File,X,EP,ANYERROR):-
-	conc_ana(Ds,As),
-	x_check(X,As,File,EP,ANYERROR).
+    conc_ana(Ds,As),
+    x_check(X,As,File,EP,ANYERROR).
 
 conc_ana([],[]).
 conc_ana([D|Ds],[A|As]):-
-	% needs revision PP
-%	types_or_modes(D,A),!,
-	get_conc_a(D,A), !,
-	conc_ana(Ds,As).
+    % needs revision PP
+%       types_or_modes(D,A),!,
+    get_conc_a(D,A), !,
+    conc_ana(Ds,As).
 conc_ana([_|Ds],As):-
-	conc_ana(Ds,As).
+    conc_ana(Ds,As).
 
 %pp%get_conc_a(D,A):-
-%pp%	get_menu_flag(check,assert_ctcheck,auto),!,
-%pp%	preferred_ana(D,A).
+%pp%    get_menu_flag(check,assert_ctcheck,auto),!,
+%pp%    preferred_ana(D,A).
 get_conc_a(D,A):-
-	get_menu_flag(check,D,A),
-	A \= none,!.
+    get_menu_flag(check,D,A),
+    A \= none,!.
 
 x_check(ind,D,File,_,ANYERROR) :-
-	inductive_ctcheck_summary(D,~maybe_main(File),ANYERROR).
+    inductive_ctcheck_summary(D,~maybe_main(File),ANYERROR).
 x_check(auto,D,File,_EP,_ANYERROR) :-
-	ct_modular_analyze(D,~maybe_main(File)).
+    ct_modular_analyze(D,~maybe_main(File)).
 x_check(curr_auto,D,File,_EP,ANYERROR) :-
-	auto_ctcheck_summary(D,~maybe_main(File),ANYERROR).
+    auto_ctcheck_summary(D,~maybe_main(File),ANYERROR).
 
 ct_modular_analyze(D,File) :-
-	current_pp_flag(ct_regen_reg,on),!,
-	modular_analyze(D,File).
+    current_pp_flag(ct_regen_reg,on),!,
+    modular_analyze(D,File).
 ct_modular_analyze(_,_).
 
 get_concrete_analyses([],[]).
 get_concrete_analyses([D|Ds],As):-
-	get_menu_flag(check,D,A),
-	( A == none ->
-	  As = As0
-	; As = [A|As0]
-	),
-	get_concrete_analyses(Ds,As0).
+    get_menu_flag(check,D,A),
+    ( A == none ->
+      As = As0
+    ; As = [A|As0]
+    ),
+    get_concrete_analyses(Ds,As0).
 
 % types_or_modes(types,Types) :- 
-% 	get_menu_flag(check, types, Types),
-% 	analysis(Types).
+%       get_menu_flag(check, types, Types),
+%       analysis(Types).
 % types_or_modes(modes,Modes) :-
-% 	get_menu_flag(check, modes, Modes),
-% 	analysis(Modes).
+%       get_menu_flag(check, modes, Modes),
+%       analysis(Modes).
 
 % ---------------------------------------------------------------------------
 % Auto selection of domains for CT checking
 
 auto_sel_dom(_) :-
-	get_menu_flag(check,ct_modular,all),!,
-	% TODO: ad-hoc!
-	get_menu_flag(ana,inter_ana,As),
-	decide_analyses_mod(As).
+    get_menu_flag(check,ct_modular,all),!,
+    % TODO: ad-hoc!
+    get_menu_flag(ana,inter_ana,As),
+    decide_analyses_mod(As).
 auto_sel_dom(File) :-
-	module(File),
-	get_menu_flag(ana,inter_ana,As),
-	curr_file(_,M),
-	determine_needed(As,M,Ds),
-	message(inform, ['{Analyses needed to check assertions: ',~~(Ds)]),
-	message(inform, ['}']).
+    module(File),
+    get_menu_flag(ana,inter_ana,As),
+    curr_file(_,M),
+    determine_needed(As,M,Ds),
+    message(inform, ['{Analyses needed to check assertions: ',~~(Ds)]),
+    message(inform, ['}']).
 
 needed_to_prove_prop(M, Dom, A) :-
-	get_one_prop(M, P),
-	needed_to_prove(A, Dom, P).
+    get_one_prop(M, P),
+    needed_to_prove(A, Dom, P).
 
 determine_needed([],_,[]).
 determine_needed([A|As],M,[Dom|Ds]) :-
-	preferred_ana(A,Dom),
-	needed_to_prove_prop(M, Dom, A),!,
-	set_menu_flag(check,A,Dom),
-	determine_needed(As,M,Ds).
+    preferred_ana(A,Dom),
+    needed_to_prove_prop(M, Dom, A),!,
+    set_menu_flag(check,A,Dom),
+    determine_needed(As,M,Ds).
 determine_needed([A|As],M,Ds) :-
-	set_menu_flag(check,A,none),
-	determine_needed(As,M,Ds).
+    set_menu_flag(check,A,none),
+    determine_needed(As,M,Ds).
 
 get_one_prop(M,P) :-
-	assertion_read(_,M1,check,Kind,Body,_,Base,_,_),
-	take_assertion(M,M1,Kind,Base),
-	assertion_body(_,_,Call,Succ,Comp,_,Body),
-	( member(Prop,Succ) ; member(Prop,Call) ; member(Prop,Comp) ),
-	native_prop(Prop,P).
+    assertion_read(_,M1,check,Kind,Body,_,Base,_,_),
+    take_assertion(M,M1,Kind,Base),
+    assertion_body(_,_,Call,Succ,Comp,_,Body),
+    ( member(Prop,Succ) ; member(Prop,Call) ; member(Prop,Comp) ),
+    native_prop(Prop,P).
 
 take_assertion(M,M1,Kind,Base) :-
-	M \== M1,
-	is_library(Base), !, % assume that one does not check libraries with auto
-	Kind  == calls.
+    M \== M1,
+    is_library(Base), !, % assume that one does not check libraries with auto
+    Kind  == calls.
 take_assertion(M,M1,Kind,_Base) :-
-	( M == M1; current_pp_flag(ct_modular,all)),
-	member(Kind,[comp,success,calls]).
+    ( M == M1; current_pp_flag(ct_modular,all)),
+    member(Kind,[comp,success,calls]).
 
 needed_to_prove_def(AnaKind, Ana, P) :-
-	preferred_ana(AnaKind, Ana),
-	P =.. [F,_|Rest],
-	PP =..[F|Rest],
-	knows_of(PP,Ana),!.
+    preferred_ana(AnaKind, Ana),
+    P =.. [F,_|Rest],
+    PP =..[F|Rest],
+    knows_of(PP,Ana),!.
 
 :- doc(bug, "needed_to_prove/3 is a weird predicate, it must be
-	more easy to read. --EMM.").
+    more easy to read. --EMM.").
 
 % a kludge to avoid problems with knows_of/2
 needed_to_prove(modes, _, ground(_)) :- !.
@@ -1484,9 +1484,9 @@ needed_to_prove(modes, _, P) :- needed_to_prove(ana_cost, _, P).
 needed_to_prove(modes, _, P) :- needed_to_prove(ana_size, _, P).
 needed_to_prove(ana_cost, _, P) :-
 % because knows_of/2 works differently for size props.
-	P =.. [F|As],
-	PP =.. [F,_|As],
-	needed_to_prove(ana_size, _, PP).
+    P =.. [F|As],
+    PP =.. [F,_|As],
+    needed_to_prove(ana_size, _, PP).
 
 % Preferred analyses of different kind.
 % Cannot use the flags here, as default values of the flags
@@ -1503,39 +1503,39 @@ preferred_ana(ana_det,  det).
 % TODO: ad-hoc for modular ct checking (it fixes types and modes)
 decide_analyses_mod([]).
 decide_analyses_mod([A|As]):-
-	decide_one_analysis_mod(A),
-	decide_analyses_mod(As).
+    decide_one_analysis_mod(A),
+    decide_analyses_mod(As).
 
 decide_one_analysis_mod(types) :-
-	set_menu_flag(check,types,terms).
+    set_menu_flag(check,types,terms).
 decide_one_analysis_mod(modes) :-
-	set_menu_flag(check,modes,shfr).
+    set_menu_flag(check,modes,shfr).
 decide_one_analysis_mod(A) :-
-	set_menu_flag(check,A,none).
+    set_menu_flag(check,A,none).
 
 % ---------------------------------------------------------------------------
 % Auto check certificate
 
 auto_check_certificate(Program) :-
-	module(Program),
-	atom_concat(Program,'.cert',Cert_Name),
-	restore(Cert_Name),
-	domain(Domain),
-	store_previous_analysis(Domain),
-	checker(Checker),
-	catch(with_pp_flags([fixpoint = Checker,
-                             widencall = off], analyze(Domain)),
-	      certif_error(X),
-              error_message("Certificate and program do not match")),
-	( var(X)-> acheck ; abort).
+    module(Program),
+    atom_concat(Program,'.cert',Cert_Name),
+    restore(Cert_Name),
+    domain(Domain),
+    store_previous_analysis(Domain),
+    checker(Checker),
+    catch(with_pp_flags([fixpoint = Checker,
+                         widencall = off], analyze(Domain)),
+          certif_error(X),
+          error_message("Certificate and program do not match")),
+    ( var(X)-> acheck ; abort).
 
 %% *** This is cheating a little bit... GP
 checker(Fixpoint):-
-	get_menu_flag(check, reduced_cert, REDCERT),
-	( REDCERT = off ->
-	    Fixpoint = check_di3
-	; Fixpoint = check_reduc_di
-	).
+    get_menu_flag(check, reduced_cert, REDCERT),
+    ( REDCERT = off ->
+        Fixpoint = check_di3
+    ; Fixpoint = check_reduc_di
+    ).
 
 :- push_prolog_flag(multi_arity_warnings, off).
 
@@ -1546,29 +1546,29 @@ checker(Fixpoint):-
       @tt{customize(optimize)} to change these options).".
 
 auto_optimize(File) :-
-	auto_optimize(File, _).
+    auto_optimize(File, _).
 
 :- pred auto_optimize(F, OFile)
    # "Same as @pred{auto_optimize/1} but the output file will be
       @var{OFile}.".
 
 auto_optimize(File, OFile) :-
-	module(File),
-	get_menu_flag(opt, inter_optimize, P),
-	with_pp_flags([dump_ai = off], exec_optimize_and_output(P, OFile)),
-	set_last_file(File),
-	!.
+    module(File),
+    get_menu_flag(opt, inter_optimize, P),
+    with_pp_flags([dump_ai = off], exec_optimize_and_output(P, OFile)),
+    set_last_file(File),
+    !.
 auto_optimize(File, _) :-
-	error_message("INTERNAL ERROR: Unexpected error when executing auto_optimize(~w)", [File]).
+    error_message("INTERNAL ERROR: Unexpected error when executing auto_optimize(~w)", [File]).
 
 :- pop_prolog_flag(multi_arity_warnings).
 
 exec_optimize_and_output(P, OFile) :-
-	exec_optimize(P),
-	( nonvar(P), own_output(P) ->
-	    true
-	; do_output(OFile)
-	).
+    exec_optimize(P),
+    ( nonvar(P), own_output(P) ->
+        true
+    ; do_output(OFile)
+    ).
 
 own_output(_) :- fail. % (default)
 :- if(defined(has_ciaopp_extra)).
@@ -1576,33 +1576,33 @@ own_output(poly_spec). % TODO: poly_spec performs its own output
 :- endif.
 
 exec_mod_analysis_list(L, File, AnaOrCheck) :-
-	get_domain_list(L,AnaOrCheck,DomList,NoValid),
-	mod_analyze(DomList, File),
-	(
-	    NoValid = [_|_] ->
-	    error_message("Modular analysis not available for the following domains: ~w",
-		               [NoValid])
-	;
-	    true
-	).
+    get_domain_list(L,AnaOrCheck,DomList,NoValid),
+    mod_analyze(DomList, File),
+    (
+        NoValid = [_|_] ->
+        error_message("Modular analysis not available for the following domains: ~w",
+                           [NoValid])
+    ;
+        true
+    ).
 
 get_domain_list([],_,[],[]).
 get_domain_list([L|Ls],AnaOrCheck,Ds,Ns):-
-	get_menu_flag(AnaOrCheck, L, none),  %No analysis to perform.
-	!,
-	get_domain_list(Ls,AnaOrCheck,Ds,Ns).
+    get_menu_flag(AnaOrCheck, L, none),  %No analysis to perform.
+    !,
+    get_domain_list(Ls,AnaOrCheck,Ds,Ns).
 get_domain_list([L|Ls],AnaOrCheck,[D|Ds],Ns):-
-	get_menu_flag(AnaOrCheck, L, D),
-	valid_mod_analysis(D), % Valid modular analysis domain.
-	!,
-	get_domain_list(Ls,AnaOrCheck,Ds,Ns).
+    get_menu_flag(AnaOrCheck, L, D),
+    valid_mod_analysis(D), % Valid modular analysis domain.
+    !,
+    get_domain_list(Ls,AnaOrCheck,Ds,Ns).
 get_domain_list([L|Ls],AnaOrCheck,Ds,[L|Ns]):-
-	get_domain_list(Ls,AnaOrCheck,Ds,[Ns]). % Non-valid modular analysis domain.
+    get_domain_list(Ls,AnaOrCheck,Ds,[Ns]). % Non-valid modular analysis domain.
 
 mod_analyze(Domain, File) :-
-	current_pp_flag(ext_policy, ExtPolicy),
-	entry_policy_value(ExtPolicy,EP),
-	with_pp_flags([entry_policy = EP], mod_analyze_(File, Domain)).
+    current_pp_flag(ext_policy, ExtPolicy),
+    entry_policy_value(ExtPolicy,EP),
+    with_pp_flags([entry_policy = EP], mod_analyze_(File, Domain)).
 
 entry_policy_value(assertions,force_assrt).
 entry_policy_value(registry,top_level).
@@ -1611,29 +1611,29 @@ entry_policy_value(registry,top_level).
 % success_policy_value(registry,under_all).
 
 mod_analyze_(_File, Domain):-
-	current_pp_flag(mnu_modules_to_analyze,all),
-	current_prolog_flag(main_module,Main),
-	Main \== '',
-	!,
-	modular_analyze(Domain, Main).
+    current_pp_flag(mnu_modules_to_analyze,all),
+    current_prolog_flag(main_module,Main),
+    Main \== '',
+    !,
+    modular_analyze(Domain, Main).
 mod_analyze_(File, Domain):-
-	modular_analyze(Domain, File).
+    modular_analyze(Domain, File).
 
 exec_analysis_list([A|B], AnaOrCheck) :-
-	get_menu_flag(AnaOrCheck, A, none),
-	!,
-	exec_analysis_list(B, AnaOrCheck).
+    get_menu_flag(AnaOrCheck, A, none),
+    !,
+    exec_analysis_list(B, AnaOrCheck).
 exec_analysis_list([A|B], AnaOrCheck) :-
-	get_menu_flag(AnaOrCheck, A, P),
-	!,
-	( analysis(P) ->
-	    ( analyze(P) ->
-	        true
-	    ; error_message("There was an error when executing analysis ~w", [P])
-	    )
-	; error_message("Unknown analysis: ~w", [P])
-	),
-	exec_analysis_list(B, AnaOrCheck).
+    get_menu_flag(AnaOrCheck, A, P),
+    !,
+    ( analysis(P) ->
+        ( analyze(P) ->
+            true
+        ; error_message("There was an error when executing analysis ~w", [P])
+        )
+    ; error_message("Unknown analysis: ~w", [P])
+    ),
+    exec_analysis_list(B, AnaOrCheck).
 exec_analysis_list([], _).
 
 exec_optimize(none) :- !.
@@ -1646,142 +1646,142 @@ exec_optimize(slice) :- !, exec_slice.
 exec_optimize(poly_spec) :- !, exec_poly_spec.
 :- endif.
 exec_optimize(O) :-
-	error_message("Unknown optimization: ~w", [O]).
+    error_message("Unknown optimization: ~w", [O]).
 
 :- if(defined(has_ciaopp_extra)).
 exec_parallelize :-
-        get_menu_flag(para, pp_info, PP),
-	( PP == on -> Flags = [dump_ai = on]
-	; Flags = []
-	),
-	with_menu_flags(para, with_pp_flags(Flags, exec_parallelize_)).
+    get_menu_flag(para, pp_info, PP),
+    ( PP == on -> Flags = [dump_ai = on]
+    ; Flags = []
+    ),
+    with_menu_flags(para, with_pp_flags(Flags, exec_parallelize_)).
 
 exec_parallelize_ :-
-        get_menu_flag(para, para_ann, Ann),
-        get_menu_flag(para, para_grain, Gr),
-        get_menu_flag(para, modes, Mode),
-        get_menu_flag(para, ana_nf, NF),
-        get_menu_flag(para, ana_det, Det),
-        get_menu_flag(para, types, Types),
-	( Mode == none -> true
-	; analyze(Mode)
-	),
-	( (Ann == uoudg, Det == det) ->
-	    analyze(Types),
-	    analyze(Det)
-	; true
-	),
-	( (Ann == uudg, Det == det) ->
-	    analyze(Types),
-	    analyze(Det)
-	; true
-	),
-	( (Ann == disjwait, Det == det) ->
-	    analyze(Types),
-	    analyze(Det)
-	; true
-	),
-	( (Ann == tgudg) ->
-	     analyze(Types),
-	     analyze(steps_ub)
-	; true
-	),
-	( ( Gr \== none, NF \== none) ->
-	     analyze(Types),
-	     analyze(NF)
-	; true
-	),
-        transform(Ann),
-	%
-	get_menu_flag(para, vers, VERS),
-	( VERS == on -> transform(vers) ; true ).
+    get_menu_flag(para, para_ann, Ann),
+    get_menu_flag(para, para_grain, Gr),
+    get_menu_flag(para, modes, Mode),
+    get_menu_flag(para, ana_nf, NF),
+    get_menu_flag(para, ana_det, Det),
+    get_menu_flag(para, types, Types),
+    ( Mode == none -> true
+    ; analyze(Mode)
+    ),
+    ( (Ann == uoudg, Det == det) ->
+        analyze(Types),
+        analyze(Det)
+    ; true
+    ),
+    ( (Ann == uudg, Det == det) ->
+        analyze(Types),
+        analyze(Det)
+    ; true
+    ),
+    ( (Ann == disjwait, Det == det) ->
+        analyze(Types),
+        analyze(Det)
+    ; true
+    ),
+    ( (Ann == tgudg) ->
+         analyze(Types),
+         analyze(steps_ub)
+    ; true
+    ),
+    ( ( Gr \== none, NF \== none) ->
+         analyze(Types),
+         analyze(NF)
+    ; true
+    ),
+    transform(Ann),
+    %
+    get_menu_flag(para, vers, VERS),
+    ( VERS == on -> transform(vers) ; true ).
 :- endif.
 
 exec_spec :-
-	spec_flags(Flags, []),
-	with_menu_flags(spec, with_pp_flags(Flags, exec_spec_)).
+    spec_flags(Flags, []),
+    with_menu_flags(spec, with_pp_flags(Flags, exec_spec_)).
 
 exec_spec_ :-
-	get_menu_flag(spec, peval_ana, P),
-	analyze(P),
-	get_menu_flag(spec, spec_poly, SP),
-	get_menu_flag(spec, min_crit, Min),
-	get_menu_flag(spec, inter_opt_arg_filt, AF),
-	( Min == none ->
-	    ( SP == off  ->
-	        ( AF == on ->
-		    transform(codegen_af)
-		; transform(codegen)
-		)
-	    ; transform(codegen),
-	      decide_transform(SP),
-	      ( AF = on ->
-		  transform(arg_filtering)
-	      ; true
-	      )
-	    )
-	; transform(codegen_min)
-	).
+    get_menu_flag(spec, peval_ana, P),
+    analyze(P),
+    get_menu_flag(spec, spec_poly, SP),
+    get_menu_flag(spec, min_crit, Min),
+    get_menu_flag(spec, inter_opt_arg_filt, AF),
+    ( Min == none ->
+        ( SP == off  ->
+            ( AF == on ->
+                transform(codegen_af)
+            ; transform(codegen)
+            )
+        ; transform(codegen),
+          decide_transform(SP),
+          ( AF = on ->
+              transform(arg_filtering)
+          ; true
+          )
+        )
+    ; transform(codegen_min)
+    ).
 
 spec_flags -->
-	{ get_menu_flag(spec, local_control, LocalControl) },
-	( { LocalControl \== off } ->
-	    [fixpoint = di]
-	; []
-	).
+    { get_menu_flag(spec, local_control, LocalControl) },
+    ( { LocalControl \== off } ->
+        [fixpoint = di]
+    ; []
+    ).
 
 exec_slice :-
-	spec_flags(Flags, []),
-	with_menu_flags(spec, with_pp_flags(Flags, exec_slice_)).
+    spec_flags(Flags, []),
+    with_menu_flags(spec, with_pp_flags(Flags, exec_slice_)).
 
 exec_slice_ :-
-	get_menu_flag(spec, peval_ana, P),
-	analyze(P),
-	get_menu_flag(spec, spec_poly, SP),
-	get_menu_flag(spec, inter_opt_arg_filt, AF),
-	transform(slicing),
-	decide_transform(SP),
-	( AF = on ->
-	    transform(arg_filtering)
-	; true
-	).
+    get_menu_flag(spec, peval_ana, P),
+    analyze(P),
+    get_menu_flag(spec, spec_poly, SP),
+    get_menu_flag(spec, inter_opt_arg_filt, AF),
+    transform(slicing),
+    decide_transform(SP),
+    ( AF = on ->
+        transform(arg_filtering)
+    ; true
+    ).
 
 :- if(defined(has_ciaopp_extra)).
 exec_poly_spec :-
-	sp_poly_flags(Flags, []),
-	with_menu_flags(sp_poly, with_pp_flags(Flags, exec_poly_spec_)).
+    sp_poly_flags(Flags, []),
+    with_menu_flags(sp_poly, with_pp_flags(Flags, exec_poly_spec_)).
 
 exec_poly_spec_ :-
-	analyze(pd),
-	transform(codegen_poly).
+    analyze(pd),
+    transform(codegen_poly).
 
 sp_poly_flags -->
-        { get_menu_flag(sp_poly, aggressivity, C) },
-	set_spec_strategy(C),
-	[fixpoint = poly_spec].
+    { get_menu_flag(sp_poly, aggressivity, C) },
+    set_spec_strategy(C),
+    [fixpoint = poly_spec].
 
 set_spec_strategy(aggressive) -->
-	[poly_global_control = [hom_emb,dyn]],
-	[poly_local_control = [[local_control(det),comp_rule(leftmost),unf_bra_fac(1)],
-                               [local_control(df_hom_emb_as),comp_rule(bind_ins_jb),unf_bra_fac(0)]]].
+    [poly_global_control = [hom_emb,dyn]],
+    [poly_local_control = [[local_control(det),comp_rule(leftmost),unf_bra_fac(1)],
+                           [local_control(df_hom_emb_as),comp_rule(bind_ins_jb),unf_bra_fac(0)]]].
 set_spec_strategy(normal) -->
-	[poly_global_control = [hom_emb]],
-	[poly_local_control = [[local_control(df_hom_emb_as),comp_rule(bind_ins_jb),unf_bra_fac(0)],
-                               [local_control(det),comp_rule(leftmost),unf_bra_fac(1)]]].
+    [poly_global_control = [hom_emb]],
+    [poly_local_control = [[local_control(df_hom_emb_as),comp_rule(bind_ins_jb),unf_bra_fac(0)],
+                           [local_control(det),comp_rule(leftmost),unf_bra_fac(1)]]].
 set_spec_strategy(conservative) -->
-	[poly_global_control = [hom_emb]],
-	[poly_local_control = [[local_control(inst)],
-                               [local_control(det),comp_rule(leftmost),unf_bra_fac(1)]]].
+    [poly_global_control = [hom_emb]],
+    [poly_local_control = [[local_control(inst)],
+                           [local_control(det),comp_rule(leftmost),unf_bra_fac(1)]]].
 :- endif.
 
 decide_transform(off) :-
-	true. % nothing to to
+    true. % nothing to to
 decide_transform(mono) :-
-	analyze(seff),
-	transform(simp).
+    analyze(seff),
+    transform(simp).
 decide_transform(poly) :-
-	analyze(seff),
-	transform(spec).
+    analyze(seff),
+    transform(spec).
 
 % ---------------------------------------------------------------------------
 % Auxiliary for modular analysis
@@ -1791,13 +1791,13 @@ decide_transform(poly) :-
       files (e.g., imported modules in a modular program).".
 
 clean_aux_files(File):-
-	intermod:cleanreg(~maybe_main(File)).
+    intermod:cleanreg(~maybe_main(File)).
 
 maybe_main(File) := R :-
-	current_prolog_flag(main_module,Main),
-	( Main = '' -> R = File
-	; R = Main
-	).
+    current_prolog_flag(main_module,Main),
+    ( Main = '' -> R = File
+    ; R = Main
+    ).
 
 % ---------------------------------------------------------------------------
 

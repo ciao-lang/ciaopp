@@ -1,11 +1,11 @@
 :- module(type_support,
-	[ closed_var_list/2,
-          var_list/2,
-	  ins_without_dup/2,
-	  replace_var_by_term/4,
-	  vset_diff/3,
-          find_list_entry/3
-	], []).
+    [ closed_var_list/2,
+      var_list/2,
+      ins_without_dup/2,
+      replace_var_by_term/4,
+      vset_diff/3,
+      find_list_entry/3
+    ], []).
 
 :- use_module(library(idlists), [member_0/2]).
 
@@ -34,7 +34,7 @@ add_variable_not_duplicates(Var, List, OuList):-
       % member_term(Var, List) % PLG May-17-2003 
       member_0(Var, List) 
        -> OuList = List 
-        ; OuList = [Var|List].
+    ; OuList = [Var|List].
 
 %
 % Creates an open list with the set of variables of a term.
@@ -58,17 +58,17 @@ var_list(X,VarSet):-
 %
 
 ins_without_dup(L,I) :- 
-	var(L), !,
-	L = [I|_].
+    var(L), !,
+    L = [I|_].
 ins_without_dup(L,I) :- 
-	nonvar(L),
-	L = [Item|_],
-	Item==I, !.
+    nonvar(L),
+    L = [Item|_],
+    Item==I, !.
 ins_without_dup(L,I) :- 
-	nonvar(L),
-	L = [Item|List],
-	I \== Item,
-	ins_without_dup(List,I).
+    nonvar(L),
+    L = [Item|List],
+    I \== Item,
+    ins_without_dup(List,I).
 
 % vset_diff(+L1, +L2, -L3) binds L3 to the set difference of L1 and L2,
 % i.e., to the set of objects in L1 that are not in L2.
@@ -108,16 +108,16 @@ arg_replace_var_by_term(Arg_Num, InTerm, ReplaceVar, ByTerm, OuTerm):-
 % 
 
 find_list_entry(VT, _, _) :- 
-	var(VT), !.
+    var(VT), !.
 find_list_entry(VT, Var, Entry) :- 
-	nonvar(VT),
-	VT = [E|_],
-	E = vt(EVar, _),
-        EVar == Var, !,
-        Entry = E.
+    nonvar(VT),
+    VT = [E|_],
+    E = vt(EVar, _),
+    EVar == Var, !,
+    Entry = E.
 find_list_entry(VT, Var, Entry) :- 
-	nonvar(VT),
-	VT = [E|S],
-        E = vt(EVar, _),
-	EVar \== Var,
-	find_list_entry(S, Var, Entry).
+    nonvar(VT),
+    VT = [E|S],
+    E = vt(EVar, _),
+    EVar \== Var,
+    find_list_entry(S, Var, Entry).

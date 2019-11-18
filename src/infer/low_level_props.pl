@@ -11,16 +11,16 @@
 
 %% CompProps is currently not transformed.
 decide_low_level_format(OutputUser0,CompProps,OutputUser,CompProps):-
-	current_pp_flag(low_level_format,on), !,
-	translate_to_low_level(OutputUser0,OutputUser).
+    current_pp_flag(low_level_format,on), !,
+    translate_to_low_level(OutputUser0,OutputUser).
 decide_low_level_format(OutputUser,CompProps,OutputUser,CompProps).
 
 translate_to_low_level([],[]).
 translate_to_low_level([Prop0|Prop0s],[Prop|Props]):-
-	low_level_equivalent(Prop0,Prop), !,
-	translate_to_low_level(Prop0s,Props).
+    low_level_equivalent(Prop0,Prop), !,
+    translate_to_low_level(Prop0s,Props).
 translate_to_low_level([_Prop0|Prop0s],Props):-
-	translate_to_low_level(Prop0s,Props).
+    translate_to_low_level(Prop0s,Props).
 
 
 % Freeness
@@ -35,28 +35,28 @@ low_level_equivalent('basic_props:flt'(X),'$trust_type'(X,float)).
 low_level_equivalent('basic_props:term'(X),'$trust_type'(X,any)).
 % Other types not considered (defined types only).
 % low_level_equivalent(Type0,'$trust_type'(Arg,Type)):-
-% 	functor(Type0,F,1),  %% Only with arity 1.
-% 	arg(1,Type0,Arg),
-% 	get_required_types(LTypes),
-% 	member(typedef(::=(F,Def)),LTypes),
-% 	low_level_equivalent_from_values(Def,Type).
+%       functor(Type0,F,1),  %% Only with arity 1.
+%       arg(1,Type0,Arg),
+%       get_required_types(LTypes),
+%       member(typedef(::=(F,Def)),LTypes),
+%       low_level_equivalent_from_values(Def,Type).
 %
 % low_level_equivalent_from_values(Def,smallint):-
-% 	is_int_disjunction(Def), !.
+%       is_int_disjunction(Def), !.
 % low_level_equivalent_from_values(Def,float):-
-% 	is_float_disjunction(Def), !.
+%       is_float_disjunction(Def), !.
 % low_level_equivalent_from_values(_Def,any).
 %
 % is_int_disjunction(I):-
-% 	integer(I).
+%       integer(I).
 % is_int_disjunction((I1;I2)):-
-% 	is_int_disjunction(I1),
-% 	is_int_disjunction(I2).
+%       is_int_disjunction(I1),
+%       is_int_disjunction(I2).
 %
 % is_float_disjunction(I):-
-% 	float(I).
+%       float(I).
 % is_float_disjunction((I1;I2)):-
-% 	is_float_disjunction(I1),
-% 	is_float_disjunction(I2).
+%       is_float_disjunction(I1),
+%       is_float_disjunction(I2).
 
 

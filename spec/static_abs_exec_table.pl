@@ -22,12 +22,12 @@
 %-------------------------------------------------------------------%
 
 % obtain_pred(Key,Name,Arity):-
-% 	atom_codes(Key,B),
-% 	append(Name1,[47],C),
-% 	append(C,Arity1,B),
-% 	atom_codes(Name,Name1),
-% 	atom_codes(Arity2,Arity1),
-% 	atom_number(Arity2,Arity).
+%       atom_codes(Key,B),
+%       append(Name1,[47],C),
+%       append(C,Arity1,B),
+%       atom_codes(Name,Name1),
+%       atom_codes(Arity2,Arity1),
+%       atom_number(Arity2,Arity).
 
 
 %-------------------------------------------------------------------%
@@ -155,7 +155,7 @@ abs_ex( plsys/1,          free, error,  free(1)).
 abs_ex( print/2,          free, error,  free(1)).
 abs_ex( prolog_flag/2,    free, error,  free(1)). 
 abs_ex( prolog_flag/3,   [free, 
-	                  indep], error, [free(1), frindep(2, 3)]). 
+                      indep], error, [free(1), frindep(2, 3)]). 
 abs_ex( put_code/1,       free, error,  free(1)).
 abs_ex( put_code/2,       free, error, [free(1), free(2)]).
 abs_ex( read/2,           free, error,  free(1)).
@@ -185,16 +185,16 @@ abs_ex( write/2,          free, error,  free(1)).
 abs_ex( write_canonical/2,free, error,  free(1)).
 abs_ex( writeq/2,         free, error,  free(1)).
 abs_ex( '<'/2, Determ, Sense, Cond):-
-	abs_ex_if_not_constraint(Determ, Sense, Cond).
+    abs_ex_if_not_constraint(Determ, Sense, Cond).
 abs_ex( '=..'/2,     free, error, free(1, 2)).
 abs_ex( '=:='/2,     free, error, [freerec(1), freerec(2)]).
 abs_ex( '=<'/2, Determ, Sense, Cond):-
-	abs_ex_if_not_constraint(Determ, Sense, Cond).
+    abs_ex_if_not_constraint(Determ, Sense, Cond).
 abs_ex( (=\=)/2,     free, error, [freerec(1), freerec(2)]).
 abs_ex( '>'/2, Determ, Sense, Cond):-
-	abs_ex_if_not_constraint(Determ, Sense, Cond).
+    abs_ex_if_not_constraint(Determ, Sense, Cond).
 abs_ex( '>='/2, Determ, Sense, Cond):-
-	abs_ex_if_not_constraint(Determ, Sense, Cond).
+    abs_ex_if_not_constraint(Determ, Sense, Cond).
 
 
 %-------------------------------------------------------------------%
@@ -250,7 +250,7 @@ abs_ex(when/2,nonvar,when,true).
 
 
 abs_ex_if_not_constraint(Determ,Sense,Cond):-
-	language(lp),
-	Determ = free,
-	Sense = error,
-	Cond = [freerec(1),freerec(2)].
+    language(lp),
+    Determ = free,
+    Sense = error,
+    Cond = [freerec(1),freerec(2)].

@@ -61,24 +61,24 @@ CiaoPP shell (this is the default behavior):
 :- use_module(library(format), [format/3]).
 
 main(Args) :-
-	catch(main_(Args), E, (handle_ciaopp_error(E), halt(1))).
+    catch(main_(Args), E, (handle_ciaopp_error(E), halt(1))).
 
 % TODO: use get_opts/1 like in lpdoc
 main_(Args) :-
-	parse_opts(Args, Cmd, Flags),
-	!,
-	ciaopp_cmd(Cmd, Flags).
+    parse_opts(Args, Cmd, Flags),
+    !,
+    ciaopp_cmd(Cmd, Flags).
 main_(_Args) :-
-	short_usage_message(Text),
-	format(user_error,Text,[]).
+    short_usage_message(Text),
+    format(user_error,Text,[]).
 
 % ===========================================================================
 :- doc(section, "Help").
 
 ciaopp_banner :-
-	display('Ciao Preprocessor (integrated Alpha version)' ), nl,
-	display(' | This is an alpha distribution, meant only for testing. Please do let us '), nl,
-	display(' | know at ciaopp-bug<at>clip.dia.fi.upm.es any problems you may have.'), nl, nl.
+    display('Ciao Preprocessor (integrated Alpha version)' ), nl,
+    display(' | This is an alpha distribution, meant only for testing. Please do let us '), nl,
+    display(' | know at ciaopp-bug<at>clip.dia.fi.upm.es any problems you may have.'), nl, nl.
 
 short_usage_message(
 "Use 'ciaopp --help' for help.
@@ -86,29 +86,29 @@ short_usage_message(
 
 usage_message(
 "Usage 1: (batch mode)
-	ciaopp [-o OutFile] Option Filename [FlagsValues]
+    ciaopp [-o OutFile] Option Filename [FlagsValues]
 
   Where:
     -o OutFile  after processing Filename, the resulting source 
-                code is written to OutFile.  If this option is
-                omitted, the output is written to a file
-                automatically named depending on the actions
-                performed.
+            code is written to OutFile.  If this option is
+            omitted, the output is written to a file
+            automatically named depending on the actions
+            performed.
 
     Option must be one of the following:
     -Q          runs the interactive (text-based) menu for
-                preprocessing Filename.
+            preprocessing Filename.
     -A          analyzes Filename with the default options
-                except the flag values set with -f at the 
-                command line.
+            except the flag values set with -f at the 
+            command line.
     -O          optimizes Filename with the default options
-                except the flag values set with -f at the 
-                command line.
+            except the flag values set with -f at the 
+            command line.
     -V          verifies the assertions of Filename with
-                the default options except the flag values set 
-                with -f at the command line.
+            the default options except the flag values set 
+            with -f at the command line.
     -U Config   processes Filename with the
-                options set in the CiaoPP configuration Config.
+            options set in the CiaoPP configuration Config.
 
     FlagsValues is a list of options -fFlagName=FlagValue
     separated by blank spaces, where FlagName is a valid
@@ -118,7 +118,7 @@ usage_message(
     their default value.  Examples:
 
     -flocal_control=on   where local_control is expected to be
-                         a CiaoPP flag;
+                     a CiaoPP flag;
     -f local_control=on  same as above, with additional blank spaces
 
     Internal flags can also be changed using -pIntFlagName=Value.
@@ -149,59 +149,59 @@ Execution Examples:
 :- data output_file/1.
 
 parse_opts([], Cmd, Flags) :- !,
-	( var(Cmd) -> % default
-	    Cmd = toplevel([])
-	; true
-	),
-	Flags = [].
+    ( var(Cmd) -> % default
+        Cmd = toplevel([])
+    ; true
+    ),
+    Flags = [].
 % commands
 parse_opts(['-h'|_], Cmd, Flags) :- !,
-	Cmd = help,
-	Flags = [].
+    Cmd = help,
+    Flags = [].
 parse_opts(['--help'|_], Cmd, Flags) :- !,
-	Cmd = help,
-	Flags = [].
+    Cmd = help,
+    Flags = [].
 parse_opts(['-T'|ToplevelOpts], Cmd, Flags) :- !,
-	Cmd = toplevel(ToplevelOpts), % TODO: make behavior consistent with other ciao tools
-	Flags = [].
+    Cmd = toplevel(ToplevelOpts), % TODO: make behavior consistent with other ciao tools
+    Flags = [].
 parse_opts(['-Q', File|Opts], Cmd, Flags) :- !,
-	Cmd = customize_and_preprocess(File),
-	parse_opts(Opts, Cmd, Flags).
+    Cmd = customize_and_preprocess(File),
+    parse_opts(Opts, Cmd, Flags).
 parse_opts(['-A', File|Opts], Cmd, Flags) :- !,
-	Cmd = ana(File),
-	parse_opts(Opts, Cmd, Flags).
+    Cmd = ana(File),
+    parse_opts(Opts, Cmd, Flags).
 parse_opts(['-V', File|Opts], Cmd, Flags) :- !,
-	Cmd = check(File),
-	parse_opts(Opts, Cmd, Flags).
+    Cmd = check(File),
+    parse_opts(Opts, Cmd, Flags).
 parse_opts(['-O', File|Opts], Cmd, Flags) :- !,
-	Cmd = opt(File),
-	parse_opts(Opts, Cmd, Flags).
+    Cmd = opt(File),
+    parse_opts(Opts, Cmd, Flags).
 parse_opts(['-U', Menu, File|Opts], Cmd, Flags) :- !,
-	Cmd = restore_menu(Menu,File),
-	parse_opts(Opts, Cmd, Flags).
+    Cmd = restore_menu(Menu,File),
+    parse_opts(Opts, Cmd, Flags).
 % output
 parse_opts(['-o', File|Opts], Cmd, Flags) :- !,
-	retractall_fact(output_file(_)),
-	asserta_fact(output_file(File)),
-	parse_opts(Opts, Cmd, Flags).
+    retractall_fact(output_file(_)),
+    asserta_fact(output_file(File)),
+    parse_opts(Opts, Cmd, Flags).
 % parse flags
 parse_opts(['-f', FV|Opts], Cmd, Flags) :- is_flag_value(FV, F, V), !,
-	Flags = [f(F,V)|Flags0],
-	parse_opts(Opts, Cmd, Flags0).
+    Flags = [f(F,V)|Flags0],
+    parse_opts(Opts, Cmd, Flags0).
 parse_opts([FV|Opts], Cmd, Flags) :- is_flag_value_f(FV, F, V), !,
-	Flags = [f(F,V)|Flags0],
-	parse_opts(Opts, Cmd, Flags0).
+    Flags = [f(F,V)|Flags0],
+    parse_opts(Opts, Cmd, Flags0).
 parse_opts(['-p', FV|Opts], Cmd, Flags) :- is_flag_value(FV, F, V), !,
-	Flags = [p(F,V)|Flags0],
-	parse_opts(Opts, Cmd, Flags0).
+    Flags = [p(F,V)|Flags0],
+    parse_opts(Opts, Cmd, Flags0).
 parse_opts([FV|Opts], Cmd, Flags) :- is_flag_value_p(FV, F, V), !,
-	Flags = [p(F,V)|Flags0],
-	parse_opts(Opts, Cmd, Flags0).
+    Flags = [p(F,V)|Flags0],
+    parse_opts(Opts, Cmd, Flags0).
 % unknown argument
 parse_opts([F|_Opts], _Cmd, _Flags) :-
-	display('Unrecognized option '),
-	displayq(F), nl,
-	fail.
+    display('Unrecognized option '),
+    displayq(F), nl,
+    fail.
 
 is_flag_value(FV, F, V) :- atom_concat([F, '=', V], FV).
 
@@ -214,45 +214,45 @@ is_flag_value_p(FV, F, V) :- atom_concat(['-p', F, '=', V], FV).
 
 :- use_module(library(menu/menu_generator), []).
 :- use_module(ciaopp(ciaopp), [
-	set_last_file/1,
-	again/0,
-	auto_analyze/2,
-	auto_check_assert/2,
-	auto_optimize/2,
-	%
-	set_pp_flag/2,
-	%
-	customize_and_preprocess/1,
-	restore_menu_config/1,
-	set_menu_flag/3,
-	get_menu_flag/3]).
+    set_last_file/1,
+    again/0,
+    auto_analyze/2,
+    auto_check_assert/2,
+    auto_optimize/2,
+    %
+    set_pp_flag/2,
+    %
+    customize_and_preprocess/1,
+    restore_menu_config/1,
+    set_menu_flag/3,
+    get_menu_flag/3]).
 :- use_module(library(toplevel), [toplevel/1]).
 
 ciaopp_cmd(help, _Flags) :- !,
-	usage_message(Text),
-	format(user_error,Text,[]).
+    usage_message(Text),
+    format(user_error,Text,[]).
 ciaopp_cmd(toplevel(Opts), _Flags) :- !,
-	ciaopp_toplevel(Opts).
+    ciaopp_toplevel(Opts).
 ciaopp_cmd(customize_and_preprocess(File), _Flags) :- !,
-	customize_and_preprocess(File).
+    customize_and_preprocess(File).
 ciaopp_cmd(restore_menu(Menu,File), _Flags) :- !,
-	display('Restoring Menu Configuration '),
-	display(Menu), nl,
-	restore_menu_config(Menu),
-	set_last_file(File),
-	again.
+    display('Restoring Menu Configuration '),
+    display(Menu), nl,
+    restore_menu_config(Menu),
+    set_last_file(File),
+    again.
 ciaopp_cmd(ana(File), Flags) :- !,
-	get_output_filename(OFile),
-	set_flags(Flags, ana),
-	auto_analyze(File, OFile).
+    get_output_filename(OFile),
+    set_flags(Flags, ana),
+    auto_analyze(File, OFile).
 ciaopp_cmd(check(File), Flags) :- !,
-	get_output_filename(OFile),
-	set_flags(Flags, check),
-	auto_check_assert(File, OFile).
+    get_output_filename(OFile),
+    set_flags(Flags, check),
+    auto_check_assert(File, OFile).
 ciaopp_cmd(opt(File), Flags) :- !,
-	get_output_filename(OFile),
-	set_flags(Flags, opt),
-	auto_optimize(File, OFile).
+    get_output_filename(OFile),
+    set_flags(Flags, opt),
+    auto_optimize(File, OFile).
 
 % TODO: use optional output(F) instead (so that no output/1 means default)
 get_output_filename(X) :- output_file(X), !.
@@ -263,26 +263,26 @@ get_output_filename(_).
 
 set_flags([], _) :- !.
 set_flags([f(F,V)|Flags], Cmd0) :-
-	set_menu_flag_option(Cmd0, F, V),
-	!,
-	set_flags(Flags, Cmd0).
+    set_menu_flag_option(Cmd0, F, V),
+    !,
+    set_flags(Flags, Cmd0).
 set_flags([p(F,V)|Flags], Cmd0) :-
-	set_pp_flag(F, V),
-	!,
-	set_flags(Flags, Cmd0).
+    set_pp_flag(F, V),
+    !,
+    set_flags(Flags, Cmd0).
 set_flags([F|Flags], Cmd0) :-
-	display('Unrecognized flag '),
-	displayq(F),
-	nl, % TODO: exit?
-	set_flags(Flags, Cmd0).
+    display('Unrecognized flag '),
+    displayq(F),
+    nl, % TODO: exit?
+    set_flags(Flags, Cmd0).
 
 set_menu_flag_option(opt, inter_optimize, V) :- !,
-	set_menu_flag(opt, inter_optimize, V).
+    set_menu_flag(opt, inter_optimize, V).
 set_menu_flag_option(opt, F, V) :- !,
-	get_menu_flag(opt, inter_optimize, P),
-	set_menu_flag_option(P, F, V).
+    get_menu_flag(opt, inter_optimize, P),
+    set_menu_flag_option(P, F, V).
 set_menu_flag_option(A, F, V) :-
-	set_menu_flag(A, F, V).
+    set_menu_flag(A, F, V).
 
 % ---------------------------------------------------------------------------
 % Toplevel
@@ -292,34 +292,34 @@ set_menu_flag_option(A, F, V) :-
 :- use_module(engine(runtime_control), [set_prolog_flag/2]).
 
 ciaopp_toplevel(Opts2) :-
-	set_prolog_flag(quiet, warning),
-	Opts = ['-p', 'ciaopp ?- '|Opts0], 
-	CiaoRC = '~/.ciaorc',
-	( \+ member('-f', Opts2), file_exists(CiaoRC) ->
-	    Opts0 = ['-l', '~/.ciaorc'|Opts1]
-	; Opts0 = Opts1
-	),
-	Opts1 = [
-            % TODO: due to a bug in c_itf:use_mod_common/4 we must
-	    %   enforce loading the .itf of the following reexported modules
-            %   before ciaopp(ciaopp) is loaded
-            '-e', 'use_module(ciaopp(frontend_driver), [])',
-            '-e', 'use_module(ciaopp(analyze_driver), [])',
-            '-e', 'use_module(ciaopp(transform_driver), [])',
-	    '-e', 'use_module(ciaopp(preprocess_flags), [])',
-	    '-e', 'use_module(auto_interface(auto_interface), [])',
-	    '-e', 'use_module(auto_interface(auto_help), [])',
-	    '-e', 'use_module(typeslib(typeslib), [])',
-	    '-e', 'use_module(ciaopp(p_unit/p_asr), [])',
- 	    '-u', ciaopp(ciaopp),
-	    %
-	    '-u', engine(runtime_control),
-	    '-e', 'set_prolog_flag(quiet, off)'
-          |Opts2],
-	( member('-q', Opts2) -> true
-	; ciaopp_banner
-	),
-	toplevel:toplevel(Opts).
+    set_prolog_flag(quiet, warning),
+    Opts = ['-p', 'ciaopp ?- '|Opts0], 
+    CiaoRC = '~/.ciaorc',
+    ( \+ member('-f', Opts2), file_exists(CiaoRC) ->
+        Opts0 = ['-l', '~/.ciaorc'|Opts1]
+    ; Opts0 = Opts1
+    ),
+    Opts1 = [
+        % TODO: due to a bug in c_itf:use_mod_common/4 we must
+        %   enforce loading the .itf of the following reexported modules
+        %   before ciaopp(ciaopp) is loaded
+        '-e', 'use_module(ciaopp(frontend_driver), [])',
+        '-e', 'use_module(ciaopp(analyze_driver), [])',
+        '-e', 'use_module(ciaopp(transform_driver), [])',
+        '-e', 'use_module(ciaopp(preprocess_flags), [])',
+        '-e', 'use_module(auto_interface(auto_interface), [])',
+        '-e', 'use_module(auto_interface(auto_help), [])',
+        '-e', 'use_module(typeslib(typeslib), [])',
+        '-e', 'use_module(ciaopp(p_unit/p_asr), [])',
+        '-u', ciaopp(ciaopp),
+        %
+        '-u', engine(runtime_control),
+        '-e', 'set_prolog_flag(quiet, off)'
+      |Opts2],
+    ( member('-q', Opts2) -> true
+    ; ciaopp_banner
+    ),
+    toplevel:toplevel(Opts).
 
 % ===========================================================================
 :- doc(section, "Handle errors").
@@ -328,8 +328,8 @@ ciaopp_toplevel(Opts2) :-
 %:- use_module(library(messages), [error_message/2]).
 
 % handle_ciaopp_error(ciaopp_error(Format, Args)) :- !, % TODO: use
-% 	error_message(Format, Args).
+%       error_message(Format, Args).
 handle_ciaopp_error(E) :-
-	default_error_message(E),
-	fail. % TODO: fail, abort or true?
+    default_error_message(E),
+    fail. % TODO: fail, abort or true?
 

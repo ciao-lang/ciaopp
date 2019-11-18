@@ -1,30 +1,30 @@
 :- module(_, [
-	  % type symbols
-	    native_type_symbol/1,
-          % basic types
-	    atom_type/1,
-	    bot_type/1,
-	    float_type/1,
-	    ground_type/1,
-	    int_type/1,
-	    nnegint_type/1,
-	    numeric_type/1,
-	    struct_type/1,
-            ground_struct_type/1,
-	    top_type/1,
-	    var_type/1,
-	    set_atom_type/1,
-	    set_bottom_type/1,
-	    set_float_type/1,
-	    set_ground_type/1,
-	    set_ground_struct_type/1,
-	    set_int_type/1,
-%%	    set_nnegint_type/1,
-	    set_numeric_type/1,
-	    set_numexp_type/1,
-%%	    set_struct_type/1,
-	    set_top_type/1,
- 	    set_var_type/1
+      % type symbols
+        native_type_symbol/1,
+      % basic types
+        atom_type/1,
+        bot_type/1,
+        float_type/1,
+        ground_type/1,
+        int_type/1,
+        nnegint_type/1,
+        numeric_type/1,
+        struct_type/1,
+        ground_struct_type/1,
+        top_type/1,
+        var_type/1,
+        set_atom_type/1,
+        set_bottom_type/1,
+        set_float_type/1,
+        set_ground_type/1,
+        set_ground_struct_type/1,
+        set_int_type/1,
+%%          set_nnegint_type/1,
+        set_numeric_type/1,
+        set_numexp_type/1,
+%%          set_struct_type/1,
+        set_top_type/1,
+        set_var_type/1
 
 ], [assertions]).
 

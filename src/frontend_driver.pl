@@ -1,14 +1,14 @@
 :- module(_, [],
-	[
-	    assertions,
-	    basicmodes,
-	    % isomodes, % TODO: for printer
-	    regtypes,
-	    nativeprops,
-	    hiord, % TODO: only for printer part
-	    datafacts,
-	    ciaopp(ciaopp_options)
-	]).
+    [
+        assertions,
+        basicmodes,
+        % isomodes, % TODO: for printer
+        regtypes,
+        nativeprops,
+        hiord, % TODO: only for printer part
+        datafacts,
+        ciaopp(ciaopp_options)
+    ]).
 
 %------------------------------------------------------------------------
 
@@ -43,7 +43,7 @@
 :- use_module(engine(internals), [module_concat/3]).
 
 :- use_module(ciaopp(preprocess_flags),
-	[current_pp_flag/2, set_pp_flag/2, push_pp_flag/2, pop_pp_flag/1]).
+    [current_pp_flag/2, set_pp_flag/2, push_pp_flag/2, pop_pp_flag/1]).
 
 :- use_module(library(aggregates), [findall/3]).
 
@@ -71,8 +71,8 @@ transformation(X) :- atom(X). % TODO: this is tranformation name, this should no
 
 :- export(supported_language/1).
 :- doc(supported_language(L),
-        "Indicates that a translation is available from language
-         @var{L} to Ciao Prolog language.").
+    "Indicates that a translation is available from language
+     @var{L} to Ciao Prolog language.").
 supported_language(ciao).
 :- if(defined(has_ciaopp_extra)).
 supported_language(java).
@@ -83,8 +83,8 @@ supported_language(xc_assembly).
 
 :- export(language_extension/2).
 :- doc(language_extension(L,E),
-	"@var{E} is an extension (including the dot) for files
-         that must be translated from language @var{L} to Ciao.").
+    "@var{E} is an extension (including the dot) for files
+     that must be translated from language @var{L} to Ciao.").
 language_extension(ciao,        '.pl').
 :- if(defined(has_ciaopp_extra)).
 language_extension(java,        '.java').
@@ -95,8 +95,8 @@ language_extension(xc_assembly, '.asm').
 
 :- export(language_output_extension/2).
 :- doc(language_output_extension(L,E),
-	"@var{E} is the extension of the file produced as
-         output by the Ciao printer for language @var{L}.").
+    "@var{E} is the extension of the file produced as
+     output by the Ciao printer for language @var{L}.").
 language_output_extension(ciao,        '.pl').
 :- if(defined(has_ciaopp_extra)).
 language_output_extension(java,        '.java').
@@ -109,48 +109,48 @@ language_output_extension(xc_assembly, '.pl').
 
 :- export(translate_input_file/5).
 :- pred translate_input_file(L,In,O,M,Out)
-	: (language(L),file_name(In),list(O,atom),module_name(M),var(Out))
+    : (language(L),file_name(In),list(O,atom),module_name(M),var(Out))
        => (language(L),file_name(In),list(O,atom),module_name(M),file_name(Out)).
 :- doc(translate_input_file(L,In,O,M,Out),
-	"This is the main predicate called when the file @var{In}
-         needs to be translated from language @var{L} into Ciao Prolog.
-         Some options to the translation may be passed in the
-         variable @var{O} and the module name that one wants to
-         get can be given in @var{M}. The translation should produce
-         a file and indicate where it is located through @var{O}.").
+    "This is the main predicate called when the file @var{In}
+     needs to be translated from language @var{L} into Ciao Prolog.
+     Some options to the translation may be passed in the
+     variable @var{O} and the module name that one wants to
+     get can be given in @var{M}. The translation should produce
+     a file and indicate where it is located through @var{O}.").
 translate_input_file(ciao, I, _, _, I).
 :- if(defined(has_ciaopp_extra)).
 translate_input_file(java, I, _, _, NI) :-
-	current_pp_flag(java_analysis_level,source),!,
-	cafelito_module(I,NI).
+    current_pp_flag(java_analysis_level,source),!,
+    cafelito_module(I,NI).
 translate_input_file(java, I, _, _, NI) :-
-	java_stop_jvm,
-	push_prolog_flag(write_strings, on),
-	java_start_jvm,
-	get_class_name_from_file(I, Main_Class),
-	java_generate_ciao(Main_Class),
-	get_ilciao_output_file(NI),
-	pop_prolog_flag(write_strings).
+    java_stop_jvm,
+    push_prolog_flag(write_strings, on),
+    java_start_jvm,
+    get_class_name_from_file(I, Main_Class),
+    java_generate_ciao(Main_Class),
+    get_ilciao_output_file(NI),
+    pop_prolog_flag(write_strings).
 translate_input_file(xc, I, _, _, Pl) :-
-	translate_xc(I,Pl).
+    translate_xc(I,Pl).
 translate_input_file(c, I, _, _, Pl) :-
-	translate_c(I,Pl).
+    translate_c(I,Pl).
 translate_input_file(xc_assembly, I, _, _, Pl) :-
-	translate_xc_assembly(I,Pl).
+    translate_xc_assembly(I,Pl).
 :- endif.
 
 :- export(initial_transformations/2).
 :- pred initial_transformations(L,T)
-	: (language(L), var(T))
+    : (language(L), var(T))
        => (language(L), list(T,transformation)).
 :- doc(initial_transformations(L,T), "@var{T} is the initial list of
-	transformations needed for language @var{L} after it has been
-	loaded as clauses.").
+    transformations needed for language @var{L} after it has been
+    loaded as clauses.").
 
 initial_transformations(ciao,        []).
 :- if(defined(has_ciaopp_extra)).
 initial_transformations(java,        [unfold_entry]):-
-	current_pp_flag(java_analysis_level, source),!.
+    current_pp_flag(java_analysis_level, source),!.
 initial_transformations(java,        []).
 initial_transformations(xc,          [unfold_entry]).
 initial_transformations(c,           [unfold_entry]).
@@ -162,12 +162,12 @@ initial_transformations(xc_assembly, [unfold_entry]).
    detected language for @var{AbsFile} file.".
 
 detect_language(AbsFile, Lang) :-
-	( supported_language(Lang0),
-	  language_extension(Lang0, Ext),
-	  atom_concat(_, Ext, AbsFile) ->
-	    Lang = Lang0
-	; Lang = ciao
-	).
+    ( supported_language(Lang0),
+      language_extension(Lang0, Ext),
+      atom_concat(_, Ext, AbsFile) ->
+        Lang = Lang0
+    ; Lang = ciao
+    ).
 
 % ===========================================================================
 :- doc(section, "Module loading for preprocessing").
@@ -180,8 +180,8 @@ detect_language(AbsFile, Lang) :-
 :- use_module(ciaopp(p_unit), [preprocessing_unit/3]). 
 % :- use_module(typeslib(typeslib),[assert_initial_types/0]). 
 :- use_module(ciaopp(p_unit/unexpand), [ 
-	generate_unexpanded_data/1, % TODO: kludge?
-	clean_unexpanded_data/0     % TODO: kludge?
+    generate_unexpanded_data/1, % TODO: kludge?
+    clean_unexpanded_data/0     % TODO: kludge?
    ]).
 :- use_module(ciaopp(p_unit/itf_db), [curr_module/1, curr_file/2]).
 
@@ -190,14 +190,14 @@ detect_language(AbsFile, Lang) :-
 
 :- export(module/1).
 :- pred module(+FileName) : sourcename
-	# "Reads the code of @var{FileName} and its preprocessing unit,
-          and sets it as the current module.".
+    # "Reads the code of @var{FileName} and its preprocessing unit,
+      and sets it as the current module.".
 :- pred module(+FileNameList) : list(atm)
-	# "Reads the code of the list of file names @var{FileNameList} (and
-	   their preprocessing units), and sets them as the current
-	   modules.".
+    # "Reads the code of the list of file names @var{FileNameList} (and
+       their preprocessing units), and sets them as the current
+       modules.".
 module(Ms):-
-	module(Ms, _Info).
+    module(Ms, _Info).
 
 ensure_list(Ms0,Ms) :- Ms0 = [_|_], !, Ms = Ms0.
 ensure_list(M,[M]).
@@ -207,85 +207,85 @@ ensure_list(M,[M]).
       prints the time required to read the module and returns extra
       information (including the time) on its second argument.".
 module(Ms, Info):-
-	ensure_list(Ms, Ms2),
-	module_(Ms2, Info).
+    ensure_list(Ms, Ms2),
+    module_(Ms2, Info).
 
 :- use_module(ciaopp(analyze_driver),
-        [clean_analysis_info/0, clean_analysis_info0/0]).
+    [clean_analysis_info/0, clean_analysis_info0/0]).
 
 :- if(defined(with_fullpp)).
 module_(ModList, Info):-
-	current_pp_flag(incremental, on), !,
-	incremental_module(ModList, Info).
+    current_pp_flag(incremental, on), !,
+    incremental_module(ModList, Info).
 :- endif. % with_fullpp
 module_(ModList, Info):-
-	pp_statistics(runtime,_),
-	clean_analysis_info0, % TODO: merge! see definition, undoall_types/0?
-	cleanup_all,
+    pp_statistics(runtime,_),
+    clean_analysis_info0, % TODO: merge! see definition, undoall_types/0?
+    cleanup_all,
   ensure_lib_sources_loaded,
-	% load 
-	absolute_file_names(ModList,AbsFileList),
-	% (only for message, avoid list if possible)
-	( AbsFileList = [AbsFileDesc] -> true
-	; AbsFileDesc = AbsFileList
-	),
-	message(inform, ['{Loading current module from ' , ~~(AbsFileDesc)]),
-	%
-	assert_curr_file(AbsFileList), % TODO: move into preprocessing_unit/3?
-	preprocessing_unit(AbsFileList,_Ms,E),
-	( E == yes -> Info=[error|Info0] ; Info=Info0 ),
-	% assert_initial_types, 
-	pp_statistics(runtime,[_,T1]),
-	message(inform, ['{loaded in ',~~(T1), ' msec.}']),
-	Info0=[time(T1,[])],
-	message(inform, ['}']),
-	%
-	curr_file(_, Mod),
-	clean_unexpanded_data,
-	generate_unexpanded_data(Mod),
-	% Perform initial transformations -- ASM % TODO: improve?
-	detect_language_from_list(AbsFileList, Lang),
-	initial_transformations(Lang, Trans),
-	perform_transformations(Trans), !. % TODO: module leaves choicepoints, fix!!
+    % load 
+    absolute_file_names(ModList,AbsFileList),
+    % (only for message, avoid list if possible)
+    ( AbsFileList = [AbsFileDesc] -> true
+    ; AbsFileDesc = AbsFileList
+    ),
+    message(inform, ['{Loading current module from ' , ~~(AbsFileDesc)]),
+    %
+    assert_curr_file(AbsFileList), % TODO: move into preprocessing_unit/3?
+    preprocessing_unit(AbsFileList,_Ms,E),
+    ( E == yes -> Info=[error|Info0] ; Info=Info0 ),
+    % assert_initial_types, 
+    pp_statistics(runtime,[_,T1]),
+    message(inform, ['{loaded in ',~~(T1), ' msec.}']),
+    Info0=[time(T1,[])],
+    message(inform, ['}']),
+    %
+    curr_file(_, Mod),
+    clean_unexpanded_data,
+    generate_unexpanded_data(Mod),
+    % Perform initial transformations -- ASM % TODO: improve?
+    detect_language_from_list(AbsFileList, Lang),
+    initial_transformations(Lang, Trans),
+    perform_transformations(Trans), !. % TODO: module leaves choicepoints, fix!!
 
-	% The analysis is transparent so setting prog_lang to ciao
-	% after loading module should not effect analysis.
-	%set_pp_flag(prog_lang, ciao).
+    % The analysis is transparent so setting prog_lang to ciao
+    % after loading module should not effect analysis.
+    %set_pp_flag(prog_lang, ciao).
 
 absolute_file_names([],[]).
 absolute_file_names([M|Ms],[A|As]):-
-	absolute_file_name(M,'_opt','.pl','.',A,_,_),
-	absolute_file_names(Ms,As).
+    absolute_file_name(M,'_opt','.pl','.',A,_,_),
+    absolute_file_names(Ms,As).
 
 :- pred assert_curr_file(Fs) : list(Fs)
-	# "Fill @pred{curr_module/1} and @pred{curr_file/2}.".
+    # "Fill @pred{curr_module/1} and @pred{curr_file/2}.".
 assert_curr_file([]) :- !.
 assert_curr_file([F|Fs]) :-
-	mod_from_base(F, M),
-	% TODO: why not assertz? JF
-	asserta_fact(curr_module(M)),
-	asserta_fact(curr_file(F, M)),
-	%
-	assert_curr_file(Fs).
+    mod_from_base(F, M),
+    % TODO: why not assertz? JF
+    asserta_fact(curr_module(M)),
+    asserta_fact(curr_file(F, M)),
+    %
+    assert_curr_file(Fs).
 
 mod_from_base(N, M) :-
-	path_splitext(N, NoExt, _),
-	path_split(NoExt, _, M1),
-	get_module_java(N,M1,M). % TODO: hack, added by UL % TODO: detect language and call hook
+    path_splitext(N, NoExt, _),
+    path_split(NoExt, _, M1),
+    get_module_java(N,M1,M). % TODO: hack, added by UL % TODO: detect language and call hook
 
 :- if(defined(has_ciaopp_extra)).
 % TODO: If file is java, module name is preceeded by 'examples.', needs to
 %   be resolved at analysis part to avoid 'examples.' prefix.
 get_module_java(File,M1,M):-
-	current_pp_flag(java_analysis_level,bytecode),
-	atom_concat(_, '.java', File),
-	!,
-	atom_concat('examples.',M1, M).
+    current_pp_flag(java_analysis_level,bytecode),
+    atom_concat(_, '.java', File),
+    !,
+    atom_concat('examples.',M1, M).
 :- endif.
 get_module_java(_,M,M).
 
 detect_language_from_list([AbsFile|_], Lang) :- !,
-	detect_language(AbsFile, Lang).
+    detect_language(AbsFile, Lang).
 detect_language_from_list(_, Lang) :- Lang = ciao.
 
 % ---------------------------------------------------------------------------
@@ -305,8 +305,8 @@ ensure_lib_sources_loaded :-
   current_pp_flag(preload_lib_sources, on),
   % Check if they were already loaded
   \+ loaded_lib_sources, !,
-	ensure_datadir('ciaopp_lib_cache', Dir),
-	catch(load_lib_sources(Dir), _, true).
+    ensure_datadir('ciaopp_lib_cache', Dir),
+    catch(load_lib_sources(Dir), _, true).
   % TODO: warn if not defined??
   % TODO: call command to generate them if not defined??
 ensure_lib_sources_loaded.
@@ -326,27 +326,27 @@ ensure_lib_sources_loaded.
    start from scratch)".
 
 cleanup_all :-
-        cleanup_itf_db,
-	clean_analysis_info,
-	cleanup_p_abs,
-	cleanup_punit,
-	cleanup_pasr,
-	cleanup_code_and_related_assertions,
-	%
-	cleanup_commented_assrt,
-	cleanup_comment_db,
-	pr_key_clean.
+    cleanup_itf_db,
+    clean_analysis_info,
+    cleanup_p_abs,
+    cleanup_punit,
+    cleanup_pasr,
+    cleanup_code_and_related_assertions,
+    %
+    cleanup_commented_assrt,
+    cleanup_comment_db,
+    pr_key_clean.
 
 %------------------------------------------------------------------------
 
 :- use_module(ciaopp(transform_driver), [transform/1]).
 
 :- pred perform_transformations/1 : list(atom)
-	# "Executes transformations over a file".
+    # "Executes transformations over a file".
 perform_transformations([]).
 perform_transformations([E|Ls]) :-
-	transform(E),
-	perform_transformations(Ls).
+    transform(E),
+    perform_transformations(Ls).
 
 % ===========================================================================
 
@@ -361,8 +361,8 @@ perform_transformations([E|Ls]) :-
 :- use_module(ciaopp(p_unit), [internal_predicate_names/1]).
 :- use_module(ciaopp(p_unit/itf_db),   [curr_file/2]).
 :- use_module(ciaopp(p_unit/unexpand), [
-	transform_clause_list/3,
-	transform_name/3
+    transform_clause_list/3,
+    transform_name/3
    ]).
 
 :- if(defined(with_fullpp)).
@@ -376,7 +376,7 @@ perform_transformations([E|Ls]) :-
 :- use_module(library(terms),         [atom_concat/2]).
 
 :- use_module(typeslib(typeslib),
-	    [get_required_types/1, typedef_to_pred/3]).
+        [get_required_types/1, typedef_to_pred/3]).
 :- use_module(library(format), [format/3]).
 
 % :- include(engine(builtin_exports)).
@@ -395,37 +395,37 @@ perform_transformations([E|Ls]) :-
 
 % Solved already
 % :- doc(bug,"Some assertions (for predicates with no clauses) might
-%	be missing in the output.").
+%       be missing in the output.").
 % :- doc(bug,"Multifile and meta_predicates declarations are not printed,
-%	and initialization, and on_abort, and....").
+%       and initialization, and on_abort, and....").
 
 % TODO: find test for these bugs
 % Solved
 % :- doc(bug,"1. Should not print required types if they are already
-% 	predicates in the source.").
+%       predicates in the source.").
 % :- doc(bug,"2. Names of required types should not clash with names
-%	already visible to the current module.").
+%       already visible to the current module.").
 % :- doc(bug,"3. Imports from engine() modules are not printed: this
-%	might be wrong.").
+%       might be wrong.").
 % :- doc(bug,"4. An [assertions] package is printed: this might be wrong.
 %        Idem with [regtypes].").
 % :- doc(bug,"5. A use_module(library(assertions/native_props)) is printed:
-%	this IS wrong!").
+%       this IS wrong!").
 % :- doc(bug,"6. Operators should be activated to print.").
 % :- doc(bug,"7. comp and prop assertions are lost in the output.").
 :- doc(bug, "8. Printing a slightly big program takes too long!. This is 
-	probably due to calling type simplification too many time...").
+    probably due to calling type simplification too many time...").
 :- doc(bug, "9. It should be possible to decide which properties should be 
-	printed when showing analysis results. For example, I may not be interested 
-        in arguments being var but only on whether they are ground.").
+    printed when showing analysis results. For example, I may not be interested 
+    in arguments being var but only on whether they are ground.").
 :- doc(bug, "10. When showing predicate level analysis information, 
-	normalization of the completes is not required if there is only one 
-        complete for the predicate").
+    normalization of the completes is not required if there is only one 
+    complete for the predicate").
 %% :- doc(bug,"11. When showing program point level analysis information and 
-%% 	collapse_ai_versions is turned off, info should not be collapsed 
+%%      collapse_ai_versions is turned off, info should not be collapsed 
 %%         but instead shown as different possibilities").
 %% :- doc(bug,"12. Unexpand module names in meta-arguments. This shows
-%% 	in list(A,'basic_props:atm') in e.g. analisis.pl. Also in true(G)
+%%      in list(A,'basic_props:atm') in e.g. analisis.pl. Also in true(G)
 %%         for the pp_info of an analysis.").
 %% :- doc( bug, "13. When Asseritiong Body has ([A];[B]), A and B are
 %%                   not well printed. Look at:
@@ -448,24 +448,24 @@ perform_transformations([E|Ls]) :-
    module.".
 
 output :-
-	get_output_path(yes, OptFile),
-	% Create output file
-	output(OptFile),
-	% Create _co symbolic link (points to latest output file)
-	get_output_path(no, COFile),
-	( create_output_symlink(COFile, OptFile) ->
-	    true
-	; warning_message("Symbolic link to output file failed!", [])
-	).
+    get_output_path(yes, OptFile),
+    % Create output file
+    output(OptFile),
+    % Create _co symbolic link (points to latest output file)
+    get_output_path(no, COFile),
+    ( create_output_symlink(COFile, OptFile) ->
+        true
+    ; warning_message("Symbolic link to output file failed!", [])
+    ).
 
 % Create _co symbolic link (points to latest output file)
 create_output_symlink(COFile, OptFile) :-
-	( COFile = OptFile ->
-	    true
-	; % Create relative symlink (assumes that dirnames are the same)
-	  path_split(OptFile, _, RelOptFile),
-	  copy_file(RelOptFile, COFile, [overwrite, symlink])
-	).
+    ( COFile = OptFile ->
+        true
+    ; % Create relative symlink (assumes that dirnames are the same)
+      path_split(OptFile, _, RelOptFile),
+      copy_file(RelOptFile, COFile, [overwrite, symlink])
+    ).
 
 % TODO: output_by_ext/2 is strange, should it take lang instead?
 :- export(output/1).
@@ -474,23 +474,23 @@ create_output_symlink(COFile, OptFile) :-
    valid for the loaded program) is guessed from the file extension.".
 
 output(File) :-
-	path_splitext(File, _, Ext),
-	( output_ext(Ext) -> true
-	; error_message("unknown output extension ~w", [Ext]),
-	  fail
-	),
-	open(File, write, Stream),
-	( output_by_ext(Ext, Stream) ->
-	    Err = no
-	; Err = yes
-	),
-	close(Stream),
-	( Err = yes ->
-	    error_message("generating output of file ~w", [File]),
-	    fail
-	; true
-	),
-	message(inform, ['{written file ',~~(File),'}']).
+    path_splitext(File, _, Ext),
+    ( output_ext(Ext) -> true
+    ; error_message("unknown output extension ~w", [Ext]),
+      fail
+    ),
+    open(File, write, Stream),
+    ( output_by_ext(Ext, Stream) ->
+        Err = no
+    ; Err = yes
+    ),
+    close(Stream),
+    ( Err = yes ->
+        error_message("generating output of file ~w", [File]),
+        fail
+    ; true
+    ),
+    message(inform, ['{written file ',~~(File),'}']).
 
 % ---------------------------------------------------------------------------
 
@@ -516,16 +516,16 @@ output(File) :-
 
 % :- export(analysis_info_to_assertions/0).
 analysis_info_to_assertions :-
-	curr_file(_, M),
-	% Delete true assertions
-	cleanup_output(M),
-	current_pp_flag(collapse_ai_vers, Collapse0),
-	current_pp_flag(pp_info,          PPoints),
-	current_fact(domain(AbsInt)),
-	( non_collapsable(AbsInt) -> Collapse=off ; Collapse=Collapse0 ),
-	% TODO: dangling choice points in prepare_ai_output?
-	( prepare_ai_output(PPoints, cl, AbsInt, Collapse) -> true ),
-	fail.
+    curr_file(_, M),
+    % Delete true assertions
+    cleanup_output(M),
+    current_pp_flag(collapse_ai_vers, Collapse0),
+    current_pp_flag(pp_info,          PPoints),
+    current_fact(domain(AbsInt)),
+    ( non_collapsable(AbsInt) -> Collapse=off ; Collapse=Collapse0 ),
+    % TODO: dangling choice points in prepare_ai_output?
+    ( prepare_ai_output(PPoints, cl, AbsInt, Collapse) -> true ),
+    fail.
 analysis_info_to_assertions.
 
 % ---------------------------------------------------------------------------
@@ -533,14 +533,14 @@ analysis_info_to_assertions.
 output_ext('.pl').
 :- if(defined(with_fullpp)).
 output_by_ext('.pl', Stream) :-
-	current_pp_flag(output_lang, raw), !,
-	raw_output(Stream).
+    current_pp_flag(output_lang, raw), !,
+    raw_output(Stream).
 :- endif. % with_fullpp
 output_by_ext('.pl', Stream) :- !,
-	( current_pp_flag(dump_ai, on) -> analysis_info_to_assertions ; true ),
-	write_mod_headers(Stream),
-	print_program(Stream),
-	write_types(Stream).
+    ( current_pp_flag(dump_ai, on) -> analysis_info_to_assertions ; true ),
+    write_mod_headers(Stream),
+    print_program(Stream),
+    write_types(Stream).
 
 % TODO: make output_by_ext/2 a hook
 :- if(defined(with_fullpp)).
@@ -571,30 +571,30 @@ output_by_ext('.pl', Stream) :- !,
 % MH: Would need a bit of cleanup and moving some parts out to
 %     separate predicates but bug above needs to be fixed first.
 write_mod_headers(Stream) :-
-        % Get all the packages used by the file (this probably needs some revision).
-	findall(Pkg, get_output_package(Pkg), AllPackages),
- 	% If file contains a module directive, then include all the packages
-	% in the module declaration.
-	( ( current_fact(source_clause(_Key, directive(module(Module, Exports, ModDeclPackages)), Dict), _Ref) ->
-	      difference(AllPackages, ModDeclPackages, AddtlPackages),
-	      append(ModDeclPackages, AddtlPackages, FinalPackages),
-	      Body = module(Module, Exports, FinalPackages)
-	  ; current_fact(source_clause(_Key, directive(module(Module, Exports)), Dict), _Ref) ->
-	      ( AllPackages = [] % May not happen in practice if some packages added by default
-	      -> Body = module(_, Exports) % TODO: wrong! only if AllPackages is the 'default' case
-	      ;  Body = module(Module, Exports, AllPackages)
-	      )
-	  ) ->
-	    pretty_print(Stream, directive(Body), [], Dict),
-	    nl(Stream)
-	; % TODO: MH: I think in the case of user files no packages are recorded and this does not work. 
-	  % (failure-driven loop)
-	  ( member(Package, AllPackages),
-	      pretty_print(Stream, directive(use_package(Package)), [], []),
-	      fail
-	  ; true
-	  )
-	).
+    % Get all the packages used by the file (this probably needs some revision).
+    findall(Pkg, get_output_package(Pkg), AllPackages),
+    % If file contains a module directive, then include all the packages
+    % in the module declaration.
+    ( ( current_fact(source_clause(_Key, directive(module(Module, Exports, ModDeclPackages)), Dict), _Ref) ->
+          difference(AllPackages, ModDeclPackages, AddtlPackages),
+          append(ModDeclPackages, AddtlPackages, FinalPackages),
+          Body = module(Module, Exports, FinalPackages)
+      ; current_fact(source_clause(_Key, directive(module(Module, Exports)), Dict), _Ref) ->
+          ( AllPackages = [] % May not happen in practice if some packages added by default
+          -> Body = module(_, Exports) % TODO: wrong! only if AllPackages is the 'default' case
+          ;  Body = module(Module, Exports, AllPackages)
+          )
+      ) ->
+        pretty_print(Stream, directive(Body), [], Dict),
+        nl(Stream)
+    ; % TODO: MH: I think in the case of user files no packages are recorded and this does not work. 
+      % (failure-driven loop)
+      ( member(Package, AllPackages),
+          pretty_print(Stream, directive(use_package(Package)), [], []),
+          fail
+      ; true
+      )
+    ).
 
 :- else.
 
@@ -604,59 +604,59 @@ write_mod_headers(Stream) :-
 :- use_module(ciaopp(p_unit/itf_db), [current_itf/3]).
 
 write_mod_headers(S) :-
-	curr_file(_, Mod), % TODO: is it correct?
+    curr_file(_, Mod), % TODO: is it correct?
 % engine default imports
-%	findall( engine(M) , builtin_module(M), B_List ),
-%	required_engine(B_List, Flag),
+%       findall( engine(M) , builtin_module(M), B_List ),
+%       required_engine(B_List, Flag),
 % exports
-	findall(F/A,
-	    ( pred_spec(exported(Mod), Mod, F, A),
-		module_concat(Mod, F, MF),
+    findall(F/A,
+        ( pred_spec(exported(Mod), Mod, F, A),
+            module_concat(Mod, F, MF),
 % if imported and exported => reexported 
 % ==> no need to appear in exported list
-		current_itf(defines, MF, A)
-	    ), E_List),
-	print_header(Mod, S, E_List),
-	nl(S).
+            current_itf(defines, MF, A)
+        ), E_List),
+    print_header(Mod, S, E_List),
+    nl(S).
 
 print_header(user(_Mod), S, _E_List) :-
-	!,
-	display(S, ':- use_package(assertions).\n').
+    !,
+    display(S, ':- use_package(assertions).\n').
 print_header(_Mod, S, E_List) :-
-	display(S, ':- module(_'),
+    display(S, ':- module(_'),
 % DTM: Note that module name should not contain
 % illegal characters
-%	atom_concat( '_' , Mod , Mod2 ),
-%	displayq( S , Mod2 ),
-	(
-	    E_List = [_|_]
-	->
-	    display(S, ', ['),
-	    print_atom_list(E_List, S),
-	    display(S, ']')
-	;
-	    display(S, ', []')
-	),
-	findall(Pkg, get_output_package(Pkg), Packages),
-	display(S, ', ['),
-	print_atom_list(Packages, S),
-	display(S, ']).\n\n').
+%       atom_concat( '_' , Mod , Mod2 ),
+%       displayq( S , Mod2 ),
+    (
+        E_List = [_|_]
+    ->
+        display(S, ', ['),
+        print_atom_list(E_List, S),
+        display(S, ']')
+    ;
+        display(S, ', []')
+    ),
+    findall(Pkg, get_output_package(Pkg), Packages),
+    display(S, ', ['),
+    print_atom_list(Packages, S),
+    display(S, ']).\n\n').
 
 print_atom_list([],  _).
 print_atom_list([A], S) :-
-	!,
-	writeq(S, A).
+    !,
+    writeq(S, A).
 print_atom_list([A|As], S) :-
-	writeq(S, A),
-	display(S, ', '),
-	print_atom_list(As, S).
+    writeq(S, A),
+    display(S, ', '),
+    print_atom_list(As, S).
 
 pred_spec(T, N, F, A) :-
-	type_of_goal(T, G),
-	transform_body(G, N, GT0),
-	dont_want_qualification(GT0, GT),
-	functor(GT, F, A0),
-	special(F, A0, A).
+    type_of_goal(T, G),
+    transform_body(G, N, GT0),
+    dont_want_qualification(GT0, GT),
+    functor(GT, F, A0),
+    special(F, A0, A).
 
 dont_want_qualification(_:G, G) :- !.
 dont_want_qualification(G,   G).
@@ -668,58 +668,58 @@ special(_,           A, A).
 
 % --- DTM: THIS HAS TO BE A HOOK
 write_types(S) :-
-	get_required_types(Rules),
-	nl(S),
-	write_list_types(Rules, S).
+    get_required_types(Rules),
+    nl(S),
+    write_list_types(Rules, S).
 
 write_list_types([],       _).
 write_list_types([Rule|L], S) :-
-	write_one_type(Rule, S),
-	write_list_types(L, S).
+    write_one_type(Rule, S),
+    write_list_types(L, S).
 
 write_one_type(typedef(::=(Pred, Def)), S) :-
-	p_unit:internal_predicate_names(InternalNames),
-	functor(Pred, TypeName, Ari),
-	PredAri is Ari + 1,
-	curr_file(_, M),
-	(
-	    member((TypeName, PredAri, Name), InternalNames)
-	->
-	    true
-	;
-	    Name=TypeName
-	),
-	transform_name(Name, M, NameT),
-	format(S, ":- regtype ~q/~w.~n~n", [NameT, PredAri]),
-	transform_one_type_clause(Def, (TypeName, NameT), DefT),
-	typedef_to_pred(DefT, NameT, Cls),
-	transform_clause_list(Cls, M, ClsT),
-%	transform_types_clauses( ClsT , (TypeName , NameT) , ClsTT ),
-	pretty_print(S, ClsT, [], _),
-	nl(S),
-	nl(S).
+    p_unit:internal_predicate_names(InternalNames),
+    functor(Pred, TypeName, Ari),
+    PredAri is Ari + 1,
+    curr_file(_, M),
+    (
+        member((TypeName, PredAri, Name), InternalNames)
+    ->
+        true
+    ;
+        Name=TypeName
+    ),
+    transform_name(Name, M, NameT),
+    format(S, ":- regtype ~q/~w.~n~n", [NameT, PredAri]),
+    transform_one_type_clause(Def, (TypeName, NameT), DefT),
+    typedef_to_pred(DefT, NameT, Cls),
+    transform_clause_list(Cls, M, ClsT),
+%       transform_types_clauses( ClsT , (TypeName , NameT) , ClsTT ),
+    pretty_print(S, ClsT, [], _),
+    nl(S),
+    nl(S).
 
 transform_one_type_clause(TH, (N, NT), THT) :-
-	functor(TH, F, A),
-	(
-	    F==N
-	->
-	    FT = NT
-	;
-	    FT = F
-	),
-	TH =.. [_|Args],
-	THT =.. [FT|Args],
-	transform_one_type_clause_args(A, THT, (N, NT)).
+    functor(TH, F, A),
+    (
+        F==N
+    ->
+        FT = NT
+    ;
+        FT = F
+    ),
+    TH =.. [_|Args],
+    THT =.. [FT|Args],
+    transform_one_type_clause_args(A, THT, (N, NT)).
 transform_one_type_clause(TH, _, TH).
 
 transform_one_type_clause_args(0, _,    _) :- !.
 transform_one_type_clause_args(N, Pred, T) :-
-	N1 is N - 1,
-	arg(N, Pred, ArgN),
-	transform_one_type_clause(ArgN, T, ArgNT),
-	setarg(N, Pred, ArgNT),
-	transform_one_type_clause_args(N1, Pred, T).
+    N1 is N - 1,
+    arg(N, Pred, ArgN),
+    transform_one_type_clause(ArgN, T, ArgNT),
+    setarg(N, Pred, ArgNT),
+    transform_one_type_clause_args(N1, Pred, T).
 
 % ---------------------------------------------------------------------------
 
@@ -727,29 +727,29 @@ transform_one_type_clause_args(N, Pred, T) :-
 
 :- export(check_global_props/2).
 check_global_props(In, Out) :-
-	assertion_body(Pred, Compat, Call0, Succ, Comp0, Comm, In),
-	compact_props(Call0, compact_calls_prop, Call),
-	compact_props(Comp0, remove_first_argument, Comp1),
-	compact_props(Comp1, compact_global_prop, Comp),
-	assertion_body(Pred, Compat, Call, Succ, Comp, Comm, Out).
+    assertion_body(Pred, Compat, Call0, Succ, Comp0, Comm, In),
+    compact_props(Call0, compact_calls_prop, Call),
+    compact_props(Comp0, remove_first_argument, Comp1),
+    compact_props(Comp1, compact_global_prop, Comp),
+    assertion_body(Pred, Compat, Call, Succ, Comp, Comm, Out).
 
 :- meta_predicate compact_props(?, pred(2), ?).
 compact_props([],   _,   []) :- !.
 compact_props([A0|B0], CompactProp, [A|B]) :- !,
-	compact_props(A0, CompactProp, A),
-	compact_props(B0, CompactProp, B).
+    compact_props(A0, CompactProp, A),
+    compact_props(B0, CompactProp, B).
 compact_props(A, CompactProp, B) :-
-	CompactProp(A, B).
+    CompactProp(A, B).
 
 remove_first_argument(M:A, M:B) :-
-	!,
-	remove_first_argument(A, B).
+    !,
+    remove_first_argument(A, B).
 remove_first_argument(A, B) :-
-	A =.. [F, _|Args],
-	!,
-	B =.. [F|Args].
+    A =.. [F, _|Args],
+    !,
+    B =.. [F|Args].
 remove_first_argument(A, B) :-
-	A =.. [B].
+    A =.. [B].
 
 % TODO: compact_global_prop/2 is a hook, and its implementation
 % TODO: for cost properties must not be implemented here, but in a
@@ -766,9 +766,9 @@ remove_first_argument(A, B) :-
 :- if(defined(with_fullpp)).
 :- if(defined(has_ciaopp_extra)).
 compact_global_prop(cost(Rel, Ap, Type, Res, _, IF, CFN), Cost) :-
-	compact_cf(CFN, IF, CF),
-	compact_cost(Rel, Ap, Type, Res, CF, Cost),
-	!.
+    compact_cf(CFN, IF, CF),
+    compact_cost(Rel, Ap, Type, Res, CF, Cost),
+    !.
 :- endif.
 :- endif. % with_fullpp
 compact_global_prop(C, C).
@@ -776,7 +776,7 @@ compact_global_prop(C, C).
 :- if(defined(with_fullpp)).
 :- if(defined(has_ciaopp_extra)).
 compact_calls_prop(intervals(_, G, _, L), intervals(S, L)) :-
-	compact_size(G, _, S), !.
+    compact_size(G, _, S), !.
 :- endif.
 :- endif. % with_fullpp
 compact_calls_prop(A, A).
@@ -784,9 +784,9 @@ compact_calls_prop(A, A).
 :- if(defined(with_fullpp)).
 :- if(defined(has_ciaopp_extra)).
 compact_cost(rel, Ap, Type, Res, CF, RelCost) :-
-	compact_rel_cost(Type, Ap, Res, CF, RelCost).
+    compact_rel_cost(Type, Ap, Res, CF, RelCost).
 compact_cost(abs, Ap, Type, Res, CF, AbsCost) :-
-	compact_abs_cost(Type, Ap, Res, CF, AbsCost).
+    compact_abs_cost(Type, Ap, Res, CF, AbsCost).
 
 compact_rel_cost(call, Ap, Res, CF, rel_cost(Ap, Res, CF)) :- !.
 compact_rel_cost(Type, Ap, Res, CF, rel_cost(Ap, Type, Res, CF)).

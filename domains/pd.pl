@@ -45,9 +45,9 @@ pd_abs_sort(ASub,ASub).
 pd_extend(_Sg,Prime,_Sv,_Call,Prime).
 
 %% pd_extend('$bottom',_Hv,_Call,Succ):- !,
-%% 	Succ = '$bottom'.
+%%      Succ = '$bottom'.
 %% pd_extend(_Prime,_Hv,_Call,Succ):- !,
-%% 	Succ = top.
+%%      Succ = top.
 
 :- export(pd_less_or_equal/2).
 pd_less_or_equal(_,_).
@@ -80,19 +80,19 @@ pd_empty_entry(_Sg,_Qv,'top').
 
 %% 
 %% pd_compute_lub([ASub1,ASub2|Rest],Lub) :-
-%% 	pd_lub(ASub1,ASub2,ASub3),
-%% 	pd_compute_lub([ASub3|Rest],Lub).
+%%      pd_lub(ASub1,ASub2,ASub3),
+%%      pd_compute_lub([ASub3|Rest],Lub).
 %% pd_compute_lub([ASub],ASub).
 %% 
 %% pd_lub('$bottom','$bottom',ALub):-!,
-%% 	ALub = '$bottom'.
+%%      ALub = '$bottom'.
 %% pd_lub(_ASub1,_ASub2,top).
 
 :- export(pd_special_builtin/5).
 pd_special_builtin(SgKey,Sg,Subgoal,Type,Condvars) :-
-	shfr_special_builtin(SgKey,Sg,Subgoal,Type,Condvars), !. % TODO: why?
+    shfr_special_builtin(SgKey,Sg,Subgoal,Type,Condvars), !. % TODO: why?
 pd_special_builtin(Key,_Sg,_Subgoal,special(Key),[]):-
-	pd_very_special_builtin(Key).
+    pd_very_special_builtin(Key).
 
 pd_very_special_builtin('=/2').
 pd_very_special_builtin('\==/2').

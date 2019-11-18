@@ -1,11 +1,11 @@
 :- module(ctchecks_pred_messages, 
-           [inform_as_change_to_user/5,
- 	   is_any_false/1, is_any_check/1,
- 	   memo_ctcheck_sum/1,
- 	   init_ctcheck_sum/0,
-	   prepare_output_info/5,
-	   name_vars/1], 
- 	   [assertions, regtypes, datafacts, ciaopp(ciaopp_options)]).
+       [inform_as_change_to_user/5,
+       is_any_false/1, is_any_check/1,
+       memo_ctcheck_sum/1,
+       init_ctcheck_sum/0,
+       prepare_output_info/5,
+       name_vars/1], 
+       [assertions, regtypes, datafacts, ciaopp(ciaopp_options)]).
 
 :- doc(module, "showing analysis output").
 
@@ -18,16 +18,16 @@
 
 :- use_module(ciaopp(p_unit), [native_prop/2]).
 :- use_module(ciaopp(p_unit), [
-	add_assertion/1,
-	assertion_set_status/3,
-	assertion_set_calls/3,
-	assertion_set_success/3,
-	assertion_set_comp/3]).
+    add_assertion/1,
+    assertion_set_status/3,
+    assertion_set_calls/3,
+    assertion_set_success/3,
+    assertion_set_comp/3]).
 :- use_module(ciaopp(p_unit/p_unit_basic), [type_of_goal/2]).
 :- use_module(typeslib(typeslib), 
-               [get_type_rule/2, 
-		pretty_type_lit_rules/4, 
-		equiv_type/2]).
+           [get_type_rule/2, 
+            pretty_type_lit_rules/4, 
+            equiv_type/2]).
 :- use_module(ciaopp(plai/domains), [asub_to_info/5, project/5,project/6]).
 :- use_module(ciaopp(p_unit/assrt_norm), [denorm_goal_prop/3]).
 :- use_module(ciaopp(preprocess_flags)).
@@ -46,9 +46,9 @@
 
 :- if(defined(has_ciaopp_extra)).
 :- use_module(infercost(algebraic/polynom_comp), % [LD]
-	[
-	    polynom_message/7
-	]).
+    [
+        polynom_message/7
+    ]).
 :- use_module(library(aggregates), [findall/3]). 
 :- endif.
 
@@ -109,125 +109,125 @@ is_any_false(no).
 is_any_check(no).
 
 init_ctcheck_sum :-
-	retractall_fact(is_any_false(_)),
-	retractall_fact(is_any_check(_)),
-	asserta_fact(is_any_false(no)),
-        asserta_fact(is_any_check(no)),
-	cleanup_polynom_message.
+    retractall_fact(is_any_false(_)),
+    retractall_fact(is_any_check(_)),
+    asserta_fact(is_any_false(no)),
+    asserta_fact(is_any_check(no)),
+    cleanup_polynom_message.
 
 :- if(defined(has_ciaopp_extra)).
 cleanup_polynom_message :-
-	retractall_fact(polynom_message(_,_,_,_,_,_,_)). %[LD]
+    retractall_fact(polynom_message(_,_,_,_,_,_,_)). %[LD]
 :- else.
 cleanup_polynom_message.
 :- endif.
 
 memo_ctcheck_sum(false) :-
-	retract_fact(is_any_false(_)),
-	asserta_fact(is_any_false(yes)).
+    retract_fact(is_any_false(_)),
+    asserta_fact(is_any_false(yes)).
 memo_ctcheck_sum(check) :-
-	retract_fact(is_any_check(_)),
-	asserta_fact(is_any_check(yes)).
+    retract_fact(is_any_check(_)),
+    asserta_fact(is_any_check(yes)).
 
 %------------------------------------------------------------------------------
 % process assertion level
 %------------------------------------------------------------------------------
 
 inform_as_change_to_user(Old,OldRef,New,Domains,Info) :-
-	current_pp_flag(verbose_ctchecks,VCT),   
-	current_pp_flag(ass_not_stat_eval,STAT),   
-	polynom_collect_message(Old, PolynomMsg), % TODO: ugly implementation!
-	decide_inform_user(VCT, STAT, Old, OldRef, New, PolynomMsg, Domains, Info).
+    current_pp_flag(verbose_ctchecks,VCT),   
+    current_pp_flag(ass_not_stat_eval,STAT),   
+    polynom_collect_message(Old, PolynomMsg), % TODO: ugly implementation!
+    decide_inform_user(VCT, STAT, Old, OldRef, New, PolynomMsg, Domains, Info).
 
 :- if(defined(has_ciaopp_extra)).
 polynom_collect_message(As, Msg):-
-	findall(msg(UComp, ACost, SafeIntervalsTrue, SafeIntervalsFalse),
-	        retract_fact(polynom_message(As,UComp,ACost,_IntervalsTrue,SafeIntervalsTrue,_IntervalsFalse,SafeIntervalsFalse)),
-		Msg).
+    findall(msg(UComp, ACost, SafeIntervalsTrue, SafeIntervalsFalse),
+            retract_fact(polynom_message(As,UComp,ACost,_IntervalsTrue,SafeIntervalsTrue,_IntervalsFalse,SafeIntervalsFalse)),
+            Msg).
 :- else.
 polynom_collect_message(_As, []).
 :- endif.
 
 % checked assertion, verbose_ctchecks = on
 decide_inform_user(VCT, _STAT, Old, OldRef, New, [], _Domains, _Info):-
-	Old = as${comp => OldComp},
-	New = as${status => Status, type => Type},
-	checked_or_true(Status),
-	Old = as${call => OrigCall, succ => OrigSuccess, locator => Loc},
-	assertion_set_calls(New, OrigCall, A2), % TODO: why?
-	assertion_set_success(A2, OrigSuccess, A3), % TODO: why?
-	assertion_set_comp(A3, OldComp, NewToPrint), % TODO: why?
-       	erase(OldRef),
-	add_assertion(NewToPrint),
-	( Status = true -> local_inccounter(simp_true_s,_) 
-	;  ( Type = calls -> local_inccounter(simp_checked_c,_) ; 
-             local_inccounter(simp_checked_s,_)
-	   )
-	),
-	VCT = on,
-	!,
-	Loc = loc(_File, FromL, ToL),
-	note_message( "(lns ~d-~d) The assertion:~n~p has been changed to~n~p" , 
-          [FromL, ToL, Old,NewToPrint] ).
+    Old = as${comp => OldComp},
+    New = as${status => Status, type => Type},
+    checked_or_true(Status),
+    Old = as${call => OrigCall, succ => OrigSuccess, locator => Loc},
+    assertion_set_calls(New, OrigCall, A2), % TODO: why?
+    assertion_set_success(A2, OrigSuccess, A3), % TODO: why?
+    assertion_set_comp(A3, OldComp, NewToPrint), % TODO: why?
+    erase(OldRef),
+    add_assertion(NewToPrint),
+    ( Status = true -> local_inccounter(simp_true_s,_) 
+    ;  ( Type = calls -> local_inccounter(simp_checked_c,_) ; 
+         local_inccounter(simp_checked_s,_)
+       )
+    ),
+    VCT = on,
+    !,
+    Loc = loc(_File, FromL, ToL),
+    note_message( "(lns ~d-~d) The assertion:~n~p has been changed to~n~p" , 
+      [FromL, ToL, Old,NewToPrint] ).
 % false or check assertions
 decide_inform_user(_VC, STAT, Old, OldRef, New, [], Domains, Info):-
-	New  = as${
-		 module => _Module,
-		 status    => Status,    type      => Type ,
-	         head      => Goal  ,    
-		 call      => Call ,     succ      => Success,
-		 comp      => Comp  ,    dic       => Dict,     		 	 
-		 locator   => Locator 
-	       },       
-        ( Status = check, type_of_goal(exported, Goal),
-	  current_pp_flag(client_safe_ctchecks, on) ->
-	    % Do not inform on check calls assertions of exported predicates
-	    fail
-	; true
-	),
-	%
-	(  Status == check, 
-	   ( Type = calls ->
-	     local_inccounter(simp_check_c,_) 
-	   ; local_inccounter(simp_check_s,_)
-	   )
-	;  Status == false, 
-          ( Type = calls -> 
-	    local_inccounter(simp_false_c,_) 
-	  ; local_inccounter(simp_false_s,_)
-	  )
-	),
-	(   Status == check, STAT \== off, %VC == on, 
-	    filter_left_over(Type, Call, Success, Comp, LeftL),
-	    list_to_conj(LeftL, Left0),
-	    copy_term((Left0, Dict),(Left, CDict)),
-	    name_vars(CDict), prettyvars(Left)
-	; 
-	    Status == false,
-	    erase(OldRef),
-	    add_assertion(New)
-	),
-	!,
-	prepare_output_info(Domains, Info, Goal, Type, RelInfo),
-	copy_term((Goal,'$an_results'(RelInfo),Dict),(GoalCopy,RelInfoCopy,DictCopy)),
-	name_vars(DictCopy),
-	prettyvars((GoalCopy,RelInfoCopy)),
-	Locator = loc(_File, RFrom, To),
-	(  RFrom == To
-	-> From = RFrom
-	;  From is RFrom+1
-	),
-	(  Status == check ->
-	   
-	   show_message(STAT, "(lns ~d-~d) Cannot verify assertion:~n~pbecause 
+    New  = as${
+             module => _Module,
+             status    => Status,    type      => Type ,
+             head      => Goal  ,    
+             call      => Call ,     succ      => Success,
+             comp      => Comp  ,    dic       => Dict,                              
+             locator   => Locator 
+           },       
+    ( Status = check, type_of_goal(exported, Goal),
+      current_pp_flag(client_safe_ctchecks, on) ->
+        % Do not inform on check calls assertions of exported predicates
+        fail
+    ; true
+    ),
+    %
+    (  Status == check, 
+       ( Type = calls ->
+         local_inccounter(simp_check_c,_) 
+       ; local_inccounter(simp_check_s,_)
+       )
+    ;  Status == false, 
+      ( Type = calls -> 
+        local_inccounter(simp_false_c,_) 
+      ; local_inccounter(simp_false_s,_)
+      )
+    ),
+    (   Status == check, STAT \== off, %VC == on, 
+        filter_left_over(Type, Call, Success, Comp, LeftL),
+        list_to_conj(LeftL, Left0),
+        copy_term((Left0, Dict),(Left, CDict)),
+        name_vars(CDict), prettyvars(Left)
+    ; 
+        Status == false,
+        erase(OldRef),
+        add_assertion(New)
+    ),
+    !,
+    prepare_output_info(Domains, Info, Goal, Type, RelInfo),
+    copy_term((Goal,'$an_results'(RelInfo),Dict),(GoalCopy,RelInfoCopy,DictCopy)),
+    name_vars(DictCopy),
+    prettyvars((GoalCopy,RelInfoCopy)),
+    Locator = loc(_File, RFrom, To),
+    (  RFrom == To
+    -> From = RFrom
+    ;  From is RFrom+1
+    ),
+    (  Status == check ->
+       
+       show_message(STAT, "(lns ~d-~d) Cannot verify assertion:~n~pbecause 
 on ~p ~p :~n~p ~nLeft to prove: ~w~n", 
-           [From, To, Old, Type, GoalCopy, RelInfoCopy, Left]),
-	    memo_ctcheck_sum(check)
-	;  error_message( "(lns ~d-~d) False assertion:~n~pbecause 
+       [From, To, Old, Type, GoalCopy, RelInfoCopy, Left]),
+        memo_ctcheck_sum(check)
+    ;  error_message( "(lns ~d-~d) False assertion:~n~pbecause 
 on ~p ~p :~n~p", 
-	   [From, To, Old, Type, GoalCopy, RelInfoCopy]),
-	    memo_ctcheck_sum(false)
-	).
+       [From, To, Old, Type, GoalCopy, RelInfoCopy]),
+        memo_ctcheck_sum(false)
+    ).
 % (otherwise)
 decide_inform_user(_Flag1,_Flag2,_Old,_OldRef,_New,[],_Dom,_Info) :- !.
 %
@@ -235,283 +235,283 @@ decide_inform_user(_Flag1,_Flag2,_Old,_OldRef,_New,[],_Dom,_Info) :- !.
 % process assertion at comp level w/ interval information
 %------------------------------------------------------------------------------
 decide_inform_user(VCT, STAT, OldAs, OldAsRef, NewAs, Msg, Domains, Info):-
-	( 
-	    member(msg(steps_ub(_),Acost, UbIncl,UbIncpt), Msg), %checking whether it has
-	    member(msg(steps_lb(_),Acost, LbIncl,LbIncpt), Msg), %upper and lower bound
-	    %checking interval correctness
-	    check_interval_error([UbIncl,UbIncpt,LbIncl,LbIncpt],ErrCode),
-	    (
-		ErrCode = 0 ->
-		%do computation
-		intersect_includes(UbIncl, LbIncl, InclInt),
-		coalesce_intervals(InclInt, num, IncludeInt),
-		intersect_incompatibles(UbIncpt, LbIncpt, IncptInt),
-		coalesce_intervals(IncptInt, num, IncompatibleInt),
-		intersect_include_incompatible(IncludeInt, IncompatibleInt, Ival),
-		%giving message
-		(
-		    VCT == on ->   
-		    member(msg(steps_ub(Sub),Acost, _UbIncl,_UbIncpt), Msg),
-		    member(msg(steps_lb(Slb),Acost, __UbIncl,__UbIncpt), Msg),
-		    (
-			member(steps_ub(Aub), Acost)
-		    ;
-			Aub = none
-		    ),
-		    (
-			member(steps_lb(Alb), Acost)
-		    ;
-			Alb = none
-		    ),
-		    general_message4(Sub, Aub, Slb, Alb)
-		;
-		    true
-		),
-		update_spawn_assertion(VCT, STAT, OldAs, OldAsRef, NewAs, Ival, Domains, Info)
-	    ;
-		explain_interval(VCT, STAT, [ErrCode], OldAs, NewAs, Domains, Info)
-	    )
-	;%only have ub
-	    member(msg(steps_ub(_),_,Incl,Incpt), Msg),	    
-	    %checking interval correctness
-	    check_interval_error([Incl,Incpt],ErrCode),
-	    (
-		ErrCode = 0 ->
-		%do computation
-		intersect_include_incompatible(Incl, Incpt, Ival),
-		%giving message
-		(
-		    VCT == on ->   
-		    member(msg(steps_ub(Sub),Acost, _UbIncl,_UbIncpt), Msg),
-		    (
-			member(steps_ub(Aub), Acost)
-		    ;
-			Aub = none
-		    ),
-		    (
-			member(steps_lb(Alb), Acost)
-		    ;
-			Alb = none
-		    ),
-		    general_message2_1(Sub,Aub,Alb)
-		;
-		    true
-		),
-		update_spawn_assertion(VCT, STAT, OldAs, OldAsRef, NewAs, Ival, Domains, Info)
-	    ;
-		explain_interval(VCT, STAT, [ErrCode], OldAs, NewAs, Domains, Info)
-	    )
-	;%only have lb
-	    member(msg(steps_lb(_),_,Incl,Incpt), Msg),	    
-	    %checking interval correctness
-	    check_interval_error([Incl,Incpt],ErrCode),
-	    (
-		ErrCode = 0 ->
-
-		%do computation
-		intersect_include_incompatible(Incl, Incpt, Ival),
-		%giving message
-		(
-		    VCT == on ->   
-		    member(msg(steps_lb(Slb),Acost, _UbIncl,_UbIncpt), Msg),!,
-		    (
-			member(steps_ub(Aub), Acost)
-		    ;
-			Aub = none
-		    ),
-		    (
-			member(steps_lb(Alb), Acost)
-		    ;
-			Alb = none
-		    ),
-		    general_message2_2(Slb, Aub, Alb)
-		;
-		    true
-		),
-		update_spawn_assertion(VCT, STAT, OldAs, OldAsRef, NewAs, Ival, Domains, Info)
+    ( 
+        member(msg(steps_ub(_),Acost, UbIncl,UbIncpt), Msg), %checking whether it has
+        member(msg(steps_lb(_),Acost, LbIncl,LbIncpt), Msg), %upper and lower bound
+        %checking interval correctness
+        check_interval_error([UbIncl,UbIncpt,LbIncl,LbIncpt],ErrCode),
+        (
+            ErrCode = 0 ->
+            %do computation
+            intersect_includes(UbIncl, LbIncl, InclInt),
+            coalesce_intervals(InclInt, num, IncludeInt),
+            intersect_incompatibles(UbIncpt, LbIncpt, IncptInt),
+            coalesce_intervals(IncptInt, num, IncompatibleInt),
+            intersect_include_incompatible(IncludeInt, IncompatibleInt, Ival),
+            %giving message
+            (
+                VCT == on ->   
+                member(msg(steps_ub(Sub),Acost, _UbIncl,_UbIncpt), Msg),
+                member(msg(steps_lb(Slb),Acost, __UbIncl,__UbIncpt), Msg),
+                (
+                    member(steps_ub(Aub), Acost)
+                ;
+                    Aub = none
+                ),
+                (
+                    member(steps_lb(Alb), Acost)
+                ;
+                    Alb = none
+                ),
+                general_message4(Sub, Aub, Slb, Alb)
             ;
-	        explain_interval(VCT, STAT, [ErrCode], OldAs, NewAs, Domains, Info)
-            ) 
-	).
+                true
+            ),
+            update_spawn_assertion(VCT, STAT, OldAs, OldAsRef, NewAs, Ival, Domains, Info)
+        ;
+            explain_interval(VCT, STAT, [ErrCode], OldAs, NewAs, Domains, Info)
+        )
+    ;%only have ub
+        member(msg(steps_ub(_),_,Incl,Incpt), Msg),     
+        %checking interval correctness
+        check_interval_error([Incl,Incpt],ErrCode),
+        (
+            ErrCode = 0 ->
+            %do computation
+            intersect_include_incompatible(Incl, Incpt, Ival),
+            %giving message
+            (
+                VCT == on ->   
+                member(msg(steps_ub(Sub),Acost, _UbIncl,_UbIncpt), Msg),
+                (
+                    member(steps_ub(Aub), Acost)
+                ;
+                    Aub = none
+                ),
+                (
+                    member(steps_lb(Alb), Acost)
+                ;
+                    Alb = none
+                ),
+                general_message2_1(Sub,Aub,Alb)
+            ;
+                true
+            ),
+            update_spawn_assertion(VCT, STAT, OldAs, OldAsRef, NewAs, Ival, Domains, Info)
+        ;
+            explain_interval(VCT, STAT, [ErrCode], OldAs, NewAs, Domains, Info)
+        )
+    ;%only have lb
+        member(msg(steps_lb(_),_,Incl,Incpt), Msg),     
+        %checking interval correctness
+        check_interval_error([Incl,Incpt],ErrCode),
+        (
+            ErrCode = 0 ->
+
+            %do computation
+            intersect_include_incompatible(Incl, Incpt, Ival),
+            %giving message
+            (
+                VCT == on ->   
+                member(msg(steps_lb(Slb),Acost, _UbIncl,_UbIncpt), Msg),!,
+                (
+                    member(steps_ub(Aub), Acost)
+                ;
+                    Aub = none
+                ),
+                (
+                    member(steps_lb(Alb), Acost)
+                ;
+                    Alb = none
+                ),
+                general_message2_2(Slb, Aub, Alb)
+            ;
+                true
+            ),
+            update_spawn_assertion(VCT, STAT, OldAs, OldAsRef, NewAs, Ival, Domains, Info)
+        ;
+            explain_interval(VCT, STAT, [ErrCode], OldAs, NewAs, Domains, Info)
+        ) 
+    ).
 % handling steps_o separately
 decide_inform_user(VCT, STAT, OldAs, OldAsRef, NewAs, Msg, Domains, Info):-
-	member(msg(steps_o(_),_,_Incl,_Incpt), Msg), !,
-	%giving message
-	(
-	    VCT == on ->
-	    member(msg(steps_o(Sub),Acost, _UbIncl,_UbIncpt), Msg),
-	    (
-		member(steps_ub(Aub), Acost)
-	    ;
-		Aub = none
-	    ),
-	    (
-		member(steps_lb(Alb), Acost)
-	    ;
-		Alb = none
-	    ),
-	    general_message_o(Sub, Aub, Alb)
-	;
-	    true
-	),
-	%copy assertion content
-	NewAs= as${status => Status},
-	assertion_set_status(OldAs, Status, NewAsFull),
-	%update assertion DB
-	add_assertion(NewAsFull),
-	% in this case the assertion is valid for whole interval
-	explain_interval(VCT, STAT, [], OldAs, NewAs, Domains, Info), 
-	erase(OldAsRef).
+    member(msg(steps_o(_),_,_Incl,_Incpt), Msg), !,
+    %giving message
+    (
+        VCT == on ->
+        member(msg(steps_o(Sub),Acost, _UbIncl,_UbIncpt), Msg),
+        (
+            member(steps_ub(Aub), Acost)
+        ;
+            Aub = none
+        ),
+        (
+            member(steps_lb(Alb), Acost)
+        ;
+            Alb = none
+        ),
+        general_message_o(Sub, Aub, Alb)
+    ;
+        true
+    ),
+    %copy assertion content
+    NewAs= as${status => Status},
+    assertion_set_status(OldAs, Status, NewAsFull),
+    %update assertion DB
+    add_assertion(NewAsFull),
+    % in this case the assertion is valid for whole interval
+    explain_interval(VCT, STAT, [], OldAs, NewAs, Domains, Info), 
+    erase(OldAsRef).
 % (for resources)
 decide_inform_user(VCT, STAT, OldAs, OldAsRef, NewAs, Msg, Domains, Info):-
-	( 
-	    member(msg(cost(CostProperty,ub,CostType,Res,_),Acost, UbIncl,UbIncpt), Msg), %checking whether it has
-	    member(msg(cost(CostProperty,lb,CostType,Res,_),Acost, LbIncl,LbIncpt), Msg), %upper and lower bound
-	    !,
-	    %checking interval correctness
-	    check_interval_error([UbIncl,UbIncpt,LbIncl,LbIncpt],ErrCode),
-	    (
-		ErrCode = 0 ->
-		%do computation
-		intersect_includes(UbIncl, LbIncl, InclInt),
-		coalesce_intervals(InclInt, num, IncludeInt),
-		intersect_incompatibles(UbIncpt, LbIncpt, IncptInt),
-		coalesce_intervals(IncptInt, num, IncompatibleInt),
-		intersect_include_incompatible(IncludeInt, IncompatibleInt, Ival),
-		%giving message
-		(
-		    VCT == on ->   
-		    member(msg(cost(CostProperty,ub,CostType,Res,Sub),Acost, _UbIncl,_UbIncpt), Msg),
-		    member(msg(cost(CostProperty,lb,CostType,Res,Slb),Acost, __UbIncl,__UbIncpt), Msg),
-		    (
-			member(cost(ub,Res,Aub), Acost)
-		    ;
-			Aub = none
-		    ),
-		    (
-			member(cost(lb,Res,Alb), Acost)
-		    ;
-			Alb = none
-		    ),
-		    general_message4(Sub, Aub, Slb, Alb)
-		;
-		    true
-		),
-		update_spawn_assertion(VCT, STAT, OldAs, OldAsRef, NewAs, Ival, Domains, Info)
-	    ;
-		explain_interval(VCT, STAT, [ErrCode], OldAs, NewAs, Domains, Info)
-	    )
-	;%only have ub
-	    member(msg(cost(CostProperty,ub,CostType,Res,_),Acost, Incl, Incpt), Msg),    
-	    !,
-	    %checking interval correctness
-	    check_interval_error([Incl,Incpt],ErrCode),
-	    (
-		ErrCode = 0 ->
-		%do computation
-		intersect_include_incompatible(Incl, Incpt, Ival),
-		%giving message
-		(
-		    VCT == on ->   
-		    member(msg(cost(CostProperty,ub,CostType,Res,Sub),Acost, _UbIncl,_UbIncpt), Msg),
-		    (
-			member(cost(ub,Res,Aub), Acost)
-		    ;
-			Aub = none
-		    ),
-		    (
-			member(cost(lb,Res,Alb), Acost)
-		    ;
-			Alb = none
-		    ),
-		    general_message2_1(Sub, Aub, Alb)
-		;
-		    true
-		),
-		update_spawn_assertion(VCT, STAT, OldAs, OldAsRef, NewAs, Ival, Domains, Info)
-	    ;
-		explain_interval(VCT, STAT, [ErrCode], OldAs, NewAs, Domains, Info)
-	    )
-	;%only have lb
-	    member(msg(cost(CostProperty,lb,CostType,Res,_),Acost, Incl, Incpt), Msg), 
-	    !,
-	    %checking interval correctness
-	    check_interval_error([Incl,Incpt],ErrCode),
-	    (
-		ErrCode = 0 ->
-
-		%do computation
-		intersect_include_incompatible(Incl, Incpt, Ival),
-		%giving message
-		(
-		    VCT == on ->   
-		    member(msg(cost(CostProperty,lb,CostType,Res,Slb),Acost, _UbIncl,_UbIncpt), Msg),
-		    (
-			member(cost(ub,Res,Aub), Acost)
-		    ;
-			Aub = none
-		    ),
-		    (
-			member(cost(lb,Res,Alb), Acost)
-		    ;
-			Alb = none
-		    ),
-		    general_message2_2(Slb, Aub, Alb)
-		;
-		    true
-		),
-		update_spawn_assertion(VCT, STAT, OldAs, OldAsRef, NewAs, Ival, Domains, Info)
+    ( 
+        member(msg(cost(CostProperty,ub,CostType,Res,_),Acost, UbIncl,UbIncpt), Msg), %checking whether it has
+        member(msg(cost(CostProperty,lb,CostType,Res,_),Acost, LbIncl,LbIncpt), Msg), %upper and lower bound
+        !,
+        %checking interval correctness
+        check_interval_error([UbIncl,UbIncpt,LbIncl,LbIncpt],ErrCode),
+        (
+            ErrCode = 0 ->
+            %do computation
+            intersect_includes(UbIncl, LbIncl, InclInt),
+            coalesce_intervals(InclInt, num, IncludeInt),
+            intersect_incompatibles(UbIncpt, LbIncpt, IncptInt),
+            coalesce_intervals(IncptInt, num, IncompatibleInt),
+            intersect_include_incompatible(IncludeInt, IncompatibleInt, Ival),
+            %giving message
+            (
+                VCT == on ->   
+                member(msg(cost(CostProperty,ub,CostType,Res,Sub),Acost, _UbIncl,_UbIncpt), Msg),
+                member(msg(cost(CostProperty,lb,CostType,Res,Slb),Acost, __UbIncl,__UbIncpt), Msg),
+                (
+                    member(cost(ub,Res,Aub), Acost)
+                ;
+                    Aub = none
+                ),
+                (
+                    member(cost(lb,Res,Alb), Acost)
+                ;
+                    Alb = none
+                ),
+                general_message4(Sub, Aub, Slb, Alb)
             ;
-	        explain_interval(VCT, STAT, [ErrCode], OldAs, NewAs, Domains, Info)
-            ) 
-        ).
+                true
+            ),
+            update_spawn_assertion(VCT, STAT, OldAs, OldAsRef, NewAs, Ival, Domains, Info)
+        ;
+            explain_interval(VCT, STAT, [ErrCode], OldAs, NewAs, Domains, Info)
+        )
+    ;%only have ub
+        member(msg(cost(CostProperty,ub,CostType,Res,_),Acost, Incl, Incpt), Msg),    
+        !,
+        %checking interval correctness
+        check_interval_error([Incl,Incpt],ErrCode),
+        (
+            ErrCode = 0 ->
+            %do computation
+            intersect_include_incompatible(Incl, Incpt, Ival),
+            %giving message
+            (
+                VCT == on ->   
+                member(msg(cost(CostProperty,ub,CostType,Res,Sub),Acost, _UbIncl,_UbIncpt), Msg),
+                (
+                    member(cost(ub,Res,Aub), Acost)
+                ;
+                    Aub = none
+                ),
+                (
+                    member(cost(lb,Res,Alb), Acost)
+                ;
+                    Alb = none
+                ),
+                general_message2_1(Sub, Aub, Alb)
+            ;
+                true
+            ),
+            update_spawn_assertion(VCT, STAT, OldAs, OldAsRef, NewAs, Ival, Domains, Info)
+        ;
+            explain_interval(VCT, STAT, [ErrCode], OldAs, NewAs, Domains, Info)
+        )
+    ;%only have lb
+        member(msg(cost(CostProperty,lb,CostType,Res,_),Acost, Incl, Incpt), Msg), 
+        !,
+        %checking interval correctness
+        check_interval_error([Incl,Incpt],ErrCode),
+        (
+            ErrCode = 0 ->
+
+            %do computation
+            intersect_include_incompatible(Incl, Incpt, Ival),
+            %giving message
+            (
+                VCT == on ->   
+                member(msg(cost(CostProperty,lb,CostType,Res,Slb),Acost, _UbIncl,_UbIncpt), Msg),
+                (
+                    member(cost(ub,Res,Aub), Acost)
+                ;
+                    Aub = none
+                ),
+                (
+                    member(cost(lb,Res,Alb), Acost)
+                ;
+                    Alb = none
+                ),
+                general_message2_2(Slb, Aub, Alb)
+            ;
+                true
+            ),
+            update_spawn_assertion(VCT, STAT, OldAs, OldAsRef, NewAs, Ival, Domains, Info)
+        ;
+            explain_interval(VCT, STAT, [ErrCode], OldAs, NewAs, Domains, Info)
+        ) 
+    ).
 % (for res_plai)
 decide_inform_user(VCT, STAT, OldAs, OldAsRef, NewAs, Msg, Domains, Info):-
-	( 
-	    member(msg(costb(ub,Res,_,_),Acost, UbIncl,UbIncpt), Msg), %checking whether it has
-	    member(msg(costb(lb,Res,_,_),Acost, LbIncl,LbIncpt), Msg), %upper and lower bound
-	    !,
-	    % %checking interval correctness
-	    check_interval_error([UbIncl,UbIncpt,LbIncl,LbIncpt],ErrCode),
-	    (
-		ErrCode = 0 ->
-		%do computation
-		intersect_includes(UbIncl, LbIncl, InclInt),
-		coalesce_intervals(InclInt, num, IncludeInt),
-		intersect_incompatibles(UbIncpt, LbIncpt, IncptInt),
-		coalesce_intervals(IncptInt, num, IncompatibleInt),
-		intersect_include_incompatible(IncludeInt, IncompatibleInt, Ival),
-		%giving message
-		(
-		    VCT == on ->   
-		    member(msg(costb(_,Res,Slb,Sub),Acost, _UbIncl,_UbIncpt), Msg),
-		    % member(msg(cost(CostProperty,lb,CostType,Res,Slb),Acost, __UbIncl,__UbIncpt), Msg),
-		    (
-			member(cost(ub,Res,Aub), Acost)
-		    ;
-			Aub = none
-		    ),
-		    (
-			member(cost(lb,Res,Alb), Acost)
-		    ;
-			Alb = none
-		    ),
-		    general_message4(Sub, Aub, Slb, Alb)
-		;
-		    true
+    ( 
+        member(msg(costb(ub,Res,_,_),Acost, UbIncl,UbIncpt), Msg), %checking whether it has
+        member(msg(costb(lb,Res,_,_),Acost, LbIncl,LbIncpt), Msg), %upper and lower bound
+        !,
+        % %checking interval correctness
+        check_interval_error([UbIncl,UbIncpt,LbIncl,LbIncpt],ErrCode),
+        (
+            ErrCode = 0 ->
+            %do computation
+            intersect_includes(UbIncl, LbIncl, InclInt),
+            coalesce_intervals(InclInt, num, IncludeInt),
+            intersect_incompatibles(UbIncpt, LbIncpt, IncptInt),
+            coalesce_intervals(IncptInt, num, IncompatibleInt),
+            intersect_include_incompatible(IncludeInt, IncompatibleInt, Ival),
+            %giving message
+            (
+                VCT == on ->   
+                member(msg(costb(_,Res,Slb,Sub),Acost, _UbIncl,_UbIncpt), Msg),
+                % member(msg(cost(CostProperty,lb,CostType,Res,Slb),Acost, __UbIncl,__UbIncpt), Msg),
+                (
+                    member(cost(ub,Res,Aub), Acost)
+                ;
+                    Aub = none
+                ),
+                (
+                    member(cost(lb,Res,Alb), Acost)
+                ;
+                    Alb = none
+                ),
+                general_message4(Sub, Aub, Slb, Alb)
+            ;
+                true
 
-		),
-		update_spawn_assertion(VCT, STAT, OldAs, OldAsRef, NewAs, Ival, Domains, Info)
-	    ;
-		explain_interval(VCT, STAT, [ErrCode], OldAs, NewAs, Domains, Info)
-	    )
-        ).
+            ),
+            update_spawn_assertion(VCT, STAT, OldAs, OldAsRef, NewAs, Ival, Domains, Info)
+        ;
+            explain_interval(VCT, STAT, [ErrCode], OldAs, NewAs, Domains, Info)
+        )
+    ).
 % (otherwise)
 decide_inform_user(_VCT, _STAT, _OldAs, _OldAsRef, _NewAs, _Msg, _Domains, _Info).
 
 
 local_inccounter(Counter, Val) :- % in case the counter is not defined
-	inccounter(Counter, Val),!.
+    inccounter(Counter, Val),!.
 local_inccounter(_, _).
 
 checked_or_true(checked).
@@ -528,87 +528,87 @@ checked_or_true(true).
 :- multifile portray/1.
 
 portray(A) :- A = as${}, !,
-	current_output(CO),
-	print_assrt(A, CO).
+    current_output(CO),
+    print_assrt(A, CO).
 portray('$an_results'(Res)) :-
-	find_tab(Res,ResT),
-	write_results(ResT).
+    find_tab(Res,ResT),
+    write_results(ResT).
 portray('$dom'(Dom,Res,Rules,Tab)) :-
-	name(Dom,Lst), length(Lst,Len),
-	format("~n[~w]",[Dom]),
-	write_spaces(Tab - Len + 1), 
-	format(": ",[]),
-	( Dom == generic_comp ->
-	  sort(Res, Res2),
-	  list_to_conj(Res2,ResConj),
-	  write(ResConj), nl
-	; write_info(Res, Tab)
-	),
-	(  Rules = [] ->
-	   nl
-	;
-	   format("~nwith: ",[]),
-	   % Flag for a format of rules here 
-	   write_rules(Rules)
-	).
+    name(Dom,Lst), length(Lst,Len),
+    format("~n[~w]",[Dom]),
+    write_spaces(Tab - Len + 1), 
+    format(": ",[]),
+    ( Dom == generic_comp ->
+      sort(Res, Res2),
+      list_to_conj(Res2,ResConj),
+      write(ResConj), nl
+    ; write_info(Res, Tab)
+    ),
+    (  Rules = [] ->
+       nl
+    ;
+       format("~nwith: ",[]),
+       % Flag for a format of rules here 
+       write_rules(Rules)
+    ).
 
 write_results([]).
 write_results([R|Rs]) :-
-	print(R),
-	write_results(Rs).
+    print(R),
+    write_results(Rs).
 
 write_info([],_).
 write_info([A|As],Tab) :- 
-	format("~w ",[A]),
-	( As \== [] ->
-	  format(" OR ~n",[]),
-	  write_spaces(Tab + 5)
-	; true
-	),
-	write_info(As,Tab).
+    format("~w ",[A]),
+    ( As \== [] ->
+      format(" OR ~n",[]),
+      write_spaces(Tab + 5)
+    ; true
+    ),
+    write_info(As,Tab).
 
 write_rules([]).
 write_rules([typedef(::=(H,B))|Rules]) :-
-	format("~w ::= ~w~n",[H,B]),
-	( Rules \== [] ->
-	  format("      ",[])
-	; true
-	),
-	write_rules(Rules).
+    format("~w ::= ~w~n",[H,B]),
+    ( Rules \== [] ->
+      format("      ",[])
+    ; true
+    ),
+    write_rules(Rules).
 
 write_spaces(Zero) :- 0 is Zero,!.
 write_spaces(N) :-
-	write(' '),
-	N1 is N - 1,
-	write_spaces(N1).
+    write(' '),
+    N1 is N - 1,
+    write_spaces(N1).
 
 
 find_tab(Res,ResT) :-
-	find_tab_x(Res,Tab,Tab,ResT).
+    find_tab_x(Res,Tab,Tab,ResT).
 
 find_tab_x([],_,0,[]).
 find_tab_x(['$dom'(Dom,Res,Rules)|Rs],Tab,MaxTab,['$dom'(Dom,Res,Rules,Tab)|RsT]) :-
-	name(Dom,List),
-	length(List,Length),
-	find_tab_x(Rs,Tab,MaxTab1,RsT),
-	find_max(MaxTab1,Length,MaxTab).
+    name(Dom,List),
+    length(List,Length),
+    find_tab_x(Rs,Tab,MaxTab1,RsT),
+    find_max(MaxTab1,Length,MaxTab).
 
 find_max(A,B,C) :- A > B, !, C = A.
 find_max(_,B,B).
 
 % a bit different from that in ctchecks_messages.pl
 filter_required_rules([typedef(::=(T,_))|Ds],Rs,RsOut):-
- 	functor(G,T,1),
- 	( native_prop(G,regtype(_Prop)) % not inferred
-	; equiv_type(T,_)               % an equivalent type will be shown 
-	), 
-	!, 
- 	filter_required_rules(Ds,Rs,RsOut).
+    functor(G,T,1),
+    ( native_prop(G,regtype(_Prop)) % not inferred
+    ; equiv_type(T,_)               % an equivalent type will be shown 
+    ), 
+    !, 
+    filter_required_rules(Ds,Rs,RsOut).
 filter_required_rules([R|Ds],Rs,RsOut):-
- 	member(R,Rs),!,                    % already in
- 	filter_required_rules(Ds,Rs,RsOut).
+    member(R,Rs),!,                    % already in
+    filter_required_rules(Ds,Rs,RsOut).
 filter_required_rules([R|Rs],RIn,ROut):-
- 	filter_required_rules(Rs,[R|RIn],ROut).
+    filter_required_rules(Rs,[R|RIn],ROut).
 filter_required_rules([],Rs,Rs).
  
 
@@ -618,129 +618,129 @@ filter_left_over(comp, _, _, Comp, Comp).
 
 name_vars([]).
 name_vars([V=V|Vs]):-
-	name_vars(Vs).
+    name_vars(Vs).
 
 
 prepare_output_info([],[],_Head,_Type,[]) :-!.
 prepare_output_info([none|Ds],[_I|Is],H,Type,AInfo) :-!,
-	prepare_output_info(Ds,Is,H,Type,AInfo).
+    prepare_output_info(Ds,Is,H,Type,AInfo).
 prepare_output_info([D|Ds],[I|Is],H,Type,AInfoOut) :-
-	trans_aux(Type,D,H,I,A),
-	(  knows_of(regtypes,D), \+ A = [[bottom]] ->   % (\=)/2 is not a builtin???
-	   collect_rules(H,A,ReqRules,A1)
-	;  ReqRules = [],
-	   A1 = A
-	),
-	(  A1 = [] ->
-	   AInfoOut = AInfo
-	;  AInfoOut = ['$dom'(D,A1,ReqRules)|AInfo]
-	),
-	prepare_output_info(Ds,Is,H,Type,AInfo).
+    trans_aux(Type,D,H,I,A),
+    (  knows_of(regtypes,D), \+ A = [[bottom]] ->   % (\=)/2 is not a builtin???
+       collect_rules(H,A,ReqRules,A1)
+    ;  ReqRules = [],
+       A1 = A
+    ),
+    (  A1 = [] ->
+       AInfoOut = AInfo
+    ;  AInfoOut = ['$dom'(D,A1,ReqRules)|AInfo]
+    ),
+    prepare_output_info(Ds,Is,H,Type,AInfo).
 
 
 
 
 % collect type rules for each and every complete
 collect_rules(G,Info,Rules,NewInfo):-
-	collect_rules_all(G,Info,[],Rules,NewInfo).
+    collect_rules_all(G,Info,[],Rules,NewInfo).
 
 collect_rules_all(_G,[],R,R,[]).
 collect_rules_all(G,[I|Is],RIn,ROut,[NewI|NewIs]) :-
-	copy_term((G,I),(CG,CI)),
-	inline_types(CI),
-	CG =.. [_Fun|Types],
-	( pretty_type_lit_rules(CG,_PrintGoal,TypesInRules,Rules0) ->
-	  true
-	; display(pretty_type_lit_rules(CG,_PrintGoal,TypesInRules,Rules0)), nl,
-          TypesInRules = [],
-	  Rules0 = []),
-	add_missing_rules(Types,TypesInRules,MissingRules), % de-simplify type rules
-	append(MissingRules,Rules0,Rules),                  % just a bit :-)   
-	filter_required_rules(Rules,RIn,RInter),
-	replace_equiv(I,NewI),
-	collect_rules_all(G,Is,RInter,ROut,NewIs).
+    copy_term((G,I),(CG,CI)),
+    inline_types(CI),
+    CG =.. [_Fun|Types],
+    ( pretty_type_lit_rules(CG,_PrintGoal,TypesInRules,Rules0) ->
+      true
+    ; display(pretty_type_lit_rules(CG,_PrintGoal,TypesInRules,Rules0)), nl,
+      TypesInRules = [],
+      Rules0 = []),
+    add_missing_rules(Types,TypesInRules,MissingRules), % de-simplify type rules
+    append(MissingRules,Rules0,Rules),                  % just a bit :-)   
+    filter_required_rules(Rules,RIn,RInter),
+    replace_equiv(I,NewI),
+    collect_rules_all(G,Is,RInter,ROut,NewIs).
 
 add_missing_rules([],_,[]) :-!.
 add_missing_rules([T|Ts],TR,Rules) :-
-	( member(T,TR)
-	; \+ atom(T)
-	; equiv_type(T,_)
-	; functor(G,T,1),
- 	  native_prop(G,regtype(_Prop))
-	),
-	!,
-	add_missing_rules(Ts,TR,Rules).
+    ( member(T,TR)
+    ; \+ atom(T)
+    ; equiv_type(T,_)
+    ; functor(G,T,1),
+      native_prop(G,regtype(_Prop))
+    ),
+    !,
+    add_missing_rules(Ts,TR,Rules).
 add_missing_rules([T|Ts],TR,[typedef(::=(T,D))|Rules]) :-
-	get_type_rule(T,[D]),
-	add_missing_rules(Ts,TR,Rules).
+    get_type_rule(T,[D]),
+    add_missing_rules(Ts,TR,Rules).
 
 
 replace_equiv((A,B),(A1,B1)) :-!,
-	replace_equiv(A,A1),
-	replace_equiv(B,B1).
+    replace_equiv(A,A1),
+    replace_equiv(B,B1).
 replace_equiv(A,B) :-
-	A =.. [T,Arg],
-	equiv_type(T,ET),
-	B =.. [ET,Arg],
-% 	native_prop(B,regtype(_Prop)), % not inferred
-	!.
+    A =.. [T,Arg],
+    equiv_type(T,ET),
+    B =.. [ET,Arg],
+%       native_prop(B,regtype(_Prop)), % not inferred
+    !.
 replace_equiv(A,A).
 
 trans_aux(comp,generic_comp,_Goal,[],[['No info available']]) :-!.
 trans_aux(_ ,_ ,_, [],[]) :-!.
 trans_aux(calls,AbsInt,Head,[complete(G,C,_Ss,_,_)|Completes],[CInfo1|CInfo]):-!,   
-	varset(G,Qv),
-	adapt_info_to_assrt_head(AbsInt,G,Qv,C,Head,C1),
-	my_asub_to_info(AbsInt,C1,Qv,CInfo1,_Comp),
-	trans_aux(calls,AbsInt,Head,Completes,CInfo).
+    varset(G,Qv),
+    adapt_info_to_assrt_head(AbsInt,G,Qv,C,Head,C1),
+    my_asub_to_info(AbsInt,C1,Qv,CInfo1,_Comp),
+    trans_aux(calls,AbsInt,Head,Completes,CInfo).
 trans_aux(calls_pp(G),AbsInt,Head,Call,[CInfo]):-!,   
-	varset(G,Qv),
-	adapt_info_to_assrt_head(AbsInt,G,Qv,Call,Head,C1),
-	varset(Head,Hv),
-	project(AbsInt,Head,Hv,_,C1,C2),
-	my_asub_to_info(AbsInt,C2,Qv,CInfo,_Comp).
+    varset(G,Qv),
+    adapt_info_to_assrt_head(AbsInt,G,Qv,Call,Head,C1),
+    varset(Head,Hv),
+    project(AbsInt,Head,Hv,_,C1,C2),
+    my_asub_to_info(AbsInt,C2,Qv,CInfo,_Comp).
 trans_aux(success,AbsInt,Head,[complete(G,_C,Ss,_,_)|Completes],SInfoL):-!,  
-	collect_success_info(Ss,AbsInt,Head,G,SInfoL1),
-	append(SInfoL1,SInfoL2,SInfoL),
-	trans_aux(success,AbsInt,Head,Completes,SInfoL2).
+    collect_success_info(Ss,AbsInt,Head,G,SInfoL1),
+    append(SInfoL1,SInfoL2,SInfoL),
+    trans_aux(success,AbsInt,Head,Completes,SInfoL2).
 trans_aux(success_pp(G),AbsInt,Head,Ss,SInfoL):-!,  
-	collect_success_info([Ss],AbsInt,Head,G,SInfoL).
-%	append(SInfoL1,SInfoL2,SInfoL).
-%	trans_aux(success,AbsInt,Goal,Completes,SInfoL2).
+    collect_success_info([Ss],AbsInt,Head,G,SInfoL).
+%       append(SInfoL1,SInfoL2,SInfoL).
+%       trans_aux(success,AbsInt,Goal,Completes,SInfoL2).
 trans_aux(success,generic_comp,_Goal,Info,Info):-!.  % for size properties
 trans_aux(comp,generic_comp,_Goal,Info,Info):-!.
-%%	displayq(Info).
+%%      displayq(Info).
 trans_aux(comp,_AbsInt,_Goal,_Info,[]).
 
 collect_success_info([],_AbsInt,_Head,_G,[]).
 collect_success_info([S|Ss],AbsInt,Head,G,[SInfo|SInfoTail]):-
-	varset(G,Qv),
-	adapt_info_to_assrt_head(AbsInt,G,Qv,S,Head,S_tmp),
-	varset(Head,Hv),
-	project(AbsInt,Head,Hv,_,S_tmp,S1),
-	my_asub_to_info(AbsInt,S1,Qv,SInfo,_Comp),
-	collect_success_info(Ss,AbsInt,Head,G,SInfoTail).
+    varset(G,Qv),
+    adapt_info_to_assrt_head(AbsInt,G,Qv,S,Head,S_tmp),
+    varset(Head,Hv),
+    project(AbsInt,Head,Hv,_,S_tmp,S1),
+    my_asub_to_info(AbsInt,S1,Qv,SInfo,_Comp),
+    collect_success_info(Ss,AbsInt,Head,G,SInfoTail).
 
 
 my_asub_to_info(_AbsInt,'$bottom',_Qv,[bottom],_Comp):-!.
 my_asub_to_info(AbsInt,S1,Qv,SInfo,Comp):-
- 	asub_to_info(AbsInt,S1,Qv,SInfoL,Comp),!,
-	list_to_conj(SInfoL,SInfo).
+    asub_to_info(AbsInt,S1,Qv,SInfoL,Comp),!,
+    list_to_conj(SInfoL,SInfo).
 
 
 as_message(warning, Text, Args) :-!,
-	warning_message(Text, Args).
+    warning_message(Text, Args).
 as_message(error, Text, Args) :-
-	error_message(Text, Args).
+    error_message(Text, Args).
 as_message(note, Text, Args) :- %[LD]
-        note_message(Text, Args).
+    note_message(Text, Args).
 
 inline_types([bottom]) :-!.
 inline_types((Prop,Props)):- !,
-	inline_types(Prop),
-	inline_types(Props).
+    inline_types(Prop),
+    inline_types(Props).
 inline_types(Prop):-
-	denorm_goal_prop(Prop,P,P).
+    denorm_goal_prop(Prop,P,P).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -754,90 +754,90 @@ inline_types(Prop):-
 % A : analysis
 %------------------------------------------------------------------------------
 general_message4(Sub, Aub, Slb, Alb):-
-	translate_arith(Sub, TSub),!,
-	translate_arith(Aub, TAub),!,
-	translate_arith(Slb, TSlb),!,
-	translate_arith(Alb, TAlb),!,
-	format(user, "Specification upper bound :~n~p~n", [TSub]),
-	format(user, "Specification lower bound :~n~p~n", [TSlb]),
-	format(user, "Analysis upper bound :~n~p~n", [TAub]),
-	format(user, "Analysis lower bound :~n~p~n", [TAlb]),
-	format(user, "plot ~p,~p,~p,~p~n", [TSub,TSlb,TAub,TAlb]).
+    translate_arith(Sub, TSub),!,
+    translate_arith(Aub, TAub),!,
+    translate_arith(Slb, TSlb),!,
+    translate_arith(Alb, TAlb),!,
+    format(user, "Specification upper bound :~n~p~n", [TSub]),
+    format(user, "Specification lower bound :~n~p~n", [TSlb]),
+    format(user, "Analysis upper bound :~n~p~n", [TAub]),
+    format(user, "Analysis lower bound :~n~p~n", [TAlb]),
+    format(user, "plot ~p,~p,~p,~p~n", [TSub,TSlb,TAub,TAlb]).
 
 general_message2_1(Sub,Aub,Alb):-
-	translate_arith(Sub, TSub),!,
-	translate_arith(Aub, TAub),!,
-	translate_arith(Alb, TAlb),!,
-	format(user, "Specification upper bound :~n~p~n", [TSub]),
-	format(user, "Analysis upper bound :~n~p~n", [TAub]),
-	format(user, "Analysis lower bound :~n~p~n", [TAlb]),
-	format(user, "plot ~p,~p,~p ~n", [TSub,TAub,TAlb]).
+    translate_arith(Sub, TSub),!,
+    translate_arith(Aub, TAub),!,
+    translate_arith(Alb, TAlb),!,
+    format(user, "Specification upper bound :~n~p~n", [TSub]),
+    format(user, "Analysis upper bound :~n~p~n", [TAub]),
+    format(user, "Analysis lower bound :~n~p~n", [TAlb]),
+    format(user, "plot ~p,~p,~p ~n", [TSub,TAub,TAlb]).
 
 general_message2_2(Slb, Aub, Alb):-
-	translate_arith(Aub, TAub),!,
-	translate_arith(Slb, TSlb),!,
-	translate_arith(Alb, TAlb),!,
-	format(user, "Specification lower bound :~n~p~n", [TSlb]),
-	format(user, "Analysis upper bound :~n~p~n", [TAub]),
-	format(user, "Analysis lower bound :~n~p~n", [TAlb]),
-	format(user, "plot ~p,~p,~p ~n", [TSlb,TAub,TAlb]).	
+    translate_arith(Aub, TAub),!,
+    translate_arith(Slb, TSlb),!,
+    translate_arith(Alb, TAlb),!,
+    format(user, "Specification lower bound :~n~p~n", [TSlb]),
+    format(user, "Analysis upper bound :~n~p~n", [TAub]),
+    format(user, "Analysis lower bound :~n~p~n", [TAlb]),
+    format(user, "plot ~p,~p,~p ~n", [TSlb,TAub,TAlb]).     
 
 general_message_o(Sub, Aub, Alb):-
-	translate_arith(Sub, TSub),!,
-	translate_arith(Aub, TAub),!,
-	translate_arith(Alb, TAlb),!,
-	format(user, "Specification big-O :~n~p~n", [TSub]),
-	format(user, "Analysis upper bound :~n~p~n", [TAub]),
-	format(user, "Analysis lower bound :~n~p~n", [TAlb]),
-	format(user, "plot ~p,~p,~p ~n", [TSub,TAub,TAlb]).
+    translate_arith(Sub, TSub),!,
+    translate_arith(Aub, TAub),!,
+    translate_arith(Alb, TAlb),!,
+    format(user, "Specification big-O :~n~p~n", [TSub]),
+    format(user, "Analysis upper bound :~n~p~n", [TAub]),
+    format(user, "Analysis lower bound :~n~p~n", [TAlb]),
+    format(user, "plot ~p,~p,~p ~n", [TSub,TAub,TAlb]).
 
 %------------------------------------------------------------------------------
 % translating cost function into gnuplot format
 %------------------------------------------------------------------------------
 translate_arith(none, none):-!.
 translate_arith(A, B):-
-	functor(A, F, N),
-	(
-	    F == sum ->
-	    arg(1, A, Arg1),
-	    arg(2, A, Arg2),
-	    arg(3, A, Arg3),
-	    arg(4, A, Arg4),
-	    translate_arith(Arg1, TArg1),
-	    translate_arith(Arg2, TArg2),
-	    translate_arith(Arg3, TArg3),
-	    translate_arith(Arg4, TArg4),
-	    B = sum(TArg1, TArg2, TArg3, TArg4)
-	    ;
-	    N == 2 ->
-	    arg(1, A, Arg1),
-	    arg(2, A, Arg2),
-	    translate_arith(Arg1, TArg1),
-	    translate_arith(Arg2, TArg2),
-	    (
-		F == exp,
-		functor(B, **, 2)
-	    ;
-		functor(B, F, 2)
-	    ),
-	    arg(1, B, TArg1),
-	    arg(2, B, TArg2)
-	;
-	    N == 1 ->
-	    member(F, [int, length, size, depth, nnegint]),
-	    B = x
-	;
-	    N == 1 ->
-	    F == '$', % note that e.g. int($(1)) is captured by previous cond
-	    B = j
+    functor(A, F, N),
+    (
+        F == sum ->
+        arg(1, A, Arg1),
+        arg(2, A, Arg2),
+        arg(3, A, Arg3),
+        arg(4, A, Arg4),
+        translate_arith(Arg1, TArg1),
+        translate_arith(Arg2, TArg2),
+        translate_arith(Arg3, TArg3),
+        translate_arith(Arg4, TArg4),
+        B = sum(TArg1, TArg2, TArg3, TArg4)
+        ;
+        N == 2 ->
+        arg(1, A, Arg1),
+        arg(2, A, Arg2),
+        translate_arith(Arg1, TArg1),
+        translate_arith(Arg2, TArg2),
+        (
+            F == exp,
+            functor(B, **, 2)
+        ;
+            functor(B, F, 2)
+        ),
+        arg(1, B, TArg1),
+        arg(2, B, TArg2)
+    ;
+        N == 1 ->
+        member(F, [int, length, size, depth, nnegint]),
+        B = x
+    ;
+        N == 1 ->
+        F == '$', % note that e.g. int($(1)) is captured by previous cond
+        B = j
 
-	;
-	    N == 0 ->
-	    A = B,!
-	;
-	    format(user, "~n function ~p is unspecified~n",[A]),
-	    B = error
-	).
+    ;
+        N == 0 ->
+        A = B,!
+    ;
+        format(user, "~n function ~p is unspecified~n",[A]),
+        B = error
+    ).
 
 %------------------------------------------------------------------------------
 % used for intersecting incompatible-incompatible
@@ -853,30 +853,30 @@ intersect_incompatibles(_, [B], [B]):- B >= 0.
 intersect_incompatibles([B], _,  [B]):- B >= 0.
 %
 intersect_incompatibles(I1, I2, I):-
-	I1 = [Ival1|Is1],
-	I2 = [Ival2|Is2],
-	Is1 = [Iroot1|Iss1],
-	Is2 = [Iroot2|Iss2],
-	(
-	    Ival1 > 0 -> %Ival1 false, take value of Ival1
-	    ( 
-		Iroot1 > Iroot2 -> %smaller move forward
-		intersect_incompatibles(I1, Iss2, It),
-		I= [Ival1, Iroot2|It]
-	    ; %Iroot1 =<Iroot2
-		intersect_incompatibles(Iss1, I2, It),
-		I= [Ival1, Iroot1|It]
-	    )
-	; % since Ival1 check, we can take whatever value of Ival2
-	    ( 
-		Iroot2 > Iroot1 -> %take smaller, smaller move forward
-		intersect_incompatibles(Iss1, I2, It),
-		I = [Ival2, Iroot1|It]	        
-	    ;
-		intersect_incompatibles(I1, Iss2, It),
-		I = [Ival2, Iroot2|It]
-	    )
-	).
+    I1 = [Ival1|Is1],
+    I2 = [Ival2|Is2],
+    Is1 = [Iroot1|Iss1],
+    Is2 = [Iroot2|Iss2],
+    (
+        Ival1 > 0 -> %Ival1 false, take value of Ival1
+        ( 
+            Iroot1 > Iroot2 -> %smaller move forward
+            intersect_incompatibles(I1, Iss2, It),
+            I= [Ival1, Iroot2|It]
+        ; %Iroot1 =<Iroot2
+            intersect_incompatibles(Iss1, I2, It),
+            I= [Ival1, Iroot1|It]
+        )
+    ; % since Ival1 check, we can take whatever value of Ival2
+        ( 
+            Iroot2 > Iroot1 -> %take smaller, smaller move forward
+            intersect_incompatibles(Iss1, I2, It),
+            I = [Ival2, Iroot1|It]          
+        ;
+            intersect_incompatibles(I1, Iss2, It),
+            I = [Ival2, Iroot2|It]
+        )
+    ).
 
 
 %------------------------------------------------------------------------------
@@ -896,30 +896,30 @@ intersect_includes(_, [B], [B]):- B < 0. %check is more dominant
 intersect_includes([B], _,  [B]):- B < 0.
 %
 intersect_includes(I1, I2, I):-
-	I1 = [Ival1|Is1],
-	I2 = [Ival2|Is2],
-	Is1 = [Iroot1|Iss1],
-	Is2 = [Iroot2|Iss2],
-	(
-	    Ival1 < 0 -> %check
-	    ( 
-		Iroot1 > Iroot2 -> %smaller move
-		intersect_includes(I1, Iss2, It),
-		I = [Ival1, Iroot2|It]
-	    ;
-		intersect_includes(Iss1, I2, It),
-		I = [Ival1, Iroot1|It]
-	    )
-	; % true, we can take whatever
-	    ( 
-		Iroot2 > Iroot1 ->
-		intersect_includes(Iss1, I2, It),
-		I=[Ival2, Iroot1|It]
-	    ;
-		intersect_includes(I1, Iss2, It),
-		I=[Ival2, Iroot2|It]
-	    )
-	).
+    I1 = [Ival1|Is1],
+    I2 = [Ival2|Is2],
+    Is1 = [Iroot1|Iss1],
+    Is2 = [Iroot2|Iss2],
+    (
+        Ival1 < 0 -> %check
+        ( 
+            Iroot1 > Iroot2 -> %smaller move
+            intersect_includes(I1, Iss2, It),
+            I = [Ival1, Iroot2|It]
+        ;
+            intersect_includes(Iss1, I2, It),
+            I = [Ival1, Iroot1|It]
+        )
+    ; % true, we can take whatever
+        ( 
+            Iroot2 > Iroot1 ->
+            intersect_includes(Iss1, I2, It),
+            I=[Ival2, Iroot1|It]
+        ;
+            intersect_includes(I1, Iss2, It),
+            I=[Ival2, Iroot2|It]
+        )
+    ).
 
 
 %------------------------------------------------------------------------------
@@ -935,101 +935,101 @@ intersect_includes(I1, I2, I):-
 %intersect_include_incompatible([], [], []). %no intersection
 intersect_include_incompatible(_IT, [f], [f]).
 intersect_include_incompatible([t], IF, IFc):- %change check in IF into true
-	convert_check_to_true(IF,IFc).
+    convert_check_to_true(IF,IFc).
 intersect_include_incompatible(IT, [c], ITc):-
-	convert_include_intervals(IT,ITc).
+    convert_include_intervals(IT,ITc).
 intersect_include_incompatible([c], IF, IFc):-
-	convert_incompatible_intervals(IF, IFc).
+    convert_incompatible_intervals(IF, IFc).
 
 intersect_include_incompatible(IT, [], ITc):-
-	convert_include_intervals(IT,ITc).
+    convert_include_intervals(IT,ITc).
 intersect_include_incompatible([], IF, IFc):-
-	convert_incompatible_intervals(IF, IFc).
+    convert_incompatible_intervals(IF, IFc).
 %bases
 intersect_include_incompatible(_, [Val], [f]):- %anything with F become false
-	Val > 0.
+    Val > 0.
 %
 intersect_include_incompatible([Val], IF, IFc):- %anything with C left as is
-	Val < 0,
-	convert_incompatible_intervals(IF, IFc).
+    Val < 0,
+    convert_incompatible_intervals(IF, IFc).
 %
 intersect_include_incompatible(IT, [Val], ITc):- %anything with C left as is
-	Val < 0,
-	convert_include_intervals(IT,ITc).
+    Val < 0,
+    convert_include_intervals(IT,ITc).
 %
 intersect_include_incompatible([Val], IF, I):- %anything with T iterate all
-	Val > 0,
-	IF = [IvalF|IFs],
-	IFs=[IrootF|IFss],
-	(
-	    IvalF > 0 -> %False
-	    intersect_include_incompatible([Val], IFss, Itmp),
-	    I = [f, IrootF|Itmp]
-	; %Ival =<0, Check , it  changes into T
-	    intersect_include_incompatible([Val], IFss, Itmp),
-	    I=[t, IrootF|Itmp]
-	).
+    Val > 0,
+    IF = [IvalF|IFs],
+    IFs=[IrootF|IFss],
+    (
+        IvalF > 0 -> %False
+        intersect_include_incompatible([Val], IFss, Itmp),
+        I = [f, IrootF|Itmp]
+    ; %Ival =<0, Check , it  changes into T
+        intersect_include_incompatible([Val], IFss, Itmp),
+        I=[t, IrootF|Itmp]
+    ).
 %recc
 intersect_include_incompatible(IT, IF, I):-
-	%for legibility
-	IT=[IvalT|ITs],
-	IF=[IvalF|IFs],
-	ITs=[IrootT|ITss],
-	IFs=[IrootF|IFss],
-	(
-	    IvalF > 0 -> %False
-	    (
-		IrootF >= IrootT -> % all move forward, 
-		                    % may skip some intervals of IT
-		skip_interval_include(ITss, IrootF, ITskip),
-		intersect_include_incompatible(ITskip, IFss, Itmp)
-	    ;% IrootF < IrootT,  IF moves forward
-		intersect_include_incompatible(IT, IFss, Itmp)
-	    ),
-	    I=[f, IrootF|Itmp]
-	; % Cek
-	    (
-		IvalT > 0 -> %true interval vs check
-		(
-		    IrootT >= IrootF -> %all move forward
-		                        % may skip some intervals of IF
-		    skip_interval_incompatible(IrootT, IFss, IFskip),
-		    intersect_include_incompatible(ITss, IFskip, Itmp)
-		;  % IrootT < IrootF, IT moves forward
-		    intersect_include_incompatible(ITss, IF, Itmp)
-		),
-		I=[t, IrootT|Itmp]
-	    ;% both are check, take the shortest
-		(
-		    IrootT > IrootF, %shortest, IF moves forward
-		    intersect_include_incompatible(IT, IFss, Itmp),
-		    New = [c, IrootF]
-		;   
-		    IrootT < IrootF, %shortest, IT moves forward
-		    intersect_include_incompatible(ITss, IF, Itmp),
-		    New = [c, IrootT]
-		;
-		    IrootT == IrootF, %both move forward
-		    intersect_include_incompatible(ITss, IFss, Itmp),
-		    New = [c, IrootT]
-		),
-		append(New, Itmp, I)
-	    )
-	).
+    %for legibility
+    IT=[IvalT|ITs],
+    IF=[IvalF|IFs],
+    ITs=[IrootT|ITss],
+    IFs=[IrootF|IFss],
+    (
+        IvalF > 0 -> %False
+        (
+            IrootF >= IrootT -> % all move forward, 
+                                % may skip some intervals of IT
+            skip_interval_include(ITss, IrootF, ITskip),
+            intersect_include_incompatible(ITskip, IFss, Itmp)
+        ;% IrootF < IrootT,  IF moves forward
+            intersect_include_incompatible(IT, IFss, Itmp)
+        ),
+        I=[f, IrootF|Itmp]
+    ; % Cek
+        (
+            IvalT > 0 -> %true interval vs check
+            (
+                IrootT >= IrootF -> %all move forward
+                                    % may skip some intervals of IF
+                skip_interval_incompatible(IrootT, IFss, IFskip),
+                intersect_include_incompatible(ITss, IFskip, Itmp)
+            ;  % IrootT < IrootF, IT moves forward
+                intersect_include_incompatible(ITss, IF, Itmp)
+            ),
+            I=[t, IrootT|Itmp]
+        ;% both are check, take the shortest
+            (
+                IrootT > IrootF, %shortest, IF moves forward
+                intersect_include_incompatible(IT, IFss, Itmp),
+                New = [c, IrootF]
+            ;   
+                IrootT < IrootF, %shortest, IT moves forward
+                intersect_include_incompatible(ITss, IF, Itmp),
+                New = [c, IrootT]
+            ;
+                IrootT == IrootF, %both move forward
+                intersect_include_incompatible(ITss, IFss, Itmp),
+                New = [c, IrootT]
+            ),
+            append(New, Itmp, I)
+        )
+    ).
 
 %------------------------------------------------------------------------------
 % it doesn't care about the value, only the position of roots
 %------------------------------------------------------------------------------
 skip_interval_include([IvalT], _IrootF, [IvalT]).
 skip_interval_include(IT, IrootF, ITskip):-
-	IT = [_Ival|ITs],
-	ITs = [IrootT|ITss],
-	(
-	    IrootT =< IrootF ->
-	    skip_interval_include(ITss, IrootF, ITskip)
-	;% IrootT > IrootF, stop searching
-	    ITskip = IT
-	).
+    IT = [_Ival|ITs],
+    ITs = [IrootT|ITss],
+    (
+        IrootT =< IrootF ->
+        skip_interval_include(ITss, IrootF, ITskip)
+    ;% IrootT > IrootF, stop searching
+        ITskip = IT
+    ).
 
 %------------------------------------------------------------------------------
 % the value is matter, only the position of roots. In this phase, TRUE is real-
@@ -1037,70 +1037,70 @@ skip_interval_include(IT, IrootF, ITskip):-
 %------------------------------------------------------------------------------
 skip_interval_incompatible(_IrootT, [IvalF], [IvalF]).
 skip_interval_incompatible(IrootT, IF, IFskip):-
-	IF = [IvalF|IFs],
-	IFs = [IrootF|IFss],
-	(
-	    IvalF < 0 -> %check
-	    (
-		IrootF =< IrootT -> %forward
-		skip_interval_incompatible(IrootT, IFss, IFskip)
-	    ;%  stop searching
-		IF = IFskip
-	    )
-	; %find false
-	    IF = IFskip
-	). 
+    IF = [IvalF|IFs],
+    IFs = [IrootF|IFss],
+    (
+        IvalF < 0 -> %check
+        (
+            IrootF =< IrootT -> %forward
+            skip_interval_incompatible(IrootT, IFss, IFskip)
+        ;%  stop searching
+            IF = IFskip
+        )
+    ; %find false
+        IF = IFskip
+    ). 
 
 
 convert_incompatible_intervals([Ival], [f]):-
-	Ival > 0.
+    Ival > 0.
 convert_incompatible_intervals([Ival], [c]):-
-	Ival < 0.
+    Ival < 0.
 convert_incompatible_intervals(IF, IFc):-
-	IF = [IvalF|IFs],
-	IFs = [IrootF|IFss],
-	convert_incompatible_intervals(IFss, IFtmp),
-	(
-	    IvalF > 0 ->
-	    IFc = [f,IrootF|IFtmp]
-	;
-	    IFc = [c, IrootF|IFtmp]
+    IF = [IvalF|IFs],
+    IFs = [IrootF|IFss],
+    convert_incompatible_intervals(IFss, IFtmp),
+    (
+        IvalF > 0 ->
+        IFc = [f,IrootF|IFtmp]
+    ;
+        IFc = [c, IrootF|IFtmp]
 
-	).
+    ).
 
 
 convert_include_intervals([Ival], [t]):-
-	Ival > 0.
+    Ival > 0.
 convert_include_intervals([Ival], [c]):-
-	Ival < 0.
+    Ival < 0.
 convert_include_intervals(IT, ITc):-
-	IT = [IvalT|ITs],
-	ITs = [IrootT|ITss],
-	convert_include_intervals(ITss, ITtmp),
-	(
-	    IvalT > 0 ->
-	    ITc = [t, IrootT|ITtmp]
-	;
-	    ITc = [c, IrootT|ITtmp]
-	).
+    IT = [IvalT|ITs],
+    ITs = [IrootT|ITss],
+    convert_include_intervals(ITss, ITtmp),
+    (
+        IvalT > 0 ->
+        ITc = [t, IrootT|ITtmp]
+    ;
+        ITc = [c, IrootT|ITtmp]
+    ).
 
 %-----------------------------------------------------------------------------
 % change number(+/-) into f/t
 %-----------------------------------------------------------------------------
 convert_check_to_true([Ival], [f]):-
-	Ival > 0.
+    Ival > 0.
 convert_check_to_true([Ival], [t]):-
-	Ival < 0.
+    Ival < 0.
 convert_check_to_true(IT, ITc):-
-	IT = [IvalT|ITs],
-	ITs = [IrootT|ITss],
-	convert_check_to_true(ITss, ITtmp),
-	(
-	    IvalT > 0 ->
-	    ITc = [f, IrootT|ITtmp]
-	;
-	    ITc = [t, IrootT|ITtmp]
-	).
+    IT = [IvalT|ITs],
+    ITs = [IrootT|ITss],
+    convert_check_to_true(ITss, ITtmp),
+    (
+        IvalT > 0 ->
+        ITc = [f, IrootT|ITtmp]
+    ;
+        ITc = [t, IrootT|ITtmp]
+    ).
 
 
 coalesce_intervals([t], _, [t]).
@@ -1108,13 +1108,13 @@ coalesce_intervals([c], _, [c]).
 coalesce_intervals([f], _, [f]).
 coalesce_intervals([Ival], _, [Ival]) :- !.
 coalesce_intervals([Ival1, Iroot1, Ival2|Is],Type,Ic):-
-	(
-	    same_value(Type, Ival1, Ival2),
-	    Ic = Ics
-	 ;
-	    Ic = [Ival1, Iroot1|Ics]
-	),
-	coalesce_intervals([Ival2|Is], Type, Ics).
+    (
+        same_value(Type, Ival1, Ival2),
+        Ic = Ics
+     ;
+        Ic = [Ival1, Iroot1|Ics]
+    ),
+    coalesce_intervals([Ival2|Is], Type, Ics).
 
 same_value(num, A, B):-A>0, B>0, !.
 same_value(num, A, B):-A<0, B<0, !.
@@ -1146,62 +1146,62 @@ same_value(_,   A, A).
 %the assertion already has no interval precondition
 % The two cost functions do not intersect
 update_spawn_assertion(VCT, STAT, OldAs, OldAsRef, NewAs, [], Domains, Info):-
-	OldAs= as${ call=>OldCall },
-	\+ exist_interval_pred(OldCall),
-	!,
-	NewAs = as${ status=>Status },
-	assertion_set_status(OldAs, Status, NewAsFull),
-	add_assertion(NewAsFull),
-	% in this case the assertion is valid for whole interval
-	explain_interval(VCT, STAT, [], OldAs, NewAs, Domains, Info), 
-	erase(OldAsRef).
+    OldAs= as${ call=>OldCall },
+    \+ exist_interval_pred(OldCall),
+    !,
+    NewAs = as${ status=>Status },
+    assertion_set_status(OldAs, Status, NewAsFull),
+    add_assertion(NewAsFull),
+    % in this case the assertion is valid for whole interval
+    explain_interval(VCT, STAT, [], OldAs, NewAs, Domains, Info), 
+    erase(OldAsRef).
 %
 % the cost functions intersect
 update_spawn_assertion(VCT, STAT, OldAs, OldAsRef, _NewAs, Intervals, Domains, Info):-
-	OldAs = as${ call => OldCall },
-	\+ exist_interval_pred(OldCall),
-	!,
-	separate_interval(Intervals, IntFalse, IntCheck, IntTrue),
-	add_assertion_w_intervals(OldAs, OldCall, IntFalse, f, AsFalse),	
-	add_assertion_w_intervals(OldAs, OldCall, IntTrue, t, AsTrue),
-	add_assertion_w_intervals(OldAs, OldCall, IntCheck, c, AsCheck),
-	assertion_changed_message(VCT, STAT, OldAs, AsFalse, AsCheck, AsTrue, Domains, Info),
-	erase(OldAsRef).
+    OldAs = as${ call => OldCall },
+    \+ exist_interval_pred(OldCall),
+    !,
+    separate_interval(Intervals, IntFalse, IntCheck, IntTrue),
+    add_assertion_w_intervals(OldAs, OldCall, IntFalse, f, AsFalse),        
+    add_assertion_w_intervals(OldAs, OldCall, IntTrue, t, AsTrue),
+    add_assertion_w_intervals(OldAs, OldCall, IntCheck, c, AsCheck),
+    assertion_changed_message(VCT, STAT, OldAs, AsFalse, AsCheck, AsTrue, Domains, Info),
+    erase(OldAsRef).
 %
 %the assertion already has interval precondition
 % The two cost functions do not intersect
 update_spawn_assertion(VCT, STAT, OldAs, OldAsRef, NewAs, [], Domains, Info):-
-	OldAs = as${ call=>OldCall },
-	exist_interval_pred(OldCall),
-	!,
-	NewAs = as${ status=>Status },
-	assertion_set_status(OldAs, Status, NewAsFull),
-	add_assertion(NewAsFull),
-	% in this case the assertion is valid for whole interval
-	explain_interval(VCT, STAT, [], OldAs, NewAs, Domains, Info), % need to be refine on the
-	%                                                             % explain_interval_bound/3
-	erase(OldAsRef).
+    OldAs = as${ call=>OldCall },
+    exist_interval_pred(OldCall),
+    !,
+    NewAs = as${ status=>Status },
+    assertion_set_status(OldAs, Status, NewAsFull),
+    add_assertion(NewAsFull),
+    % in this case the assertion is valid for whole interval
+    explain_interval(VCT, STAT, [], OldAs, NewAs, Domains, Info), % need to be refine on the
+    %                                                             % explain_interval_bound/3
+    erase(OldAsRef).
 %
 %the cost functions intersect
 update_spawn_assertion(VCT, STAT, OldAs, OldAsRef, _NewAs, Intervals, Domains, Info):-
-	OldAs = as${ call=>PreCond },
-	exist_interval_pred(PreCond),
-	!,
-	remove_interval_precond(PreCond, CleanPrecond, IntPred),
-        %--  this point is the only part to accommodate changes in interval syntax ------
-        % this is enough for handling this syntax: intervals(length(A),[[2,4],[10,21]])
-	IntPred=[IntPrecond],
-	get_list_user_interval(IntPrecond, ListUserInterval),
-        %--------------------------------------------------------------------------------
-        % additional predicate to handle this syntax: intervals(length(A),[i(2,4),i(10,21)])
-	extract_user_intervals(ListUserInterval, ListUserInterval2),
-        %--------------------------------------------------------------------------------
-	construct_new_intervals(ListUserInterval2, Intervals, IntFalse, IntCheck, IntTrue),
-	add_assertion_w_intervals(OldAs, CleanPrecond, IntFalse, f, AsFalse),	
-	add_assertion_w_intervals(OldAs, CleanPrecond, IntTrue, t, AsTrue),
- 	add_assertion_w_intervals(OldAs, CleanPrecond, IntCheck, c, AsCheck),
-	assertion_changed_message(VCT, STAT, OldAs, AsFalse, AsCheck, AsTrue, Domains, Info),
-	erase(OldAsRef).	
+    OldAs = as${ call=>PreCond },
+    exist_interval_pred(PreCond),
+    !,
+    remove_interval_precond(PreCond, CleanPrecond, IntPred),
+    %--  this point is the only part to accommodate changes in interval syntax ------
+    % this is enough for handling this syntax: intervals(length(A),[[2,4],[10,21]])
+    IntPred=[IntPrecond],
+    get_list_user_interval(IntPrecond, ListUserInterval),
+    %--------------------------------------------------------------------------------
+    % additional predicate to handle this syntax: intervals(length(A),[i(2,4),i(10,21)])
+    extract_user_intervals(ListUserInterval, ListUserInterval2),
+    %--------------------------------------------------------------------------------
+    construct_new_intervals(ListUserInterval2, Intervals, IntFalse, IntCheck, IntTrue),
+    add_assertion_w_intervals(OldAs, CleanPrecond, IntFalse, f, AsFalse),   
+    add_assertion_w_intervals(OldAs, CleanPrecond, IntTrue, t, AsTrue),
+    add_assertion_w_intervals(OldAs, CleanPrecond, IntCheck, c, AsCheck),
+    assertion_changed_message(VCT, STAT, OldAs, AsFalse, AsCheck, AsTrue, Domains, Info),
+    erase(OldAsRef).        
 
 get_list_user_interval('resources_props:intervals'(_, _, _, L), L).
 get_list_user_interval(intervals(_, L), L).
@@ -1211,59 +1211,59 @@ get_list_user_interval(intervals(_, L), L).
 %------------------------------------------------------------------------------
 extract_user_intervals([],[]).
 extract_user_intervals([i(A,B)|Ls],[[A,B]|Rs]):-
-	extract_user_intervals(Ls,Rs).
+    extract_user_intervals(Ls,Rs).
 
 %------------------------------------------------------------------------------
 % assertion_changed_message
 % shows all splitted assertion 
 %------------------------------------------------------------------------------
 assertion_changed_message(VCT, STAT, OldAs, AsFalse, AsCheck, AsTrue, Domains, Info):-
-	OldAs  = as${
-		 type      => Type ,
-	         head      => Goal  ,    
-		 dic       => Dict,
-		 locator   => Loc
-	       },       
-	Loc = loc(_File, FromL, ToL),	
-	(
+    OldAs  = as${
+             type      => Type ,
+             head      => Goal  ,    
+             dic       => Dict,
+             locator   => Loc
+           },       
+    Loc = loc(_File, FromL, ToL),   
+    (
 
-	    AsFalse == [],
-	    AsCheck == [],
-	    AsTrue \= [],
-	    (
-		VCT == on ->
-		note_message(" (lns ~d-~d) The assertion ~n ~p has been changed to the following assertions:",[FromL, ToL, OldAs]),
-		format(user, "~n",[]), 	    
-		simplify_assertion(AsTrue, AsTruePrint),
-		show_changed_message(VCT, STAT, true, AsTruePrint)
-	    ;
-		true
-	    )
-	;
-	    (
-		AsFalse \= [],
-		% as_message(error, " (lns ~d-~d) The assertion ~n ~p has been changed to the following assertions:",[FromL, ToL, OldAs]),
-		as_message(note, " (lns ~d-~d) The assertion ~n ~p has been changed to the following assertions:",[FromL, ToL, OldAs]),
-		format(user, "~n",[]) 
-	    ;
-		% AsCheck must not be empty
-		% as_message(STAT, " (lns ~d-~d) The assertion ~n ~p has been changed to the following assertions:",[FromL, ToL, OldAs]),
-		as_message(note, " (lns ~d-~d) The assertion ~n ~p has been changed to the following assertions:",[FromL, ToL, OldAs]),
-		format(user, "~n",[])
-	    ),
-	    simplify_assertion(AsFalse, AsFalsePrint),
-	    simplify_assertion(AsCheck, AsCheckPrint),
-	    simplify_assertion(AsTrue, AsTruePrint),
-	    show_changed_message(VCT, STAT, false, AsFalsePrint),
-	    show_changed_message(VCT, STAT, check, AsCheckPrint),
-	    show_changed_message(VCT, STAT, true, AsTruePrint),
+        AsFalse == [],
+        AsCheck == [],
+        AsTrue \= [],
+        (
+            VCT == on ->
+            note_message(" (lns ~d-~d) The assertion ~n ~p has been changed to the following assertions:",[FromL, ToL, OldAs]),
+            format(user, "~n",[]),      
+            simplify_assertion(AsTrue, AsTruePrint),
+            show_changed_message(VCT, STAT, true, AsTruePrint)
+        ;
+            true
+        )
+    ;
+        (
+            AsFalse \= [],
+            % as_message(error, " (lns ~d-~d) The assertion ~n ~p has been changed to the following assertions:",[FromL, ToL, OldAs]),
+            as_message(note, " (lns ~d-~d) The assertion ~n ~p has been changed to the following assertions:",[FromL, ToL, OldAs]),
+            format(user, "~n",[]) 
+        ;
+            % AsCheck must not be empty
+            % as_message(STAT, " (lns ~d-~d) The assertion ~n ~p has been changed to the following assertions:",[FromL, ToL, OldAs]),
+            as_message(note, " (lns ~d-~d) The assertion ~n ~p has been changed to the following assertions:",[FromL, ToL, OldAs]),
+            format(user, "~n",[])
+        ),
+        simplify_assertion(AsFalse, AsFalsePrint),
+        simplify_assertion(AsCheck, AsCheckPrint),
+        simplify_assertion(AsTrue, AsTruePrint),
+        show_changed_message(VCT, STAT, false, AsFalsePrint),
+        show_changed_message(VCT, STAT, check, AsCheckPrint),
+        show_changed_message(VCT, STAT, true, AsTruePrint),
 
-	    prepare_output_info(Domains, Info, Goal, Type, RelInfo),
-	    copy_term((Goal,'$an_results'(RelInfo),Dict),(GoalCopy,RelInfoCopy,DictCopy)),
-	    name_vars(DictCopy),
-	    prettyvars((GoalCopy, RelInfoCopy)),
-	    format(user, "because on ~p ~p :~n~p", [Type, GoalCopy, RelInfoCopy])
-	).
+        prepare_output_info(Domains, Info, Goal, Type, RelInfo),
+        copy_term((Goal,'$an_results'(RelInfo),Dict),(GoalCopy,RelInfoCopy,DictCopy)),
+        name_vars(DictCopy),
+        prettyvars((GoalCopy, RelInfoCopy)),
+        format(user, "because on ~p ~p :~n~p", [Type, GoalCopy, RelInfoCopy])
+    ).
 
 %------------------------------------------------------------------------------
 % show_changed_message will not show certain sign of error, nor warning
@@ -1271,10 +1271,10 @@ assertion_changed_message(VCT, STAT, OldAs, AsFalse, AsCheck, AsTrue, Domains, I
 %-----------------------------------------------------------------------------
 show_changed_message(_VCT, _STAT, _TypeMsg, []).
 show_changed_message(_VCT, _STAT, false, NewAs):-
-	    memo_ctcheck_sum(false),
-	    format(user, "~p", [NewAs]),!.
+        memo_ctcheck_sum(false),
+        format(user, "~p", [NewAs]),!.
 show_changed_message(_VCT, _STAT, _TypeMsg, NewAs):-
-	    format(user, "~p", [NewAs]).	
+        format(user, "~p", [NewAs]).        
 
 %------------------------------------------------------------------------------
 %construct_new_intervals([[A, B]|LUIs], Intervals, IntFalse, IntCheck, IntTrue):-
@@ -1282,13 +1282,13 @@ show_changed_message(_VCT, _STAT, _TypeMsg, NewAs):-
 %------------------------------------------------------------------------------
 construct_new_intervals([], _Intervals, [],[],[]).
 construct_new_intervals([[A, B]|LUIs], Intervals, IntFalse, IntCheck, IntTrue):-
-%	cut_interval_L(Intervals, A, B, CutIntervals),
-	cut_interval(Intervals, A, B, CutIntervals),
-	separate_bound_interval(CutIntervals, CIntFalse, CIntCheck, CIntTrue),
-	construct_new_intervals(LUIs, Intervals, TIntFalse, TIntCheck, TIntTrue),
-	append(CIntFalse, TIntFalse, IntFalse),
-	append(CIntCheck, TIntCheck, IntCheck),
-	append(CIntTrue, TIntTrue, IntTrue).
+%       cut_interval_L(Intervals, A, B, CutIntervals),
+    cut_interval(Intervals, A, B, CutIntervals),
+    separate_bound_interval(CutIntervals, CIntFalse, CIntCheck, CIntTrue),
+    construct_new_intervals(LUIs, Intervals, TIntFalse, TIntCheck, TIntTrue),
+    append(CIntFalse, TIntFalse, IntFalse),
+    append(CIntCheck, TIntCheck, IntCheck),
+    append(CIntTrue, TIntTrue, IntTrue).
 
 
 %------------------------------------------------------------------------------
@@ -1296,54 +1296,54 @@ construct_new_intervals([[A, B]|LUIs], Intervals, IntFalse, IntCheck, IntTrue):-
 %------------------------------------------------------------------------------
 cut_interval([], _A,_B, []).
 cut_interval(Interval, A,B, Result):-
-	cutleft(Interval,A,Left),!,
-	cutright(Left,B,Result),!.
+    cutleft(Interval,A,Left),!,
+    cutright(Left,B,Result),!.
 %[f,5,c,6,t,15,c,16,f]
 %base
 cutleft([Ival], A, Left):-
-	(
-	    Ival == c ->
-	    Al is A-1, 
-	    Left = [Al,Ival]
-	;
-	    Left = [A,Ival]
-	).
+    (
+        Ival == c ->
+        Al is A-1, 
+        Left = [Al,Ival]
+    ;
+        Left = [A,Ival]
+    ).
 %recc
 cutleft([IvalL,Root,IvalR|Is], A, Left):-
-	(
-	    less_than_i(Root, A) -> %move right
-	    cutleft([IvalR|Is], A, Left)
-	;
-	    Root == A ->
-	    (
-		IvalL \== c -> 
-		Left = [Root,IvalL,Root,IvalR|Is] %duplicate root
-	    ;
-		Left = [Root,IvalR|Is]
-	    )
-	; %Root > A
-	    Left = [A,IvalL,Root,IvalR|Is]
-	).
+    (
+        less_than_i(Root, A) -> %move right
+        cutleft([IvalR|Is], A, Left)
+    ;
+        Root == A ->
+        (
+            IvalL \== c -> 
+            Left = [Root,IvalL,Root,IvalR|Is] %duplicate root
+        ;
+            Left = [Root,IvalR|Is]
+        )
+    ; %Root > A
+        Left = [A,IvalL,Root,IvalR|Is]
+    ).
 
 
 %when there's no other root Root is A
 cutright([Root,Ival], B, [Root,Ival,B]).
 cutright([Root,Ival,Root1,Ival1|Is], B, Right):-
-	(
-	    less_than_i(Root1, B) -> %move right
-	    cutright([Root1,Ival1|Is], B, Right1),
-	    Right = [Root,Ival|Right1]
-	;
-	    Root1 == B -> 
-	    (
-		Ival1 \== c ->
-		Right = [Root,Ival,Root1,Ival1,Root1] %duplicate Root1
-	    ;
-		Right = [Root,Ival,Root1]
-	    )
-	;% Root1 > B
-	    Right = [Root,Ival,B]
-	).
+    (
+        less_than_i(Root1, B) -> %move right
+        cutright([Root1,Ival1|Is], B, Right1),
+        Right = [Root,Ival|Right1]
+    ;
+        Root1 == B -> 
+        (
+            Ival1 \== c ->
+            Right = [Root,Ival,Root1,Ival1,Root1] %duplicate Root1
+        ;
+            Right = [Root,Ival,Root1]
+        )
+    ;% Root1 > B
+        Right = [Root,Ival,B]
+    ).
 
 
 %---------------------------------------------------------------
@@ -1358,70 +1358,70 @@ separate_bound_interval([A,t,B], [], [], [i(A,B)]).
 
 %first case
 separate_bound_interval([R1,f,R2,Ival2,R3|Is], [i(R1,R2)|IntFalse], IntCheck, IntTrue):-
-	separate_bound_interval_rest([f,R2,Ival2,R3|Is], IntFalse, IntCheck, IntTrue).
+    separate_bound_interval_rest([f,R2,Ival2,R3|Is], IntFalse, IntCheck, IntTrue).
 %
 separate_bound_interval([R1,t,R2,f,R3|Is], IntFalse, IntCheck, [i(R1,R2m1)|IntTrue]):-
-	R2m1 is R2 - 1,
-	separate_bound_interval_rest([t,R2,f,R3|Is], IntFalse, IntCheck, IntTrue).
+    R2m1 is R2 - 1,
+    separate_bound_interval_rest([t,R2,f,R3|Is], IntFalse, IntCheck, IntTrue).
 separate_bound_interval([R1,c,R2,Ival2,R3|Is], IntFalse, [i(R1,R2m1)|IntCheck], IntTrue):-
-	R2m1 is R2 - 1,
-	separate_bound_interval_rest([c,R2,Ival2,R3|Is], IntFalse, IntCheck, IntTrue).
+    R2m1 is R2 - 1,
+    separate_bound_interval_rest([c,R2,Ival2,R3|Is], IntFalse, IntCheck, IntTrue).
 % TODO: CHECK THIS CHANGE.
 %%%%%%%%%%
 %MKL: MODIFIED 2014-11-13 FOR ENTRA DEMO
 %Warning IT MUST BE REVISED!
 %%%%%%%%%%
 separate_bound_interval([R1,t,R2,c,R3|Is], IntFalse, IntCheck, [i(R1,R2p1)|IntTrue]):-
-	R2p1 is R2, %+ 1, %%MKL: I COMMENTED OUT +1
-	separate_bound_interval_rest([t,R2,c,R3|Is], IntFalse, IntCheck, IntTrue).
+    R2p1 is R2, %+ 1, %%MKL: I COMMENTED OUT +1
+    separate_bound_interval_rest([t,R2,c,R3|Is], IntFalse, IntCheck, IntTrue).
 
 
 %base
 separate_bound_interval_rest([_,R1,f,R2], [i(R1,R2)], [], []).
 separate_bound_interval_rest([c,R1,t,R2], [], [], [i(R1,R2)]).
 separate_bound_interval_rest([f,R1,t,R2], [], [], [i(R1p1,R2)]):-
-	R1p1 is R1 + 1.
+    R1p1 is R1 + 1.
 separate_bound_interval_rest([_,R1,c,R2], [], [i(R1p1,R2)], []):-
-	R1p1 is R1 + 1.
+    R1p1 is R1 + 1.
 
 %recc
 separate_bound_interval_rest([_,R1,f,R2,Ival|Is], [i(R1,R2)|IntFalse], IntCheck, IntTrue):-
-	separate_bound_interval_rest([f,R2,Ival|Is], IntFalse, IntCheck, IntTrue).
+    separate_bound_interval_rest([f,R2,Ival|Is], IntFalse, IntCheck, IntTrue).
 %
 separate_bound_interval_rest([f,R1,t,R2,f|Is], IntFalse, IntCheck, NewIntTrue):-
-	R1p1 is R1 + 1,
-	(
-	    R1p1 < R2 ->
-	    R2m1 is R2 - 1,
-	    NewIntTrue = [i(R1p1,R2m1)|IntTrue]
-	;
-	    NewIntTrue = IntTrue
-	),
-	separate_bound_interval_rest([t,R2,f|Is], IntFalse, IntCheck, IntTrue).
+    R1p1 is R1 + 1,
+    (
+        R1p1 < R2 ->
+        R2m1 is R2 - 1,
+        NewIntTrue = [i(R1p1,R2m1)|IntTrue]
+    ;
+        NewIntTrue = IntTrue
+    ),
+    separate_bound_interval_rest([t,R2,f|Is], IntFalse, IntCheck, IntTrue).
 separate_bound_interval_rest([_,R1,c,R2,Ival|Is], IntFalse, NewIntCheck, IntTrue):-
-	R1p1 is R1 + 1,
-	(
-	    R1p1 < R2 ->
-	    R2m1 is R2 - 1,
-	    NewIntCheck = [i(R1p1,R2m1)|IntCheck]
-	;
-	    NewIntCheck = IntCheck
-	),
-	separate_bound_interval_rest([c,R2,Ival|Is], IntFalse, IntCheck, IntTrue).
+    R1p1 is R1 + 1,
+    (
+        R1p1 < R2 ->
+        R2m1 is R2 - 1,
+        NewIntCheck = [i(R1p1,R2m1)|IntCheck]
+    ;
+        NewIntCheck = IntCheck
+    ),
+    separate_bound_interval_rest([c,R2,Ival|Is], IntFalse, IntCheck, IntTrue).
 %
 separate_bound_interval_rest([c,R1,t,R2,f|Is], IntFalse, IntCheck, [i(R1,R2m1)|IntTrue]):-
-	R2m1 is R2 - 1,
-	separate_bound_interval_rest([t,R2,f|Is], IntFalse, IntCheck, IntTrue).
+    R2m1 is R2 - 1,
+    separate_bound_interval_rest([t,R2,f|Is], IntFalse, IntCheck, IntTrue).
 %
 separate_bound_interval_rest([f,R1,t,R2,c|Is], IntFalse, IntCheck, [i(R1p1,R2)|IntTrue]):-
-	R1p1 is R1 + 1,
-	separate_bound_interval_rest([t,R2,c|Is], IntFalse, IntCheck, IntTrue).
+    R1p1 is R1 + 1,
+    separate_bound_interval_rest([t,R2,c|Is], IntFalse, IntCheck, IntTrue).
 % [LD] need to scrutinize this code
 % separate_bound_interval_rest([c,R1,t,R2,f|Is], IntFalse, IntCheck, [i(R1,R2m1)|IntTrue]):-
-% 	R2m1 is R2 + 1,
-% 	separate_bound_interval_rest([t,R2,f|Is], IntFalse, IntCheck, IntTrue).
+%       R2m1 is R2 + 1,
+%       separate_bound_interval_rest([t,R2,f|Is], IntFalse, IntCheck, IntTrue).
 separate_bound_interval_rest([c,R1,t,R2,c|Is], IntFalse, IntCheck, [i(R1,R2)|IntTrue]):-
-	separate_bound_interval_rest([t,R2,c|Is], IntFalse, IntCheck, IntTrue).
+    separate_bound_interval_rest([t,R2,c|Is], IntFalse, IntCheck, IntTrue).
 
 %------------------------------------------------------------------------------
 % NewAssertion is "output", when it builds nothing we make NewAssertion = []
@@ -1429,41 +1429,41 @@ separate_bound_interval_rest([c,R1,t,R2,c|Is], IntFalse, IntCheck, [i(R1,R2)|Int
 %------------------------------------------------------------------------------
 add_assertion_w_intervals(_OldAs, _CleanPrecond, [], _Sign, []):- !.
 add_assertion_w_intervals(OldAs, CleanPrecond, ListIntervals, 
-	Sign, NewAssertion):-
-	   OldAs= as${
-	       type=>Type,
-	       call=>OrigPrecond,
-	       comp=>Comp
-	   },
-           (
-	       Sign == t,
-	       NewStatus = checked,
-	       ( Type = calls  -> 
-		 local_inccounter(simp_checked_c,_) 
-	       ; local_inccounter(simp_checked_s,_)
-	       )
-	   ;
-	       Sign == c,
- 	       NewStatus = check,
-	       ( Type = calls -> 
-		 local_inccounter(simp_check_c,_) 
-	       ; local_inccounter(simp_check_s,_)
-	       )
-	   ;
-	       Sign == f,
-	       NewStatus = false,
-	       ( Type = calls -> 
-		 local_inccounter(simp_false_c,_) 
-	       ; local_inccounter(simp_false_s,_)
-	       )
-	   ),
-	   !, % TODO: added cut, is it OK? (JF)
-	   get_measured_param(OrigPrecond, Comp, CostVar),
-	   append([intervals(CostVar,ListIntervals)], CleanPrecond, NewPrecond),
-	   %
-	   assertion_set_status(OldAs, NewStatus, A2),
-	   assertion_set_calls(A2, NewPrecond, NewAssertion),
-	   add_assertion(NewAssertion).
+    Sign, NewAssertion):-
+       OldAs= as${
+           type=>Type,
+           call=>OrigPrecond,
+           comp=>Comp
+       },
+       (
+           Sign == t,
+           NewStatus = checked,
+           ( Type = calls  -> 
+             local_inccounter(simp_checked_c,_) 
+           ; local_inccounter(simp_checked_s,_)
+           )
+       ;
+           Sign == c,
+           NewStatus = check,
+           ( Type = calls -> 
+             local_inccounter(simp_check_c,_) 
+           ; local_inccounter(simp_check_s,_)
+           )
+       ;
+           Sign == f,
+           NewStatus = false,
+           ( Type = calls -> 
+             local_inccounter(simp_false_c,_) 
+           ; local_inccounter(simp_false_s,_)
+           )
+       ),
+       !, % TODO: added cut, is it OK? (JF)
+       get_measured_param(OrigPrecond, Comp, CostVar),
+       append([intervals(CostVar,ListIntervals)], CleanPrecond, NewPrecond),
+       %
+       assertion_set_status(OldAs, NewStatus, A2),
+       assertion_set_calls(A2, NewPrecond, NewAssertion),
+       add_assertion(NewAssertion).
 
 %------------------------------------------------------------------------------
 % the Term interval will only have this following possible form
@@ -1478,13 +1478,13 @@ contains_interval('resources_props:intervals'(_, _, _, _)).
 % remove_interval_precond takes the interval information from precondition
 %------------------------------------------------------------------------------
 remove_interval_precond([Term|Ps], NewPrecond, IntPrecond):-
-	contains_interval(Term),
-	append([Term], IP, IntPrecond),
-	remove_interval_precond(Ps, NewPrecond, IP),!. 
+    contains_interval(Term),
+    append([Term], IP, IntPrecond),
+    remove_interval_precond(Ps, NewPrecond, IP),!. 
 %                                               
 remove_interval_precond([Term|Ps], NewPrecond, IntPrecond):-
-	append([Term], NP, NewPrecond),
-	remove_interval_precond(Ps, NP, IntPrecond).
+    append([Term], NP, NewPrecond),
+    remove_interval_precond(Ps, NP, IntPrecond).
 %
 remove_interval_precond([], [], []).
 
@@ -1511,33 +1511,33 @@ less_than_i(A, B):- A < B.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 get_measured_param(_,Comp, MP):-
-        member('resources_props:cost'(_,_,_,_,_,_,[FMeasure],_), Comp),
-	functor(FMeasure, =, _),
-	arg(1, FMeasure, Arg1),
-	functor(MP, int, 1),
-	arg(1, MP, Arg1).
+    member('resources_props:cost'(_,_,_,_,_,_,[FMeasure],_), Comp),
+    functor(FMeasure, =, _),
+    arg(1, FMeasure, Arg1),
+    functor(MP, int, 1),
+    arg(1, MP, Arg1).
 
 get_measured_param(OrigPrec,Comp, MP):-
-	member('native_props:costb'(_,_,_,_), Comp),
-	member('resources_props:intervals'(_,FMeasure,_16419,[i(1,inf)]),OrigPrec),
- 	functor(FMeasure, =, _),
- 	arg(1, FMeasure, Arg1),
- 	functor(MP, int, 1),
- 	arg(1, MP, Arg1).
+    member('native_props:costb'(_,_,_,_), Comp),
+    member('resources_props:intervals'(_,FMeasure,_16419,[i(1,inf)]),OrigPrec),
+    functor(FMeasure, =, _),
+    arg(1, FMeasure, Arg1),
+    functor(MP, int, 1),
+    arg(1, MP, Arg1).
 
 get_measured_param(_,Comp, MP):-
-%	Comp = ['resources_props:cost'(_,_,_,_,_,_,[FMeasure],_)],
-        member('resources_props:cost'(_,_,_,_,_,_,[FMeasure],_), Comp),
-	functor(FMeasure, F, _),
-	arg(1, FMeasure, Arg1),
-	functor(MP, F, 1),
-	arg(1, MP, Arg1).
+%       Comp = ['resources_props:cost'(_,_,_,_,_,_,[FMeasure],_)],
+    member('resources_props:cost'(_,_,_,_,_,_,[FMeasure],_), Comp),
+    functor(FMeasure, F, _),
+    arg(1, FMeasure, Arg1),
+    functor(MP, F, 1),
+    arg(1, MP, Arg1).
 %
 get_measured_param(_,Comp, SM):-
-	get_size_measures(Comp, SmLst), % never fail --> []
-	SmLst=[SM|_]. %In this case we ONLY have SINGLE cost variable which are 
-                      %listed on size_var/1 predicate
-	
+    get_size_measures(Comp, SmLst), % never fail --> []
+    SmLst=[SM|_]. %In this case we ONLY have SINGLE cost variable which are 
+                  %listed on size_var/1 predicate
+    
 %------------------------------------------------------------------------------
 %these code taken and modify from remove_size_measure ----
 get_size_measures(C,[]):-
@@ -1579,125 +1579,125 @@ size_var(nnegint(_)).
 % there is error encountered.
 %---------------------------------------------------------------
 explain_interval(VCT, STAT, SignMsg, OldAssertion, NewAssertion, Domains, Info):-
-	SignMsg = [],  % doesn't encounter function intersection
-	OldAssertion= as${
-	     comp      => OldComp
-	},
-	NewAssertion   = as${
-	     status    => Status,       type      => Type ,
-	     head      => Goal,
-	     call      => Call ,        succ      => Success,
-	     dic       => Dict,         comp      => Comp,
-	     locator   => Loc,
-             fromwhere => From 
-	},
-	% this might be heavy on large module, for performance reason
-	% this should only be applied for false and check case
-	Loc = loc(_File, RFrom, To),
-	(  RFrom == To
-	-> From = RFrom
-	;  From is RFrom+1
-	),
-	(
-	    Status = checked,
-	    ( Type = calls  -> 
-	      local_inccounter(simp_checked_c,_) 
-	    ; local_inccounter(simp_checked_s,_)
-	    ),
-	    ( VCT = on -> % TODO: added cut, is it OK? (JF)
-		assertion_set_comp(NewAssertion, OldComp, NewAssertionToPrint), % TODO: why?
-		note_message( "(lns ~d-~d) The assertion:~n~p has been changed to~n~p" , 
-		  [From, To, OldAssertion,NewAssertionToPrint] )
-	    ;
-		true
-	    )
-	;
-	    Status = check,
-	    ( Type = calls -> 
-	      local_inccounter(simp_check_c,_) 
-	    ; local_inccounter(simp_check_s,_)
-	    ),
-	    prepare_output_info(Domains, Info, Goal, Type, RelInfo),
-	    copy_term((Goal,'$an_results'(RelInfo),Dict),(GoalCopy,RelInfoCopy,DictCopy)),
-	    name_vars(DictCopy),
-	    prettyvars((GoalCopy,RelInfoCopy)),
-	    (
-		STAT \== off,
-		filter_left_over(Type, Call, Success, Comp, LeftL),
-		list_to_conj(LeftL, Left0),
-		copy_term((Left0, Dict),(Left, CDict)),
-		name_vars(CDict), prettyvars(Left),
-		show_message(STAT, "(lns ~d-~d) Cannot verify assertion:~n~pbecause on ~p ~p :~n~p ~nLeft to prove: ~w~n", 
-		[From, To, OldAssertion, Type, GoalCopy, RelInfoCopy, Left]),
-		 memo_ctcheck_sum(check)
-	    ;
-		true
-	    )
-	;
-	    Status = false,
-	    ( Type = calls -> 
-	      local_inccounter(simp_false_c,_) 
-	    ; local_inccounter(simp_false_s,_)
-	    ),
-	    prepare_output_info(Domains, Info, Goal, Type, RelInfo),
-	    copy_term((Goal,'$an_results'(RelInfo),Dict),(GoalCopy,RelInfoCopy,DictCopy)),
-	    name_vars(DictCopy),
-	    prettyvars((GoalCopy,RelInfoCopy)),
-	    error_message( "(lns ~d-~d) False assertion:~n~pbecause on ~p ~p :~n~p", 
-	    [From, To, OldAssertion, Type, GoalCopy, RelInfoCopy]),
-	     memo_ctcheck_sum(false)
-	).
+    SignMsg = [],  % doesn't encounter function intersection
+    OldAssertion= as${
+         comp      => OldComp
+    },
+    NewAssertion   = as${
+         status    => Status,       type      => Type ,
+         head      => Goal,
+         call      => Call ,        succ      => Success,
+         dic       => Dict,         comp      => Comp,
+         locator   => Loc,
+         fromwhere => From 
+    },
+    % this might be heavy on large module, for performance reason
+    % this should only be applied for false and check case
+    Loc = loc(_File, RFrom, To),
+    (  RFrom == To
+    -> From = RFrom
+    ;  From is RFrom+1
+    ),
+    (
+        Status = checked,
+        ( Type = calls  -> 
+          local_inccounter(simp_checked_c,_) 
+        ; local_inccounter(simp_checked_s,_)
+        ),
+        ( VCT = on -> % TODO: added cut, is it OK? (JF)
+            assertion_set_comp(NewAssertion, OldComp, NewAssertionToPrint), % TODO: why?
+            note_message( "(lns ~d-~d) The assertion:~n~p has been changed to~n~p" , 
+              [From, To, OldAssertion,NewAssertionToPrint] )
+        ;
+            true
+        )
+    ;
+        Status = check,
+        ( Type = calls -> 
+          local_inccounter(simp_check_c,_) 
+        ; local_inccounter(simp_check_s,_)
+        ),
+        prepare_output_info(Domains, Info, Goal, Type, RelInfo),
+        copy_term((Goal,'$an_results'(RelInfo),Dict),(GoalCopy,RelInfoCopy,DictCopy)),
+        name_vars(DictCopy),
+        prettyvars((GoalCopy,RelInfoCopy)),
+        (
+            STAT \== off,
+            filter_left_over(Type, Call, Success, Comp, LeftL),
+            list_to_conj(LeftL, Left0),
+            copy_term((Left0, Dict),(Left, CDict)),
+            name_vars(CDict), prettyvars(Left),
+            show_message(STAT, "(lns ~d-~d) Cannot verify assertion:~n~pbecause on ~p ~p :~n~p ~nLeft to prove: ~w~n", 
+            [From, To, OldAssertion, Type, GoalCopy, RelInfoCopy, Left]),
+             memo_ctcheck_sum(check)
+        ;
+            true
+        )
+    ;
+        Status = false,
+        ( Type = calls -> 
+          local_inccounter(simp_false_c,_) 
+        ; local_inccounter(simp_false_s,_)
+        ),
+        prepare_output_info(Domains, Info, Goal, Type, RelInfo),
+        copy_term((Goal,'$an_results'(RelInfo),Dict),(GoalCopy,RelInfoCopy,DictCopy)),
+        name_vars(DictCopy),
+        prettyvars((GoalCopy,RelInfoCopy)),
+        error_message( "(lns ~d-~d) False assertion:~n~pbecause on ~p ~p :~n~p", 
+        [From, To, OldAssertion, Type, GoalCopy, RelInfoCopy]),
+         memo_ctcheck_sum(false)
+    ).
 %
 explain_interval(_VCT, STAT, SignMsg, OldAssertion, NewAssertion, Domains, Info):-
-	STAT \== off, 
-	(
-	    SignMsg = [1]
-	;
-	    SignMsg = [2]
-	;
-	    SignMsg = [3]
-	;
-	    SignMsg = [4]
-	),
-	NewAssertion  = as${
-	         type      => Type,
-	         head      => Goal,    
-		 call      => Call,    succ      => Success,
-		 comp      => Comp,    dic       => Dict,
-		 locator   => Locator 
-		  },       
-	filter_left_over(Type, Call, Success, Comp, LeftL),
-	list_to_conj(LeftL, Left0),
-	copy_term((Left0, Dict),(Left, CDict)),
-	name_vars(CDict), prettyvars(Left),
-	!,
-	prepare_output_info(Domains, Info, Goal, Type, RelInfo),
-	copy_term((Goal,'$an_results'(RelInfo),Dict),(GoalCopy,RelInfoCopy,DictCopy)),
-	name_vars(DictCopy),
-	prettyvars((GoalCopy,RelInfoCopy)),
-	Locator = loc(_File, RFrom, To),
-	(  RFrom == To
-	-> From = RFrom
-	;  From is RFrom+1
-	),
-	(
-	    SignMsg == [1],
-	    show_message(STAT, "(lns ~d-~d) Uncovered cost function~n Cannot verify assertion:~n~pbecause on ~p ~p :~n~p ~nLeft to prove: ~w~n", 
-	    [From, To, OldAssertion, Type, GoalCopy, RelInfoCopy, Left])
-	;
-	    SignMsg == [2],
-	    show_message(STAT, "(lns ~d-~d) Unconvergence GSL algorithm~n Cannot verify assertion:~n~pbecause on ~p ~p :~n~p ~nLeft to prove: ~w~n", 
-	    [From, To, OldAssertion, Type, GoalCopy, RelInfoCopy, Left])
-	;
-	    SignMsg == [3],
-	    show_message(STAT, "(lns ~d-~d) Encounters small intervals ~n Cannot verify assertion:~n~pbecause on ~p ~p :~n~p ~nLeft to prove: ~w~n", 
-	    [From, To, OldAssertion, Type, GoalCopy, RelInfoCopy, Left])
-	;
-	    SignMsg == [4],
-	    show_message(STAT, "(lns ~d-~d) Searching for safe root algorithm might be unconverge ~n Cannot verify assertion:~n~pbecause on ~p ~p :~n~p ~nLeft to prove: ~w~n", 
-	    [From, To, OldAssertion, Type, GoalCopy, RelInfoCopy, Left])
+    STAT \== off, 
+    (
+        SignMsg = [1]
+    ;
+        SignMsg = [2]
+    ;
+        SignMsg = [3]
+    ;
+        SignMsg = [4]
+    ),
+    NewAssertion  = as${
+             type      => Type,
+             head      => Goal,    
+             call      => Call,    succ      => Success,
+             comp      => Comp,    dic       => Dict,
+             locator   => Locator 
+              },       
+    filter_left_over(Type, Call, Success, Comp, LeftL),
+    list_to_conj(LeftL, Left0),
+    copy_term((Left0, Dict),(Left, CDict)),
+    name_vars(CDict), prettyvars(Left),
+    !,
+    prepare_output_info(Domains, Info, Goal, Type, RelInfo),
+    copy_term((Goal,'$an_results'(RelInfo),Dict),(GoalCopy,RelInfoCopy,DictCopy)),
+    name_vars(DictCopy),
+    prettyvars((GoalCopy,RelInfoCopy)),
+    Locator = loc(_File, RFrom, To),
+    (  RFrom == To
+    -> From = RFrom
+    ;  From is RFrom+1
+    ),
+    (
+        SignMsg == [1],
+        show_message(STAT, "(lns ~d-~d) Uncovered cost function~n Cannot verify assertion:~n~pbecause on ~p ~p :~n~p ~nLeft to prove: ~w~n", 
+        [From, To, OldAssertion, Type, GoalCopy, RelInfoCopy, Left])
+    ;
+        SignMsg == [2],
+        show_message(STAT, "(lns ~d-~d) Unconvergence GSL algorithm~n Cannot verify assertion:~n~pbecause on ~p ~p :~n~p ~nLeft to prove: ~w~n", 
+        [From, To, OldAssertion, Type, GoalCopy, RelInfoCopy, Left])
+    ;
+        SignMsg == [3],
+        show_message(STAT, "(lns ~d-~d) Encounters small intervals ~n Cannot verify assertion:~n~pbecause on ~p ~p :~n~p ~nLeft to prove: ~w~n", 
+        [From, To, OldAssertion, Type, GoalCopy, RelInfoCopy, Left])
+    ;
+        SignMsg == [4],
+        show_message(STAT, "(lns ~d-~d) Searching for safe root algorithm might be unconverge ~n Cannot verify assertion:~n~pbecause on ~p ~p :~n~p ~nLeft to prove: ~w~n", 
+        [From, To, OldAssertion, Type, GoalCopy, RelInfoCopy, Left])
 
-	),!.
+    ),!.
 %otherwise: show nothing
 explain_interval(_VCT, _STAT, _SignMsg, _OldAssertion, _NewAssertion, _Domains, _Info).
 
@@ -1715,38 +1715,38 @@ explain_interval(_VCT, _STAT, _SignMsg, _OldAssertion, _NewAssertion, _Domains, 
 separate_interval([],[],[],[]).
 %general case
 separate_interval([f,R,Ival2|Is], [i(0,R)|IntFalse], IntCheck, IntTrue):-
-	separate_interval_rest([f,R,Ival2|Is], IntFalse, IntCheck, IntTrue).
+    separate_interval_rest([f,R,Ival2|Is], IntFalse, IntCheck, IntTrue).
 %
 separate_interval([t,R,f|Is], IntFalse, IntCheck, IntTrue):-
-	(
-	    R > 0 ->
-	    Rm is R - 1,
-	    IntTrue = [i(0,Rm)|IntTrue1]
-	;
-	    IntTrue = IntTrue1
-	),
-	separate_interval_rest([t,R,f|Is], IntFalse, IntCheck, IntTrue1).
+    (
+        R > 0 ->
+        Rm is R - 1,
+        IntTrue = [i(0,Rm)|IntTrue1]
+    ;
+        IntTrue = IntTrue1
+    ),
+    separate_interval_rest([t,R,f|Is], IntFalse, IntCheck, IntTrue1).
 separate_interval([c,R,f|Is], IntFalse, IntCheck, IntTrue):-
-	(
-	    R > 0 ->
-	    Rm is R - 1,
-	    IntCheck = [i(0,Rm)|IntCheck1]
-	;
-	    IntCheck = IntCheck1
-	),
-	separate_interval_rest([c,R,f|Is], IntFalse, IntCheck1, IntTrue).
+    (
+        R > 0 ->
+        Rm is R - 1,
+        IntCheck = [i(0,Rm)|IntCheck1]
+    ;
+        IntCheck = IntCheck1
+    ),
+    separate_interval_rest([c,R,f|Is], IntFalse, IntCheck1, IntTrue).
 %
 separate_interval([t,R,c|Is], IntFalse, IntCheck, [i(0,R)|IntTrue]):-
-	separate_interval_rest([t,R,c|Is], IntFalse, IntCheck, IntTrue).
+    separate_interval_rest([t,R,c|Is], IntFalse, IntCheck, IntTrue).
 separate_interval([c,R,t|Is], IntFalse, IntCheck, IntTrue):- 
-	(
-	    R > 0 ->
-	    Rm is R - 1,
-	    IntCheck = [i(0,Rm)|IntCheck1]
-	;
-	    IntCheck = IntCheck1
-	),
-	separate_interval_rest([c,R,t|Is], IntFalse, IntCheck1, IntTrue).
+    (
+        R > 0 ->
+        Rm is R - 1,
+        IntCheck = [i(0,Rm)|IntCheck1]
+    ;
+        IntCheck = IntCheck1
+    ),
+    separate_interval_rest([c,R,t|Is], IntFalse, IntCheck1, IntTrue).
 
 %---------------------------------------------------------------
 % separate_interval_rest
@@ -1754,63 +1754,63 @@ separate_interval([c,R,t|Is], IntFalse, IntCheck, IntTrue):-
 %base
 separate_interval_rest([_,R,f], [i(R,inf)], [], []).
 separate_interval_rest([f,R,t], [], [], [i(Rp,inf)]):-
-	Rp is R + 1.
+    Rp is R + 1.
 separate_interval_rest([f,R,c], [], [i(Rp,inf)], []):-
-	Rp is R + 1.
+    Rp is R + 1.
 separate_interval_rest([t,R,c], [], [i(Rp,inf)], []):-
-	Rp is R + 1.
+    Rp is R + 1.
 separate_interval_rest([c,R,t], [], [], [i(R,inf)]).
 %recc
 separate_interval_rest([_Ival1,R1,f,R2,Ival3|Is], [i(R1,R2)|IntFalse], IntCheck, IntTrue):- 
-	separate_interval_rest([f,R2,Ival3|Is], IntFalse, IntCheck, IntTrue).
+    separate_interval_rest([f,R2,Ival3|Is], IntFalse, IntCheck, IntTrue).
 separate_interval_rest([c,R1,t,R2,c|Is], IntFalse, IntCheck, [i(R1,R2)|IntTrue]):- 
-	separate_interval_rest([t,R2,c|Is], IntFalse, IntCheck, IntTrue).
+    separate_interval_rest([t,R2,c|Is], IntFalse, IntCheck, IntTrue).
 %
 separate_interval_rest([f,R1,t,R2,f|Is], IntFalse, IntCheck, NewIntTrue):- 
-	R1p is R1 + 1,
-	(   % we have to ensure that it is not empty, eg [f,3,t,4,f] is empty TrueInterval
-	    R1p < R2 -> 
-	    R2m is R2 - 1,
-	    NewIntTrue = [i(R1p,R2m)|IntTrue] 
-	;
-	    NewIntTrue = IntTrue
-	),
-	separate_interval_rest([t,R2,f|Is], IntFalse, IntCheck, IntTrue).
+    R1p is R1 + 1,
+    (   % we have to ensure that it is not empty, eg [f,3,t,4,f] is empty TrueInterval
+        R1p < R2 -> 
+        R2m is R2 - 1,
+        NewIntTrue = [i(R1p,R2m)|IntTrue] 
+    ;
+        NewIntTrue = IntTrue
+    ),
+    separate_interval_rest([t,R2,f|Is], IntFalse, IntCheck, IntTrue).
 separate_interval_rest([_Ival1,R1,c,R2,Ival3|Is], IntFalse, NewIntCheck, IntTrue):- 
-	R1p is R1 + 1,
-	(
-	    R1p < R2 -> 
-	    R2m is R2 - 1,
-	    NewIntCheck = [i(R1p,R2m)|IntCheck]
-	;
-	    NewIntCheck = IntCheck
-	),
-	separate_interval_rest([c,R2,Ival3|Is], IntFalse, IntCheck, IntTrue).
+    R1p is R1 + 1,
+    (
+        R1p < R2 -> 
+        R2m is R2 - 1,
+        NewIntCheck = [i(R1p,R2m)|IntCheck]
+    ;
+        NewIntCheck = IntCheck
+    ),
+    separate_interval_rest([c,R2,Ival3|Is], IntFalse, IntCheck, IntTrue).
 %
 separate_interval_rest([c,R1,t,R2,f|Is], IntFalse, IntCheck, [i(R1,R2m)|IntTrue]):- 
-	R2m is R2 - 1, %our case do not have this possibility [c,4,t,4,f], so no need to check
-	separate_interval_rest([t,R2,f|Is], IntFalse, IntCheck, IntTrue).
+    R2m is R2 - 1, %our case do not have this possibility [c,4,t,4,f], so no need to check
+    separate_interval_rest([t,R2,f|Is], IntFalse, IntCheck, IntTrue).
 %
 separate_interval_rest([f,R1,t,R2,c|Is], IntFalse, IntCheck, [i(R1p,R2)|IntTrue]):- 
-	R1p is R1 + 1,
-	separate_interval_rest([t,R2,c|Is], IntFalse, IntCheck, IntTrue).
+    R1p is R1 + 1,
+    separate_interval_rest([t,R2,c|Is], IntFalse, IntCheck, IntTrue).
 
 %-----------------------------------------------------------------------------
 % The following code related to simplifying comp part of the assertion
 
 simplify_assertion([],[]) :- !. % case analysis
 simplify_assertion(A0, A):- 
-	A0 = as${ comp=>Comp },
-	simplify_comp(Comp, SimpleComp), %never fail
-	assertion_set_comp(A0, SimpleComp, A).
+    A0 = as${ comp=>Comp },
+    simplify_comp(Comp, SimpleComp), %never fail
+    assertion_set_comp(A0, SimpleComp, A).
 
 simplify_comp([],[]).
 simplify_comp([Comp1|Comps], [SimpleComp1|SimpleComps]):-
-	simplify_comp_el(Comp1, SimpleComp1),
-	simplify_comp(Comps, SimpleComps).
+    simplify_comp_el(Comp1, SimpleComp1),
+    simplify_comp(Comps, SimpleComps).
 
 simplify_comp_el(CompEl, SimpleCompEl) :-
-	custom_compact_global_prop(CompEl, SimpleCompEl),!.
+    custom_compact_global_prop(CompEl, SimpleCompEl),!.
 simplify_comp_el(A,A).%leave it as is
 
 % custom_compact_global_prop
@@ -1819,59 +1819,59 @@ simplify_comp_el(A,A).%leave it as is
 % %custom_compact_global_prop(cost(_, Rel, Ap, Type, Res, _, IF, CF), Cost) :-
 % % slight modification
 custom_compact_global_prop('resources_props:cost'(_, Rel, Ap, Type, Res, _, IF, CF), Cost) :-
-%	compact_cf(IF, CF), % it has side effect
-	simp_cost(IF, CF, NewCF),
-	compact_cost(Rel, Ap, Type, Res, NewCF, Cost).
+%       compact_cf(IF, CF), % it has side effect
+    simp_cost(IF, CF, NewCF),
+    compact_cost(Rel, Ap, Type, Res, NewCF, Cost).
 
 compact_cost(rel, Ap, Type, Res, CF, RelCost) :-
-	compact_rel_cost(Type, Ap, Res, CF, RelCost).
+    compact_rel_cost(Type, Ap, Res, CF, RelCost).
 compact_cost(abs, Ap, Type, Res, CF, AbsCost) :-
-	compact_abs_cost(Type, Ap, Res, CF, AbsCost).
+    compact_abs_cost(Type, Ap, Res, CF, AbsCost).
 
 compact_rel_cost(call, Ap, Res, CF, rel_cost(Ap, Res, CF)) :- !.
 compact_rel_cost(Type, Ap, Res, CF, rel_cost(Ap, Type, Res, CF)).
 
 %compact_abs_cost(call, Ap, Res, CF, cost(Ap, Res, CF)) :- !.
 compact_abs_cost(call, Ap, Res, CF, cost(_,Ap, Res, CF)) :- !. %dummy element due to
-                                                               % strange printer [LD]
+                                                           % strange printer [LD]
 compact_abs_cost(Type, Ap, Res, CF, cost(Ap, Type, Res, CF)).
 
 simp_cost(FI, A, B):-
     ( var(A) ->
       subtitute_var(FI, A, B)
     ;
-	functor(A, F, N),
-	(
-	    N == 2,
-	    arg(1, A, Arg1),
-	    arg(2, A, Arg2),
-	    simp_cost(FI, Arg1, TArg1),
-	    simp_cost(FI, Arg2, TArg2),
-	    functor(B, F, 2),
-	    arg(1, B, TArg1),
-	    arg(2, B, TArg2)
-	;
-	    N == 0,
-	    ( var(A) ->
-	       subtitute_var(FI, A, B)
-	      ;
-		A = B
-	    )
-	;
-	    error_message("~nsimp_cost: function ~p is unspecified~n",[A])
-	)
+    functor(A, F, N),
+    (
+        N == 2,
+        arg(1, A, Arg1),
+        arg(2, A, Arg2),
+        simp_cost(FI, Arg1, TArg1),
+        simp_cost(FI, Arg2, TArg2),
+        functor(B, F, 2),
+        arg(1, B, TArg1),
+        arg(2, B, TArg2)
+    ;
+        N == 0,
+        ( var(A) ->
+           subtitute_var(FI, A, B)
+          ;
+            A = B
+        )
+    ;
+        error_message("~nsimp_cost: function ~p is unspecified~n",[A])
+    )
      ).
 
 subtitute_var(FI, Var, CF):-
-	member(length(Par, Var), FI),
-	CF = length(Par).
+    member(length(Par, Var), FI),
+    CF = length(Par).
 subtitute_var(FI, Var, CF):-
-	member(size(Par, Var), FI),
-	CF = size(Par).
+    member(size(Par, Var), FI),
+    CF = size(Par).
 :- doc(bug, "adhoc implementation, further examination required").
 subtitute_var(FI, Var, CF):-
-	member(Par=Var, FI),
-	CF = int(Par).
+    member(Par=Var, FI),
+    CF = int(Par).
 
 % check_interval_error(List_of_Interval, ErrorCode)
 check_interval_error([],0).      %not error 

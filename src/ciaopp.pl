@@ -35,7 +35,7 @@ analysis).
 %:- multifile analysis/1.
 :- impl_defined(analysis/1).
 :- prop analysis(Analysis)
-	# "@var{Analysis} is a valid analysis identifier.".
+    # "@var{Analysis} is a valid analysis identifier.".
 
 :- doc(analysis/1,"Analyses can be integrated in CiaoPP in an ad-hoc
    way (see the Internals manual), in which the CiaoPP menu would not
@@ -45,7 +45,7 @@ analysis).
 %:- multifile transformation/1.
 :- impl_defined(transformation/1).
 :- prop transformation(Transformation)
-	# "@var{Transformation} is a valid transformation identifier.".
+    # "@var{Transformation} is a valid transformation identifier.".
 
 :- doc(transformation/1,"Transformations can be integrated in CiaoPP
    in an ad-hoc way (see the Internals manual), in which the CiaoPP
@@ -190,13 +190,13 @@ help.
 % Preprocess flags
 
 :- reexport(ciaopp(preprocess_flags),
-	[ current_pp_flag/2,
-	  set_pp_flag/2,
-	  push_pp_flag/2,
-	  pop_pp_flag/1,
-	  pp_flag/1,
-	  flag_value/1,
-	  valid_flag_value/2]).
+    [ current_pp_flag/2,
+      set_pp_flag/2,
+      push_pp_flag/2,
+      pop_pp_flag/1,
+      pp_flag/1,
+      flag_value/1,
+      valid_flag_value/2]).
 :- doc(doinclude,current_pp_flag/2).
 :- doc(doinclude,set_pp_flag/2).
 :- doc(doinclude,pp_flag/1).
@@ -224,36 +224,36 @@ flag_is_targetdir(tmp_dir).
 
 :- initialization(ciaopp_init).
 ciaopp_init :-
-	init_check_flags.
+    init_check_flags.
 
 :- pred init_check_flags # "Check that the current default flag values
    are valid. See @pred{check_flag/2} and @pred{check_targetdir/2}.".
 
 init_check_flags :-
-	pp_flag(F),
-	current_pp_flag(F, V),
-	check_flag(F, V),
-	( flag_is_targetdir(F) ->
-	    check_targetdir(F, V)
-	; true
-	),
-	fail.
+    pp_flag(F),
+    current_pp_flag(F, V),
+    check_flag(F, V),
+    ( flag_is_targetdir(F) ->
+        check_targetdir(F, V)
+    ; true
+    ),
+    fail.
 init_check_flags.
 
 check_flag(F, V) :-
-	( valid_flag_value(F, V) ->
-            true
-	; error_message( 
-	    "INTERNAL ERROR: The flag ~w has a value ~w which is not correct",
-	    [F,V]),
-	  fail
-	).
+    ( valid_flag_value(F, V) ->
+        true
+    ; error_message( 
+        "INTERNAL ERROR: The flag ~w has a value ~w which is not correct",
+        [F,V]),
+      fail
+    ).
 
 check_targetdir(Flag, Dir) :-
-	( Dir == source -> true % TODO: ad-hoc...
-	; file_exists(Dir, 7) ->
-	    true
-	; error_message("INTERNAL ERROR: the directory ~w is not "||
-		        "accesible (flag: ~w)" , [Dir,Flag]),
-	  fail
-	).
+    ( Dir == source -> true % TODO: ad-hoc...
+    ; file_exists(Dir, 7) ->
+        true
+    ; error_message("INTERNAL ERROR: the directory ~w is not "||
+                    "accesible (flag: ~w)" , [Dir,Flag]),
+      fail
+    ).

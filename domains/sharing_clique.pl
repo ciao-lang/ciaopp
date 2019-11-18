@@ -52,61 +52,61 @@
 %------------------------------------------------------------------------%
 
 :- doc(bug,"1. In case of success multivariance the predicate
-           eliminate_equivalent/2 must be redefined.").
+       eliminate_equivalent/2 must be redefined.").
 :- doc(bug,"2. The builtin ==/2 is defined but it is not used. For 
-	   its use, comment it out in special_builtin.").
+       its use, comment it out in special_builtin.").
 :- doc(bug,"3. The builtins read/2 and length/2 are used in a simple
-	   way. In order to use more complex definitions, comment it in 
-	   special_builtin.").
+       way. In order to use more complex definitions, comment it in 
+       special_builtin.").
 :- doc(bug,"4. The non-redundant version is not working because the 
-	   semantics of the builtins has not been defined yet.").
+       semantics of the builtins has not been defined yet.").
 
 :- use_module(library(lsets), 
-	       [sort_list_of_lists/2,
-		ord_split_lists_from_list/4,
-		merge_list_of_lists/2,
-		ord_member_list_of_lists/2
-		]).	  
+           [sort_list_of_lists/2,
+            ord_split_lists_from_list/4,
+            merge_list_of_lists/2,
+            ord_member_list_of_lists/2
+            ]).       
 :- use_module(library(sets), 
-              [
-	       ord_subset/2,
-	       ord_subtract/3,
-	       ord_union/3,
-	       ord_intersection/3,
-	       ord_member/2,
-	       merge/3,
-	       insert/3,
-	       ord_intersection_diff/4
-	       ]).
+          [
+           ord_subset/2,
+           ord_subtract/3,
+           ord_union/3,
+           ord_intersection/3,
+           ord_member/2,
+           merge/3,
+           insert/3,
+           ord_intersection_diff/4
+           ]).
 :- use_module(library(lists), 
-              [delete/3,               
-	       append/3,
-	       powerset/2,
-	       list_to_list_of_lists/2
-	       ]).
+          [delete/3,               
+           append/3,
+           powerset/2,
+           list_to_list_of_lists/2
+           ]).
 :- use_module(library(sort), 
-	      [sort/2]).	
+          [sort/2]).        
 :- use_module(library(terms_vars), [varset/2]).
 
 :- use_module(domain(share_amgu_sets)).
 :- use_module(domain(s_grshfr), 
-        [projected_gvars/3]).
+    [projected_gvars/3]).
 :- use_module(domain(share_clique_aux), [
-	widen/1,
-	type_widening/1,
-	type_widening_condition/1,
-	widen_upper_bound/1,
-	widen_lower_bound/1]).
+    widen/1,
+    type_widening/1,
+    type_widening_condition/1,
+    widen_upper_bound/1,
+    widen_lower_bound/1]).
 :- use_module(domain(share_aux), [
-	eliminate_couples/4,
-	handle_each_indep/4,
-	eliminate_if_not_possible/3,
-	test_temp/2,
-	eliminate_if_not_possible/4]).
+    eliminate_couples/4,
+    handle_each_indep/4,
+    eliminate_if_not_possible/3,
+    test_temp/2,
+    eliminate_if_not_possible/4]).
 :- use_module(domain(share_aux), [append_dl/3]).
 :- use_module(domain(share_clique_1_aux),
-	[split_list_of_lists_singleton/3,
- 	 share_clique_1_normalize/4]).
+    [split_list_of_lists_singleton/3,
+     share_clique_1_normalize/4]).
 
 :- use_module(domain(sharing)).
 :- use_module(domain(share_clique_aux)).
@@ -171,7 +171,7 @@ share_clique_exit_to_prime(Sg,Hv,Head,_Sv,Exit,Flag,Prime):-
      share_clique_abs_sort(NewPrime,Prime).
 share_clique_exit_to_prime(_,[],_,_,_,_,([],[])):- !.
 share_clique_exit_to_prime(Sg,_Hv,_Head,Sv,Exit,ExtraInfo,Prime):-
-     ExtraInfo = (Equations,Gv_Call),     	
+     ExtraInfo = (Equations,Gv_Call),           
      share_clique_augment_asub(Exit,Sv,ASub),     
      share_clique_iterate(Equations,star,ASub, Prime0),
      share_clique_widen(plai_op,Prime0,_,Prime1),
@@ -190,8 +190,8 @@ share_clique_exit_to_prime(Sg,_Hv,_Head,Sv,Exit,ExtraInfo,Prime):-
 %------------------------------------------------------------------------%
 :- export(share_clique_amgu/4).
 share_clique_amgu(Sg,Head,ASub,AMGU):-
-	peel_equations(Sg, Head,Eqs),
-	share_clique_iterate(Eqs,star,ASub,AMGU),!.
+    peel_equations(Sg, Head,Eqs),
+    share_clique_iterate(Eqs,star,ASub,AMGU),!.
 
 %------------------------------------------------------------------------%
 %                            ABSTRACT Iterate                            %
@@ -222,9 +222,9 @@ share_clique_extend(_Sg,_Prime,[],Call,Succ):- !,
 share_clique_extend(_Sg,Prime,Sv,Call,Succ):-!,
 %open('clsh.pl',append,Fd),
      Call = (Call_Cl,Call_Sh),
-     split_list_of_lists(Sv,Call_Cl,Call_Cl_g,_),	
-     split_list_of_lists(Sv,Call_Sh,Call_Sh_g,Irrel_Sh),	
-     delete_vars_from_list_of_lists(Sv,Call_Cl,Irrel_Cl),	
+     split_list_of_lists(Sv,Call_Cl,Call_Cl_g,_),       
+     split_list_of_lists(Sv,Call_Sh,Call_Sh_g,Irrel_Sh),        
+     delete_vars_from_list_of_lists(Sv,Call_Cl,Irrel_Cl),       
      star_w((Call_Cl_g,Call_Sh_g),(Cl1,Sh1)), 
 %------------------------------------------------------------------------%
 % REMARK:In order to be able to go on with the analysis, if |sh2| > 0    |
@@ -261,23 +261,23 @@ share_clique_extend(_Sg,Prime,Sv,Call,Succ):-!,
 
 normalize_if_clsh_needs((Cl2,[]),_,(Cl2,[])):-!.
 normalize_if_clsh_needs((Cl2,Sh2),Cl1,(NewCl2,NewSh2)):-
-	T = 7,
-	( asub_gt(Cl1,T) ->
-	  share_clique_normalize((Cl2,Sh2),100,1,(NewCl2,NewSh2))
-        ;
-	  (NewCl2,NewSh2) = (Cl2,Sh2)
-        ).
+    T = 7,
+    ( asub_gt(Cl1,T) ->
+      share_clique_normalize((Cl2,Sh2),100,1,(NewCl2,NewSh2))
+    ;
+      (NewCl2,NewSh2) = (Cl2,Sh2)
+    ).
 
 :- export(asub_gt/2).
 asub_gt([S|Ss],T):-
-	length(S,LS),!,
-	( LS > T ->
-	  true
-	;
-	  asub_gt(Ss,T)
-        ).
+    length(S,LS),!,
+    ( LS > T ->
+      true
+    ;
+      asub_gt(Ss,T)
+    ).
 
-:- export(prune_success/5).	
+:- export(prune_success/5).     
 prune_success([],_Prime,_Sv,Succ,Succ).
 prune_success([Xs|Xss],Prime,Sv,Call,Succ) :-
      ord_intersection(Xs,Sv,Xs_proj),
@@ -295,17 +295,17 @@ prune_success([Xs|Xss],Prime,Sv,Call,Succ) :-
 
 extendcl([],_,_,Irrel,Irrel).
 extendcl([S_cl2|S_cl2s],Cl1,Vars,Irrel,Extendcl):-
-	extendcl_(Cl1,S_cl2,Vars,Res),
-	extendcl(S_cl2s,Cl1,Vars,Irrel,Result),
-	ord_union(Result,Res,Extendcl).
+    extendcl_(Cl1,S_cl2,Vars,Res),
+    extendcl(S_cl2s,Cl1,Vars,Irrel,Result),
+    ord_union(Result,Res,Extendcl).
 extendcl_([],_,_,[]).
 extendcl_([S|Ss],S_cl2,Vars,[Res|Result]):-
-	ord_intersection(S_cl2,S,Int),
-	ord_subtract(S,Vars,Disj),
-	ord_union(Int,Disj,Res),
-	extendcl_(Ss,S_cl2,Vars,Result).
+    ord_intersection(S_cl2,S,Int),
+    ord_subtract(S,Vars,Disj),
+    ord_union(Int,Disj,Res),
+    extendcl_(Ss,S_cl2,Vars,Result).
 extendcl_([_|Ss],S_cl2,Vars,Result):-
-	extendcl_(Ss,S_cl2,Vars,Result).
+    extendcl_(Ss,S_cl2,Vars,Result).
 
 %------------------------------------------------------------------------%
 % clsh(cl',sh2,g) = {s | s \subseteq c \in cl', (s/\g) \in sh2}          |
@@ -313,52 +313,52 @@ extendcl_([_|Ss],S_cl2,Vars,Result):-
 %------------------------------------------------------------------------%
 
 clsh(Cl,Sh2,Sv,Call,Succ):-
-	widen(off),!,
-	clsh_more_precise(Cl,Sh2,Sv,Call,Succ).
+    widen(off),!,
+    clsh_more_precise(Cl,Sh2,Sv,Call,Succ).
 clsh(Cl,Sh2,Sv,Call,Succ):-
-	type_widening(WT),!,
-	( (WT == panic_1 ; WT == panic_2) ->
-	  clsh_more_efficient(Cl,Sh2,Sv,Call,Succ)
-        ; 
-          clsh_more_precise(Cl,Sh2,Sv,Call,Succ)
-        ).
+    type_widening(WT),!,
+    ( (WT == panic_1 ; WT == panic_2) ->
+      clsh_more_efficient(Cl,Sh2,Sv,Call,Succ)
+    ; 
+      clsh_more_precise(Cl,Sh2,Sv,Call,Succ)
+    ).
 
 clsh_more_precise(_,[],_,Succ,Succ):-!.
 clsh_more_precise([Cl|Cls],Sh2,Sv,Call,Succ) :-
-	sharing_possible(Sh2,Cl,Sv,Sharing_Allowed),
-        ord_subtract(Cl,Sv,Sv_No_Projected),
-	powerset_with_empty_set(Sv_No_Projected,Pow_Sv_No_Projected),
-	clsh_extend_sharing(Sharing_Allowed,Pow_Sv_No_Projected,Res),
-	ord_union(Call,Res,Temp),
-        clsh_more_precise(Cls,Sh2,Sv,Temp,Succ).
+    sharing_possible(Sh2,Cl,Sv,Sharing_Allowed),
+    ord_subtract(Cl,Sv,Sv_No_Projected),
+    powerset_with_empty_set(Sv_No_Projected,Pow_Sv_No_Projected),
+    clsh_extend_sharing(Sharing_Allowed,Pow_Sv_No_Projected,Res),
+    ord_union(Call,Res,Temp),
+    clsh_more_precise(Cls,Sh2,Sv,Temp,Succ).
 clsh_more_precise([],_,_,Succ,Succ).
 
 :- export(sharing_possible/4).
 sharing_possible([],_,_,[]).
 sharing_possible([Sh|Shs],Cl,Sv,[Sh|Shs0]):-
-	( ord_subset(Sh,Sv),  % all variables of sh are in Sv
-	  ord_subset(Sh,Cl)   % and in Cl
-        ),!,
-	sharing_possible(Shs,Cl,Sv,Shs0).
+    ( ord_subset(Sh,Sv),  % all variables of sh are in Sv
+      ord_subset(Sh,Cl)   % and in Cl
+    ),!,
+    sharing_possible(Shs,Cl,Sv,Shs0).
 sharing_possible([_|Shs],Cl,Sv,Shs0):-
-	sharing_possible(Shs,Cl,Sv,Shs0).
+    sharing_possible(Shs,Cl,Sv,Shs0).
 
 clsh_extend_sharing([],_,[]).
 clsh_extend_sharing(Sh,[],Sh).
 clsh_extend_sharing([S|Ss],Pow,ExtSh):-
-        bin_union([S],Pow,Res),
-	clsh_extend_sharing(Ss,Pow,Result),
-        ord_union(Res,Result,ExtSh).	
+    bin_union([S],Pow,Res),
+    clsh_extend_sharing(Ss,Pow,Result),
+    ord_union(Res,Result,ExtSh).    
 
 :- export(powerset_with_empty_set/2).
 powerset_with_empty_set(S,PS):-
-	powerset(S,PS0),!,
-	( PS0 = [] ->
-          PS= PS0
-        ; 
-	  insert(PS0,[],PS1),
-	  sort_list_of_lists(PS1,PS)
-        ).
+    powerset(S,PS0),!,
+    ( PS0 = [] ->
+      PS= PS0
+    ; 
+      insert(PS0,[],PS1),
+      sort_list_of_lists(PS1,PS)
+    ).
 
 %------------------------------------------------------------------------%
 % clsh(cl',sh2,g) = {c| c \in cl', (c /\ g) \supseteq s \in sh2}         |
@@ -368,16 +368,16 @@ powerset_with_empty_set(S,PS):-
 clsh_more_efficient(Cl,Sh2,Sv,Call,Succ):-
        clsh_(Cl,Sh2,Sv,Call,Succ_s),
        sort_list_of_lists(Succ_s,Succ).
-	
+    
 clsh_([],_Sh2,_Sv,Succ,Succ).
 clsh_([C|Cs],Sh2,Sv,Call,Succ):-
-	ord_intersection(C,Sv,C_proj),!,
-	( ord_superset_lists_with_list(Sh2,C_proj) ->
-	  Temp = [C|Call]
-        ;
-	  Temp = Call
-        ),  
-	clsh_(Cs,Sh2,Sv,Temp,Succ).
+    ord_intersection(C,Sv,C_proj),!,
+    ( ord_superset_lists_with_list(Sh2,C_proj) ->
+      Temp = [C|Call]
+    ;
+      Temp = Call
+    ),  
+    clsh_(Cs,Sh2,Sv,Temp,Succ).
 
 %------------------------------------------------------------------------%
 % shcl(sh',cl2,g) = {s| s \in sh', (s /\ g) \subseteq c \in cl2}         |
@@ -385,18 +385,18 @@ clsh_([C|Cs],Sh2,Sv,Call,Succ):-
 %------------------------------------------------------------------------%
 
 shcl(Xss,Cl,Sv,Call,Succ_s):-
-	shcl_(Xss,Cl,Sv,Call,Succ),
-	sort_list_of_lists(Succ,Succ_s).
+    shcl_(Xss,Cl,Sv,Call,Succ),
+    sort_list_of_lists(Succ,Succ_s).
 
 shcl_([],_Cl,_Sv,Succ,Succ).
 shcl_([Xs|Xss],Cl,Sv,Call,Succ):-
-	ord_intersection(Xs,Sv,Xs_proj),!,
-	( ord_subset_lists_with_list(Cl,Xs_proj) ->
-	  Temp = [Xs|Call]
-        ;
-	  Temp = Call
-        ),  
-	shcl_(Xss,Cl,Sv,Temp,Succ).
+    ord_intersection(Xs,Sv,Xs_proj),!,
+    ( ord_subset_lists_with_list(Cl,Xs_proj) ->
+      Temp = [Xs|Call]
+    ;
+      Temp = Call
+    ),  
+    shcl_(Xss,Cl,Sv,Temp,Succ).
 
 %------------------------------------------------------------------------%
 %                      ABSTRACT Extend_Asub                              |
@@ -408,14 +408,14 @@ shcl_([Xs|Xss],Cl,Sv,Call,Succ):-
 :- export(share_clique_augment_asub/3).
 share_clique_augment_asub(ASub,[],ASub) :- !.
 share_clique_augment_asub(ASub,Vars,ASub_s):-
-	share_clique_abs_sort(ASub,SASub),
-	sort(Vars,SVars),!,
-	share_clique_augment_asub_(SASub,SVars,ASub1),
-	share_clique_abs_sort(ASub1,ASub_s).
+    share_clique_abs_sort(ASub,SASub),
+    sort(Vars,SVars),!,
+    share_clique_augment_asub_(SASub,SVars,ASub1),
+    share_clique_abs_sort(ASub1,ASub_s).
 
 share_clique_augment_asub_(ASub,[],ASub) :- !.
 share_clique_augment_asub_(ASub,[H|T],(Cl,[[H]|Sh])):-
-	share_clique_augment_asub_(ASub,T,(Cl,Sh)).
+    share_clique_augment_asub_(ASub,T,(Cl,Sh)).
 
 %------------------------------------------------------------------------%
 %                      ABSTRACT PROJECTION
@@ -427,8 +427,8 @@ share_clique_augment_asub_(ASub,[H|T],(Cl,[[H]|Sh])):-
 :- export(share_clique_project/5).                  
 share_clique_project(_,_,_,'$bottom','$bottom'):- !.
 share_clique_project(Sg,Vars,HvFv_u,(Cl,Sh),(Cl0,Sh0)) :-
-	share_project(Sg,Vars,HvFv_u,Sh,Sh0),
-	intersection_lists_with_list(Cl,Vars,Cl0).
+    share_project(Sg,Vars,HvFv_u,Sh,Sh0),
+    intersection_lists_with_list(Cl,Vars,Cl0).
 
 %------------------------------------------------------------------------%
 %                      ABSTRACT SORT                                     %
@@ -441,8 +441,8 @@ share_clique_project(Sg,Vars,HvFv_u,(Cl,Sh),(Cl0,Sh0)) :-
 :- export(share_clique_abs_sort/2).                     
 share_clique_abs_sort('$bottom','$bottom'):- !.
 share_clique_abs_sort((Cl_ASub,Sh_ASub),(Cl_ASub_s,Sh_ASub_s) ):-
-	sort_list_of_lists(Cl_ASub,Cl_ASub_s),
-	sort_list_of_lists(Sh_ASub,Sh_ASub_s).
+    sort_list_of_lists(Cl_ASub,Cl_ASub_s),
+    sort_list_of_lists(Sh_ASub,Sh_ASub_s).
 
 %------------------------------------------------------------------------%
 % share_clique_identical_abstract(+,+)                                   |
@@ -455,15 +455,15 @@ share_clique_identical_abstract('$bottom','$bottom'):- !.
 share_clique_identical_abstract('$bottom',_):- !,fail.
 share_clique_identical_abstract(_,'$bottom'):- !,fail.
 share_clique_identical_abstract(ASub0,ASub1):-
-	ASub0 == ASub1,!.
+    ASub0 == ASub1,!.
 share_clique_identical_abstract(ASub0,ASub1):- !,
-	share_clique_normalize(ASub0,100,1,NASub0),
-	( NASub0 == ASub1 ->
-	  true
-        ;
-	  share_clique_normalize(ASub1,100,1,NASub1),
-	  NASub0 == NASub1
-        ).
+    share_clique_normalize(ASub0,100,1,NASub0),
+    ( NASub0 == ASub1 ->
+      true
+    ;
+      share_clique_normalize(ASub1,100,1,NASub1),
+      NASub0 == NASub1
+    ).
 
 %------------------------------------------------------------------------%
 % eliminate_equivalent(+,-)                                              |
@@ -475,17 +475,17 @@ share_clique_identical_abstract(ASub0,ASub1):- !,
 %------------------------------------------------------------------------%
 :- export(share_clique_eliminate_equivalent/2).
 share_clique_eliminate_equivalent(TmpLSucc,Succ):-
-	sort(TmpLSucc,Succ).
+    sort(TmpLSucc,Succ).
 
 % share_clique_eliminate_equivalent(TmpLSucc,Succ):-
-% 	normalize_lists(TmpLSucc,New_TmpLSucc),
-% 	sort(New_TmpLSucc,Succ).
+%       normalize_lists(TmpLSucc,New_TmpLSucc),
+%       sort(New_TmpLSucc,Succ).
 
 % normalize_lists([],[]).
 % normalize_lists([X|Xs],[New_X|Res]):-
-% 	share_clique_normalize(X,100,1,New_X),
-% 	normalize_lists(Xs,Res).
-	
+%       share_clique_normalize(X,100,1,New_X),
+%       normalize_lists(Xs,Res).
+    
 %------------------------------------------------------------------------%
 % share_clique_less_or_equal(+,+)                                        |
 % share_clique_less_or_equal(ASub0,ASub1)                                |
@@ -495,31 +495,31 @@ share_clique_eliminate_equivalent(TmpLSucc,Succ):-
 :- export(share_clique_less_or_equal/2).
 share_clique_less_or_equal('$bottom',_ASub):- !.
 share_clique_less_or_equal(ASub,ASub1):-
-	share_clique_normalize(ASub,100,1,(Cl0,Sh0)),
-	share_clique_normalize(ASub1,100,1,(Cl1,Sh1)),
-	clique_part_less_or_equal(Cl0,Cl1),
-	sharing_part_less_or_equal(Sh0,Sh1,Cl1).
+    share_clique_normalize(ASub,100,1,(Cl0,Sh0)),
+    share_clique_normalize(ASub1,100,1,(Cl1,Sh1)),
+    clique_part_less_or_equal(Cl0,Cl1),
+    sharing_part_less_or_equal(Sh0,Sh1,Cl1).
 
 :- export(clique_part_less_or_equal/2).
 clique_part_less_or_equal(Cl0,Cl1):-
-	Cl0 == Cl1,!.
+    Cl0 == Cl1,!.
 clique_part_less_or_equal(Cl0,Cl1):-
-	ord_subset_list_of_lists(Cl0,Cl1),!.
+    ord_subset_list_of_lists(Cl0,Cl1),!.
 
 :- export(sharing_part_less_or_equal/3).
 sharing_part_less_or_equal(Sh0,Sh1,_Cl1):-
-	Sh0 == Sh1,!.
+    Sh0 == Sh1,!.
 sharing_part_less_or_equal(Sh0,Sh1,Cl1):-
-	sharing_part_less_or_equal_(Sh0,Sh1,Cl1).
+    sharing_part_less_or_equal_(Sh0,Sh1,Cl1).
 
 sharing_part_less_or_equal_([],_Sh1,_Cl1).
 sharing_part_less_or_equal_([Sh|Shs],Sh1,Cl1):-
-	ord_subset([Sh],Sh1),!,	
-        sharing_part_less_or_equal_(Shs,Sh1,Cl1).
+    ord_subset([Sh],Sh1),!, 
+    sharing_part_less_or_equal_(Shs,Sh1,Cl1).
 sharing_part_less_or_equal_([Sh|Shs],Sh1,Cl1):-
-	ord_subset_list_of_lists([Sh],Cl1),!,
-        sharing_part_less_or_equal_(Shs,Sh1,Cl1).
-	
+    ord_subset_list_of_lists([Sh],Cl1),!,
+    sharing_part_less_or_equal_(Shs,Sh1,Cl1).
+    
 %------------------------------------------------------------------------%
 %                      ABSTRACT Call to Success Fact                     |
 %------------------------------------------------------------------------%
@@ -535,20 +535,20 @@ sharing_part_less_or_equal_([Sh|Shs],Sh1,Cl1):-
 
 :- export(share_clique_call_to_success_fact/9).
 share_clique_call_to_success_fact(_,[],_Head,_K,Sv,(Cl,Sh),_,([],[]),Succ):-!,
-	ord_split_lists_from_list(Sv,Sh,_,Succ_Sh),
-	delete_vars_from_list_of_lists(Sv,Cl,Succ_Cl),
-	Succ = (Succ_Cl,Succ_Sh).
+    ord_split_lists_from_list(Sv,Sh,_,Succ_Sh),
+    delete_vars_from_list_of_lists(Sv,Cl,Succ_Cl),
+    Succ = (Succ_Cl,Succ_Sh).
 share_clique_call_to_success_fact(Sg,Hv,Head,_K,Sv,Call,_Proj,Prime,Succ):-
 % exit_to_prime
-	share_clique_augment_asub(Call,Hv,ASub),	
-	peel_equations(Sg, Head,Equations),
-	share_clique_iterate(Equations,star,ASub,(Cl1,Sh1)),
-	share_clique_widen(plai_op,(Cl1,Sh1),_,(Cl,Sh)),
-	share_clique_project(Sg,Sv,not_provided_HvFv_u,(Cl,Sh),Prime),
+    share_clique_augment_asub(Call,Hv,ASub),        
+    peel_equations(Sg, Head,Equations),
+    share_clique_iterate(Equations,star,ASub,(Cl1,Sh1)),
+    share_clique_widen(plai_op,(Cl1,Sh1),_,(Cl,Sh)),
+    share_clique_project(Sg,Sv,not_provided_HvFv_u,(Cl,Sh),Prime),
 % extend
-	delete_vars_from_list_of_lists(Hv,Cl,Succ_Cl),
-	delete_vars_from_list_of_lists(Hv,Sh,Succ_Sh),
-	share_clique_abs_sort((Succ_Cl,Succ_Sh),Succ),!.
+    delete_vars_from_list_of_lists(Hv,Cl,Succ_Cl),
+    delete_vars_from_list_of_lists(Hv,Sh,Succ_Sh),
+    share_clique_abs_sort((Succ_Cl,Succ_Sh),Succ),!.
 share_clique_call_to_success_fact(_Sg,_Hv,_Head,_K,_Sv,_Call,_Proj,'$bottom','$bottom').
 
 %------------------------------------------------------------------------%
@@ -558,11 +558,11 @@ share_clique_call_to_success_fact(_Sg,_Hv,_Head,_K,_Sv,_Call,_Proj,'$bottom','$b
 :- export(share_clique_call_to_prime_fact/6).
 share_clique_call_to_prime_fact(Sg,Hv,Head,Sv,Call,Prime) :-
 % exit_to_prime
-	share_clique_augment_asub(Call,Hv,ASub),	
-	peel_equations(Sg, Head,Equations),
-	share_clique_iterate(Equations,star,ASub,(Cl1,Sh1)),
-	share_clique_widen(plai_op,(Cl1,Sh1),_,(Cl,Sh)),
-	share_clique_project(Sg,Sv,not_provided_HvFv_u,(Cl,Sh),Prime),!.
+    share_clique_augment_asub(Call,Hv,ASub),        
+    peel_equations(Sg, Head,Equations),
+    share_clique_iterate(Equations,star,ASub,(Cl1,Sh1)),
+    share_clique_widen(plai_op,(Cl1,Sh1),_,(Cl,Sh)),
+    share_clique_project(Sg,Sv,not_provided_HvFv_u,(Cl,Sh),Prime),!.
 share_clique_call_to_prime_fact(_Sg,_Hv,_Head,_Sv,_Call,'$bottom').
 %------------------------------------------------------------------------%
 %                      ABSTRACT LUB                                      |
@@ -576,25 +576,25 @@ share_clique_call_to_prime_fact(_Sg,_Hv,_Head,_Sv,_Call,'$bottom').
 %------------------------------------------------------------------------%
 :- export(share_clique_compute_lub/2).
 share_clique_compute_lub([ASub1,ASub2|Rest],Lub) :- !,
-	share_clique_lub_cl(ASub1,ASub2,ASub3),
-	share_clique_widen(extend,ASub3,_,ASub_widen),
-	share_clique_compute_lub([ASub_widen|Rest],Lub).
+    share_clique_lub_cl(ASub1,ASub2,ASub3),
+    share_clique_widen(extend,ASub3,_,ASub_widen),
+    share_clique_compute_lub([ASub_widen|Rest],Lub).
 share_clique_compute_lub([ASub],ASub).
 
 :- export(share_clique_lub_cl/3).
 share_clique_lub_cl(ASub1,ASub2,ASub3):-
-	ASub1 == ASub2,!,
-	ASub3 = ASub2.
+    ASub1 == ASub2,!,
+    ASub3 = ASub2.
 share_clique_lub_cl(ASub1,ASub2,ASub3):-
-	merge_subst(ASub1,ASub2,ASub3).
+    merge_subst(ASub1,ASub2,ASub3).
 
 merge_subst('$bottom',Yss,Yss):- !.
 merge_subst(Xss,'$bottom',Xss):- !.
 merge_subst((Cl1,Sh1),(Cl2,Sh2),Lub) :-
-	merge(Cl1,Cl2,Cl0),
-	merge(Sh1,Sh2,Sh0),
-%	Lub = (Cl0,Sh0).
-	share_clique_normalize((Cl0,Sh0),Lub).
+    merge(Cl1,Cl2,Cl0),
+    merge(Sh1,Sh2,Sh0),
+%       Lub = (Cl0,Sh0).
+    share_clique_normalize((Cl0,Sh0),Lub).
 
 %------------------------------------------------------------------------%
 % share_clique_glb(+,+,-)                                                       |
@@ -606,7 +606,7 @@ merge_subst((Cl1,Sh1),(Cl2,Sh2),Lub) :-
 share_clique_glb('$bottom',_ASub,ASub3) :- !, ASub3='$bottom'.
 share_clique_glb(_ASub,'$bottom',ASub3) :- !, ASub3='$bottom'.
 share_clique_glb(ASub0,ASub1,Glb):- 
-	ord_intersection_w(ASub0,ASub1,Glb).
+    ord_intersection_w(ASub0,ASub1,Glb).
 
 %------------------------------------------------------------------------%
 % share_clique_input_user_interface(+,+,-,+,+)                           |
@@ -619,34 +619,34 @@ share_clique_glb(ASub0,ASub1,Glb):-
 
 :- export(share_clique_input_user_interface/5).
 share_clique_input_user_interface((Gv,Sh,Cl,I),Qv,Call,Sg,MaybeCallASub):-
-	share_input_user_interface((Gv,Sh,I),Qv,New_Sh,Sg,MaybeCallASub),
-	may_be_var(Cl,Cl0),
-	take_ground_out_clique(Gv,Cl0,New_Cl),   
-	Call = (New_Cl,New_Sh).
-%	share_clique_normalize((New_Cl,New_Sh),Call).
+    share_input_user_interface((Gv,Sh,I),Qv,New_Sh,Sg,MaybeCallASub),
+    may_be_var(Cl,Cl0),
+    take_ground_out_clique(Gv,Cl0,New_Cl),   
+    Call = (New_Cl,New_Sh).
+%       share_clique_normalize((New_Cl,New_Sh),Call).
 
 take_ground_out_clique(Gv,Cl,Cl1):-
-	ord_split_lists_from_list(Gv,Cl,Intersect,Disjoint),
-	delete_vars_from_list_of_lists(Gv,Intersect,Intersect1),
-	ord_union(Intersect1,Disjoint,Cl1).
-        	
+    ord_split_lists_from_list(Gv,Cl,Intersect,Disjoint),
+    delete_vars_from_list_of_lists(Gv,Intersect,Intersect1),
+    ord_union(Intersect1,Disjoint,Cl1).
+            
 :- export(share_clique_input_interface/4).
 share_clique_input_interface(clique(X),perfect,(Gv,Sh,Cl0,I),(Gv,Sh,Cl,I)):-
-	nonvar(X),
-	sort_list_of_lists(X,ASub),
-	myappend(ASub,Cl0,Cl),!.         
+    nonvar(X),
+    sort_list_of_lists(X,ASub),
+    myappend(ASub,Cl0,Cl),!.         
 share_clique_input_interface(Prop,Any,(Gv0,Sh0,Cl,I0),(Gv,Sh,Cl,I)):-
-	share_input_interface(Prop,Any,(Gv0,Sh0,I0),(Gv,Sh,I)).
+    share_input_interface(Prop,Any,(Gv0,Sh0,I0),(Gv,Sh,I)).
 
 :- export(may_be_var/2). % TODO: duplicated
 may_be_var(X,X):- ( X=[] ; true ), !.
 
 :- export(myappend/3). % TODO: duplicated
 myappend(Vs,V0,V):-
-	var(Vs), !,
-	V=V0.
+    var(Vs), !,
+    V=V0.
 myappend(Vs,V0,V):-
-	merge(Vs,V0,V).
+    merge(Vs,V0,V).
 
 %------------------------------------------------------------------------%
 % share_clique_asub_to_native(+,+,+,-,-)                                 |
@@ -657,11 +657,11 @@ myappend(Vs,V0,V):-
 :- export(share_clique_asub_to_native/5). 
 share_clique_asub_to_native('$bottom',_Qv,_OutFlag,_ASub_user,_Comps):- !, fail.
 share_clique_asub_to_native((Cl,Sh),Qv,_OutFlag,Info,[]):-
-	ord_union(Sh,Cl,All),
-	projected_gvars(All,Qv,Gv),
-	if_not_nil(Cl,clique(Cl),Info,Info0),
-	if_not_nil(Sh,sharing(Sh),Info0,Info1),
-	if_not_nil(Gv,ground(Gv),Info1,[]).
+    ord_union(Sh,Cl,All),
+    projected_gvars(All,Qv,Gv),
+    if_not_nil(Cl,clique(Cl),Info,Info0),
+    if_not_nil(Sh,sharing(Sh),Info0,Info1),
+    if_not_nil(Gv,ground(Gv),Info1,[]).
 
 %------------------------------------------------------------------------%
 % share_clique_unknown_call(+,+,+,-)                                     |
@@ -675,11 +675,11 @@ share_clique_asub_to_native((Cl,Sh),Qv,_OutFlag,Info,[]):-
 share_clique_unknown_call(_Sg,_Vars,'$bottom','$bottom') :- !.
 share_clique_unknown_call(_Sg,_Vars,([],[]),([],[])) :- !.
 share_clique_unknown_call(_Sg,Vars,(Cl,Sh),Succ):-
-	split_list_of_lists(Vars,Cl,Cl_vars,_),
-	split_list_of_lists(Vars,Sh,Sh_vars,Irrel_Sh_vars),
-	delete_vars_from_list_of_lists(Vars,Cl,Irrel_Cl_vars),
-	star_w((Cl_vars,Sh_vars),Star),
-	ord_union_w(Star,(Irrel_Cl_vars,Irrel_Sh_vars),Succ).
+    split_list_of_lists(Vars,Cl,Cl_vars,_),
+    split_list_of_lists(Vars,Sh,Sh_vars,Irrel_Sh_vars),
+    delete_vars_from_list_of_lists(Vars,Cl,Irrel_Cl_vars),
+    star_w((Cl_vars,Sh_vars),Star),
+    ord_union_w(Star,(Irrel_Cl_vars,Irrel_Sh_vars),Succ).
 
 %------------------------------------------------------------------------%
 % share_clique_empty_entry(+,+,-)                                        |
@@ -694,8 +694,8 @@ share_clique_unknown_call(_Sg,Vars,(Cl,Sh),Succ):-
 
 :- export(share_clique_empty_entry/3).
 share_clique_empty_entry(Sg,Vars,Entry):-
-	share_empty_entry(Sg,Vars,EntryVars),!,
-	Entry = ([],EntryVars).
+    share_empty_entry(Sg,Vars,EntryVars),!,
+    Entry = ([],EntryVars).
 
 %------------------------------------------------------------------------%
 % share_clique_unknown_entry(+,+,-)                                      |
@@ -703,11 +703,11 @@ share_clique_empty_entry(Sg,Vars,Entry):-
 % The top value in Clique for a set of variables is the powerset. It     |
 % consits of putting Qv directly in the clique part.                     |
 %------------------------------------------------------------------------%
-         
+     
 :- export(share_clique_unknown_entry/3).
 share_clique_unknown_entry(_Sg,Qv,Call):-
-	sort(Qv,QvS),	
-	Call = (QvS,[]).
+    sort(Qv,QvS),   
+    Call = (QvS,[]).
 
 %------------------------------------------------------------------------%
 % share_clique_widen(+,+,+,-)                                            |
@@ -723,42 +723,42 @@ share_clique_unknown_entry(_Sg,Qv,Call):-
 :- push_prolog_flag(multi_arity_warnings,off).
 :- export(share_clique_widen/4).
 share_clique_widen(_,ASub,_,ASub):-
-	widen(off),!.
+    widen(off),!.
 share_clique_widen(amgu,ASub1,ExtraInfo,ASub):-
-	widen(amgu),!,
-	type_widening(TWid),
-	type_widening_condition(TCond),
-	share_clique_widen(TCond,TWid,ASub1,ExtraInfo,ASub).
+    widen(amgu),!,
+    type_widening(TWid),
+    type_widening_condition(TCond),
+    share_clique_widen(TCond,TWid,ASub1,ExtraInfo,ASub).
 share_clique_widen(plai_op,ASub1,ExtraInfo,ASub):-
-	widen(plai_op),!,
-	type_widening(TWid),
-	share_clique_widen(aamgu,TWid,ASub1,ExtraInfo,ASub).
+    widen(plai_op),!,
+    type_widening(TWid),
+    share_clique_widen(aamgu,TWid,ASub1,ExtraInfo,ASub).
 share_clique_widen(extend,ASub1,ExtraInfo,ASub):-!,
-	type_widening(TWid),
-	share_clique_widen(aamgu,TWid,ASub1,ExtraInfo,ASub).
+    type_widening(TWid),
+    share_clique_widen(aamgu,TWid,ASub1,ExtraInfo,ASub).
 %% 1-clique-sharing
 share_clique_widen(amgu_clique_1,ASub1,ExtraInfo,ASub):-
-	widen(amgu),!,
-	type_widening(NTWid),
-	widening_clique_1(NTWid,TWid),
-	type_widening_condition(TCond),
-	share_clique_widen(TCond,TWid,ASub1,ExtraInfo,ASub).
+    widen(amgu),!,
+    type_widening(NTWid),
+    widening_clique_1(NTWid,TWid),
+    type_widening_condition(TCond),
+    share_clique_widen(TCond,TWid,ASub1,ExtraInfo,ASub).
 share_clique_widen(plai_op_clique_1,ASub1,ExtraInfo,ASub):-
-	widen(plai_op),!,
-	type_widening(NTWid),
-	widening_clique_1(NTWid,TWid),
-	share_clique_widen(aamgu,TWid,ASub1,ExtraInfo,ASub).
+    widen(plai_op),!,
+    type_widening(NTWid),
+    widening_clique_1(NTWid,TWid),
+    share_clique_widen(aamgu,TWid,ASub1,ExtraInfo,ASub).
 share_clique_widen(extend_clique_1,ASub1,ExtraInfo,ASub):-!,
-	type_widening(NTWid),
-	widening_clique_1(NTWid,TWid),
-	share_clique_widen(aamgu,TWid,ASub1,ExtraInfo,ASub).
+    type_widening(NTWid),
+    widening_clique_1(NTWid,TWid),
+    share_clique_widen(aamgu,TWid,ASub1,ExtraInfo,ASub).
 % it shouldn't but...
 share_clique_widen(_,ASub,_,ASub):-!.
 
 widening_clique_1('cautious','cautious_clique_1'):-!.
 widening_clique_1('inter_1','inter_1_clique_1'):-!.
 widening_clique_1(_,_):-!,
-	error_message("Widening not allowed for 1-clique-sharing").
+    error_message("Widening not allowed for 1-clique-sharing").
 %------------------------------------------------------------------------%
 % share_clique_widen(?,?,+,+,-)                                          |
 % share_clique_widen(TCond,TWid,ASub1,ExtraInfo,ASub)                    |
@@ -770,22 +770,22 @@ widening_clique_1(_,_):-!,
 
 :- export(share_clique_widen/5).
 share_clique_widen(_,_,ASub,_,ASub):-
-	widen(off),!.
+    widen(off),!.
 share_clique_widen(TCond,TWid,ASub1,ExtraInfo,ASub):-!,
-	( share_clique_widening_condition(TCond,ASub1,ExtraInfo)->
-	  % inc_widen_done,
-	  share_clique_widening(TWid,ASub1,ASub)
-          %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-	  % debug
-	  %, ASub1 = (_,Sh1),
-	  %size_set_of_sets(Sh1,NSh1),
-	  %ASub = (_,Sh),
-	  %size_set_of_sets(Sh,NSh),
-	  %format("WIDENING: ~d-~d ~n",[NSh1,NSh])
-          %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-	;
-	  ASub = ASub1
-	).
+    ( share_clique_widening_condition(TCond,ASub1,ExtraInfo)->
+      % inc_widen_done,
+      share_clique_widening(TWid,ASub1,ASub)
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      % debug
+      %, ASub1 = (_,Sh1),
+      %size_set_of_sets(Sh1,NSh1),
+      %ASub = (_,Sh),
+      %size_set_of_sets(Sh,NSh),
+      %format("WIDENING: ~d-~d ~n",[NSh1,NSh])
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    ;
+      ASub = ASub1
+    ).
 
 :- pop_prolog_flag(multi_arity_warnings).
 %-------------------------------------------------------------------------%
@@ -799,18 +799,18 @@ share_clique_widen(TCond,TWid,ASub1,ExtraInfo,ASub):-!,
 %   amgu in order to avoid to compute it.                                 |
 %-------------------------------------------------------------------------%
 share_clique_widening_condition(aamgu,SH,_ExtraInfo):-
-	widen_upper_bound(UB),
-	size_clsh(SH,N),
-	!,	
-	N > UB.
+    widen_upper_bound(UB),
+    size_clsh(SH,N),
+    !,      
+    N > UB.
 share_clique_widening_condition(bamgu,(Cl,Sh),_):-
-	compute_upper_amgu(Sh,UB_Sh),
-	size_set_of_sets(Cl,Size_Cl),
-	UB_ClSh is Size_Cl + UB_Sh,
-	widen_upper_bound(UB),
-        !,
-	UB_ClSh > UB.
-%	format("~d > ~d ", [UB_ClSh,UB]).
+    compute_upper_amgu(Sh,UB_Sh),
+    size_set_of_sets(Cl,Size_Cl),
+    UB_ClSh is Size_Cl + UB_Sh,
+    widen_upper_bound(UB),
+    !,
+    UB_ClSh > UB.
+%       format("~d > ~d ", [UB_ClSh,UB]).
 
 %------------------------------------------------------------------------%
 % share_clique_widening(+,+,-)                                           |
@@ -833,11 +833,11 @@ share_clique_widening_condition(bamgu,(Cl,Sh),_):-
 
 % Panic widening
 share_clique_widening(panic_1,(Cl,Sh),(Cl1,[])):-
-     merge_list_of_lists(Sh,USh),	
+     merge_list_of_lists(Sh,USh),       
      ord_union(Cl,[USh],Cl1).
 share_clique_widening(panic_2,(Cl,Sh),([Cl1],[])):-
-     merge_list_of_lists(Sh,USh),	
-     merge_list_of_lists(Cl,UCl),	
+     merge_list_of_lists(Sh,USh),       
+     merge_list_of_lists(Cl,UCl),       
      ord_union(UCl,USh,Cl1).
 % Cautious widening
 share_clique_widening(cautious,SH,SH1):-     
@@ -857,7 +857,7 @@ share_clique_widening(inter_2,(Cl,Sh),SH):-
 
 %% 1-clique-sharing widenings
 share_clique_widening(inter_1_clique_1,(Cl,Sh),(Cl1,Sing)):-
-     split_list_of_lists_singleton(Sh,Non,Sing),	
+     split_list_of_lists_singleton(Sh,Non,Sing),        
      ord_union(Cl,Non,Cl1).     
 %     ord_union(Cl,Sh,Cl1).
 share_clique_widening(cautious_clique_1,SH,SH1):-     
@@ -874,42 +874,42 @@ share_clique_widening(cautious_clique_1,SH,SH1):-
 %------------------------------------------------------------------------%
 compute_subsets_for_sh_groups([],_,_,[]).
 compute_subsets_for_sh_groups([X|Xs],Sh,M,Xs1):-
-	sublist_list_of_lists(Sh,X,CardCandSh,CandSh),!,	
-	( CardCandSh >= M ->   
-	  %L is CardCandSh, 
-	  L is 0 - CardCandSh,
-	  compute_subsets_for_sh_groups(Xs,Sh,M,R),
-	  Xs1= [L-X-CandSh|R]
-	;
-	  compute_subsets_for_sh_groups(Xs,Sh,M,R),
-	  Xs1= R
+    sublist_list_of_lists(Sh,X,CardCandSh,CandSh),!,        
+    ( CardCandSh >= M ->   
+      %L is CardCandSh, 
+      L is 0 - CardCandSh,
+      compute_subsets_for_sh_groups(Xs,Sh,M,R),
+      Xs1= [L-X-CandSh|R]
+    ;
+      compute_subsets_for_sh_groups(Xs,Sh,M,R),
+      Xs1= R
   ).
 
 regularize_list_of_tuple(Cl,Cl1):-
-	sort(Cl,Cl_s), % eliminate duplicates
-	regularize_list_of_tuple_(Cl_s,Cl_s,Cl1).
+    sort(Cl,Cl_s), % eliminate duplicates
+    regularize_list_of_tuple_(Cl_s,Cl_s,Cl1).
 
 regularize_list_of_tuple_([],_,[]).
 regularize_list_of_tuple_([Cl1|Cls1],Cls,Cl2):-
-	delete(Cls,Cl1,Cls0),!,
-	( ord_subset_list_of_tuple(Cls0,Cl1) ->   
-          regularize_list_of_tuple_(Cls1,Cls,Cl2)
-        ;
-	  regularize_list_of_tuple_(Cls1,Cls,Cl0),
-	  Cl2 = [Cl1|Cl0]
-        ).
+    delete(Cls,Cl1,Cls0),!,
+    ( ord_subset_list_of_tuple(Cls0,Cl1) ->   
+      regularize_list_of_tuple_(Cls1,Cls,Cl2)
+    ;
+      regularize_list_of_tuple_(Cls1,Cls,Cl0),
+      Cl2 = [Cl1|Cl0]
+    ).
 
 ord_subset_list_of_tuple([],_):- !,fail.
 ord_subset_list_of_tuple([_-H1-_|_],_-H2-_) :-
-	ord_subset(H2,H1),!.
+    ord_subset(H2,H1),!.
 ord_subset_list_of_tuple([_|T1],H2) :-
-	ord_subset_list_of_tuple(T1,H2).
+    ord_subset_list_of_tuple(T1,H2).
 
 reduce_sharing([],SH,_,_,SH).
 reduce_sharing([(L-Cand-Sh_cand)|T],SH,LB,Size,Res):-
      New_Size is Size + L,!, % L is negative (for sorting)
      %New_Size is Size - L,!, % L is positive (for sorting)
-     update_clique(Cand,SH,Sh_cand,NewSH),!,	
+     update_clique(Cand,SH,Sh_cand,NewSH),!,    
      ( New_Size > LB ->
        reduce_sharing(T,NewSH,LB,New_Size,Res)
      ;
@@ -939,8 +939,8 @@ share_clique_special_builtin('read/2',read(X,Y),_,'recorded/3',p(Y,X)) :- !.
 share_clique_special_builtin('length/2',length(_X,Y),_,some,[Y]) :- !.
 share_clique_special_builtin('==/2',_,_,_,_):- !, fail.
 share_clique_special_builtin(SgKey,Sg,Subgoal,Type,Condvars):-
-	share_special_builtin(SgKey,Sg,Subgoal,Type,Condvars).
-	
+    share_special_builtin(SgKey,Sg,Subgoal,Type,Condvars).
+    
 %------------------------------------------------------------------------%
 % share_clique_success_builtin(+,+,+,+,+,-)                              |
 % share_clique_success_builtin(Type,Sv_u,Condv,HvFv_u,Call,Succ)                |
@@ -955,123 +955,123 @@ share_clique_special_builtin(SgKey,Sg,Subgoal,Type,Condvars):-
 
 :- export(share_clique_success_builtin/6).
 share_clique_success_builtin(ground,Sv_u,_,_,Call,Succ):-
-	sort(Sv_u,Sv),	
-	irrel_w(Sv,Call,Succ).
+    sort(Sv_u,Sv),  
+    irrel_w(Sv,Call,Succ).
 share_clique_success_builtin(bottom,_,_,_,_,'$bottom').
 share_clique_success_builtin(unchanged,_,_,_,Call,Call).
 share_clique_success_builtin(some,_,NewGround,_,Call,Succ):-
-	irrel_w(NewGround,Call,Succ).
+    irrel_w(NewGround,Call,Succ).
 % SPECIAL BUILTINS
 share_clique_success_builtin('=../2',_,p(X,Y),_,(Cl,Sh),Succ):-
 % All variables of X are ground. All variables of Y will be ground
-	varset(X,Varsx),
-	ord_union(Sh,Cl,All),
-	projected_gvars(All,Varsx,Vars),
-	Vars == Varsx,!, 
-	varset(Y,Varsy),
-	ord_split_lists_from_list(Varsy,Sh,_Intersect,Sh1),
-        take_ground_out_clique(Varsy,Cl,Cl1),
-	Succ = (Cl1,Sh1).
+    varset(X,Varsx),
+    ord_union(Sh,Cl,All),
+    projected_gvars(All,Varsx,Vars),
+    Vars == Varsx,!, 
+    varset(Y,Varsy),
+    ord_split_lists_from_list(Varsy,Sh,_Intersect,Sh1),
+    take_ground_out_clique(Varsy,Cl,Cl1),
+    Succ = (Cl1,Sh1).
 share_clique_success_builtin('=../2',_,p(X,Y),_,(Cl,Sh),Succ):-
 % All variables of Y are ground. All variables of X will be ground
-	nonvar(Y),
-	Y = [Z|W],
-	varset(W,Varsy),
-	ord_union(Sh,Cl,All),
-	projected_gvars(All,Varsy,Vars),
-	Vars == Varsy,!,
-	varset((X,Z),Varsx),
-	ord_split_lists_from_list(Varsx,Sh,_Intersect,Sh1),
-	take_ground_out_clique(Varsx,Cl,Cl1),
-	Succ = (Cl1,Sh1).
+    nonvar(Y),
+    Y = [Z|W],
+    varset(W,Varsy),
+    ord_union(Sh,Cl,All),
+    projected_gvars(All,Varsy,Vars),
+    Vars == Varsy,!,
+    varset((X,Z),Varsx),
+    ord_split_lists_from_list(Varsx,Sh,_Intersect,Sh1),
+    take_ground_out_clique(Varsx,Cl,Cl1),
+    Succ = (Cl1,Sh1).
 share_clique_success_builtin('=../2',Sv_u,p(X,Y),_,Call,Succ):-
 % X and Y are variables. Therefore, all variables of X can 
 % share with all variables of Y
-	var(X), var(Y),!,
-	sort(Sv_u,Sv),
-	Prime = ([],[Sv]),
-	share_clique_extend(not_provided_Sg,Prime,Sv,Call,Succ).
+    var(X), var(Y),!,
+    sort(Sv_u,Sv),
+    Prime = ([],[Sv]),
+    share_clique_extend(not_provided_Sg,Prime,Sv,Call,Succ).
 share_clique_success_builtin('=../2',Sv_u,p(X,Y),_,Call,Succ):-
 % General case: Either X is f(t1,...,tn) or Y is [G|Something]. 
 % We must unify [f,t1,...,tn] = [G|Something]
-	( var(Y) -> G=g ; Y = [G|_] ), !,
-	( var(X) -> Term=[G|X] ; X=..Term ),
-	sort(Sv_u,Sv),
-	share_clique_project(not_provided_Sg,Sv,not_provided_HvFv_u,Call,Proj),
-	share_clique_call_to_success_builtin('=/2','='(Term,Y),Sv,Call,Proj,Succ).
+    ( var(Y) -> G=g ; Y = [G|_] ), !,
+    ( var(X) -> Term=[G|X] ; X=..Term ),
+    sort(Sv_u,Sv),
+    share_clique_project(not_provided_Sg,Sv,not_provided_HvFv_u,Call,Proj),
+    share_clique_call_to_success_builtin('=/2','='(Term,Y),Sv,Call,Proj,Succ).
 share_clique_success_builtin('=../2',_Sv_u,_,_,_Call,'$bottom').
 share_clique_success_builtin('==/2',Sv_u,p(X,Y),_,Call,Succ):-
 % If X and Y are identical, we only need to propagate groundness
-	sh_peel(X,Y,Binds-[]),
-	sort(Sv_u,Sv),
-	Call = (Cl,Sh),
-	ord_union(Cl,Sh,All),
-	projected_gvars(All,Sv,Ground),  
+    sh_peel(X,Y,Binds-[]),
+    sort(Sv_u,Sv),
+    Call = (Cl,Sh),
+    ord_union(Cl,Sh,All),
+    projected_gvars(All,Sv,Ground),  
 %% clique-part
-	clique_make_decomposition(Binds,Cl,Ground,NewGround,NewSH),
-	sort(NewGround,NewGround1),
-	NewSH = (Succ_Cl,Sh1),
-%	share_clique_normalize(NewSH,(Succ_Cl,Sh1)),
+    clique_make_decomposition(Binds,Cl,Ground,NewGround,NewSH),
+    sort(NewGround,NewGround1),
+    NewSH = (Succ_Cl,Sh1),
+%       share_clique_normalize(NewSH,(Succ_Cl,Sh1)),
 %% sharing-part
-	ord_union(Sh,Sh1,Sh0),
-	share_make_reduction(Binds,Sh0,NewGround1,NewGround2,Sets-[]),
-	sort(NewGround2,NewGround3),
-	sort_list_of_lists(Sets,Sets1),
-	ord_split_lists_from_list(NewGround3,Sh0,_Intersect,Temp),
-	ord_subtract(Temp,Sets1,Succ_Sh),
-	Succ = (Succ_Cl,Succ_Sh).
+    ord_union(Sh,Sh1,Sh0),
+    share_make_reduction(Binds,Sh0,NewGround1,NewGround2,Sets-[]),
+    sort(NewGround2,NewGround3),
+    sort_list_of_lists(Sets,Sets1),
+    ord_split_lists_from_list(NewGround3,Sh0,_Intersect,Temp),
+    ord_subtract(Temp,Sets1,Succ_Sh),
+    Succ = (Succ_Cl,Succ_Sh).
 share_clique_success_builtin(copy_term,_Sv_u,p(X,Y),_,Call,Succ):-
-	varset(X,VarsX),
-	share_clique_project(not_provided_Sg,VarsX,not_provided_HvFv_u,Call,ProjectedX),
-	copy_term((X,ProjectedX),(NewX,NewProjectedX)),
-	share_clique_abs_sort(NewProjectedX,ProjectedNewX),
-	varset(NewX,VarsNewX),
-	varset(Y,VarsY),
-	merge(VarsNewX,VarsY,TempSv),
-	share_clique_project(not_provided_Sg,VarsY,not_provided_HvFv_u,Call,ProjectedY),
-	ord_union_w(ProjectedY,ProjectedNewX,TempProjected),
-	ord_union_w(ProjectedNewX,Call,TempCall),
-	share_clique_call_to_success_builtin('=/2','='(NewX,Y),TempSv,
-	                      TempCall,TempProjected,Temp_success),
-        Call = (Cl,Sh),			   
-	merge_list_of_lists(Cl,VarsCl),   
-	merge_list_of_lists(Sh,VarsSh),   
-	ord_union(VarsCl,VarsSh,VarsCall),
-	share_clique_project(not_provided_Sg,VarsCall,not_provided_HvFv_u,Temp_success,Succ).
+    varset(X,VarsX),
+    share_clique_project(not_provided_Sg,VarsX,not_provided_HvFv_u,Call,ProjectedX),
+    copy_term((X,ProjectedX),(NewX,NewProjectedX)),
+    share_clique_abs_sort(NewProjectedX,ProjectedNewX),
+    varset(NewX,VarsNewX),
+    varset(Y,VarsY),
+    merge(VarsNewX,VarsY,TempSv),
+    share_clique_project(not_provided_Sg,VarsY,not_provided_HvFv_u,Call,ProjectedY),
+    ord_union_w(ProjectedY,ProjectedNewX,TempProjected),
+    ord_union_w(ProjectedNewX,Call,TempCall),
+    share_clique_call_to_success_builtin('=/2','='(NewX,Y),TempSv,
+                          TempCall,TempProjected,Temp_success),
+    Call = (Cl,Sh),                    
+    merge_list_of_lists(Cl,VarsCl),   
+    merge_list_of_lists(Sh,VarsSh),   
+    ord_union(VarsCl,VarsSh,VarsCall),
+    share_clique_project(not_provided_Sg,VarsCall,not_provided_HvFv_u,Temp_success,Succ).
 share_clique_success_builtin(findall,_Sv_u,p(X,Z),HvFv_u,Call,Succ):-
-	Call=(Cl,Sh),
-	ord_union(Sh,Cl,All),
-	varset(X,Varsx),
-	projected_gvars(All,Varsx,Vars),
-	Vars == Varsx,!,
-	varset(Z,Varsz),
-	share_clique_success_builtin(ground,Varsz,_any,HvFv_u,Call,Succ).
+    Call=(Cl,Sh),
+    ord_union(Sh,Cl,All),
+    varset(X,Varsx),
+    projected_gvars(All,Varsx,Vars),
+    Vars == Varsx,!,
+    varset(Z,Varsz),
+    share_clique_success_builtin(ground,Varsz,_any,HvFv_u,Call,Succ).
 share_clique_success_builtin(findall,_Sv_u,_,_,Call,Call).
 share_clique_success_builtin('indep/2',_Sv,p(X,Y),_,(Cl,Sh),(Succ_Cl,Succ_Sh)):-
-	varset(X,Xv),
-	varset(Y,Yv),
-	eliminate_couples_clique(Cl,Xv,Yv,Succ_Cl),
-	eliminate_couples(Sh,Xv,Yv,Succ_Sh).
+    varset(X,Xv),
+    varset(Y,Yv),
+    eliminate_couples_clique(Cl,Xv,Yv,Succ_Cl),
+    eliminate_couples(Sh,Xv,Yv,Succ_Sh).
 share_clique_success_builtin('indep/2',_Sv,_Condvars,_,_Call,'$bottom').
 share_clique_success_builtin('indep/1',_Sv,p(X),_,Call,Succ):- 
-	nonvar(X),
-	handle_each_indep(X,share_clique,Call,Succ), !.  
+    nonvar(X),
+    handle_each_indep(X,share_clique,Call,Succ), !.  
 share_clique_success_builtin('indep/1',_,_,_,_,'$bottom').
 
 share_clique_success_builtin('recorded/3',Sv_u,p(Y,Z),_,Call,Succ):-
-	varset(Z,Varsz),
-	irrel_w(Varsz,Call,ASub),
-	varset(Y,Varsy),
-	share_clique_project(not_provided_Sg,Varsy,not_provided_HvFv_u,ASub,ASub1),!,
-	star_w(ASub1,Prime),
-	sort(Sv_u,Sv),
-	share_clique_extend(not_provided_Sg,Prime,Sv,Call,Succ).
+    varset(Z,Varsz),
+    irrel_w(Varsz,Call,ASub),
+    varset(Y,Varsy),
+    share_clique_project(not_provided_Sg,Varsy,not_provided_HvFv_u,ASub,ASub1),!,
+    star_w(ASub1,Prime),
+    sort(Sv_u,Sv),
+    share_clique_extend(not_provided_Sg,Prime,Sv,Call,Succ).
 
 share_clique_success_builtin(var,_Sv,p(X),_,(Cl,Sh),Succ):-
-	var(X),
-	( ord_member_list_of_lists(X,Cl) ;
-          ord_member_list_of_lists(X,Sh)), !,
-	Succ = (Cl,Sh).
+    var(X),
+    ( ord_member_list_of_lists(X,Cl) ;
+      ord_member_list_of_lists(X,Sh)), !,
+    Succ = (Cl,Sh).
 share_clique_success_builtin(var,_Sv,_Condvars,_HvFv_u,_Call,'$bottom').
 
 %------------------------------------------------------------------------%
@@ -1082,30 +1082,30 @@ share_clique_success_builtin(var,_Sv,_Condvars,_HvFv_u,_Call,'$bottom').
 
 :- export(share_clique_call_to_success_builtin/6).
 share_clique_call_to_success_builtin('=/2','='(X,Y),Sv,Call,Proj,Succ):-
-	copy_term(X,Xterm),
-	copy_term(Y,Yterm),
-	Xterm = Yterm,!,
-	varset(Xterm,Vars),
-	share_clique_call_to_success_fact('='(X,Y),Vars,'='(Xterm,Xterm),not_provided,Sv,Call,Proj,_Prime,Succ). % TODO: add some ClauseKey?
+    copy_term(X,Xterm),
+    copy_term(Y,Yterm),
+    Xterm = Yterm,!,
+    varset(Xterm,Vars),
+    share_clique_call_to_success_fact('='(X,Y),Vars,'='(Xterm,Xterm),not_provided,Sv,Call,Proj,_Prime,Succ). % TODO: add some ClauseKey?
 share_clique_call_to_success_builtin('=/2',_Sg,_Sv,_Call,_Proj,'$bottom') :- !.
 share_clique_call_to_success_builtin('C/3','C'(X,Y,Z),Sv,Call,Proj,Succ):- !,
-	share_clique_call_to_success_fact('='(X,[Y|Z]),[W],'='(W,W),not_provided,Sv,Call,Proj,_Prime,Succ). % TODO: add some ClauseKey?
+    share_clique_call_to_success_fact('='(X,[Y|Z]),[W],'='(W,W),not_provided,Sv,Call,Proj,_Prime,Succ). % TODO: add some ClauseKey?
 share_clique_call_to_success_builtin('sort/2',sort(X,Y),Sv,Call,Proj,Succ):- !,
-	share_clique_call_to_success_builtin('=/2','='(X,Y),Sv,Call,Proj,Succ).
+    share_clique_call_to_success_builtin('=/2','='(X,Y),Sv,Call,Proj,Succ).
 share_clique_call_to_success_builtin('expand_term/2',expand_term(X,Y),Sv,Call,
-	                          Proj,Succ):- !,
-	share_clique_call_to_success_builtin('arg/3',arg(1,Y,X),Sv,Call,Proj,Succ).
+                              Proj,Succ):- !,
+    share_clique_call_to_success_builtin('arg/3',arg(1,Y,X),Sv,Call,Proj,Succ).
 share_clique_call_to_success_builtin('keysort/2',keysort(X,Y),Sv,Call,Proj,Succ):- !,
-	share_clique_call_to_success_builtin('=/2','='(X,Y),Sv,Call,Proj,Succ).
+    share_clique_call_to_success_builtin('=/2','='(X,Y),Sv,Call,Proj,Succ).
 share_clique_call_to_success_builtin('arg/3',arg(X,Y,Z),_,Call,Proj,Succ):- !,
-	varset(X,OldG),
-	irrel_w(OldG,Call,TempCall),
-	Sg = p(Y,Z),
-	Head = p(f(A,_B),A),
-	varset(Sg,Sv),
-	varset(Head,Hv),
-	share_clique_project(not_provided_Sg,Sv,not_provided_HvFv_u,TempCall,Proj),
-        share_clique_call_to_success_fact(Sg,Hv,Head,not_provided,Sv,TempCall,Proj,_Prime,Succ). % TODO: add some ClauseKey?
+    varset(X,OldG),
+    irrel_w(OldG,Call,TempCall),
+    Sg = p(Y,Z),
+    Head = p(f(A,_B),A),
+    varset(Sg,Sv),
+    varset(Head,Hv),
+    share_clique_project(not_provided_Sg,Sv,not_provided_HvFv_u,TempCall,Proj),
+    share_clique_call_to_success_fact(Sg,Hv,Head,not_provided,Sv,TempCall,Proj,_Prime,Succ). % TODO: add some ClauseKey?
 
 %------------------------------------------------------------------------%
 %                      Intermediate operations                           |
@@ -1129,29 +1129,29 @@ share_clique_call_to_success_builtin('arg/3',arg(X,Y,Z),_,Call,Proj,Succ):- !,
 :- export(clique_make_decomposition/5).
 clique_make_decomposition([],_,_,[],([],[])).
 clique_make_decomposition([(X,VarsTerm)|More],Cl,Ground,NewGround,NewSH):-
-	ord_member(X,Ground), !,
-	clique_make_decomposition(More,Cl,Ground,NewGround1,NewSH1),
-	append(VarsTerm,NewGround1,NewGround),
-        ord_difference_list_of_lists(Cl,VarsTerm,NewCl),
-	sort_list_of_lists(NewCl,NewCl1),
-	ord_union_w((NewCl1,[]),NewSH1,NewSH).
+    ord_member(X,Ground), !,
+    clique_make_decomposition(More,Cl,Ground,NewGround1,NewSH1),
+    append(VarsTerm,NewGround1,NewGround),
+    ord_difference_list_of_lists(Cl,VarsTerm,NewCl),
+    sort_list_of_lists(NewCl,NewCl1),
+    ord_union_w((NewCl1,[]),NewSH1,NewSH).
 clique_make_decomposition([(X,VarsTerm)|More],Cl,Ground,[X|NewGround],NewSH):-
-	ord_subset(VarsTerm,Ground), !,
-	clique_make_decomposition(More,Cl,Ground,NewGround,NewSH1),
-        ord_difference_list_of_lists(Cl,[X],NewCl),
-	sort_list_of_lists(NewCl,NewCl1),
-	ord_union_w((NewCl1,[]),NewSH1,NewSH).
+    ord_subset(VarsTerm,Ground), !,
+    clique_make_decomposition(More,Cl,Ground,NewGround,NewSH1),
+    ord_difference_list_of_lists(Cl,[X],NewCl),
+    sort_list_of_lists(NewCl,NewCl1),
+    ord_union_w((NewCl1,[]),NewSH1,NewSH).
 clique_make_decomposition([(X,[Y])|More],Cl,Ground,NewGround,NewSH):-
-	var(Y), !,
-	sort([X,Y],Vars),
-	decompose_if_not_possible(Cl,Vars,NewSH0),  
-	clique_make_decomposition(More,Cl,Ground,NewGround,NewSH1),
-	ord_union_w(NewSH0,NewSH1,NewSH).
+    var(Y), !,
+    sort([X,Y],Vars),
+    decompose_if_not_possible(Cl,Vars,NewSH0),  
+    clique_make_decomposition(More,Cl,Ground,NewGround,NewSH1),
+    ord_union_w(NewSH0,NewSH1,NewSH).
 clique_make_decomposition([(X,VarsTerm)|More],Cl,Ground,NewGround,NewSH):-
-	ord_subtract(VarsTerm,Ground,List),
-	decompose_if_not_possible(Cl,X,List,NewSH0), 
-	clique_make_decomposition(More,Cl,Ground,NewGround,NewSH1),
-	ord_union_w(NewSH0,NewSH1,NewSH).
+    ord_subtract(VarsTerm,Ground,List),
+    decompose_if_not_possible(Cl,X,List,NewSH0), 
+    clique_make_decomposition(More,Cl,Ground,NewGround,NewSH1),
+    ord_union_w(NewSH0,NewSH1,NewSH).
 
 %-----------------------------------------------------------------------%
 % decompose_if_not_possible(+,+,-)                                      |  
@@ -1165,15 +1165,15 @@ clique_make_decomposition([(X,VarsTerm)|More],Cl,Ground,NewGround,NewSH):-
 
 decompose_if_not_possible([],_,([],[])).
 decompose_if_not_possible([Z|Rest],Vars,(NewCl,Sh)):-
-	ord_intersection_diff(Z,Vars,Term,Disj),	
-	test_temp(Term,Vars), !,
-	powerset(Disj,PDisj),
-	obtain_sharing(PDisj,Vars,NewSh),	
-	decompose_if_not_possible(Rest,Vars,(NewCl0,NewSh0)),
-	ord_union(NewCl0,[Disj],NewCl),
-	ord_union(NewSh0,NewSh,Sh).
+    ord_intersection_diff(Z,Vars,Term,Disj),        
+    test_temp(Term,Vars), !,
+    powerset(Disj,PDisj),
+    obtain_sharing(PDisj,Vars,NewSh),       
+    decompose_if_not_possible(Rest,Vars,(NewCl0,NewSh0)),
+    ord_union(NewCl0,[Disj],NewCl),
+    ord_union(NewSh0,NewSh,Sh).
 decompose_if_not_possible([_|Rest],Vars,ASub):-
-	decompose_if_not_possible(Rest,Vars,ASub).
+    decompose_if_not_possible(Rest,Vars,ASub).
 
 %-----------------------------------------------------------------------%
 % decompose_if_not_possible(+,+,+,-)                                    |
@@ -1190,32 +1190,32 @@ decompose_if_not_possible([_|Rest],Vars,ASub):-
 :- push_prolog_flag(multi_arity_warnings,off).
 decompose_if_not_possible([],_,_,([],[])).
 decompose_if_not_possible([Z|Rest],X,Vars,More):-
-	test_eliminate(Z,X,Vars,NewVars),
-	ord_union([X],NewVars,All),
-	ord_intersection_diff(Z,All,_,Disj),
-	test_clique(X,NewVars,Z,Disj,Rest,More). % TODO: Missing cut?
+    test_eliminate(Z,X,Vars,NewVars),
+    ord_union([X],NewVars,All),
+    ord_intersection_diff(Z,All,_,Disj),
+    test_clique(X,NewVars,Z,Disj,Rest,More). % TODO: Missing cut?
 decompose_if_not_possible([_|Rest],X,Vars,More):-
-	decompose_if_not_possible(Rest,X,Vars,More).
-	
+    decompose_if_not_possible(Rest,X,Vars,More).
+    
 test_eliminate(Z,X,Vars,NewVars):-
-	ord_member(X,Z),
-	ord_intersection(Z,Vars,NewVars),
-	NewVars \== [].
-	
+    ord_member(X,Z),
+    ord_intersection(Z,Vars,NewVars),
+    NewVars \== [].
+    
 :- pop_prolog_flag(multi_arity_warnings).
 
 test_clique(X,Vars,Z,Disj,Rest,(NewCl,Sh)):-
-	ord_member(X,Z),!,
-	powerset(Vars,PVars),
-	ord_union_lists_with_list(PVars,[X],Sh1),
-	powerset(Disj,PDisj),
-        ord_union_list_of_lists(PDisj,Sh1,Sh2),	
-	ord_union(Sh1,Sh2,NewSh),
-	decompose_if_not_possible(Rest,X,Vars,(NewCl0,NewSh0)),
-	add_disj(Disj,NewCl0,NewCl),
-	ord_union(NewSh0,NewSh,Sh).
+    ord_member(X,Z),!,
+    powerset(Vars,PVars),
+    ord_union_lists_with_list(PVars,[X],Sh1),
+    powerset(Disj,PDisj),
+    ord_union_list_of_lists(PDisj,Sh1,Sh2), 
+    ord_union(Sh1,Sh2,NewSh),
+    decompose_if_not_possible(Rest,X,Vars,(NewCl0,NewSh0)),
+    add_disj(Disj,NewCl0,NewCl),
+    ord_union(NewSh0,NewSh,Sh).
 test_clique(X,Vars,_,_,Rest,More):- !,
-	decompose_if_not_possible(Rest,X,Vars,More).
+    decompose_if_not_possible(Rest,X,Vars,More).
 
 add_disj([],X,X). % TODO: missing cut?
 add_disj(Xs,Ys,Zs):- ord_union([Xs],Ys,Zs).
@@ -1225,9 +1225,9 @@ add_disj(Xs,Ys,Zs):- ord_union([Xs],Ys,Zs).
 obtain_sharing(_,[],[]) :- !.
 obtain_sharing([],Term,[Term]).
 obtain_sharing([D|Disj],Term,NewSh):-
-	merge(Term,D,NewTerm),
-	obtain_sharing(Disj,Term,NewSh0),
-	merge(NewSh0,[NewTerm],NewSh).
+    merge(Term,D,NewTerm),
+    obtain_sharing(Disj,Term,NewSh0),
+    merge(NewSh0,[NewTerm],NewSh).
 
 %------------------------------------------------------------------------
 % eliminate_couples_clique(+,+,+,-)                                      |
@@ -1236,18 +1236,18 @@ obtain_sharing([D|Disj],Term,NewSh):-
 %------------------------------------------------------------------------
 :- export(eliminate_couples_clique/4).
 eliminate_couples_clique(Cl,Xv,Yv,NewCl1):-
-	split_list_of_lists(Xv,Cl,Int1,Disj1),
-	split_list_of_lists(Yv,Int1,Int2,Disj2),
-	merge(Disj1,Disj2,T),
-	partition_cliques(Int2,Xv,Yv,T,NewCl),
-	sort_list_of_lists(NewCl,NewCl1).
+    split_list_of_lists(Xv,Cl,Int1,Disj1),
+    split_list_of_lists(Yv,Int1,Int2,Disj2),
+    merge(Disj1,Disj2,T),
+    partition_cliques(Int2,Xv,Yv,T,NewCl),
+    sort_list_of_lists(NewCl,NewCl1).
 
 partition_cliques([],_,_,X,X).
 partition_cliques([Cl|Cls],Xv,Yv,Tail,[NewXv0,NewYv0|NewCls]):-
-	partition_set(Cl,Xv,Yv,NewXv,NewYv,Disj),
-	merge(NewXv,Disj,NewXv0),
-	merge(NewYv,Disj,NewYv0),
-	partition_cliques(Cls,Xv,Yv,Tail,NewCls).
+    partition_set(Cl,Xv,Yv,NewXv,NewYv,Disj),
+    merge(NewXv,Disj,NewXv0),
+    merge(NewYv,Disj,NewYv0),
+    partition_cliques(Cls,Xv,Yv,Tail,NewCls).
 
 %------------------------------------------------------------------------
 % partition_set(+,+,+,-,-,-)                                             |
@@ -1255,13 +1255,13 @@ partition_cliques([Cl|Cls],Xv,Yv,Tail,[NewXv0,NewYv0|NewCls]):-
 %------------------------------------------------------------------------
 partition_set([],_,_,[],[],[]).
 partition_set([H|T],Xv,Yv,[H|NXv],NYv,NDisj):-
-	ord_member(H,Xv),!,
-	partition_set(T,Xv,Yv,NXv,NYv,NDisj).
+    ord_member(H,Xv),!,
+    partition_set(T,Xv,Yv,NXv,NYv,NDisj).
 partition_set([H|T],Xv,Yv,NXv,[H|NYv],NDisj):-
-	ord_member(H,Yv),!,
-	partition_set(T,Xv,Yv,NXv,NYv,NDisj).
+    ord_member(H,Yv),!,
+    partition_set(T,Xv,Yv,NXv,NYv,NDisj).
 partition_set([H|T],Xv,Yv,NXv,NYv,[H|Disj]):-
-	partition_set(T,Xv,Yv,NXv,NYv,Disj).
+    partition_set(T,Xv,Yv,NXv,NYv,Disj).
 
 %------------------------------------------------------------------------%
 % This predicates is defined in sharing.pl. It should be exported        |
@@ -1280,23 +1280,23 @@ partition_set([H|T],Xv,Yv,NXv,NYv,[H|Disj]):-
 :- export(share_make_reduction/5).
 share_make_reduction([],_,_,[],Y-Y).
 share_make_reduction([(X,VarsTerm)|More],Lambda,Ground,NewGround,Eliminate):-
-	ord_member(X,Ground), !,
-	share_make_reduction(More,Lambda,Ground,NewGround1,Eliminate),
-	append(VarsTerm,NewGround1,NewGround).
+    ord_member(X,Ground), !,
+    share_make_reduction(More,Lambda,Ground,NewGround1,Eliminate),
+    append(VarsTerm,NewGround1,NewGround).
 share_make_reduction([(X,VarsTerm)|More],Lambda,Ground,[X|NewGround],Eliminate):-
-	ord_subset(VarsTerm,Ground), !,
-	share_make_reduction(More,Lambda,Ground,NewGround,Eliminate).
+    ord_subset(VarsTerm,Ground), !,
+    share_make_reduction(More,Lambda,Ground,NewGround,Eliminate).
 share_make_reduction([(X,[Y])|More],Lambda,Ground,NewGround,Eliminate):-
-	var(Y), !,
-	sort([X,Y],Vars),
-	eliminate_if_not_possible(Lambda,Vars,Elim1),
-	share_make_reduction(More,Lambda,Ground,NewGround,Elim2),
-	append_dl(Elim1,Elim2,Eliminate).
+    var(Y), !,
+    sort([X,Y],Vars),
+    eliminate_if_not_possible(Lambda,Vars,Elim1),
+    share_make_reduction(More,Lambda,Ground,NewGround,Elim2),
+    append_dl(Elim1,Elim2,Eliminate).
 share_make_reduction([(X,VarsTerm)|More],Lambda,Ground,NewGround,Eliminate):-
-	ord_subtract(VarsTerm,Ground,List),
-	eliminate_if_not_possible(Lambda,X,List,Elim1),
-	share_make_reduction(More,Lambda,Ground,NewGround,Elim2),
-	append_dl(Elim1,Elim2,Eliminate).
+    ord_subtract(VarsTerm,Ground,List),
+    eliminate_if_not_possible(Lambda,X,List,Elim1),
+    share_make_reduction(More,Lambda,Ground,NewGround,Elim2),
+    append_dl(Elim1,Elim2,Eliminate).
 
 :- export(projected_gvars_clique/3).
 projected_gvars_clique(Proj,Sv,Gv):-
@@ -1313,11 +1313,11 @@ projected_gvars_clique(Proj,Sv,Gv):-
 % where   size'(X) = Sum{for all x \in X} |x|                            |
 %------------------------------------------------------------------------%
 % size_clsh((Cl,Sh),N):-
-% 	size_set_of_sets(Cl,Size_cl),
-% 	size_set_of_sets(Sh,Size_sh),
-% 	N is Size_cl + Size_sh.	
+%       size_set_of_sets(Cl,Size_cl),
+%       size_set_of_sets(Sh,Size_sh),
+%       N is Size_cl + Size_sh. 
 size_clsh((_Cl,Sh),Size_sh):-
-	size_set_of_sets(Sh,Size_sh).
+    size_set_of_sets(Sh,Size_sh).
 
 %------------------------------------------------------------------------%
 % size_set_of_sets(+,-)                                                  |
@@ -1325,30 +1325,30 @@ size_clsh((_Cl,Sh),Size_sh):-
 %------------------------------------------------------------------------%
 size_set_of_sets([],0).
 size_set_of_sets([S|Ss],Res):-
-	length(S,L_S),
-	size_set_of_sets(Ss,L_Ss),
-	Res is L_S + L_Ss.
+    length(S,L_S),
+    size_set_of_sets(Ss,L_Ss),
+    Res is L_S + L_Ss.
 
 :- export(compute_upper_amgu/2). % JN needed by sharedef.pl
 compute_upper_amgu(Sh,UB):-
-	merge_list_of_lists(Sh,Vars),
-	length(Vars,Num_Vars),
-	minimum(Sh,Min),
-	UB is (2**Num_Vars) - (2**Min).
+    merge_list_of_lists(Sh,Vars),
+    length(Vars,Num_Vars),
+    minimum(Sh,Min),
+    UB is (2**Num_Vars) - (2**Min).
 
 minimum([],0):-!.
 minimum([H|T],M):-
-	length(H,L),
-	minimum_list_of_lists(T,H,L,M).
+    length(H,L),
+    minimum_list_of_lists(T,H,L,M).
 
 minimum_list_of_lists([],_,M,M).
 minimum_list_of_lists([S|Ss],X,M,R):-
-	length(S,LS),!,
-	( LS < M ->   
-	  minimum_list_of_lists(Ss,S,LS,R)
-	;
-	  minimum_list_of_lists(Ss,X,M,R)
-        ).
+    length(S,LS),!,
+    ( LS < M ->   
+      minimum_list_of_lists(Ss,S,LS,R)
+    ;
+      minimum_list_of_lists(Ss,X,M,R)
+    ).
 
 %------------------------------------------------------------------------%
 % compute_upper_amgu(+,+,+,-)                                            |
@@ -1367,29 +1367,29 @@ minimum_list_of_lists([S|Ss],X,M,R):-
 % approximation.                                                         |
 %------------------------------------------------------------------------%       
 % compute_upper_amgu(Irrel_Sh_xt,Sh_x,Sh_t,UB):-
-% 	size_set_of_sets(Irrel_Sh_xt,Size_Irrel_Sh_xt),
-% 	length(Sh_x,CC_Sh_x),
-% 	NG_Sh_x_star is (2**CC_Sh_x) - 1,
-% 	maximum(Sh_x,M_x),
-% 	UB_Sh_x is NG_Sh_x_star * CC_Sh_x * M_x,
-% 	length(Sh_t,CC_Sh_t),		
-% 	NG_Sh_t_star is (2**CC_Sh_t) - 1,
-% 	maximum(Sh_t,M_t),
-% 	UB_Sh_t is NG_Sh_t_star * CC_Sh_t * M_t,
-% 	UB is Size_Irrel_Sh_xt + (UB_Sh_x * UB_Sh_t).
+%       size_set_of_sets(Irrel_Sh_xt,Size_Irrel_Sh_xt),
+%       length(Sh_x,CC_Sh_x),
+%       NG_Sh_x_star is (2**CC_Sh_x) - 1,
+%       maximum(Sh_x,M_x),
+%       UB_Sh_x is NG_Sh_x_star * CC_Sh_x * M_x,
+%       length(Sh_t,CC_Sh_t),           
+%       NG_Sh_t_star is (2**CC_Sh_t) - 1,
+%       maximum(Sh_t,M_t),
+%       UB_Sh_t is NG_Sh_t_star * CC_Sh_t * M_t,
+%       UB is Size_Irrel_Sh_xt + (UB_Sh_x * UB_Sh_t).
        
 % maximum([],0):-!.
 % maximum([H|T],M):-
-% 	length(H,L),
-% 	maximum_list_of_lists(T,H,L,M).
+%       length(H,L),
+%       maximum_list_of_lists(T,H,L,M).
 
 % maximum_list_of_lists([],_,M,M).
 % maximum_list_of_lists([S|Ss],X,M,R):-
-% 	length(S,LS),!,
-% 	( LS >= M ->   
-% 	  maximum_list_of_lists(Ss,S,LS,R)
-% 	;
-% 	  maximum_list_of_lists(Ss,X,M,R)
+%       length(S,LS),!,
+%       ( LS >= M ->   
+%         maximum_list_of_lists(Ss,S,LS,R)
+%       ;
+%         maximum_list_of_lists(Ss,X,M,R)
 %         ).
 
 % ===========================================================================
@@ -1402,10 +1402,10 @@ minimum_list_of_lists([S|Ss],X,M,R):-
 %
 % :- export(number_of_widening/1).
 % number_of_widening(N):-
-% 	findall(widen_done,widen_done,L),
-% 	length(L,N),
-% 	retractall_fact(widen_done).
+%       findall(widen_done,widen_done,L),
+%       length(L,N),
+%       retractall_fact(widen_done).
 % 
 % :- export(clean_number_of_widening/0).
 % clean_number_of_widening:-
-% 	retractall_fact(widen_done).
+%       retractall_fact(widen_done).

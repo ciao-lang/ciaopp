@@ -1,32 +1,32 @@
 :- module(sondergaard,
-	[ son_call_to_entry/9,
-	  son_call_to_success_builtin/6, 
-	  son_call_to_success_fact/9, 
-	  son_call_to_prime_fact/6, 
-	  son_compute_lub/2,  
-	  son_exit_to_prime/7,
-	  son_extend/5,       
-	  son_glb/3,        
-	  son_input_user_interface/5, 
-	  son_input_interface/4, 
-	  son_less_or_equal/2,
-	  son_lub/3,        
-	  son_asub_to_native/5,
-	  son_project/5,      
-	  son_abs_sort/2,         
-	  son_special_builtin/5,
-	  son_success_builtin/6,
-	  son_unknown_call/4,
-	  son_unknown_entry/3,
-	  son_empty_entry/3,
-	%
-	  propagate_to_sh/4,
-	  propagate_to_son/4,
-	%
-	  share_to_son/3,
-	  son_to_share/4
-	],
-	[ assertions ] ).
+    [ son_call_to_entry/9,
+      son_call_to_success_builtin/6, 
+      son_call_to_success_fact/9, 
+      son_call_to_prime_fact/6, 
+      son_compute_lub/2,  
+      son_exit_to_prime/7,
+      son_extend/5,       
+      son_glb/3,        
+      son_input_user_interface/5, 
+      son_input_interface/4, 
+      son_less_or_equal/2,
+      son_lub/3,        
+      son_asub_to_native/5,
+      son_project/5,      
+      son_abs_sort/2,         
+      son_special_builtin/5,
+      son_success_builtin/6,
+      son_unknown_call/4,
+      son_unknown_entry/3,
+      son_empty_entry/3,
+    %
+      propagate_to_sh/4,
+      propagate_to_son/4,
+    %
+      share_to_son/3,
+      son_to_share/4
+    ],
+    [ assertions ] ).
 
 :- include(ciaopp(plai/plai_domain)).
 :- dom_def(son).
@@ -51,9 +51,9 @@
 % :- dom_impl(son, compute_lub_el(ASub1,ASub2,ASub), lub(ASub1,ASub2,ASub)).
 
 :- use_module(domain(sharing), 
-	[ share_input_interface/4,
-	  share_input_user_interface/5
-	]).
+    [ share_input_interface/4,
+      share_input_user_interface/5
+    ]).
 :- use_module(domain(s_grshfr), [new1_gvars/4]).
 :- use_module(domain(share_aux), [if_not_nil/4,append_dl/3,handle_each_indep/4]).
 
@@ -61,24 +61,24 @@
 :- use_module(library(lists), [append/3, list_to_list_of_lists/2]).
 :- use_module(library(llists), [collect_singletons/2]).
 :- use_module(library(lsets), 
-	[ closure_under_union/2,
-	  ord_split_lists/4,
-	  ord_split_lists_from_list/4,
-	  sort_list_of_lists/2
-	]).
+    [ closure_under_union/2,
+      ord_split_lists/4,
+      ord_split_lists_from_list/4,
+      sort_list_of_lists/2
+    ]).
 :- use_module(library(sets), 
-	[ insert/3, 
-	  merge/3,
-	  ord_delete/3,
-	  ord_intersect/2,
-	  ord_intersection/3,
- 	  ord_member/2, 
-	  ord_subset/2, 
-	  ord_subtract/3,
-	  ord_union/3,
-	  ord_union_diff/4,
-	  setproduct/3
-	]).
+    [ insert/3, 
+      merge/3,
+      ord_delete/3,
+      ord_intersect/2,
+      ord_intersection/3,
+      ord_member/2, 
+      ord_subset/2, 
+      ord_subtract/3,
+      ord_union/3,
+      ord_union_diff/4,
+      setproduct/3
+    ]).
 :- use_module(library(sort)).
 :- use_module(library(terms_check), [variant/2]).
 :- use_module(library(terms_vars), [varset/2]).
@@ -119,20 +119,20 @@
 %-------------------------------------------------------------------------
 
 son_project(_Sg,_Vars,_HvFv_u,'$bottom',Proj):- !,
-	Proj = '$bottom'.
+    Proj = '$bottom'.
 son_project(_Sg,[],_HvFv_u,_,Proj):- !,
-	Proj = ([],[]).
+    Proj = ([],[]).
 son_project(_Sg,Vars,_HvFv_u,(Gr,Sh),(Proj_gr,Proj_sh)):-
-	ord_intersection(Gr,Vars,Proj_gr),
-	son_project_subst(Sh,Vars,Proj_sh).
+    ord_intersection(Gr,Vars,Proj_gr),
+    son_project_subst(Sh,Vars,Proj_sh).
 
 son_project_subst([],_,[]).
 son_project_subst([Xs|Xss],Vars,Proj_sh):-
-	ord_subset(Xs,Vars), !,
-	Proj_sh = [Xs|Rest],
-	son_project_subst(Xss,Vars,Rest).
+    ord_subset(Xs,Vars), !,
+    Proj_sh = [Xs|Rest],
+    son_project_subst(Xss,Vars,Rest).
 son_project_subst([_|Xss],Vars,Proj_sh):-
-	son_project_subst(Xss,Vars,Proj_sh).
+    son_project_subst(Xss,Vars,Proj_sh).
 
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
@@ -166,20 +166,20 @@ son_project_subst([_|Xss],Vars,Proj_sh):-
 %------------------------------------------------------------------------%
 
 son_call_to_entry(_Sv,Sg,_Hv,Head,_K,_Fv,Proj,Entry,yes):-
-	variant(Sg,Head),!,
-	copy_term((Sg,Proj),(NewTerm,NewEntry)),
-	Head = NewTerm,
-	son_abs_sort(NewEntry,Entry).
+    variant(Sg,Head),!,
+    copy_term((Sg,Proj),(NewTerm,NewEntry)),
+    Head = NewTerm,
+    son_abs_sort(NewEntry,Entry).
 son_call_to_entry(_Sv,_Sg,[],_Head,_K,_Fv,_Proj,([],[]),no):- !.
 son_call_to_entry(_Sv,Sg,Hv,Head,_K,_Fv,(Proj_gr,Proj_sh),Entry,(NewBinds,GvAll)):-
-	son_abs_unify(Sg,Head,Binds,Gv1),
-	son_groundness_propagate(Binds,Proj_gr,Gv1,Proj_sh,NewBinds,TempSh,
-                                                                      GvAll),
-	ord_intersection(GvAll,Hv,Entry_gr),
-	collect_singletons(TempSh,NonLinear),
-	unify_list_binds(NewBinds,TempSh,NonLinear,NewSh),
-	son_project_subst(NewSh,Hv,Entry_sh),
-	Entry = (Entry_gr,Entry_sh).
+    son_abs_unify(Sg,Head,Binds,Gv1),
+    son_groundness_propagate(Binds,Proj_gr,Gv1,Proj_sh,NewBinds,TempSh,
+                                                                  GvAll),
+    ord_intersection(GvAll,Hv,Entry_gr),
+    collect_singletons(TempSh,NonLinear),
+    unify_list_binds(NewBinds,TempSh,NonLinear,NewSh),
+    son_project_subst(NewSh,Hv,Entry_sh),
+    Entry = (Entry_gr,Entry_sh).
 
 %-------------------------------------------------------------------------
 %-------------------------------------------------------------------------
@@ -210,20 +210,20 @@ son_call_to_entry(_Sv,Sg,Hv,Head,_K,_Fv,(Proj_gr,Proj_sh),Entry,(NewBinds,GvAll)
 
 son_exit_to_prime(_,_,_,_,'$bottom',_,'$bottom') :- !.
 son_exit_to_prime(Sg,Hv,Head,_,Exit,Flag,Prime):- 
-	Flag == yes, !,
-	son_project(Sg,Hv,not_provided_HvFv_u,Exit,BPrime),
-	copy_term((Head,BPrime),(NewTerm,NewPrime)),
-	Sg = NewTerm,
-	son_abs_sort(NewPrime,Prime).
+    Flag == yes, !,
+    son_project(Sg,Hv,not_provided_HvFv_u,Exit,BPrime),
+    copy_term((Head,BPrime),(NewTerm,NewPrime)),
+    Sg = NewTerm,
+    son_abs_sort(NewPrime,Prime).
 son_exit_to_prime(_,[],_,Sv,_,_,(Sv,[])):- !.
 son_exit_to_prime(Sg,Hv,_,Sv,Exit,(Binds,Gv_1),Prime):-
-	son_project(Sg,Hv,not_provided_HvFv_u,Exit,(Gv,Sh)),
-	son_groundness_propagate(Binds,Gv,Gv_1,Sh,NewBinds,TempSh,GvAll),
-	ord_intersection(GvAll,Sv,Gv_prime),
-	collect_singletons(TempSh,NonLinear),
-	unify_list_binds(NewBinds,TempSh,NonLinear,NewSh),
-	son_project_subst(NewSh,Sv,Prime_sh),
-	Prime = (Gv_prime,Prime_sh).
+    son_project(Sg,Hv,not_provided_HvFv_u,Exit,(Gv,Sh)),
+    son_groundness_propagate(Binds,Gv,Gv_1,Sh,NewBinds,TempSh,GvAll),
+    ord_intersection(GvAll,Sv,Gv_prime),
+    collect_singletons(TempSh,NonLinear),
+    unify_list_binds(NewBinds,TempSh,NonLinear,NewSh),
+    son_project_subst(NewSh,Sv,Prime_sh),
+    Prime = (Gv_prime,Prime_sh).
 
 %-------------------------------------------------------------------------
 %-------------------------------------------------------------------------
@@ -238,8 +238,8 @@ son_exit_to_prime(Sg,Hv,_,Sv,Exit,(Binds,Gv_1),Prime):-
 
 son_abs_sort('$bottom','$bottom').
 son_abs_sort((Gr,Sh),(Gr_s,Sh_s)):-
-	sort(Gr,Gr_s),
-	sort_list_of_lists(Sh,Sh_s).
+    sort(Gr,Gr_s),
+    sort_list_of_lists(Sh,Sh_s).
 
 %-------------------------------------------------------------------------
 %-------------------------------------------------------------------------
@@ -255,18 +255,18 @@ son_abs_sort((Gr,Sh),(Gr_s,Sh_s)):-
 %------------------------------------------------------------------------%
 
 son_compute_lub([Xss,Yss|Rest],Lub) :- !,
-	son_lub(Xss,Yss,Zss),
-	son_compute_lub([Zss|Rest],Lub).
+    son_lub(Xss,Yss,Zss),
+    son_compute_lub([Zss|Rest],Lub).
 son_compute_lub([X],X).
 
 son_lub('$bottom',Yss,Yss):- !.
 son_lub(Xss,'$bottom',Xss):- !.
 son_lub(Xss,Yss,Zss) :-
-	Xss == Yss,!,
-	Zss = Xss.
+    Xss == Yss,!,
+    Zss = Xss.
 son_lub((Gx,Shx),(Gy,Shy),(Gz,Shz)) :-
-	ord_intersection(Gx,Gy,Gz),
-	merge(Shx,Shy,Shz).
+    ord_intersection(Gx,Gy,Gz),
+    merge(Shx,Shy,Shz).
 
 %------------------------------------------------------------------------%
 % son_glb(+,+,-)                                                         %
@@ -276,11 +276,11 @@ son_lub((Gx,Shx),(Gy,Shy),(Gz,Shz)) :-
 son_glb('$bottom',_ASub,ASub3) :- !, ASub3='$bottom'.
 son_glb(_ASub,'$bottom',ASub3) :- !, ASub3='$bottom'.
 son_glb(Xss,Yss,Zss) :-
-	Xss == Yss, !,
-	Zss = Xss.
+    Xss == Yss, !,
+    Zss = Xss.
 son_glb((Gx,Shx),(Gy,Shy),(Gz,Shz)) :-
-	ord_union(Gx,Gy,Gz),
-	ord_intersection(Shx,Shy,Shz).
+    ord_union(Gx,Gy,Gz),
+    ord_intersection(Shx,Shy,Shz).
 
 %-------------------------------------------------------------------------
 %-------------------------------------------------------------------------
@@ -299,14 +299,14 @@ son_glb((Gx,Shx),(Gy,Shy),(Gz,Shz)) :-
 
 son_extend(_Sg,'$bottom',_,_,'$bottom'):- !.
 son_extend(_Sg,_,[],Call,Succ):- !,
-	Succ = Call.
+    Succ = Call.
 son_extend(_Sg,(Prime_gr,Prime_sh),Sv,(Call_gr,Call_sh),(Succ_gr,Succ_sh)):-
-	merge(Prime_gr,Call_gr,Succ_gr),
-	ord_split_lists_from_list(Prime_gr,Call_sh,_Intersect,Temp_Sh),
-	son_project_subst(Temp_Sh,Sv,Temp1),
-	ord_subtract(Temp1,Prime_sh,Eliminate),
-	ord_subtract(Temp_Sh,Eliminate,Temp1_Sh),
-	son_unify_each_exit(Prime_sh,Temp1_Sh,[],Succ_sh).
+    merge(Prime_gr,Call_gr,Succ_gr),
+    ord_split_lists_from_list(Prime_gr,Call_sh,_Intersect,Temp_Sh),
+    son_project_subst(Temp_Sh,Sv,Temp1),
+    ord_subtract(Temp1,Prime_sh,Eliminate),
+    ord_subtract(Temp_Sh,Eliminate,Temp1_Sh),
+    son_unify_each_exit(Prime_sh,Temp1_Sh,[],Succ_sh).
 
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
@@ -317,18 +317,18 @@ son_extend(_Sg,(Prime_gr,Prime_sh),Sv,(Call_gr,Call_sh),(Succ_gr,Succ_sh)):-
 %-------------------------------------------------------------------------
 
 son_call_to_success_fact(_,[],_Head,_K,Sv,(Call_gr,Call_sh),_,Prime,Succ):- !,
-	Prime = (Sv,[]),
-	merge(Call_gr,Sv,Succ_gr),
-	ord_split_lists_from_list(Sv,Call_sh,_Intersect,Succ_sh),
-	Succ = (Succ_gr,Succ_sh). 
+    Prime = (Sv,[]),
+    merge(Call_gr,Sv,Succ_gr),
+    ord_split_lists_from_list(Sv,Call_sh,_Intersect,Succ_sh),
+    Succ = (Succ_gr,Succ_sh). 
 son_call_to_success_fact(Sg,_,Head,_K,Sv,Call,(Gv,Sh),(Prime_gr,Prime_sh),Succ):-
-	son_abs_unify(Sg,Head,Binds,Gv_1),
-	son_groundness_propagate(Binds,Gv,Gv_1,Sh,NewBinds,TempSh,GvAll),
-	collect_singletons(TempSh,NonLinear),
-	unify_list_binds(NewBinds,TempSh,NonLinear,NewSh),
-	son_project_subst(NewSh,Sv,Prime_sh),
-	ord_intersection(GvAll,Sv,Prime_gr),
-	son_extend(Sg,(Prime_gr,Prime_sh),Sv,Call,Succ).
+    son_abs_unify(Sg,Head,Binds,Gv_1),
+    son_groundness_propagate(Binds,Gv,Gv_1,Sh,NewBinds,TempSh,GvAll),
+    collect_singletons(TempSh,NonLinear),
+    unify_list_binds(NewBinds,TempSh,NonLinear,NewSh),
+    son_project_subst(NewSh,Sv,Prime_sh),
+    ord_intersection(GvAll,Sv,Prime_gr),
+    son_extend(Sg,(Prime_gr,Prime_sh),Sv,Call,Succ).
 
 %------------------------------------------------------------------------- |
 % son_call_to_prime_fact/6 obtains the abstract prime substitution         |
@@ -338,13 +338,13 @@ son_call_to_success_fact(Sg,_,Head,_K,Sv,Call,(Gv,Sh),(Prime_gr,Prime_sh),Succ):
 
 son_call_to_prime_fact(_,[],_,Sv,_,(Sv,[])):- !.
 son_call_to_prime_fact(Sg,_,Head,Sv,(Gv,Sh),(Prime_gr,Prime_sh)):-
-	son_abs_unify(Sg,Head,Binds,Gv_1),
-	son_groundness_propagate(Binds,Gv,Gv_1,Sh,New_Binds,Temp_Sh,
-	                                                       Gv_final),
-	collect_singletons(Temp_Sh,NonLinear),
-	unify_list_binds(New_Binds,Temp_Sh,NonLinear,New_Sh),
-	ord_intersection(Gv_final,Sv,Prime_gr),
-	son_project_subst(New_Sh,Sv,Prime_sh).
+    son_abs_unify(Sg,Head,Binds,Gv_1),
+    son_groundness_propagate(Binds,Gv,Gv_1,Sh,New_Binds,Temp_Sh,
+                                                           Gv_final),
+    collect_singletons(Temp_Sh,NonLinear),
+    unify_list_binds(New_Binds,Temp_Sh,NonLinear,New_Sh),
+    ord_intersection(Gv_final,Sv,Prime_gr),
+    son_project_subst(New_Sh,Sv,Prime_sh).
 
 %-------------------------------------------------------------------------
 % son_unknown_call(+,+,+,-)                                                |
@@ -356,10 +356,10 @@ son_call_to_prime_fact(Sg,_,Head,Sv,(Gv,Sh),(Prime_gr,Prime_sh)):-
 
 son_unknown_call(_Sg,_Vars,'$bottom','$bottom') :- !.
 son_unknown_call(_Sg,Vars,(Call_gr,_Call_sh),Succ):-
-	ord_subtract(Vars,Call_gr,TopVars),
-	couples_and_singletons(TopVars,Succ_sh,[]),
-	Succ = (Call_gr,Succ_sh).
-	
+    ord_subtract(Vars,Call_gr,TopVars),
+    couples_and_singletons(TopVars,Succ_sh,[]),
+    Succ = (Call_gr,Succ_sh).
+    
 %-------------------------------------------------------------------------
 % son_unknown_entry(+,+,-)                                               |
 % son_unknown_entry(Sg,Qv,Call)                                          |
@@ -368,8 +368,8 @@ son_unknown_call(_Sg,Vars,(Call_gr,_Call_sh),Succ):-
 %-------------------------------------------------------------------------
 
 son_unknown_entry(_Sg,Qv,([],Sh)):-
-	couples_and_singletons(Qv,Sh1,[]),
-	sort_list_of_lists(Sh1,Sh).
+    couples_and_singletons(Qv,Sh1,[]),
+    sort_list_of_lists(Sh1,Sh).
 
 %-------------------------------------------------------------------------
 % son_empty_entry(+,+,-)                                                   |
@@ -390,11 +390,11 @@ son_empty_entry(_Sg,_Qv,([],[])).
 %------------------------------------------------------------------------%
 
 son_asub_to_native((Gr,SSon),Qv,_OutFlag,ASub_user,[]):-
-	son_to_share((Gr,SSon),Qv,SetSh,LinearVars0),
-	ord_subtract(LinearVars0,Gr,LinearVars),
-	if_not_nil(Gr,ground(Gr),ASub_user,ASub_user0),
-	if_not_nil(LinearVars,linear(LinearVars),ASub_user0,ASub_user1),
-	if_not_nil(SetSh,sharing(SetSh),ASub_user1,[]).
+    son_to_share((Gr,SSon),Qv,SetSh,LinearVars0),
+    ord_subtract(LinearVars0,Gr,LinearVars),
+    if_not_nil(Gr,ground(Gr),ASub_user,ASub_user0),
+    if_not_nil(LinearVars,linear(LinearVars),ASub_user0,ASub_user1),
+    if_not_nil(SetSh,sharing(SetSh),ASub_user1,[]).
 
 %-------------------------------------------------------------------------
 % son_input_user_interface(+,+,-,+,+)                                    %
@@ -412,26 +412,26 @@ son_asub_to_native((Gr,SSon),Qv,_OutFlag,ASub_user,[]):-
 %-------------------------------------------------------------------------
 
 son_input_user_interface((Sh0,Lin0),Qv,(Gr,Sh),Sg,MaybeCallASub):-
-	share_input_user_interface(Sh0,Qv,SH,Sg,MaybeCallASub),
-	varset(SH,SHv),
-	ord_subtract(Qv,SHv,Gr),
-	may_be_var(Lin0,Linear),
-	ord_subtract(Qv,Linear,NonLinear1),
-	ord_subtract(NonLinear1,Gr,NonLinear),
-	list_to_list_of_lists(NonLinear,Singletons),
-	share_to_son(SH,Sh_u,Singletons),
-	sort_list_of_lists(Sh_u,Sh).
+    share_input_user_interface(Sh0,Qv,SH,Sg,MaybeCallASub),
+    varset(SH,SHv),
+    ord_subtract(Qv,SHv,Gr),
+    may_be_var(Lin0,Linear),
+    ord_subtract(Qv,Linear,NonLinear1),
+    ord_subtract(NonLinear1,Gr,NonLinear),
+    list_to_list_of_lists(NonLinear,Singletons),
+    share_to_son(SH,Sh_u,Singletons),
+    sort_list_of_lists(Sh_u,Sh).
 
 son_input_interface(Info,Kind,(Sh0,Lin),(Sh,Lin)):-
-	share_input_interface(Info,Kind,Sh0,Sh), !.
+    share_input_interface(Info,Kind,Sh0,Sh), !.
 son_input_interface(free(X),approx,(Sh,Lin0),(Sh,Lin)):-
-	var(X),
-	may_be_var(Lin0,Lin1),
-	insert(Lin1,X,Lin).
+    var(X),
+    may_be_var(Lin0,Lin1),
+    insert(Lin1,X,Lin).
 son_input_interface(linear(X),perfect,(Sh,Lin0),(Sh,Lin)):-
-	varset(X,Xs),
-	may_be_var(Lin0,Lin1),
-	merge(Lin1,Xs,Lin).
+    varset(X,Xs),
+    may_be_var(Lin0,Lin1),
+    merge(Lin1,Xs,Lin).
 
 may_be_var(X,X):- ( X=[] ; true ), !.
 
@@ -442,10 +442,10 @@ may_be_var(X,X):- ( X=[] ; true ), !.
 %------------------------------------------------------------------------%
 
 son_less_or_equal(ASub0,ASub1):-
-	ASub0 == ASub1, !.
+    ASub0 == ASub1, !.
 son_less_or_equal((Gr0,Sh0),(Gr1,Sh1)):-
-	ord_subset(Gr1,Gr0),
-	ord_subset(Sh0,Sh1).
+    ord_subset(Gr1,Gr0),
+    ord_subset(Sh0,Sh1).
 
 
 %------------------------------------------------------------------------%
@@ -579,26 +579,26 @@ son_special_builtin('@</2',_,_,unchanged,_).
 %-------------------------------------------------------------------------
 son_special_builtin('format/2',format(X,_Y),_,some,[X]).
 son_special_builtin('format/3',format(X,Y,_Z),_,some,List):-
-	varset([X,Y],List).
+    varset([X,Y],List).
 son_special_builtin('functor/3',functor(_X,Y,Z),_,some,List):-
-	varset([Y,Z],List).
+    varset([Y,Z],List).
 son_special_builtin('length/2',length(_X,Y),_,some,List):-
-	varset(Y,List).
+    varset(Y,List).
 son_special_builtin('print/2',print(X,_Y),_,some,[X]).
 son_special_builtin('predicate_property/2',predicate_property(_X,Y),_,some,Vars):-
-	varset(Y,Vars).
+    varset(Y,Vars).
 son_special_builtin('recorda/3',recorda(_,_,Z),_,some,Vars):-
-	varset(Z,Vars).
+    varset(Z,Vars).
 son_special_builtin('recordz/3',recordz(_,_,Z),_,some,Vars):-
-	varset(Z,Vars).
+    varset(Z,Vars).
 son_special_builtin('assert/2',assert(_X,Y),_,some,Vars):-
-	varset(Y,Vars).
+    varset(Y,Vars).
 son_special_builtin('asserta/2',asserta(_X,Y),_,some,Vars):-
-	varset(Y,Vars).
+    varset(Y,Vars).
 son_special_builtin('assertz/2',assertz(_X,Y),_,some,Vars):-
-	varset(Y,Vars).
+    varset(Y,Vars).
 son_special_builtin('write/2',write(X,_Y),_,some,Vars):-
-	varset(X,Vars).
+    varset(X,Vars).
 %%%%%%%%%% '=../2'
 son_special_builtin('=../2','=..'(X,Y),_,'=../2',p(X,Y)).
 %%%%%%%%%% 'recorded/3'
@@ -641,148 +641,148 @@ son_special_builtin('sort/2',sort(X,Y),_,'=/2',p(X,Y)).
 %-------------------------------------------------------------------------
 
 son_success_builtin(ground,Sv_u,_,_,(Gv,Sh),(Succ_gr,Succ_sh)):-
-	sort(Sv_u,Sv),
-	merge(Sv,Gv,Succ_gr),
-	ord_split_lists_from_list(Sv,Sh,_Intersect,Succ_sh).
+    sort(Sv_u,Sv),
+    merge(Sv,Gv,Succ_gr),
+    ord_split_lists_from_list(Sv,Sh,_Intersect,Succ_sh).
 son_success_builtin(bottom,_,_,_,_,'$bottom').
 son_success_builtin(unchanged,_,_,_,Call,Call).
 son_success_builtin(some,_,NewGround,_HvFv_u,(Gr,Sh),(Succ_gr,Succ_sh)):-
-	merge(Gr,NewGround,Succ_gr),
-	ord_split_lists_from_list(NewGround,Sh,_Intersect,Succ_sh).
+    merge(Gr,NewGround,Succ_gr),
+    ord_split_lists_from_list(NewGround,Sh,_Intersect,Succ_sh).
 son_success_builtin('=../2',_,p(X,Y),_HvFv_u,(Call_gr,Call_sh),(Succ_gr,Succ_sh)):-
-	varset(X,Varsx),
-	ord_subset(Varsx,Call_gr),!,
-	varset(Y,Varsy),
-	merge(Varsy,Call_gr,Succ_gr),
-	ord_split_lists_from_list(Varsy,Call_sh,_Intersect,Succ_sh).
+    varset(X,Varsx),
+    ord_subset(Varsx,Call_gr),!,
+    varset(Y,Varsy),
+    merge(Varsy,Call_gr,Succ_gr),
+    ord_split_lists_from_list(Varsy,Call_sh,_Intersect,Succ_sh).
 son_success_builtin('=../2',_,p(X,Y),_HvFv_u,(Call_gr,Call_sh),(Succ_gr,Succ_sh)):-
-	varset(Y,Varsy),
-	ord_subset(Varsy,Call_gr),!,
-	varset(X,Varsx),
-	merge(Varsx,Call_gr,Succ_gr),
-	ord_split_lists_from_list(Varsx,Call_sh,_Intersect,Succ_sh).
+    varset(Y,Varsy),
+    ord_subset(Varsy,Call_gr),!,
+    varset(X,Varsx),
+    merge(Varsx,Call_gr,Succ_gr),
+    ord_split_lists_from_list(Varsx,Call_sh,_Intersect,Succ_sh).
 son_success_builtin('=../2',_,p(X,Y),_HvFv_u,(Call_gr,Call_sh),Succ):-
-	var(X), var(Y),!,
-	sort([[X],[Y]],NonLinear),
-	( ord_intersect(NonLinear,Call_sh) ->
-	  sort_list_of_lists([[X],[X,Y],[Y]],Prime)
-	; sort([X,Y],T),
-	  Prime = [T]
-	),
-	son_unify_each_exit(Prime,Call_sh,[],Succ_sh),
-	Succ = (Call_gr,Succ_sh).
+    var(X), var(Y),!,
+    sort([[X],[Y]],NonLinear),
+    ( ord_intersect(NonLinear,Call_sh) ->
+      sort_list_of_lists([[X],[X,Y],[Y]],Prime)
+    ; sort([X,Y],T),
+      Prime = [T]
+    ),
+    son_unify_each_exit(Prime,Call_sh,[],Succ_sh),
+    Succ = (Call_gr,Succ_sh).
 son_success_builtin('=../2',_,p(X,Y),_HvFv_u,(Call_gr,Call_sh),(Succ_gr,Succ_sh)):-
-	var(X), !,
-	Y = [Z|R],
-	(var(Z) ->
-	    ord_split_lists_from_list([Z],Call_sh,_Intersect,Prime_sh),
-	    insert(Call_gr,Z,Succ_gr)
-	; Prime_sh = Call_sh,
-	  Succ_gr = Call_gr
-        ),
-	son_abs_unify(X,R,Binds,_),
-	collect_singletons(Prime_sh,NonLinear),
-	unify_list_binds(Binds,Prime_sh,NonLinear,Succ_sh).
+    var(X), !,
+    Y = [Z|R],
+    (var(Z) ->
+        ord_split_lists_from_list([Z],Call_sh,_Intersect,Prime_sh),
+        insert(Call_gr,Z,Succ_gr)
+    ; Prime_sh = Call_sh,
+      Succ_gr = Call_gr
+    ),
+    son_abs_unify(X,R,Binds,_),
+    collect_singletons(Prime_sh,NonLinear),
+    unify_list_binds(Binds,Prime_sh,NonLinear,Succ_sh).
 son_success_builtin('recorded/3',_,p(Y,Z),_HvFv_u,(Call_gr,Call_sh),(Succ_gr,Succ_sh)):-
-	varset(Z,VarsZ),
-	ord_split_lists_from_list(VarsZ,Call_sh,_Intersect,Disjoint),
-	merge(VarsZ,Call_gr,Succ_gr),
-	varset(Y,Varsy),
-	ord_subtract(Varsy,Succ_gr,NonGround),
-	couples_and_singletons(NonGround,Prime_sh,[]),
-	son_unify_each_exit(Prime_sh,Disjoint,[],Succ_sh).
+    varset(Z,VarsZ),
+    ord_split_lists_from_list(VarsZ,Call_sh,_Intersect,Disjoint),
+    merge(VarsZ,Call_gr,Succ_gr),
+    varset(Y,Varsy),
+    ord_subtract(Varsy,Succ_gr,NonGround),
+    couples_and_singletons(NonGround,Prime_sh,[]),
+    son_unify_each_exit(Prime_sh,Disjoint,[],Succ_sh).
 son_success_builtin('read/1',_,p(X),_HvFv_u,(Call_gr,Call_sh),(Call_gr,Succ_sh)):-
-	varset(X,Varsx),
-	ord_subtract(Varsx,Call_gr,NonGround),
-	couples_and_singletons(NonGround,Prime_sh,[]),
-	son_unify_each_exit(Prime_sh,Call_sh,[],Succ_sh).
+    varset(X,Varsx),
+    ord_subtract(Varsx,Call_gr,NonGround),
+    couples_and_singletons(NonGround,Prime_sh,[]),
+    son_unify_each_exit(Prime_sh,Call_sh,[],Succ_sh).
 son_success_builtin('read/2',_,p(X,Y),_HvFv_u,(Call_gr,Call_sh),(Succ_gr,Succ_sh)):-
-	varset(X,Varsx),
-	merge(Varsx,Call_gr,Succ_gr),
-	varset(Y,Varsy),
-	ord_subtract(Varsy,Succ_gr,NonGround),
-	couples_and_singletons(NonGround,Prime_sh,[]),
-	son_unify_each_exit(Prime_sh,Call_sh,[],Succ_sh).
+    varset(X,Varsx),
+    merge(Varsx,Call_gr,Succ_gr),
+    varset(Y,Varsy),
+    ord_subtract(Varsy,Succ_gr,NonGround),
+    couples_and_singletons(NonGround,Prime_sh,[]),
+    son_unify_each_exit(Prime_sh,Call_sh,[],Succ_sh).
 son_success_builtin(copy_term,Sv_u,p(X,Y),HvFv_u,Call,Succ):-
-	copy_term(Y,NewY),
-	varset(NewY,Hv),
-	varset(X,Xv),
-	son_project(not_provided_Sg,Xv,not_provided_HvFv_u,Call,Proj),
-	son_call_to_entry(Xv,X,Hv,NewY,not_provided,[],Proj,(Entry_gr,Entry_sh),_), % TODO: add some ClauseKey?
-	Call = (Call_gr,Call_sh),
-	merge(Call_gr,Entry_gr,TempCall_gr),
-	merge(Call_sh,Entry_sh,TempCall_sh),
-	varset(Y,Yv),
-	merge(Hv,Yv,TempSv),
-	son_success_builtin('=/2',TempSv,p(NewY,Y),HvFv_u,(TempCall_gr,TempCall_sh),
-	                          TempSucc),
-	varset(Call,Callv),
-	sort(Sv_u,Sv),
-	merge(Callv,Sv,Vars),
-	son_project(not_provided_Sg,Vars,not_provided_HvFv_u,TempSucc,Succ).
+    copy_term(Y,NewY),
+    varset(NewY,Hv),
+    varset(X,Xv),
+    son_project(not_provided_Sg,Xv,not_provided_HvFv_u,Call,Proj),
+    son_call_to_entry(Xv,X,Hv,NewY,not_provided,[],Proj,(Entry_gr,Entry_sh),_), % TODO: add some ClauseKey?
+    Call = (Call_gr,Call_sh),
+    merge(Call_gr,Entry_gr,TempCall_gr),
+    merge(Call_sh,Entry_sh,TempCall_sh),
+    varset(Y,Yv),
+    merge(Hv,Yv,TempSv),
+    son_success_builtin('=/2',TempSv,p(NewY,Y),HvFv_u,(TempCall_gr,TempCall_sh),
+                              TempSucc),
+    varset(Call,Callv),
+    sort(Sv_u,Sv),
+    merge(Callv,Sv,Vars),
+    son_project(not_provided_Sg,Vars,not_provided_HvFv_u,TempSucc,Succ).
 son_success_builtin(var,_,p(X),_HvFv_u,(Call_gr,_),Succ):-
-	ord_member(X,Call_gr), !,
-	Succ = '$bottom'.
+    ord_member(X,Call_gr), !,
+    Succ = '$bottom'.
 son_success_builtin(var,_,p(X),_HvFv_u,(Call_gr,Call_sh),(Call_gr,Succ_sh)):-
-	ord_subtract(Call_sh,[[X]],Succ_sh).
+    ord_subtract(Call_sh,[[X]],Succ_sh).
 son_success_builtin('indep/2',_,p(X,Y),_HvFv_u,(Call_gr,Call_sh),Succ):-
-	varset(X,Varsx),
-	varset(Y,Varsy),
-	setproduct(Varsx,Varsy,Dependent),
-	collect_singletons(Dependent,Gv),
-	merge(Call_gr,Gv,Succ_gr),
-	ord_split_lists_from_list(Gv,Call_sh,_Intersect,TempSh),
-	ord_subtract(TempSh,Dependent,Succ_sh),
-	Succ = (Succ_gr,Succ_sh).
+    varset(X,Varsx),
+    varset(Y,Varsy),
+    setproduct(Varsx,Varsy,Dependent),
+    collect_singletons(Dependent,Gv),
+    merge(Call_gr,Gv,Succ_gr),
+    ord_split_lists_from_list(Gv,Call_sh,_Intersect,TempSh),
+    ord_subtract(TempSh,Dependent,Succ_sh),
+    Succ = (Succ_gr,Succ_sh).
 son_success_builtin('indep/1',_,p(X),_HvFv_u,Call,Succ):- 
-	nonvar(X),
-	handle_each_indep(X,son,Call,Succ), !.
+    nonvar(X),
+    handle_each_indep(X,son,Call,Succ), !.
 son_success_builtin('indep/1',_,_,_,_,'$bottom').
 son_success_builtin('arg/3',_,p(X,Y,Z),_HvFv_u,(Call_gr,Call_sh),Succ):- 
-	varset(Y,Varsy),
-	ord_subset(Varsy,Call_gr), !,
-	varset([X,Z],Vars),
-	ord_split_lists_from_list(Vars,Call_sh,_Intersect,Succ_sh),
-	merge(Vars,Call_gr,Succ_gr),
-	Succ = (Succ_gr,Succ_sh).
+    varset(Y,Varsy),
+    ord_subset(Varsy,Call_gr), !,
+    varset([X,Z],Vars),
+    ord_split_lists_from_list(Vars,Call_sh,_Intersect,Succ_sh),
+    merge(Vars,Call_gr,Succ_gr),
+    Succ = (Succ_gr,Succ_sh).
 son_success_builtin('arg/3',_,p(X,_,Z),_HvFv_u,(Call_gr,Call_sh),Succ):- 
-	varset(Z,Varsz),
-	ord_subset(Varsz,Call_gr), !,
-	varset(X,Varsx),
-	ord_split_lists_from_list(Varsx,Call_sh,_Intersect,Succ_sh),
-	merge(Call_gr,Varsx,Succ_gr),
-	Succ = (Succ_gr,Succ_sh).
+    varset(Z,Varsz),
+    ord_subset(Varsz,Call_gr), !,
+    varset(X,Varsx),
+    ord_split_lists_from_list(Varsx,Call_sh,_Intersect,Succ_sh),
+    merge(Call_gr,Varsx,Succ_gr),
+    Succ = (Succ_gr,Succ_sh).
 son_success_builtin('arg/3',_,p(X,Y,Z),_HvFv_u,(Call_gr,Call_sh),(Succ_gr,Succ_sh)):- 
-	varset(X,Varsx),
-	merge(Call_gr,Varsx,Succ_gr),
-	ord_split_lists_from_list(Varsx,Call_sh,_Intersect,TempSh),
-	varset([Y,Z],Vars),
-	list_to_list_of_lists(Vars,Singletons),
-	( ord_intersect(Singletons,TempSh) ->
-	  couples_and_singletons(Vars,Prime,[])
-	; couples(Vars,Prime,[])
-	),
-	son_unify_each_exit(Prime,Call_sh,[],Succ_sh).
+    varset(X,Varsx),
+    merge(Call_gr,Varsx,Succ_gr),
+    ord_split_lists_from_list(Varsx,Call_sh,_Intersect,TempSh),
+    varset([Y,Z],Vars),
+    list_to_list_of_lists(Vars,Singletons),
+    ( ord_intersect(Singletons,TempSh) ->
+      couples_and_singletons(Vars,Prime,[])
+    ; couples(Vars,Prime,[])
+    ),
+    son_unify_each_exit(Prime,Call_sh,[],Succ_sh).
 son_success_builtin('=/2',_,p(X,Y),_HvFv_u,(Call_gr,Call_sh),Succ):-
-	son_abs_unify(X,Y,Binds,Gr1),
-	merge(Gr1,Call_gr,Gr2),
-	son_g_propagate(Gr2,Binds,Gr2,NewBinds,Succ_gr),
-	ord_subtract(Succ_gr,Call_gr,NewGv),
-	ord_split_lists_from_list(NewGv,Call_sh,_Intersect,Temp_Sh),
-	collect_singletons(Temp_Sh,NonLinear),
-	unify_list_binds(NewBinds,Temp_Sh,NonLinear,Succ_sh), !,
-	Succ = (Succ_gr,Succ_sh).
+    son_abs_unify(X,Y,Binds,Gr1),
+    merge(Gr1,Call_gr,Gr2),
+    son_g_propagate(Gr2,Binds,Gr2,NewBinds,Succ_gr),
+    ord_subtract(Succ_gr,Call_gr,NewGv),
+    ord_split_lists_from_list(NewGv,Call_sh,_Intersect,Temp_Sh),
+    collect_singletons(Temp_Sh,NonLinear),
+    unify_list_binds(NewBinds,Temp_Sh,NonLinear,Succ_sh), !,
+    Succ = (Succ_gr,Succ_sh).
 son_success_builtin('=/2',_,_,_,_,'$bottom').
 son_success_builtin('==/2',_,p(X,Y),_HvFv_u,(Call_gr,Call_sh),Succ):-
-%?	sh_peel(X,Y,Binds-[]),
-	son_peel(X,Y,Binds-[]),
-	son_make_reduction(Binds,(Call_gr,Call_sh),Ground,Eliminate), !,
-	sort(Ground,Ground1),
-	merge(Ground1,Call_gr,Succ_gr),
-	sort_list_of_lists(Eliminate,Eliminate1),
-	ord_subtract(Call_sh,Eliminate1,TempSh),
-	ord_split_lists_from_list(Succ_gr,TempSh,_Intersect,Succ_sh),
-	Succ = (Succ_gr,Succ_sh).
+%?      sh_peel(X,Y,Binds-[]),
+    son_peel(X,Y,Binds-[]),
+    son_make_reduction(Binds,(Call_gr,Call_sh),Ground,Eliminate), !,
+    sort(Ground,Ground1),
+    merge(Ground1,Call_gr,Succ_gr),
+    sort_list_of_lists(Eliminate,Eliminate1),
+    ord_subtract(Call_sh,Eliminate1,TempSh),
+    ord_split_lists_from_list(Succ_gr,TempSh,_Intersect,Succ_sh),
+    Succ = (Succ_gr,Succ_sh).
 son_success_builtin('==/2',_,_,_,_,'$bottom').
 
 %-------------------------------------------------------------------------
@@ -799,22 +799,22 @@ son_call_to_success_builtin(_SgKey,_Sg,_Sv,_Call,_Proj,'$bottom').
 
 share_to_son([],T,T).
 share_to_son([[_]|Sharing],PairSharing,T):- !,
- 	share_to_son(Sharing,PairSharing,T).
+    share_to_son(Sharing,PairSharing,T).
 share_to_son([[X,Y]|Sharing],[[X,Y]|PairSharing],T):- !,
-	share_to_son(Sharing,PairSharing,T).
+    share_to_son(Sharing,PairSharing,T).
 share_to_son([Set|Sharing],PairSharing,T):-
-	couples(Set,PairSharing,Tail),
-	share_to_son(Sharing,Tail,T).
+    couples(Set,PairSharing,Tail),
+    share_to_son(Sharing,Tail,T).
 
 son_to_share((Gr,SSon),Qv,SetSh,LinearVars):-
-	collect_singletons(SSon,NonLinearVars),
-	ord_subtract(Qv,NonLinearVars,LinearVars),
-	closure_under_union(SSon,Star),
-	sort_list_of_lists(Star,Star_s),
-	propagate_to_sh(Star_s,SSon,NewSSon,_),
-	ord_subtract(Qv,Gr,NonGv),
-	list_to_list_of_lists(NonGv,ShSingletons),	
-	merge(ShSingletons,NewSSon,SetSh).
+    collect_singletons(SSon,NonLinearVars),
+    ord_subtract(Qv,NonLinearVars,LinearVars),
+    closure_under_union(SSon,Star),
+    sort_list_of_lists(Star,Star_s),
+    propagate_to_sh(Star_s,SSon,NewSSon,_),
+    ord_subtract(Qv,Gr,NonGv),
+    list_to_list_of_lists(NonGv,ShSingletons),      
+    merge(ShSingletons,NewSSon,SetSh).
 
 %-------------------------------------------------------------------------
 % propagate_to_sh(+,+,-,-)                                               |
@@ -828,17 +828,17 @@ son_to_share((Gr,SSon),Qv,SetSh,LinearVars):-
 
 propagate_to_sh([],_,[],[]).
 propagate_to_sh([Xs|Xss],SSon,NewASub_sh,Allowed_sh):-
-	couples(Xs,NewXss,[]),
-	sort(NewXss,NewXss_s),
-	decide_couples(Xss,Xs,NewXss_s,SSon,NewASub_sh,Allowed_sh).
+    couples(Xs,NewXss,[]),
+    sort(NewXss,NewXss_s),
+    decide_couples(Xss,Xs,NewXss_s,SSon,NewASub_sh,Allowed_sh).
 
 decide_couples(Xss,Xs,NewXss,SSon,NewASub_sh,NewAllowed_sh):-
-	ord_subset(NewXss,SSon),!,
-	NewASub_sh = [Xs|Rest],
-	propagate_to_sh(Xss,SSon,Rest,Allowed_sh),
-	merge(NewXss,Allowed_sh,NewAllowed_sh).
+    ord_subset(NewXss,SSon),!,
+    NewASub_sh = [Xs|Rest],
+    propagate_to_sh(Xss,SSon,Rest,Allowed_sh),
+    merge(NewXss,Allowed_sh,NewAllowed_sh).
 decide_couples(Xss,_,_,SSon,NewASub_sh,Allowed_sh):-
-	propagate_to_sh(Xss,SSon,NewASub_sh,Allowed_sh).
+    propagate_to_sh(Xss,SSon,NewASub_sh,Allowed_sh).
 
 %-------------------------------------------------------------------------
 % propagate_to_son(+,+,+,-)                                              |
@@ -852,16 +852,16 @@ decide_couples(Xss,_,_,SSon,NewASub_sh,Allowed_sh):-
 
 propagate_to_son([],_,_,[]).
 propagate_to_son([[X]|Xss],Allowed_sh,NewGSon,NewSSon):-
-	ord_member(X,NewGSon),!,
-	propagate_to_son(Xss,Allowed_sh,NewGSon,NewSSon).
+    ord_member(X,NewGSon),!,
+    propagate_to_son(Xss,Allowed_sh,NewGSon,NewSSon).
 propagate_to_son([[X]|Xss],Allowed_sh,NewGSon,[[X]|NewSSon]):- !,
-	propagate_to_son(Xss,Allowed_sh,NewGSon,NewSSon).
+    propagate_to_son(Xss,Allowed_sh,NewGSon,NewSSon).
 propagate_to_son([Xs|Xss],Allowed_sh,NewGSon,NewSSon):-
-	ord_member(Xs,Allowed_sh),!,
-	NewSSon = [Xs|Rest],
-	propagate_to_son(Xss,Allowed_sh,NewGSon,Rest).
+    ord_member(Xs,Allowed_sh),!,
+    NewSSon = [Xs|Rest],
+    propagate_to_son(Xss,Allowed_sh,NewGSon,Rest).
 propagate_to_son([_|Xss],Allowed_sh,NewGSon,NewSSon):- !,
-	propagate_to_son(Xss,Allowed_sh,NewGSon,NewSSon).
+    propagate_to_son(Xss,Allowed_sh,NewGSon,NewSSon).
 
 %-------------------------------------------------------------------------
 % son_groundness_propagate(+,+,+,+,-,-,-)                                |
@@ -877,29 +877,29 @@ propagate_to_son([_|Xss],Allowed_sh,NewGSon,NewSSon):- !,
 %-------------------------------------------------------------------------
 
 son_groundness_propagate(OldBinds,Gv1,Gv2,Proj,NewBinds,NewProj,GvAll) :-
-	merge(Gv1,Gv2,Gv),                
-	son_g_propagate(Gv,OldBinds,Gv,NewBinds,GvAll),
-	ord_split_lists_from_list(GvAll,Proj,_Intersect,NewProj).
+    merge(Gv1,Gv2,Gv),                
+    son_g_propagate(Gv,OldBinds,Gv,NewBinds,GvAll),
+    ord_split_lists_from_list(GvAll,Proj,_Intersect,NewProj).
 
 son_g_propagate([],Old_Binds,Gvars,Old_Binds,Gvars).
 son_g_propagate([X|Xs],Old_Binds,Gvars,New_Binds,GvAll) :-
-	new1_gvars(Old_Binds,X,Int1_Binds,New1_gvars),
-	son_new2_gvars(Int1_Binds,X,Int2_Binds,New2_gvars),
-	append(New1_gvars,New2_gvars,Int_gvars),
-	sort(Int_gvars,New_gvars),
-	ord_subtract(New_gvars,Gvars,New),
-	merge(New,Xs,Queue),
-	merge(New,Gvars,GvInt),!,
-	son_g_propagate(Queue,Int2_Binds,GvInt,New_Binds,GvAll).
+    new1_gvars(Old_Binds,X,Int1_Binds,New1_gvars),
+    son_new2_gvars(Int1_Binds,X,Int2_Binds,New2_gvars),
+    append(New1_gvars,New2_gvars,Int_gvars),
+    sort(Int_gvars,New_gvars),
+    ord_subtract(New_gvars,Gvars,New),
+    merge(New,Xs,Queue),
+    merge(New,Gvars,GvInt),!,
+    son_g_propagate(Queue,Int2_Binds,GvInt,New_Binds,GvAll).
 
 son_new2_gvars([],_,[],[]).
 son_new2_gvars([(Y,Bind)|Rest],X,[(Y,New_bind)|New_rest],New2_gvars) :-
-	son_delete_var_from_list_of_lists(Bind,X,New_bind,Ans),
-	( Ans = yes ->
-	    New2_gvars = [Y|Rem_gvars]
-	; New2_gvars = Rem_gvars
-        ),
-	son_new2_gvars(Rest,X,New_rest,Rem_gvars).
+    son_delete_var_from_list_of_lists(Bind,X,New_bind,Ans),
+    ( Ans = yes ->
+        New2_gvars = [Y|Rem_gvars]
+    ; New2_gvars = Rem_gvars
+    ),
+    son_new2_gvars(Rest,X,New_rest,Rem_gvars).
 
 %-------------------------------------------------------------------------
 % son_abs_unify(+,+,-,-)                                                 |
@@ -912,9 +912,9 @@ son_new2_gvars([(Y,Bind)|Rest],X,[(Y,New_bind)|New_rest],New2_gvars) :-
 %-------------------------------------------------------------------------
 
 son_abs_unify(Term1,Term2,Binds,Gv) :-
-	son_peel(Term1,Term2,Temp1-[]),
-	sort(Temp1,Temp2),
-	son_collect(Temp2,Binds,Gv).
+    son_peel(Term1,Term2,Temp1-[]),
+    sort(Temp1,Temp2),
+    son_collect(Temp2,Binds,Gv).
 
 %-------------------------------------------------------------------------
 % son_peel(+,+,-)                                                        |
@@ -927,37 +927,37 @@ son_abs_unify(Term1,Term2,Binds,Gv) :-
 %-------------------------------------------------------------------------
 
 son_peel(Term1,Term2,Binds) :-
-	var(Term1),!,
-	son_peel_var(Term1,Term2,Binds).
+    var(Term1),!,
+    son_peel_var(Term1,Term2,Binds).
 son_peel(Term1,Term2,Binds) :-
-	var(Term2),!,
-	collect_vars_is_linear(Term1,List,Flag),
-	Binds = [(Term2,List,Flag)|X]-X. 
+    var(Term2),!,
+    collect_vars_is_linear(Term1,List,Flag),
+    Binds = [(Term2,List,Flag)|X]-X. 
 son_peel(Term1,Term2,Binds) :- 
-	Term1 == Term2, !,
-	Binds = X-X.
+    Term1 == Term2, !,
+    Binds = X-X.
 son_peel(Term1,Term2,Binds) :-
-	functor(Term1,F,N),
-	functor(Term2,F,N),
-	son_peel_args(Term1,Term2,0,N,Binds).
+    functor(Term1,F,N),
+    functor(Term2,F,N),
+    son_peel_args(Term1,Term2,0,N,Binds).
 
 son_peel_var(Term1,Term2,Binds):-
-	var(Term2),!,
-	Binds = [(Term1,[Term2],yes)|X]-X.
+    var(Term2),!,
+    Binds = [(Term1,[Term2],yes)|X]-X.
 son_peel_var(Term1,Term2,Binds):-
-	collect_vars_is_linear(Term2,List,Flag),
-	Binds = [(Term1,List,Flag)|X]-X.
+    collect_vars_is_linear(Term2,List,Flag),
+    Binds = [(Term1,List,Flag)|X]-X.
 
 son_peel_args(_,_,N1,N,Binds) :-
-	N1 = N, !,
-	Binds = X-X.
+    N1 = N, !,
+    Binds = X-X.
 son_peel_args(Term1,Term2,N1,N,Binds) :-
-	N2 is N1 + 1,
-	arg(N2,Term1,A1),
-	arg(N2,Term2,A2),
-	son_peel(A1,A2,Bind1),
-	son_peel_args(Term1,Term2,N2,N,Bind2),
-	append_dl(Bind1,Bind2,Binds).
+    N2 is N1 + 1,
+    arg(N2,Term1,A1),
+    arg(N2,Term2,A2),
+    son_peel(A1,A2,Bind1),
+    son_peel_args(Term1,Term2,N2,N,Bind2),
+    append_dl(Bind1,Bind2,Binds).
 
 %-------------------------------------------------------------------------
 % son_collect(+,-,-)                                                     |
@@ -970,17 +970,17 @@ son_peel_args(Term1,Term2,N1,N,Binds) :-
 
 son_collect([],[],[]).
 son_collect([(X1,List1,Flag1),(X2,List2,Flag2)|Rest],Binds,Gv) :-
-	test_ground(List1,X1,Gv,G_rest),
-	insert(List1,Flag1,NewList),
-	( X1 == X2 ->
-	    son_collect([(X2,List2,Flag2)|Rest],[(X2,List)|Bind],G_rest),
-	    Binds = [(X1,[NewList|List])|Bind]
-	; son_collect([(X2,List2,Flag2)|Rest],Bind,G_rest),
-          Binds = [(X1,[NewList])|Bind]
-        ).
+    test_ground(List1,X1,Gv,G_rest),
+    insert(List1,Flag1,NewList),
+    ( X1 == X2 ->
+        son_collect([(X2,List2,Flag2)|Rest],[(X2,List)|Bind],G_rest),
+        Binds = [(X1,[NewList|List])|Bind]
+    ; son_collect([(X2,List2,Flag2)|Rest],Bind,G_rest),
+      Binds = [(X1,[NewList])|Bind]
+    ).
 son_collect([(X,List,Flag)],[(X,[NewList])],Gv):-
-	insert(List,Flag,NewList),
-	test_ground(List,X,Gv,[]).
+    insert(List,Flag,NewList),
+    test_ground(List,X,Gv,[]).
 
 test_ground([],X1,[X1|G_rest],G_rest).
 test_ground([_|_],_,G_rest,G_rest).
@@ -994,8 +994,8 @@ test_ground([_|_],_,G_rest,G_rest).
 
 unify_list_binds([],Sh,_,Sh).
 unify_list_binds([(X,List)|Xs],Sh,NonLinear,NewSh):-
-	compute_abstract(List,X,NonLinear,Sh,NewNonLinear,TempSh),
-	unify_list_binds(Xs,TempSh,NewNonLinear,NewSh).
+    compute_abstract(List,X,NonLinear,Sh,NewNonLinear,TempSh),
+    unify_list_binds(Xs,TempSh,NewNonLinear,NewSh).
 
 %-------------------------------------------------------------------------
 % compute_abstract(+,+,+,+,-,-)                                          |
@@ -1005,8 +1005,8 @@ unify_list_binds([(X,List)|Xs],Sh,NonLinear,NewSh):-
 
 compute_abstract([],_,NonLinear,Sh,NonLinear,Sh).
 compute_abstract([Ys|Yss],X,NonLinear,Sh,NewNonLinear,NewSh):-
-	compute_one(Ys,X,NonLinear,Sh,TempNonLinear,TempSh),
-	compute_abstract(Yss,X,TempNonLinear,TempSh,NewNonLinear,NewSh).
+    compute_one(Ys,X,NonLinear,Sh,TempNonLinear,TempSh),
+    compute_abstract(Yss,X,TempNonLinear,TempSh,NewNonLinear,NewSh).
 
 
 %-------------------------------------------------------------------------
@@ -1033,27 +1033,27 @@ compute_abstract([Ys|Yss],X,NonLinear,Sh,NewNonLinear,NewSh):-
 
 
 compute_one(Ys,X,NonLinear,Sh,NewNonLinear,NewSh):-
-	ord_member(X,NonLinear),!,
-	eliminate_flag_insertx(Ys,X,Vars),
-	couples_and_singletons(Vars,Sh1,[]),
-	son_unify_each(Sh1,Sh,[],NewNonLinear,NewSh).
+    ord_member(X,NonLinear),!,
+    eliminate_flag_insertx(Ys,X,Vars),
+    couples_and_singletons(Vars,Sh1,[]),
+    son_unify_each(Sh1,Sh,[],NewNonLinear,NewSh).
 compute_one(Ys,X,NonLinear,Sh,NewNonLinear,NewSh):-
-	ord_setproduct_linear([X],Ys,TempSubs,Flag),
-	decide_linearx(Flag,X,Ys,NonLinear,Sh,TempSubs,Sh1),
-	son_unify_each(Sh1,Sh,[],NewNonLinear,NewSh).
+    ord_setproduct_linear([X],Ys,TempSubs,Flag),
+    decide_linearx(Flag,X,Ys,NonLinear,Sh,TempSubs,Sh1),
+    son_unify_each(Sh1,Sh,[],NewNonLinear,NewSh).
 
 
 eliminate_flag_insertx([_],X,[X]):- !.
 eliminate_flag_insertx([Y|Ys],X,Vars):-
-	X @< Y, !,
-	Vars = [X,Y|Rest],
-	eliminate_flag(Ys,Rest).
+    X @< Y, !,
+    Vars = [X,Y|Rest],
+    eliminate_flag(Ys,Rest).
 eliminate_flag_insertx([Y|Ys],X,[Y|Vars]):-
-	eliminate_flag_insertx(Ys,X,Vars).
+    eliminate_flag_insertx(Ys,X,Vars).
 
 eliminate_flag([_],[]):- !.
 eliminate_flag([Y|Ys],[Y|Rest]):-
-	eliminate_flag(Ys,Rest).
+    eliminate_flag(Ys,Rest).
 
 %-------------------------------------------------------------------------
 % ord_setproduct_linear(+,+,-,-)                                         |
@@ -1068,16 +1068,16 @@ eliminate_flag([Y|Ys],[Y|Rest]):-
 
 ord_setproduct_linear([], _, [],_).
 ord_setproduct_linear([Head|Tail], Set, SetProduct,Flag)  :-
-	ord_setproduct_linear(Set, Head, SetProduct, Rest,Flag),
-	ord_setproduct_linear(Tail, Set, Rest,Flag).
+    ord_setproduct_linear(Set, Head, SetProduct, Rest,Flag),
+    ord_setproduct_linear(Tail, Set, Rest,Flag).
 
 ord_setproduct_linear([Head|_], _, SetProduct, Rest, Flag) :-
-	nonvar(Head),!,
-	SetProduct = Rest,
-	Flag = Head.
+    nonvar(Head),!,
+    SetProduct = Rest,
+    Flag = Head.
 ord_setproduct_linear([Head|Tail], X, [Set|TailX], Tl,Flag) :-
-	sort([Head,X],Set),
-	ord_setproduct_linear(Tail, X, TailX, Tl,Flag).
+    sort([Head,X],Set),
+    ord_setproduct_linear(Tail, X, TailX, Tl,Flag).
 
 :- pop_prolog_flag(multi_arity_warnings).
 
@@ -1091,21 +1091,21 @@ ord_setproduct_linear([Head|Tail], X, [Set|TailX], Tl,Flag) :-
 %-------------------------------------------------------------------------
 
 decide_linearx(no,X,_,_,_,TempSubs,Subs):-
-	insert(TempSubs,[X],Subs).
+    insert(TempSubs,[X],Subs).
 decide_linearx(yes,X,Set,NonLinear,_,TempSubs,Subs):-
-	ord_intersect(Set,NonLinear),!,
-	insert(TempSubs,[X],Subs).
+    ord_intersect(Set,NonLinear),!,
+    insert(TempSubs,[X],Subs).
 decide_linearx(yes,X,Set,_,Sh,TempSubs,Subs):-
-	son_project_subst(Sh,Set,Sh_projected),
-	at_least_one_couple(Sh_projected),!,
-	insert(TempSubs,[X],Subs).
+    son_project_subst(Sh,Set,Sh_projected),
+    at_least_one_couple(Sh_projected),!,
+    insert(TempSubs,[X],Subs).
 decide_linearx(yes,_,_,_,_,Subs,Subs).
 
 
 at_least_one_couple([X|_]):-
-	X = [_,_],!.
+    X = [_,_],!.
 at_least_one_couple([_|Xs]):-
-	at_least_one_couple(Xs).
+    at_least_one_couple(Xs).
 
 %------------------------------------------------------------------------- |
 % son_unify_each(+,+,+,-,-)                                                |
@@ -1119,12 +1119,12 @@ at_least_one_couple([_|Xs]):-
 %------------------------------------------------------------------------- |
 
 son_unify_each([],Sh2,Temp,NonLinear,NewSh):-
-	merge(Sh2,Temp,NewSh),
-	collect_singletons(NewSh,NonLinear).
+    merge(Sh2,Temp,NewSh),
+    collect_singletons(NewSh,NonLinear).
 son_unify_each([Xs|Xss],Sh2,Temp,NewNonLinear,NewSh):-
-	son_unify_one(Xs,Sh2,Temp1),
-	merge(Temp1,Temp,Temp2),
-	son_unify_each(Xss,Sh2,Temp2,NewNonLinear,NewSh).
+    son_unify_one(Xs,Sh2,Temp1),
+    merge(Temp1,Temp,Temp2),
+    son_unify_each(Xss,Sh2,Temp2,NewNonLinear,NewSh).
 
 %------------------------------------------------------------------------- |
 % son_unify_one(+,+,-)                                                     |
@@ -1151,16 +1151,16 @@ son_unify_each([Xs|Xss],Sh2,Temp,NewNonLinear,NewSh):-
 %------------------------------------------------------------------------- |
 
 son_unify_one([X],Sh,Temp):-
-	ord_split_lists(Sh,X,Interesting,_),
-	varset([X|Interesting],Vars),
-	couples_and_singletons(Vars,Temp,[]).
+    ord_split_lists(Sh,X,Interesting,_),
+    varset([X|Interesting],Vars),
+    couples_and_singletons(Vars,Temp,[]).
 son_unify_one([X,Y],Sh,Temp):-
-	ord_split_lists(Sh,X,IntersectX,_),
-	varset([X|IntersectX],VarsX),
-	ord_split_lists(Sh,Y,IntersectY,_),
-	varset([Y|IntersectY],VarsY),
-	setproduct(VarsY,VarsX,Temp1),
-	sort(Temp1,Temp).
+    ord_split_lists(Sh,X,IntersectX,_),
+    varset([X|IntersectX],VarsX),
+    ord_split_lists(Sh,Y,IntersectY,_),
+    varset([Y|IntersectY],VarsY),
+    setproduct(VarsY,VarsX,Temp1),
+    sort(Temp1,Temp).
 
 %------------------------------------------------------------------------- |
 % son_unify_each_exit(+,+,+,-)                                             |
@@ -1170,11 +1170,11 @@ son_unify_one([X,Y],Sh,Temp):-
 %------------------------------------------------------------------------- |
 
 son_unify_each_exit([],Sh2,Temp,NewSh):-
-	merge(Sh2,Temp,NewSh).
+    merge(Sh2,Temp,NewSh).
 son_unify_each_exit([Xs|Xss],Sh2,Temp,NewSh):-
-	son_unify_one(Xs,Sh2,Temp1),
-	merge(Temp1,Temp,Temp2),
-	son_unify_each_exit(Xss,Sh2,Temp2,NewSh).
+    son_unify_one(Xs,Sh2,Temp1),
+    merge(Temp1,Temp,Temp2),
+    son_unify_each_exit(Xss,Sh2,Temp2,NewSh).
 
 %-------------------------------------------------------------
 %  predicates for manipulation of variables
@@ -1182,14 +1182,14 @@ son_unify_each_exit([Xs|Xss],Sh2,Temp,NewSh):-
 
 son_delete_var_from_list_of_lists([],_,[],no).
 son_delete_var_from_list_of_lists([Ys|Yss],X,List_of_lists,Ans) :-
- 	ord_delete(Ys,X,New_Ys),
- 	( empty(New_Ys) ->
- 	    Ans = yes,
- 	    List_of_lists = New_Yss
- 	; Ans = Ans1,
- 	  List_of_lists = [New_Ys|New_Yss]
-         ),
- 	son_delete_var_from_list_of_lists(Yss,X,New_Yss,Ans1).
+    ord_delete(Ys,X,New_Ys),
+    ( empty(New_Ys) ->
+        Ans = yes,
+        List_of_lists = New_Yss
+    ; Ans = Ans1,
+      List_of_lists = [New_Ys|New_Yss]
+     ),
+    son_delete_var_from_list_of_lists(Yss,X,New_Yss,Ans1).
  
 empty([]).
 empty([X]):- nonvar(X), !. 
@@ -1207,63 +1207,63 @@ empty([X]):- nonvar(X), !.
 
 son_make_reduction([],_,[],[]).
 son_make_reduction([(X,VarsTerm)|More],(Gv,Sh),TGv,Eliminate):-
-	ord_member(X,Gv), !,
-	son_make_reduction(More,(Gv,Sh),TempGv,Eliminate),
-	append(VarsTerm,TempGv,TGv).
+    ord_member(X,Gv), !,
+    son_make_reduction(More,(Gv,Sh),TempGv,Eliminate),
+    append(VarsTerm,TempGv,TGv).
 son_make_reduction([(X,VarsTerm)|More],(Gv,Sh),[X|TGv],Eliminate):-
-	ord_subset(VarsTerm,Gv), !,
-	son_make_reduction(More,(Gv,Sh),TGv,Eliminate).
+    ord_subset(VarsTerm,Gv), !,
+    son_make_reduction(More,(Gv,Sh),TGv,Eliminate).
 son_make_reduction([(X,[Y])|More],(Gv,Sh),TGv,Eliminate):-
-	var(Y), !,
-	son_make_reduction_vars(X,Y,(Gv,Sh),TGv1,TElim1),
-	son_make_reduction(More,(Gv,Sh),TempGv,TempElim),
-	append(TempGv,TGv1,TGv),
-	append(TElim1,TempElim,Eliminate).
+    var(Y), !,
+    son_make_reduction_vars(X,Y,(Gv,Sh),TGv1,TElim1),
+    son_make_reduction(More,(Gv,Sh),TempGv,TempElim),
+    append(TempGv,TGv1,TGv),
+    append(TElim1,TempElim,Eliminate).
 son_make_reduction([(X,VarsTerm)|More],(Gv,Sh),TGv,Eliminate):-
-	ord_subtract(VarsTerm,Gv,List),
-	ord_split_lists(Sh,X,IntersectX,NotIntersect),
-	varset(IntersectX,VarsX),
-	ord_subtract(VarsX,[X],VarsX1),
-	son_make_reduction_term(List,X,VarsX1,NotIntersect,Sh,NewGv,NewElim),
-	son_make_reduction(More,(Gv,Sh),TGv1,TElim1),
-	append(TGv1,NewGv,TGv),
-	append(NewElim,TElim1,Eliminate).
+    ord_subtract(VarsTerm,Gv,List),
+    ord_split_lists(Sh,X,IntersectX,NotIntersect),
+    varset(IntersectX,VarsX),
+    ord_subtract(VarsX,[X],VarsX1),
+    son_make_reduction_term(List,X,VarsX1,NotIntersect,Sh,NewGv,NewElim),
+    son_make_reduction(More,(Gv,Sh),TGv1,TElim1),
+    append(TGv1,NewGv,TGv),
+    append(NewElim,TElim1,Eliminate).
 
 
 son_make_reduction_vars(X,Y,(_,Sh),[],NewEliminate):-
-	sort([[X],[Y]],List),
-	ord_intersection(List,Sh,Temp), 
-	test_temp(Temp,List),
-	ord_split_lists(Sh,X,IntersectX,NotIntersect),
-	varset(IntersectX,VarsX),
-	ord_member(Y,VarsX),!,
-	ord_split_lists(NotIntersect,Y,IntersectY,_),
-	varset(IntersectY,VarsY),
-	sort([X,Y],Vars),
-	ord_subtract(VarsX,Vars,VarsX1),
-	ord_union_diff(VarsY,VarsX1,_,Difference),
-	setproduct(Vars,Difference,NewEliminate).
+    sort([[X],[Y]],List),
+    ord_intersection(List,Sh,Temp), 
+    test_temp(Temp,List),
+    ord_split_lists(Sh,X,IntersectX,NotIntersect),
+    varset(IntersectX,VarsX),
+    ord_member(Y,VarsX),!,
+    ord_split_lists(NotIntersect,Y,IntersectY,_),
+    varset(IntersectY,VarsY),
+    sort([X,Y],Vars),
+    ord_subtract(VarsX,Vars,VarsX1),
+    ord_union_diff(VarsY,VarsX1,_,Difference),
+    setproduct(Vars,Difference,NewEliminate).
 son_make_reduction_vars(X,Y,_,Vars,[]):-
-	sort([X,Y],Vars).
+    sort([X,Y],Vars).
 
 test_temp([],_).
 test_temp([X|Xs],List):-
-	[X|Xs] == List.
+    [X|Xs] == List.
 
 son_make_reduction_term([],_,_,_,_,[],[]).
 son_make_reduction_term([Y|Ys],X,VarsX,NotIntersectX,Sh,NewGv,NewSh):-
-	sort([[X],[Y]],List),
-	ord_intersection(List,Sh,Temp), 
-	Temp \== [[Y]],
-	ord_member(Y,VarsX),!,
-	ord_split_lists(NotIntersectX,Y,IntersectY,_),
-	varset(IntersectY,VarsY),
-	ord_subtract(VarsY,VarsX,Difference),
-	setproduct([Y],Difference,Product),
-	son_make_reduction_term(Ys,X,VarsX,NotIntersectX,Sh,NewGv,NewSh1),
-	append(Product,NewSh1,NewSh).
+    sort([[X],[Y]],List),
+    ord_intersection(List,Sh,Temp), 
+    Temp \== [[Y]],
+    ord_member(Y,VarsX),!,
+    ord_split_lists(NotIntersectX,Y,IntersectY,_),
+    varset(IntersectY,VarsY),
+    ord_subtract(VarsY,VarsX,Difference),
+    setproduct([Y],Difference,Product),
+    son_make_reduction_term(Ys,X,VarsX,NotIntersectX,Sh,NewGv,NewSh1),
+    append(Product,NewSh1,NewSh).
 son_make_reduction_term([Y|Ys],X,VarsX,NotIntersectX,Sh,[Y|NewGv],NewSh):-
-	son_make_reduction_term(Ys,X,VarsX,NotIntersectX,Sh,NewGv,NewSh).
+    son_make_reduction_term(Ys,X,VarsX,NotIntersectX,Sh,NewGv,NewSh).
 
 % -------------------------------------------------------------------------
 % AUXILIARY
@@ -1278,13 +1278,13 @@ son_make_reduction_term([Y|Ys],X,VarsX,NotIntersectX,Sh,[Y|NewGv],NewSh):-
 
 couples([],Xss,Xss).
 couples([X|Xs],Xss,Tail):-
-	each_couple(Xs,X,Xss,Tail0),
-	couples(Xs,Tail0,Tail).
+    each_couple(Xs,X,Xss,Tail0),
+    couples(Xs,Tail0,Tail).
 
 each_couple([],_,Yss,Yss).
 each_couple([Y|Ys],X,[[X,Y]|Yss],Tail):-
-	each_couple(Ys,X,Yss,Tail).
-	
+    each_couple(Ys,X,Yss,Tail).
+    
 %-------------------------------------------------------------------------
 % couples_and_singletons(+,-,+/-)                                        |
 % couples_and_singletons(Xs,Xss,Tail)                                    |
@@ -1294,8 +1294,8 @@ each_couple([Y|Ys],X,[[X,Y]|Yss],Tail):-
 
 couples_and_singletons([],Xss,Xss).
 couples_and_singletons([X|Xs],[[X]|Xss],Tail):-
-	each_couple(Xs,X,Xss,Tail0),
-	couples_and_singletons(Xs,Tail0,Tail).
+    each_couple(Xs,X,Xss,Tail0),
+    couples_and_singletons(Xs,Tail0,Tail).
 
 %-------------------------------------------------------------------------
 % collect_vars_is_linear(+,-,-)                                          |
@@ -1305,29 +1305,29 @@ couples_and_singletons([X|Xs],[[X]|Xss],Tail):-
 %-------------------------------------------------------------------------
 
 collect_vars_is_linear(Term,Xs,Flag) :- 
-	collect_vars_is_linear1(Term,[],Xs,TempFlag),
-	decide_flag(TempFlag,Flag).
+    collect_vars_is_linear1(Term,[],Xs,TempFlag),
+    decide_flag(TempFlag,Flag).
 
 collect_vars_is_linear1(Term,Vars,NewVars,Flag) :- 
-	var(Term),!, 
-	look_for_linear(Term,Vars,Flag),
-	insert(Vars,Term,NewVars).
+    var(Term),!, 
+    look_for_linear(Term,Vars,Flag),
+    insert(Vars,Term,NewVars).
 collect_vars_is_linear1(Term,Temp_vars,Vars,Flag) :-
-	functor(Term,_,A),
-	go_inside_is_linear(A,Term,Temp_vars,Vars,Flag),!.
+    functor(Term,_,A),
+    go_inside_is_linear(A,Term,Temp_vars,Vars,Flag),!.
 collect_vars_is_linear1(_,V,V,_) :- !.
 
 look_for_linear(Term,Vars,Flag):-
-	ord_member(Term,Vars), !,
-	Flag = no.
+    ord_member(Term,Vars), !,
+    Flag = no.
 look_for_linear(_,_,_).
 
 go_inside_is_linear(0,_,V,V,_) :- !.
 go_inside_is_linear(N,T,V,Vars,Flag) :-
-	Nth is N-1,
-	go_inside_is_linear(Nth,T,V,V1,Flag),
-	arg(N,T,ARG),
-	collect_vars_is_linear1(ARG,V1,Vars,Flag).
+    Nth is N-1,
+    go_inside_is_linear(Nth,T,V,V1,Flag),
+    arg(N,T,ARG),
+    collect_vars_is_linear1(ARG,V1,Vars,Flag).
 
 decide_flag(Term,Flag):- var(Term),!,Flag = yes.
 decide_flag(no,no).

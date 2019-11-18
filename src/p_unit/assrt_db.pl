@@ -1,19 +1,19 @@
 :- module(assrt_db,
-	[ assertion_read/9,
-	  add_assertion_read/9,
-	  remove_assertion_read/9,
-	  removeall_assertion_read/9,
-	  ref_assertion_read/10,
-	  reload_assertion_read/0,
-	  assertion_of/9,
-	  assertion_body/7,
-	  cleanup_assrt_db/0,
-	  load_lib_assrt/1,
-	  gen_lib_assrt/1,
+    [ assertion_read/9,
+      add_assertion_read/9,
+      remove_assertion_read/9,
+      removeall_assertion_read/9,
+      ref_assertion_read/10,
+      reload_assertion_read/0,
+      assertion_of/9,
+      assertion_body/7,
+      cleanup_assrt_db/0,
+      load_lib_assrt/1,
+      gen_lib_assrt/1,
     loaded_lib_assrt/0,
-	  cleanup_lib_assrt/0
-	],
-	[assertions, datafacts]).
+      cleanup_lib_assrt/0
+    ],
+    [assertions, datafacts]).
 
 % Documentation
 :- use_module(library(assertions/assertions_props)).
@@ -23,8 +23,8 @@
 
 :- doc(cleanup_assrt_db,"Cleanups the database.").
 cleanup_assrt_db:-
-	retractall_fact(pgm_assertion_read(_,_,_,_,_,_,_,_,_)),
-	retractall_fact(assertion_of(_,_,_,_,_,_,_,_,_)).
+    retractall_fact(pgm_assertion_read(_,_,_,_,_,_,_,_,_)),
+    retractall_fact(assertion_of(_,_,_,_,_,_,_,_,_)).
 
 %% ---------------------------------------------------------------------------
 :- pred assertion_of(Goal,M,Status,Type,Body,Dict,Source,LB,LE)
@@ -56,9 +56,9 @@ cleanup_assrt_db:-
 :- doc(assertion_read/9,"Same as @tt{assertion_of/9} but assertions
    are already normalized and fully expanded (including module names).").
 assertion_read(Goal,M,Status,Type,Body,Dict,Source,LB,LE):-
-	pgm_assertion_read(Goal,M,Status,Type,Body,Dict,Source,LB,LE).
+    pgm_assertion_read(Goal,M,Status,Type,Body,Dict,Source,LB,LE).
 assertion_read(Goal,M,Status,Type,Body,Dict,Source,LB,LE):-
-        lib_assertion_read(Goal,M,Status,Type,Body,Dict,Source,LB,LE).
+    lib_assertion_read(Goal,M,Status,Type,Body,Dict,Source,LB,LE).
 
 :- export(assertion_type/2).
 assertion_type(assertion_read(_,_,_,Type,_,_,_,_,_),Type).
@@ -72,29 +72,29 @@ assertion_type(pgm_assertion_read(_,_,_,Type,_,_,_,_,_),Type).
 # "Adds an entry for an assertion located in a preprocessing unit
    module (but not in library modules).".
 add_assertion_read(Goal,M,Status,Type,Body,Dict,Source,LB,LE):-
-        functor(Goal,F,A),
-        functor(Goal0,F,A),
-        ( variant(Goal,Goal0) ->
-            assertz_fact(pgm_assertion_read(Goal,M,Status,Type,Body,Dict,Source,LB,LE))
-        ;
-            warning_message(loc(Source, LB, LE), "Assertion head syntax ~q, assertion ignored.", [Goal])
-        ).
+    functor(Goal,F,A),
+    functor(Goal0,F,A),
+    ( variant(Goal,Goal0) ->
+        assertz_fact(pgm_assertion_read(Goal,M,Status,Type,Body,Dict,Source,LB,LE))
+    ;
+        warning_message(loc(Source, LB, LE), "Assertion head syntax ~q, assertion ignored.", [Goal])
+    ).
 
 :- pred remove_assertion_read(Goal,M,Status,Type,Body,Dict,Source,LB,LE)
 # "Removes an entry for an assertion located in a preprocessing unit
    module (but not from library modules).".
 remove_assertion_read(Goal,M,Status,Type,Body,Dict,Source,LB,LE):-
-	retract_fact(pgm_assertion_read(Goal,M,Status,Type,Body,Dict,Source,LB,LE)).
+    retract_fact(pgm_assertion_read(Goal,M,Status,Type,Body,Dict,Source,LB,LE)).
 % remove_assertion_read(Goal,M,Status,Type,Body,Dict,Source,LB,LE):-
-% 	retract_fact(lib_assertion_read(Goal,M,Status,Type,Body,Dict,Source,LB,LE)).
+%       retract_fact(lib_assertion_read(Goal,M,Status,Type,Body,Dict,Source,LB,LE)).
 
 :- pred removeall_assertion_read(Goal,M,Status,Type,Body,Dict,Source,LB,LE)
 # "Removes all entries matching arguments for assertions located in a
    preprocessing unit module (but not from library modules).".
 removeall_assertion_read(Goal,M,Status,Type,Body,Dict,Source,LB,LE):-
-	retractall_fact(pgm_assertion_read(Goal,M,Status,Type,Body,Dict,Source,LB,LE)).
+    retractall_fact(pgm_assertion_read(Goal,M,Status,Type,Body,Dict,Source,LB,LE)).
 % removeall_assertion_read(Goal,M,Status,Type,Body,Dict,Source,LB,LE):-
-% 	retractall_fact(lib_assertion_read(Goal,M,Status,Type,Body,Dict,Source,LB,LE)).
+%       retractall_fact(lib_assertion_read(Goal,M,Status,Type,Body,Dict,Source,LB,LE)).
 
 :- pred ref_assertion_read(Goal,M,Status,Type,Body,Dict,Source,LB,LE,Ref)
 # "Erases an entry for an assertion for which we have its reference
@@ -104,18 +104,18 @@ removeall_assertion_read(Goal,M,Status,Type,Body,Dict,Source,LB,LE):-
 :- doc(bug, "This predicate is very dangerous and error prone.").
 
 ref_assertion_read(Goal,M,Status,Type,Body,Dict,Source,LB,LE,Ref):-
-	current_fact(pgm_assertion_read(Goal,M,Status,Type,Body,Dict,Source,LB,LE),Ref).
-%%%%%%%	!.
+    current_fact(pgm_assertion_read(Goal,M,Status,Type,Body,Dict,Source,LB,LE),Ref).
+%%%%%%% !.
 ref_assertion_read(Goal,M,Status,Type,Body,Dict,Source,LB,LE,Ref):-
-	current_fact(lib_assertion_read(Goal,M,Status,Type,Body,Dict,Source,LB,LE),Ref).
+    current_fact(lib_assertion_read(Goal,M,Status,Type,Body,Dict,Source,LB,LE),Ref).
 
 :- pred reload_assertion_read
 # "Reloads the library assertions from the library assertions file. This should be
    called only after changes in the assertions or properties from libraries (for
    example, after running compile-time checks.)".
 reload_assertion_read:-
-	display(user_error,'Not implemented yet.'),
-	nl(user_error).
+    display(user_error,'Not implemented yet.'),
+    nl(user_error).
 
 % TODO: This property should be merged with the other assertion readers
 :- prop assertion_body(Pred,Compat,Call,Succ,Comp,Comm,Body)
@@ -123,7 +123,7 @@ reload_assertion_read:-
       with the fields @var{Compat}, @var{Call}, @var{Succ}, @var{Comp}, and
       @var{Comm}.".
 assertion_body(Pred,Compat,Call,Succ,Comp,Comm,
-	      (Pred::Compat:Call=>Succ+Comp#Comm)).
+          (Pred::Compat:Call=>Succ+Comp#Comm)).
 
 %% ---------------------------------------------------------------------------
 
@@ -134,33 +134,33 @@ assertion_body(Pred,Compat,Call,Succ,Comp,Comm,
 :- pred load_lib_assrt(Stream)
 # "Loads the facts for lib_assertion_read/9 from the stream @var{Stream}.".
 load_lib_assrt(Stream):-
-	repeat,
-	read(Stream,Fact),
-	( Fact = end_of_file ->
-	    !
-	;
-	    assertz_fact(Fact), % TODO: the performance of this can be improved
-	    fail
-	).
+    repeat,
+    read(Stream,Fact),
+    ( Fact = end_of_file ->
+        !
+    ;
+        assertz_fact(Fact), % TODO: the performance of this can be improved
+        fail
+    ).
 
 :- pred loaded_lib_assrt
-        #"Checks if the library assertions are already preloaded".
+    #"Checks if the library assertions are already preloaded".
 loaded_lib_assrt :-
-        \+ \+ lib_assertion_read(_,_,_,_,_,_,_,_,_).
+    \+ \+ lib_assertion_read(_,_,_,_,_,_,_,_,_).
 
 :- pred cleanup_lib_assrt
 # "Cleans up all facts of lib_assertion_read/9.".
 cleanup_lib_assrt:-
-	retractall_fact(lib_assertion_read(_,_,_,_,_,_,_,_,_)).
+    retractall_fact(lib_assertion_read(_,_,_,_,_,_,_,_,_)).
 
 :- pred gen_lib_assrt(Stream)
 # "Saves the facts for lib_assertion_read/9 to the stream @var{Stream}
   from pgm_assertion_read/9.".
 gen_lib_assrt(Stream):-
-	assertion_read(PD,M,Status,Type,Body,Dict,S,LB,LE),
-	assertion_body(Pred,Compat,Call,Succ,Comp,_Comm,Body),
-	assertion_body(Pred,Compat,Call,Succ,Comp,"",Body1), %no comment is stored.
-	writeq(Stream,lib_assertion_read(PD,M,Status,Type,Body1,Dict,S,LB,LE)),
-	display(Stream,'.'),nl(Stream),
-	fail.
+    assertion_read(PD,M,Status,Type,Body,Dict,S,LB,LE),
+    assertion_body(Pred,Compat,Call,Succ,Comp,_Comm,Body),
+    assertion_body(Pred,Compat,Call,Succ,Comp,"",Body1), %no comment is stored.
+    writeq(Stream,lib_assertion_read(PD,M,Status,Type,Body1,Dict,S,LB,LE)),
+    display(Stream,'.'),nl(Stream),
+    fail.
 gen_lib_assrt(_).

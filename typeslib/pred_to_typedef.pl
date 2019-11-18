@@ -33,7 +33,7 @@
 %% 
 %% app_goals((Lit, Body), Goals, (Lit, AppGoals)):- 
 %%         !,
-%% 	app_goals(Body, Goals, AppGoals).
+%%      app_goals(Body, Goals, AppGoals).
 %% app_goals(Lit, Goals, (Lit, Goals)).
 
 
@@ -67,18 +67,18 @@ all_occurs_vars_0(X, IVarSet, OVarSet):-
 %% 
 %%  %% pred_to_typedef(Clauses, Type, TypeDefin):-
 %%  %%         functor(Type, Name, A),
-%%  %% 	predicate_to_type_rule(Name, A, Clauses, TypeRule),
-%%  %% 	internal_rule_translate(TypeRule, TypeDefin).
+%%  %%  predicate_to_type_rule(Name, A, Clauses, TypeRule),
+%%  %%  internal_rule_translate(TypeRule, TypeDefin).
 %% 
 %% pred_to_typedef(Clauses, Type, TypeDef):-
 %%         functor(Type, Name, A),
-%%   	predicate_to_type_rule(Name, A, Clauses, TypeRule),
-%%   	internal_rule_translate(TypeRule, TypeDefin),
+%%      predicate_to_type_rule(Name, A, Clauses, TypeRule),
+%%      internal_rule_translate(TypeRule, TypeDefin),
 %%         TypeDefin = (typedef Type ::= TypeDef).
 
  %% predtypedef_to_grammartypedef(Clauses, T, TypeDef):-
- %% 	predicate_2_type_rule(T, Clauses, TypeRule),
- %% 	internal_rule_translate(TypeRule, TypeDefin),
+ %%     predicate_2_type_rule(T, Clauses, TypeRule),
+ %%     internal_rule_translate(TypeRule, TypeDefin),
  %%         TypeDefin = (typedef _TypeSymbol ::= TypeDef).
 
 pred2par_non_par_rule(Type, Clauses, TypeRule):- 
@@ -93,10 +93,10 @@ pred2par_non_par_rule(Type, Clauses, paramtypedef(Symbol, Defin)):-
    predicate_to_type_rule(Name, A, Clauses, typedef(Symbol, Defin)).
 
 predicate_to_type_rule(Predicate, Arity, Clauses, 
-                       typedef(TypeSymbol, RuleBody)):-
+                   typedef(TypeSymbol, RuleBody)):-
    predicate_to_rule_type_symbol(Predicate, Arity, TypeSymbol, ParametricVars),
    clauses_to_rule_body(Clauses, ParametricVars, RuleBody).
-          
+      
 predicate_to_rule_type_symbol(Predicate, Arity, Type, ParametricVars):-
      functor(Type, Predicate, Arity),
      Type =.. [Predicate|ParametricVars].
@@ -182,7 +182,7 @@ assign_top_type_to_non_parametric_vars([Var|List], ParVars):-
 % Format translation
 
 internal_rule_translate(typedef(TypSymbol, InDefin), 
-                       (typedef TypSymbol ::= ExDefin)):-
+                   (typedef TypSymbol ::= ExDefin)):-
      internal_union_translate(InDefin, ExDefin).
 
 internal_union_translate([Type1,Type2|Defin], (NewType;NewDefin)):-!,
@@ -328,18 +328,18 @@ internal_type_translate(X, X).
 %% 
 %% regular_type_literal_definition_1(Name, Arity, Lit, Clause,
 %%                  TermVarsSeen, TermVars, ParametricVars, [Arg1|TermVarsSeen],
-%% 		 Error):-
+%%               Error):-
 %%    (valid_body_type(Name/Arity) ->  
 %%         Lit =.. [Name, Arg1|Parameters],
 %%         valid_term_var(Arg1, Lit, TermVarsSeen, TermVars, Clause, Error),  
 %%         valid_parameters(Parameters, Lit, Clause, ParametricVars, Error)
 %%         ;
 %% %% PBC: call/2 with reversed args
-%% 	Name/Arity = call/2 ->
+%%      Name/Arity = call/2 ->
 %%             Lit =.. [Name, Arg, Arg1],
-%% 	    valid_term_var(Arg1, Lit, TermVarsSeen, TermVars, Clause, Error),  
-%% 	    valid_parameters([Arg], Lit, Clause, ParametricVars, Error)
-%% 	    ;
+%%          valid_term_var(Arg1, Lit, TermVarsSeen, TermVars, Clause, Error),  
+%%          valid_parameters([Arg], Lit, Clause, ParametricVars, Error)
+%%          ;
 %%             Error = bad_builtin_in_body_type(Name/Arity, Clause)).
 %% 
 %%  %% valid_body_type(Pred):- 

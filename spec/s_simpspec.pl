@@ -1,16 +1,16 @@
 :- module(s_simpspec,
-	[ body2list/2,
-	  list2body/2,
-	  make_atom/2,
-	  p_exp2list/2,
-	  next_pred/2,
-%% 	  next_key/2,
-%% 	  last_key/2,
- 	  next_or_last_key/3,
-	  list_format/2,
-	  newformat/2
-	],
-	[assertions,isomodes]).
+    [ body2list/2,
+      list2body/2,
+      make_atom/2,
+      p_exp2list/2,
+      next_pred/2,
+%%        next_key/2,
+%%        last_key/2,
+      next_or_last_key/3,
+      list_format/2,
+      newformat/2
+    ],
+    [assertions,isomodes]).
 
 :- use_module(ciaopp(p_unit/program_keys), [decode_litkey/5]).
 
@@ -20,16 +20,16 @@
 :- use_module(library(lists), [append/3]).
 
 make_atom(X,Y):-
-	make_name(X,Z),
-	name(Y,Z).
+    make_name(X,Z),
+    name(Y,Z).
 
 make_name([X],X1) :-
-	!,
-	name(X,X1).
+    !,
+    name(X,X1).
 make_name([X|Y],Z) :-
-	name(X,X1),
-	make_name(Y,Y1),
-	append(X1,[0'/|Y1],Z).
+    name(X,X1),
+    make_name(Y,Y1),
+    append(X1,[0'/|Y1],Z).
 
 %-------------------------------------------------------------------%
 % list2body(+,-)                                                    %
@@ -40,12 +40,12 @@ make_name([X|Y],Z) :-
 %-------------------------------------------------------------------%
 list2body([],true).
 list2body([Last],NewLast):-!,
-        list2p_exp(Last,NewLast).
+    list2p_exp(Last,NewLast).
 %list2body([First,(error:'$bottom')],NewFirst):- %this two lines avoid 
  %       list2p_exp(First,NewFirst). % displaying error literals
 list2body([First|Rest],(NewFirst,More)):-
-        list2p_exp(First,NewFirst),
-        list2body(Rest,More).
+    list2p_exp(First,NewFirst),
+    list2body(Rest,More).
 
 %-------------------------------------------------------------------%
 % list2p_exp(+,-)                                                   %
@@ -56,7 +56,7 @@ list2body([First|Rest],(NewFirst,More)):-
 list2p_exp([],(true:true)).  % dangerous. true does not have id...
 list2p_exp([Last],Last):-!.
 list2p_exp([First|Rest],(First & More)):-!,
-        list2p_exp(Rest,More).
+    list2p_exp(Rest,More).
 list2p_exp(Goal,Goal).
 
 %-------------------------------------------------------------------%
@@ -65,11 +65,11 @@ list2p_exp(Goal,Goal).
 %  Transform the body of a clause into a list of goals              %
 %-------------------------------------------------------------------% 
 body2list((First,Rest),[NewFirst|More]):-
-        !,
-	p_exp2list(First,NewFirst),
-        body2list(Rest,More).
+    !,
+    p_exp2list(First,NewFirst),
+    body2list(Rest,More).
 body2list(Last,[NewLast]):-
-	p_exp2list(Last,NewLast).
+    p_exp2list(Last,NewLast).
 
 %-------------------------------------------------------------------%
 % p_exp2list(+,-)                                                   %
@@ -77,11 +77,11 @@ body2list(Last,[NewLast]):-
 %  Transform a set of parallel goals to a list of goals             %
 %-------------------------------------------------------------------%
 p_exp2list((G & Goals),[G|More]):-!,
-	p_exp2listlist(Goals,More).
+    p_exp2listlist(Goals,More).
 p_exp2list(Goal,Goal).
 
 p_exp2listlist((G & Goals),[G|More]):-
-	p_exp2listlist(Goals,More).
+    p_exp2listlist(Goals,More).
 p_exp2listlist(Goal,[Goal]).
 
 
@@ -91,9 +91,9 @@ p_exp2listlist(Goal,[Goal]).
 %  Pred is the functor of the first goal of the list of goals Goals %
 %-------------------------------------------------------------------%
 next_pred([(Goal:_)|_],N/A):-!,
-        functor(Goal,N,A).
+    functor(Goal,N,A).
 next_pred([Goal|_],N/A):-
-        functor(Goal,N,A).
+    functor(Goal,N,A).
 next_pred([],none).
 
 %% GP: not needed any longer!
@@ -101,30 +101,30 @@ next_pred([],none).
 %% literal following the one with key @tt{K}.".
 %% 
 %% next_key(K,K1):-
-%% 	decode_litkey(K,P,A,C,G),
+%%      decode_litkey(K,P,A,C,G),
 %%         G1 is G+1,
-%% 	make_atom([P,A,C,G1],K1).
+%%      make_atom([P,A,C,G1],K1).
 %% 
 :- pred last_key(K,K1) : atm(K) => atm(K1)
-        # "@tt{K1} is the key for the end of the clause to which @tt{K} belongs.".
+    # "@tt{K1} is the key for the end of the clause to which @tt{K} belongs.".
 last_key(K,K1):-
-	decode_litkey(K,P,A,C,_G),
-	make_atom([P,A,C],K1).
+    decode_litkey(K,P,A,C,_G),
+    make_atom([P,A,C],K1).
 
 :- pred next_or_last_key(Goals,K,K1) : (list(Goals), atm(K)) => atm(K1)
-        # "@tt{K1} is the key for the end of the clause to which @tt{K} belongs
-         if @tt{Goals} is empty or the key for the next literal otherwise.".
+    # "@tt{K1} is the key for the end of the clause to which @tt{K} belongs
+     if @tt{Goals} is empty or the key for the next literal otherwise.".
 next_or_last_key([],K,K1):-
-	last_key(K,K1).
+    last_key(K,K1).
 next_or_last_key([(_:GK)|_],_K,K1):-
-	!,
-	K1 = GK.
+    !,
+    K1 = GK.
 next_or_last_key([!|Body],K,K1):-
-	!,
-	next_or_last_key(Body,K,K1).
+    !,
+    next_or_last_key(Body,K,K1).
 next_or_last_key([A|_],_,_):-
-	message( error , ['INTERNAL ERROR: next_or_last_key: in ' , A] ),
-	fail.
+    message( error , ['INTERNAL ERROR: next_or_last_key: in ' , A] ),
+    fail.
 
 %-------------------------------------------------------------------%
 % list_format(+,-)                                                  %
@@ -134,12 +134,12 @@ next_or_last_key([A|_],_,_):-
 %-------------------------------------------------------------------%
 list_format([],[]).
 list_format([directive(Dir):Id|Cs],[directive(Dir):Id|SCs]):-
-	list_format(Cs,SCs).
+    list_format(Cs,SCs).
 list_format([clause(H,true):Clid|Cs],[clause(H,[]):Clid|SCs]):-
-	list_format(Cs,SCs).
+    list_format(Cs,SCs).
 list_format([clause(H,Body):Clid|Cs],[clause(H,NewBody):Clid|SCs]):-
-	body2list(Body,NewBody),
-	list_format(Cs,SCs).
+    body2list(Body,NewBody),
+    list_format(Cs,SCs).
 
 %% -----------------------------------------------------------------------
 
@@ -153,7 +153,7 @@ list_format([clause(H,Body):Clid|Cs],[clause(H,NewBody):Clid|SCs]):-
 %-------------------------------------------------------------------%
 newformat([],[]).
 newformat([directive(D):Id|Cs],[directive(D):Id|SCs]):-
-        newformat(Cs,SCs).
+    newformat(Cs,SCs).
 newformat([clause(Head,Body):Clid|Cs],[clause(Head,NewBody):Clid|SCs]):-
-        list2body(Body,NewBody),
-        newformat(Cs,SCs).
+    list2body(Body,NewBody),
+    newformat(Cs,SCs).

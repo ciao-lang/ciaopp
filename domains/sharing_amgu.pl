@@ -42,12 +42,12 @@
 %------------------------------------------------------------------------%
 
 :- doc(bug,"1. The builtin ==/2 is defined but it is not used. For 
-	   its use, comment it out in special_builtin.").
+       its use, comment it out in special_builtin.").
 :- doc(bug,"2. The builtins read/2 and length/2 are used in a simple
-	   way. In order to use more complex definitions, comment it in 
-	   special_builtin.").
+       way. In order to use more complex definitions, comment it in 
+       special_builtin.").
 :- doc(bug,"3. The non-redundant version is not working because the 
-	   semantics of the builtins has not been defined yet.").
+       semantics of the builtins has not been defined yet.").
 
 :- use_module(library(terms_vars),     [varset/2]).
 :- use_module(library(sort),           [sort/2]).
@@ -115,8 +115,8 @@ share_amgu_iterate([(X,Ts)|Eqs],Flag,ASub, ASub2):-
 %------------------------------------------------------------------------%
 :- export(share_amgu_amgu/4).
 share_amgu_amgu(Sg,Head,ASub,AMGU):-
-	peel_equations(Sg,Head,Eqs),
-	share_amgu_iterate(Eqs,star,ASub,AMGU),!.
+    peel_equations(Sg,Head,Eqs),
+    share_amgu_iterate(Eqs,star,ASub,AMGU),!.
 
 %------------------------------------------------------------------------%
 %                      ABSTRACT Extend_Asub                              %
@@ -128,14 +128,14 @@ share_amgu_amgu(Sg,Head,ASub,AMGU):-
 :- export(share_amgu_augment_asub/3).
 share_amgu_augment_asub(ASub,[],ASub).
 share_amgu_augment_asub(ASub,Vars,ASub1):-
-	share_abs_sort(ASub,SASub),
-	sort(Vars,SVars),
-	share_amgu_augment_asub_(SASub,SVars,ASub0),
-	share_abs_sort(ASub0,ASub1).
+    share_abs_sort(ASub,SASub),
+    sort(Vars,SVars),
+    share_amgu_augment_asub_(SASub,SVars,ASub0),
+    share_abs_sort(ASub0,ASub1).
 
 share_amgu_augment_asub_(ASub,[],ASub).
 share_amgu_augment_asub_(ASub,[H|T],[[H]|ASub0]):-
-	share_amgu_augment_asub_(ASub,T,ASub0).
+    share_amgu_augment_asub_(ASub,T,ASub0).
 
 %------------------------------------------------------------------------%
 %                      ABSTRACT Extend_two_asub                          %
@@ -147,9 +147,9 @@ share_amgu_augment_asub_(ASub,[H|T],[[H]|ASub0]):-
 share_amgu_augment_two_asub([],ASub1,ASub1):-!.
 share_amgu_augment_two_asub(ASub0,[],ASub0):-!.
 share_amgu_augment_two_asub(ASub0,ASub1,ASub):-
-        append(ASub0,ASub1,ASub_u),
-	share_abs_sort(ASub_u,ASub),!.
-	
+    append(ASub0,ASub1,ASub_u),
+    share_abs_sort(ASub_u,ASub),!.
+    
        
 %------------------------------------------------------------------------%
 %                      ABSTRACT Exit to Prime                            %
@@ -161,19 +161,19 @@ share_amgu_augment_two_asub(ASub0,ASub1,ASub):-
 :- export(share_amgu_exit_to_prime/7).
 share_amgu_exit_to_prime(_,_,_,_,'$bottom',_,'$bottom'):-!.
 share_amgu_exit_to_prime(Sg,Hv,Head,_Sv,Exit,Flag,Prime):-  
-	Flag == yes, !,
-	share_project(Sg,Hv,not_provided_HvFv_u,Exit,BPrime),
-	copy_term((Head,BPrime),(NewHead,NewPrime)),
-	Sg = NewHead,
-	share_abs_sort(NewPrime,Prime).
+    Flag == yes, !,
+    share_project(Sg,Hv,not_provided_HvFv_u,Exit,BPrime),
+    copy_term((Head,BPrime),(NewHead,NewPrime)),
+    Sg = NewHead,
+    share_abs_sort(NewPrime,Prime).
 share_amgu_exit_to_prime(_,[],_,_,_,_,[]):- !.
 share_amgu_exit_to_prime(Sg,_Hv,_Head,Sv,Exit,ExtraInfo,Prime):-
-	ExtraInfo= (Equations,Gv_Call),
-	share_amgu_augment_asub(Exit,Sv,ASub),     
-        share_amgu_iterate(Equations,star, ASub, Prime0),
-        share_project(Sg,Sv,not_provided_HvFv_u,Prime0,Prime1),
-	% groundness propagation from call_to_entry
-	ord_split_lists_from_list(Gv_Call,Prime1,_,Prime).
+    ExtraInfo= (Equations,Gv_Call),
+    share_amgu_augment_asub(Exit,Sv,ASub),     
+    share_amgu_iterate(Equations,star, ASub, Prime0),
+    share_project(Sg,Sv,not_provided_HvFv_u,Prime0,Prime1),
+    % groundness propagation from call_to_entry
+    ord_split_lists_from_list(Gv_Call,Prime1,_,Prime).
 
 %------------------------------------------------------------------------%
 %                      ABSTRACT Call to Success Fact                     %
@@ -185,14 +185,14 @@ share_amgu_exit_to_prime(Sg,_Hv,_Head,Sv,Exit,ExtraInfo,Prime):-
 :- export(share_amgu_call_to_success_fact/9).
 share_amgu_call_to_success_fact(Sg,Hv,Head,_K,Sv,Call,_Proj,Prime,Succ) :-
 % exit_to_prime
-	share_amgu_augment_asub(Call,Hv,ASub),
-	peel_equations(Sg, Head,Equations),
-	share_amgu_iterate(Equations,star,ASub,ASub1),
-	share_project(Sg,Sv,not_provided_HvFv_u,ASub1,Prime),
+    share_amgu_augment_asub(Call,Hv,ASub),
+    peel_equations(Sg, Head,Equations),
+    share_amgu_iterate(Equations,star,ASub,ASub1),
+    share_project(Sg,Sv,not_provided_HvFv_u,ASub1,Prime),
 % extend
-	delete_vars_from_list_of_lists(Hv,ASub1,Succ0),
-	sort_list_of_lists(Succ0,Succ),!.	
-share_amgu_call_to_success_fact(_Sg,_Hv,_Head,_K,_Sv,_Call,_Proj, '$bottom','$bottom').	
+    delete_vars_from_list_of_lists(Hv,ASub1,Succ0),
+    sort_list_of_lists(Succ0,Succ),!.       
+share_amgu_call_to_success_fact(_Sg,_Hv,_Head,_K,_Sv,_Call,_Proj, '$bottom','$bottom'). 
 
 %-------------------------------------------------------------------------
 % Specialised version of share_call_to_success_fact in order to allow    |
@@ -204,10 +204,10 @@ share_amgu_call_to_success_fact(_Sg,_Hv,_Head,_K,_Sv,_Call,_Proj, '$bottom','$bo
 :- export(share_amgu_call_to_prime_fact/6).
 share_amgu_call_to_prime_fact(Sg,Hv,Head,Sv,Call,Prime) :-
 % exit_to_prime
-	share_amgu_augment_asub(Call,Hv,ASub),
-	peel_equations(Sg, Head,Equations),
-	share_amgu_iterate(Equations,star,ASub,ASub1),
-	share_project(Sg,Sv,not_provided_HvFv_u,ASub1,Prime).	
+    share_amgu_augment_asub(Call,Hv,ASub),
+    peel_equations(Sg, Head,Equations),
+    share_amgu_iterate(Equations,star,ASub,ASub1),
+    share_project(Sg,Sv,not_provided_HvFv_u,ASub1,Prime).   
 
 
 %------------------------------------------------------------------------%
@@ -234,8 +234,8 @@ share_amgu_special_builtin('read/2',read(X,Y),_,'recorded/3',p(Y,X)).
 share_amgu_special_builtin('length/2',length(_X,Y),_,some,[Y]).
 share_amgu_special_builtin('==/2',_,_,_,_):- !, fail.
 share_amgu_special_builtin(SgKey,Sg,Subgoal,Type,Condvars):-
-	share_special_builtin(SgKey,Sg,Subgoal,Type,Condvars).
-	
+    share_special_builtin(SgKey,Sg,Subgoal,Type,Condvars).
+    
 
 %-------------------------------------------------------------------------
 % share_amgu_success_builtin(+,+,+,+,+,-)                                |
@@ -251,55 +251,55 @@ share_amgu_special_builtin(SgKey,Sg,Subgoal,Type,Condvars):-
 
 :- export(share_amgu_success_builtin/6).
 share_amgu_success_builtin('=../2',_,p(X,Y),_,Call,Succ):-
-	varset(X,Varsx),
-	projected_gvars(Call,Varsx,Vars),Vars == Varsx,!,
-	varset(Y,Varsy),
-	ord_split_lists_from_list(Varsy,Call,_Intersect,Succ).
+    varset(X,Varsx),
+    projected_gvars(Call,Varsx,Vars),Vars == Varsx,!,
+    varset(Y,Varsy),
+    ord_split_lists_from_list(Varsy,Call,_Intersect,Succ).
 share_amgu_success_builtin('=../2',_,p(X,Y),_,Call,Succ):-
-	nonvar(Y),
-	Y = [Z|W],
-	varset(W,Varsy),
-	projected_gvars(Call,Varsy,Vars),Vars == Varsy,!,
-	varset((X,Z),Varsx),
-	ord_split_lists_from_list(Varsx,Call,_Intersect,Succ).
+    nonvar(Y),
+    Y = [Z|W],
+    varset(W,Varsy),
+    projected_gvars(Call,Varsy,Vars),Vars == Varsy,!,
+    varset((X,Z),Varsx),
+    ord_split_lists_from_list(Varsx,Call,_Intersect,Succ).
 share_amgu_success_builtin('=../2',Sv_u,p(X,Y),_,Call,Succ):-
-	var(X), var(Y),!,
-	sort(Sv_u,Sv),
-	share_extend(not_provided_Sg,[Sv],Sv,Call,Succ).
+    var(X), var(Y),!,
+    sort(Sv_u,Sv),
+    share_extend(not_provided_Sg,[Sv],Sv,Call,Succ).
 share_amgu_success_builtin('=../2',Sv_u,p(X,Y),_,Call,Succ):-
-%%	( var(Y) ; Y = [_|_] ), !,
-%%	( var(X) -> Term=[g|X] ; X=..Term ),
-	( var(Y) -> G=g ; Y = [G|_] ), !,
-	( var(X) -> Term=[G|X] ; X=..Term ),
-	sort(Sv_u,Sv),
-	share_project(not_provided_Sg,Sv,not_provided_HvFv_u,Call,Proj),
-	share_amgu_call_to_success_builtin('=/2','='(Term,Y),Sv,Call,Proj,Succ).
+%%      ( var(Y) ; Y = [_|_] ), !,
+%%      ( var(X) -> Term=[g|X] ; X=..Term ),
+    ( var(Y) -> G=g ; Y = [G|_] ), !,
+    ( var(X) -> Term=[G|X] ; X=..Term ),
+    sort(Sv_u,Sv),
+    share_project(not_provided_Sg,Sv,not_provided_HvFv_u,Call,Proj),
+    share_amgu_call_to_success_builtin('=/2','='(Term,Y),Sv,Call,Proj,Succ).
 share_amgu_success_builtin('=../2',_Sv_u,_,_,_Call,'$bottom'):- !.
 share_amgu_success_builtin(copy_term,_Sv_u,p(X,Y),_,Call,Succ):-
-	varset(X,VarsX),
-	share_project(not_provided_Sg,VarsX,not_provided_HvFv_u,Call,ProjectedX),
-	copy_term((X,ProjectedX),(NewX,NewProjectedX)),
-	sort_list_of_lists(NewProjectedX,ProjectedNewX),
-	varset(NewX,VarsNewX),
-	varset(Y,VarsY),
-	merge(VarsNewX,VarsY,TempSv),
-	share_project(not_provided_Sg,VarsY,not_provided_HvFv_u,Call,ProjectedY),
-	merge(ProjectedY,ProjectedNewX,TempProjected),
-	merge(ProjectedNewX,Call,TempCall),
-	share_amgu_call_to_success_builtin('=/2','='(NewX,Y),TempSv,
-                                TempCall,TempProjected,Temp_success),
-	merge_list_of_lists(Call,VarsCall),
-	share_project(not_provided_Sg,VarsCall,not_provided_HvFv_u,Temp_success,Succ),
-	!. % TODO: move cut somewhere else? (JF)
+    varset(X,VarsX),
+    share_project(not_provided_Sg,VarsX,not_provided_HvFv_u,Call,ProjectedX),
+    copy_term((X,ProjectedX),(NewX,NewProjectedX)),
+    sort_list_of_lists(NewProjectedX,ProjectedNewX),
+    varset(NewX,VarsNewX),
+    varset(Y,VarsY),
+    merge(VarsNewX,VarsY,TempSv),
+    share_project(not_provided_Sg,VarsY,not_provided_HvFv_u,Call,ProjectedY),
+    merge(ProjectedY,ProjectedNewX,TempProjected),
+    merge(ProjectedNewX,Call,TempCall),
+    share_amgu_call_to_success_builtin('=/2','='(NewX,Y),TempSv,
+                            TempCall,TempProjected,Temp_success),
+    merge_list_of_lists(Call,VarsCall),
+    share_project(not_provided_Sg,VarsCall,not_provided_HvFv_u,Temp_success,Succ),
+    !. % TODO: move cut somewhere else? (JF)
 share_amgu_success_builtin(findall,_Sv_u,p(X,Z),HvFv_u,Call,Succ):-
-	varset(X,Varsx),
-	projected_gvars(Call,Varsx,Vars),Vars == Varsx,!,
-	varset(Z,Varsz),
-	share_amgu_success_builtin(ground,Varsz,_any,HvFv_u,Call,Succ).
+    varset(X,Varsx),
+    projected_gvars(Call,Varsx,Vars),Vars == Varsx,!,
+    varset(Z,Varsz),
+    share_amgu_success_builtin(ground,Varsz,_any,HvFv_u,Call,Succ).
 share_amgu_success_builtin(findall,_Sv_u,_,_HvFv_u,Call,Call):- !.
 %
 share_amgu_success_builtin(Type,Sv_u,Condv,HvFv_u,Call,Succ):-
-	share_success_builtin(Type,Sv_u,Condv,HvFv_u,Call,Succ).
+    share_success_builtin(Type,Sv_u,Condv,HvFv_u,Call,Succ).
 
 %-------------------------------------------------------------------------
 % share_amgu_call_to_success_builtin(+,+,+,+,+,-)                        %
@@ -308,29 +308,29 @@ share_amgu_success_builtin(Type,Sv_u,Condv,HvFv_u,Call,Succ):-
 %-------------------------------------------------------------------------
 :- export(share_amgu_call_to_success_builtin/6).
 share_amgu_call_to_success_builtin('=/2','='(X,Y),Sv,Call,Proj,Succ):-
-	copy_term(X,Xterm),
-	copy_term(Y,Yterm),
-	Xterm = Yterm,!,
-	varset(Xterm,Vars),
-	share_amgu_call_to_success_fact('='(X,Y),Vars,'='(Xterm,Xterm),not_provided,Sv,Call,Proj,_Prime,Succ). % TODO: add some ClauseKey?
+    copy_term(X,Xterm),
+    copy_term(Y,Yterm),
+    Xterm = Yterm,!,
+    varset(Xterm,Vars),
+    share_amgu_call_to_success_fact('='(X,Y),Vars,'='(Xterm,Xterm),not_provided,Sv,Call,Proj,_Prime,Succ). % TODO: add some ClauseKey?
 share_amgu_call_to_success_builtin('=/2',_Sg,_Sv,_Call,_Proj,'$bottom').
 share_amgu_call_to_success_builtin('C/3','C'(X,Y,Z),Sv,Call,Proj,Succ):-
-	share_amgu_call_to_success_fact('='(X,[Y|Z]),[W],'='(W,W),not_provided,Sv,Call,Proj,_Prime,Succ). % TODO: add some ClauseKey?
+    share_amgu_call_to_success_fact('='(X,[Y|Z]),[W],'='(W,W),not_provided,Sv,Call,Proj,_Prime,Succ). % TODO: add some ClauseKey?
 share_amgu_call_to_success_builtin('sort/2',sort(X,Y),Sv,Call,Proj,Succ):- 
-	share_amgu_call_to_success_builtin('=/2','='(X,Y),Sv,Call,Proj,Succ).
+    share_amgu_call_to_success_builtin('=/2','='(X,Y),Sv,Call,Proj,Succ).
 share_amgu_call_to_success_builtin('expand_term/2',expand_term(X,Y),Sv,Call,Proj,Succ):- 
-	share_amgu_call_to_success_builtin('arg/3',arg(1,Y,X),Sv,Call,Proj,Succ).
+    share_amgu_call_to_success_builtin('arg/3',arg(1,Y,X),Sv,Call,Proj,Succ).
 share_amgu_call_to_success_builtin('keysort/2',keysort(X,Y),Sv,Call,Proj,Succ):- 
-	share_amgu_call_to_success_builtin('=/2','='(X,Y),Sv,Call,Proj,Succ).
+    share_amgu_call_to_success_builtin('=/2','='(X,Y),Sv,Call,Proj,Succ).
 share_amgu_call_to_success_builtin('arg/3',arg(X,Y,Z),_,Call,Proj,Succ):- 
-	varset(X,OldG),
-	ord_split_lists_from_list(OldG,Call,_Intersect,TempCall),
-	Sg = p(Y,Z),
-	Head = p(f(A,_B),A),
-	varset(Sg,Sv),
-	varset(Head,Hv),
-	share_project(not_provided_Sg,Sv,not_provided_HvFv_u,TempCall,Proj),
-	share_amgu_call_to_success_fact(Sg,Hv,Head,not_provided,Sv,TempCall,Proj,_Prime,Succ). % TODO: add some ClauseKey?
+    varset(X,OldG),
+    ord_split_lists_from_list(OldG,Call,_Intersect,TempCall),
+    Sg = p(Y,Z),
+    Head = p(f(A,_B),A),
+    varset(Sg,Sv),
+    varset(Head,Hv),
+    share_project(not_provided_Sg,Sv,not_provided_HvFv_u,TempCall,Proj),
+    share_amgu_call_to_success_fact(Sg,Hv,Head,not_provided,Sv,TempCall,Proj,_Prime,Succ). % TODO: add some ClauseKey?
 
 %------------------------------------------------------------------------%
 %            Intermediate Functions                                      |

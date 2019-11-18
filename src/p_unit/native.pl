@@ -1,9 +1,9 @@
 :- module(native,
-	[ builtin/2, builtin_package/1, 
-	  native_prop_map/3, native_prop_term/1,
-	  native_builtin/2, native_property/2,
-	  wam_builtin/2],
-	[assertions, regtypes, hiord_old, nortchecks, ciaopp(ciaopp_options)]).
+    [ builtin/2, builtin_package/1, 
+      native_prop_map/3, native_prop_term/1,
+      native_builtin/2, native_property/2,
+      wam_builtin/2],
+    [assertions, regtypes, hiord_old, nortchecks, ciaopp(ciaopp_options)]).
 
 :- use_module(library(lists), [member/2, append/3]).
 :- use_module(engine(runtime_control), [module_split/3]).
@@ -14,7 +14,7 @@ term_to_meta(Term,Term).
 %------------------------------------------------------------------------%
 
 :- doc(module,"This module has the basic procedures for understanding
-	predicates as builtins and properties as native properties.").
+    predicates as builtins and properties as native properties.").
 
 %------------------------------------------------------------------------%
 
@@ -24,21 +24,21 @@ term_to_meta(Term,Term).
     (builtin or property) predicate.").
 
 builtin(regtype(Term),'basic_props:regtype'(Meta)):-
-	term_to_meta(Term,Meta).
+    term_to_meta(Term,Meta).
 builtin(native(Term,Y),'basic_props:native'(Meta,Y)):-
-	term_to_meta(Term,Meta).
+    term_to_meta(Term,Meta).
 %% builtin(native(Term,Term),native(Meta)):-
-%% 	term_to_meta(Term,Meta).
+%%      term_to_meta(Term,Meta).
 builtin(native(Term,Y),'basic_props:native'(Meta)):-
-	term_to_meta(Term,Meta),
-	Meta=..[F|Args],
-	unexpand(F,FY),
-	Y=..[FY|Args].
+    term_to_meta(Term,Meta),
+    Meta=..[F|Args],
+    unexpand(F,FY),
+    Y=..[FY|Args].
 builtin(entry_point_name(Term,Y),'native_props:entry_point_name'(Meta,Y)):-
-	term_to_meta(Term,Meta).
+    term_to_meta(Term,Meta).
 
 unexpand(F,FT):-
-	module_split(F,_M,FT0), !, FT = FT0.
+    module_split(F,_M,FT0), !, FT = FT0.
 unexpand(F,F).
 
 :- doc(hide,builtin_package/1).
@@ -46,7 +46,7 @@ unexpand(F,F).
 builtin_package(nativeprops).
 
 :- doc(bug, "Verify why this module is not compatible with
-	rtchecks. -- EMM").
+    rtchecks. -- EMM").
 
 %------------------------------------------------------------------------%
 :- doc(native_prop_term/1,"Defined as @includedef{native_prop_term/1}").
@@ -117,11 +117,11 @@ vlist(L):- list(L,var).
     @tt{map}(@var{Vars},@var{P})").
 
 native_prop_map(free(Vars),free,Vars):-
-	nonvar(Vars).
+    nonvar(Vars).
 native_prop_map(not_free(Vars),not_free,Vars):-
-	nonvar(Vars).
+    nonvar(Vars).
 native_prop_map(not_ground(Vars),not_ground,Vars):-
-	nonvar(Vars).
+    nonvar(Vars).
 
 %------------------------------------------------------------------------%
 % Should correspond with native/1 above:
@@ -158,7 +158,7 @@ native_property('native_props:steps_ub'(G,C),steps_ub(G,C)).
 native_property('native_props:steps_o'(G,C),steps_o(G,C)).
 :- if(defined(has_ciaopp_extra)).
 native_property('resources_props:cost'(G,Rel,Ap,Type,R,_,IF,CFN),
-	cost(G,Rel,Ap,Type,R,CF)) :- compact_cf(CFN,IF,CF).
+    cost(G,Rel,Ap,Type,R,CF)) :- compact_cf(CFN,IF,CF).
 :- endif.
 native_property('native_props:terminates'(G),terminates(G)).
 native_property('native_props:size'(G,C),size(G,C)).
@@ -180,17 +180,17 @@ native_builtin('basiccontrol:$metacut'(V),metacut(V)). % in remotecut.pl
 
 % ACC
 native_builtin('andprolog_rt:&'(A,B),
-               ampersand(A,B)).              % in tr_parallel.pl
+           ampersand(A,B)).              % in tr_parallel.pl
 native_builtin('andprolog_rt:&!'(A,B),
-               ampersand_det(A,B)).          % in tr_parallel.pl
+           ampersand_det(A,B)).          % in tr_parallel.pl
 native_builtin('andprolog_rt:&>'(A,B),
-               amp_publish_goal(A,B)).       % in tr_parallel.pl
+           amp_publish_goal(A,B)).       % in tr_parallel.pl
 native_builtin('andprolog_rt:&!>'(A,B),
-               amp_publish_goal_det(A,B)).   % in tr_parallel.pl
+           amp_publish_goal_det(A,B)).   % in tr_parallel.pl
 native_builtin('andprolog_rt:<&'(A),
-               amp_get_result(A)).           % in tr_parallel.pl
+           amp_get_result(A)).           % in tr_parallel.pl
 native_builtin('andprolog_rt:<&!'(A),
-               amp_get_result_det(A)).       % in tr_parallel.pl
+           amp_get_result_det(A)).       % in tr_parallel.pl
 
 native_builtin('term_basic:\\='(X,Y),\=(X,Y)).
 native_builtin('io_basic:display'(X),display(X)).

@@ -15,100 +15,100 @@
 
 :- export(get_prev_lit/2).
 get_prev_lit(SgKey,PrevKey) :-
-	is_clkey(SgKey),!,
-	get_last_lit(SgKey,PrevKey).
+    is_clkey(SgKey),!,
+    get_last_lit(SgKey,PrevKey).
 get_prev_lit(SgKey,PrevKey) :-
-	decode_litkey(SgKey,F,A,C,G),
-	G1 is G - 1,
-	G1 > 0,
-	make_atom([F,A,C,G1],PrevKey).
+    decode_litkey(SgKey,F,A,C,G),
+    G1 is G - 1,
+    G1 > 0,
+    make_atom([F,A,C,G1],PrevKey).
 
 :- export(get_clause_id/2).
 get_clause_id(SgKey,ClKey) :-
-	decode_litkey(SgKey,F,A,C,_),
-	make_atom([F,A,C],ClKey),!.
+    decode_litkey(SgKey,F,A,C,_),
+    make_atom([F,A,C],ClKey),!.
 get_clause_id(SgKey,SgKey).
 
 :- export(find_lit/2).
 find_lit(((Lit:Key),_),Lit:Key) :-!.
 find_lit((_,Lits),Lit) :-!,
-	find_lit(Lits,Lit).
+    find_lit(Lits,Lit).
 find_lit((Lit:Key),Lit:Key) :-!.
 find_lit(_,Lit) :-
-	displayq('NOT FOUND IN BODY'(Lit)),fail.
+    displayq('NOT FOUND IN BODY'(Lit)),fail.
 
 :- export(get_last_lit/2).
 get_last_lit(ClKey,LastKey) :-
-	source_clause(ClKey,clause(_,Body),_),
-	find_last(Body,LastKey).
+    source_clause(ClKey,clause(_,Body),_),
+    find_last(Body,LastKey).
 
 :- export(find_last/2).
 find_last((_,B),Last) :-
-	find_last(B,Last).
+    find_last(B,Last).
 find_last(_:Key,Key).
 
 :- export(get_next_lit/2).
 get_next_lit(SgKey,NextKey) :-
-	is_last_lit(SgKey),!,
-	get_clause_id(SgKey,NextKey).
+    is_last_lit(SgKey),!,
+    get_clause_id(SgKey,NextKey).
 get_next_lit(SgKey,NextKey) :-
-	decode_litkey(SgKey,F,A,C,G),
-	G1 is G + 1,
-	make_atom([F,A,C,G1],NextKey).
+    decode_litkey(SgKey,F,A,C,G),
+    G1 is G + 1,
+    make_atom([F,A,C,G1],NextKey).
 
 :- export(get_first_lit_cl/2).
 get_first_lit_cl(ClKey,FKey) :-
-	decode_clkey(ClKey,F,A,C),
-	make_atom([F,A,C,1],FKey).
+    decode_clkey(ClKey,F,A,C),
+    make_atom([F,A,C,1],FKey).
 
 :- export(is_last_lit/1).
 is_last_lit(SgKey) :-
-	get_clause_id(SgKey,ClKey),
-	get_last_lit(ClKey,SgKey).
+    get_clause_id(SgKey,ClKey),
+    get_last_lit(ClKey,SgKey).
 
 :- export(get_var_name/4).
 get_var_name(V,[V0|_],[N|_],N) :-
-	V == V0,!.
+    V == V0,!.
 get_var_name(V,[_|Vs],[_|Ns],N) :-
-	get_var_name(V,Vs,Ns,N).
+    get_var_name(V,Vs,Ns,N).
 
 :- export(guess_vars/2).
 guess_vars(B,A) :-
-	length(B,Max),
-	gen_list(Max,1,[_],A),
-	subset(A,B).
+    length(B,Max),
+    gen_list(Max,1,[_],A),
+    subset(A,B).
 
 :- export(subset/2).
 subset([A],[A|_]).
 subset(S,[A|Ss]) :-
-	subset(S1,Ss),
-	( S = S1
-	; S = [A|S1]
-	).
+    subset(S1,Ss),
+    ( S = S1
+    ; S = [A|S1]
+    ).
 
 :- export(gen_list/4).
 gen_list(_,_,L,L).
 gen_list(Max,N1,L,L1):-
-	N1 < Max,
-	N2 is N1 + 1,
-	gen_list(Max,N2,[_|L],L1).
+    N1 < Max,
+    N2 is N1 + 1,
+    gen_list(Max,N2,[_|L],L1).
 
 :- export(subset_0/2).
 subset_0([],_).
 subset_0([S|Ss],Sup) :-
-	member_0(S,Sup),
-	subset_0(Ss,Sup).
+    member_0(S,Sup),
+    subset_0(Ss,Sup).
 
 :- export(range/2).
 range(ASubs,Range) :-
-	varset(ASubs,Range).
+    varset(ASubs,Range).
 
 :- export(get_init_lit/4).
 get_init_lit(_,Head,Lit,Key) :-
-	\+ decode_litkey(Key,_,_,_,_),!,
-	Lit = Head.
+    \+ decode_litkey(Key,_,_,_,_),!,
+    Lit = Head.
 get_init_lit(Body,_,Lit,Key) :-
-%	get_prev_lit(Key,PKey),
-	find_lit(Body,(Lit:Key)).
+%       get_prev_lit(Key,PKey),
+    find_lit(Body,(Lit:Key)).
 
 

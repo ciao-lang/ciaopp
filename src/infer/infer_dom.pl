@@ -1,14 +1,14 @@
 :- module(infer_dom,
-	[ asub_to_info/6,
-	  asub_to_out/6,
-	  asub_to_props/4, 
-	  abs_execute_with_info/4,
-	  flag_is/3,
-	  flag_set/3,
-	  knows_of/2,
-	  non_collapsable/1
-	],
-	[assertions, regtypes, datafacts, ciaopp(ciaopp_options)]).
+    [ asub_to_info/6,
+      asub_to_out/6,
+      asub_to_props/4, 
+      abs_execute_with_info/4,
+      flag_is/3,
+      flag_set/3,
+      knows_of/2,
+      non_collapsable/1
+    ],
+    [assertions, regtypes, datafacts, ciaopp(ciaopp_options)]).
 
 :- use_package(ciaopp(p_unit/p_unit_argnames)).
 
@@ -16,15 +16,15 @@
 %[LD] for interval
 :- use_module(infercost(algebraic/polynom_comp),
       [
-          polynom_root_interval/3,
-          difference/3,
-          polynomize/2,
-          validate_polynom/2,
-          polynom_current_assertion/1,
-          polynom_message/7, 
-	  brute_eval_intervals/3,
-	  eval_arith/3,
-          compute_safe_intervals/4
+      polynom_root_interval/3,
+      difference/3,
+      polynomize/2,
+      validate_polynom/2,
+      polynom_current_assertion/1,
+      polynom_message/7, 
+      brute_eval_intervals/3,
+      eval_arith/3,
+      compute_safe_intervals/4
       ]).
 %:- use_module(library(format)).
 %[/LD] for interval
@@ -34,20 +34,20 @@
 :- use_module(ciaopp(preprocess_flags), [current_pp_flag/2]).
 :- if(defined(has_ciaopp_extra)).
 :- use_module(infercost(algebraic), 
-        [ exp_greater_eq_than/2,
-          exp_greater_than/2,
-          exp_eq_than/2,
-          order_of_function/2,
-          complexity_order_greater_than/2,
-          complexity_order_greater_eq_than/2
-        ]).
+    [ exp_greater_eq_than/2,
+      exp_greater_than/2,
+      exp_eq_than/2,
+      order_of_function/2,
+      complexity_order_greater_than/2,
+      complexity_order_greater_eq_than/2
+    ]).
 :- use_module(infercost(infercost_register), 
-        [ is_time_analysis/1,
-          is_size_analysis/1,
-          is_single_complexity_analysis/1,
-          is_ualb_complexity_analysis/3,
-          is_complexity_analysis/1
-        ]).
+    [ is_time_analysis/1,
+      is_size_analysis/1,
+      is_single_complexity_analysis/1,
+      is_ualb_complexity_analysis/3,
+      is_complexity_analysis/1
+    ]).
 :- endif.
 %
 :- use_module(ciaopp(p_unit),     [native_prop/2]).
@@ -56,8 +56,8 @@
 :- use_module(spec(abs_exec_cond), [cond/4]).
 :- use_module(domain(eterms),      [eterms_asub_to_native1/3]).
 :- use_module(typeslib(typeslib), 
-	[assert_param_type_instance/2, 
-	 equivalent_to_top_type/1]).
+    [assert_param_type_instance/2, 
+     equivalent_to_top_type/1]).
 %
 :- use_module(library(keys), [key_lookup/4]).
 :- use_module(library(terms_vars), [varset/2]).
@@ -80,74 +80,74 @@
 
 :- doc(bug, "Handling of compatibility types and properties is missing."). 
 :- doc(bug, "All references to old resource-related properties should
-                 be removed.").
+             be removed.").
 % ------------------------------------------------------------------------
 
 asub_to_out(nfg,_Goal,nf(Call0,Succ0,Fail,Cover),Call,Succ,[Fail,Cover]):- !,
-        eterms_asub_to_native1(Call0,yes,Call),
-        eterms_asub_to_native1(Succ0,yes,Succ).
+    eterms_asub_to_native1(Call0,yes,Call),
+    eterms_asub_to_native1(Succ0,yes,Succ).
 asub_to_out(detg,_Goal,nf(Call0,Succ0,Fail,Cover),Call,Succ,[Fail,Cover]):- !,
-        eterms_asub_to_native1(Call0,yes,Call),
-        eterms_asub_to_native1(Succ0,yes,Succ).
+    eterms_asub_to_native1(Call0,yes,Call),
+    eterms_asub_to_native1(Succ0,yes,Succ).
 asub_to_out(An,Goal,Abs,Call,Succ,Info):-
-	asub_to_info(An,Goal,Abs,Call,Succ,Info0),
-	norm_goal_props(Info0,Info,Goal).
+    asub_to_info(An,Goal,Abs,Call,Succ,Info0),
+    norm_goal_props(Info0,Info,Goal).
 
 norm_goal_props([],[],_).
 norm_goal_props([GP|GPs],[NGP|NGPs],NPD) :-
-	norm_goal_prop(GP,NGP,NPD),
-	norm_goal_props(GPs,NGPs,NPD).
+    norm_goal_prop(GP,NGP,NPD),
+    norm_goal_props(GPs,NGPs,NPD).
 
 asub_to_info(tp,_Goal,Abs,[],[],[Abs]).
 asub_to_info(seff,Goal,Abs,[],[],[Prop]):-
-	seff_property(Abs,Goal,Prop).
+    seff_property(Abs,Goal,Prop).
 asub_to_info(nfg,_Goal,nf(Call0,Succ0,Fail,Cover),Call,Succ,[Fail,Cover]):-
-        eterms_asub_to_native1(Call0,no,Call),
-        eterms_asub_to_native1(Succ0,no,Succ).
+    eterms_asub_to_native1(Call0,no,Call),
+    eterms_asub_to_native1(Succ0,no,Succ).
 asub_to_info(detg,_Goal,nf(Call0,Succ0,Fail,Cover),Call,Succ,[Fail,Cover]):-
-        eterms_asub_to_native1(Call0,no,Call),
-        eterms_asub_to_native1(Succ0,no,Succ).
+    eterms_asub_to_native1(Call0,no,Call),
+    eterms_asub_to_native1(Succ0,no,Succ).
 :- if(defined(has_ciaopp_extra)).
 asub_to_info(resources,Goal,Abs,Call,Succ,Comp):-
-        get_vartypes_from_resource_info(Abs, Call_VarType, Succ_VarType),
-	complexity_property(Abs,resources,Goal,Succ0,Comp),
-        eterms_asub_to_native1(Call_VarType,no,Call),
-        eterms_asub_to_native1(Succ_VarType,no,New_Succ_VarType),
-        append(New_Succ_VarType, Succ0, Succ).
+    get_vartypes_from_resource_info(Abs, Call_VarType, Succ_VarType),
+    complexity_property(Abs,resources,Goal,Succ0,Comp),
+    eterms_asub_to_native1(Call_VarType,no,Call),
+    eterms_asub_to_native1(Succ_VarType,no,New_Succ_VarType),
+    append(New_Succ_VarType, Succ0, Succ).
 asub_to_info(An,Goal,Abs,Call,Succ,Comp):-
-        is_complexity_analysis(An), % TODO: missing cut?
-        get_vartypes_from_complexity_info(Abs, Call_VarType, Succ_VarType),
-	complexity_property(Abs,An,Goal,Succ0,Comp),
-        eterms_asub_to_native1(Call_VarType,no,Call),
-        eterms_asub_to_native1(Succ_VarType,no,New_Succ_VarType),
-        append(New_Succ_VarType, Succ0, Succ).
+    is_complexity_analysis(An), % TODO: missing cut?
+    get_vartypes_from_complexity_info(Abs, Call_VarType, Succ_VarType),
+    complexity_property(Abs,An,Goal,Succ0,Comp),
+    eterms_asub_to_native1(Call_VarType,no,Call),
+    eterms_asub_to_native1(Succ_VarType,no,New_Succ_VarType),
+    append(New_Succ_VarType, Succ0, Succ).
 :- endif.
 asub_to_info(Anal,Goal,Abs,Call,Succ,Comp):-
-	inferred_to_property(Anal,Goal,Abs,Call,Succ,Comp).
+    inferred_to_property(Anal,Goal,Abs,Call,Succ,Comp).
 
 :- if(defined(has_ciaopp_extra)).
 get_vartypes_from_complexity_info([_Abs_Lb, Abs_Ub], Call_VarType, Succ_VarType):-
-        !, 
-        Abs_Ub = complexity(Call_VarType, Succ_VarType, _Mode, _Measure, _Mutex, 
-                            _Solution_Det, _Size, _Relation, _Time, _Domain).
+    !, 
+    Abs_Ub = complexity(Call_VarType, Succ_VarType, _Mode, _Measure, _Mutex, 
+                        _Solution_Det, _Size, _Relation, _Time, _Domain).
 get_vartypes_from_complexity_info(Abs, Call_VarType, Succ_VarType):-
-        Abs=complexity(Call_VarType, Succ_VarType, _Mode, _Measure, _Mutex, 
-                       _Solution_Det, _Size, _Relation, _Time, _Domain).
+    Abs=complexity(Call_VarType, Succ_VarType, _Mode, _Measure, _Mutex, 
+                   _Solution_Det, _Size, _Relation, _Time, _Domain).
 
 get_vartypes_from_resource_info(Abs, Call_VarType, Succ_VarType):-
-        Abs=complexity(Call_VarType, Succ_VarType, _Mode, _Measure,
-                       _Mutex, _Solution_Det, _Size, _Relation,
-                       _Approx, _Resources, _Time, _Domain).
+    Abs=complexity(Call_VarType, Succ_VarType, _Mode, _Measure,
+                   _Mutex, _Solution_Det, _Size, _Relation,
+                   _Approx, _Resources, _Time, _Domain).
 
 complexity_property([Abs_Lb, Abs_Ub],Cost_An,Goal,Succ,Comp):-
-        is_ualb_complexity_analysis(Cost_An, Lower_An, Upper_An),
-        !,
-        complexity_property(Abs_Lb,Lower_An,Goal,SuccLb,CompLb),
- 	complexity_property(Abs_Ub,Upper_An,Goal,SuccUb,CompUb),
-        append(SuccLb, SuccUb, Succ),
-        append(CompLb, CompUb, Comp).
+    is_ualb_complexity_analysis(Cost_An, Lower_An, Upper_An),
+    !,
+    complexity_property(Abs_Lb,Lower_An,Goal,SuccLb,CompLb),
+    complexity_property(Abs_Ub,Upper_An,Goal,SuccUb,CompUb),
+    append(SuccLb, SuccUb, Succ),
+    append(CompLb, CompUb, Comp).
 complexity_property(Abs,Cost,Goal,Succ,Comp):-
-        asub_to_props(Cost,Goal,Abs,(Succ,Comp)).
+    asub_to_props(Cost,Goal,Abs,(Succ,Comp)).
 :- endif.
 
 :- multifile inferred_to_property/6.
@@ -158,153 +158,153 @@ flag_is(_,_,_):- fail. % (default)
 :- if(defined(has_ciaopp_extra)).
 % Non-failure
 flag_is(nf,not_fails,Flag):-
-        Flag == not_fails.
+    Flag == not_fails.
 flag_is(nf,possibly_fails,Flag):-
-        Flag == possibly_fails.
+    Flag == possibly_fails.
 flag_is(nf,covered,Flag):-
-        Flag == covered.
+    Flag == covered.
 flag_is(nf,not_covered,Flag):-
-        Flag == not_covered.
+    Flag == not_covered.
 % Determinism
 flag_is(det,is_det,Flag):-
-        Flag == not_fails.
+    Flag == not_fails.
 flag_is(det,non_det,Flag):-
-        Flag == possibly_fails.
+    Flag == possibly_fails.
 flag_is(det,mut_exclusive,Flag):-
-        Flag == covered.
+    Flag == covered.
 flag_is(det,not_mut_exclusive,Flag):-
-        Flag == not_covered.
+    Flag == not_covered.
 % Resources
 flag_is(res_plai,Prop,Flag) :-
-	flag_set(nf,Prop,Flag).
+    flag_set(nf,Prop,Flag).
 flag_is(res_plai,Prop,Flag) :-
-	flag_set(det,Prop,Flag).
+    flag_set(det,Prop,Flag).
 % Resources (acc cost)
 flag_is(res_plai_stprf,Prop,Flag) :-
-	flag_set(nf,Prop,Flag).
+    flag_set(nf,Prop,Flag).
 flag_is(res_plai_stprf,Prop,Flag) :-
-	flag_set(det,Prop,Flag).
+    flag_set(det,Prop,Flag).
 % % Sizes
 % flag_is(sized_types,Prop,Flag) :-
-% 	flag_set(nf,Prop,Flag).
+%       flag_set(nf,Prop,Flag).
 % flag_is(sized_types,Prop,Flag) :-
-% 	flag_set(det,Prop,Flag).
+%       flag_set(det,Prop,Flag).
 :- endif.
 
 flag_set(_,_,_):- fail. % (default)
 :- if(defined(has_ciaopp_extra)).
 % Non-failure
 flag_set(nf,not_fails,Flag):-
-        Flag = not_fails.
+    Flag = not_fails.
 flag_set(nf,possibly_fails,Flag):-
-        Flag = possibly_fails.
+    Flag = possibly_fails.
 flag_set(nf,covered,Flag):-
-        Flag = covered.
+    Flag = covered.
 flag_set(nf,not_covered,Flag):-
-        Flag = not_covered.
+    Flag = not_covered.
 % Determinism
 flag_set(det,is_det,Flag):-
-        Flag = not_fails.
+    Flag = not_fails.
 flag_set(det,non_det,Flag):-
-        Flag = possibly_fails.
+    Flag = possibly_fails.
 flag_set(det,mut_exclusive,Flag):-
-        Flag = covered.
+    Flag = covered.
 flag_set(det,not_mut_exclusive,Flag):-
-        Flag = not_covered.
+    Flag = not_covered.
 % Resources
 flag_set(res_plai,Prop,Flag) :-
-	flag_set(nf,Prop,Flag).
+    flag_set(nf,Prop,Flag).
 flag_set(res_plai,Prop,Flag) :-
-	flag_set(det,Prop,Flag).
+    flag_set(det,Prop,Flag).
 % Resources (acc cost)
 flag_set(res_plai_stprf,Prop,Flag) :-
-	flag_set(nf,Prop,Flag).
+    flag_set(nf,Prop,Flag).
 flag_set(res_plai_stprf,Prop,Flag) :-
-	flag_set(det,Prop,Flag).
+    flag_set(det,Prop,Flag).
 % % Size
 % flag_set(sized_types,Prop,Flag) :-
-% 	flag_set(nf,Prop,Flag).
+%       flag_set(nf,Prop,Flag).
 % flag_set(sized_types,Prop,Flag) :-
-% 	flag_set(det,Prop,Flag).
+%       flag_set(det,Prop,Flag).
 :- endif.
 
 %-------------------------------------------------------------------------
 
 :- doc(bug, "Unable to determine Approx.  It should be passed
-	through the complexity structure.").
+    through the complexity structure.").
 
 asub_to_props(_,_,_,_) :- fail. % (default)
 :- if(defined(has_ciaopp_extra)).
 asub_to_props(resources,Goal,Abs,Info):-
-        !,
-	Abs=complexity(_Call_VarType, _Succ_Vatype, _Mode, Measure, _Mutex, 
-                       _Solution_Det, Size, _Relation, Approx, Resources,
-		       Time, _Domain),
-        Goal=..[_|Args],
-	size_exps(Args,Measure,0,Dic),
-	SizeName = size,
-        decide_complexity_output_list(Size,Out_Size),
-	size_bounds(Out_Size,[Approx], Args,SizeName,Dic,Succ),
-        decide_complexity_output_list(Time,Out_Time),
-	resource_bound(Approx, Resources, Goal, Dic, Out_Time, Comp),
-        Info=(Succ,Comp),
-	!. % no backtracking
+    !,
+    Abs=complexity(_Call_VarType, _Succ_Vatype, _Mode, Measure, _Mutex, 
+                   _Solution_Det, Size, _Relation, Approx, Resources,
+                   Time, _Domain),
+    Goal=..[_|Args],
+    size_exps(Args,Measure,0,Dic),
+    SizeName = size,
+    decide_complexity_output_list(Size,Out_Size),
+    size_bounds(Out_Size,[Approx], Args,SizeName,Dic,Succ),
+    decide_complexity_output_list(Time,Out_Time),
+    resource_bound(Approx, Resources, Goal, Dic, Out_Time, Comp),
+    Info=(Succ,Comp),
+    !. % no backtracking
 asub_to_props(An,Goal,Abs,Info):-
-        is_single_complexity_analysis(An),
-        !,
-	Abs=complexity(_Call_VarType, _Succ_Vatype, _Mode, Measure, _Mutex, 
-                       _Solution_Det, Size, _Relation, Time, _Domain), 
-        Goal=..[_|Args],
-	size_exps(Args,Measure,0,Dic),
-	size_name(An,SizeName),
-        decide_complexity_output_list(Size,Out_Size),
-	size_bounds(Out_Size,[],Args,SizeName,Dic,Succ),
-        decide_complexity_output_list(Time,Out_Time),
-        comp_to_props(An,Goal,Dic,Out_Time, Comp),
-        Info=(Succ,Comp),
-	!. % no backtracking
+    is_single_complexity_analysis(An),
+    !,
+    Abs=complexity(_Call_VarType, _Succ_Vatype, _Mode, Measure, _Mutex, 
+                   _Solution_Det, Size, _Relation, Time, _Domain), 
+    Goal=..[_|Args],
+    size_exps(Args,Measure,0,Dic),
+    size_name(An,SizeName),
+    decide_complexity_output_list(Size,Out_Size),
+    size_bounds(Out_Size,[],Args,SizeName,Dic,Succ),
+    decide_complexity_output_list(Time,Out_Time),
+    comp_to_props(An,Goal,Dic,Out_Time, Comp),
+    Info=(Succ,Comp),
+    !. % no backtracking
 asub_to_props(nfg,_Goal,nf(_Call,_Succ,Fail,Cover),Info):- !,
-	Info=[Fail,Cover].
+    Info=[Fail,Cover].
 asub_to_props(nf,_Goal,nf(_,_,nf(_,Cover,Fail)),Info):- !,  %% JNL
-	Info=[Fail,Cover].
+    Info=[Fail,Cover].
 asub_to_props(detg,_Goal,nf(_Call,_Succ,Det,Mut),Info):- !,
-	Info=[Det,Mut].
+    Info=[Det,Mut].
 :- endif.
 
 :- if(defined(has_ciaopp_extra)).
 comp_to_props(An,Goal,Dic,Time,[Comp_Time]):-
-        is_time_analysis(An),
-        !, 
-	comp_bound(An,Goal,Dic,Time,Comp_Time).
+    is_time_analysis(An),
+    !, 
+    comp_bound(An,Goal,Dic,Time,Comp_Time).
 comp_to_props(An,_Goal,_Dic,_Time,[]):-
-        is_size_analysis(An).
+    is_size_analysis(An).
 
 size_exps([A|Args],[M|Measure],N0,[N=SizeMeasure|Dic]):-
-	N is N0+1,
-	SizeMeasure=..[M,A],
-	size_exps(Args,Measure,N,Dic).
+    N is N0+1,
+    SizeMeasure=..[M,A],
+    size_exps(Args,Measure,N,Dic).
 size_exps([],_,_,[]).
 
 size_bounds([S|Size],FixedArgs,[A|Args],SizeName,Dic,[SizeExp|Bounds]):-
-	key_rename_another_term(S,Dic,Exp),
-	append(FixedArgs,[A,Exp],SizeExpArgs),
-	SizeExp=..[SizeName|SizeExpArgs],
-	size_bounds(Size,FixedArgs, Args,SizeName,Dic,Bounds).
+    key_rename_another_term(S,Dic,Exp),
+    append(FixedArgs,[A,Exp],SizeExpArgs),
+    SizeExp=..[SizeName|SizeExpArgs],
+    size_bounds(Size,FixedArgs, Args,SizeName,Dic,Bounds).
 size_bounds([],_FixedArgs,[],_,_Dic,[]).
 
 comp_bound(ExpName,_Goal,Dic,Exp0,Comp):-
-	( Exp0 = [Exp] -> true ; Exp = Exp0 ),
-	key_rename_another_term(Exp,Dic,Comp_Exp),
-	Comp=..[ExpName,Comp_Exp].
+    ( Exp0 = [Exp] -> true ; Exp = Exp0 ),
+    key_rename_another_term(Exp,Dic,Comp_Exp),
+    Comp=..[ExpName,Comp_Exp].
 
 resource_bound(Approx, Resources, _Goal, Dic, Exp0, Comp):-
-	resource_vector_to_prop(Resources, Exp0, Approx, Exp),
-	key_rename_another_term(Exp, Dic, Comp).
+    resource_vector_to_prop(Resources, Exp0, Approx, Exp),
+    key_rename_another_term(Exp, Dic, Comp).
 
 resource_vector_to_prop([], [], _, []).
 resource_vector_to_prop([Resource|Resources], [Exp|Exps], Approx,
-	    [cost(Approx, Resource, Exp)|Props]) :-
-	resource_vector_to_prop(Resources, Exps, Approx, Props).
+        [cost(Approx, Resource, Exp)|Props]) :-
+    resource_vector_to_prop(Resources, Exps, Approx, Props).
 
 size_name(steps_lb, size_lb).
 size_name(steps_ub, size_ub).
@@ -315,15 +315,15 @@ size_name(size_ub, size_ub).
 
 % This one is (almost) exactly that of aeq_aux.pl
 key_rename_another_term('$'(0,X),Dic,Term):- !,
-	key_lookup(X,Dic,Term,_).
+    key_lookup(X,Dic,Term,_).
 key_rename_another_term([],_,[]):- !.
 key_rename_another_term([X|Xs],Dic,[Name|Names]):- !,
-	key_rename_another_term(X,Dic,Name),          
-	key_rename_another_term(Xs,Dic,Names).
+    key_rename_another_term(X,Dic,Name),          
+    key_rename_another_term(Xs,Dic,Names).
 key_rename_another_term(X,Dic,Term):-
-	X=..[F|Args],
-	key_rename_another_term(Args,Dic,Names),
-	Term=..[F|Names].
+    X=..[F|Args],
+    key_rename_another_term(Args,Dic,Names),
+    Term=..[F|Names].
 
 decide_complexity_output_list([F|R], [OF|OR]):-
       decide_complexity_output(F, OF),
@@ -341,13 +341,13 @@ decide_complexity_output(F, F):-
 %-------------------------------------------------------------------------
 
 % abs_execute_with_info(steps_ub,Info,Prop,Sense):- !,
-% 	check_cost_info(Prop,Info,Sense).
+%       check_cost_info(Prop,Info,Sense).
 % abs_execute_with_info(steps_lb,Info,Prop,Sense):- !,
-% 	check_cost_info(Prop,Info,Sense).
+%       check_cost_info(Prop,Info,Sense).
 %abs_execute_with_info(steps_o,Info,Prop,Sense):- !,
-%	check_cost_info(Prop,Info,Sense).
+%       check_cost_info(Prop,Info,Sense).
 % abs_execute_with_info(resources,Info,Prop,Sense):- !, %original
-% 	check_resource_info(Prop,Info,Sense).
+%       check_resource_info(Prop,Info,Sense).
 %[LD]
 %with interval
 :- doc(abs_execute_with_info/4, "Check the correctness of assertion
@@ -364,204 +364,204 @@ cost expression e.g. steps_ub(Arithmetic Expr) and @var{Info} is list
 of cost expression".
 :- if(defined(has_ciaopp_extra)).
 abs_execute_with_info(steps_ub,Info,Prop,Sense):-
-	current_pp_flag( ctchecks_intervals , on ),!,
-	check_cost_info_byvalue(Prop,Info,Sense),
-	check_cost_interval(Prop,Info,IntervalsTrue,SafeIntervalsTrue,IntervalsFalse,SafeIntervalsFalse),%LD
-	build_message(IntervalsTrue,SafeIntervalsTrue,IntervalsFalse,SafeIntervalsFalse,Prop,Info).%LD
-abs_execute_with_info(steps_lb,Info,Prop,Sense):- 	
-	current_pp_flag( ctchecks_intervals , on ),!,
-	check_cost_info_byvalue(Prop,Info,Sense),
-	check_cost_interval(Prop,Info,IntervalsTrue,SafeIntervalsTrue,IntervalsFalse,SafeIntervalsFalse),%LD
-	build_message(IntervalsTrue,SafeIntervalsTrue,IntervalsFalse,SafeIntervalsFalse,Prop,Info).%LD
+    current_pp_flag( ctchecks_intervals , on ),!,
+    check_cost_info_byvalue(Prop,Info,Sense),
+    check_cost_interval(Prop,Info,IntervalsTrue,SafeIntervalsTrue,IntervalsFalse,SafeIntervalsFalse),%LD
+    build_message(IntervalsTrue,SafeIntervalsTrue,IntervalsFalse,SafeIntervalsFalse,Prop,Info).%LD
+abs_execute_with_info(steps_lb,Info,Prop,Sense):-       
+    current_pp_flag( ctchecks_intervals , on ),!,
+    check_cost_info_byvalue(Prop,Info,Sense),
+    check_cost_interval(Prop,Info,IntervalsTrue,SafeIntervalsTrue,IntervalsFalse,SafeIntervalsFalse),%LD
+    build_message(IntervalsTrue,SafeIntervalsTrue,IntervalsFalse,SafeIntervalsFalse,Prop,Info).%LD
 abs_execute_with_info(res_plai,Info,Prop,Sense):- !,   
-	current_pp_flag( ctchecks_intervals , on ),!,
-	check_resource_info_byvalue(Prop,Info,Sense),
-	check_res_plai_interval(Prop,Info,IntervalsTrueLB,SafeIntervalsTrueLB,IntervalsFalseLB,SafeIntervalsFalseLB,IntervalsTrueUB,SafeIntervalsTrueUB,IntervalsFalseUB,SafeIntervalsFalseUB),
-	build_message(lb,IntervalsTrueLB,SafeIntervalsTrueLB,IntervalsFalseLB,SafeIntervalsFalseLB,Prop,Info),
-	build_message(ub,IntervalsTrueUB,SafeIntervalsTrueUB,IntervalsFalseUB,SafeIntervalsFalseUB,Prop,Info).
+    current_pp_flag( ctchecks_intervals , on ),!,
+    check_resource_info_byvalue(Prop,Info,Sense),
+    check_res_plai_interval(Prop,Info,IntervalsTrueLB,SafeIntervalsTrueLB,IntervalsFalseLB,SafeIntervalsFalseLB,IntervalsTrueUB,SafeIntervalsTrueUB,IntervalsFalseUB,SafeIntervalsFalseUB),
+    build_message(lb,IntervalsTrueLB,SafeIntervalsTrueLB,IntervalsFalseLB,SafeIntervalsFalseLB,Prop,Info),
+    build_message(ub,IntervalsTrueUB,SafeIntervalsTrueUB,IntervalsFalseUB,SafeIntervalsFalseUB,Prop,Info).
 abs_execute_with_info(resources,Info,Prop,Sense):- !,   
-	current_pp_flag( ctchecks_intervals , on ),!,
-	check_resource_info_byvalue(Prop,Info,Sense),
-	check_resource_interval(Prop,Info,IntervalsTrue,SafeIntervalsTrue,IntervalsFalse,SafeIntervalsFalse),
-	build_message(IntervalsTrue,SafeIntervalsTrue,IntervalsFalse,SafeIntervalsFalse,Prop,Info).
+    current_pp_flag( ctchecks_intervals , on ),!,
+    check_resource_info_byvalue(Prop,Info,Sense),
+    check_resource_interval(Prop,Info,IntervalsTrue,SafeIntervalsTrue,IntervalsFalse,SafeIntervalsFalse),
+    build_message(IntervalsTrue,SafeIntervalsTrue,IntervalsFalse,SafeIntervalsFalse,Prop,Info).
 %without interval 
 abs_execute_with_info(steps_ub,Info,Prop,Sense):- !,
-	current_pp_flag( ctchecks_intervals , off ), %LD
-	check_cost_info(Prop,Info,Sense).
-abs_execute_with_info(steps_lb,Info,Prop,Sense):- !,	
-	current_pp_flag( ctchecks_intervals , off ),%LD
-	check_cost_info(Prop,Info,Sense).
+    current_pp_flag( ctchecks_intervals , off ), %LD
+    check_cost_info(Prop,Info,Sense).
+abs_execute_with_info(steps_lb,Info,Prop,Sense):- !,    
+    current_pp_flag( ctchecks_intervals , off ),%LD
+    check_cost_info(Prop,Info,Sense).
 abs_execute_with_info(steps_o,Info,Prop,Sense):- !,
-	check_cost_info(Prop,Info,Sense).
+    check_cost_info(Prop,Info,Sense).
 abs_execute_with_info(res_plai,Info,Prop,Sense):- !,   
-	current_pp_flag( ctchecks_intervals , off ),!,
-	check_resource_info(Prop,Info,Sense).
+    current_pp_flag( ctchecks_intervals , off ),!,
+    check_resource_info(Prop,Info,Sense).
 abs_execute_with_info(resources,Info,Prop,Sense):- !,   
-	current_pp_flag( ctchecks_intervals , off ),!,
-	check_resource_info(Prop,Info,Sense).
+    current_pp_flag( ctchecks_intervals , off ),!,
+    check_resource_info(Prop,Info,Sense).
 %[/LD]
 abs_execute_with_info(size_ub,Info,Prop,Sense):- !,
-	check_size_info(Prop,Info,Sense).
+    check_size_info(Prop,Info,Sense).
 abs_execute_with_info(size_lb,Info,Prop,Sense):- !,
-	check_size_info(Prop,Info,Sense).
+    check_size_info(Prop,Info,Sense).
 abs_execute_with_info(size_o,Info,Prop,Sense):- !,
-	check_size_info(Prop,Info,Sense).
+    check_size_info(Prop,Info,Sense).
 :- endif.
 :- if(defined(has_ciaopp_extra)).
 abs_execute_with_info(nfg,Info,Prop,Sense):- !,
-	check_nf_info(Prop,Info,Sense).
+    check_nf_info(Prop,Info,Sense).
 abs_execute_with_info(detg,Info,Prop,Sense):- !,
-	check_det_info(Prop,Info,Sense).
+    check_det_info(Prop,Info,Sense).
 abs_execute_with_info(det,Info,Prop,Sense):- !,
-	check_det_info(Prop,Info,Sense).
+    check_det_info(Prop,Info,Sense).
 :- endif.
 abs_execute_with_info(Dom,Info,'basic_props:compat'(X,_Prop),true):-
-	abs_execute_with_info(Dom,Info,var(X),true),!.
+    abs_execute_with_info(Dom,Info,var(X),true),!.
 abs_execute_with_info(Dom,Info,'basic_props:compat'(X,Prop),Sense):-!,
-	Prop =.. [F|Args],
-	NewProp =.. [F,X|Args],
-	abs_execute_with_info(Dom,Info,NewProp,Sense0),
-	( Sense0 = NewProp -> 
-	  Sense = 'basic_props:compat'(X,Prop)
-	; Sense = Sense0
-	).
+    Prop =.. [F|Args],
+    NewProp =.. [F,X|Args],
+    abs_execute_with_info(Dom,Info,NewProp,Sense0),
+    ( Sense0 = NewProp -> 
+      Sense = 'basic_props:compat'(X,Prop)
+    ; Sense = Sense0
+    ).
 %% PP: Handle parametric types in assertions (don't know if 
 %% this is the best point to plug it...)
 abs_execute_with_info(Dom,Info,Prop,Sense):-
-	knows_of(regtypes, Dom),
-	functor(Prop,F,2),
-	statically_comp(Dom,F/2,Sense,Cond),
-	make_type_unary(Prop,UProp),
-	functor(UProp,UF,1),
-	convert_cond(Cond,UF,NewCond),
-	cond(NewCond,Dom,UProp,Info), !.
+    knows_of(regtypes, Dom),
+    functor(Prop,F,2),
+    statically_comp(Dom,F/2,Sense,Cond),
+    make_type_unary(Prop,UProp),
+    functor(UProp,UF,1),
+    convert_cond(Cond,UF,NewCond),
+    cond(NewCond,Dom,UProp,Info), !.
 abs_execute_with_info(Dom,_Info,Prop,Sense):-
-	knows_of(regtypes, Dom),
-	functor(Prop,_F,2),!,
-	Sense = Prop.
+    knows_of(regtypes, Dom),
+    functor(Prop,_F,2),!,
+    Sense = Prop.
 abs_execute_with_info(AbsInt,Info,Prop,Sense):-
-	functor(Prop,F,A),
-	statically_comp(AbsInt,F/A,Sense,Condition),
-	cond(Condition,AbsInt,Prop,Info), !.
+    functor(Prop,F,A),
+    statically_comp(AbsInt,F/A,Sense,Condition),
+    cond(Condition,AbsInt,Prop,Info), !.
 abs_execute_with_info(_AbsInt,_Info,Prop,Prop).
 
 statically_comp(AbsInt,ground/1,true,ground(1)):-
-	determinable(AbsInt,ground).
+    determinable(AbsInt,ground).
 statically_comp(AbsInt,ground/1,fail,not_ground(1)):-
-	determinable(AbsInt,free).
+    determinable(AbsInt,free).
 statically_comp(AbsInt,var/1,true,free(1)):-
-	determinable(AbsInt,free).
+    determinable(AbsInt,free).
 statically_comp(AbsInt,indep/2,true,indep(1,2)):-
-	determinable(AbsInt,indep).
+    determinable(AbsInt,indep).
 statically_comp(AbsInt,indep/2,fail,not_indep(1,2)):-
-	determinable(AbsInt,not_indep).
+    determinable(AbsInt,not_indep).
 statically_comp(AbsInt,F/1,Sense,Condition):-
-	determinable(AbsInt,free),
-	functor(FAtom,F,1),
-	native_prop(FAtom,regtype(_)),
-	\+ (equivalent_to_top_type(F)),
-	Sense = fail,
-	Condition = free(1).
+    determinable(AbsInt,free),
+    functor(FAtom,F,1),
+    native_prop(FAtom,regtype(_)),
+    \+ (equivalent_to_top_type(F)),
+    Sense = fail,
+    Condition = free(1).
 statically_comp(AbsInt,F/A,Sense,Condition):-
-	abs_exec(AbsInt,F/A,Sense,Condition).
+    abs_exec(AbsInt,F/A,Sense,Condition).
 
 % ------------------------------------------------------------------------
 
 :- if(defined(has_ciaopp_extra)).
 check_cost_info(C,Cost,Status):-
-        cost_incompatible(C,Cost), !,
-        Status=false.
+    cost_incompatible(C,Cost), !,
+    Status=false.
 check_cost_info(C,Cost,Status):-
-        cost_included(C,Cost), !,
-        Status=true.
+    cost_included(C,Cost), !,
+    Status=true.
 check_cost_info(_C,_Cost,check).
 :- endif.
 
 :- if(defined(has_ciaopp_extra)).
 % Added by EMM
 check_resource_info(C,Cost,Status):-
-        resource_incompatible(C,Cost), !,
-        Status=false.
+    resource_incompatible(C,Cost), !,
+    Status=false.
 check_resource_info(C,Cost,Status):-
-        resource_included(C,Cost), !,
-        Status=true.
+    resource_included(C,Cost), !,
+    Status=true.
 check_resource_info(_C,_Cost,check).
 % End Added by EMM
 :- endif.
 
 :- if(defined(has_ciaopp_extra)).
 check_size_info(C,Cost,Status):-
-        size_incompatible(C,Cost), !,
-        Status=false.
+    size_incompatible(C,Cost), !,
+    Status=false.
 check_size_info(C,Cost,Status):-
-        size_included(C,Cost), !,
-        Status=true.
+    size_included(C,Cost), !,
+    Status=true.
 check_size_info(_C,_Cost,check).
 :- endif.
 
 :- if(defined(has_ciaopp_extra)).
 check_nf_info(C,Nf,Status):-
-        nf_incompatible(C,Nf), !,
-        Status=false.
+    nf_incompatible(C,Nf), !,
+    Status=false.
 check_nf_info(C,Nf,Status):-
-        nf_included(C,Nf), !,
-        Status=true.
+    nf_included(C,Nf), !,
+    Status=true.
 check_nf_info(_C,_Nf,check).
 :- endif.
 
 :- if(defined(has_ciaopp_extra)).
 check_det_info(C,Det,Status):-
-        det_incompatible(C,Det), !,
-        Status=false.
+    det_incompatible(C,Det), !,
+    Status=false.
 check_det_info(C,Det,Status):-
-        det_included(C,Det), !,
-        Status=true.
+    det_included(C,Det), !,
+    Status=true.
 check_det_info(_C,_Det,check).
 :- endif.
 
 :- if(defined(has_ciaopp_extra)).
 cost_incompatible(steps_lb(C),Cost):-
-        member(steps_ub(A),Cost),
-        infer_dom:exp_greater_than(C,A).
+    member(steps_ub(A),Cost),
+    infer_dom:exp_greater_than(C,A).
 cost_incompatible(steps_ub(C),Cost):-
-        member(steps_lb(A),Cost),
-        infer_dom:exp_greater_than(A,C).
+    member(steps_lb(A),Cost),
+    infer_dom:exp_greater_than(A,C).
 cost_incompatible(steps_o(C),Cost):-
-        member(steps_lb(A),Cost),
-        order_of_function_greater_than_function(A, C).
+    member(steps_lb(A),Cost),
+    order_of_function_greater_than_function(A, C).
 cost_incompatible(steps_o(C),Cost):-
-        member(steps_o(A),Cost),
-        infer_dom:exp_greater_than(A,C).
+    member(steps_o(A),Cost),
+    infer_dom:exp_greater_than(A,C).
 cost_incompatible(steps(C),Cost):-
-        member(steps_ub(A),Cost),
-        infer_dom:exp_greater_than(C,A).
+    member(steps_ub(A),Cost),
+    infer_dom:exp_greater_than(C,A).
 cost_incompatible(steps(C),Cost):-
-        member(steps_lb(A),Cost),
-        infer_dom:exp_greater_than(A,C).
+    member(steps_lb(A),Cost),
+    infer_dom:exp_greater_than(A,C).
 cost_incompatible(steps(C),Cost):-
-        member(steps_o(A),Cost),
-        order_of_function_greater_than_function(C, A).
+    member(steps_o(A),Cost),
+    order_of_function_greater_than_function(C, A).
 cost_incompatible(terminates,Cost):-
-        member(steps_lb(A),Cost),
-        A == inf.
+    member(steps_lb(A),Cost),
+    A == inf.
 
 cost_included(steps_lb(C),Cost):-
-	member(steps_lb(A),Cost),
-	infer_dom:exp_greater_eq_than(A,C).
+    member(steps_lb(A),Cost),
+    infer_dom:exp_greater_eq_than(A,C).
 cost_included(steps_ub(C),Cost):-
-	member(steps_ub(A),Cost),
-	infer_dom:exp_greater_eq_than(C,A).
+    member(steps_ub(A),Cost),
+    infer_dom:exp_greater_eq_than(C,A).
 cost_included(steps_o(C),Cost):-
-	member(steps_ub(A),Cost),
-	function_greater_eq_than_order_of_function(C, A).
+    member(steps_ub(A),Cost),
+    function_greater_eq_than_order_of_function(C, A).
 cost_included(steps(C),Cost):-
-	member(steps_ub(U),Cost),
-	exp_eq_than(C,U),
-	member(steps_lb(L),Cost),
-	exp_eq_than(C,L).
+    member(steps_ub(U),Cost),
+    exp_eq_than(C,U),
+    member(steps_lb(L),Cost),
+    exp_eq_than(C,L).
 cost_included(terminates,Cost):-
-        member(steps_ub(A),Cost),
-        A \== inf.
+    member(steps_ub(A),Cost),
+    A \== inf.
 
 %%% Added by JNL
 
@@ -569,55 +569,55 @@ cost_included(terminates,Cost):-
 % inferred statically:
 
 resource_incompatible(cost(abs,lb,call,Res,C),Cost) :-
-	member(cost(ub,Res,A),Cost),
-	infer_dom:exp_greater_than(C,A).
+    member(cost(ub,Res,A),Cost),
+    infer_dom:exp_greater_than(C,A).
 resource_incompatible(cost(abs,ub,call,Res,C),Cost) :-
-	member(cost(lb,Res,A),Cost),
-	infer_dom:exp_greater_than(A,C).
+    member(cost(lb,Res,A),Cost),
+    infer_dom:exp_greater_than(A,C).
 
 resource_included(cost(abs,lb,call,Res,C),Cost):-
-	member(cost(lb,Res,A),Cost),
-	infer_dom:exp_greater_eq_than(A,C).
+    member(cost(lb,Res,A),Cost),
+    infer_dom:exp_greater_eq_than(A,C).
 resource_included(cost(abs,ub,call,Res,C),Cost):-
-	member(cost(ub,Res,A),Cost),
-	infer_dom:exp_greater_eq_than(C,A).
+    member(cost(ub,Res,A),Cost),
+    infer_dom:exp_greater_eq_than(C,A).
 
 size_incompatible(size_lb(V,C),Cost):-
-        find_property_value(size_ub,V,Cost,A),
-        infer_dom:exp_greater_than(C,A).
+    find_property_value(size_ub,V,Cost,A),
+    infer_dom:exp_greater_than(C,A).
 size_incompatible(size_ub(V,C),Cost):-
-        find_property_value(size_lb,V,Cost,A),
-        infer_dom:exp_greater_than(A,C).
+    find_property_value(size_lb,V,Cost,A),
+    infer_dom:exp_greater_than(A,C).
 size_incompatible(size_o(V,C),Cost):-
-        find_property_value(size_lb,V,Cost,A),
-        order_of_function_greater_than_function(A, C).
+    find_property_value(size_lb,V,Cost,A),
+    order_of_function_greater_than_function(A, C).
 size_incompatible(size_o(V,C),Cost):-
-        find_property_value(size_o,V,Cost,A),
-        infer_dom:exp_greater_than(A,C).
+    find_property_value(size_o,V,Cost,A),
+    infer_dom:exp_greater_than(A,C).
 size_incompatible(size(V,C),Cost):-
-        find_property_value(size_ub,V,Cost,A),
-        infer_dom:exp_greater_than(C,A).
+    find_property_value(size_ub,V,Cost,A),
+    infer_dom:exp_greater_than(C,A).
 size_incompatible(size(V,C),Cost):-
-        find_property_value(size_lb,V,Cost,A),
-        infer_dom:exp_greater_than(A,C).
+    find_property_value(size_lb,V,Cost,A),
+    infer_dom:exp_greater_than(A,C).
 size_incompatible(size(V,C),Cost):-
-        find_property_value(size_o,V,Cost,A),
-        order_of_function_greater_than_function(C, A).
+    find_property_value(size_o,V,Cost,A),
+    order_of_function_greater_than_function(C, A).
 
 size_included(size_lb(V,C),Cost):-
-        find_property_value(size_lb,V,Cost,A),
-        infer_dom:exp_greater_eq_than(A,C).
+    find_property_value(size_lb,V,Cost,A),
+    infer_dom:exp_greater_eq_than(A,C).
 size_included(size_ub(V,C),Cost):-
-        find_property_value(size_ub,V,Cost,A),
-        infer_dom:exp_greater_eq_than(C,A).
+    find_property_value(size_ub,V,Cost,A),
+    infer_dom:exp_greater_eq_than(C,A).
 size_included(size_o(V,C),Cost):-
-        find_property_value(size_ub,V,Cost,A),
-        function_greater_eq_than_order_of_function(C, A).
+    find_property_value(size_ub,V,Cost,A),
+    function_greater_eq_than_order_of_function(C, A).
 size_included(size(V,C),Cost):-
-         find_property_value(size_ub,V,Cost,U),
-         exp_eq_than(C,U),
-         find_property_value(size_lb,V,Cost,L),
-         exp_eq_than(C,L).
+     find_property_value(size_ub,V,Cost,U),
+     exp_eq_than(C,U),
+     find_property_value(size_lb,V,Cost,L),
+     exp_eq_than(C,L).
 
 %---- byvalue --------
 % Here are several predicates to support expression comparison
@@ -630,49 +630,49 @@ size_included(size(V,C),Cost):-
 % simulate infinity
 
 check_cost_info_byvalue(C,Cost,Status):-
-        cost_incompatible_byvalue(C,Cost), !,
-        Status=false.
+    cost_incompatible_byvalue(C,Cost), !,
+    Status=false.
 check_cost_info_byvalue(C,Cost,Status):-
-        cost_included_byvalue(C,Cost), !,
-        Status=true.
+    cost_included_byvalue(C,Cost), !,
+    Status=true.
 check_cost_info_byvalue(_C,_Cost,check).
 
 
 check_resource_info_byvalue(C,Cost,Status):-
-        resource_incompatible_byvalue(C,Cost), !,
-        Status=false.
+    resource_incompatible_byvalue(C,Cost), !,
+    Status=false.
 check_resource_info_byvalue(C,Cost,Status):-
-        resource_included_byvalue(C,Cost), !,
-        Status=true.
+    resource_included_byvalue(C,Cost), !,
+    Status=true.
 check_resource_info_byvalue(_C,_Cost,check).
 
 cost_incompatible_byvalue(steps_lb(C),Cost):-
-        member(steps_ub(A),Cost),
-        infer_dom:exp_greater_than_byvalue(C,A,1).
+    member(steps_ub(A),Cost),
+    infer_dom:exp_greater_than_byvalue(C,A,1).
 cost_incompatible_byvalue(steps_ub(C),Cost):-
-        member(steps_lb(A),Cost),
-        infer_dom:exp_greater_than_byvalue(A,C,1).
+    member(steps_lb(A),Cost),
+    infer_dom:exp_greater_than_byvalue(A,C,1).
 
 cost_included_byvalue(steps_lb(C),Cost):-
-	member(steps_lb(A),Cost),
-	infer_dom:exp_greater_eq_than_byvalue(A,C,1).
+    member(steps_lb(A),Cost),
+    infer_dom:exp_greater_eq_than_byvalue(A,C,1).
 cost_included_byvalue(steps_ub(C),Cost):-
-	member(steps_ub(A),Cost),
-	infer_dom:exp_greater_eq_than_byvalue(C,A,1).
+    member(steps_ub(A),Cost),
+    infer_dom:exp_greater_eq_than_byvalue(C,A,1).
 
 resource_incompatible_byvalue(cost(abs,lb,call,Res,C),Cost) :-
-	member(cost(ub,Res,A),Cost),
-	infer_dom:exp_greater_than_byvalue(C,A,1).
+    member(cost(ub,Res,A),Cost),
+    infer_dom:exp_greater_than_byvalue(C,A,1).
 resource_incompatible_byvalue(cost(abs,ub,call,Res,C),Cost) :-
-	member(cost(lb,Res,A),Cost),
-	infer_dom:exp_greater_than_byvalue(A,C,1).
+    member(cost(lb,Res,A),Cost),
+    infer_dom:exp_greater_than_byvalue(A,C,1).
 
 resource_included_byvalue(cost(abs,lb,call,Res,C),Cost):-
-	member(cost(lb,Res,A),Cost),
-	infer_dom:exp_greater_eq_than_byvalue(A,C,1).
+    member(cost(lb,Res,A),Cost),
+    infer_dom:exp_greater_eq_than_byvalue(A,C,1).
 resource_included_byvalue(cost(abs,ub,call,Res,C),Cost):-
-	member(cost(ub,Res,A),Cost),
-	infer_dom:exp_greater_eq_than_byvalue(C,A,1).
+    member(cost(ub,Res,A),Cost),
+    infer_dom:exp_greater_eq_than_byvalue(C,A,1).
 :- endif.
 
 :- if(defined(has_ciaopp_extra)).
@@ -681,26 +681,26 @@ resource_included_byvalue(cost(abs,ub,call,Res,C),Cost):-
 % A > C on point X
 %------------------------------------------------------------------------------
 exp_greater_than_byvalue(A, C, X):-
-	copy_term(dummy_func(C,A),dummy_func(C1,A1)), 
-	marshall_args_p(f(C1,A1),0,f(CP,AP)),
-	remove_size_measures(CP,SC),
-	remove_size_measures(AP,SA),
-	CostDiff = SA - SC,
-	eval_arith(CostDiff, X, Res),
-	Res > 0.
+    copy_term(dummy_func(C,A),dummy_func(C1,A1)), 
+    marshall_args_p(f(C1,A1),0,f(CP,AP)),
+    remove_size_measures(CP,SC),
+    remove_size_measures(AP,SA),
+    CostDiff = SA - SC,
+    eval_arith(CostDiff, X, Res),
+    Res > 0.
 
 %------------------------------------------------------------------------------
 % exp_value_greater_than_byvalue(A, C, X)
 % A >= C on point X
 %------------------------------------------------------------------------------
 exp_greater_eq_than_byvalue(A, C, X):-
-	copy_term(dummy_func(C,A),dummy_func(C1,A1)), 
-	marshall_args_p(f(C1,A1),0,f(CP,AP)),
-	remove_size_measures(CP,SC),
-	remove_size_measures(AP,SA),
-	CostDiff = SA - SC,
-	eval_arith(CostDiff, X, Res),
-	Res >= 0.
+    copy_term(dummy_func(C,A),dummy_func(C1,A1)), 
+    marshall_args_p(f(C1,A1),0,f(CP,AP)),
+    remove_size_measures(CP,SC),
+    remove_size_measures(AP,SA),
+    CostDiff = SA - SC,
+    eval_arith(CostDiff, X, Res),
+    Res >= 0.
 
 %/---- byvalue --------
 find_property_value(PropName, Var, [Prop|_], Value):-
@@ -712,23 +712,23 @@ find_property_value(PropName, Var, [_Prop|R], Value):-
    find_property_value(PropName, Var, R, Value).
 
 exp_greater_eq_than(C,A):-
-	order_of_function_greater_than_function(C, A), !. % ?? -PLG
+    order_of_function_greater_than_function(C, A), !. % ?? -PLG
 exp_greater_eq_than(C,A):- 
-	\+ \+ ( marshall_args(f(C,A),0),
-                remove_size_measures(C,SC),
-                remove_size_measures(A,SA),
-	        algebraic:exp_greater_eq_than(SC,SA)
-	      ).
+    \+ \+ ( marshall_args(f(C,A),0),
+            remove_size_measures(C,SC),
+            remove_size_measures(A,SA),
+            algebraic:exp_greater_eq_than(SC,SA)
+          ).
 
 :- export(exp_greater_than/2).
 exp_greater_than(C,A):-
-	order_of_function_greater_than_function(C, A), !. % -PLG
+    order_of_function_greater_than_function(C, A), !. % -PLG
 exp_greater_than(C,A):-
-	\+ \+ ( marshall_args(f(C,A),0),
-                remove_size_measures(C,SC),
-                remove_size_measures(A,SA),
-	        algebraic:exp_greater_than(SC,SA)
-	      ).
+    \+ \+ ( marshall_args(f(C,A),0),
+            remove_size_measures(C,SC),
+            remove_size_measures(A,SA),
+            algebraic:exp_greater_than(SC,SA)
+          ).
 
 size_variable(length(_)).
 size_variable(size(_)).
@@ -738,22 +738,22 @@ size_variable(nnegint(_)).
 
 
 order_of_function_greater_than_function(OA, C):- 
-	\+ \+ ( marshall_args(f(C,OA),0),
-                remove_size_measures(C,SC),
-                remove_size_measures(OA,SOA),
-                order_of_function(SOA, NA),
-	        % algebraic:exp_greater_than(NA,SC)
-                algebraic:complexity_order_greater_than(NA,SC)
-	      ).
+    \+ \+ ( marshall_args(f(C,OA),0),
+            remove_size_measures(C,SC),
+            remove_size_measures(OA,SOA),
+            order_of_function(SOA, NA),
+            % algebraic:exp_greater_than(NA,SC)
+            algebraic:complexity_order_greater_than(NA,SC)
+          ).
 
 function_greater_eq_than_order_of_function(C, OA):- 
-	\+ \+ ( marshall_args(f(C,OA),0),
-                remove_size_measures(C,SC),
-                remove_size_measures(OA,SOA),
-                order_of_function(SOA, NA),
-                % algebraic:exp_greater_eq_than(SC,NA)
-                algebraic:complexity_order_greater_eq_than(SC,NA)
-	      ).
+    \+ \+ ( marshall_args(f(C,OA),0),
+            remove_size_measures(C,SC),
+            remove_size_measures(OA,SOA),
+            order_of_function(SOA, NA),
+            % algebraic:exp_greater_eq_than(SC,NA)
+            algebraic:complexity_order_greater_eq_than(SC,NA)
+          ).
 
 remove_size_measures(C,C):-
    var(C),
@@ -787,59 +787,59 @@ compound_remove_size_measures(A,C,SC):-
 
 :- if(defined(has_ciaopp_extra)).
 marshall_args(Term,N):-
-	varset(Term,Vars),
-        marshall_args_(Vars,N).
+    varset(Term,Vars),
+    marshall_args_(Vars,N).
 
 marshall_args_([],_).
 marshall_args_([$(N1)|Args],N):-
-        N1 is N+1,
-        marshall_args_(Args,N1).
+    N1 is N+1,
+    marshall_args_(Args,N1).
 :- endif.
 
 :- if(defined(has_ciaopp_extra)).
 nf_incompatible(fails,Nf):-
-        member(not_fails,Nf).
+    member(not_fails,Nf).
 nf_incompatible(not_fails,Nf):-
-        member(fails,Nf).
+    member(fails,Nf).
 nf_incompatible(covered,Nf):-
-        member(not_covered,Nf).
+    member(not_covered,Nf).
 nf_incompatible(not_covered,Nf):-
-        member(covered,Nf).
+    member(covered,Nf).
 
 nf_included(fails,Nf):-
-        member(fails,Nf).
+    member(fails,Nf).
 nf_included(not_fails,Nf):-
-        member(not_fails,Nf).
+    member(not_fails,Nf).
 nf_included(covered,Nf):-
-        member(covered,Nf).
+    member(covered,Nf).
 nf_included(not_covered,Nf):-
-        member(not_covered,Nf).
+    member(not_covered,Nf).
 nf_included(possibly_fails,_Nf).
 :- endif.
 
 :- if(defined(has_ciaopp_extra)).
 det_incompatible(non_det,Det):-
-        member(is_det,Det).
+    member(is_det,Det).
 det_incompatible(mut_exclusive,Det):-
-        member(not_mut_exclusive,Det).
+    member(not_mut_exclusive,Det).
 det_incompatible(not_mut_exclusive,Det):-
-        member(mut_exclusive,Det).
+    member(mut_exclusive,Det).
 
 det_included(is_det,Det):-
-        member(is_det,Det).
+    member(is_det,Det).
 det_included(mut_exclusive,Det):-
-        member(mut_exclusive,Det).
+    member(mut_exclusive,Det).
 det_included(possibly_nondet,_Det).
 :- endif.
 
 % ------------------------------------------------------------------------
 
 make_type_unary(Type, NonParamType) :-
-	functor(Type, _, 2), 
-	!,
-	arg(1, Type, Var),
-        assert_param_type_instance(Type,NewTypeName),
-	NonParamType =..[NewTypeName, Var].
+    functor(Type, _, 2), 
+    !,
+    arg(1, Type, Var),
+    assert_param_type_instance(Type,NewTypeName),
+    NonParamType =..[NewTypeName, Var].
 make_type_unary(Type,Type).
 
 convert_cond(type_incl(N,_),NU,type_incl(N,NU)).
@@ -1071,10 +1071,10 @@ Please read this explanation:
  1. A denotes Assertion
     C denotes Cost_analysis
  2. lb case: Alb =< Clb TRUE
-             Alb >  Cub FALSE
+         Alb >  Cub FALSE
 
     ub case: Aub >= Cub TRUE
-             Aub <  Clb FALSE
+         Aub <  Clb FALSE
     
     otherwise CHECK
 @end{verbatim}
@@ -1159,14 +1159,14 @@ check_cost_interval(_,_,[],[],[],[]).
 % for passing information to ctchecks
 %------------------------------------------------------------------------------
 build_message(IntervalsTrue,SafeIntervalsTrue,IntervalsFalse,SafeIntervalsFalse,Prop,Info):-
-	polynom_current_assertion(Assertion),
-	asserta_fact(polynom_message(Assertion,Prop,Info,IntervalsTrue,SafeIntervalsTrue,IntervalsFalse,SafeIntervalsFalse)).
+    polynom_current_assertion(Assertion),
+    asserta_fact(polynom_message(Assertion,Prop,Info,IntervalsTrue,SafeIntervalsTrue,IntervalsFalse,SafeIntervalsFalse)).
 
 build_message(Bound,IntervalsTrue,SafeIntervalsTrue,IntervalsFalse,SafeIntervalsFalse,Prop,Info):-
-	polynom_current_assertion(Assertion),
-	Prop =..[H|L],
-	PropB =..[H,Bound|L],
-	asserta_fact(polynom_message(Assertion,PropB,Info,IntervalsTrue,SafeIntervalsTrue,IntervalsFalse,SafeIntervalsFalse)).
+    polynom_current_assertion(Assertion),
+    Prop =..[H|L],
+    PropB =..[H,Bound|L],
+    asserta_fact(polynom_message(Assertion,PropB,Info,IntervalsTrue,SafeIntervalsTrue,IntervalsFalse,SafeIntervalsFalse)).
 
 :- pop_prolog_flag(multi_arity_warnings).
 %-----------------------------------------------------------------------
@@ -1179,26 +1179,26 @@ build_message(Bound,IntervalsTrue,SafeIntervalsTrue,IntervalsFalse,SafeIntervals
 cost_difference([],_,[]):-!. %handling global change in library that is already true
 cost_difference(_,[],[]):-!. %[] might be uncovered function
 cost_difference(A,B,C):-
-	difference(A,B,C).
+    difference(A,B,C).
 
 normalize_zero([0.0],[0]):-!.
 normalize_zero([0.0|Res],[0|NormalRes]):-
-	normalize_zero(Res,NormalRes),!.
+    normalize_zero(Res,NormalRes),!.
 
 normalize_zero([A],[A]).
 normalize_zero([X|Res],[X|NormalRes]):-
-	normalize_zero(Res,NormalRes).
+    normalize_zero(Res,NormalRes).
 
 cost_validate_polynom([],[]):-!. %same reason with cost_difference
 cost_validate_polynom(PDiff,PDiffValid):-
-	normalize_zero(PDiff,PDiffNormal),%change 0.0 into 0
-	validate_polynom(PDiffNormal,PDiffValid).
+    normalize_zero(PDiff,PDiffNormal),%change 0.0 into 0
+    validate_polynom(PDiffNormal,PDiffValid).
 
 
 value_check_greater_than(E1, E2, X):-
-	eval_arith(E1, X, V1),!,
-	eval_arith(E2, X, V2),!,
-	V1 > V2.
+    eval_arith(E1, X, V1),!,
+    eval_arith(E2, X, V2),!,
+    V1 > V2.
 %------------------------------------------------------------------------------
 % Core function for comparing two cost function
 :- doc(doinclude, expression_equal_greater_than/4).
@@ -1227,105 +1227,105 @@ encounters small interval. ".
 %------------------------------------------------------------------------------
 % This approach is using GSL
 expression_equal_greater_than(A,C,Interval,SafeInterval):-
-	current_pp_flag(ctchecks_value_evaluation, off),
-	copy_term(dummy_func(C,A),dummy_func(C1,A1)), 
-	marshall_args_p(f(C1,A1),0,f(CP,AP)),
-	remove_size_measures(CP,SC),
-	remove_size_measures(AP,SA),
-	polynomize(SA,PA),%uncovered cost function will be failed here
-	polynomize(SC,PC),%uncovered cost function will be failed here
-	reverse(PA,RPA),
-	reverse(PC,RPC),
-	% in polynom NormalForm, the order of polynom is sorted descending
-	% X^n+...+X^0, but we need to make it ascending, X^0+...+X^n 
-	%according to GSL spec
-	cost_difference(RPA,RPC,PDiff), %PDiff=RPA-RPC
-	cost_validate_polynom(PDiff,PDiffValid),
-	CostDiff = SA - SC,
-	polynom_root_interval(CostDiff, PDiffValid,FullInterval),
-%	format(user, "Use GSL. ",[]),
-	(
-	    FullInterval == [] -> %no intersection found, mark whether A >= C
-	    (
-		value_check_greater_than(SA, SC, 0) -> %proving A >= C
-		Interval = [],
-		SafeInterval = []
-	    ; % the comparison can't prove A >= C, mark as check interval
-		Interval = [c],
-		SafeInterval = [c]
-	    )
-	;
-	    FullInterval == [2] -> % unconvergence GSL algorithm
-	    Interval = [2], 
-	    SafeInterval = [2]
-	;
-	    cut_negative_roots(FullInterval, PositiveInterval),
-	    %we use the arithmetic expression for evaluating the safe root
-	    compute_safe_intervals(CostDiff, PositiveInterval, SafeIntMix, Error),
-	    %the safe root algorithm may encounter safe negative root
-	    cut_negative_roots(SafeIntMix, SafeInt),
-	    (
-		Error = 0 ->
-		(
-		    small_intervals(SafeInt) ->
-		    Interval = [3], 
-		    SafeInterval = [3]
-		;
-		    Interval = PositiveInterval, 
-		    SafeInterval = SafeInt
-		)
-	    ;
-		Error = 1 ->
-		Interval = [4],
-		SafeInterval = [4]
-	    )
-	), !.
+    current_pp_flag(ctchecks_value_evaluation, off),
+    copy_term(dummy_func(C,A),dummy_func(C1,A1)), 
+    marshall_args_p(f(C1,A1),0,f(CP,AP)),
+    remove_size_measures(CP,SC),
+    remove_size_measures(AP,SA),
+    polynomize(SA,PA),%uncovered cost function will be failed here
+    polynomize(SC,PC),%uncovered cost function will be failed here
+    reverse(PA,RPA),
+    reverse(PC,RPC),
+    % in polynom NormalForm, the order of polynom is sorted descending
+    % X^n+...+X^0, but we need to make it ascending, X^0+...+X^n 
+    %according to GSL spec
+    cost_difference(RPA,RPC,PDiff), %PDiff=RPA-RPC
+    cost_validate_polynom(PDiff,PDiffValid),
+    CostDiff = SA - SC,
+    polynom_root_interval(CostDiff, PDiffValid,FullInterval),
+%       format(user, "Use GSL. ",[]),
+    (
+        FullInterval == [] -> %no intersection found, mark whether A >= C
+        (
+            value_check_greater_than(SA, SC, 0) -> %proving A >= C
+            Interval = [],
+            SafeInterval = []
+        ; % the comparison can't prove A >= C, mark as check interval
+            Interval = [c],
+            SafeInterval = [c]
+        )
+    ;
+        FullInterval == [2] -> % unconvergence GSL algorithm
+        Interval = [2], 
+        SafeInterval = [2]
+    ;
+        cut_negative_roots(FullInterval, PositiveInterval),
+        %we use the arithmetic expression for evaluating the safe root
+        compute_safe_intervals(CostDiff, PositiveInterval, SafeIntMix, Error),
+        %the safe root algorithm may encounter safe negative root
+        cut_negative_roots(SafeIntMix, SafeInt),
+        (
+            Error = 0 ->
+            (
+                small_intervals(SafeInt) ->
+                Interval = [3], 
+                SafeInterval = [3]
+            ;
+                Interval = PositiveInterval, 
+                SafeInterval = SafeInt
+            )
+        ;
+            Error = 1 ->
+            Interval = [4],
+            SafeInterval = [4]
+        )
+    ), !.
 %
 %------------------------------------------------------------------------------
 % This approach is using interval value enumeration
 expression_equal_greater_than(A,C,Interval,SafeInterval):-
-	%get user interval
-	polynom_current_assertion(Assertion),
-	Assertion= as${call => PreCond},
-	exist_interval_pred(PreCond),
-	remove_interval_precond(PreCond, _CleanPrecond, IntPred), 
-	IntPred=[IntPrecond],
-	arg(2, IntPrecond, ListUserInterval),
-        % intervals(length(A),[i(2,4),i(10,21)])
-	%extract_user_intervals(ListUserInterval, ListUserInterval2),
-	copy_term(dummy_func(C,A),dummy_func(C1,A1)), 
-	marshall_args_p(f(C1,A1),0,f(CP,AP)),
-	remove_size_measures(CP,SC),
-	remove_size_measures(AP,SA),
-	CostDiff = SA - SC,
-	%normalized CostDiff in a hope to get simpler for, so faster to evaluate
-	%normalization postponed later
-	%	
-	brute_eval_intervals(CostDiff, ListUserInterval, Interval),
-	SafeInterval = Interval,
-%	format(user, "Do not use GSL. ", []),
-	!.
+    %get user interval
+    polynom_current_assertion(Assertion),
+    Assertion= as${call => PreCond},
+    exist_interval_pred(PreCond),
+    remove_interval_precond(PreCond, _CleanPrecond, IntPred), 
+    IntPred=[IntPrecond],
+    arg(2, IntPrecond, ListUserInterval),
+    % intervals(length(A),[i(2,4),i(10,21)])
+    %extract_user_intervals(ListUserInterval, ListUserInterval2),
+    copy_term(dummy_func(C,A),dummy_func(C1,A1)), 
+    marshall_args_p(f(C1,A1),0,f(CP,AP)),
+    remove_size_measures(CP,SC),
+    remove_size_measures(AP,SA),
+    CostDiff = SA - SC,
+    %normalized CostDiff in a hope to get simpler for, so faster to evaluate
+    %normalization postponed later
+    %       
+    brute_eval_intervals(CostDiff, ListUserInterval, Interval),
+    SafeInterval = Interval,
+%       format(user, "Do not use GSL. ", []),
+    !.
 %------------------------------------------------------------------------------
 % This approach is using interval value enumeration event though the user 
 % specified interval does not exist. Therefore we fix the interval to be
 % evaluated is [0,10000].
 expression_equal_greater_than(A,C,Interval,SafeInterval):-
-	current_pp_flag(ctchecks_value_evaluation, on),
-        % intervals(length(A),[i(2,4),i(10,21)])
-	% fix the interval
-	ListUserInterval = [i(0,10000)],
-	copy_term(dummy_func(C,A),dummy_func(C1,A1)), 
-	marshall_args_p(f(C1,A1),0,f(CP,AP)),
-	remove_size_measures(CP,SC),
-	remove_size_measures(AP,SA),
-	CostDiff = SA - SC,
-	%normalized CostDiff in a hope to get simpler for, so faster to evaluate
-	%normalization postponed later
-	%	
-	brute_eval_intervals(CostDiff, ListUserInterval, Interval),
-	SafeInterval = Interval,
-%	format(user, "Do not use GSL. ", []),
-	!.
+    current_pp_flag(ctchecks_value_evaluation, on),
+    % intervals(length(A),[i(2,4),i(10,21)])
+    % fix the interval
+    ListUserInterval = [i(0,10000)],
+    copy_term(dummy_func(C,A),dummy_func(C1,A1)), 
+    marshall_args_p(f(C1,A1),0,f(CP,AP)),
+    remove_size_measures(CP,SC),
+    remove_size_measures(AP,SA),
+    CostDiff = SA - SC,
+    %normalized CostDiff in a hope to get simpler for, so faster to evaluate
+    %normalization postponed later
+    %       
+    brute_eval_intervals(CostDiff, ListUserInterval, Interval),
+    SafeInterval = Interval,
+%       format(user, "Do not use GSL. ", []),
+    !.
 %
 expression_equal_greater_than(_,_,[1],[1]). %uncovered cost function
 
@@ -1334,21 +1334,21 @@ expression_equal_greater_than(_,_,[1],[1]). %uncovered cost function
 :- pred expression_greater_than(A,C,Interval,SafeInterval)#"".
 %------------------------------------------------------------------------------
 expression_greater_than(A,C,Interval,SafeInterval):-
-	expression_equal_greater_than(A,C,Interval,SafeInterval1),
-	%checking error
-	check_result_error(SafeInterval1, ErrVal),
-	(
-	    ErrVal == 0 -> %no error occured
-	    copy_term(dummy_func(C,A),dummy_func(C1,A1)), 
-	    marshall_args_p(f(C1,A1),0,f(CP,AP)),
-	    remove_size_measures(CP,SC),
-	    remove_size_measures(AP,SA),
-	    CostDiff = SA - SC,
-	    create_strict_inequality(CostDiff, SafeInterval1, SafeInterval)
-	;
-	    %error occured, preserves the error code
-	    SafeInterval = SafeInterval1
-	).
+    expression_equal_greater_than(A,C,Interval,SafeInterval1),
+    %checking error
+    check_result_error(SafeInterval1, ErrVal),
+    (
+        ErrVal == 0 -> %no error occured
+        copy_term(dummy_func(C,A),dummy_func(C1,A1)), 
+        marshall_args_p(f(C1,A1),0,f(CP,AP)),
+        remove_size_measures(CP,SC),
+        remove_size_measures(AP,SA),
+        CostDiff = SA - SC,
+        create_strict_inequality(CostDiff, SafeInterval1, SafeInterval)
+    ;
+        %error occured, preserves the error code
+        SafeInterval = SafeInterval1
+    ).
 
 %------------------------------------------------------------------------------
 :- pred create_strict_inequality(Expr, SafeInterval1, SafeInterval)#" Create
@@ -1361,33 +1361,33 @@ create_strict_inequality(_, [], []).
 create_strict_inequality(_, [c], [c]).
 %base
 create_strict_inequality(Expr, [Ival1,R,Ival2], [Ival1,NewR,Ival2]):-!,
-	eval_arith(Expr, R, EvalRes),
-	(
-	    EvalRes > 0 ->
-	    NewR = R
-	;
-	    (
-		Ival1 > Ival2 ->
-		NewR is R - 1 %move left
-	    ;
-		NewR is R + 1 %move right
-	    )
-	).
+    eval_arith(Expr, R, EvalRes),
+    (
+        EvalRes > 0 ->
+        NewR = R
+    ;
+        (
+            Ival1 > Ival2 ->
+            NewR is R - 1 %move left
+        ;
+            NewR is R + 1 %move right
+        )
+    ).
 %recc
 create_strict_inequality(Expr, [Ival1,R,Ival2|Is], [Ival1,NewR|SafeInterval]):-
-	eval_arith(Expr, R, EvalRes),
-	(
-	    EvalRes > 0 ->
-	    NewR = R
-	;
-	    (
-		Ival1 > Ival2 ->
-		NewR is R - 1 %move left
-	    ;
-		NewR is R + 1 %move right
-	    )
-	),
-	create_strict_inequality(Expr,[Ival2|Is], SafeInterval).
+    eval_arith(Expr, R, EvalRes),
+    (
+        EvalRes > 0 ->
+        NewR = R
+    ;
+        (
+            Ival1 > Ival2 ->
+            NewR is R - 1 %move left
+        ;
+            NewR is R + 1 %move right
+        )
+    ),
+    create_strict_inequality(Expr,[Ival2|Is], SafeInterval).
 
 %------------------------------------------------------------------------------
 % cut the negative parts of a list of interval
@@ -1396,27 +1396,27 @@ cut_negative_roots([], []).
 cut_negative_roots([_], []).
 cut_negative_roots([_,_], []).
 cut_negative_roots([Ival|Is], CutIntervals):-
-	Is=[Iroot|Iss],
-	(Iroot < 0 ->
-	 cut_negative_roots(Iss, CutIntervals)
-	;
-	 CutIntervals= [Ival|Is]
-        ).
+    Is=[Iroot|Iss],
+    (Iroot < 0 ->
+     cut_negative_roots(Iss, CutIntervals)
+    ;
+     CutIntervals= [Ival|Is]
+    ).
 
 :- doc(marshall_args_p/3, "It has side effect of changing the input argument").
 %marshall_args_p(f(C1,A1),0,f(CP,AP)),
 marshall_args_p(Term,N,TermRes):-
-	TermRes=Term,
-	varset(Term,Vars),
-	varset(TermRes,Vars),
-        marshall_args_(Vars,N).
+    TermRes=Term,
+    varset(Term,Vars),
+    varset(TermRes,Vars),
+    marshall_args_(Vars,N).
 
 
 % to check if there is any small interval
 small_intervals([_,A,_V,A|_Rest]).
 small_intervals([_,A,V,B|Rest]):-
-	A \== B,
-	small_intervals([V,B|Rest]).
+    A \== B,
+    small_intervals([V,B|Rest]).
 
 
 %------------------------------------------------------------------------------
@@ -1424,20 +1424,20 @@ small_intervals([_,A,V,B|Rest]):-
 %------------------------------------------------------------------------------
 % extract_user_intervals([],[]).
 % extract_user_intervals([i(A,B)|Ls],[[A,B]|Rs]):-
-% 	extract_user_intervals(Ls,Rs).
+%       extract_user_intervals(Ls,Rs).
 %------------------------------------------------------------------------------
 
 %------------------------------------------------------------------------------
 % remove_interval_precond takes the interval information from precondition
 %------------------------------------------------------------------------------
 remove_interval_precond([Term|Ps], NewPrecond, IntPrecond):-
-	contains_interval(Term),
-	append([Term], IP, IntPrecond),
-	remove_interval_precond(Ps, NewPrecond, IP),!. 
+    contains_interval(Term),
+    append([Term], IP, IntPrecond),
+    remove_interval_precond(Ps, NewPrecond, IP),!. 
 %                                               
 remove_interval_precond([Term|Ps], NewPrecond, IntPrecond):-
-	append([Term], NP, NewPrecond),
-	remove_interval_precond(Ps, NP, IntPrecond).
+    append([Term], NP, NewPrecond),
+    remove_interval_precond(Ps, NP, IntPrecond).
 %
 remove_interval_precond([], [], []).
 

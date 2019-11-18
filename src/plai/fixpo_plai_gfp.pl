@@ -1,18 +1,18 @@
-/*             Copyright (C)1990-2002 UPM-CLIP				*/
+/*             Copyright (C)1990-2002 UPM-CLIP                          */
 
 /* This module contains changes needed for using fixpo_plai to compute greatest fixpoints */
 
 :- module(fixpo_plai_gfp,
-	[ query/8,
-	  init_fixpoint/0,
-	  cleanup_fixpoint/1,
-	  entry_to_exit/9,
-	  % for debugging purposes
-	  approx/6,
-	  fixpoint/6,
-	  '$depend_list'/3	
-	],
-	[assertions, datafacts]).
+    [ query/8,
+      init_fixpoint/0,
+      cleanup_fixpoint/1,
+      entry_to_exit/9,
+      % for debugging purposes
+      approx/6,
+      fixpoint/6,
+      '$depend_list'/3      
+    ],
+    [assertions, datafacts]).
 
 :- use_package(.(notrace)). % inhibits the tracing
 
@@ -31,41 +31,41 @@
 
 % Plai library
 :- use_module(ciaopp(plai/fixpo_ops_gfp), [
-	top/1, 
-	singleton/2,
-	each_abs_sort/3,
-	each_extend/6,
-	each_project/6,
-	each_exit_to_prime/8,
-	each_unknown_call/5,
-	each_body_succ_builtin/12,
-	body_succ_meta/7,
-	reduce_equivalent/3,
-	each_apply_trusted/7,
-	dual_widen_succ/4,
-	decide_memo/6,
-	abs_superset_/3]).
+    top/1, 
+    singleton/2,
+    each_abs_sort/3,
+    each_extend/6,
+    each_project/6,
+    each_exit_to_prime/8,
+    each_unknown_call/5,
+    each_body_succ_builtin/12,
+    body_succ_meta/7,
+    reduce_equivalent/3,
+    each_apply_trusted/7,
+    dual_widen_succ/4,
+    decide_memo/6,
+    abs_superset_/3]).
 
 :- use_module(ciaopp(plai/fixpo_ops), [
-	inexistent/2,
-	variable/2,
-	fixpoint_id_reuse_prev/5,
-	fixpoint_id/1,
-	fixp_id/1,
-	clause_applies/2, fixpoint_get_new_id/5]).
+    inexistent/2,
+    variable/2,
+    fixpoint_id_reuse_prev/5,
+    fixpoint_id/1,
+    fixp_id/1,
+    clause_applies/2, fixpoint_get_new_id/5]).
 
 :- use_module(ciaopp(plai/domains)).
 :- use_module(ciaopp(plai/trace_fixp), [fixpoint_trace/7, cleanup/0]).
 :- use_module(ciaopp(plai/plai_db), 
-	[ complete/7, memo_call/5, memo_table/6, cleanup_plai_db/1 ]).
+    [ complete/7, memo_call/5, memo_table/6, cleanup_plai_db/1 ]).
 :- use_module(ciaopp(plai/psets), [update_if_member_idlist/3]).
 :- use_module(ciaopp(plai/plai_db), [erase_previous_memo_tables_and_parents/4]).
 :- use_module(ciaopp(plai/transform), [body_info0/4, trans_clause/3]).
 :- use_module(ciaopp(plai/apply_assertions_old),
-	[ apply_trusted0/7, cleanup_trusts/1]).
+    [ apply_trusted0/7, cleanup_trusts/1]).
 
 %% :- use_module(spec(unfold), 
-%% 	[ init_unfold/0 ]).
+%%      [ init_unfold/0 ]).
 
 :- doc(author,"Kalyan Muthukumar").
 :- doc(author,"Maria Garcia de la Banda").
@@ -75,31 +75,31 @@
 :- doc(author, "Alejandro Serrano").
 
 :- doc(module,"This module implements the top-down greatest fixpoint 
-	algorithm of PLAI, both in its mono-variant and multi-variant
-	on successes versions. It is always multi-variant on calls.
-        The algorithm is parametric on the particular analysis domain.").
+    algorithm of PLAI, both in its mono-variant and multi-variant
+    on successes versions. It is always multi-variant on calls.
+    The algorithm is parametric on the particular analysis domain.").
 
 :- doc(bug,"1. Check analysis of meta_calls works after introducing
-        fixpoint_reuse_prev_id/5. See, e.g., mmatrix_parallelized.").
+    fixpoint_reuse_prev_id/5. See, e.g., mmatrix_parallelized.").
 :- doc(bug,"2. Add support for mono-variance on calls, in two
-	fashions: (1) one call-pattern per predicate, (2) one 
-	call-pattern per predicate atom in the program.").
+    fashions: (1) one call-pattern per predicate, (2) one 
+    call-pattern per predicate atom in the program.").
 :- doc(bug,"3. Check support for analyzing meta-calls: it does not work
-	in success multivariance, and also the constants should be 
-	module-expanded. Also, what about [Body|...] in a meta-call?"). 
+    in success multivariance, and also the constants should be 
+    module-expanded. Also, what about [Body|...] in a meta-call?"). 
 :- doc(bug,"4. Check analysis of bagof(X,Y^T,Z)").
 :- doc(bug,"5. Add support for approximating non-native properties in 
-	trusts.").
+    trusts.").
 :- doc(bug,"6. Should we assert complete for meta-calls?").
 :- doc(bug,"7. Revise treatment of builtins. Specially when not
-	supported by the domain.").
+    supported by the domain.").
 :- doc(bug,"8. Revise all the treatment of bottom. Should probably stop
-	inmmediately.").
+    inmmediately.").
 :- doc(bug,"9. Check the processing for success multivariance.").
 :- doc(bug,"10. $meta has extra variables because of the meta-terms. 
-        This is confusing (specially on output, maybe also for analysis
-        -- see body_succ0). Should not be there, and only added to
-	analyze the meta-term.").
+    This is confusing (specially on output, maybe also for analysis
+    -- see body_succ0). Should not be there, and only added to
+    analyze the meta-term.").
 
 %------------------------------------------------------------------------%
 %                                                                        %
@@ -163,40 +163,40 @@
 :- data approx_variant/7.
 
 :- doc(init_fixpoint/0,"Cleanups the database of analysis of
-	temporary information.").
+    temporary information.").
 
 init_fixpoint:-
-	retractall_fact(approx(_,_,_,_,_,_)),
-	retractall_fact(fixpoint(_,_,_,_,_,_)),
-	retractall_fact('$depend_list'(_,_,_)),
-	retractall_fact(ch_id(_,_)),
-	retractall_fact(fixpoint_variant(_,_,_,_,_,_)),
-	retractall_fact(approx_variant(_,_,_,_,_,_,_)),
-	trace_fixp:cleanup.
-%	init_unfold.
+    retractall_fact(approx(_,_,_,_,_,_)),
+    retractall_fact(fixpoint(_,_,_,_,_,_)),
+    retractall_fact('$depend_list'(_,_,_)),
+    retractall_fact(ch_id(_,_)),
+    retractall_fact(fixpoint_variant(_,_,_,_,_,_)),
+    retractall_fact(approx_variant(_,_,_,_,_,_,_)),
+    trace_fixp:cleanup.
+%       init_unfold.
 
 
 :- doc(cleanup_fixpoint(AbsInt),"Cleanups the database of analysis, of both
-	temporary as well as permanent information regarding abstract
-	domain @var{AbsInt}.").
+    temporary as well as permanent information regarding abstract
+    domain @var{AbsInt}.").
 
 cleanup_fixpoint(AbsInt):-
-	cleanup_plai_db(AbsInt),
-	cleanup_trusts(AbsInt),
-	retractall_fact(fixp_id(_)),
-	asserta_fact(fixp_id(0)), % there is no way to recover this 
-	init_fixpoint.            % if several analysis coexist!
+    cleanup_plai_db(AbsInt),
+    cleanup_trusts(AbsInt),
+    retractall_fact(fixp_id(_)),
+    asserta_fact(fixp_id(0)), % there is no way to recover this 
+    init_fixpoint.            % if several analysis coexist!
 
 approx_to_completes(AbsInt):-
-	current_fact(approx(SgKey,Sg,Proj,Prime,Pid,Fs),Ref),
-	asserta_fact(complete(SgKey,AbsInt,Sg,Proj,Prime,Pid,Fs)),
-	erase(Ref),
-	fail.
+    current_fact(approx(SgKey,Sg,Proj,Prime,Pid,Fs),Ref),
+    asserta_fact(complete(SgKey,AbsInt,Sg,Proj,Prime,Pid,Fs)),
+    erase(Ref),
+    fail.
 approx_to_completes(AbsInt):-
-	current_fact(approx_variant(_Id,Pid,SgKey,Sg,Proj,Prime,Fs),Ref),	
-	asserta_fact(complete(SgKey,AbsInt,Sg,Proj,Prime,Pid,Fs)),
-	erase(Ref),
-	fail.
+    current_fact(approx_variant(_Id,Pid,SgKey,Sg,Proj,Prime,Fs),Ref),       
+    asserta_fact(complete(SgKey,AbsInt,Sg,Proj,Prime,Pid,Fs)),
+    erase(Ref),
+    fail.
 approx_to_completes(_AbsInt).
 
 %------------------------------------------------------------------------%
@@ -253,302 +253,302 @@ approx_to_completes(_AbsInt).
 %------------------------------------------------------------------------%
 
 call_to_success(_RFlag,SgKey,Call,Proj,Sg,Sv,AbsInt,_ClId,Succ,List,F,N,Id):-
-%w	write('c'),
-	current_fact(complete(SgKey,AbsInt,Subg,Proj1,Prime1,Id,Fs),R),
-	identical_proj(AbsInt,Sg,Proj,Subg,Proj1), !,
-	patch_parents(R,complete(SgKey,AbsInt,Subg,Proj1,Prime1,Id,Ps),F,N,Ps,Fs),
-	List = [],
-	fixpoint_trace('complete used',N,Id,SgKey,Sg,Prime1,_),
-	each_abs_sort(Prime1,AbsInt,Prime),
-	each_extend(Sg,Prime,AbsInt,Sv,Call,Succ).
+%w      write('c'),
+    current_fact(complete(SgKey,AbsInt,Subg,Proj1,Prime1,Id,Fs),R),
+    identical_proj(AbsInt,Sg,Proj,Subg,Proj1), !,
+    patch_parents(R,complete(SgKey,AbsInt,Subg,Proj1,Prime1,Id,Ps),F,N,Ps,Fs),
+    List = [],
+    fixpoint_trace('complete used',N,Id,SgKey,Sg,Prime1,_),
+    each_abs_sort(Prime1,AbsInt,Prime),
+    each_extend(Sg,Prime,AbsInt,Sv,Call,Succ).
 call_to_success(r,SgKey,Call,Proj,Sg,Sv,AbsInt,_ClId,Succ,List,F,N,Id) :-
-	current_fact(approx(SgKey,Subg,Proj1,Prime1,Id,Fs),Ref),
-	identical_proj(AbsInt,Sg,Proj,Subg,Proj1), !,
-	fixpoint_trace('approx used',N,Id,SgKey,Sg,Prime1,_),
-	each_abs_sort(Prime1,AbsInt,TempPrime),
-	current_fact('$depend_list'(Id,SgKey,IdList)),
-	call_to_success_approx(SgKey,Subg,Call,Proj,Proj1,Sg,Sv,AbsInt,F,N,Fs,
-	                       Id,Ref,IdList,Prime1,TempPrime,List,Prime),
-	each_extend(Sg,Prime,AbsInt,Sv,Call,Succ).
+    current_fact(approx(SgKey,Subg,Proj1,Prime1,Id,Fs),Ref),
+    identical_proj(AbsInt,Sg,Proj,Subg,Proj1), !,
+    fixpoint_trace('approx used',N,Id,SgKey,Sg,Prime1,_),
+    each_abs_sort(Prime1,AbsInt,TempPrime),
+    current_fact('$depend_list'(Id,SgKey,IdList)),
+    call_to_success_approx(SgKey,Subg,Call,Proj,Proj1,Sg,Sv,AbsInt,F,N,Fs,
+                           Id,Ref,IdList,Prime1,TempPrime,List,Prime),
+    each_extend(Sg,Prime,AbsInt,Sv,Call,Succ).
 call_to_success(r,SgKey,Call,Proj,Sg,Sv,AbsInt,_ClId,Succ,List,F,N,Id):-
-	current_fact(fixpoint(SgKey,Subg,Proj1,Prime1,Id,Fs),Ref),
-	identical_proj(AbsInt,Sg,Proj,Subg,Proj1), !,
-	patch_parents(Ref,fixpoint(SgKey,Subg,Proj1,Prime1,Id,Ps),F,N,Ps,Fs),
-	fixpoint_trace('fixpoint used',N,Id,SgKey,Sg,Prime1,_),
-	current_fact(ch_id(Id,Num)),
-	List = [Id/Num],
-	each_abs_sort(Prime1,AbsInt,Prime),
-	each_extend(Sg,Prime,AbsInt,Sv,Call,Succ).
+    current_fact(fixpoint(SgKey,Subg,Proj1,Prime1,Id,Fs),Ref),
+    identical_proj(AbsInt,Sg,Proj,Subg,Proj1), !,
+    patch_parents(Ref,fixpoint(SgKey,Subg,Proj1,Prime1,Id,Ps),F,N,Ps,Fs),
+    fixpoint_trace('fixpoint used',N,Id,SgKey,Sg,Prime1,_),
+    current_fact(ch_id(Id,Num)),
+    List = [Id/Num],
+    each_abs_sort(Prime1,AbsInt,Prime),
+    each_extend(Sg,Prime,AbsInt,Sv,Call,Succ).
 call_to_success(_RFlag,SgKey,Call,Proj,Sg,Sv,AbsInt,_ClId,Succ,List,F,N,Id):-
-%w	write('c'),
-	current_pp_flag(variants,on),
-	current_fact(complete(SgKey,AbsInt,Subg,Proj1,Prime1,_Id1,_Fs),_R),
-	identical_proj_1(AbsInt,Sg,Proj,Subg,Proj1,Prime1,Prime2), !,
-	fixpoint_get_new_id(SgKey,AbsInt,Sg,Proj,Id),
-	each_abs_sort(Prime2,AbsInt,Prime),
-	List = [],
-	fixpoint_trace('complete used',N,Id,SgKey,Sg,Prime2,_),
-	asserta_fact(complete(SgKey,AbsInt,Sg,Proj,Prime,Id,[(F,N)])),
-	each_extend(Sg,Prime,AbsInt,Sv,Call,Succ).
+%w      write('c'),
+    current_pp_flag(variants,on),
+    current_fact(complete(SgKey,AbsInt,Subg,Proj1,Prime1,_Id1,_Fs),_R),
+    identical_proj_1(AbsInt,Sg,Proj,Subg,Proj1,Prime1,Prime2), !,
+    fixpoint_get_new_id(SgKey,AbsInt,Sg,Proj,Id),
+    each_abs_sort(Prime2,AbsInt,Prime),
+    List = [],
+    fixpoint_trace('complete used',N,Id,SgKey,Sg,Prime2,_),
+    asserta_fact(complete(SgKey,AbsInt,Sg,Proj,Prime,Id,[(F,N)])),
+    each_extend(Sg,Prime,AbsInt,Sv,Call,Succ).
 call_to_success(r,SgKey,Call,Proj,Sg,Sv,AbsInt,_ClId,Succ,List,F,N,Id) :-
-	current_pp_flag(variants,on),
-	current_fact(approx(SgKey,Subg,Proj1,Prime1,Id1,Fs),Ref),
-	identical_proj_1(AbsInt,Sg,Proj,Subg,Proj1,Prime1,Prime2), !,
-	fixpoint_trace('approx used',N,Id1,SgKey,Sg,Prime1,_),
-	each_abs_sort(Prime2,AbsInt,TempPrime),
-	current_fact('$depend_list'(Id1,SgKey,IdList)),
-	call_to_success_approx_variant(SgKey,Subg,Call,Proj,Proj1,Sg,Sv,AbsInt,F,N,Fs,
-	                       Id,Id1,Ref,IdList,Prime1,TempPrime,List,Prime),
-	each_extend(Sg,Prime,AbsInt,Sv,Call,Succ).
+    current_pp_flag(variants,on),
+    current_fact(approx(SgKey,Subg,Proj1,Prime1,Id1,Fs),Ref),
+    identical_proj_1(AbsInt,Sg,Proj,Subg,Proj1,Prime1,Prime2), !,
+    fixpoint_trace('approx used',N,Id1,SgKey,Sg,Prime1,_),
+    each_abs_sort(Prime2,AbsInt,TempPrime),
+    current_fact('$depend_list'(Id1,SgKey,IdList)),
+    call_to_success_approx_variant(SgKey,Subg,Call,Proj,Proj1,Sg,Sv,AbsInt,F,N,Fs,
+                           Id,Id1,Ref,IdList,Prime1,TempPrime,List,Prime),
+    each_extend(Sg,Prime,AbsInt,Sv,Call,Succ).
 call_to_success(r,SgKey,Call,Proj,Sg,Sv,AbsInt,_ClId,Succ,List,F,N,Id):-
-	current_pp_flag(variants,on),
-	current_fact(fixpoint(SgKey,Subg,Proj1,Prime1,Id1,_Fs),_Ref),
-	identical_proj_1(AbsInt,Sg,Proj,Subg,Proj1,Prime1,Prime2), !,
-	(
-	    current_fact(fixpoint_variant(Id1,Id,SgKey,Sgv,Projv,Fsv),Refv),
-	    identical_proj(AbsInt,Sg,Proj,Sgv,Projv) ->
-	    patch_parents(Refv,fixpoint_variant(Id1,Id,SgKey,Sgv,Projv,Ps),F,N,Ps,Fsv)
-	;
+    current_pp_flag(variants,on),
+    current_fact(fixpoint(SgKey,Subg,Proj1,Prime1,Id1,_Fs),_Ref),
+    identical_proj_1(AbsInt,Sg,Proj,Subg,Proj1,Prime1,Prime2), !,
+    (
+        current_fact(fixpoint_variant(Id1,Id,SgKey,Sgv,Projv,Fsv),Refv),
+        identical_proj(AbsInt,Sg,Proj,Sgv,Projv) ->
+        patch_parents(Refv,fixpoint_variant(Id1,Id,SgKey,Sgv,Projv,Ps),F,N,Ps,Fsv)
+    ;
       fixpoint_get_new_id(SgKey,AbsInt,Sg,Proj,Id),
-	    asserta_fact(fixpoint_variant(Id1,Id,SgKey,Sg,Proj,[(F,N)]))
-	),
-	each_abs_sort(Prime2,AbsInt,Prime),
-	fixpoint_trace('fixpoint used',N,Id1,SgKey,Sg,Prime2,_),
-	current_fact(ch_id(Id1,Num)),
-	List = [Id1/Num],
-	each_extend(Sg,Prime,AbsInt,Sv,Call,Succ).
+        asserta_fact(fixpoint_variant(Id1,Id,SgKey,Sg,Proj,[(F,N)]))
+    ),
+    each_abs_sort(Prime2,AbsInt,Prime),
+    fixpoint_trace('fixpoint used',N,Id1,SgKey,Sg,Prime2,_),
+    current_fact(ch_id(Id1,Num)),
+    List = [Id1/Num],
+    each_extend(Sg,Prime,AbsInt,Sv,Call,Succ).
 call_to_success(r,SgKey,Call,Proj,Sg,Sv,AbsInt,_ClId,Succ,List,F,N,Id) :-
-	init_fixpoint0(SgKey,Call,Proj,Sg,Sv,AbsInt,F,N,[(F,N)],Id,List,Prime),
-	each_extend(Sg,Prime,AbsInt,Sv,Call,Succ).
+    init_fixpoint0(SgKey,Call,Proj,Sg,Sv,AbsInt,F,N,[(F,N)],Id,List,Prime),
+    each_extend(Sg,Prime,AbsInt,Sv,Call,Succ).
 call_to_success(nr,SgKey,Call,Proj,Sg,Sv,AbsInt,ClId,Succ,[],F,N,Id):-
-	fixpoint_get_new_id(SgKey,AbsInt,Sg,Proj,Id),
-	fixpoint_trace('non-recursive initiated',Id,N,SgKey,Sg,Proj,_),
-	proj_to_prime_nr(SgKey,Sg,Sv,Call,Proj,AbsInt,ClId,Prime,Id), 
-	fixpoint_trace('non-recursive completed',Id,N,SgKey,Sg,Prime,_),
-	asserta_fact(complete(SgKey,AbsInt,Sg,Proj,Prime,Id,[(F,N)])),
-	each_extend(Sg,Prime,AbsInt,Sv,Call,Succ).
+    fixpoint_get_new_id(SgKey,AbsInt,Sg,Proj,Id),
+    fixpoint_trace('non-recursive initiated',Id,N,SgKey,Sg,Proj,_),
+    proj_to_prime_nr(SgKey,Sg,Sv,Call,Proj,AbsInt,ClId,Prime,Id), 
+    fixpoint_trace('non-recursive completed',Id,N,SgKey,Sg,Prime,_),
+    asserta_fact(complete(SgKey,AbsInt,Sg,Proj,Prime,Id,[(F,N)])),
+    each_extend(Sg,Prime,AbsInt,Sv,Call,Succ).
 
 patch_parents(_Ref,_Memo,F,N,_Ps,Fs):-
-	member((F,N),Fs), !.
+    member((F,N),Fs), !.
 patch_parents(Ref,Memo,F,N,Ps,Fs):-
-	erase(Ref),
-	Ps=[(F,N)|Fs],
-	asserta_fact(Memo).
+    erase(Ref),
+    Ps=[(F,N)|Fs],
+    asserta_fact(Memo).
 
 call_to_success_approx(SgKey,Subg,_Call,Proj,Proj1,Sg,_Sv,_AbsInt,F,N,Fs,
-	                     Id,Ref,IdList,Prime1,TempPrime,List,Prime):-
-	not_modified(IdList), !,
-	fixpoint_trace('approx unchanged',N,Id,SgKey,Sg,Proj,_),
-	patch_parents(Ref,approx(SgKey,Subg,Proj1,Prime1,Id,Ps),F,N,Ps,Fs),
-	Prime = TempPrime,
-	List = IdList.
+                         Id,Ref,IdList,Prime1,TempPrime,List,Prime):-
+    not_modified(IdList), !,
+    fixpoint_trace('approx unchanged',N,Id,SgKey,Sg,Proj,_),
+    patch_parents(Ref,approx(SgKey,Subg,Proj1,Prime1,Id,Ps),F,N,Ps,Fs),
+    Prime = TempPrime,
+    List = IdList.
 call_to_success_approx(SgKey,_Subg,Call,Proj,_Proj1,Sg,Sv,AbsInt,F,N,Fs,
-	                     Id,Ref,_IdList,_Prime1,TempPrime,List,Prime):-
-	erase(Ref),
-	init_fixpoint_(SgKey,Call,Proj,Sg,Sv,AbsInt,F,N,Fs,Id,
-	                     TempPrime,List,Prime).
+                         Id,Ref,_IdList,_Prime1,TempPrime,List,Prime):-
+    erase(Ref),
+    init_fixpoint_(SgKey,Call,Proj,Sg,Sv,AbsInt,F,N,Fs,Id,
+                         TempPrime,List,Prime).
 
 aproxs_to_fixpoint_variant(Id):-
-	current_fact(approx_variant(Id,Idv,SgKey,Sgv,Projv,_Primev,Fs),Ref),!,
-	erase(Ref),
-	asserta_fact(fixpoint_variant(Id,Idv,SgKey,Sgv,Projv,Fs)),
-	aproxs_to_fixpoint_variant(Id).
+    current_fact(approx_variant(Id,Idv,SgKey,Sgv,Projv,_Primev,Fs),Ref),!,
+    erase(Ref),
+    asserta_fact(fixpoint_variant(Id,Idv,SgKey,Sgv,Projv,Fs)),
+    aproxs_to_fixpoint_variant(Id).
 aproxs_to_fixpoint_variant(_).
 
 
 call_to_success_approx_variant(SgKey,_Subg,_Call,Proj,_Proj1,Sg,_Sv,AbsInt,F,N,_Fs,
-	                     Id,Id1,_Ref,IdList,_Prime1,TempPrime,List,Prime):-
-	not_modified(IdList), !,
-	(
-	    current_fact(approx_variant(Id1,Id,SgKey,Sgv,Projv,Primev,Fsv),Refv),
-	    identical_proj(AbsInt,Sg,Proj,Sgv,Projv) ->
-	    patch_parents(Refv,approx_variant(Id1,Id,SgKey,Sgv,Projv,Primev,Ps),F,N,Ps,Fsv) 
-	;
+                         Id,Id1,_Ref,IdList,_Prime1,TempPrime,List,Prime):-
+    not_modified(IdList), !,
+    (
+        current_fact(approx_variant(Id1,Id,SgKey,Sgv,Projv,Primev,Fsv),Refv),
+        identical_proj(AbsInt,Sg,Proj,Sgv,Projv) ->
+        patch_parents(Refv,approx_variant(Id1,Id,SgKey,Sgv,Projv,Primev,Ps),F,N,Ps,Fsv) 
+    ;
       fixpoint_get_new_id(SgKey,AbsInt,Sg,Proj,Id),
-	    asserta_fact(approx_variant(Id1,Id,SgKey,Sg,Proj,TempPrime,[(F,N)]))
-	),
-	fixpoint_trace('approx unchanged',N,Id1,SgKey,Sg,Proj,_),
-	Prime = TempPrime,
-	List = IdList.
+        asserta_fact(approx_variant(Id1,Id,SgKey,Sg,Proj,TempPrime,[(F,N)]))
+    ),
+    fixpoint_trace('approx unchanged',N,Id1,SgKey,Sg,Proj,_),
+    Prime = TempPrime,
+    List = IdList.
 call_to_success_approx_variant(SgKey,Subg,Call,Proj,Proj1,Sg,Sv,AbsInt,F,N,Fs,
-	                     Id,Id1,Ref,_IdList,Prime1,_TempPrime,List,Prime):-
-	(
-	    current_fact(approx_variant(Id1,Id,SgKey,Sgv,Projv,_Primev,Fsv),Refv),
-	    identical_proj(AbsInt,Sg,Proj,Sgv,Projv) ->
-	    erase(Refv),
-	    ( member((F,N),Fsv) -> NewFs = Fsv ; NewFs = [(F,N)|Fsv] )
-	;
-	  fixpoint_get_new_id(SgKey,AbsInt,Sg,Proj,Id),
-	    NewFs = [(F,N)]
-	),
-        aproxs_to_fixpoint_variant(Id1),
-	erase(Ref),
-	asserta_fact(fixpoint_variant(Id1,Id,SgKey,Sg,Proj,NewFs)),
-	varset(Subg,Subv),
-	init_fixpoint_(SgKey,Call,Proj1,Subg,Subv,AbsInt,F,N,Fs,Id1,
-	                     Prime1,List,Prime0),
-	each_exit_to_prime(Prime0,AbsInt,Sg,Subv,Subg,Sv,(no,Proj),Prime).		% ver
+                         Id,Id1,Ref,_IdList,Prime1,_TempPrime,List,Prime):-
+    (
+        current_fact(approx_variant(Id1,Id,SgKey,Sgv,Projv,_Primev,Fsv),Refv),
+        identical_proj(AbsInt,Sg,Proj,Sgv,Projv) ->
+        erase(Refv),
+        ( member((F,N),Fsv) -> NewFs = Fsv ; NewFs = [(F,N)|Fsv] )
+    ;
+      fixpoint_get_new_id(SgKey,AbsInt,Sg,Proj,Id),
+        NewFs = [(F,N)]
+    ),
+    aproxs_to_fixpoint_variant(Id1),
+    erase(Ref),
+    asserta_fact(fixpoint_variant(Id1,Id,SgKey,Sg,Proj,NewFs)),
+    varset(Subg,Subv),
+    init_fixpoint_(SgKey,Call,Proj1,Subg,Subv,AbsInt,F,N,Fs,Id1,
+                         Prime1,List,Prime0),
+    each_exit_to_prime(Prime0,AbsInt,Sg,Subv,Subg,Sv,(no,Proj),Prime).              % ver
 
 
 init_fixpoint0(SgKey,Call,Proj0,Sg,Sv,AbsInt,F,N,Fs,Id,List,Prime):-
-	current_pp_flag(widen,on),
-	current_pp_flag(multi_success,off),
-	dual_widen_call(AbsInt,SgKey,Sg,F,N,Proj0,Proj), !,
-	init_fixpoint1(SgKey,Call,Proj,Sg,Sv,AbsInt,F,N,Fs,Id,List,Prime).
+    current_pp_flag(widen,on),
+    current_pp_flag(multi_success,off),
+    dual_widen_call(AbsInt,SgKey,Sg,F,N,Proj0,Proj), !,
+    init_fixpoint1(SgKey,Call,Proj,Sg,Sv,AbsInt,F,N,Fs,Id,List,Prime).
 init_fixpoint0(SgKey,Call,Proj,Sg,Sv,AbsInt,F,N,Fs,Id,List,Prime):-
-	init_fixpoint2(SgKey,Call,Proj,Sg,Sv,AbsInt,F,N,Fs,Id,List,Prime).
+    init_fixpoint2(SgKey,Call,Proj,Sg,Sv,AbsInt,F,N,Fs,Id,List,Prime).
 
 init_fixpoint1(SgKey,_Call,Proj,Sg,_Sv,AbsInt,F,N,_Fs0,Id,List,Prime):-
-	current_fact(complete(SgKey,AbsInt,Subg,Proj1,Prime1,Id,Fs),R),
-	identical_proj(AbsInt,Sg,Proj,Subg,Proj1), !,
-	patch_parents(R,complete(SgKey,AbsInt,Subg,Proj1,Prime1,Id,Ps),F,N,Ps,Fs),
-	List = [],
-	fixpoint_trace('complete used',N,Id,SgKey,Sg,Prime1,_),
-	each_abs_sort(Prime1,AbsInt,Prime).
+    current_fact(complete(SgKey,AbsInt,Subg,Proj1,Prime1,Id,Fs),R),
+    identical_proj(AbsInt,Sg,Proj,Subg,Proj1), !,
+    patch_parents(R,complete(SgKey,AbsInt,Subg,Proj1,Prime1,Id,Ps),F,N,Ps,Fs),
+    List = [],
+    fixpoint_trace('complete used',N,Id,SgKey,Sg,Prime1,_),
+    each_abs_sort(Prime1,AbsInt,Prime).
 init_fixpoint1(SgKey,Call,Proj,Sg,Sv,AbsInt,F,N,_Fs0,Id,List,Prime):-
-	current_fact(approx(SgKey,Subg,Proj1,Prime1,Id,Fs),Ref),
-	identical_proj(AbsInt,Sg,Proj,Subg,Proj1), !,
-	fixpoint_trace('approx used',N,Id,SgKey,Sg,Prime1,_),
-	each_abs_sort(Prime1,AbsInt,TempPrime),
-	current_fact('$depend_list'(Id,SgKey,IdList)),
-	call_to_success_approx(SgKey,Subg,Call,Proj,Proj1,Sg,Sv,AbsInt,F,N,Fs,
-	                       Id,Ref,IdList,Prime1,TempPrime,List,Prime).
+    current_fact(approx(SgKey,Subg,Proj1,Prime1,Id,Fs),Ref),
+    identical_proj(AbsInt,Sg,Proj,Subg,Proj1), !,
+    fixpoint_trace('approx used',N,Id,SgKey,Sg,Prime1,_),
+    each_abs_sort(Prime1,AbsInt,TempPrime),
+    current_fact('$depend_list'(Id,SgKey,IdList)),
+    call_to_success_approx(SgKey,Subg,Call,Proj,Proj1,Sg,Sv,AbsInt,F,N,Fs,
+                           Id,Ref,IdList,Prime1,TempPrime,List,Prime).
 init_fixpoint1(SgKey,_,Proj,Sg,_Sv,AbsInt,F,N,_Fs0,Id,List,Prime):-
-	current_fact(fixpoint(SgKey,Subg,Proj1,Prime1,Id,Fs),Ref),
-	identical_proj(AbsInt,Sg,Proj,Subg,Proj1), !,
-	patch_parents(Ref,fixpoint(SgKey,Subg,Proj1,Prime1,Id,Ps),F,N,Ps,Fs),
-	fixpoint_trace('fixpoint used',N,Id,SgKey,Sg,Prime1,_),
-	current_fact(ch_id(Id,Num)),
-	List = [Id/Num],
-	each_abs_sort(Prime1,AbsInt,Prime).
+    current_fact(fixpoint(SgKey,Subg,Proj1,Prime1,Id,Fs),Ref),
+    identical_proj(AbsInt,Sg,Proj,Subg,Proj1), !,
+    patch_parents(Ref,fixpoint(SgKey,Subg,Proj1,Prime1,Id,Ps),F,N,Ps,Fs),
+    fixpoint_trace('fixpoint used',N,Id,SgKey,Sg,Prime1,_),
+    current_fact(ch_id(Id,Num)),
+    List = [Id/Num],
+    each_abs_sort(Prime1,AbsInt,Prime).
 init_fixpoint1(SgKey,_Call,Proj,Sg,_Sv,AbsInt,F,N,_Fs0,Id,List,Prime):-
-	current_pp_flag(variants,on),
-	current_fact(complete(SgKey,AbsInt,Subg,Proj1,Prime1,_Id1,_Fs),_R),
-	identical_proj_1(AbsInt,Sg,Proj,Subg,Proj1,Prime1,Prime2), !,
-	fixpoint_get_new_id(SgKey,AbsInt,Sg,Proj,Id),
-	each_abs_sort(Prime2,AbsInt,Prime),
-	List = [],
-	fixpoint_trace('complete used',N,Id,SgKey,Sg,Prime2,_),
-	asserta_fact(complete(SgKey,AbsInt,Sg,Proj,Prime,Id,[(F,N)])).
+    current_pp_flag(variants,on),
+    current_fact(complete(SgKey,AbsInt,Subg,Proj1,Prime1,_Id1,_Fs),_R),
+    identical_proj_1(AbsInt,Sg,Proj,Subg,Proj1,Prime1,Prime2), !,
+    fixpoint_get_new_id(SgKey,AbsInt,Sg,Proj,Id),
+    each_abs_sort(Prime2,AbsInt,Prime),
+    List = [],
+    fixpoint_trace('complete used',N,Id,SgKey,Sg,Prime2,_),
+    asserta_fact(complete(SgKey,AbsInt,Sg,Proj,Prime,Id,[(F,N)])).
 init_fixpoint1(SgKey,Call,Proj,Sg,Sv,AbsInt,F,N,_Fs0,Id,List,Prime):-
-	current_pp_flag(variants,on),
-	current_fact(approx(SgKey,Subg,Proj1,Prime1,Id1,Fs),Ref),
-	identical_proj_1(AbsInt,Sg,Proj,Subg,Proj1,Prime1,Prime2), !,
-	fixpoint_trace('approx used',N,Id1,SgKey,Sg,Prime1,_),
-	each_abs_sort(Prime2,AbsInt,TempPrime),
-	current_fact('$depend_list'(Id1,SgKey,IdList)),
-	call_to_success_approx_variant(SgKey,Subg,Call,Proj,Proj1,Sg,Sv,AbsInt,F,N,Fs,
-	                       Id,Id1,Ref,IdList,Prime1,TempPrime,List,Prime).
+    current_pp_flag(variants,on),
+    current_fact(approx(SgKey,Subg,Proj1,Prime1,Id1,Fs),Ref),
+    identical_proj_1(AbsInt,Sg,Proj,Subg,Proj1,Prime1,Prime2), !,
+    fixpoint_trace('approx used',N,Id1,SgKey,Sg,Prime1,_),
+    each_abs_sort(Prime2,AbsInt,TempPrime),
+    current_fact('$depend_list'(Id1,SgKey,IdList)),
+    call_to_success_approx_variant(SgKey,Subg,Call,Proj,Proj1,Sg,Sv,AbsInt,F,N,Fs,
+                           Id,Id1,Ref,IdList,Prime1,TempPrime,List,Prime).
 init_fixpoint1(SgKey,_,Proj,Sg,_Sv,AbsInt,F,N,_Fs0,Id,List,Prime):-
-	current_pp_flag(variants,on),
-	current_fact(fixpoint(SgKey,Subg,Proj1,Prime1,Id1,_Fs),_Ref),
-	identical_proj_1(AbsInt,Sg,Proj,Subg,Proj1,Prime1,Prime2), !,
-	(
-	    current_fact(fixpoint_variant(Id1,Id,SgKey,Sgv,Projv,Fsv),Refv),
-	    identical_proj(AbsInt,Sg,Proj,Sgv,Projv) ->
-	    patch_parents(Refv,fixpoint_variant(Id1,Id,SgKey,Sgv,Projv,Ps),F,N,Ps,Fsv)
-	;
-	  fixpoint_get_new_id(SgKey,AbsInt,Sg,Proj,Id),
-	    asserta_fact(fixpoint_variant(Id1,Id,SgKey,Sg,Proj,[(F,N)]))
-	),
-	each_abs_sort(Prime2,AbsInt,Prime),
-	fixpoint_trace('fixpoint used',N,Id1,SgKey,Sg,Prime2,_),
-	current_fact(ch_id(Id1,Num)),
-	List = [Id1/Num].
+    current_pp_flag(variants,on),
+    current_fact(fixpoint(SgKey,Subg,Proj1,Prime1,Id1,_Fs),_Ref),
+    identical_proj_1(AbsInt,Sg,Proj,Subg,Proj1,Prime1,Prime2), !,
+    (
+        current_fact(fixpoint_variant(Id1,Id,SgKey,Sgv,Projv,Fsv),Refv),
+        identical_proj(AbsInt,Sg,Proj,Sgv,Projv) ->
+        patch_parents(Refv,fixpoint_variant(Id1,Id,SgKey,Sgv,Projv,Ps),F,N,Ps,Fsv)
+    ;
+      fixpoint_get_new_id(SgKey,AbsInt,Sg,Proj,Id),
+        asserta_fact(fixpoint_variant(Id1,Id,SgKey,Sg,Proj,[(F,N)]))
+    ),
+    each_abs_sort(Prime2,AbsInt,Prime),
+    fixpoint_trace('fixpoint used',N,Id1,SgKey,Sg,Prime2,_),
+    current_fact(ch_id(Id1,Num)),
+    List = [Id1/Num].
 init_fixpoint1(SgKey,Call,Proj,Sg,Sv,AbsInt,F,N,Fs,Id,List,Prime):-
-	init_fixpoint2(SgKey,Call,Proj,Sg,Sv,AbsInt,F,N,Fs,Id,List,Prime).
+    init_fixpoint2(SgKey,Call,Proj,Sg,Sv,AbsInt,F,N,Fs,Id,List,Prime).
 
 init_fixpoint2(SgKey,Call,Proj,Sg,Sv,AbsInt,F,N,Fs,Id,List,Prime):-
-	fixpoint_get_new_id(SgKey,AbsInt,Sg,Proj,Id),
-	asserta_fact(ch_id(Id,1)),
-	fixpoint_trace('non-recursive initiated',Id,N,SgKey,Sg,Proj,_),
-	proj_to_prime_r(SgKey,Sg,Sv,Call,Proj,AbsInt,TempPrime,Id), 
-	fixpoint_trace('non-recursive completed',Id,N,SgKey,Sg,TempPrime,_),
-	init_fixpoint_(SgKey,Call,Proj,Sg,Sv,AbsInt,F,N,Fs,Id,
-	                     TempPrime,List,Prime).
+    fixpoint_get_new_id(SgKey,AbsInt,Sg,Proj,Id),
+    asserta_fact(ch_id(Id,1)),
+    fixpoint_trace('non-recursive initiated',Id,N,SgKey,Sg,Proj,_),
+    proj_to_prime_r(SgKey,Sg,Sv,Call,Proj,AbsInt,TempPrime,Id), 
+    fixpoint_trace('non-recursive completed',Id,N,SgKey,Sg,TempPrime,_),
+    init_fixpoint_(SgKey,Call,Proj,Sg,Sv,AbsInt,F,N,Fs,Id,
+                         TempPrime,List,Prime).
 
 init_fixpoint_(SgKey,Call,Proj,Sg,Sv,AbsInt,F,N,Fs,Id,Prime0,List,Prime):-
-	normalize_asub0(AbsInt,Prime0,TempPrime),
-	asserta_fact(fixpoint(SgKey,Sg,Proj,TempPrime,Id,Fs)),
-	bagof(X, X^(trans_clause(SgKey,r,X)),Clauses),!,
-	fixpoint_trace('fixpoint initiated',Id,N,SgKey,Sg,Proj,Clauses),
-	fixpoint_compute(Clauses,SgKey,Sg,Sv,Call,Proj,
-	                    AbsInt,_LEntry,TempPrime,Prime1,Id,TempList),
-	each_apply_trusted(Proj,SgKey,Sg,Sv,AbsInt,Prime1,Prime), % estaba comentado
-%	Prime1=Prime,
-	current_fact(fixpoint(SgKey,Sg,_,_,Id,Fs2),Ref),
-	erase(Ref),
-	( current_fact('$depend_list'(Id,SgKey,_),RefDep) ->
-	  erase(RefDep)
-	; true
-	),
-	update_if_member_idlist(TempList,Id,AddList),
-	( member((F,N),Fs2) -> NewFs = Fs2 ; NewFs = [(F,N)|Fs2] ),
-	decide_approx(AddList,Id,NewFs,AbsInt,SgKey,Sg,Proj,Prime),
-	List = AddList.
+    normalize_asub0(AbsInt,Prime0,TempPrime),
+    asserta_fact(fixpoint(SgKey,Sg,Proj,TempPrime,Id,Fs)),
+    bagof(X, X^(trans_clause(SgKey,r,X)),Clauses),!,
+    fixpoint_trace('fixpoint initiated',Id,N,SgKey,Sg,Proj,Clauses),
+    fixpoint_compute(Clauses,SgKey,Sg,Sv,Call,Proj,
+                        AbsInt,_LEntry,TempPrime,Prime1,Id,TempList),
+    each_apply_trusted(Proj,SgKey,Sg,Sv,AbsInt,Prime1,Prime), % estaba comentado
+%       Prime1=Prime,
+    current_fact(fixpoint(SgKey,Sg,_,_,Id,Fs2),Ref),
+    erase(Ref),
+    ( current_fact('$depend_list'(Id,SgKey,_),RefDep) ->
+      erase(RefDep)
+    ; true
+    ),
+    update_if_member_idlist(TempList,Id,AddList),
+    ( member((F,N),Fs2) -> NewFs = Fs2 ; NewFs = [(F,N)|Fs2] ),
+    decide_approx(AddList,Id,NewFs,AbsInt,SgKey,Sg,Proj,Prime),
+    List = AddList.
 
 dual_widen_call(AbsInt,SgKey,Sg,F1,Id0,Proj1,Proj):-
-	( current_pp_flag(widencall,off) -> fail ; true ),
-	dual_widen_call0(AbsInt,SgKey,Sg,F1,Id0,[Id0],Proj1,Proj), !,
-	fixpoint_trace('result of widening',Id0,F1,SgKey,Sg,Proj,_),
-	true.
+    ( current_pp_flag(widencall,off) -> fail ; true ),
+    dual_widen_call0(AbsInt,SgKey,Sg,F1,Id0,[Id0],Proj1,Proj), !,
+    fixpoint_trace('result of widening',Id0,F1,SgKey,Sg,Proj,_),
+    true.
 
 dual_widen_call0(AbsInt,SgKey,Sg,F1,Id0,Ids,Proj1,Proj):-
-	dual_widen_call1(AbsInt,SgKey,Sg,F1,Id0,Ids,Proj1,Proj).
+    dual_widen_call1(AbsInt,SgKey,Sg,F1,Id0,Ids,Proj1,Proj).
 dual_widen_call0(AbsInt,SgKey,Sg,F1,Id0,Ids,Proj1,Proj):-
-	current_pp_flag(widencall,com_child),
-	dual_widen_call2(AbsInt,SgKey,Sg,F1,Id0,Ids,Proj1,Proj).
+    current_pp_flag(widencall,com_child),
+    dual_widen_call2(AbsInt,SgKey,Sg,F1,Id0,Ids,Proj1,Proj).
 
 
 dual_widen_call1(AbsInt,SgKey,Sg,F1,Id0,Ids,Proj1,Proj):-
-	current_fact(fixpoint(SgKey0,Sg0,Proj0,_Prime0,Id0,Fs0)),
-	( SgKey=SgKey0,
-          % same program point:
-	  member((F1,_NewId0),Fs0)
-	-> Sg0=Sg,
-	   abs_sort(AbsInt,Proj0,Proj0_s),
-	   abs_sort(AbsInt,Proj1,Proj1_s),
-	   dual_widencall(AbsInt,Proj0_s,Proj1_s,Proj)
-%	   dual_widencall(AbsInt,Proj1_s,Proj0_s,Proj)
-	 ; % continue with the parents:
-	   member((_F1,NewId0),Fs0),
-	   \+ member(NewId0,Ids),
-	   dual_widen_call1(AbsInt,SgKey,Sg,F1,NewId0,[NewId0|Ids],Proj1,Proj)
-	).
+    current_fact(fixpoint(SgKey0,Sg0,Proj0,_Prime0,Id0,Fs0)),
+    ( SgKey=SgKey0,
+      % same program point:
+      member((F1,_NewId0),Fs0)
+    -> Sg0=Sg,
+       abs_sort(AbsInt,Proj0,Proj0_s),
+       abs_sort(AbsInt,Proj1,Proj1_s),
+       dual_widencall(AbsInt,Proj0_s,Proj1_s,Proj)
+%          dual_widencall(AbsInt,Proj1_s,Proj0_s,Proj)
+     ; % continue with the parents:
+       member((_F1,NewId0),Fs0),
+       \+ member(NewId0,Ids),
+       dual_widen_call1(AbsInt,SgKey,Sg,F1,NewId0,[NewId0|Ids],Proj1,Proj)
+    ).
 
 
 % widen_call2(AbsInt,SgKey,Sg,F1,Id0,_Ids,Proj1,Proj):-
-% 	current_fact(complete(SgKey,AbsInt,Sg0,Proj0,_Prime0,_Id0,Fs0)),
-% 	member((F1,Id0),Fs0),
-% 	Sg0=Sg,
-% 	abs_sort(AbsInt,Proj0,Proj0_s),
-% 	abs_sort(AbsInt,Proj1,Proj1_s),
-% 	widencall(AbsInt,Proj0_s,Proj1_s,Proj).
+%       current_fact(complete(SgKey,AbsInt,Sg0,Proj0,_Prime0,_Id0,Fs0)),
+%       member((F1,Id0),Fs0),
+%       Sg0=Sg,
+%       abs_sort(AbsInt,Proj0,Proj0_s),
+%       abs_sort(AbsInt,Proj1,Proj1_s),
+%       widencall(AbsInt,Proj0_s,Proj1_s,Proj).
 % widen_call2(AbsInt,SgKey,Sg,F1,Id0,Ids,Proj1,Proj):-
-% 	current_fact(fixpoint(_SgKey0,_Sg0,_Proj0,_Prime0,Id0,Fs0)),
-% 	member((_F1,NewId0),Fs0),
-% 	\+ member(NewId0,Ids),
-% 	widen_call2(AbsInt,SgKey,Sg,F1,NewId0,[NewId0|Ids],Proj1,Proj).
+%       current_fact(fixpoint(_SgKey0,_Sg0,_Proj0,_Prime0,Id0,Fs0)),
+%       member((_F1,NewId0),Fs0),
+%       \+ member(NewId0,Ids),
+%       widen_call2(AbsInt,SgKey,Sg,F1,NewId0,[NewId0|Ids],Proj1,Proj).
 
 dual_widen_call2(AbsInt,SgKey,Sg,F1,_Id,_Ids,Proj1,Proj):-
-	current_fact(complete(SgKey,AbsInt,Sg0,Proj0,_Prime0,_Id0,Fs0)),
-	member((F1,Id0),Fs0),
-	Sg0=Sg,
-	same_fixpoint_ancestor(Id0,[Id0],AbsInt),
-	abs_sort(AbsInt,Proj0,Proj0_s),
-	abs_sort(AbsInt,Proj1,Proj1_s),
-	dual_widencall(AbsInt,Proj0_s,Proj1_s,Proj).
-%	dual_widencall(AbsInt,Proj1_s,Proj0_s,Proj).
+    current_fact(complete(SgKey,AbsInt,Sg0,Proj0,_Prime0,_Id0,Fs0)),
+    member((F1,Id0),Fs0),
+    Sg0=Sg,
+    same_fixpoint_ancestor(Id0,[Id0],AbsInt),
+    abs_sort(AbsInt,Proj0,Proj0_s),
+    abs_sort(AbsInt,Proj1,Proj1_s),
+    dual_widencall(AbsInt,Proj0_s,Proj1_s,Proj).
+%       dual_widencall(AbsInt,Proj1_s,Proj0_s,Proj).
 
 same_fixpoint_ancestor(Id0,_Ids,_AbsInt):-
-	current_fact(fixpoint(_SgKey0,_Sg0,_Proj0,_Prime0,Id0,_Fs0)), !.
+    current_fact(fixpoint(_SgKey0,_Sg0,_Proj0,_Prime0,Id0,_Fs0)), !.
 same_fixpoint_ancestor(Id0,_Ids,_AbsInt):-
-	current_fact(approx(_SgKey0,_Sg0,_Proj0,_Prime0,Id0,_Fs0)), !.
+    current_fact(approx(_SgKey0,_Sg0,_Proj0,_Prime0,Id0,_Fs0)), !.
 same_fixpoint_ancestor(Id0,Ids,AbsInt):-
-	current_fact(complete(_SgKey0,AbsInt,_Sg0,_Proj0,_Prime0,Id0,Fs0)),
-	member((_F1,Id),Fs0),
-	\+ member(Id,Ids),
-	same_fixpoint_ancestor(Id,[Id|Ids],AbsInt).
+    current_fact(complete(_SgKey0,AbsInt,_Sg0,_Proj0,_Prime0,Id0,Fs0)),
+    member((_F1,Id),Fs0),
+    \+ member(Id,Ids),
+    same_fixpoint_ancestor(Id,[Id|Ids],AbsInt).
 
 %-------------------------------------------------------------------------
 % decide_approx(+,+,+,+,+,+,+,+)                                         %
@@ -562,51 +562,51 @@ same_fixpoint_ancestor(Id0,Ids,AbsInt):-
 %------------------------------------------------------------------------%
 
 fixpoint_variants_update(Id,AbsInt,Sg,Prime):-
-	current_fact(fixpoint_variant(Id,Idv,SgKey,Sgv,Projv,Fs),Ref),!,
-	erase(Ref),
-	varset(Sg,Hv),
-	varset(Sgv,Hvv),
-	each_exit_to_prime(Prime,AbsInt,Sgv,Hv,Sg,Hvv,(no,Projv),Prime2), % ver
-	asserta_fact(complete(SgKey,AbsInt,Sgv,Projv,Prime2,Idv,Fs)),	
-	fixpoint_variants_update(Id,AbsInt,Sg,Prime). 
+    current_fact(fixpoint_variant(Id,Idv,SgKey,Sgv,Projv,Fs),Ref),!,
+    erase(Ref),
+    varset(Sg,Hv),
+    varset(Sgv,Hvv),
+    each_exit_to_prime(Prime,AbsInt,Sgv,Hv,Sg,Hvv,(no,Projv),Prime2), % ver
+    asserta_fact(complete(SgKey,AbsInt,Sgv,Projv,Prime2,Idv,Fs)),   
+    fixpoint_variants_update(Id,AbsInt,Sg,Prime). 
 fixpoint_variants_update(_,_,_,_).
 
 approx_variants_update(Id,AbsInt,Sg,Prime):-
-	current_fact(fixpoint_variant(Id,Idv,SgKey,Sgv,Projv,Fs),Ref),!,
-	erase(Ref),
-	varset(Sg,Hv),
-	varset(Sgv,Hvv),
-	each_exit_to_prime(Prime,AbsInt,Sgv,Hv,Sg,Hvv,(no,Projv),Prime2),  % ver
-	asserta_fact(approx_variant(Id,Idv,SgKey,Sgv,Projv,Prime2,Fs)),	
-	approx_variants_update(Id,AbsInt,Sg,Prime). 
+    current_fact(fixpoint_variant(Id,Idv,SgKey,Sgv,Projv,Fs),Ref),!,
+    erase(Ref),
+    varset(Sg,Hv),
+    varset(Sgv,Hvv),
+    each_exit_to_prime(Prime,AbsInt,Sgv,Hv,Sg,Hvv,(no,Projv),Prime2),  % ver
+    asserta_fact(approx_variant(Id,Idv,SgKey,Sgv,Projv,Prime2,Fs)), 
+    approx_variants_update(Id,AbsInt,Sg,Prime). 
 approx_variants_update(_,_,_,_).
-	
+    
 
 decide_approx([],Id,Fs,AbsInt,SgKey,Sg,Proj,Prime):- !,
-	current_fact(ch_id(Id,_),Ref3),
-	erase(Ref3),
-        % Not needed for correctness: only book-keeping
-%	update_depend_list_approx(Id,AbsInt),
-	fixpoint_trace('fixpoint completed',Id,o,SgKey,Sg,Prime,_),
-	asserta_fact(complete(SgKey,AbsInt,Sg,Proj,Prime,Id,Fs)),
-	(
-	    current_pp_flag(variants,on) -> 
-	    each_abs_sort(Prime,AbsInt,Prime_s),
-	    fixpoint_variants_update(Id,AbsInt,Sg,Prime_s)
-	;
-	    true
-	).
+    current_fact(ch_id(Id,_),Ref3),
+    erase(Ref3),
+    % Not needed for correctness: only book-keeping
+%       update_depend_list_approx(Id,AbsInt),
+    fixpoint_trace('fixpoint completed',Id,o,SgKey,Sg,Prime,_),
+    asserta_fact(complete(SgKey,AbsInt,Sg,Proj,Prime,Id,Fs)),
+    (
+        current_pp_flag(variants,on) -> 
+        each_abs_sort(Prime,AbsInt,Prime_s),
+        fixpoint_variants_update(Id,AbsInt,Sg,Prime_s)
+    ;
+        true
+    ).
 decide_approx(AddList,Id,Fs,_AbsInt,SgKey,Sg,Proj,Prime):-
-	asserta_fact('$depend_list'(Id,SgKey,AddList)),
-	fixpoint_trace('fixpoint approximated',Id,o,SgKey,Sg,Prime,_),
-	asserta_fact(approx(SgKey,Sg,Proj,Prime,Id,Fs),_),
-	(
-	    current_pp_flag(variants,on) -> 
-	    each_abs_sort(Prime,AbsInt,Prime_s),
-	    approx_variants_update(Id,AbsInt,Sg,Prime_s)
-	;
-	    true
-	).
+    asserta_fact('$depend_list'(Id,SgKey,AddList)),
+    fixpoint_trace('fixpoint approximated',Id,o,SgKey,Sg,Prime,_),
+    asserta_fact(approx(SgKey,Sg,Proj,Prime,Id,Fs),_),
+    (
+        current_pp_flag(variants,on) -> 
+        each_abs_sort(Prime,AbsInt,Prime_s),
+        approx_variants_update(Id,AbsInt,Sg,Prime_s)
+    ;
+        true
+    ).
 
 %-------------------------------------------------------------------------
 % update_depend_list_approx(+,+)
@@ -630,51 +630,51 @@ decide_approx(AddList,Id,Fs,_AbsInt,SgKey,Sg,Proj,Prime):-
 %-------------------------------------------------------------------------
 
 %% update_depend_list_approx(Id,AbsInt) :-
-%% 	collect_depend_lists_approx(List),
-%% 	select_depend_lists([Id],List,AbsInt,New_List),
-%% 	create_depend_lists(New_List).
+%%      collect_depend_lists_approx(List),
+%%      select_depend_lists([Id],List,AbsInt,New_List),
+%%      create_depend_lists(New_List).
 %% 
 %% collect_depend_lists_approx([l(X,SgKey,List)|Rest]):-
-%% 	current_fact('$depend_list'(X,SgKey,List),Ref),
-%% 	current_fact(approx(SgKey,_,_,_,X,_),_),!,
-%% 	erase(Ref),
-%% 	collect_depend_lists_approx(Rest).
+%%      current_fact('$depend_list'(X,SgKey,List),Ref),
+%%      current_fact(approx(SgKey,_,_,_,X,_),_),!,
+%%      erase(Ref),
+%%      collect_depend_lists_approx(Rest).
 %% collect_depend_lists_approx([]).
 %% 
 %% select_depend_lists([],List,_AbsInt,List).
 %% select_depend_lists([Id|Ids],List,AbsInt,More):-
-%% 	collect_completes(List,Id,New_List,TempCompletes),
-%% 	approx_to_complete(TempCompletes,AbsInt,NewCompletes),
-%% 	merge(Ids,NewCompletes,Completes),
-%% 	select_depend_lists(Completes,New_List,AbsInt,More).
+%%      collect_completes(List,Id,New_List,TempCompletes),
+%%      approx_to_complete(TempCompletes,AbsInt,NewCompletes),
+%%      merge(Ids,NewCompletes,Completes),
+%%      select_depend_lists(Completes,New_List,AbsInt,More).
 %% 
 %% approx_to_complete([],_AbsInt,[]).
 %% approx_to_complete([l(Pid,SgKey)|Completes],AbsInt,[Pid|NewCompletes]):-
-%% 	current_fact(approx(SgKey,Sg,Proj,Prime,Pid,Fs),Ref),
-%% 	asserta_fact(complete(SgKey,AbsInt,Sg,Proj,Prime,Pid,Fs)),
-%% 	erase(Ref),
-%% 	approx_to_complete(Completes,AbsInt,NewCompletes).
+%%      current_fact(approx(SgKey,Sg,Proj,Prime,Pid,Fs),Ref),
+%%      asserta_fact(complete(SgKey,AbsInt,Sg,Proj,Prime,Pid,Fs)),
+%%      erase(Ref),
+%%      approx_to_complete(Completes,AbsInt,NewCompletes).
 %% 
 %% collect_completes([],_Id,[],[]).
 %% collect_completes([l(X,Key,[Id/_])|Rest],Id,New_list,[l(X,Key)|Comp]):- !,
-%% 	collect_completes(Rest,Id,New_list,Comp).
+%%      collect_completes(Rest,Id,New_list,Comp).
 %% collect_completes([l(X,Key,List)|Rest],Id,[l(X,Key,Temp)|New_list],Comp):- 
-%% 	select_all(List,Id,Temp), !,
-%% 	collect_completes(Rest,Id,New_list,Comp).
+%%      select_all(List,Id,Temp), !,
+%%      collect_completes(Rest,Id,New_list,Comp).
 %% collect_completes([l(X,Key,List)|Rest],Id,[l(X,Key,List)|New_list],Comp):- 
-%% 	collect_completes(Rest,Id,New_list,Comp).
+%%      collect_completes(Rest,Id,New_list,Comp).
 %% 
 %% create_depend_lists([]).
 %% create_depend_lists([l(X,SgKey,List)|New_List]):-
-%% 	asserta_fact('$depend_list'(X,SgKey,List)),
-%% 	create_depend_lists(New_List).
+%%      asserta_fact('$depend_list'(X,SgKey,List)),
+%%      create_depend_lists(New_List).
 %% 
 %% select_all([],_,[]).
 %% select_all([Head/V|Tail], Element, [Head/V|Rest]) :-
-%% 	Head < Element,!,
-%% 	select_all(Tail, Element, Rest).
+%%      Head < Element,!,
+%%      select_all(Tail, Element, Rest).
 %% select_all([Element/_|Tail], Element, Rest):- !,
-%% 	select_all(Tail, Element, Rest).
+%%      select_all(Tail, Element, Rest).
 %% select_all([Head|Tail],_, [Head|Tail]).
 
 %-------------------------------------------------------------------------
@@ -685,8 +685,8 @@ decide_approx(AddList,Id,Fs,_AbsInt,SgKey,Sg,Proj,Prime):-
 
 not_modified([]).
 not_modified([Id/N|List]):-
-	current_fact(ch_id(Id,N)), !,
-	not_modified(List).
+    current_fact(ch_id(Id,N)), !,
+    not_modified(List).
 
 %-------------------------------------------------------------------------
 % proj_to_prime(+,+,+,+,+,+,-,+,+,+)                                     %
@@ -699,50 +699,50 @@ not_modified([Id/N|List]):-
 %-------------------------------------------------------------------------
 
 proj_to_prime_nr(SgKey,Sg,Sv,Call,Proj,AbsInt,_ClId,LPrime,Id) :-
-	bagof(X, X^(trans_clause(SgKey,nr,X)),Clauses), !,
-	proj_to_prime(Clauses,SgKey,Sg,Sv,Call,Proj,AbsInt,LPrime1,Id),
-	compute_clauses_glb(AbsInt,LPrime1,Proj,LPrime).
+    bagof(X, X^(trans_clause(SgKey,nr,X)),Clauses), !,
+    proj_to_prime(Clauses,SgKey,Sg,Sv,Call,Proj,AbsInt,LPrime1,Id),
+    compute_clauses_glb(AbsInt,LPrime1,Proj,LPrime).
 proj_to_prime_nr(SgKey,Sg,Sv,_Call,Proj,AbsInt,ClId,LPrime,_Id) :-
-	apply_trusted0(Proj,SgKey,Sg,Sv,AbsInt,ClId,Prime), !,
-	singleton(Prime,LPrime).
+    apply_trusted0(Proj,SgKey,Sg,Sv,AbsInt,ClId,Prime), !,
+    singleton(Prime,LPrime).
 proj_to_prime_nr(_SgKey,Sg,Sv,Call,_Proj,AbsInt,_ClId,LSucc,_Id) :-
-	% In Java programs, mode and type information is known for any method.
-	% Therefore, in case of a method with unavailable code we can still
-	% infer useful information.
-	current_pp_flag(prog_lang,java), !,
-	unknown_call(AbsInt,Sg,Sv,Call,Succ),
-	singleton(Succ,LSucc).
-        %fixpoint_trace('external call completed',_Id,_N,SgKey,Sg,LSucc,_).
+    % In Java programs, mode and type information is known for any method.
+    % Therefore, in case of a method with unavailable code we can still
+    % infer useful information.
+    current_pp_flag(prog_lang,java), !,
+    unknown_call(AbsInt,Sg,Sv,Call,Succ),
+    singleton(Succ,LSucc).
+    %fixpoint_trace('external call completed',_Id,_N,SgKey,Sg,LSucc,_).
 proj_to_prime_nr(SgKey,_Sg,_Sv,_Call,_Proj,_AbsInt,ClId,Bot,_Id) :-
-	top(Bot),
-	inexistent(SgKey,ClId).
+    top(Bot),
+    inexistent(SgKey,ClId).
 
 proj_to_prime_r(SgKey,Sg,Sv,Call,Proj,AbsInt,Prime,Id) :-
-	bagof(X, X^(trans_clause(SgKey,nr,X)),Clauses), !,
-	proj_to_prime(Clauses,SgKey,Sg,Sv,Call,Proj,AbsInt,Prime,Id).
+    bagof(X, X^(trans_clause(SgKey,nr,X)),Clauses), !,
+    proj_to_prime(Clauses,SgKey,Sg,Sv,Call,Proj,AbsInt,Prime,Id).
 proj_to_prime_r(_SgKey,_Sg,_Sv,_Call,_Proj,_AbsInt,Bot,_Id):-
-	top(Bot).
+    top(Bot).
 
 proj_to_prime(Clauses,SgKey,Sg,Sv,Call,Proj,AbsInt,Prime,Id) :-
-	fixpoint_trace('non-recursive clauses',Id,_N,SgKey,Sg,Proj,Clauses),
-	proj_to_prime_loop(Clauses,Sg,Sv,Call,Proj,AbsInt,ListPrime0,Id),
-	reduce_equivalent(ListPrime0,AbsInt,ListPrime1),
-	each_apply_trusted(Proj,SgKey,Sg,Sv,AbsInt,ListPrime1,Prime).
+    fixpoint_trace('non-recursive clauses',Id,_N,SgKey,Sg,Proj,Clauses),
+    proj_to_prime_loop(Clauses,Sg,Sv,Call,Proj,AbsInt,ListPrime0,Id),
+    reduce_equivalent(ListPrime0,AbsInt,ListPrime1),
+    each_apply_trusted(Proj,SgKey,Sg,Sv,AbsInt,ListPrime1,Prime).
 
 proj_to_prime_loop([],_,_,_,_,_,[],_).
 proj_to_prime_loop([Clause|Rest],Sg,Sv,Call,Proj,AbsInt,Primes,Id):-
-	do_nr_cl(Clause,Sg,Sv,Call,Proj,AbsInt,Primes,TailPrimes,Id),!,
-	proj_to_prime_loop(Rest,Sg,Sv,Call,Proj,AbsInt,TailPrimes,Id).
+    do_nr_cl(Clause,Sg,Sv,Call,Proj,AbsInt,Primes,TailPrimes,Id),!,
+    proj_to_prime_loop(Rest,Sg,Sv,Call,Proj,AbsInt,TailPrimes,Id).
 
 do_nr_cl(Clause,Sg,Sv,Call,Proj,AbsInt,Primes,TailPrimes,Id):-
-	Clause = clause(Head,Vars_u,K,Body),
-	clause_applies(Head,Sg), !,
-	varset(Head,Hv),
-	sort(Vars_u,Vars),
-	ord_subtract(Vars,Hv,Fv),
-	process_body(Body,K,AbsInt,Sg,Hv,Fv,Vars_u,Head,Sv,Call,
-	                                                Proj,LPrime,Id),
-	append_(LPrime,TailPrimes,Primes).
+    Clause = clause(Head,Vars_u,K,Body),
+    clause_applies(Head,Sg), !,
+    varset(Head,Hv),
+    sort(Vars_u,Vars),
+    ord_subtract(Vars,Hv,Fv),
+    process_body(Body,K,AbsInt,Sg,Hv,Fv,Vars_u,Head,Sv,Call,
+                                                    Proj,LPrime,Id),
+    append_(LPrime,TailPrimes,Primes).
 do_nr_cl(_Clause,_Sg,_Sv,_Call,_Proj,_AbsInt,Primes,Primes,_Id).
 
 append_([Prime],TailPrimes,Primes):- !, Primes=[Prime|TailPrimes].
@@ -751,26 +751,26 @@ append_(LPrime,TailPrimes,Primes):- append(LPrime,TailPrimes,Primes).
 %process_body(true,
 
 process_body(Body,K,AbsInt,Sg,Hv,Fv,_,Head,Sv,Call,Proj,LPrime,Id):- 
-	Body = g(_,[],'$built'(_,true,_),'true/0',true), !,
-	Help=(Sv,Sg,Hv,Fv,AbsInt),
-	singleton(Prime,LPrime),
-	fixpoint_trace('visit fact',Id,_N,K,Head,Proj,Help),
-	call_to_success_fact(AbsInt,Sg,Hv,Head,K,Sv,Call,Proj,Prime,_Succ),
-	fixpoint_trace('exit fact',Id,_N,K,Head,Prime,Help),
-	( current_pp_flag(fact_info,on) -> 
- 	  call_to_entry(AbsInt,Sv,Sg,Hv,Head,not_provided,[],Prime,Exit,_),
-	  decide_memo(AbsInt,K,Id,no,Hv,[Exit])
-	;
-	  true
-	),
-	true.
+    Body = g(_,[],'$built'(_,true,_),'true/0',true), !,
+    Help=(Sv,Sg,Hv,Fv,AbsInt),
+    singleton(Prime,LPrime),
+    fixpoint_trace('visit fact',Id,_N,K,Head,Proj,Help),
+    call_to_success_fact(AbsInt,Sg,Hv,Head,K,Sv,Call,Proj,Prime,_Succ),
+    fixpoint_trace('exit fact',Id,_N,K,Head,Prime,Help),
+    ( current_pp_flag(fact_info,on) -> 
+      call_to_entry(AbsInt,Sv,Sg,Hv,Head,not_provided,[],Prime,Exit,_),
+      decide_memo(AbsInt,K,Id,no,Hv,[Exit])
+    ;
+      true
+    ),
+    true.
 process_body(Body,K,AbsInt,Sg,Hv,Fv,Vars_u,Head,Sv,_,Proj,Prime,Id):-
-	call_to_entry(AbsInt,Sv,Sg,Hv,Head,not_provided,Fv,Proj,Entry,ExtraInfo),
-	fixpoint_trace('visit clause',Id,_N,K,Head,Entry,Body),
-	singleton(Entry,LEntry),
-	entry_to_exit(Body,K,LEntry,Exit,[],_,Vars_u,AbsInt,Id),
-	fixpoint_trace('exit clause',Id,_N,K,Head,Exit,_),
-	each_exit_to_prime(Exit,AbsInt,Sg,Hv,Head,Sv,ExtraInfo,Prime).
+    call_to_entry(AbsInt,Sv,Sg,Hv,Head,not_provided,Fv,Proj,Entry,ExtraInfo),
+    fixpoint_trace('visit clause',Id,_N,K,Head,Entry,Body),
+    singleton(Entry,LEntry),
+    entry_to_exit(Body,K,LEntry,Exit,[],_,Vars_u,AbsInt,Id),
+    fixpoint_trace('exit clause',Id,_N,K,Head,Exit,_),
+    each_exit_to_prime(Exit,AbsInt,Sg,Hv,Head,Sv,ExtraInfo,Prime).
 
 %-------------------------------------------------------------------------
 % fixpoint_compute(+,+,+,+,+,+,+,+,+,-,+,-)                              %
@@ -789,63 +789,63 @@ process_body(Body,K,AbsInt,Sg,Hv,Fv,Vars_u,Head,Sv,_,Proj,Prime,Id):-
 %-------------------------------------------------------------------------
 
 fixpoint_compute(Clauses,SgKey,Sg,Sv,Call,Proj,AbsInt,LEntryInf,
-	         Prime0,Prime,Id,List) :-
-	fixpoint_compute_(Clauses,SgKey,Sg,Sv,Call,Proj,AbsInt,LEntryInf,
-	                  Prime0,Prime1,Id,List),
-	compute_clauses_glb(AbsInt,Prime1,Proj,Prime).
+             Prime0,Prime,Id,List) :-
+    fixpoint_compute_(Clauses,SgKey,Sg,Sv,Call,Proj,AbsInt,LEntryInf,
+                      Prime0,Prime1,Id,List),
+    compute_clauses_glb(AbsInt,Prime1,Proj,Prime).
 
 fixpoint_compute_(Clauses,SgKey,Sg,Sv,Call,Proj,AbsInt,LEntryInf,
-	         TempPrime,Prime,Id,List) :-
-        compute(Clauses,SgKey,Sg,Sv,Call,Proj,AbsInt,LEntryInf,
-	         TempPrime,Prime1,Id,[],NewList,Flag),
-%	dual_widen_succ(AbsInt,TempPrime,Prime1,NewPrime),
-%	decide_flag(AbsInt,TempPrime,NewPrime,SgKey,Sg,Id,Proj,Flag),
-	fixpoint(NewList,Flag,Clauses,SgKey,Sg,Sv,Call,Proj,AbsInt,LEntryInf,
-	         Prime1,Prime,Id,List), !.
-%	         NewPrime,Prime,Id,List), !.
+             TempPrime,Prime,Id,List) :-
+    compute(Clauses,SgKey,Sg,Sv,Call,Proj,AbsInt,LEntryInf,
+             TempPrime,Prime1,Id,[],NewList,Flag),
+%       dual_widen_succ(AbsInt,TempPrime,Prime1,NewPrime),
+%       decide_flag(AbsInt,TempPrime,NewPrime,SgKey,Sg,Id,Proj,Flag),
+    fixpoint(NewList,Flag,Clauses,SgKey,Sg,Sv,Call,Proj,AbsInt,LEntryInf,
+             Prime1,Prime,Id,List), !.
+%                NewPrime,Prime,Id,List), !.
 
 fixpoint([],_,_,_,_,_,_,_,_,_,Prime1,Prime,_,List):- !,
-	Prime = Prime1,
-	List = [].
+    Prime = Prime1,
+    List = [].
 fixpoint(NewList,Flag,_,_,_,_,_,_,_,_,Prime1,Prime,_,List):- 
-        var(Flag),!,
-	Prime = Prime1,
-	List = NewList.
+    var(Flag),!,
+    Prime = Prime1,
+    List = NewList.
 fixpoint(_,_,Clauses,SgKey,Sg,Sv,Call,Proj,AbsInt,LEntryInf,Prime1,Prime,Id,
-                                                      List):-
-        fixpoint_trace('fixpoint iteration',Id,_N,SgKey,Sg,Prime1,_),
-        fixpoint_compute_(Clauses,SgKey,Sg,Sv,Call,Proj,AbsInt,LEntryInf,
-	         Prime1,Prime,Id,List).
+                                                  List):-
+    fixpoint_trace('fixpoint iteration',Id,_N,SgKey,Sg,Prime1,_),
+    fixpoint_compute_(Clauses,SgKey,Sg,Sv,Call,Proj,AbsInt,LEntryInf,
+             Prime1,Prime,Id,List).
 
 % some domains need normalization to perform the widening:
 normalize_asub0(AbsInt,Prime0,Prime):-
-	current_pp_flag(widen,on), !,
-	normalize_asub(AbsInt,Prime0,Prime).
+    current_pp_flag(widen,on), !,
+    normalize_asub(AbsInt,Prime0,Prime).
 normalize_asub0(_AbsInt,Prime,Prime).
 
 %% %% not needed since normalization is done only for nr initial value:
 %% %% it is assumed that Prime is normalized thereafter
 %%
 %% normalize_asub0(AbsInt,SgKey,Sg,Proj,Prime0,Id,Prime):-
-%% 	current_pp_flag(widen,on), !,
-%% 	normalize_asub(AbsInt,Prime0,Prime),
-%% 	replace_fixpoint_record(SgKey,Sg,Proj,Prime0,Id,Prime).
+%%      current_pp_flag(widen,on), !,
+%%      normalize_asub(AbsInt,Prime0,Prime),
+%%      replace_fixpoint_record(SgKey,Sg,Proj,Prime0,Id,Prime).
 %% normalize_asub0(_AbsInt,_SgKey,_Sg,_Proj,Prime,_Id,Prime).
 %% 
 %% replace_fixpoint_record(_SgKey,_Sg,_Proj,Prime,_Id,NewPrime):-
-%% 	Prime==NewPrime, !.
+%%      Prime==NewPrime, !.
 %% replace_fixpoint_record(SgKey,Sg,Proj,Prime,Id,NewPrime):-
-%% 	current_fact(fixpoint(SgKey,Sg,Proj0,Prime0,Id,L),Ref),
-%% 	Proj0==Proj,
-%% %	Prime0==Prime, may have changed!
-%% 	% If normalization was done also in each fixp iteration
-%% 	erase(Ref),
-%% 	asserta_fact(fixpoint(SgKey,Sg,Proj,NewPrime,Id,L)).
+%%      current_fact(fixpoint(SgKey,Sg,Proj0,Prime0,Id,L),Ref),
+%%      Proj0==Proj,
+%% %    Prime0==Prime, may have changed!
+%%      % If normalization was done also in each fixp iteration
+%%      erase(Ref),
+%%      asserta_fact(fixpoint(SgKey,Sg,Proj,NewPrime,Id,L)).
 
 %-------------------------------------------------------------------------
 % compute(+,+,+,+,+,+,+,+,+,-,+,+,-,-)                                   %
 % compute(Clauses,SgKey,Sg,Sv,Call,Proj,AbsInt,LEntryInf                 %
-%	                TempPrime,Prime,Id,List,NewList,Flag)            %
+%                       TempPrime,Prime,Id,List,NewList,Flag)            %
 % It analyses each clause. If after the computation the                  %
 % approximate abstract prime substitution changes, the Flag is changed to%
 % 'notend' and erases the register ch_id(Id,Num), increases Num by one   %
@@ -854,64 +854,64 @@ normalize_asub0(_AbsInt,Prime,Prime).
 
 compute([],_,_,_,_,_,_,[],Prime,Prime,_,List,List,_).
 compute([Clause|Rest],SgKey,Sg,Sv,Call,Proj,AbsInt,[EntryInf|LEntryInf],
-	                  TempPrime,Prime,Id,List,NewList,Flag) :-
-	do_r_cl(Clause,SgKey,Sg,Sv,Proj,AbsInt,EntryInf,Id,List,IntList,
-	                                   TempPrime,NewPrime,Flag),
-	compute(Rest,SgKey,Sg,Sv,Call,Proj,AbsInt,LEntryInf,NewPrime,Prime,
-	                                   Id,IntList,NewList,Flag).
+                      TempPrime,Prime,Id,List,NewList,Flag) :-
+    do_r_cl(Clause,SgKey,Sg,Sv,Proj,AbsInt,EntryInf,Id,List,IntList,
+                                       TempPrime,NewPrime,Flag),
+    compute(Rest,SgKey,Sg,Sv,Call,Proj,AbsInt,LEntryInf,NewPrime,Prime,
+                                       Id,IntList,NewList,Flag).
 
 do_r_cl(Clause,SgKey,Sg,Sv,Proj,AbsInt,EntryInf,Id,OldL,List,TempPrime,
-	                                               NewPrime,Flag):-
-	Clause=clause(Head,Vars_u,K,Body),
-	clause_applies(Head,Sg), !,
-	erase_previous_memo_tables_and_parents(Body,AbsInt,K,Id),
-	varset(Head,Hv),
-	reuse_entry(EntryInf,Vars_u,AbsInt,Sv,Sg,Hv,Head,Proj,Entry,ExtraInfo),
-	fixpoint_trace('visit clause',Id,_N,K,Head,Entry,Body),
-	singleton(Entry,LEntry),
-	entry_to_exit(Body,K,LEntry,Exit,OldL,List,Vars_u,AbsInt,Id),
-	fixpoint_trace('exit clause',Id,_N,K,Head,Exit,_),
-	each_exit_to_prime(Exit,AbsInt,Sg,Hv,Head,Sv,ExtraInfo,Prime1),
-	dual_widen_succ(AbsInt,TempPrime,Prime1,NewPrime),
-	decide_flag(AbsInt,TempPrime,NewPrime,SgKey,Sg,Id,Proj,Flag).
+                                                   NewPrime,Flag):-
+    Clause=clause(Head,Vars_u,K,Body),
+    clause_applies(Head,Sg), !,
+    erase_previous_memo_tables_and_parents(Body,AbsInt,K,Id),
+    varset(Head,Hv),
+    reuse_entry(EntryInf,Vars_u,AbsInt,Sv,Sg,Hv,Head,Proj,Entry,ExtraInfo),
+    fixpoint_trace('visit clause',Id,_N,K,Head,Entry,Body),
+    singleton(Entry,LEntry),
+    entry_to_exit(Body,K,LEntry,Exit,OldL,List,Vars_u,AbsInt,Id),
+    fixpoint_trace('exit clause',Id,_N,K,Head,Exit,_),
+    each_exit_to_prime(Exit,AbsInt,Sg,Hv,Head,Sv,ExtraInfo,Prime1),
+    dual_widen_succ(AbsInt,TempPrime,Prime1,NewPrime),
+    decide_flag(AbsInt,TempPrime,NewPrime,SgKey,Sg,Id,Proj,Flag).
 
 do_r_cl(_,_,_,_,_,_,_,_,List,List,Prime,Prime,_).
 
 dual_widen_succ_off(AbsInt,Prime0,Prime1,LPrime):-
-	current_pp_flag(multi_success,on), !,
-	reduce_equivalent([Prime0,Prime1],AbsInt,LPrime).
+    current_pp_flag(multi_success,on), !,
+    reduce_equivalent([Prime0,Prime1],AbsInt,LPrime).
 dual_widen_succ_off(AbsInt,Prime0,Prime1,Prime):-
-	singleton(P0,Prime0),
-	singleton(P1,Prime1),
-	singleton(P,Prime), 
-	compute_glb(AbsInt,[P0,P1],P).
+    singleton(P0,Prime0),
+    singleton(P1,Prime1),
+    singleton(P,Prime), 
+    compute_glb(AbsInt,[P0,P1],P).
 
 
 reuse_entry(EntryInf,Vars_u,AbsInt,Sv,Sg,Hv,Head,Proj,Entry,ExtraInfo):-
-	var(EntryInf), !,
-	sort(Vars_u,Vars),
-	ord_subtract(Vars,Hv,Fv),
-	call_to_entry(AbsInt,Sv,Sg,Hv,Head,not_provided,Fv,Proj,Entry,ExtraInfo),
-	EntryInf = (Entry,ExtraInfo).
+    var(EntryInf), !,
+    sort(Vars_u,Vars),
+    ord_subtract(Vars,Hv,Fv),
+    call_to_entry(AbsInt,Sv,Sg,Hv,Head,not_provided,Fv,Proj,Entry,ExtraInfo),
+    EntryInf = (Entry,ExtraInfo).
 reuse_entry(EntryInf,_Vars_u,_AbsInt,_Sv,_Sg,_Hv,_Head,_Proj,Entry,ExtraInfo):-
-	EntryInf = (Entry,ExtraInfo).
+    EntryInf = (Entry,ExtraInfo).
 
 decide_flag(AbsInt,TempPrime,NewPrime,_SgKey,_Sg,_Id,_Proj,_Flag):-
-	abs_superset_(NewPrime,AbsInt,TempPrime), !.
+    abs_superset_(NewPrime,AbsInt,TempPrime), !.
 decide_flag(_AbsInt,TempPrime,NewPrime,SgKey,Sg,Id,Proj,Flag):-
-	Flag = notend,
-	merge_(NewPrime,TempPrime,LPrime),
-	current_fact(fixpoint(SgKey,Sg,_,_,Id,Fs),Ref),
-	erase(Ref),
-	asserta_fact(fixpoint(SgKey,Sg,Proj,LPrime,Id,Fs)),  
-	current_fact(ch_id(Id,Num),Ref3),
-	erase(Ref3),
-	Num1 is Num+1,
-	asserta_fact(ch_id(Id,Num1)).
+    Flag = notend,
+    merge_(NewPrime,TempPrime,LPrime),
+    current_fact(fixpoint(SgKey,Sg,_,_,Id,Fs),Ref),
+    erase(Ref),
+    asserta_fact(fixpoint(SgKey,Sg,Proj,LPrime,Id,Fs)),  
+    current_fact(ch_id(Id,Num),Ref3),
+    erase(Ref3),
+    Num1 is Num+1,
+    asserta_fact(ch_id(Id,Num1)).
 
 merge_([NewPrime],_TempPrime,LPrime):- !, LPrime=[NewPrime].
 merge_(NewPrime,TempPrime,LPrime):-
-	merge(NewPrime,TempPrime,LPrime).
+    merge(NewPrime,TempPrime,LPrime).
 
 %-------------------------------------------------------------------------
 % entry_to_exit(+,+,+,-,+,-,+,+,+)                                       %
@@ -923,13 +923,13 @@ merge_(NewPrime,TempPrime,LPrime):-
 %-------------------------------------------------------------------------
 
 entry_to_exit((Sg,Rest),K,Call,Exit,OldList,NewList,Vars_u,AbsInt,NewN):- !,
-	body_succ(Call,Sg,Succ,OldList,IntList,Vars_u,AbsInt,K,NewN,_),
-	entry_to_exit(Rest,K,Succ,Exit,IntList,NewList,Vars_u,AbsInt,NewN).
+    body_succ(Call,Sg,Succ,OldList,IntList,Vars_u,AbsInt,K,NewN,_),
+    entry_to_exit(Rest,K,Succ,Exit,IntList,NewList,Vars_u,AbsInt,NewN).
 entry_to_exit(true,_,Call,Call,List,List,_,_,_):- !.
 %entry_to_exit(g(_,[],'$built'(_,true,_),'true/0',true),_,Call,Call,List,List,_,_,_):- !.
 entry_to_exit(Sg,Key,Call,Exit,OldList,NewList,Vars_u,AbsInt,NewN):- 
-	body_succ(Call,Sg,Exit,OldList,NewList,Vars_u,AbsInt,Key,NewN,_),
-	decide_memo(AbsInt,Key,NewN,no,Vars_u,Exit),!. 
+    body_succ(Call,Sg,Exit,OldList,NewList,Vars_u,AbsInt,Key,NewN,_),
+    decide_memo(AbsInt,Key,NewN,no,Vars_u,Exit),!. 
 
 %-------------------------------------------------------------------------
 % body_succ(+,+,-,+,-,+,+,+,+,-)                                         %
@@ -945,38 +945,38 @@ entry_to_exit(Sg,Key,Call,Exit,OldList,NewList,Vars_u,AbsInt,NewN):-
 %-------------------------------------------------------------------------
 
 body_succ(Call,Atom,Succ,List,List,HvFv_u,AbsInt,_ClId,ParentId,no):-
-	top(Call), !,
-%	bottom(Succ),
-	Succ = Call,
-	Atom=g(Key,_Av,_I,_SgKey,_Sg),
-	asserta_fact(memo_table(Key,AbsInt,ParentId,no,HvFv_u,Succ)).
+    top(Call), !,
+%       bottom(Succ),
+    Succ = Call,
+    Atom=g(Key,_Av,_I,_SgKey,_Sg),
+    asserta_fact(memo_table(Key,AbsInt,ParentId,no,HvFv_u,Succ)).
 body_succ(Call,Atom,Succ,List,NewList,HvFv_u,AbsInt,ClId,ParentId,Id):- 
-	Atom=g(Key,Sv,Info,SgKey,Sg),
-	fixpoint_trace('visit goal',ParentId,ClId,Key,Sg,Call,AbsInt),
-	body_succ_(Info,SgKey,Sg,Sv,HvFv_u,Call,Succ,List,NewList,AbsInt,
-	           ClId,Key,ParentId,Id),
-	fixpoint_trace('exit goal',Id,ParentId,(SgKey,Key),Sg,Succ,AbsInt),
-%	fixpoint_trace('exit goal',ParentId,ClId,(SgKey,Key),Sg,Succ,AbsInt),
-	decide_memo(AbsInt,Key,ParentId,Id,HvFv_u,Call).
+    Atom=g(Key,Sv,Info,SgKey,Sg),
+    fixpoint_trace('visit goal',ParentId,ClId,Key,Sg,Call,AbsInt),
+    body_succ_(Info,SgKey,Sg,Sv,HvFv_u,Call,Succ,List,NewList,AbsInt,
+               ClId,Key,ParentId,Id),
+    fixpoint_trace('exit goal',Id,ParentId,(SgKey,Key),Sg,Succ,AbsInt),
+%       fixpoint_trace('exit goal',ParentId,ClId,(SgKey,Key),Sg,Succ,AbsInt),
+    decide_memo(AbsInt,Key,ParentId,Id,HvFv_u,Call).
 
 body_succ_(Info,SgKey,Sg,Sv,HFv,Call,Succ,L,NewL,AbsInt,ClId,Key,PId,Id):-
-	Info = [_|_], !,
-	split_combined_domain(AbsInt,Call,Calls,Domains),
-	map_body_succ(Info,SgKey,Sg,Sv,HFv,Calls,Succs,L,NewL,Domains,
-	              ClId,Key,PId,Id),
-	split_combined_domain(AbsInt,Succ,Succs,Domains).
+    Info = [_|_], !,
+    split_combined_domain(AbsInt,Call,Calls,Domains),
+    map_body_succ(Info,SgKey,Sg,Sv,HFv,Calls,Succs,L,NewL,Domains,
+                  ClId,Key,PId,Id),
+    split_combined_domain(AbsInt,Succ,Succs,Domains).
 body_succ_(Info,SgKey,Sg,Sv,HFv,Call,Succ,L,NewL,AbsInt,ClId,Key,PId,Id):-
-	body_succ0(Info,SgKey,Sg,Sv,HFv,Call,Succ,L,NewL,AbsInt,
-	           ClId,Key,PId,Id).
+    body_succ0(Info,SgKey,Sg,Sv,HFv,Call,Succ,L,NewL,AbsInt,
+               ClId,Key,PId,Id).
 
 % L=NewL and Id=no is not quite correct!!!
 map_body_succ([],_SgKey,_Sg,_Sv,_HFv,[],[],L,L,[],_ClId,_Key,_PId,no).
 map_body_succ([I|Info],SgKey,Sg,Sv,HFv,[Call|Calls],[Succ|Succs],L,NewL,
-	      [AbsInt|Domains],ClId,Key,PId,Id):-
-	body_succ0(I,SgKey,Sg,Sv,HFv,Call,Succ,L,_NewL,AbsInt,
-	           ClId,Key,PId,_Id), !,
-	map_body_succ(Info,SgKey,Sg,Sv,HFv,Calls,Succs,L,NewL,Domains,
-	           ClId,Key,PId,Id).
+          [AbsInt|Domains],ClId,Key,PId,Id):-
+    body_succ0(I,SgKey,Sg,Sv,HFv,Call,Succ,L,_NewL,AbsInt,
+               ClId,Key,PId,_Id), !,
+    map_body_succ(Info,SgKey,Sg,Sv,HFv,Calls,Succs,L,NewL,Domains,
+               ClId,Key,PId,Id).
 
 %-------------------------------------------------------------------------
 % body_succ0(+,+,+,+,+,+,-,+,-,+,+,+,-)                                  %
@@ -987,142 +987,142 @@ map_body_succ([I|Info],SgKey,Sg,Sv,HFv,[Call|Calls],[Succ|Succs],L,NewL,
 %-------------------------------------------------------------------------
 
 %% body_succ0('$var',_SgKey,Sg,_Sv_u,_HvFv_u,Call,Succ,List0,List,AbsInt,
-%% 	    ClId,F,_N,Id):-
-%% 	!,
-%% 	variable(F,ClId),
-%% 	Id=no,
-%% 	List=List0,
-%% 	each_unknown_call(Call,AbsInt,[Sg],Succ). % Sg is a variable
+%%          ClId,F,_N,Id):-
+%%      !,
+%%      variable(F,ClId),
+%%      Id=no,
+%%      List=List0,
+%%      each_unknown_call(Call,AbsInt,[Sg],Succ). % Sg is a variable
 body_succ0('$var',SgKey,Sg,_Sv_u,HvFv_u,Calls,Succs,List0,List,AbsInt,
-	    ClId,F,_N,Id):-
-        !,
-	( Calls=[Call],
-	  concrete(AbsInt,Sg,Call,Concretes),
-	  concretes_to_body(Concretes,SgKey,AbsInt,B)
-	-> fixpoint_id(Id),
-	   meta_call(B,HvFv_u,Calls,[],Succs,List0,List,AbsInt,ClId,Id,Ids),
-	   assertz_fact(memo_call(F,Id,AbsInt,Concretes,Ids))
-	 ; Id=no,
-	   List=List0,
-	   variable(F,ClId),
-	   each_unknown_call(Calls,AbsInt,Sg,[Sg],Succs) % Sg is a variable % TODO: use call(Sg) or similar? (JF)
-	).
+        ClId,F,_N,Id):-
+    !,
+    ( Calls=[Call],
+      concrete(AbsInt,Sg,Call,Concretes),
+      concretes_to_body(Concretes,SgKey,AbsInt,B)
+    -> fixpoint_id(Id),
+       meta_call(B,HvFv_u,Calls,[],Succs,List0,List,AbsInt,ClId,Id,Ids),
+       assertz_fact(memo_call(F,Id,AbsInt,Concretes,Ids))
+     ; Id=no,
+       List=List0,
+       variable(F,ClId),
+       each_unknown_call(Calls,AbsInt,Sg,[Sg],Succs) % Sg is a variable % TODO: use call(Sg) or similar? (JF)
+    ).
 body_succ0('$meta'(T,B,_),SgKey,Sg,Sv_u,HvFv_u,Call,Succ,List0,List,AbsInt,
-	    ClId,F,N,Id):-
-        !,
-	(current_pp_flag(reuse_fixp_id,on) ->
-	   ( Call=[C]
-	     -> sort(Sv_u,Sv),
-	        project(AbsInt,Sg,Sv,HvFv_u,C,Proj),
-		fixpoint_id_reuse_prev(SgKey,AbsInt,Sg,Proj,Id)
-              ; true
-	   )
-	;
-	    fixpoint_id(Id)
-	),
-	meta_call(B,HvFv_u,Call,[],Exits,List0,List,AbsInt,ClId,Id,_Ids),
-	( body_succ_meta(T,AbsInt,Sv_u,HvFv_u,Call,Exits,Succ)
-	-> 
-	   ( Call=[C]
-	   -> sort(Sv_u,Sv),
-	      project(AbsInt,Sg,Sv,HvFv_u,C,Proj),
-	      each_project(Exits,AbsInt,Sg,Sv,HvFv_u,Prime),
-	      asserta_fact(complete(SgKey,AbsInt,Sg,Proj,Prime,Id,[(F,N)]))
-	    ; true
-	   )
-	; % for the trusts, if any:
-	  varset(Sg,Sv_r), % Sv_u contains extra vars (from meta-term)
-                           % which will confuse apply_trusted
-	  body_succ0(nr,SgKey,Sg,Sv_r,HvFv_u,Call,Succ,[],_List,AbsInt,
-		        ClId,F,N,Id0),
-	  retract_fact(complete(SgKey,AbsInt,Sg,Proj,Prime,Id0,Ps)),
-	  asserta_fact(complete(SgKey,AbsInt,Sg,Proj,Prime,Id,Ps))
-	).
+        ClId,F,N,Id):-
+    !,
+    (current_pp_flag(reuse_fixp_id,on) ->
+       ( Call=[C]
+         -> sort(Sv_u,Sv),
+            project(AbsInt,Sg,Sv,HvFv_u,C,Proj),
+            fixpoint_id_reuse_prev(SgKey,AbsInt,Sg,Proj,Id)
+          ; true
+       )
+    ;
+        fixpoint_id(Id)
+    ),
+    meta_call(B,HvFv_u,Call,[],Exits,List0,List,AbsInt,ClId,Id,_Ids),
+    ( body_succ_meta(T,AbsInt,Sv_u,HvFv_u,Call,Exits,Succ)
+    -> 
+       ( Call=[C]
+       -> sort(Sv_u,Sv),
+          project(AbsInt,Sg,Sv,HvFv_u,C,Proj),
+          each_project(Exits,AbsInt,Sg,Sv,HvFv_u,Prime),
+          asserta_fact(complete(SgKey,AbsInt,Sg,Proj,Prime,Id,[(F,N)]))
+        ; true
+       )
+    ; % for the trusts, if any:
+      varset(Sg,Sv_r), % Sv_u contains extra vars (from meta-term)
+                       % which will confuse apply_trusted
+      body_succ0(nr,SgKey,Sg,Sv_r,HvFv_u,Call,Succ,[],_List,AbsInt,
+                    ClId,F,N,Id0),
+      retract_fact(complete(SgKey,AbsInt,Sg,Proj,Prime,Id0,Ps)),
+      asserta_fact(complete(SgKey,AbsInt,Sg,Proj,Prime,Id,Ps))
+    ).
 %asserta_complete(K,AbsInt,Sg,Sv_u,HvFv_u,Call,Succ,Id,F,N).
 body_succ0('$built'(T,Tg,Vs),SgKey,Sg,Sv_u,HvFv_u,Call,Succ,List0,List,AbsInt,
-	    _ClId,F,N,Id):-
-	!,
-	Id=no,
-	List=List0,
-	sort(Sv_u,Sv),
-	each_body_succ_builtin(Call,AbsInt,T,Tg,Vs,SgKey,Sg,Sv,HvFv_u,
-	                       F,N,Succ).
+        _ClId,F,N,Id):-
+    !,
+    Id=no,
+    List=List0,
+    sort(Sv_u,Sv),
+    each_body_succ_builtin(Call,AbsInt,T,Tg,Vs,SgKey,Sg,Sv,HvFv_u,
+                           F,N,Succ).
 body_succ0(RFlag,SgKey,Sg,Sv_u,HvFv_u,Call,Succ,List0,List,AbsInt,
-	   ClId,F,N,Id):-
-	sort(Sv_u,Sv),
-	each_call_to_success(Call,RFlag,SgKey,Sg,Sv,HvFv_u,AbsInt,ClId,
-                             Succ,List0,List,F,N,Id).
+       ClId,F,N,Id):-
+    sort(Sv_u,Sv),
+    each_call_to_success(Call,RFlag,SgKey,Sg,Sv,HvFv_u,AbsInt,ClId,
+                         Succ,List0,List,F,N,Id).
 
 each_call_to_success([Call],RFlag,SgKey,Sg,Sv,HvFv_u,AbsInt,ClId,Succ,L0,L,
-	             F,N,Id):-
-	!,
-	project(AbsInt,Sg,Sv,HvFv_u,Call,Proj),
-	call_to_success(RFlag,SgKey,Call,Proj,Sg,Sv,AbsInt,ClId,Succ,L1,F,N,Id),
+                 F,N,Id):-
+    !,
+    project(AbsInt,Sg,Sv,HvFv_u,Call,Proj),
+    call_to_success(RFlag,SgKey,Call,Proj,Sg,Sv,AbsInt,ClId,Succ,L1,F,N,Id),
 
-	merge(L1,L0,L).
+    merge(L1,L0,L).
 each_call_to_success(LCall,RFlag,SgKey,Sg,Sv,HvFv_u,AbsInt,ClId,LSucc,L0,L,
-                     F,N,Id):-
-	each_call_to_success0(LCall,RFlag,SgKey,Sg,Sv,HvFv_u,AbsInt,ClId,
-                              LSucc,L0,L,F,N,Id).
+                 F,N,Id):-
+    each_call_to_success0(LCall,RFlag,SgKey,Sg,Sv,HvFv_u,AbsInt,ClId,
+                          LSucc,L0,L,F,N,Id).
 
 each_call_to_success0([],_Flag,_SgK,_Sg,_Sv,_HvFv,_AbsInt,_,[],L,L,_F,_N,_NN).
 each_call_to_success0([Call|LCall],RFlag,SgKey,Sg,Sv,HvFv_u,AbsInt,ClId,
-	              LSucc,L0,L,F,N,NewN):-
-	project(AbsInt,Sg,Sv,HvFv_u,Call,Proj),
-	call_to_success(RFlag,SgKey,Call,Proj,Sg,Sv,AbsInt,ClId,LSucc0,L1,F,N,_),
-	merge(L0,L1,L2),
-	append(LSucc0,LSucc1,LSucc),
-	each_call_to_success0(LCall,RFlag,SgKey,Sg,Sv,HvFv_u,AbsInt,ClId,
-	                      LSucc1,L2,L,F,N,NewN).
+                  LSucc,L0,L,F,N,NewN):-
+    project(AbsInt,Sg,Sv,HvFv_u,Call,Proj),
+    call_to_success(RFlag,SgKey,Call,Proj,Sg,Sv,AbsInt,ClId,LSucc0,L1,F,N,_),
+    merge(L0,L1,L2),
+    append(LSucc0,LSucc1,LSucc),
+    each_call_to_success0(LCall,RFlag,SgKey,Sg,Sv,HvFv_u,AbsInt,ClId,
+                          LSucc1,L2,L,F,N,NewN).
 
 %GP if the list of Bodies is empty, then there is nothing to analyze 
 %   and we can make Succ = Call. Some more thinking is welcome
 meta_call([],_HvFv_u,Call,[],Call,List,List,_AbsInt,_ClId,_Id,[]).
 meta_call([Body|Bodies],HvFv_u,Call,Succ0,Succ,L0,List,AbsInt,ClId,Id,Ids):-
-	meta_call_([Body|Bodies],HvFv_u,Call,Succ0,Succ,L0,List,AbsInt,ClId,Id,Ids).
+    meta_call_([Body|Bodies],HvFv_u,Call,Succ0,Succ,L0,List,AbsInt,ClId,Id,Ids).
 meta_call_([Body|Bodies],HvFv_u,Call,Succ0,Succ,L0,List,AbsInt,ClId,Id,Ids):-
-	meta_call_body(Body,ClId,Call,Succ1,L0,L1,HvFv_u,AbsInt,Id,Ids0),
-%	dual_widen_succ(AbsInt,Succ0,Succ1,Succ2),
-	append(Succ0,Succ1,Succ2),
-	append(Ids0,Ids1,Ids),
-	meta_call_(Bodies,HvFv_u,Call,Succ2,Succ,L1,List,AbsInt,ClId,Id,Ids1).
+    meta_call_body(Body,ClId,Call,Succ1,L0,L1,HvFv_u,AbsInt,Id,Ids0),
+%       dual_widen_succ(AbsInt,Succ0,Succ1,Succ2),
+    append(Succ0,Succ1,Succ2),
+    append(Ids0,Ids1,Ids),
+    meta_call_(Bodies,HvFv_u,Call,Succ2,Succ,L1,List,AbsInt,ClId,Id,Ids1).
 meta_call_([],_HvFv_u,_Call,Succ,Succ,List,List,_AbsInt,_ClId,_Id,[]).
 
 meta_call_body((Sg,Rest),K,Call,Exit,OldList,NewList,Vars_u,AbsInt,PId,CIds):-
-	!,
-	CIds=[Id|Ids],
-	body_succ(Call,Sg,Succ,OldList,IntList,Vars_u,AbsInt,K,PId,Id),
-	meta_call_body(Rest,K,Succ,Exit,IntList,NewList,Vars_u,AbsInt,PId,Ids).
+    !,
+    CIds=[Id|Ids],
+    body_succ(Call,Sg,Succ,OldList,IntList,Vars_u,AbsInt,K,PId,Id),
+    meta_call_body(Rest,K,Succ,Exit,IntList,NewList,Vars_u,AbsInt,PId,Ids).
 meta_call_body(true,_,Call,Call,List,List,_,_,_,[no]):- !.
 meta_call_body(Sg,Key,Call,Exit,OldList,NewList,Vars_u,AbsInt,PId,[Id]):- 
-	body_succ(Call,Sg,Exit,OldList,NewList,Vars_u,AbsInt,Key,PId,Id).
+    body_succ(Call,Sg,Exit,OldList,NewList,Vars_u,AbsInt,Key,PId,Id).
 
 concretes_to_body([],_SgKey,_AbsInt,[]).
 concretes_to_body([Sg|Sgs],SgKey,AbsInt,[B|Bs]):-
-	% have to module-expand Sg!!!!
-	body_info0(Sg:SgKey,[],AbsInt,B),
-	concretes_to_body(Sgs,SgKey,AbsInt,Bs).
+    % have to module-expand Sg!!!!
+    body_info0(Sg:SgKey,[],AbsInt,B),
+    concretes_to_body(Sgs,SgKey,AbsInt,Bs).
 
 %-------------------------------------------------------------------------
 % query(+,+,+,+,+,+,+,-)
 %-------------------------------------------------------------------------
 
 :- doc(query(AbsInt,QKey,Query,Qv,RFlag,N,Call,Succ),
-	"The success pattern of @var{Query} with @var{Call} is
-         @var{Succ} in the analysis domain @var{AbsInt}. The predicate
-         called is identified by @var{QKey}, and @var{RFlag} says if it
-         is recursive or not. The goal @var{Query} has variables @var{Qv},
-         and the call pattern is uniquely identified by @var{N}.").
+    "The success pattern of @var{Query} with @var{Call} is
+     @var{Succ} in the analysis domain @var{AbsInt}. The predicate
+     called is identified by @var{QKey}, and @var{RFlag} says if it
+     is recursive or not. The goal @var{Query} has variables @var{Qv},
+     and the call pattern is uniquely identified by @var{N}.").
 
 query(AbsInt,QKey,Query,Qv,RFlag,N,Call,Succ) :-
-	project(AbsInt,Query,Qv,Qv,Call,Proj),
-	fixpoint_trace('init fixpoint',N,N,QKey,Query,Proj,_),
-	call_to_success(RFlag,QKey,Call,Proj,Query,Qv,AbsInt,0,Succ,_,N,0,Id),
-	!,
-	fixpoint_trace('exit goal',Id,query(N),(QKey,QKey),Query,Succ,AbsInt),
-	approx_to_completes(AbsInt).
+    project(AbsInt,Query,Qv,Qv,Call,Proj),
+    fixpoint_trace('init fixpoint',N,N,QKey,Query,Proj,_),
+    call_to_success(RFlag,QKey,Call,Proj,Query,Qv,AbsInt,0,Succ,_,N,0,Id),
+    !,
+    fixpoint_trace('exit goal',Id,query(N),(QKey,QKey),Query,Succ,AbsInt),
+    approx_to_completes(AbsInt).
 
 
 query(_AbsInt,_QKey,_Query,_Qv,_RFlag,_N,_Call,_Succ):-
 % should never happen, but...
-	error_message("SOMETHING HAS FAILED!").
+    error_message("SOMETHING HAS FAILED!").

@@ -8,12 +8,12 @@
 
 :- set_prolog_flag(multi_arity_warnings,off).
 main([]):-
-        display('Usage: gen_lib_cache <dest-dir>'),nl,
-        display('       Where <dest-dir> is the directory where the generated files'),nl,
-        display('       will be created.'),nl.
+    display('Usage: gen_lib_cache <dest-dir>'),nl,
+    display('       Where <dest-dir> is the directory where the generated files'),nl,
+    display('       will be created.'),nl.
 main([Dir]):-
-        bundle_path(ciaopp, 'cmds/cachedmods/cached_core.pl', P),
-        module(P),
-        set_fact(fake_module_name(cached_core)), % do not cache info of cached_core
-        p_asr:gen_lib_sources(Dir).
+    bundle_path(ciaopp, 'cmds/cachedmods/cached_core.pl', P),
+    module(P),
+    set_fact(fake_module_name(cached_core)), % do not cache info of cached_core
+    p_asr:gen_lib_sources(Dir).
 

@@ -20,8 +20,8 @@
 %% % Apply a type to a term
 %% 
 %% set_type_of_term(Term,Type,Typing):-
-%% 	Type =.. [T|Args],
-%% 	Typing =.. [T,Term|Args].
+%%      Type =.. [T|Args],
+%%      Typing =.. [T,Term|Args].
 
 % Translation of types
 
@@ -33,9 +33,9 @@ in @var{PreType}.".
 
 pretty_type_lit(Type, PreType, TypeSymbolList):-
     (simp_typedefs(yes) ->
-         no_simp_pretty_type_lit(Type, PreType, TypeSymbolList)
-         ;
-         simp_pretty_type_lit(Type, PreType, TypeSymbolList)).
+     no_simp_pretty_type_lit(Type, PreType, TypeSymbolList)
+     ;
+     simp_pretty_type_lit(Type, PreType, TypeSymbolList)).
 
 :- pred no_simp_pretty_type_lit(+Type, -PreType, -TypeSymbolList)
 
@@ -99,13 +99,13 @@ pretty_type_lit_rules(Type, PreType, TypeSymbolList, TypeRuleList):-
 %% :- regtype external_type_rule_list/1.
 %% 
 %% external_type_rule_list(A) :-
-%% 	list(A, external_type_rule).
+%%      list(A, external_type_rule).
 %% 
 %% :- regtype external_type_rule/1.
 %% 
 %% external_type_rule((typedef TypSymbol ::= ExDefin)) :-
-%% 	gnd(TypSymbol),
-%% 	gnd(ExDefin).
+%%      gnd(TypSymbol),
+%%      gnd(ExDefin).
 %% 
 %% translate_rule_list_to_internal([], []).
 %% translate_rule_list_to_internal([IRule|IL], [Rule|L]) :- 
@@ -265,26 +265,26 @@ pretty_type_lit_rules(Type, PreType, TypeSymbolList, TypeRuleList):-
 %% rules_to_pred_defs([], []).
 %% rules_to_pred_defs([Rule|L], DefList) :- 
 %%         debug_message("one_rule_to_pred(~q, ~q)", [Rule, DefList1]),
-%% 	one_rule_to_pred(Rule, DefList1),
+%%      one_rule_to_pred(Rule, DefList1),
 %%         debug_message("one_rule_to_pred(~q, ~q)", [Rule, DefList1]),
-%% 	append(DefList1, DefList2, DefList),
-%% 	rules_to_pred_defs(L, DefList2).
+%%      append(DefList1, DefList2, DefList),
+%%      rules_to_pred_defs(L, DefList2).
 %% 
 %% one_rule_to_pred(typedef(Pred, Def), Cls):-
-%% 	one_typedef_to_pred(Def, Pred, Cls0),
-%% 	rewrite_cls(Cls0, Cls1),
-%% 	null_directive_key(DK),
+%%      one_typedef_to_pred(Def, Pred, Cls0),
+%%      rewrite_cls(Cls0, Cls1),
+%%      null_directive_key(DK),
 %%         functor(Pred, Name, Ari),
 %%         Arity is Ari + 1,
-%% 	Cls=[(directive(type(Name/Arity)),DK)|Cls1].
+%%      Cls=[(directive(type(Name/Arity)),DK)|Cls1].
 %% 
 %% :- prop internal_type_disjunction/1 + regtype # "A Type defined in
-%% 	internal rule format.".
+%%      internal rule format.".
 %% 
 %% internal_type_disjunction(_).
 
 :- prop clause_list/1 + regtype # "A list of clauses defining a
-	predicate.".
+    predicate.".
 
 clause_list(_).
 
@@ -297,24 +297,24 @@ clause_list(_).
 %%    (named @var{Pred}) in @var{Cls}.".
 %% 
 %% one_typedef_to_pred([Or|Ors], Pred, [Clause|Cls]):- 
-%% 	!,
-%% 	debug_message("one_disjunct_to_clause(~q, ~q, ~q)", [Or, Pred, Clause]),
-%% 	one_disjunct_to_clause(Or, Pred, Clause),
-%% 	debug_message("one_disjunct_to_clause(~q, ~q, ~q)", [Or, Pred, Clause]),
-%% 	one_typedef_to_pred(Ors, Pred, Cls).
+%%      !,
+%%      debug_message("one_disjunct_to_clause(~q, ~q, ~q)", [Or, Pred, Clause]),
+%%      one_disjunct_to_clause(Or, Pred, Clause),
+%%      debug_message("one_disjunct_to_clause(~q, ~q, ~q)", [Or, Pred, Clause]),
+%%      one_typedef_to_pred(Ors, Pred, Cls).
 %% one_typedef_to_pred([], _Pred, []).
 %% 
 %% rule_to_pred_one((typedef Pred ::= Def), Cls):-
 %%         debug_message("typedef_to_pred(~q, ~q, ~q)", [Def, Pred, Cls0]),
-%% 	typedef_to_pred(Def, Pred, Cls0),
+%%      typedef_to_pred(Def, Pred, Cls0),
 %%         debug_message("typedef_to_pred(~q, ~q, ~q)", [Def, Pred, Cls0]),
-%% 	debug_message("rewrite_cls(~q, ~q)", [Cls0, Cls1]),
+%%      debug_message("rewrite_cls(~q, ~q)", [Cls0, Cls1]),
 %%         rewrite_cls(Cls0, Cls1),
 %%         debug_message("rewrite_cls(~q, ~q)", [Cls0, Cls1]),
-%% 	null_directive_key(DK),
+%%      null_directive_key(DK),
 %%         functor(Pred, Name, Ari),
 %%         Arity is Ari + 1,
-%% 	Cls=[(directive(type(Name/Arity)),DK)|Cls1].
+%%      Cls=[(directive(type(Name/Arity)),DK)|Cls1].
 
 % PARAMETRIC TYPES
 
@@ -376,25 +376,25 @@ set_type_symbol_renaming(ParamTypSymbol, NonParamTypSymbol):-
     (exist_type_symbol_renaming(ParamTypSymbol, NoParRenaming)
       -> NonParamTypSymbol = NoParRenaming
       ;
-         new_param_type_symbol(NewNoParRenaming), 
-         asserta_fact(pgm_param_type_symbol_renaming(ParamTypSymbol, NewNoParRenaming)),
-         NonParamTypSymbol = NewNoParRenaming).
+     new_param_type_symbol(NewNoParRenaming), 
+     asserta_fact(pgm_param_type_symbol_renaming(ParamTypSymbol, NewNoParRenaming)),
+     NonParamTypSymbol = NewNoParRenaming).
  
 ground_params_if_any(ParSymbol) :- 
-	varset(ParSymbol,Params),
-	ground_params(Params).
+    varset(ParSymbol,Params),
+    ground_params(Params).
 
 ground_params([]).
 ground_params([Param|Params]) :-
-	new_type_parameter(Param),
-	ground_params(Params).
+    new_type_parameter(Param),
+    ground_params(Params).
 
 exist_type_symbol_renaming(ParamTypSymbol, NoParRenaming):-
    param_type_symbol_renaming(ParamTypSymbol, NoParRenaming).
 
 remove_parametric_types_from_union([], []). 
 remove_parametric_types_from_union([ParType|ParDefin], 
-                                   [NonParType|NonParDefin]):-
+                               [NonParType|NonParDefin]):-
    !,
    remove_one_parametric_type(ParType, NonParType),
    remove_parametric_types_from_union(ParDefin, NonParDefin).
@@ -469,16 +469,16 @@ rewrite_as_parametric_rule_list([Rule|RestRul], NonParRule, TypeSymbol):-
  %% defined by a type rule.
 
 rewrite_one_rule_as_parametric(ParRule, NonParRule, NTypeSymbol):-
-        copy_term(ParRule, Rule),
-        non_parametric_type_rule_symbol_def(NonParRule, NTypeSymbol, NDefin),
-        parametric_type_rule_symbol_def(Rule, PTypeSymbol, PDefin),
-        order_type_defin(PDefin, OrPDefin), !, 
-        rewrite_defin(OrPDefin, NDefin), 
-        ground(PTypeSymbol),
-        assert_param_type_rule_instance(PTypeSymbol, NtypSymbol1),
-        dz_equivalent_types(NTypeSymbol, NtypSymbol1),
-        assert_and_propagate_type_equivalence(NTypeSymbol, NtypSymbol1).
-        % actualize_renaming(NTypeSymbol, NtypSymbol1).
+    copy_term(ParRule, Rule),
+    non_parametric_type_rule_symbol_def(NonParRule, NTypeSymbol, NDefin),
+    parametric_type_rule_symbol_def(Rule, PTypeSymbol, PDefin),
+    order_type_defin(PDefin, OrPDefin), !, 
+    rewrite_defin(OrPDefin, NDefin), 
+    ground(PTypeSymbol),
+    assert_param_type_rule_instance(PTypeSymbol, NtypSymbol1),
+    dz_equivalent_types(NTypeSymbol, NtypSymbol1),
+    assert_and_propagate_type_equivalence(NTypeSymbol, NtypSymbol1).
+    % actualize_renaming(NTypeSymbol, NtypSymbol1).
 
  %% actualize_equiv_types(NTypeSymbol, NtypSymbol1):-
  %%    retract(equiv_type(NTypeSymbol, _)),
@@ -512,13 +512,13 @@ rewrite_one_rule_as_parametric(ParRule, NonParRule, NTypeSymbol):-
    
 rewrite_defin([], []).
 rewrite_defin([PType|PDefin], NDefin):-
-        unify_with_some_type(NDefin, PType, RestNDefin),
-        rewrite_defin(PDefin, RestNDefin).
+    unify_with_some_type(NDefin, PType, RestNDefin),
+    rewrite_defin(PDefin, RestNDefin).
 
 unify_with_some_type([NType|NDefin], PType, NDefin):-
-        type_unify(NType, PType), !.
+    type_unify(NType, PType), !.
 unify_with_some_type([NType|NDefin], PType, [NType|RestNDefin]):-
-        unify_with_some_type(NDefin, PType, RestNDefin).
+    unify_with_some_type(NDefin, PType, RestNDefin).
 
 type_unify(NType, PType):-
     var(PType),

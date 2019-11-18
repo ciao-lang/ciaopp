@@ -21,15 +21,15 @@
 :- use_module(ciaobld(builder_aux), [update_file_from_clauses/3]).
 
 '$builder_hook'(prepare_build_bin) :-
-	ConfigFile = ~bundle_path(ciaopp, 'src/ciaopp_config_auto.pl'),
-	update_file_from_clauses(~findall(C, emit_config(C)), ConfigFile, _).
+    ConfigFile = ~bundle_path(ciaopp, 'src/ciaopp_config_auto.pl'),
+    update_file_from_clauses(~findall(C, emit_config(C)), ConfigFile, _).
 
 emit_config(C) :-
-	'$bundle_id'(ciaopp_extra),
-	C = (:- compilation_fact(has_ciaopp_extra)).
+    '$bundle_id'(ciaopp_extra),
+    C = (:- compilation_fact(has_ciaopp_extra)).
 emit_config(C) :-
-	'$bundle_id'(davinci),
-	C = (:- compilation_fact(has_davinci)).
+    '$bundle_id'(davinci),
+    C = (:- compilation_fact(has_davinci)).
 
 % ===========================================================================
 
@@ -46,7 +46,7 @@ emit_config(C) :-
 
 '$builder_hook'(cmds:cmd('gen_lib_cache', [main='cmds/gen_lib_cache'])).
 '$builder_hook'(custom_run(cache_libraries, [])) :- !,
-	cache_libraries.
+    cache_libraries.
 
 :- use_module(library(bundle/bundle_paths)).
 :- use_module(ciaobld(config_common), [cmd_path/4]).
@@ -55,10 +55,10 @@ emit_config(C) :-
 :- use_module(library(persdb/datadir), [ensure_datadir/2]).
 
 db_data_dir(Dir) :-
-	ensure_datadir('ciaopp_lib_cache', Dir).
+    ensure_datadir('ciaopp_lib_cache', Dir).
 
 cache_libraries :-
-	db_data_dir(Dir),
-	bundle_path(ciaopp, 'src/p_unit', LibFakeDir),
-	cmd_path(ciaopp, plexe, 'gen_lib_cache', CmdPath),
-	cpx_process_call(CmdPath, [Dir], [cwd(LibFakeDir)]).
+    db_data_dir(Dir),
+    bundle_path(ciaopp, 'src/p_unit', LibFakeDir),
+    cmd_path(ciaopp, plexe, 'gen_lib_cache', CmdPath),
+    cpx_process_call(CmdPath, [Dir], [cwd(LibFakeDir)]).

@@ -1,13 +1,13 @@
 :- module(share_amgu_aux,
-          [ peel_equations/3,
-            sh_peel/3,
-            bin_union/3,
-	    self/2,
-	    star/2,
-	    amgu/4,
-	    amgu/5
-	    ],
-         [assertions,isomodes]).
+      [ peel_equations/3,
+        sh_peel/3,
+        bin_union/3,
+        self/2,
+        star/2,
+        amgu/4,
+        amgu/5
+        ],
+     [assertions,isomodes]).
 
 :- doc(author, "Jorge Navas").
 % Copyright (C) 2004-2019 The Ciao Development Team
@@ -40,10 +40,10 @@
 % If Flag = star then if performs the "star" amgu                        |
 % Otherwise, it performs the amgu the "self-union" amgu                  |   
 %------------------------------------------------------------------------%
-amgu(X,T,star,ASub,AMGU):-	
-	amgu(X,T,ASub,AMGU),!.
-amgu(X,T,self,ASub,AMGU):-	
-	amgu_s(X,T,ASub,AMGU),!.
+amgu(X,T,star,ASub,AMGU):-      
+    amgu(X,T,ASub,AMGU),!.
+amgu(X,T,self,ASub,AMGU):-      
+    amgu_s(X,T,ASub,AMGU),!.
 
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
@@ -61,20 +61,20 @@ amgu(X,T,self,ASub,AMGU):-
 % via an aliasing to a variable in t (and vice versa)                    |
 %------------------------------------------------------------------------%
 amgu(X,T,ASub,AMGU):-
-	sort(T,V_t),
-	sort(ASub,SASub),
-	ord_union([X],V_t,V_xt), 
-	split_list_of_lists([X],SASub,Rel_x,_),
-	%simple_message("Rel_x: ~q",[Rel_x]),
-	split_list_of_lists(V_t,SASub,Rel_t,_),
-	%simple_message("Rel_t: ~q",[Rel_t]),
-	split_list_of_lists(V_xt,SASub,_,Irrel_xt),	
-	%simple_message("Irrel_xt: ~q",[Irrel_xt]),
-	bin_union(Rel_x,Rel_t,BinUnion),
-	%simple_message("BinUnion: ~q",[BinUnion]),
-	star(BinUnion,BinUnionStar),
-	%simple_message("Star: ~q",[BinUnionStar]),
-	ord_union(Irrel_xt,BinUnionStar,AMGU).
+    sort(T,V_t),
+    sort(ASub,SASub),
+    ord_union([X],V_t,V_xt), 
+    split_list_of_lists([X],SASub,Rel_x,_),
+    %simple_message("Rel_x: ~q",[Rel_x]),
+    split_list_of_lists(V_t,SASub,Rel_t,_),
+    %simple_message("Rel_t: ~q",[Rel_t]),
+    split_list_of_lists(V_xt,SASub,_,Irrel_xt),     
+    %simple_message("Irrel_xt: ~q",[Irrel_xt]),
+    bin_union(Rel_x,Rel_t,BinUnion),
+    %simple_message("BinUnion: ~q",[BinUnion]),
+    star(BinUnion,BinUnionStar),
+    %simple_message("Star: ~q",[BinUnionStar]),
+    ord_union(Irrel_xt,BinUnionStar,AMGU).
 
 :- pop_prolog_flag(multi_arity_warnings).
 %------------------------------------------------------------------------%
@@ -90,16 +90,16 @@ amgu(X,T,ASub,AMGU):-
 %------------------------------------------------------------------------%
 
 amgu_s(X,T,ASub,AMGU):-
-	sort(T,V_t),
-	sort(ASub,SASub),
-	ord_union([X],V_t,V_xt),
-	split_list_of_lists([X],SASub,Rel_x,_),
-	split_list_of_lists(V_t,SASub,Rel_t,_),	
-	split_list_of_lists(V_xt,SASub,_,Irrel_xt),	
-	self(Rel_x,Star_Rel_x),
-	self(Rel_t,Star_Rel_t),
-	bin_union(Star_Rel_x,Star_Rel_t,BinUnion),
-	ord_union(Irrel_xt,BinUnion,AMGU).
+    sort(T,V_t),
+    sort(ASub,SASub),
+    ord_union([X],V_t,V_xt),
+    split_list_of_lists([X],SASub,Rel_x,_),
+    split_list_of_lists(V_t,SASub,Rel_t,_), 
+    split_list_of_lists(V_xt,SASub,_,Irrel_xt),     
+    self(Rel_x,Star_Rel_x),
+    self(Rel_t,Star_Rel_t),
+    bin_union(Star_Rel_x,Star_Rel_t,BinUnion),
+    ord_union(Irrel_xt,BinUnion,AMGU).
 
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
@@ -118,33 +118,33 @@ amgu_s(X,T,ASub,AMGU):-
 
 % bin_union([],_,[]).
 % bin_union([H|T],L2,L):-
-% %	sort(H,H1),
-% 	bin_union_(L2,H,SL),
-% 	bin_union(T,L2,RL),
-% 	ord_union(RL,SL,L).
+% %     sort(H,H1),
+%       bin_union_(L2,H,SL),
+%       bin_union(T,L2,RL),
+%       ord_union(RL,SL,L).
 
 % bin_union_([],_,[]).
 % bin_union_([S|Ss],E,BUnion ):-
-% %	sort(H,H0),
-% 	ord_union(S,E,Union),
-% 	bin_union_(Ss,E,Res),
-% 	ord_union(Res,[Union],BUnion).
+% %     sort(H,H0),
+%       ord_union(S,E,Union),
+%       bin_union_(Ss,E,Res),
+%       ord_union(Res,[Union],BUnion).
 
 bin_union(Ss1,Ss2,BinUnion):-
-	bin_union0(Ss1,Ss2,[],BinUnion_u),
-	sort_list_of_lists(BinUnion_u,BinUnion).
+    bin_union0(Ss1,Ss2,[],BinUnion_u),
+    sort_list_of_lists(BinUnion_u,BinUnion).
 
 %% tail-recursion version
 bin_union0([],_,Res,Res).
 bin_union0([X|Xs],Ss,Acc,Res):-
-	bin_union_(Ss,X,Acc,NAcc),
-	bin_union0(Xs,Ss,NAcc,Res).
+    bin_union_(Ss,X,Acc,NAcc),
+    bin_union0(Xs,Ss,NAcc,Res).
 
 %% tail-recursion version
 bin_union_([],_,Res,Res).
 bin_union_([S|Ss],E,Acc,Res ):-
-	ord_union(S,E,Union),
-	bin_union_(Ss,E,[Union|Acc],Res).
+    ord_union(S,E,Union),
+    bin_union_(Ss,E,[Union|Acc],Res).
 
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
@@ -181,38 +181,38 @@ star(Sh,Star):-closure_under_union(Sh,Star).
 %------------------------------------------------------------------------%
 
 peel_equations(Term1,Term2,Equs) :-
-	sh_peel(Term1,Term2,Temp-[]),
-	sort(Temp,Equs). % remove duplicates
+    sh_peel(Term1,Term2,Temp-[]),
+    sort(Temp,Equs). % remove duplicates
   
 sh_peel(Term1,Term2,Binds) :-
-	var(Term1),!,
-	sh_peel_var(Term1,Term2,Binds).
+    var(Term1),!,
+    sh_peel_var(Term1,Term2,Binds).
 sh_peel(Term1,Term2,Binds) :-
-	var(Term2),!,
-	varset(Term1,List),
-	Binds = [(Term2,List)|X]-X.
+    var(Term2),!,
+    varset(Term1,List),
+    Binds = [(Term2,List)|X]-X.
 sh_peel(Term1,Term2,Binds) :- 
-	Term1 == Term2, !,
-	Binds = X-X.
+    Term1 == Term2, !,
+    Binds = X-X.
 sh_peel(Term1,Term2,Binds) :-
-	functor(Term1,F,N),
-	functor(Term2,F,N),
-	sh_peel_args(Term1,Term2,0,N,Binds).
+    functor(Term1,F,N),
+    functor(Term2,F,N),
+    sh_peel_args(Term1,Term2,0,N,Binds).
 
 sh_peel_var(Term1,Term2,Binds):-
-	var(Term2),!,
-	Binds = [(Term1,[Term2])|X]-X.
+    var(Term2),!,
+    Binds = [(Term1,[Term2])|X]-X.
 sh_peel_var(Term1,Term2,Binds):-
-	varset(Term2,List),
-	Binds = [(Term1,List)|X]-X.
+    varset(Term2,List),
+    Binds = [(Term1,List)|X]-X.
 
 sh_peel_args(_,_,N1,N,Binds) :-
-	N1 = N, !,
-	Binds = X-X.
+    N1 = N, !,
+    Binds = X-X.
 sh_peel_args(Term1,Term2,N1,N,Binds) :-
-	N2 is N1 + 1,
-	arg(N2,Term1,A1),
-	arg(N2,Term2,A2),
-	sh_peel(A1,A2,Bind1),
-	sh_peel_args(Term1,Term2,N2,N,Bind2),
-	append_dl(Bind1,Bind2,Binds).
+    N2 is N1 + 1,
+    arg(N2,Term1,A1),
+    arg(N2,Term2,A2),
+    sh_peel(A1,A2,Bind1),
+    sh_peel_args(Term1,Term2,N2,N,Bind2),
+    append_dl(Bind1,Bind2,Binds).

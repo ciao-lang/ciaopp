@@ -10,13 +10,13 @@ get_metric(size,     size) :- !.
 get_metric(depth, depth) :- !.
 get_metric(depth(_), depth) :- !.
 get_metric(M,        null) :-
-	message(warning, ['The measure ', ~~(M), ' is unknown.']).
+    message(warning, ['The measure ', ~~(M), ' is unknown.']).
 
 :- export(translate_to_modes/2).
 translate_to_modes([],[]).
 translate_to_modes([I|Is],[M|Ms]):-
-	translate_to_mode(I,M),
-	translate_to_modes(Is,Ms).
+    translate_to_mode(I,M),
+    translate_to_modes(Is,Ms).
 
 :- export(translate_to_mode/2).
 translate_to_mode(y/y,'+') :- !.

@@ -1,30 +1,30 @@
 :- module(preprocess_flags,[
-	push_pp_flag/2,
-	pop_pp_flag/1,
-	current_pp_flag/2,
-	set_pp_flag/2,
-	pp_flag/2,
-	pp_flag/1,            % it is a type
-	flag_value/1,
-	valid_flag_value/2,   % (auto_inteface uses them)
-	valid_flag_values/2,  % (auto_inteface uses them)
-	dump_flags/1,
-	save_config/1,
-	restore_config/1,
-	remove_config/1,
-	show_config/1,
-	show_configs/0,
-	sublist2/2
-	],[assertions,nortchecks,regtypes,isomodes,persdb,datafacts,
-	   ciaopp(ciaopp_options)]).
+    push_pp_flag/2,
+    pop_pp_flag/1,
+    current_pp_flag/2,
+    set_pp_flag/2,
+    pp_flag/2,
+    pp_flag/1,            % it is a type
+    flag_value/1,
+    valid_flag_value/2,   % (auto_inteface uses them)
+    valid_flag_values/2,  % (auto_inteface uses them)
+    dump_flags/1,
+    save_config/1,
+    restore_config/1,
+    remove_config/1,
+    show_config/1,
+    show_configs/0,
+    sublist2/2
+    ],[assertions,nortchecks,regtypes,isomodes,persdb,datafacts,
+       ciaopp(ciaopp_options)]).
 
 :- doc(title, "Preprocessing Flags").
 
 %%------------------------------------------------------------------------
 
 :- doc(bug,"Having changed the names of flags, the rest of ciaopp
-	should also be changed to use the new names: current solution
-	is a kludge.").
+    should also be changed to use the new names: current solution
+    is a kludge.").
 
 %%------------------------------------------------------------------------
 
@@ -59,15 +59,15 @@ persistent_dir(dbdir, '~/.ciao.d/ciaopp_flags').
 % :- multifile pp_flag/1,
 :- discontiguous pp_flag/1.
 :- regtype pp_flag(Flag)
-	# "@var{Flag} is a valid preprocessor flag.".
+    # "@var{Flag} is a valid preprocessor flag.".
 :- doc(pp_flag/1," The list of valid flags and their values is
-          as follows: @include{preprocess_flags.lpdoc}").
+      as follows: @include{preprocess_flags.lpdoc}").
 
 % :- multifile pp_flag/2.
 :- discontiguous pp_flag/2.
 :- pred pp_flag(Name,Help) 
-	# "@var{Name} is a valid preprocess flag.@var{Help} is a
-          description of what @var{Name} does.".
+    # "@var{Name} is a valid preprocess flag.@var{Help} is a
+      description of what @var{Name} does.".
 
 % TODO: LpDoc is not able to handle this as a reexport:
 %:- doc(pp_flag/1,"Valid flags:  @include{preprocess_flags.lpdoc}").
@@ -75,19 +75,19 @@ persistent_dir(dbdir, '~/.ciao.d/ciaopp_flags').
 % :- multifile current_pp_flags/2,
 :- discontiguous current_pp_flags/2.
 :- pred current_pp_flags(Name,Value) 
-	:: pp_flag * flag_value
-	# "Current proprocess flags. These facts can be dynamically updated 
-           using @tt{set_pp_flag/2}. Initial facts are flag values by 
-           default.".
+    :: pp_flag * flag_value
+    # "Current proprocess flags. These facts can be dynamically updated 
+       using @tt{set_pp_flag/2}. Initial facts are flag values by 
+       default.".
 
 :- data current_pp_flags/2.
 
 % :- multifile valid_flag_values/2.
 :- discontiguous valid_flag_values/2.
 :- pred valid_flag_values(Name,Value_Checker) 
-	:: pp_flag * callable
-	# "@var{Value_Checker} is a goal that checks that a value given as
-           first argument of this term is a valid value for @var{Name}.".
+    :: pp_flag * callable
+    # "@var{Value_Checker} is a goal that checks that a value given as
+       first argument of this term is a valid value for @var{Name}.".
 
 % ---------------------------------------------------------------------------
 
@@ -149,23 +149,23 @@ pp_flag(inter_all).
 pp_flag(inter_all, 'Select which high-level action the preprocessor will perform.').
 current_pp_flags(  inter_all          , analyze ).
 valid_flag_values( inter_all          , member( _ , 
-	                                        [
-						 analyze, 
-						 check_assertions, 
-						 check_certificate,
-						 optimize] ) ).
+                                            [
+                                             analyze, 
+                                             check_assertions, 
+                                             check_certificate,
+                                             optimize] ) ).
 
 pp_flag(inter_ana).
 pp_flag(inter_ana, 'No Help Available').
 current_pp_flags(  inter_ana          , [types,modes,ana_num,ana_nf,ana_det,ana_cost]   ).
 valid_flag_values( inter_ana          , sublist2( _ , [
-						       types,
-						       modes,
-						       ana_num,
-						       ana_nf,
-						       ana_cost,
-						       ana_det
-						     ] ) ).
+                                                   types,
+                                                   modes,
+                                                   ana_num,
+                                                   ana_nf,
+                                                   ana_cost,
+                                                   ana_det
+                                                 ] ) ).
 
 :- if(defined(has_ciaopp_extra)).
 :- include(ciaopp(preprocess_flags_java)).
@@ -180,7 +180,7 @@ pp_flag(inter_optimize, 'Determines the kind of optimization to perform.').
 current_pp_flags(  inter_optimize     , spec ).
 :- if(defined(has_ciaopp_extra)).
 valid_flag_values( inter_optimize     , member( _ , [spec,parallelize,
-                                                     slice,poly_spec] ) ).
+                                                 slice,poly_spec] ) ).
 :- else.
 valid_flag_values( inter_optimize     , member( _ , [spec,slice] ) ).
 :- endif.
@@ -190,8 +190,8 @@ pp_flag(para_ann).
 pp_flag(para_ann, 'Decides whether to parallelize the current program using a specific annotation algorithm.').
 current_pp_flags(  para_ann           , mel ).
 valid_flag_values( para_ann           , member( _ , [mel, cdg, udg, uoudg,
-                                                     uudg, disjwait,
-                                                     tgudg, urlp, crlp] )).
+                                                 uudg, disjwait,
+                                                 tgudg, urlp, crlp] )).
 
 pp_flag(para_iap).
 pp_flag(para_iap, 'Decides whether the parallelizer uses only the abstract information before the goals and the conjuntion or also the information after each goal and the conjuntion in the parallelization. This amounts to using strict independence or non-strict independence.').
@@ -217,7 +217,7 @@ pp_flag(para_cost).
 pp_flag(para_cost, 'Decides which cost analysis will be used by the granularity analysis to parallelize the current program.').
 current_pp_flags(  para_cost          , both ).
 valid_flag_values( para_cost          , member( _ , [none, lower,
-                                        upper, both] )).
+                                    upper, both] )).
 :- endif.
 
 pp_flag(menu_level).
@@ -473,20 +473,20 @@ pp_flag(fixpoint, 'Determines the fixpoint algorithm to be used during analysis.
 current_pp_flags(  fixpoint           , plai). 
 :- if(defined(has_ciaopp_extra)).
 valid_flag_values( fixpoint           , member(_,[plai,
-	                                          plai_gfp, plai_sp, % TODO:[new-resources] from new-resources branch, check
-						  dd, di, check_di,
-                                                  check_di2, check_di3, 
-                                                  check_di4, check_di5,
-						  poly_spec, check_reduc_di,
-						  bu]) ).
+                                              plai_gfp, plai_sp, % TODO:[new-resources] from new-resources branch, check
+                                              dd, di, check_di,
+                                              check_di2, check_di3, 
+                                              check_di4, check_di5,
+                                              poly_spec, check_reduc_di,
+                                              bu]) ).
 :- else.
 valid_flag_values( fixpoint           , member(_,[plai,
-	                                          plai_gfp, plai_sp, % TODO:[new-resources] from new-resources branch, check
-						  dd, di, check_di,
-                                                  check_di2, check_di3, 
-                                                  check_di4, check_di5,
-						  check_reduc_di,
-						  bu]) ).
+                                              plai_gfp, plai_sp, % TODO:[new-resources] from new-resources branch, check
+                                              dd, di, check_di,
+                                              check_di2, check_di3, 
+                                              check_di4, check_di5,
+                                              check_reduc_di,
+                                              bu]) ).
 :- endif.
 
 :- if(defined(has_ciaopp_extra)).
@@ -570,14 +570,14 @@ current_pp_flags(  old_trusts , on).
 valid_flag_values( old_trusts , member(_, [off,on])).
 
 pp_flag(           fixp_stick_to_success ,
-	'Whether to use the success values of assertions instead of inferring them.').
+    'Whether to use the success values of assertions instead of inferring them.').
 % Note that the fixpoint cannot grow bigger than this value, and that
 % if check assertions are used as trust, then they are applied too
 current_pp_flags(  fixp_stick_to_success , off).
 valid_flag_values( fixp_stick_to_success , member(_, [off,on])).
 
 pp_flag(           fixp_stick_to_calls ,
-	'Whether to use the call value in assertions instead of inferring it').
+    'Whether to use the call value in assertions instead of inferring it').
 % Note that the fixpoint cannot grow bigger than this value, and that
 % if check assertions are used as trust, then they are applied too
 % (same as with fixp_stick_to_success)
@@ -594,8 +594,8 @@ pp_flag(success_policy).
 pp_flag(success_policy, 'The policy for obtaining success information for imported predicates during inter-modular analysis.').
 current_pp_flags(  success_policy   , over_all).
 valid_flag_values( success_policy   , member(_, [over_best, over_first, over_all, 
-	                                         top, under_first, under_best, 
-						 under_all, bottom, bottom_up])). 
+                                             top, under_first, under_best, 
+                                             under_all, bottom, bottom_up])). 
 
 pp_flag(ext_policy).
 pp_flag(ext_policy, 'Entries and successes for analysis.').
@@ -613,7 +613,7 @@ pp_flag(initial_guess).
 pp_flag(initial_guess, 'The policy for obtaining initial guess when computing the analysis of a predicate from the current module.').
 current_pp_flags(  initial_guess     , bottom).
 valid_flag_values( initial_guess     , member(_, [botfirst, botbest, botall, 
-						   bottom])). 
+                                               bottom])). 
 
 pp_flag(entry_policy).
 pp_flag(entry_policy, 'The policy for obtaining entry call patterns for exported predicates during inter-modular analysis.').
@@ -657,11 +657,11 @@ pp_flag(local_control).
 pp_flag(local_control, 'Determines the unfolding rule to use during partial evaluation.').
 current_pp_flags(  local_control      , off).
 valid_flag_values( local_control      , member(_,[off, orig, inst, det, det_la,
-	                                          depth, first_sol,first_sol_d,
-						  all_sol, hom_emb,hom_emb_anc,
-						  hom_emb_as, df_hom_emb_as, 
-						  df_tree_hom_emb, df_hom_emb,
-						  decompile,df_hom_emb_as_orig])).
+                                              depth, first_sol,first_sol_d,
+                                              all_sol, hom_emb,hom_emb_anc,
+                                              hom_emb_as, df_hom_emb_as, 
+                                              df_tree_hom_emb, df_hom_emb,
+                                              decompile,df_hom_emb_as_orig])).
 
 :- if(defined(has_ciaopp_extra)).
 pp_flag(poly_local_control).
@@ -766,8 +766,8 @@ pp_flag(global_scheduling).
 pp_flag(global_scheduling, 'Global scheduling policy to be used in intermodular analysis.').
 current_pp_flags(  global_scheduling  , naive_bottom_up).
 valid_flag_values( global_scheduling  , member(_,[depth_first,
-	abs_depth_first, naive_top_down, naive_bottom_up, 
-	top_down_preanalysis, bottom_up_preanalysis])).
+    abs_depth_first, naive_top_down, naive_bottom_up, 
+    top_down_preanalysis, bottom_up_preanalysis])).
 
 pp_flag(widencall).
 pp_flag(widencall, 'Type of widening performed on abstract procedure calls.').
@@ -1019,11 +1019,11 @@ valid_flag_values(preload_lib_sources, member( _ , [on, off] )).
 
 tmp_dir(source).
 tmp_dir(Dir) :-
-	atm(Dir).
+    atm(Dir).
 
 asr_dir(source).
 asr_dir(Dir) :-
-	atm(Dir).
+    atm(Dir).
 
 % the following three should be put in common with infer_dom:knows_of/2
 % and multifile:analysis/1
@@ -1080,127 +1080,127 @@ numericanalysis(polyhedra).
 numericanalysis(lsign).
 
 the_same_as(X, P) :-
-	valid_flag_value(P, X).
+    valid_flag_value(P, X).
 
 valid_alpha(X):-
-	float(X),
-	X>=0,
-	X=<1.
+    float(X),
+    X>=0,
+    X=<1.
 
 sublist2(X, [L]) :-
-	var(X), !,
-	member(X, L).
+    var(X), !,
+    member(X, L).
 sublist2(X, L) :-
-	sublist(X, L).
+    sublist(X, L).
 
 %%------------------------------------------------------------------------
 :- regtype flag_value(V)  
-	# "@var{V} is a value for a flag.".
+    # "@var{V} is a value for a flag.".
 
 flag_value( X ) :- atm( X ).
 flag_value( X ) :- list( X , atm ).
 
 %------------------------------------------------------------------------
 :- pred current_pp_flag(Name,?Value)
-	: pp_flag(Name) => valid_flag_value(Name,Value)
-	# "Preprocess flag @var{Name} has the value @var{Value}.".
+    : pp_flag(Name) => valid_flag_value(Name,Value)
+    # "Preprocess flag @var{Name} has the value @var{Value}.".
 
 current_pp_flag(analysis_info,Value):- !, current_pp_flag(dump_ai,Value).
 current_pp_flag(point_info,Value):- !, current_pp_flag(pp_info,Value).
 current_pp_flag(part_concrete,Value):- !, current_pp_flag(part_conc,Value).
 %
 current_pp_flag(Name,Value):-
-	current_pp_flags(Name,Value).
+    current_pp_flags(Name,Value).
 
 %------------------------------------------------------------------------
 :- pred set_pp_flag(Name,Value) 
-	: ( pp_flag(Name) , valid_flag_value(Name,Value) )
-	# "Sets @var{Value} for preprocessor flag @var{Name}.".
+    : ( pp_flag(Name) , valid_flag_value(Name,Value) )
+    # "Sets @var{Value} for preprocessor flag @var{Name}.".
 
 set_pp_flag(analysis_info,Value):- !, set_pp_flag(dump_ai,Value).
 set_pp_flag(point_info,Value):- !, set_pp_flag(pp_info,Value).
 set_pp_flag(part_concrete,Value):- !, set_pp_flag(part_conc,Value).
 %
 set_pp_flag(Name,Value):-
-	ground(Name),
-	ground(Value),
-	pp_flag(Name,_),
-	valid_flag_value(Name,Value),!,  % checking name and value existence.
-	datafacts_rt:retract_fact(current_pp_flags(Name,_)),
-	datafacts_rt:assertz_fact(current_pp_flags(Name,Value)).
+    ground(Name),
+    ground(Value),
+    pp_flag(Name,_),
+    valid_flag_value(Name,Value),!,  % checking name and value existence.
+    datafacts_rt:retract_fact(current_pp_flags(Name,_)),
+    datafacts_rt:assertz_fact(current_pp_flags(Name,Value)).
 
 %%------------------------------------------------------------------------
 
 :- prop valid_flag_value(Name,Value) 
-	: pp_flag * flag_value
-	# "@var{Value} is a valid value for preprocessor flag @var{Name}.".
+    : pp_flag * flag_value
+    # "@var{Value} is a valid value for preprocessor flag @var{Name}.".
 
 % more kludges
 valid_flag_value(analysis_info,Value):- 
-	!,
-	valid_flag_value(dump_ai,Value).
+    !,
+    valid_flag_value(dump_ai,Value).
 
 valid_flag_value(Name,Value):-
-	valid_flag_values(Name,ValGen),
-	arg(1,ValGen,Value),           
-	call(ValGen).
+    valid_flag_values(Name,ValGen),
+    arg(1,ValGen,Value),           
+    call(ValGen).
 
 :- data old_flag/2.
 
 :- pred push_pp_flag(Flag, Value)
-	   : ( pp_flag(Flag), valid_flag_value(Flag,Value) )
-	# "Sets @var{Value} for preprocessor flag @var{Flag}, storing the current
-	   value to restore it with @pred{pop_pp_flag/1}.".
+       : ( pp_flag(Flag), valid_flag_value(Flag,Value) )
+    # "Sets @var{Value} for preprocessor flag @var{Flag}, storing the current
+       value to restore it with @pred{pop_pp_flag/1}.".
 
 push_pp_flag(analysis_info,Value):- !, push_pp_flag(dump_ai,Value).
 push_pp_flag(point_info,Value):- !, push_pp_flag(pp_info,Value).
 push_pp_flag(part_concrete,Value):- !, push_pp_flag(part_conc,Value).
 %
 push_pp_flag(Flag, NewValue) :-
-        nonvar(Flag),
-        current_pp_flag(Flag, OldValue),
-	set_pp_flag(Flag,NewValue),
-        datafacts_rt:asserta_fact(old_flag(Flag, OldValue)).
+    nonvar(Flag),
+    current_pp_flag(Flag, OldValue),
+    set_pp_flag(Flag,NewValue),
+    datafacts_rt:asserta_fact(old_flag(Flag, OldValue)).
 
 :- pred pop_pp_flag(Flag) : pp_flag
-	# "Restores the value of the preprocessor flag @var{Flag}
-	   previous to the last non-canceled @pred{push_pp_flag/2} on
-	   it.".
+    # "Restores the value of the preprocessor flag @var{Flag}
+       previous to the last non-canceled @pred{push_pp_flag/2} on
+       it.".
 
 pop_pp_flag(analysis_info):- !, pop_pp_flag(dump_ai).
 pop_pp_flag(point_info):- !, pop_pp_flag(pp_info).
 pop_pp_flag(part_concrete):- !, pop_pp_flag(part_conc).
 %
 pop_pp_flag(Flag) :-
-        nonvar(Flag),
-        datafacts_rt:retract_fact(old_flag(Flag, OldValue)),
-        set_pp_flag(Flag,OldValue).
+    nonvar(Flag),
+    datafacts_rt:retract_fact(old_flag(Flag, OldValue)),
+    set_pp_flag(Flag,OldValue).
 
 %-------------------------------------------------------------------------
 
 :- multifile dump_flags_list/2.
 
 :- pred dump_flags(Name) : atm
-        # "@var{Name} represent the list of flags to be dumped. To associate a
-          name (key) with a list, use @pred{dump_flags_list}.".
+    # "@var{Name} represent the list of flags to be dumped. To associate a
+      name (key) with a list, use @pred{dump_flags_list}.".
 dump_flags(Name) :-
-	dump_flags_list(Name, List),
-	dump_all_flags(List).
+    dump_flags_list(Name, List),
+    dump_all_flags(List).
 
 dump_flags(Name) :-
-	message(error, ['Flag list ', Name, ' unkown']).
+    message(error, ['Flag list ', Name, ' unkown']).
 
 dump_flags_list(all, L) :-
-	findall(X, pp_flag(X,_), L).
+    findall(X, pp_flag(X,_), L).
 
 dump_all_flags([A|B]) :-
-	current_pp_flag(A, V),
-	!,
-	display(A), display(' = '), display(V), nl,
-	dump_all_flags(B).
+    current_pp_flag(A, V),
+    !,
+    display(A), display(' = '), display(V), nl,
+    dump_all_flags(B).
 dump_all_flags([A|B]) :-
-	display('unkown flag '), display(A), nl,
-	dump_all_flags(B).
+    display('unkown flag '), display(A), nl,
+    dump_all_flags(B).
 dump_all_flags([]).
 
 %%------------------------------------------------------------------------
@@ -1208,56 +1208,56 @@ dump_all_flags([]).
 :- use_module(library(menu/menu_generator), [get_menu_configs/1]).
 
 is_menu_config(V) :-
-	get_menu_configs(X),
-	member(V, [none|X]).
+    get_menu_configs(X),
+    member(V, [none|X]).
 
 %%------------------------------------------------------------------------
 
 :- pred save_config(Name) : atm
-	# "Save the current flags configuration under the @var{Name} key.".
+    # "Save the current flags configuration under the @var{Name} key.".
 save_config(Name) :-
-	findall((A=B), current_pp_flags(A, B), L),
-	save_flags_list(Name, L).
+    findall((A=B), current_pp_flags(A, B), L),
+    save_flags_list(Name, L).
 
 save_flags_list(Name, List) :-
-	(persdb_rt:retract_fact(config(Name, _)), fail ; true),
-	persdb_rt:assertz_fact(config(Name, List)).
+    (persdb_rt:retract_fact(config(Name, _)), fail ; true),
+    persdb_rt:assertz_fact(config(Name, List)).
 
 :- pred remove_config(Name) : atm
-	# "Remove the configuration stored with the @var{Name} key.".
+    # "Remove the configuration stored with the @var{Name} key.".
 remove_config(Name) :-
-	persdb_rt:retract_fact(config(Name, _)),
-	fail.
+    persdb_rt:retract_fact(config(Name, _)),
+    fail.
 remove_config(_Name).
 
 :- pred restore_config(Name) : atm(Name)
 # "Restores the set of flags saved previously under the name of @var{Name}.".
 restore_config(Name) :-
-	config(Name, L),
-	restore_flags_list(L).
+    config(Name, L),
+    restore_flags_list(L).
 
 %What happens with non existing flags?
 restore_flags_list([]) :- !.
 restore_flags_list([(A=B)|As]) :-
-	(set_pp_flag(A,B)->true;true),
-	 restore_flags_list(As).
+    (set_pp_flag(A,B)->true;true),
+     restore_flags_list(As).
 
 :- pred show_configs # "Show all stored configs.".
 show_configs :-
-	findall(Name, config(Name, _), L),
-	display(L), nl.
+    findall(Name, config(Name, _), L),
+    display(L), nl.
 
-:- pred show_config(C)	: atm
-	# "Show specific configuration values pointed by @var{C} key.".
+:- pred show_config(C)  : atm
+    # "Show specific configuration values pointed by @var{C} key.".
 show_config(Name) :-
-	config(Name, F),
-	show_config_list(F),
-	fail.
+    config(Name, F),
+    show_config_list(F),
+    fail.
 show_config(_).
 
 show_config_list([]) :- !.
 show_config_list([A|B]) :-
-	write(A), nl,
-	show_config_list(B).
+    write(A), nl,
+    show_config_list(B).
 
 

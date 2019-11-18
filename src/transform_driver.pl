@@ -1,12 +1,12 @@
 :- module(_, [],
-	[
-	    assertions,
-	    basicmodes,
-	    regtypes,
-	    nativeprops,
-	    datafacts,
-	    ciaopp(ciaopp_options)
-	]).
+    [
+        assertions,
+        basicmodes,
+        regtypes,
+        nativeprops,
+        datafacts,
+        ciaopp(ciaopp_options)
+    ]).
 
 %------------------------------------------------------------------------
 
@@ -40,11 +40,11 @@
 :- use_module(engine(messages_basic), [message/2]).
 
 :- use_module(ciaopp(preprocess_flags),
-	[current_pp_flag/2, set_pp_flag/2, push_pp_flag/2, pop_pp_flag/1]).
+    [current_pp_flag/2, set_pp_flag/2, push_pp_flag/2, pop_pp_flag/1]).
 
 % ===========================================================================
 :- doc(section, "Program transformation").
-	
+    
 :- use_module(ciaopp(p_unit/itf_db), [curr_file/2]).
 :- use_module(ciaopp(p_unit), [program/2]). 
 :- use_module(ciaopp(p_unit), [push_history/1]).
@@ -79,133 +79,133 @@
 
 :- export(transform/1).
 :- pred transform(-Trans) => transformation
-	# "Returns on backtracking all available program transformation identifiers.".
+    # "Returns on backtracking all available program transformation identifiers.".
 :- pred transform(+Trans) : transformation
-	# "Performs transformation @var{Trans} on the current module.".
+    # "Performs transformation @var{Trans} on the current module.".
 transform(Trans):- var(Trans), !, transformation(Trans). % TODO: ugly
 transform(Trans):- transform(Trans,_Info).
 
 :- export(transform/2).
 :- pred transform(+Trans,-Info) 
 # "Same as transform(@var{Trans}) but returns information that can be
-	used to check the results of the transformation.".
+    used to check the results of the transformation.".
 
 transform(Trans,Info):-
-	transformation(Trans), !,
-	curr_file(File,_),
-	message(inform, ['{Transforming ',~~(File)]),
-	program(Cls,Ds),
-	push_history(Trans),
-	transform_(Trans,Cls,Ds,Info),
-	message(inform, ['}']).
+    transformation(Trans), !,
+    curr_file(File,_),
+    message(inform, ['{Transforming ',~~(File)]),
+    program(Cls,Ds),
+    push_history(Trans),
+    transform_(Trans,Cls,Ds,Info),
+    message(inform, ['}']).
 transform(Trans,_Info):-
-	message(error0, ['{Not a valid program transformation: ',~~(Trans),'}']),
-	fail.
+    message(error0, ['{Not a valid program transformation: ',~~(Trans),'}']),
+    fail.
 
 :- if(defined(with_fullpp)).
 transform_(spec,Cls,Ds,Info):- !,
-	simpspec(spec,Cls,Ds,Info).
+    simpspec(spec,Cls,Ds,Info).
 transform_(simp,Cls,Ds,Info):- !,
-	simpspec(simp,Cls,Ds,Info).
+    simpspec(simp,Cls,Ds,Info).
 transform_(vers,Cls,Ds,Info):- !,
-	simpspec(vers,Cls,Ds,Info).
+    simpspec(vers,Cls,Ds,Info).
 transform_(codegen,Cls,Ds,Info):- !,
-	simpspec(codegen,Cls,Ds,Info).
+    simpspec(codegen,Cls,Ds,Info).
 transform_(codegen_af,Cls,Ds,Info):- !,
-	simpspec(codegen_af,Cls,Ds,Info).
+    simpspec(codegen_af,Cls,Ds,Info).
 transform_(codegen_min,Cls,Ds,Info):- !,
-	simpspec(codegen_min,Cls,Ds,Info).
+    simpspec(codegen_min,Cls,Ds,Info).
 transform_(slicing,Cls,Ds,Info):- !,
-	simpspec(slicing,Cls,Ds,Info).
+    simpspec(slicing,Cls,Ds,Info).
 :- if(defined(has_ciaopp_extra)).
 transform_(codegen_poly,_Cls,_Ds,Info):- !,
-	( current_pp_flag(fixpoint,poly_spec) ->
- 	    % last_used_domain(AbsInt),
-	    get_all_solutions(Solutions),
-	    print_all_solutions(Solutions,Info)
-	; true
-        ).
+    ( current_pp_flag(fixpoint,poly_spec) ->
+        % last_used_domain(AbsInt),
+        get_all_solutions(Solutions),
+        print_all_solutions(Solutions,Info)
+    ; true
+    ).
 :- endif.
 transform_(arg_filtering,Cls,Ds,_Info):- !,
-	last_domain_used(AbsInt),
-	arg_filtering(Cls,Ds,AbsInt,NCls,NDs),
-	replace_program(NCls,NDs).
+    last_domain_used(AbsInt),
+    arg_filtering(Cls,Ds,AbsInt,NCls,NDs),
+    replace_program(NCls,NDs).
 transform_(unfold_entry,Cls,Ds,_Info) :- !,
-	unfold(Cls,Ds,yes,Cls1,Ds1),
-	replace_program(Cls1,Ds1).
+    unfold(Cls,Ds,yes,Cls1,Ds1),
+    replace_program(Cls1,Ds1).
 transform_(normalize, Cls, Ds, _Info ) :- !,
-	normalize_args(Cls,Ds,Cls1,Ds1), % TODO: what is this?
-	replace_program(Cls1,Ds1).
+    normalize_args(Cls,Ds,Cls1,Ds1), % TODO: what is this?
+    replace_program(Cls1,Ds1).
 :- endif. % with_fullpp
 transform_(Tr,Cls,Ds,Info):-
-	transformation(Tr,Cls,Ds,Info).
-%	last_domain_used(AbsInt),
-%	codegen_min(Cls,Ds,Info).
+    transformation(Tr,Cls,Ds,Info).
+%       last_domain_used(AbsInt),
+%       codegen_min(Cls,Ds,Info).
 
 :- if(defined(with_fullpp)).
 
 :- use_module(ciaopp(analyze_driver), [cleanup_for_codegen/0]).
 
 simpspec(Spec,Cls,Ds,Info):-
-	last_domain_used(AbsInt), !, 
-	simpspec_(Spec,AbsInt,Cls,Ds,TmpCls,TmpDs,Info),
- 	decide_update_ai_info_case(Spec,TmpCls,TmpDs,NewCls,NewDs),
- 	replace_program(NewCls,NewDs).
+    last_domain_used(AbsInt), !, 
+    simpspec_(Spec,AbsInt,Cls,Ds,TmpCls,TmpDs,Info),
+    decide_update_ai_info_case(Spec,TmpCls,TmpDs,NewCls,NewDs),
+    replace_program(NewCls,NewDs).
 simpspec(Spec,_Cls,_Ds,_Info):-
-	message(inform, ['{Required analysis info not available for ', ~~(Spec), '}']),
-	fail.
+    message(inform, ['{Required analysis info not available for ', ~~(Spec), '}']),
+    fail.
 
 simpspec_(vers,AbsInt,Cls,Ds,NewCls,NewDs,_Info):- !,
-	all_versions(Cls,Ds,AbsInt,NewCls,NewDs).
+    all_versions(Cls,Ds,AbsInt,NewCls,NewDs).
 simpspec_(codegen,AbsInt,Cls,Ds,NewCls,NewDs,Info):- !,
-	( current_pp_flag(local_control,off) -> 
+    ( current_pp_flag(local_control,off) -> 
       NewCls = Cls,
-	    NewDs = Ds 
-	;
-	    codegen(AbsInt,NewCls,NewDs,Info)
-	).
+        NewDs = Ds 
+    ;
+        codegen(AbsInt,NewCls,NewDs,Info)
+    ).
 simpspec_(codegen_af,AbsInt,Cls,Ds,NewCls,NewDs,Info):- !,
-	( current_pp_flag(local_control,off) -> 
+    ( current_pp_flag(local_control,off) -> 
       NewCls = Cls,
-	    NewDs = Ds 
-	;
-	    codegen_af(AbsInt,NewCls,NewDs,Info)
-	).
+        NewDs = Ds 
+    ;
+        codegen_af(AbsInt,NewCls,NewDs,Info)
+    ).
 simpspec_(codegen_min,AbsInt,Cls,Ds,NewCls,NewDs,Info):- !,
-	( current_pp_flag(local_control,off) -> 
+    ( current_pp_flag(local_control,off) -> 
       NewCls = Cls,
-	    NewDs = Ds 
-	;
-	    codegen_min(AbsInt,NewCls,NewDs,Info)
-	).
+        NewDs = Ds 
+    ;
+        codegen_min(AbsInt,NewCls,NewDs,Info)
+    ).
 simpspec_(slicing,AbsInt,Cls,Ds,NewCls,NewDs,_Info):- !,
-	( current_pp_flag(local_control,off) -> 
+    ( current_pp_flag(local_control,off) -> 
       NewCls = Cls,
-	    NewDs = Ds 
-	;
-	    slicing(AbsInt,NewCls,NewDs)
-	).
+        NewDs = Ds 
+    ;
+        slicing(AbsInt,NewCls,NewDs)
+    ).
 simpspec_(Spec,AbsInt,Cls,Ds,NewCls,NewDs,_Info):-
-	simplify_specialize(AbsInt,Spec,Cls,Ds,NewCls,NewDs).
+    simplify_specialize(AbsInt,Spec,Cls,Ds,NewCls,NewDs).
 
 decide_update_ai_info_case(codegen,Cls,Ds,Cls,Ds):- !.
 decide_update_ai_info_case(codegen_af,Cls,Ds,Cls,Ds):-!,
-        cleanup_for_codegen.
+    cleanup_for_codegen.
 decide_update_ai_info_case(codegen_min,Cls,Ds,Cls,Ds):-!,
-        cleanup_for_codegen.
+    cleanup_for_codegen.
 decide_update_ai_info_case(_Spec,TmpCls,TmpDs,NewCls,NewDs):-
-	update_ai_info_case(TmpCls,TmpDs,NewCls,NewDs).
+    update_ai_info_case(TmpCls,TmpDs,NewCls,NewDs).
 :- endif. % with_fullpp
 
 :- push_prolog_flag(multi_arity_warnings,off).
 
 :- pred transformation(Transformation,Clauses,Dictionaries,Info)
-	: transformation(Transformation)
-	# "Performs @var{Transformation} on program @var{Clauses}.".
+    : transformation(Transformation)
+    # "Performs @var{Transformation} on program @var{Clauses}.".
 :- multifile transformation/4.
 
 :- prop transformation(Transformation)
-	# "@var{Transformation} is a valid transformation identifier.".
+    # "@var{Transformation} is a valid transformation identifier.".
 :- multifile transformation/1.
 
 :- if(defined(with_fullpp)).

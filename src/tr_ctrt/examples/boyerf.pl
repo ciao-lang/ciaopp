@@ -31,17 +31,17 @@
 %benchmark_data(boyer, 10, 0).
 %benchmark(_Data, X) :-
 main :-
-	wff(X), tautology(X).
+    wff(X), tautology(X).
 
 :- entry wff(X) : term(X).
 %:- pred wff/1 => formula.
 :- pred wff/1 : term => formula.
 
 wff(implies(and(implies(X,Y),
-        and(implies(Y,Z),
-            and(implies(Z,U),
-            implies(U,W)))),
-        implies(X,W))) :-
+    and(implies(Y,Z),
+        and(implies(Z,U),
+        implies(U,W)))),
+    implies(X,W))) :-
     X = f(plus(plus(a,b),plus(c,zero))),
     Y = f(times(times(a,b),plus(c,d))),
     Z = f(reverse(append(append(a,b),[]))),
@@ -52,44 +52,44 @@ wff(implies(and(implies(X,Y),
 :- pred tautology/1: formula => formula.
 
 tautology(Wff) :-
-	% display('rewriting...'),nl,
-	rewrite(Wff,NewWff),
-	% display('proving...'),nl,
-	tautology_2(NewWff,[],[]).
+    % display('rewriting...'),nl,
+    rewrite(Wff,NewWff),
+    % display('proving...'),nl,
+    tautology_2(NewWff,[],[]).
 
 :- pred tautology_2/3 : formula * list * list
-                     => formula * list * list.
+                 => formula * list * list.
 
 % M.H. Implications changed to ! for right now: incorrect under Quintus!!!
 
 % TODO:{fix} CiaoPP reader problems
 %% tautology_2(Wff,Tlist,Flist) :-
-%% 	( truep(Wff,Tlist) -> true
-%% 	; falsep(Wff,Flist) -> fail
-%% 	; Wff = if(If,Then,Else) ->
-%% 	    ( truep(If,Tlist) -> tautology_2(Then,Tlist,Flist)
-%% 	    ; falsep(If,Flist) -> tautology_2(Else,Tlist,Flist)
-%% 	    ; tautology_2(Then,[If|Tlist],Flist), % both must hold
-%% 	      tautology_2(Else,Tlist,[If|Flist])
-%% 	    )
-%% 	),
-%% 	!.
+%%      ( truep(Wff,Tlist) -> true
+%%      ; falsep(Wff,Flist) -> fail
+%%      ; Wff = if(If,Then,Else) ->
+%%          ( truep(If,Tlist) -> tautology_2(Then,Tlist,Flist)
+%%          ; falsep(If,Flist) -> tautology_2(Else,Tlist,Flist)
+%%          ; tautology_2(Then,[If|Tlist],Flist), % both must hold
+%%            tautology_2(Else,Tlist,[If|Flist])
+%%          )
+%%      ),
+%%      !.
 
 tautology_2(Wff,Tlist,_Flist) :-
-	truep(Wff,Tlist), !, true.
+    truep(Wff,Tlist), !, true.
 tautology_2(Wff,_Tlist,Flist) :-
-	falsep(Wff,Flist), !, fail.
+    falsep(Wff,Flist), !, fail.
 tautology_2(Wff,Tlist,Flist) :-
-	Wff = if(If,Then,Else),
-	tautology_3(If,Then,Else,Tlist,Flist).
+    Wff = if(If,Then,Else),
+    tautology_3(If,Then,Else,Tlist,Flist).
 
 tautology_3(If,Then,_Else,Tlist,Flist) :-
-	truep(If,Tlist), !, tautology_2(Then,Tlist,Flist).
+    truep(If,Tlist), !, tautology_2(Then,Tlist,Flist).
 tautology_3(If,_Then,Else,Tlist,Flist) :-
-	falsep(If,Flist), !, tautology_2(Else,Tlist,Flist).
+    falsep(If,Flist), !, tautology_2(Else,Tlist,Flist).
 tautology_3(If,Then,Else,Tlist,Flist) :-
-	tautology_2(Then,[If|Tlist],Flist), % both must hold
-	tautology_2(Else,Tlist,[If|Flist]).
+    tautology_2(Then,[If|Tlist],Flist), % both must hold
+    tautology_2(Else,Tlist,[If|Flist]).
 
 % ---------------------------------------------------------------------------
 % Rewrite formula -- version 1
@@ -179,10 +179,10 @@ rewrite_args(N,Old,Mid) :-
 :- pred rewrite/2 : formula * var => formula * formula.
 
 rewrite(Atom,Atom) :-
-	formula(Atom).
+    formula(Atom).
 rewrite(_Old,New) :-
-	formula(Mid),
-	rewrite(Next,New).
+    formula(Mid),
+    rewrite(Next,New).
 
 %rewrite(Atom,Atom) :-
 %    atomic(Atom),!,formula(Atom).
@@ -361,27 +361,27 @@ rewrite(Old,New) :-
 :- pred rewrite_args/2 : formula * var => formula * formula.
 
 rewrite_args(Old, New) :-
-	getargs1(Old, X), !,
-	rewrite(X, X2),
-	setargs1(Old, X2, New).
+    getargs1(Old, X), !,
+    rewrite(X, X2),
+    setargs1(Old, X2, New).
 rewrite_args(Old, New) :-
-	getargs2(Old, X, Y), !,
-	rewrite(X, X2),
-	rewrite(Y, Y2),
-	setargs2(Old, X2, Y2, New).
+    getargs2(Old, X, Y), !,
+    rewrite(X, X2),
+    rewrite(Y, Y2),
+    setargs2(Old, X2, Y2, New).
 rewrite_args(Old, New) :-
-	getargs3(Old, X, Y, Z), !,
-	rewrite(X, X2),
-	rewrite(Y, Y2),
-	rewrite(Z, Z2),
-	setargs3(Old, X2, Y2, Z2, New).
+    getargs3(Old, X, Y, Z), !,
+    rewrite(X, X2),
+    rewrite(Y, Y2),
+    rewrite(Z, Z2),
+    setargs3(Old, X2, Y2, Z2, New).
 rewrite_args(Old, New) :-
-	getargs4(Old, W, X, Y, Z), !,
-	rewrite(W, W2),
-	rewrite(X, X2),
-	rewrite(Y, Y2),
-	rewrite(Z, Z2),
-	setargs4(Old, W2, X2, Y2, Z2, New).
+    getargs4(Old, W, X, Y, Z), !,
+    rewrite(W, W2),
+    rewrite(X, X2),
+    rewrite(Y, Y2),
+    rewrite(Z, Z2),
+    setargs4(Old, W2, X2, Y2, Z2, New).
 
 getargs1(not(X), X).
 getargs1(boolean(X), X).
@@ -624,10 +624,10 @@ equal( compile(Form), % ???
 %
 equal( count_list(Z,sort_lp(X,Y)),
     plus(count_list(Z,X),
-         count_list(Z,Y))
+     count_list(Z,Y))
     ).
 equal( countps_(L,Pred), % ???
-          countps_loop(L,Pred,zero)
+      countps_loop(L,Pred,zero)
     ).
 equal( difference(A,B),
     C
@@ -698,8 +698,8 @@ equal( last(append(A,B)),
        last(B),
        if(listp(A),
 %          cons(car(last(A))), % TODO: Wrong in original translation! (see fix below)
-          cons(car(last(A)), B), % TODO: Wrong in original translation! (I had to add ", B")
-          B))
+      cons(car(last(A)), B), % TODO: Wrong in original translation! (I had to add ", B")
+      B))
     ).
 equal( length(A),
     B
@@ -731,7 +731,7 @@ equal( nth(A,B),
     ) :- nth(A,B,C).
 equal( numberp(greatest_factor(X,Y)),
     not(and(or(zerop(Y),equal(Y,1)),
-        not(numberp(X))))
+    not(numberp(X))))
     ).
 equal( or(P,Q),
 %    if(P,t,if(Q,t,f),f) % TODO: Wrong in original translation! (see fix below)
@@ -746,8 +746,8 @@ equal( power_eval(A,B),
 %
 equal( prime(X),
     and(not(zerop(X)),
-        and(not(equal(X,add1(zero))),
-            prime1(X,decr(X))))
+    and(not(equal(X,add1(zero))),
+        prime1(X,decr(X))))
     ).
 equal( prime_list(append(X,Y)),
     and(prime_list(X),prime_list(Y))
@@ -812,34 +812,34 @@ eq(zero, difference(X,Y),not(lessp(Y,X)) ) :- !.
 %%                         and(or(equal(X,zero),
 %%                             zerop(Y)))) ) :- !.
 eq(X, difference(X,Y),and(numberp(X),
-                          or(equal(X,zero),
-                             zerop(Y))) ) :- !.
+                      or(equal(X,zero),
+                         zerop(Y))) ) :- !.
 eq(times(X,Y), zero, or(zerop(X),zerop(Y)) ) :- !.
 eq(append(A,B), append(A,C), equal(B,C) ) :- !.
 eq(flatten(X), cons(Y,[]), and(nlistp(X),equal(X,Y)) ) :- !.
 eq(greatest_factor(X,Y),zero, and(or(zerop(Y),equal(Y,1)),
-                        equal(X,zero)) ) :- !.
+                    equal(X,zero)) ) :- !.
 eq(greatest_factor(X,_),1, equal(X,1) ) :- !.
 eq(Z, times(W,Z), and(numberp(Z),
-                        or(equal(Z,zero),
-                           equal(W,1))) ) :- !.
+                    or(equal(Z,zero),
+                       equal(W,1))) ) :- !.
 eq(X, times(X,Y), or(equal(X,zero),
-                       and(numberp(X),equal(Y,1))) ) :- !.
+                   and(numberp(X),equal(Y,1))) ) :- !.
 eq(times(A,B), 1, and(not(equal(A,zero)),
-                      and(not(equal(B,zero)),
-                        and(numberp(A),
-                          and(numberp(B),
-                            and(equal(decr(A),zero),
-                          equal(decr(B),zero))))))
-                                    ) :- !.
+                  and(not(equal(B,zero)),
+                    and(numberp(A),
+                      and(numberp(B),
+                        and(equal(decr(A),zero),
+                      equal(decr(B),zero))))))
+                                ) :- !.
 eq(difference(X,Y), difference(Z,Y),if(lessp(X,Y),
-                        not(lessp(Y,Z)),
-                        if(lessp(Z,Y),
-                            not(lessp(Y,X)),
-                            equal(fix(X),fix(Z)))) ) :- !.
+                    not(lessp(Y,Z)),
+                    if(lessp(Z,Y),
+                        not(lessp(Y,X)),
+                        equal(fix(X),fix(Z)))) ) :- !.
 eq(lessp(X,Y), Z, if(lessp(X,Y),
-                       equal(t,Z),
-                       equal(f,Z)) ).
+                   equal(t,Z),
+                   equal(f,Z)) ).
 
 :- pred exp/3 : expr * expr * term => expr * expr * expr.
 
@@ -859,20 +859,20 @@ mylength(cons(_,cons(_,cons(_,cons(_,cons(_,cons(_,X7)))))),
 
 lessp(remainder(_,Y), Y, not(zerop(Y)) ) :- !.
 lessp(quotient(I,J), I, and(not(zerop(I)),
-                    or(zerop(J),
-                       not(equal(J,1)))) ) :- !.
+                or(zerop(J),
+                   not(equal(J,1)))) ) :- !.
 lessp(remainder(X,Y), X, and(not(zerop(Y)),
-                    and(not(zerop(X)),
-                          not(lessp(X,Y)))) ) :- !.
+                and(not(zerop(X)),
+                      not(lessp(X,Y)))) ) :- !.
 lessp(plus(X,Y), plus(X,Z), lessp(Y,Z) ) :- !.
 lessp(times(X,Z), times(Y,Z), and(not(zerop(Z)),
-                        lessp(X,Y)) ) :- !.
+                    lessp(X,Y)) ) :- !.
 lessp(Y, plus(X,Y), not(zerop(X)) ) :- !.
 lessp(length(delete(X,L)), length(L), member(X,L) ).
 
 meaning(plus_tree(append(X,Y)),A,
     plus(meaning(plus_tree(X),A),
-         meaning(plus_tree(Y),A))
+     meaning(plus_tree(Y),A))
     ) :- !.
 meaning(plus_tree(plus_fringe(X)),A,
     fix(meaning(X,A))
@@ -880,7 +880,7 @@ meaning(plus_tree(plus_fringe(X)),A,
 meaning(plus_tree(delete(X,Y)),A,
     if(member(X,Y),
        difference(meaning(plus_tree(Y),A),
-              meaning(X,A)),
+          meaning(X,A)),
        meaning(plus_tree(Y),A))).
 
 mymember(X,append(A,B),or(member(X,A),member(X,B))) :- !.
@@ -895,7 +895,7 @@ plus(plus(X,Y),Z,
     plus(X,plus(Y,Z))
     ) :- !.
 plus(remainder(X,Y),
-         times(Y,quotient(X,Y)),
+     times(Y,quotient(X,Y)),
     fix(X)
     ) :- !.
 plus(X,add1(Y),
@@ -912,13 +912,13 @@ power_eval(power_rep(I,Base),Base,
     ) :- !.
 power_eval(big_plus(X,Y,I,Base),Base,
     plus(I,plus(power_eval(X,Base),
-            power_eval(Y,Base)))
+        power_eval(Y,Base)))
     ) :- !.
 power_eval(big_plus(power_rep(I,Base),
-                power_rep(J,Base),
-                zero,
-                Base),
-           Base,
+            power_rep(J,Base),
+            zero,
+            Base),
+       Base,
     plus(I,J)
     ).
 
@@ -937,8 +937,8 @@ times(X, plus(Y,Z), plus(times(X,Y),times(X,Z)) ) :- !.
 times(times(X,Y),Z, times(X,times(Y,Z)) ) :- !.
 times(X, difference(C,W),difference(times(C,X),times(W,X))) :- !.
 times(X, add1(Y), if(numberp(Y),
-                    plus(X,times(X,Y)),
-                    fix(X)) ).
+                plus(X,times(X,Y)),
+                fix(X)) ).
 
 % -------------------------------------------------------------------
 % this is not what might serve for the shfr+eterms analysis

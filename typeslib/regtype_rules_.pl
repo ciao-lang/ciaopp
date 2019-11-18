@@ -3,8 +3,8 @@
 :- regtype type_symbol/1.
 
 type_symbol(Type) :-
-	atom(Type),
-	\+ Type = [].
+    atom(Type),
+    \+ Type = [].
 
 %% :- pred type_symbol(Type)
 %% 

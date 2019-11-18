@@ -1,18 +1,18 @@
-/*             Copyright (C)1990-94 UPM-CLIP				*/
+/*             Copyright (C)1990-94 UPM-CLIP                            */
 :- module(deftools,
-	[ def_abstract_equation/4,
-	  def_conjunct_constr/3,
-	  def_decide_arg/6,
-	  def_herbrand_equation/4,
-	  def_merge/3,
-	  def_minimize_each/3,
-	  def_numerical_equation0/4,
-	  def_project_each/3,
-	  def_remain_if_element/5,
-	  def_remain_if_element_all/3,
-	  find_type/2
-	],
-	[ ]).
+    [ def_abstract_equation/4,
+      def_conjunct_constr/3,
+      def_decide_arg/6,
+      def_herbrand_equation/4,
+      def_merge/3,
+      def_minimize_each/3,
+      def_numerical_equation0/4,
+      def_project_each/3,
+      def_remain_if_element/5,
+      def_remain_if_element_all/3,
+      find_type/2
+    ],
+    [ ]).
 
 %------------------------------------------------------------------------%
 % This portion contains the auxiliar functions for the definiteness      %
@@ -28,7 +28,7 @@
 :- use_module(library(lists), [append/3, length/2]).
 :- use_module(library(messages), [warning_message/2]).
 :- use_module(library(sets), 
-	[  merge/3, ord_member/2, ord_subset/2, ord_subtract/3, insert/3 ]).
+    [  merge/3, ord_member/2, ord_subset/2, ord_subtract/3, insert/3 ]).
 :- use_module(library(sort), [sort/2]).
 :- use_module(library(terms_vars), [varset/2]).
 
@@ -55,22 +55,22 @@
 %-------------------------------------------------------------------------
 
 def_herbrand_equation(Term1,Term2,Call,Succ):-
-	functor(Term1,F,A),
-	functor(Term2,F,A),!,
-	def_herbrand_equation(0,A,Term1,Term2,Call,Succ).
+    functor(Term1,F,A),
+    functor(Term2,F,A),!,
+    def_herbrand_equation(0,A,Term1,Term2,Call,Succ).
 def_herbrand_equation(_Term1,_Term2,_Call,'$bottom').
 
 def_herbrand_equation(N,N,_Term1,_Term2,Call,Call):- !.
 def_herbrand_equation(N1,N,Term1,Term2,Call,Succ):-
-	N2 is N1 + 1,
-	arg(N2,Term1,Arg1),
-	arg(N2,Term2,Arg2),
-	def_abstract_equation(Arg1,Arg2,Call,NewCall),
-	def_decide_herbrand(NewCall,N2,N,Term1,Term2,Succ).
+    N2 is N1 + 1,
+    arg(N2,Term1,Arg1),
+    arg(N2,Term2,Arg2),
+    def_abstract_equation(Arg1,Arg2,Call,NewCall),
+    def_decide_herbrand(NewCall,N2,N,Term1,Term2,Succ).
 
 def_decide_herbrand('$bottom',_N2,_N,_Term1,_Term2,'$bottom'):- !.
 def_decide_herbrand(NewCall,N2,N,Term1,Term2,Succ):-
-	def_herbrand_equation(N2,N,Term1,Term2,NewCall,Succ).
+    def_herbrand_equation(N2,N,Term1,Term2,NewCall,Succ).
 
 %-------------------------------------------------------------------------
 % def_abstract_equation(+,+,+,-),                                        %
@@ -86,16 +86,16 @@ def_decide_herbrand(NewCall,N2,N,Term1,Term2,Succ):-
 %-------------------------------------------------------------------------
 
 def_abstract_equation(Term1,Term2,Call,Succ):-
-	var(Term1),!,
-	def_abstract_equation0(Term1,Term2,Call,Succ).
+    var(Term1),!,
+    def_abstract_equation0(Term1,Term2,Call,Succ).
 def_abstract_equation(Term1,Term2,Call,Succ):-
-	var(Term2),!,
-	find_type(Term1,Type),
-	def_abstract_var(Type,Term2,Term1,Call,Succ).
+    var(Term2),!,
+    find_type(Term1,Type),
+    def_abstract_var(Type,Term2,Term1,Call,Succ).
 def_abstract_equation(Term1,Term2,Call,Succ):-
-	find_type(Term1,Type),
-	find_type(Term2,Type),!,
-	def_abstract_nonvar(Type,Term1,Term2,Call,Succ).
+    find_type(Term1,Type),
+    find_type(Term2,Type),!,
+    def_abstract_nonvar(Type,Term1,Term2,Call,Succ).
 def_abstract_equation(_Term1,_Term2,_Call,'$bottom').
 
 %-------------------------------------------------------------------------
@@ -109,12 +109,12 @@ def_abstract_equation(_Term1,_Term2,_Call,'$bottom').
 %-------------------------------------------------------------------------
 
 def_abstract_equation0(Var,Term,Call,Succ):-
-	var(Term),!,
-	sort([Var,Term],Lin),
-	def_numerical_equation0([],Lin,Call,Succ).
+    var(Term),!,
+    sort([Var,Term],Lin),
+    def_numerical_equation0([],Lin,Call,Succ).
 def_abstract_equation0(Var,Term,Call,Succ):-
-	find_type(Term,Type),
-	def_abstract_var(Type,Var,Term,Call,Succ).
+    find_type(Term,Type),
+    def_abstract_var(Type,Var,Term,Call,Succ).
 
 %-------------------------------------------------------------------------
 % find_type(+,-)                                                         %
@@ -127,11 +127,11 @@ def_abstract_equation0(Var,Term,Call,Succ):-
 %    piii or num must be herb                                            %
 %-------------------------------------------------------------------------
 find_type(X,Type):-
-	language(clp),!,
-	find_type0(X,Type).
+    language(clp),!,
+    find_type0(X,Type).
 find_type(_,Type):-
-	language(lp),!,
-	Type = herb.
+    language(lp),!,
+    Type = herb.
 
 find_type0(piii(_),piii):- !.
 find_type0(+(_,_),num):- !.
@@ -140,14 +140,14 @@ find_type0(/(_,_),num):- !.
 find_type0(+(_),num):- !.
 find_type0(-(_),num):- !.
 find_type0(#(X),Type):- 
-	atom(X),!,
-	Type = num.
+    atom(X),!,
+    Type = num.
 find_type0(X,Type):- 
-	lsign_non_linear(X),!,
-	Type = num.
+    lsign_non_linear(X),!,
+    Type = num.
 find_type0(X,Type):-
-	number(X),!,
-	Type = num.
+    number(X),!,
+    Type = num.
 find_type0(_,herb).
 
 %-------------------------------------------------------------------------
@@ -162,11 +162,11 @@ find_type0(_,herb).
 %-------------------------------------------------------------------------
 
 def_abstract_var(herb,Var,Term,Call,Succ):- 
-	def_primitive_herbrand(Var,Term,Call,Succ).
+    def_primitive_herbrand(Var,Term,Call,Succ).
 def_abstract_var(piii,Var,piii(Term),Call,Succ):-
-	def_primitive_piii(Term,Var,Call,Succ).
+    def_primitive_piii(Term,Var,Call,Succ).
 def_abstract_var(num,Var,Term,Call,Succ):-
-	def_numerical_equation(Var+Term,Call,Succ).
+    def_numerical_equation(Var+Term,Call,Succ).
 
 %-------------------------------------------------------------------------
 % def_abstract_nonvar(+,+,-)                                             %
@@ -182,11 +182,11 @@ def_abstract_var(num,Var,Term,Call,Succ):-
 %-------------------------------------------------------------------------
 
 def_abstract_nonvar(herb,Term1,Term2,Call,Succ):-
-	def_herbrand_equation(Term1,Term2,Call,Succ).
+    def_herbrand_equation(Term1,Term2,Call,Succ).
 def_abstract_nonvar(piii,piii(Term1),piii(Term2),Call,Succ):-
-	def_piii_equation(Term1,Term2,Call,Succ).
+    def_piii_equation(Term1,Term2,Call,Succ).
 def_abstract_nonvar(num,Term1,Term2,Call,Succ):-
-	def_numerical_equation(Term1+Term2,Call,Succ).
+    def_numerical_equation(Term1+Term2,Call,Succ).
 
 %-------------------------------------------------------------------------
 % def_primitive_herbrand(+,+,+,-)                                        %
@@ -201,27 +201,27 @@ def_abstract_nonvar(num,Term1,Term2,Call,Succ):-
 %-------------------------------------------------------------------------
 
 def_primitive_herbrand(Var,Term,Call,Succ):-
-	Call = a(G,_),
-	ord_member(Var,G),!,
-	functor(Term,_F,A),
-	def_primitive_herbrand(0,A,Term,[],Call,Succ).
+    Call = a(G,_),
+    ord_member(Var,G),!,
+    functor(Term,_F,A),
+    def_primitive_herbrand(0,A,Term,[],Call,Succ).
 def_primitive_herbrand(Var,Term,Call,Succ):- 
-	varset(Term,VarsTerm),
-	Call = a(G,_),
-	ord_subtract(VarsTerm,G,NonGroundVars),
-	def_decide_primitive_herbrand(NonGroundVars,Var,Term,Call,Succ).
+    varset(Term,VarsTerm),
+    Call = a(G,_),
+    ord_subtract(VarsTerm,G,NonGroundVars),
+    def_decide_primitive_herbrand(NonGroundVars,Var,Term,Call,Succ).
 
 def_decide_primitive_herbrand([],Var,_Term,Call,Succ):- !,
-	Constr1= a([Var],[]),
-	def_conjunct_constr(Constr1,Call,Succ).
+    Constr1= a([Var],[]),
+    def_conjunct_constr(Constr1,Call,Succ).
 def_decide_primitive_herbrand([X],Var,_Term,Call,Succ):- !,
-	sort([X,Var],Lin),
-	def_numerical_equation0([],Lin,Call,Succ).
+    sort([X,Var],Lin),
+    def_numerical_equation0([],Lin,Call,Succ).
 def_decide_primitive_herbrand(NonGroundVars,Var,Term,Call,Succ):- 
-	functor(Term,_F,A),
-	def_primitive_herbrand(0,A,Term,[Var],Call,Call1),
-	Constr1= a([],[(Var,[NonGroundVars])]),
-	def_conjunct_constr(Constr1,Call1,Succ).
+    functor(Term,_F,A),
+    def_primitive_herbrand(0,A,Term,[Var],Call,Call1),
+    Constr1= a([],[(Var,[NonGroundVars])]),
+    def_conjunct_constr(Constr1,Call1,Succ).
 
 %-------------------------------------------------------------------------
 % def_primitive_herbrand(+,+,+,+,+,-)                                    %
@@ -238,32 +238,32 @@ def_decide_primitive_herbrand(NonGroundVars,Var,Term,Call,Succ):-
 
 def_primitive_herbrand(A,A,_Term,_Vars,Call,Call):- !.
 def_primitive_herbrand(I,A,Term,Vars,Call,Succ):-
-	I1 is I +1,
-	arg(I1,Term,Arg),
-	def_primitive_one(Arg,Vars,Call,Call1),
-	def_primitive_herbrand(I1,A,Term,Vars,Call1,Succ).
+    I1 is I +1,
+    arg(I1,Term,Arg),
+    def_primitive_one(Arg,Vars,Call,Call1),
+    def_primitive_herbrand(I1,A,Term,Vars,Call1,Succ).
 
 def_primitive_one(Arg,Vars,Call,Succ):-
-	var(Arg),!,
-	Call =a(G,_),
-	( ord_member(Arg,G) ->
-	   Succ = Call
-	; def_build_non_linear([Arg],Vars,[],Ground,Set),
-	  def_conjunct_constr(a(Ground,Set),Call,Succ)
-	).
+    var(Arg),!,
+    Call =a(G,_),
+    ( ord_member(Arg,G) ->
+       Succ = Call
+    ; def_build_non_linear([Arg],Vars,[],Ground,Set),
+      def_conjunct_constr(a(Ground,Set),Call,Succ)
+    ).
 def_primitive_one(Arg,Vars,Call,Succ):-
-	find_type(Arg,Type),
-	def_primitive_type(Type,Arg,Vars,Call,Succ).
+    find_type(Arg,Type),
+    def_primitive_type(Type,Arg,Vars,Call,Succ).
 
 def_primitive_type(herb,Arg,Vars,Call,Succ):-
-	functor(Arg,_F,A),
-	def_primitive_herbrand(0,A,Arg,Vars,Call,Succ).
+    functor(Arg,_F,A),
+    def_primitive_herbrand(0,A,Arg,Vars,Call,Succ).
 def_primitive_type(num,Arg,Vars,Call,Succ):-
-	def_find_linearity_num(Arg,Lin,NonLin),
-	merge(NonLin,Vars,NewNonLin),
-	def_numerical_equation0(NewNonLin,Lin,Call,Succ).
+    def_find_linearity_num(Arg,Lin,NonLin),
+    merge(NonLin,Vars,NewNonLin),
+    def_numerical_equation0(NewNonLin,Lin,Call,Succ).
 def_primitive_type(piii,Arg,Vars,Call,Succ):-
-	def_primitive_piii0(Arg,Vars,Call,Succ).
+    def_primitive_piii0(Arg,Vars,Call,Succ).
 
 %-------------------------------------------------------------------------
 %                 CONJUNCTING A NUMERICAL CONSTRAINT                     %
@@ -285,13 +285,13 @@ def_primitive_type(piii,Arg,Vars,Call,Succ):-
 %-------------------------------------------------------------------------
 
 def_numerical_equation(Term,Call,Succ):-
-	def_find_linearity_num(Term,TempLin,NonLin),
-	ord_subtract(TempLin,NonLin,Lin),
-	def_numerical_equation0(NonLin,Lin,Call,Succ).
+    def_find_linearity_num(Term,TempLin,NonLin),
+    ord_subtract(TempLin,NonLin,Lin),
+    def_numerical_equation0(NonLin,Lin,Call,Succ).
 
 def_numerical_equation0(NonLin,Lin,Call,Succ):-
-	def_build_numerical_constraint(NonLin,Lin,Call,Constr),
-	def_conjunct_constr(Constr,Call,Succ).
+    def_build_numerical_constraint(NonLin,Lin,Call,Constr),
+    def_conjunct_constr(Constr,Call,Succ).
 
 %-------------------------------------------------------------------------
 % def_build_numerical_constraint(+,+,+,-)                                %
@@ -308,12 +308,12 @@ def_numerical_equation0(NonLin,Lin,Call,Succ):-
 %-------------------------------------------------------------------------
 
 def_build_numerical_constraint(NonLin,Lin,Call,Constr):- 
-	Call = a(G,_S),
-	ord_subtract(Lin,G,NonGroundLin),
-	ord_subtract(NonLin,G,NonGroundNonLin),
-	merge(NonGroundLin,NonGroundNonLin,Vars),
-	def_build_non_linear(NonGroundLin,Vars,[],Ground,Set),	
-	Constr = a(Ground,Set).
+    Call = a(G,_S),
+    ord_subtract(Lin,G,NonGroundLin),
+    ord_subtract(NonLin,G,NonGroundNonLin),
+    merge(NonGroundLin,NonGroundNonLin,Vars),
+    def_build_non_linear(NonGroundLin,Vars,[],Ground,Set),  
+    Constr = a(Ground,Set).
 
 %-------------------------------------------------------------------------
 % def_build_non_linear(+,+,+,-,-)                                        %
@@ -328,13 +328,13 @@ def_build_numerical_constraint(NonLin,Lin,Call,Constr):-
 
 def_build_non_linear([],_Vars,Temp,Temp,[]).
 def_build_non_linear([X|Lin],Vars,Temp,Ground,Constr):-
-	ord_subtract(Vars,[X],NewTerm),
-	def_decide_ground(NewTerm,X,Temp,NewTemp,Constr,NewConstr),
-	def_build_non_linear(Lin,Vars,NewTemp,Ground,NewConstr).
+    ord_subtract(Vars,[X],NewTerm),
+    def_decide_ground(NewTerm,X,Temp,NewTemp,Constr,NewConstr),
+    def_build_non_linear(Lin,Vars,NewTemp,Ground,NewConstr).
 
 def_decide_ground([],X,Temp,NewTemp,Constr,NewConstr):- !,
-	insert(Temp,X,NewTemp),
-	NewConstr = Constr.
+    insert(Temp,X,NewTemp),
+    NewConstr = Constr.
 def_decide_ground(NewTerm,X,Temp,Temp,[(X,[NewTerm])|NewConstr],NewConstr).
 
 %-------------------------------------------------------------------------
@@ -346,61 +346,61 @@ def_decide_ground(NewTerm,X,Temp,Temp,[(X,[NewTerm])|NewConstr],NewConstr).
 %-------------------------------------------------------------------------
 
 def_find_linearity_num(X,Lin,NonLin):- 
-	var(X),!,
-	Lin = [X],NonLin = [].
+    var(X),!,
+    Lin = [X],NonLin = [].
 def_find_linearity_num(X,Lin,NonLin):- 
-	ground(X),!,
-	Lin = [], NonLin = [].
+    ground(X),!,
+    Lin = [], NonLin = [].
 def_find_linearity_num(sin(X),[],NonLin):-
-	varset(X,NonLin).
+    varset(X,NonLin).
 def_find_linearity_num(arcsin(X),Lin,[]):-
-	varset(X,Lin).
+    varset(X,Lin).
 def_find_linearity_num(cos(X),[],NonLin):-
-	varset(X,NonLin).
+    varset(X,NonLin).
 def_find_linearity_num(arccos(X),Lin,[]):-
-	varset(X,Lin).
+    varset(X,Lin).
 def_find_linearity_num(pow(X,Y),[],NonLin):-
-	varset(p(X,Y),NonLin).
+    varset(p(X,Y),NonLin).
 def_find_linearity_num(min(X,Y),[],NonLin):-
-	varset(p(X,Y),NonLin).
+    varset(p(X,Y),NonLin).
 def_find_linearity_num(max(X,Y),[],NonLin):-
-	varset(p(X,Y),NonLin).
+    varset(p(X,Y),NonLin).
 def_find_linearity_num(abs(X),[],NonLin):-
-	varset(X,NonLin).
+    varset(X,NonLin).
 def_find_linearity_num(eval(X),[],NonLin):-
-	varset(X,NonLin).
+    varset(X,NonLin).
 def_find_linearity_num(+(X,Y),Lin,NonLin):- 
-	def_find_linearity_num(X,Lin1,NonLin1),
-	def_find_linearity_num(Y,Lin2,NonLin2),
-	merge(Lin1,Lin2,Lin3),
-	merge(NonLin1,NonLin2,NonLin),
-	ord_subtract(Lin3,NonLin,Lin).
+    def_find_linearity_num(X,Lin1,NonLin1),
+    def_find_linearity_num(Y,Lin2,NonLin2),
+    merge(Lin1,Lin2,Lin3),
+    merge(NonLin1,NonLin2,NonLin),
+    ord_subtract(Lin3,NonLin,Lin).
 def_find_linearity_num(-(X,Y),Lin,NonLin):- 
-	def_find_linearity_num(X,Lin1,NonLin1),
-	def_find_linearity_num(Y,Lin2,NonLin2),
-	merge(Lin1,Lin2,Lin3),
-	merge(NonLin1,NonLin2,NonLin),
-	ord_subtract(Lin3,NonLin,Lin).
+    def_find_linearity_num(X,Lin1,NonLin1),
+    def_find_linearity_num(Y,Lin2,NonLin2),
+    merge(Lin1,Lin2,Lin3),
+    merge(NonLin1,NonLin2,NonLin),
+    ord_subtract(Lin3,NonLin,Lin).
 def_find_linearity_num(*(X,Y),Lin,NonLin):- 
-	varset(X,VarsX),
-	( VarsX = [] ->
-	    def_find_linearity_num(Y,Lin,NonLin)
-	; varset(Y,VarsY),
-	  ( VarsY = [] ->
-	      def_find_linearity_num(X,Lin,NonLin)
-	  ; Lin = [],
-	    merge(VarsX,VarsY,NonLin)
-	  )
-        ).
+    varset(X,VarsX),
+    ( VarsX = [] ->
+        def_find_linearity_num(Y,Lin,NonLin)
+    ; varset(Y,VarsY),
+      ( VarsY = [] ->
+          def_find_linearity_num(X,Lin,NonLin)
+      ; Lin = [],
+        merge(VarsX,VarsY,NonLin)
+      )
+    ).
 def_find_linearity_num(/(X,Y),Lin,NonLin):-  !,
-	( ground(Y) ->
-	    def_find_linearity_num(X,Lin,NonLin)
-	;  warning_message("Non-normalized division ~w",[X/Y])
-        ).
+    ( ground(Y) ->
+        def_find_linearity_num(X,Lin,NonLin)
+    ;  warning_message("Non-normalized division ~w",[X/Y])
+    ).
 def_find_linearity_num(+(X),Lin,NonLin):- 
-	def_find_linearity_num(X,Lin,NonLin).
+    def_find_linearity_num(X,Lin,NonLin).
 def_find_linearity_num(-(X),Lin,NonLin):- 
-	def_find_linearity_num(X,Lin,NonLin).
+    def_find_linearity_num(X,Lin,NonLin).
 
 %-------------------------------------------------------------------------
 %            CONJUNCTING A PrologIII LIST CONSTRAINT                     %
@@ -411,14 +411,14 @@ def_find_linearity_num(-(X),Lin,NonLin):-
 % It will obtain the abstract constraint resulting form the equation
 % Term1 = Term2 where both Terms are prologiii lists. The prologiii      %
 % lists are translated into something readable by Prolog. For example:   %
-%           <>	        -> piii([])                                      %
-%           <>.X	-> piii([[],X])                                  %
-%           X.Y 	-> piii([X,Y])                                   %
-%           <X>.Y	-> piii([[X],Y])                                 %
-%           <X>.<Y>.Z	-> piii([[X],[Y],Z)                              %
-%           <X,Y>.Z	-> piii([[X,Y],Z])                               %
-%           <X.Y>.Z	-> piii([ [piii([X,Y])] , Z ])                   %
-%           <<X>.Y>.Z	-> piii([ [piii([[X],Y]], Z ]).                  %
+%           <>          -> piii([])                                      %
+%           <>.X        -> piii([[],X])                                  %
+%           X.Y         -> piii([X,Y])                                   %
+%           <X>.Y       -> piii([[X],Y])                                 %
+%           <X>.<Y>.Z   -> piii([[X],[Y],Z)                              %
+%           <X,Y>.Z     -> piii([[X,Y],Z])                               %
+%           <X.Y>.Z     -> piii([ [piii([X,Y])] , Z ])                   %
+%           <<X>.Y>.Z   -> piii([ [piii([[X],Y]], Z ]).                  %
 % Then:                                                                  %
 %  * If both = [] the Call = Succ                                        %
 %  * If one (say Term1) is [] and the other (say Term2) is not, then:    %
@@ -437,24 +437,24 @@ def_find_linearity_num(-(X),Lin,NonLin):-
 
 def_piii_equation([],[],Call,Call):- !.
 def_piii_equation([],Y,Call,Succ):- !,
-	def_take_nonvars(Y,NonVars),
-	def_decide_ground_piii(NonVars,Y,Call,Succ).
+    def_take_nonvars(Y,NonVars),
+    def_decide_ground_piii(NonVars,Y,Call,Succ).
 def_piii_equation(X,[],Call,Succ):- !,
-	def_take_nonvars(X,NonVars),
-	def_decide_ground_piii(NonVars,X,Call,Succ).
+    def_take_nonvars(X,NonVars),
+    def_decide_ground_piii(NonVars,X,Call,Succ).
 def_piii_equation([X],Y,Call,Succ):-
-	var(X),!,
-	def_primitive_piii(Y,X,Call,Succ).
+    var(X),!,
+    def_primitive_piii(Y,X,Call,Succ).
 def_piii_equation(X,[Y],Call,Succ):-
-	var(Y),!,
-	def_primitive_piii(X,Y,Call,Succ).
+    var(Y),!,
+    def_primitive_piii(X,Y,Call,Succ).
 def_piii_equation([X|RestX],[Y|RestY],Call,Succ):-
-	nonvar(X),nonvar(Y),!,
-	def_decide_piii(X,Y,RestX,RestY,NX,NY,Call,Call1),
-	def_piii_equation(NX,NY,Call1,Succ).
+    nonvar(X),nonvar(Y),!,
+    def_decide_piii(X,Y,RestX,RestY,NX,NY,Call,Call1),
+    def_piii_equation(NX,NY,Call1,Succ).
 def_piii_equation(X,Y,Call,Succ):-
-	def_piii_equation_each(X,X,[],Y,Call,Call1),
-	def_piii_equation_each(Y,Y,[],X,Call1,Succ).
+    def_piii_equation_each(X,X,[],Y,Call,Call1),
+    def_piii_equation_each(Y,Y,[],X,Call1,Succ).
 
 %-------------------------------------------------------------------------
 % def_decide_ground_piii(+,+,+,-,-)                                      %
@@ -465,9 +465,9 @@ def_piii_equation(X,Y,Call,Succ):-
 %-------------------------------------------------------------------------
 
 def_decide_ground_piii([],Y,a(G,S),Succ):- !,
-	varset(Y,Ground),
-	ord_subtract(Ground,G,NewGround),
-	def_conjunct_constr(a(NewGround,[]),a(G,S),Succ).
+    varset(Y,Ground),
+    ord_subtract(Ground,G,NewGround),
+    def_conjunct_constr(a(NewGround,[]),a(G,S),Succ).
 def_decide_ground_piii(_,_,_,'$bottom').
 
 %-------------------------------------------------------------------------
@@ -498,31 +498,31 @@ def_decide_ground_piii(_,_,_,'$bottom').
 %-------------------------------------------------------------------------
 
 def_primitive_piii(Term,Var,Call,Succ):- 
-	Call = a(G,_),
-	ord_member(Var,G),!,
-	def_primitive_piii0(Term,[],Call,Succ).
+    Call = a(G,_),
+    ord_member(Var,G),!,
+    def_primitive_piii0(Term,[],Call,Succ).
 def_primitive_piii(Term,Var,Call,Succ):- 
-	varset(Term,VarsTerm),
-	Call = a(G,_),
-	ord_subtract(VarsTerm,G,NonGroundVars),
-	def_decide_primitive_piii(NonGroundVars,Var,Term,Call,Succ).
+    varset(Term,VarsTerm),
+    Call = a(G,_),
+    ord_subtract(VarsTerm,G,NonGroundVars),
+    def_decide_primitive_piii(NonGroundVars,Var,Term,Call,Succ).
 
 def_decide_primitive_piii([],Var,_Term,Call,Succ):- !,
-	Constr1= a([Var],[]),
-	def_conjunct_constr(Constr1,Call,Succ).
+    Constr1= a([Var],[]),
+    def_conjunct_constr(Constr1,Call,Succ).
 %% def_decide_primitive_piii(Vars,Var,Term,_Call,Succ):- 
-%% 	ord_member(Var,Vars),
-%% 	def_take_nonvars(Term,Non),
-%% 	Non \== [],!,
-%% 	Succ = '$bottom'.
+%%      ord_member(Var,Vars),
+%%      def_take_nonvars(Term,Non),
+%%      Non \== [],!,
+%%      Succ = '$bottom'.
 def_decide_primitive_piii([X],Var,_Term,Call,Succ):-  !,
-	sort([X,Var],Lin),
-	def_numerical_equation0([],Lin,Call,Succ).
+    sort([X,Var],Lin),
+    def_numerical_equation0([],Lin,Call,Succ).
 def_decide_primitive_piii(NGVars,Var,Term,Call,Succ):- 
-	ord_subtract(NGVars,[Var],NGVars1),
-	Constr1= a([],[(Var,[NGVars1])]),
-	def_conjunct_constr(Constr1,Call,Call1),
-	def_primitive_piii0(Term,[Var],Call1,Succ).
+    ord_subtract(NGVars,[Var],NGVars1),
+    Constr1= a([],[(Var,[NGVars1])]),
+    def_conjunct_constr(Constr1,Call,Call1),
+    def_primitive_piii0(Term,[Var],Call1,Succ).
 
 %-------------------------------------------------------------------------
 % def_primitive_piii0(+,+,+,-)                                           %
@@ -531,153 +531,153 @@ def_decide_primitive_piii(NGVars,Var,Term,Call,Succ):-
 %-------------------------------------------------------------------------
 
 def_primitive_piii0(Term,Vars,Call,Succ):-
-	def_primitive_piii1(Term,Vars,Call,[],Succ).
+    def_primitive_piii1(Term,Vars,Call,[],Succ).
 
 def_primitive_piii1([],Vars,Call,Lin,Succ):-
-	merge(Vars,Lin,Vars1),
-	def_build_non_linear(Lin,Vars1,[],Ground,Set),
-	def_conjunct_constr(a(Ground,Set),Call,Succ).
+    merge(Vars,Lin,Vars1),
+    def_build_non_linear(Lin,Vars1,[],Ground,Set),
+    def_conjunct_constr(a(Ground,Set),Call,Succ).
 def_primitive_piii1([X|Rest],Vars,Call,Lin,Succ):-
-	var(X),!,
-	Call = a(G,_),
-	( ord_member(X,G) ->
-	  NewLin = Lin
-	; insert(Lin,X,NewLin)
-	),
-	def_primitive_piii1(Rest,Vars,Call,NewLin,Succ).
+    var(X),!,
+    Call = a(G,_),
+    ( ord_member(X,G) ->
+      NewLin = Lin
+    ; insert(Lin,X,NewLin)
+    ),
+    def_primitive_piii1(Rest,Vars,Call,NewLin,Succ).
 def_primitive_piii1([TermSeq|Rest],Vars,Call,Lin,Succ):-
-	def_primitive_piii_ground(TermSeq,Vars,Call,Lin,Call1),
-	def_collect_main_vars(Rest,RestLin),
-	sort(RestLin,RestLin_s),
-	def_primitive_piii_ground(TermSeq,Vars,Call1,RestLin_s,Call2),
-	def_primitive_piii1(Rest,Vars,Call2,Lin,Succ).
+    def_primitive_piii_ground(TermSeq,Vars,Call,Lin,Call1),
+    def_collect_main_vars(Rest,RestLin),
+    sort(RestLin,RestLin_s),
+    def_primitive_piii_ground(TermSeq,Vars,Call1,RestLin_s,Call2),
+    def_primitive_piii1(Rest,Vars,Call2,Lin,Succ).
 
 def_primitive_piii_ground([],_Vars,Call,_,Call).
 def_primitive_piii_ground([X|TermSeq],Vars,Call,Lin,Succ):-
-	nonvar(X), X = piii(Y),!,
-	merge(Vars,Lin,Vars1),
-	def_primitive_one(Y,Vars1,Call,Call1),
-	def_primitive_piii_ground(TermSeq,Vars,Call1,Lin,Succ).	
+    nonvar(X), X = piii(Y),!,
+    merge(Vars,Lin,Vars1),
+    def_primitive_one(Y,Vars1,Call,Call1),
+    def_primitive_piii_ground(TermSeq,Vars,Call1,Lin,Succ). 
 def_primitive_piii_ground([X|TermSeq],Vars,Call,Lin,Succ):-
-	merge(Vars,Lin,Vars1),
-	def_primitive_one(X,Vars1,Call,Call1),
-	def_primitive_piii_ground(TermSeq,Vars,Call1,Lin,Succ).
-	
+    merge(Vars,Lin,Vars1),
+    def_primitive_one(X,Vars1,Call,Call1),
+    def_primitive_piii_ground(TermSeq,Vars,Call1,Lin,Succ).
+    
 def_collect_main_vars([],[]).
 def_collect_main_vars([X|Xs],Vars):-
-	var(X),!,
-	Vars = [X|NewVars],
-	def_collect_main_vars(Xs,NewVars).
+    var(X),!,
+    Vars = [X|NewVars],
+    def_collect_main_vars(Xs,NewVars).
 def_collect_main_vars([_X|Xs],Vars):-
-	def_collect_main_vars(Xs,Vars).
+    def_collect_main_vars(Xs,Vars).
 
 %-------------------------------------------------------------------------
 %-------------------------------------------------------------------------
 
 def_piii_equation_each([],_TempX,_Y,_TempY,Call,Call).
 def_piii_equation_each([X|RestX],TermX,TempX,TermY,Call,Succ):-
-	var(X),!,
-	Call = a(G,_),
-	( ord_member(X,G) ->
-	  Call1 = Call,
-	  NewTempX = TempX
-	; def_collect_main_vars(TermX,Vars1),
-	  sort(Vars1,Vars1_s),
-	  def_collect_main_vars_but_last(TermY,[],[],NonVar,TempVars),
-	  def_decide_nonvars(NonVar,RestX,TempVars,Vars2),
-	  merge(Vars1_s,Vars2,Vars),
-	  ord_subtract(Vars,G,NGVars),
-	  def_build_non_linear([X],NGVars,[],Ground,Set),	  
-	  def_conjunct_constr(a(Ground,Set),Call,Call1),
-	  NewTempX = [X|TempX]
-	),
-	def_piii_equation_each(RestX,TermX,NewTempX,TermY,Call1,Succ).
+    var(X),!,
+    Call = a(G,_),
+    ( ord_member(X,G) ->
+      Call1 = Call,
+      NewTempX = TempX
+    ; def_collect_main_vars(TermX,Vars1),
+      sort(Vars1,Vars1_s),
+      def_collect_main_vars_but_last(TermY,[],[],NonVar,TempVars),
+      def_decide_nonvars(NonVar,RestX,TempVars,Vars2),
+      merge(Vars1_s,Vars2,Vars),
+      ord_subtract(Vars,G,NGVars),
+      def_build_non_linear([X],NGVars,[],Ground,Set),         
+      def_conjunct_constr(a(Ground,Set),Call,Call1),
+      NewTempX = [X|TempX]
+    ),
+    def_piii_equation_each(RestX,TermX,NewTempX,TermY,Call1,Succ).
 def_piii_equation_each([X|RestX],TermX,TempX,TermY,Call,Succ):-
-	varset(TempX,Vars1),
-	varset(TermY,Vars2),
-	merge(Vars1,Vars2,Vars3),
-	Call = a(G,_),
-	ord_subtract(Vars3,G,NGVars1),
-	find_type(X,Type),
-	def_primitive_type(Type,X,NGVars1,Call,Call1),
-	def_collect_main_vars(RestX,Vars4),
-	sort(Vars4,Vars4_s),
-	merge(Vars4_s,Vars2,Vars5),
-	ord_subtract(Vars5,G,NGVars2),
-	def_primitive_type(Type,X,NGVars2,Call1,Call2),
-	def_piii_equation_each(RestX,TermX,TempX,TermY,Call2,Succ).
+    varset(TempX,Vars1),
+    varset(TermY,Vars2),
+    merge(Vars1,Vars2,Vars3),
+    Call = a(G,_),
+    ord_subtract(Vars3,G,NGVars1),
+    find_type(X,Type),
+    def_primitive_type(Type,X,NGVars1,Call,Call1),
+    def_collect_main_vars(RestX,Vars4),
+    sort(Vars4,Vars4_s),
+    merge(Vars4_s,Vars2,Vars5),
+    ord_subtract(Vars5,G,NGVars2),
+    def_primitive_type(Type,X,NGVars2,Call1,Call2),
+    def_piii_equation_each(RestX,TermX,TempX,TermY,Call2,Succ).
 
 
 def_decide_nonvars([],_RestX,Vars,Vars):- !.
 def_decide_nonvars(NonVar,RestX,TempVars,Vars):-
-	length_each(NonVar,0,N,[],Args),
-	def_take_nonvars(RestX,NonVars),
-	length_each(NonVars,0,N1,[],_),
-	N2 is N - N1,
-	def_take_last(N2,Args,[],Vars1),
-	merge(TempVars,Vars1,Vars).
+    length_each(NonVar,0,N,[],Args),
+    def_take_nonvars(RestX,NonVars),
+    length_each(NonVars,0,N1,[],_),
+    N2 is N - N1,
+    def_take_last(N2,Args,[],Vars1),
+    merge(TempVars,Vars1,Vars).
 
 def_take_last(0,_Args,Temp,Temp):- !.
 def_take_last(N,[Arg|Args],Temp,Vars):-
-	N > 0,!,
-	varset(Arg,Vars1),
-	merge(Temp,Vars1,NewTemp),
-	N1 is N -1,
-	def_take_last(N1,Args,NewTemp,Vars).
+    N > 0,!,
+    varset(Arg,Vars1),
+    merge(Temp,Vars1,NewTemp),
+    N1 is N -1,
+    def_take_last(N1,Args,NewTemp,Vars).
 def_take_last(_N,_,_,[]).
 
 
 def_take_nonvars([],[]).
 def_take_nonvars([X|RestX],NonVars):-
-	var(X),!,
-	def_take_nonvars(RestX,NonVars).
+    var(X),!,
+    def_take_nonvars(RestX,NonVars).
 def_take_nonvars([[]|RestX],NonVars):- !,
-	def_take_nonvars(RestX,NonVars).
+    def_take_nonvars(RestX,NonVars).
 def_take_nonvars([X|RestX],[X|NonVars]):-
-	def_take_nonvars(RestX,NonVars).
+    def_take_nonvars(RestX,NonVars).
 
 length_each([],N,N,Temp,Temp).
 length_each([X|NonVar],N1,N,Temp,Args):-
-	length(X,N2),
-	N3 is N1 + N2,
-	append(X,Temp,NewTemp),
-	length_each(NonVar,N3,N,NewTemp,Args).
+    length(X,N2),
+    N3 is N1 + N2,
+    append(X,Temp,NewTemp),
+    length_each(NonVar,N3,N,NewTemp,Args).
 
 
 
 def_collect_main_vars_but_last([],Temp,NonVar,NonVar,Temp).
 def_collect_main_vars_but_last([X|Xs],Temp1,Temp2,NonVar,Vars):-
-	var(X),!,
-	varset(Temp2,VarsTemp2),
-	merge(Temp1,VarsTemp2,Temp),
-	insert(Temp,X,NewTemp),
-	def_collect_main_vars_but_last(Xs,NewTemp,[],NonVar,Vars).
+    var(X),!,
+    varset(Temp2,VarsTemp2),
+    merge(Temp1,VarsTemp2,Temp),
+    insert(Temp,X,NewTemp),
+    def_collect_main_vars_but_last(Xs,NewTemp,[],NonVar,Vars).
 def_collect_main_vars_but_last([X|Xs],Temp1,Temp2,NonVar,Vars):-
-	def_collect_main_vars_but_last(Xs,Temp1,[X|Temp2],NonVar,Vars).
+    def_collect_main_vars_but_last(Xs,Temp1,[X|Temp2],NonVar,Vars).
 
 %% def_piii_equation([X|Rest],[],Call,Succ):-
-%% 	X = [],!,
-%% 	def_piii_equation(Rest,[],Call,Succ).
+%%      X = [],!,
+%%      def_piii_equation(Rest,[],Call,Succ).
 %% def_piii_equation([],[Y|Rest],Call,Succ):-
-%% 	Y = [],!,
-%% 	def_piii_equation(Rest,[],Call,Succ).
+%%      Y = [],!,
+%%      def_piii_equation(Rest,[],Call,Succ).
 %% def_piii_equation(_X,_Y,_Call,'$bottom').
 
-	
+    
 %% def_piii_bottom_equation('$bottom',_NX,_NY,'$bottom'):- !.
 %% def_piii_bottom_equation(NewCall,NX,NY,Succ):- 
-%% 	def_piii_equation(NX,NY,NewCall,Succ).
+%%      def_piii_equation(NX,NY,NewCall,Succ).
 
 def_decide_piii([],[],RX,RY,RX,RY,Call,Call):- !.
 def_decide_piii(Term,[],RX,RY,[Term|RX],RY,Call,Call):- !.
 def_decide_piii([],Term,RX,RY,RX,[Term|RY],Call,Call).
 def_decide_piii([X|RestX],[Y|RestY],RX,RY,NX,NY,Call,Succ):- 
-	def_abstract_equation(X,Y,Call,NewCall), 
-	def_decide_bottom_piii(NewCall,RestX,RestY,RX,RY,NX,NY,Succ).
+    def_abstract_equation(X,Y,Call,NewCall), 
+    def_decide_bottom_piii(NewCall,RestX,RestY,RX,RY,NX,NY,Succ).
 
 def_decide_bottom_piii('$bottom',_RestX,_RestY,_RX,_RY,_NX,_NY,'$bottom'):- !.
 def_decide_bottom_piii(NewCall,RestX,RestY,RX,RY,NX,NY,Succ):-
-	def_decide_piii(RestX,RestY,RX,RY,NX,NY,NewCall,Succ).
+    def_decide_piii(RestX,RestY,RX,RY,NX,NY,NewCall,Succ).
 
 %-------------------------------------------------------------------------
 % def_conjunct_constr(+,+,-)
@@ -713,47 +713,47 @@ def_decide_bottom_piii(NewCall,RestX,RestY,RX,RY,NX,NY,Succ):-
 %-------------------------------------------------------------------------
 
 def_conjunct_constr(a(G1,S1),a(G2,[]),Lambda):- !,
-	merge(G1,G2,G),
-	Lambda = a(G,S1).
+    merge(G1,G2,G),
+    Lambda = a(G,S1).
 def_conjunct_constr(a(G1,[]),a(G2,S2),Lambda):- !,
-	ord_subtract(G1,G2,NewG1),
-	def_eliminate_if_element_all(NewG1,S2,TempS),
-	propagate(NewG1,TempS,NewG1,NewS,NewG2),
-	merge(NewG2,G2,NewG),
-	Lambda = a(NewG,NewS).
+    ord_subtract(G1,G2,NewG1),
+    def_eliminate_if_element_all(NewG1,S2,TempS),
+    propagate(NewG1,TempS,NewG1,NewS,NewG2),
+    merge(NewG2,G2,NewG),
+    Lambda = a(NewG,NewS).
 def_conjunct_constr(a(G1,S1),a(G2,S2),a(TG,TSet)):- 
-%%	myspy,
-	ord_disjunction_merge(G1,G2,CG,TmpG),
-	propagate(CG,S2,TmpG,TmpS2,TG),
-	propagate_inform(S1,TmpS2,TSet_u),
- 	sort(TSet_u,TSet).
-%%   	( \+ \+ (numbervars(p(G1,S1,G2,S2),0,_),
-%%   	         write(user,a(G1,S1)),nl(user),
-%%   	         write(user,a(G2,S2)),nl(user),
-%%   		 write(user,a(TG,TSet)),nl(user)
-%%  		 )).
+%%      myspy,
+    ord_disjunction_merge(G1,G2,CG,TmpG),
+    propagate(CG,S2,TmpG,TmpS2,TG),
+    propagate_inform(S1,TmpS2,TSet_u),
+    sort(TSet_u,TSet).
+%%      ( \+ \+ (numbervars(p(G1,S1,G2,S2),0,_),
+%%               write(user,a(G1,S1)),nl(user),
+%%               write(user,a(G2,S2)),nl(user),
+%%               write(user,a(TG,TSet)),nl(user)
+%%               )).
 
 propagate_inform([],S2,S2).
 propagate_inform([(Y,Ty)|Xs],S2,[(Y,NewTy)|UpdatedS2]):-
-	propagate_s2_to_y(S2,Y,Ty,NewTy,Flag),
-	( Flag == yes ->
-	    TmpS2 = S2
-	; propagate_tmpy_to_s2(S2,Y,NewTy,TmpS2)
-        ),
-	propagate_inform(Xs,TmpS2,UpdatedS2).
+    propagate_s2_to_y(S2,Y,Ty,NewTy,Flag),
+    ( Flag == yes ->
+        TmpS2 = S2
+    ; propagate_tmpy_to_s2(S2,Y,NewTy,TmpS2)
+    ),
+    propagate_inform(Xs,TmpS2,UpdatedS2).
 
 propagate_tmpy_to_s2([],_,_,[]).
 propagate_tmpy_to_s2([(X,Tx)|S2],Y,Ty,[(X,TmpTx)|NewS2]):-
-	propagate_first_to_sec(Y,Ty,X,Tx,TmpTx,_),
-	propagate_tmpy_to_s2(S2,Y,Ty,NewS2).
+    propagate_first_to_sec(Y,Ty,X,Tx,TmpTx,_),
+    propagate_tmpy_to_s2(S2,Y,Ty,NewS2).
 
 propagate_s2_to_y([],_,Ty,Ty,_).
 propagate_s2_to_y([(X,Tx)|S2],Y,Ty,NewTy,Flag):-
-	propagate_first_to_sec(X,Tx,Y,Ty,TmpTy,Flag),
-	( Flag == yes ->
-	    NewTy = Ty
-	; propagate_s2_to_y(S2,Y,TmpTy,NewTy,Flag)
-        ).
+    propagate_first_to_sec(X,Tx,Y,Ty,TmpTy,Flag),
+    ( Flag == yes ->
+        NewTy = Ty
+    ; propagate_s2_to_y(S2,Y,TmpTy,NewTy,Flag)
+    ).
 
 %% %-------------------------------------------------------------------------
 %% % def_add_inform_diff(+,+,-,-)
@@ -771,8 +771,8 @@ propagate_s2_to_y([(X,Tx)|S2],Y,Ty,NewTy,Flag):-
 %% %-------------------------------------------------------------------------
 %% 
 %% def_add_inform_diff(a(G1,S1),a(G2,S2),a(TG,TSet),a(CG,CSet)):- 
-%% 	ord_disjunction_merge(G1,G2,CG,TG),
-%% 	def_add_inform_diff_set(S1,S2,CG,TSet,CSet).
+%%      ord_disjunction_merge(G1,G2,CG,TG),
+%%      def_add_inform_diff_set(S1,S2,CG,TSet,CSet).
 %% 
 %% %-------------------------------------------------------------------------
 %% % def_add_inform_diff_set(+,+,+,+,-,-,-).
@@ -803,32 +803,32 @@ propagate_s2_to_y([(X,Tx)|S2],Y,Ty,NewTy,Flag):-
 %% %-------------------------------------------------------------------------
 %% 
 %% def_add_inform_diff_set([],X,CG,TSet,CSet):- !,
-%% 	def_eliminate_if_element_all(CG,X,TSet),
-%% 	TSet = CSet.
+%%      def_eliminate_if_element_all(CG,X,TSet),
+%%      TSet = CSet.
 %% def_add_inform_diff_set(X,[],_CG,X,X):- !.
 %% def_add_inform_diff_set([(X,Tx)|Tl1],[(Y,Ty)|Tl2],CG,TSet,CSet) :-
-%% 	compare(Ord, X, Y),
-%% 	def_add_inform_diff(Ord,(X,Tx),Tl1,(Y,Ty),Tl2,CG,TSet,CSet).
+%%      compare(Ord, X, Y),
+%%      def_add_inform_diff(Ord,(X,Tx),Tl1,(Y,Ty),Tl2,CG,TSet,CSet).
 %% 
 %% % def_add_inform(+,+,+,+,+,+,-)
 %% def_add_inform_diff(=,(X,Tx),Tl1,(_,Ty),Tl2,CG,[(X,NTx)|TSet],CSet):-
 %%         compare(Order,Tx,Ty),
-%% 	def_add_element(Order,Tx,Ty,NTx,Flag),
-%% 	def_changed(Flag,(X,NTx),CSet,NCSet), 
-%% 	def_add_inform_diff_set(Tl1,Tl2,CG,TSet,NCSet).
+%%      def_add_element(Order,Tx,Ty,NTx,Flag),
+%%      def_changed(Flag,(X,NTx),CSet,NCSet), 
+%%      def_add_inform_diff_set(Tl1,Tl2,CG,TSet,NCSet).
 %% def_add_inform_diff(>,Hd1,Tl1,Hd0,Tl2,CG,TSet,CSet) :-
-%% 	def_eliminate_if_element(CG,Hd0,TSet,NTSet,NCG),
-%% 	def_eliminate_if_element(CG,Hd0,CSet,NCSet,_NCG),
-%% 	def_add_inform_diff_set([Hd1|Tl1],Tl2,NCG,NTSet,NCSet).
+%%      def_eliminate_if_element(CG,Hd0,TSet,NTSet,NCG),
+%%      def_eliminate_if_element(CG,Hd0,CSet,NCSet,_NCG),
+%%      def_add_inform_diff_set([Hd1|Tl1],Tl2,NCG,NTSet,NCSet).
 %% def_add_inform_diff(<,Hd0,Tl1,Hd2,Tl2,GC,[Hd0|TSet],[Hd0|CSet]) :-
-%% 	def_add_inform_diff_set(Tl1,[Hd2|Tl2],GC,TSet,CSet).
+%%      def_add_inform_diff_set(Tl1,[Hd2|Tl2],GC,TSet,CSet).
 
 % def_add_element(+,+,-,-)
 def_add_element(=,Tx,_Ty,Tx,yes).
 def_add_element(>,Tx,Ty,New_Ty,no):- 
-	merge_no_supersets(Tx,Ty,New_Ty).
+    merge_no_supersets(Tx,Ty,New_Ty).
 def_add_element(<,Tx,Ty,New_Ty,no):- 
-	merge_no_supersets(Tx,Ty,New_Ty).
+    merge_no_supersets(Tx,Ty,New_Ty).
 
 %def_changed(+,+,-,-).
 %
@@ -844,24 +844,24 @@ def_add_element(<,Tx,Ty,New_Ty,no):-
 
 def_remain_if_element_all([],_X,[]):- !.
 def_remain_if_element_all(T1,Elem,CSet):-
-	def_remain_if_element_set(Elem,T1,CSet).
+    def_remain_if_element_set(Elem,T1,CSet).
 
 def_remain_if_element_set([],_T1,[]).
 def_remain_if_element_set([X|Xs],T1,CSet):-
-	def_remain_if_element(T1,X,CSet,NewCSet,NewT1),
-	def_remain_if_element_set(Xs,NewT1,NewCSet).
+    def_remain_if_element(T1,X,CSet,NewCSet,NewT1),
+    def_remain_if_element_set(Xs,NewT1,NewCSet).
 
 
 def_remain_if_element([],_Elem,CSet,CSet,[]).
 def_remain_if_element([T|T1],(X,Set),CSet,NewCSet,NewT1):-
-	compare(Ord,T,X),
-	def_remain_if_element(Ord,T,T1,(X,Set),CSet,NewCSet,NewT1).
+    compare(Ord,T,X),
+    def_remain_if_element(Ord,T,T1,(X,Set),CSet,NewCSet,NewT1).
 
 def_remain_if_element(=,_T,T1,Elem,[Elem|CSet],CSet,T1).
 def_remain_if_element(<,_T,T1,Elem,CSet,NewCSet,NewT1):-
-	def_remain_if_element(T1,Elem,CSet,NewCSet,NewT1).
+    def_remain_if_element(T1,Elem,CSet,NewCSet,NewT1).
 def_remain_if_element(>,T,T1,_Elem,CSet,CSet,[T|T1]).
-	
+    
 
 %-------------------------------------------------------------------------
 % def_eliminate_if_element_all(+,+,-)
@@ -871,32 +871,32 @@ def_remain_if_element(>,T,T1,_Elem,CSet,CSet,[T|T1]).
 %-------------------------------------------------------------------------
 def_eliminate_if_element_all([],X,X):- !.
 def_eliminate_if_element_all(CG,X,TSet):-
-	def_eliminate_if_element_set(X,CG,TSet).
+    def_eliminate_if_element_set(X,CG,TSet).
 
 def_eliminate_if_element_set([],_CG,[]).
 def_eliminate_if_element_set([X|Xs],CG,TSet):-
-	def_eliminate_if_element(CG,X,TSet,NewTSet,NewCG),
-	def_eliminate_if_element_all(NewCG,Xs,NewTSet).
+    def_eliminate_if_element(CG,X,TSet,NewTSet,NewCG),
+    def_eliminate_if_element_all(NewCG,Xs,NewTSet).
 
 def_eliminate_if_element([],Elem,[Elem|TSet],TSet,[]).
 def_eliminate_if_element([G|CG],(X,Set),TSet,NewTSet,NewCG):-
-	compare(Ord,G,X),
-	def_eliminate_if_element(Ord,G,CG,(X,Set),TSet,NewTSet,NewCG).
+    compare(Ord,G,X),
+    def_eliminate_if_element(Ord,G,CG,(X,Set),TSet,NewTSet,NewCG).
 
 def_eliminate_if_element(=,_,CG,_,TSet,TSet,CG).
 def_eliminate_if_element(<,_G,CG,Elem,TSet,NewTSet,NewCG):-
-	def_eliminate_if_element(CG,Elem,TSet,NewTSet,NewCG).
+    def_eliminate_if_element(CG,Elem,TSet,NewTSet,NewCG).
 def_eliminate_if_element(>,G,CG,Elem,[Elem|TSet],TSet,[G|CG]).
 
 %% collect_vars_set([],[]).
 %% collect_vars_set([(X,_)|Xs],[X|VS1]):-
-%% 	collect_vars_set(Xs,VS1).
+%%      collect_vars_set(Xs,VS1).
 %% 
 %% 
 %% def_minimize_set([],[]).
 %% def_minimize_set([(X,SS)|TempS],[(X,NewSS)|NewS]):-
-%% 	def_minimize_each(SS,[],NewSS),
-%% 	def_minimize_set(TempS,NewS).
+%%      def_minimize_each(SS,[],NewSS),
+%%      def_minimize_set(TempS,NewS).
 %% 
 %% %-------------------------------------------------------------------------
 %% % decide_propagate(+,+,+,-)
@@ -922,22 +922,22 @@ def_eliminate_if_element(>,G,CG,Elem,[Elem|TSet],TSet,[G|CG]).
 %% 
 %% decide_propagate([],[],Lambda,Lambda):- !.
 %% decide_propagate([],Ground,Lambda,NewLambda):- !,
-%% 	Lambda = a(G,S),
-%% 	propagate(Ground,S,Ground,NewS,TempG),
-%% 	merge(TempG,G,NewG),
-%% 	NewLambda = a(NewG,NewS).
+%%      Lambda = a(G,S),
+%%      propagate(Ground,S,Ground,NewS,TempG),
+%%      merge(TempG,G,NewG),
+%%      NewLambda = a(NewG,NewS).
 %% decide_propagate(Set,[],Lambda,NewLambda):- !,
-%% 	Lambda = a(G,S),
-%% 	propagate_inf(Set,S,NewS),
-%% 	NewLambda = a(G,NewS).
+%%      Lambda = a(G,S),
+%%      propagate_inf(Set,S,NewS),
+%%      NewLambda = a(G,NewS).
 %% decide_propagate(Set,Ground,Lambda,NewLambda):- 
-%% 	Lambda = a(G,S),
-%% 	propagate(Ground,S,Ground,TempS,TempG),
-%% 	def_diff(TempS,S,Changed),
-%% 	update_changed(Changed,Set,NewSet),
-%% 	propagate_inf(NewSet,TempS,NewS),
-%% 	merge(TempG,G,NewG),
-%% 	NewLambda = a(NewG,NewS).
+%%      Lambda = a(G,S),
+%%      propagate(Ground,S,Ground,TempS,TempG),
+%%      def_diff(TempS,S,Changed),
+%%      update_changed(Changed,Set,NewSet),
+%%      propagate_inf(NewSet,TempS,NewS),
+%%      merge(TempG,G,NewG),
+%%      NewLambda = a(NewG,NewS).
 
 %-------------------------------------------------------------------------
 % propagate(+,+,+,-,-)
@@ -958,33 +958,33 @@ def_eliminate_if_element(>,G,CG,Elem,[Elem|TSet],TSet,[G|CG]).
 
 propagate([],S,G,S,G):- !.
 propagate(G1,S,G,NewS,NewG):-
-	propagate_set(S,G1,TempS,NewG1),
-	merge(NewG1,G,NewG2),
-	propagate(NewG1,TempS,NewG2,NewS,NewG).
+    propagate_set(S,G1,TempS,NewG1),
+    merge(NewG1,G,NewG2),
+    propagate(NewG1,TempS,NewG2,NewS,NewG).
 
 % propagate_set(+,+,-,-).
 propagate_set([],_,[],[]).
 propagate_set([(Y,Ty)|Lambda],G,Templ,NewG):- 
-	eliminate_if_member(Ty,G,[],NewTy,_),
-	decide_newground(NewTy,Y,Rest,G,NewG,G1,Templ,NewTempl),
-	propagate_set(Lambda,G1,NewTempl,Rest).
+    eliminate_if_member(Ty,G,[],NewTy,_),
+    decide_newground(NewTy,Y,Rest,G,NewG,G1,Templ,NewTempl),
+    propagate_set(Lambda,G1,NewTempl,Rest).
 
 %eliminate_if_member(+,+,+,-).
 eliminate_if_member([],_G,Ty,NewTy,Flag):- !,
-	sort(Ty,Ty_sorted),
-	(var(Flag) ->
-	   NewTy = Ty_sorted
-	; def_minimize_each(Ty_sorted,[],NewTy)
-	).
+    sort(Ty,Ty_sorted),
+    (var(Flag) ->
+       NewTy = Ty_sorted
+    ; def_minimize_each(Ty_sorted,[],NewTy)
+    ).
 eliminate_if_member([X|Xs],G,Ty,NewTy,Flag):-
-	ord_subtract_flag(X,G,NonG,Flag), NonG \== [],!,
-	eliminate_if_member(Xs,G,[NonG|Ty],NewTy,Flag).
+    ord_subtract_flag(X,G,NonG,Flag), NonG \== [],!,
+    eliminate_if_member(Xs,G,[NonG|Ty],NewTy,Flag).
 eliminate_if_member(_,_G,_Ty,g,_).
 
 % decide_newground(+,+,+,+,-,-).
 decide_newground(g,Y,Rest,G,NewG,G1,Templ,Templ):- !,
-	    NewG = [Y|Rest],
-	    insert(G,Y,G1).
+        NewG = [Y|Rest],
+        insert(G,Y,G1).
 decide_newground(Ty,Y,Rest,G,Rest,G,[(Y,Ty)|Templ],Templ).
 
 %% %-------------------------------------------------------------------------
@@ -997,20 +997,20 @@ decide_newground(Ty,Y,Rest,G,Rest,G,[(Y,Ty)|Templ],Templ).
 %% update_changed(NonGround,[],NonGround):- !.
 %% update_changed([],Changed,Changed).
 %% update_changed([(X,Tx)|Tl1],[(Y,Ty)|Tl2],New_NonGround):-
-%% 	compare(Ord,X,Y),
-%% 	update_changed(Ord,(X,Tx),Tl1,(Y,Ty),Tl2,New_NonGround).
+%%      compare(Ord,X,Y),
+%%      update_changed(Ord,(X,Tx),Tl1,(Y,Ty),Tl2,New_NonGround).
 %% 
 %% %update_non_groun(+,+,+,+,+,-)
 %% update_changed(<,Hd1,[],Hd2,Tl2,[Hd1,Hd2|Tl2]):- !.
 %% update_changed(<,Hd1,[(X,Tx)|Tl1],(Y,Ty),Tl2,[Hd1|New_NonGround]):-
-%% 	compare(Ord,X,Y),
-%% 	update_changed(Ord,(X,Tx),Tl1,(Y,Ty),Tl2,New_NonGround).
+%%      compare(Ord,X,Y),
+%%      update_changed(Ord,(X,Tx),Tl1,(Y,Ty),Tl2,New_NonGround).
 %% update_changed(>,Hd1,Tl1,Hd2,[],[Hd2,Hd1|Tl1]):- !.
 %% update_changed(>,(X,Tx),Tl1,Hd2,[(Y,Ty)|Tl2],[Hd2|New_NonGround]):-
-%% 	compare(Ord,X,Y),
-%% 	update_changed(Ord,(X,Tx),Tl1,(Y,Ty),Tl2,New_NonGround).
+%%      compare(Ord,X,Y),
+%%      update_changed(Ord,(X,Tx),Tl1,(Y,Ty),Tl2,New_NonGround).
 %% update_changed(=,_Hd1,Tl1,Hd2,Tl2,[Hd2|New_NonGround]):-
-%% 	update_changed(Tl1,Tl2,New_NonGround).
+%%      update_changed(Tl1,Tl2,New_NonGround).
 
 %-------------------------------------------------------------------------
 % propagate_inf(+,+,-).
@@ -1034,40 +1034,40 @@ decide_newground(Ty,Y,Rest,G,Rest,G,[(Y,Ty)|Templ],Templ).
 %-------------------------------------------------------------------------
 
 propagate_first_to_sec(X,Tx,Y,Ty,TmpTy,Flag):-
-	X == Y,!,
-        compare(Order,Tx,Ty),
-	def_add_element(Order,Tx,Ty,TmpTy,Flag).
+    X == Y,!,
+    compare(Order,Tx,Ty),
+    def_add_element(Order,Tx,Ty,TmpTy,Flag).
 propagate_first_to_sec(X,Tx,Y,Ty,TmpTy,_):-
-	split_lists_without(Ty,X,ContainedX), 
-	def_decide_propagate1(ContainedX,Y,Ty,Tx,TmpTy).
+    split_lists_without(Ty,X,ContainedX), 
+    def_decide_propagate1(ContainedX,Y,Ty,Tx,TmpTy).
 
 def_decide_propagate1([],_,Tx,_,Tx):- !.
 def_decide_propagate1(ContainedY,X,Tx,Ty,NewTx):-
-	split_lists(Ty,X,NotContainX),
-	def_pairwise_union_no_supersets(ContainedY,NotContainX,Tx,NewTx).
+    split_lists(Ty,X,NotContainX),
+    def_pairwise_union_no_supersets(ContainedY,NotContainX,Tx,NewTx).
 
 %% propagate_inf([],S2,S2).
 %% propagate_inf([(Y,Ty)|Xs],S2,UpdatedS2):-
-%% 	propagate_each(S2,Y,Ty,Temp_S2,Changed),
-%% 	update_changed(Xs,Changed,New_Xs),
-%% 	propagate_inf(New_Xs,Temp_S2,UpdatedS2).
+%%      propagate_each(S2,Y,Ty,Temp_S2,Changed),
+%%      update_changed(Xs,Changed,New_Xs),
+%%      propagate_inf(New_Xs,Temp_S2,UpdatedS2).
 %% 
 %% propagate_each([],_Y,_Ty,[],[]).
 %% propagate_each([(X,Tx)|S2],Y,Ty,[(X,Tx)|Temp_S2],Changed):-
-%% 	X == Y,!,
-%% 	propagate_each(S2,Y,Ty,Temp_S2,Changed).
+%%      X == Y,!,
+%%      propagate_each(S2,Y,Ty,Temp_S2,Changed).
 %% propagate_each([(X,Tx)|S2],Y,Ty,[(X,NewTx)|Temp_S2],Changed):- 
-%% 	split_lists_without(Tx,Y,ContainedY), 
-%% 	def_decide_propagate(ContainedY,X,Tx,Ty,NewTx,Changed,Rest),
-%% 	propagate_each(S2,Y,Ty,Temp_S2,Rest).
+%%      split_lists_without(Tx,Y,ContainedY), 
+%%      def_decide_propagate(ContainedY,X,Tx,Ty,NewTx,Changed,Rest),
+%%      propagate_each(S2,Y,Ty,Temp_S2,Rest).
 %% 
 %% def_decide_propagate([],_,Tx,_,Tx,Changed,Changed):- !.
 %% def_decide_propagate(ContainedY,X,Tx,Ty,NewTx,Changed,Rest):-
-%% 	split_lists(Ty,X,NotContainX),
-%% 	def_pairwise_union_no_supersets(ContainedY,NotContainX,Tx,NewTx),
-%% 	( NewTx == Tx ->
-%% 	     Changed = Rest
-%% 	; Changed = [(X,NewTx)|Rest]
+%%      split_lists(Ty,X,NotContainX),
+%%      def_pairwise_union_no_supersets(ContainedY,NotContainX,Tx,NewTx),
+%%      ( NewTx == Tx ->
+%%           Changed = Rest
+%%      ; Changed = [(X,NewTx)|Rest]
 %%         ).
 
 %-------------------------------------------------------------------------
@@ -1082,25 +1082,25 @@ def_decide_propagate1(ContainedY,X,Tx,Ty,NewTx):-
 def_pairwise_union_no_supersets([],_,Product,Product):- !.
 def_pairwise_union_no_supersets(_,[],Product,Product):- !.
 def_pairwise_union_no_supersets(Ty,Tx,Temp,New):-
-	def_merge(Tx,Ty,Merged),
-	sort(Merged,NewMerged),
-	def_minimize_each(NewMerged,Temp,New).
+    def_merge(Tx,Ty,Merged),
+    sort(Merged,NewMerged),
+    def_minimize_each(NewMerged,Temp,New).
 
 def_merge([],_,[]).
 def_merge([Y|Ys],X,Merged):-
-	def_merge_each(X,Y,Merged,Rest),
-	def_merge(Ys,X,Rest).
+    def_merge_each(X,Y,Merged,Rest),
+    def_merge(Ys,X,Rest).
 
 def_merge_each([],_Y,X,X).
 def_merge_each([X|Tx],Y,[Merge|Merged],Rest):-
-	merge(X,Y,Merge),
-	def_merge_each(Tx,Y,Merged,Rest).
+    merge(X,Y,Merge),
+    def_merge_each(Tx,Y,Merged,Rest).
 
 def_minimize_each([],Temp,Temp).
 def_minimize_each([M|Merged],Temp,New):-
-	def_no_subset(Temp,M,NewTemp,Flag),
-	decide_minimized(Flag,NewTemp,M,Temp1),
-	def_minimize_each(Merged,Temp1,New).
+    def_no_subset(Temp,M,NewTemp,Flag),
+    decide_minimized(Flag,NewTemp,M,Temp1),
+    def_minimize_each(Merged,Temp1,New).
 
 %% %-------------------------------------------------------------------------
 %% % put_value(+,-,+)
@@ -1111,7 +1111,7 @@ def_minimize_each([M|Merged],Temp,New):-
 %% 
 %% put_value([],[],_Value).
 %% put_value([X|Xs],[(X,Value)|Rest],Value):-
-%% 	put_value(Xs,Rest,Value).
+%%      put_value(Xs,Rest,Value).
 %% 
 %% %-------------------------------------------------------------------------
 %% % def_diff (+,+,-)
@@ -1124,14 +1124,14 @@ def_minimize_each([M|Merged],Temp,New):-
 %% 
 %% def_diff([],_,[]).
 %% def_diff([(X,Vx)|Lambda],[(Y,Vy)|Temp_Lambda],Changed):-
-%% 	compare(Order,X,Y),
-%% 	def_diff(Order,(X,Vx),Lambda,(Y,Vy),Temp_Lambda,Changed).
+%%      compare(Order,X,Y),
+%%      def_diff(Order,(X,Vx),Lambda,(Y,Vy),Temp_Lambda,Changed).
 %% 
 %% def_diff(=,Elem,Lambda,_,Temp_Lambda,[Elem|Changed]):-
-%% 	def_diff(Lambda,Temp_Lambda,Changed).
+%%      def_diff(Lambda,Temp_Lambda,Changed).
 %% def_diff(>,(X,Tx),Lambda,_,[(Y,Ty)|Temp_Lambda],Changed):-
-%% 	compare(Order,X,Y),
-%% 	def_diff(Order,(X,Tx),Lambda,(Y,Ty),Temp_Lambda,Changed).
+%%      compare(Order,X,Y),
+%%      def_diff(Order,(X,Tx),Lambda,(Y,Ty),Temp_Lambda,Changed).
 
 %-------------------------------------------------------------------------
 % def_project_each(+,+,-)
@@ -1143,12 +1143,12 @@ def_minimize_each([M|Merged],Temp,New):-
 
 def_project_each([],_Vars,[]).
 def_project_each([Set|Rest],Vars,NewSet):-
-	ord_subset(Set,Vars),!,
-	NewSet = [Set|RestNewSet],
-	def_project_each(Rest,Vars,RestNewSet).
+    ord_subset(Set,Vars),!,
+    NewSet = [Set|RestNewSet],
+    def_project_each(Rest,Vars,RestNewSet).
 def_project_each([_Set|Rest],Vars,NewSet):-
-	def_project_each(Rest,Vars,NewSet).
-	
+    def_project_each(Rest,Vars,NewSet).
+    
 %-------------------------------------------------------------------------
 %split_lists_without(+,+,-)
 % It returns the elements of the list of lists given as second argument 
@@ -1158,35 +1158,35 @@ def_project_each([_Set|Rest],Vars,NewSet):-
 
 split_lists_without([],_X,[]).
 split_lists_without([L|Ls],X,ContainedX):-
-	L = [Y|Ys],
-	compare(Order,X,Y),
-	delete_if_member1(Order,Y,Ys,X,L1,Flag),
-	def_decide_split(Flag,X,L1,Ls,ContainedX).
+    L = [Y|Ys],
+    compare(Order,X,Y),
+    delete_if_member1(Order,Y,Ys,X,L1,Flag),
+    def_decide_split(Flag,X,L1,Ls,ContainedX).
 
 %delete_if_member1(+,+,+,+,-,-)
 delete_if_member1(<,_Y,_Ys,_X,_Ys,end).
 delete_if_member1(=,_Y,Ys,_X,Ys,yes).
 delete_if_member1(>,Y,Ys,X,[Y|Rest],Flag):-
-	delete_if_member(Ys,X,Rest,Flag).
-	
+    delete_if_member(Ys,X,Rest,Flag).
+    
 %delete_if_member(+,+,-,-)
 delete_if_member([],_X,_NewYs,no).
 delete_if_member([Y|Ys],X,NewYs,Flag):-
-	compare(Order,X,Y),
-	delete_if_member(Order,Y,Ys,X,NewYs,Flag).
+    compare(Order,X,Y),
+    delete_if_member(Order,Y,Ys,X,NewYs,Flag).
 
 %delete_if_member(+,+,+,+,-,-)
 delete_if_member(<,_Y,_Ys,_X,_Ys,no).
 delete_if_member(=,_Y,Ys,_X,Ys,yes).
 delete_if_member(>,Y,Ys,X,[Y|Rest],Flag):-
-	delete_if_member(Ys,X,Rest,Flag).
-	
+    delete_if_member(Ys,X,Rest,Flag).
+    
 %def_decide_split(+,+,+,+,-)
 def_decide_split(end,_X,_L1,_Ls,[]).
 def_decide_split(yes,X,L1,Ls,[L1|ContainedX]):-
-	split_lists_without(Ls,X,ContainedX).
+    split_lists_without(Ls,X,ContainedX).
 def_decide_split(no,X,_L1,Ls,ContainedX):-
-	split_lists_without(Ls,X,ContainedX).
+    split_lists_without(Ls,X,ContainedX).
 
 %-------------------------------------------------------------------------
 %split_lists(+,+,-,)
@@ -1196,28 +1196,28 @@ def_decide_split(no,X,_L1,Ls,ContainedX):-
 
 %% split_lists([],_,[]).
 %% split_lists([[LH|LT]|Ls],X,List2):-
-%% 	LH @> X,!,
-%% 	List2 = [[LH|LT]|Ls].
+%%      LH @> X,!,
+%%      List2 = [[LH|LT]|Ls].
 %% split_lists([L|Ls],X,List2):-
-%% 	myord_subset([X], L),!,
-%% 	split_lists(Ls,X,List2).
+%%      myord_subset([X], L),!,
+%%      split_lists(Ls,X,List2).
 %% split_lists([L|Ls],X,[L|List2]):-
-%% 	split_lists(Ls,X,List2).
+%%      split_lists(Ls,X,List2).
 
 split_lists([],_,[]).
 split_lists([[LH|LT]|Ls],X,List2):-
-	compare(Order,LH,X),
-	split_lists_each(Order,LH,LT,Ls,X,List2).
+    compare(Order,LH,X),
+    split_lists_each(Order,LH,LT,Ls,X,List2).
 
 split_lists_each(=,_LH,_LT,Ls,X,List2):-
-	split_lists(Ls,X,List2).
+    split_lists(Ls,X,List2).
 split_lists_each(>,LH,LT,Ls,_X,List2):-
-	List2 = [[LH|LT]|Ls].
+    List2 = [[LH|LT]|Ls].
 split_lists_each(<,_LH,LT,Ls,X,List2):-
-	ord_subset([X], LT),!,
-	split_lists(Ls,X,List2).
+    ord_subset([X], LT),!,
+    split_lists(Ls,X,List2).
 split_lists_each(<,LH,LT,Ls,X,[[LH|LT]|List2]):-
-	split_lists(Ls,X,List2).
+    split_lists(Ls,X,List2).
 
 %-------------------------------------------------------------------------
 % Split the list of lists in the first argument into two lists: in
@@ -1227,23 +1227,23 @@ split_lists_each(<,LH,LT,Ls,X,[[LH|LT]|List2]):-
 ord_disjunction_merge([],X,[],X) :- !.
 ord_disjunction_merge(X,[],X,X) :- !.
 ord_disjunction_merge([Hd1|Tail1],[Hd2|Tail2],Disjunct,Merge) :-
-	compare(Order,Hd1,Hd2),
-	ord_disjunction_merge(Order,Hd1,Tail1,Hd2,Tail2,Disjunct,Merge).
+    compare(Order,Hd1,Hd2),
+    ord_disjunction_merge(Order,Hd1,Tail1,Hd2,Tail2,Disjunct,Merge).
 
 ord_disjunction_merge(<,H1,[],H2,T2,Disjunct,Merge) :- !,
-	Disjunct = [H1],
-	Merge = [H1,H2|T2].
+    Disjunct = [H1],
+    Merge = [H1,H2|T2].
 ord_disjunction_merge(<,H1,[Hd1|Tail1],Hd2,Tail2,[H1|Disjunct],[H1|Merge]) :-
-	compare(Order,Hd1,Hd2),
-	ord_disjunction_merge(Order,Hd1,Tail1,Hd2,Tail2,Disjunct,Merge).
+    compare(Order,Hd1,Hd2),
+    ord_disjunction_merge(Order,Hd1,Tail1,Hd2,Tail2,Disjunct,Merge).
 ord_disjunction_merge(=,Hd,Tail1,_,Tail2,Disjunct,[Hd|Merge]) :-
-	ord_disjunction_merge(Tail1,Tail2,Disjunct,Merge).
+    ord_disjunction_merge(Tail1,Tail2,Disjunct,Merge).
 ord_disjunction_merge(>,H1,T1,H2,[],Disjunct,Merge) :- !,
-	Disjunct = [H1|T1],
-	Merge= [H2,H1|T1].
+    Disjunct = [H1|T1],
+    Merge= [H2,H1|T1].
 ord_disjunction_merge(>,Hd1,Tail1,H2,[Hd2|Tail2],Disjunct,[H2|Merge]) :-
-	compare(Order,Hd1,Hd2),
-	ord_disjunction_merge(Order,Hd1,Tail1,Hd2,Tail2,Disjunct,Merge).
+    compare(Order,Hd1,Hd2),
+    ord_disjunction_merge(Order,Hd1,Tail1,Hd2,Tail2,Disjunct,Merge).
 
 %-------------------------------------------------------------------------
 % def_minimize(+,+,-)
@@ -1253,7 +1253,7 @@ ord_disjunction_merge(>,Hd1,Tail1,H2,[Hd2|Tail2],Disjunct,[H2|Merge]) :-
 
 decide_minimized(superset,Tx,_X,Tx).
 decide_minimized(nosuperset,Tx,X,Minimized):-
-	insert(Tx,X,Minimized).
+    insert(Tx,X,Minimized).
 
 %-------------------------------------------------------------------------
 %def_no_subset(+,+,-,-)
@@ -1269,87 +1269,87 @@ decide_minimized(nosuperset,Tx,X,Minimized):-
 
 %% def_no_subset([],_X,[],nosuperset).
 %% def_no_subset([Y|Ty],X,TY,Flag):-
-%% 	compare(Order,X,Y),
-%% 	def_no_subset(Order,Y,Ty,X,TY,Flag).
+%%      compare(Order,X,Y),
+%%      def_no_subset(Order,Y,Ty,X,TY,Flag).
 %% 
 %% def_no_subset(=,_Y,_Ty,_X,_TY,superset). 
 %% def_no_subset(<,Y,Ty,X,TY,Flag):-
-%% 	myord_intersect(Y,X,Intersect),
-%% 	compare(Order,Y,Intersect),
-%% 	def_decide_temp(Order,X,Y,Intersect,Ty,TY,Flag).
+%%      myord_intersect(Y,X,Intersect),
+%%      compare(Order,Y,Intersect),
+%%      def_decide_temp(Order,X,Y,Intersect,Ty,TY,Flag).
 %% def_no_subset(>,Y,Ty,X,TY,Flag):-
-%% 	myord_intersect(Y,X,Intersect),
-%% 	compare(Order,Y,Intersect),
-%% 	def_decide_temp(Order,X,Y,Intersect,Ty,TY,Flag).
+%%      myord_intersect(Y,X,Intersect),
+%%      compare(Order,Y,Intersect),
+%%      def_decide_temp(Order,X,Y,Intersect,Ty,TY,Flag).
 %% 
 %% def_decide_temp(=,_X,_Y,_Intersect,_Ty,_TY,Flag):- 
-%% 	Flag = superset.
+%%      Flag = superset.
 %% def_decide_temp(<,X,Y,Intersect,Ty,TY,Flag):-
-%% 	compare(Order,X,Intersect),
-%% 	def_decide_temp_x(Order,X,Y,Ty,TY,Flag).
+%%      compare(Order,X,Intersect),
+%%      def_decide_temp_x(Order,X,Y,Ty,TY,Flag).
 %% def_decide_temp(>,X,Y,Intersect,Ty,TY,Flag):-
-%% 	compare(Order,X,Intersect),
-%% 	def_decide_temp_x(Order,X,Y,Ty,TY,Flag).
+%%      compare(Order,X,Intersect),
+%%      def_decide_temp_x(Order,X,Y,Ty,TY,Flag).
 %% 
 %% def_decide_temp_x(=, X,_Y,Ty,TY,Flag):- 
-%% 	def_no_subset(Ty,X,TY,Flag).
+%%      def_no_subset(Ty,X,TY,Flag).
 %% def_decide_temp_x(<,X,Y,Ty,[Y|TY],Flag):-
-%% 	def_no_subset(Ty,X,TY,Flag).
+%%      def_no_subset(Ty,X,TY,Flag).
 %% def_decide_temp_x(>,X,Y,Ty,[Y|TY],Flag):-
-%% 	def_no_subset(Ty,X,TY,Flag).
+%%      def_no_subset(Ty,X,TY,Flag).
 
 
 def_no_subset([],_X,[],nosuperset).
 def_no_subset([Y|Ty],X,TY,Flag):-
-	X == Y,!,
-	TY = [Y|Ty],
-	Flag = superset.
+    X == Y,!,
+    TY = [Y|Ty],
+    Flag = superset.
 def_no_subset([Y|Ty],X,TY,Flag):-
-	dmyord_superset(Y,X,Order),
-	def_decide_temp(Order,X,Y,Ty,TY,Flag).
+    dmyord_superset(Y,X,Order),
+    def_decide_temp(Order,X,Y,Ty,TY,Flag).
 
 def_decide_temp(nosuperset,X,Y,Ty,[Y|TY],Flag):- 
-	def_no_subset(Ty,X,TY,Flag).
+    def_no_subset(Ty,X,TY,Flag).
 def_decide_temp(superset2,_X,Y,Ty,[Y|Ty],superset).
 def_decide_temp(superset1,X,_Y,Ty,TY,Flag):-
-	def_no_subset(Ty,X,TY,Flag).
+    def_no_subset(Ty,X,TY,Flag).
 
 
 dmyord_superset([],_,superset2):- !.
 dmyord_superset(_,[],superset1):- !.
 dmyord_superset([Y|Ty],[X|Tx],Flag):-
-	compare(Order,Y,X),
-	dmyord_superset(Order,Y,Ty,X,Tx,Flag).
+    compare(Order,Y,X),
+    dmyord_superset(Order,Y,Ty,X,Tx,Flag).
 
 dmyord_superset(=,_Y,Ty,_X,Tx,Flag):-
-	dmyord_superset(Ty,Tx,Flag).
+    dmyord_superset(Ty,Tx,Flag).
 dmyord_superset(<,_Y,Ty,X,Tx,Flag):-
-	dmyord_subset_1(Ty,[X|Tx],Flag).
+    dmyord_subset_1(Ty,[X|Tx],Flag).
 dmyord_superset(>,Y,Ty,_X,Tx,Flag):-
-	dmyord_subset_2([Y|Ty],Tx,Flag).
+    dmyord_subset_2([Y|Ty],Tx,Flag).
 
 dmyord_subset_1(_,[],superset1):- !.
 dmyord_subset_1([],_,nosuperset):- !.
 dmyord_subset_1([Y|Ty],[X|Tx],Flag):-
-	compare(Order,Y,X),
-	dmyord_subset_1(Order,Y,Ty,X,Tx,Flag).
+    compare(Order,Y,X),
+    dmyord_subset_1(Order,Y,Ty,X,Tx,Flag).
 
 dmyord_subset_1(=,_Y,Ty,_X,Tx,Flag):-
-	dmyord_subset_1(Ty,Tx,Flag).
+    dmyord_subset_1(Ty,Tx,Flag).
 dmyord_subset_1(<,_Y,Ty,X,Tx,Flag):-
-	dmyord_subset_1(Ty,[X|Tx],Flag).
+    dmyord_subset_1(Ty,[X|Tx],Flag).
 dmyord_subset_1(>,_Y,_Ty,_X,_Tx,nosuperset).
 
 dmyord_subset_2([],_,superset2):- !.
 dmyord_subset_2(_,[],nosuperset):- !.
 dmyord_subset_2([Y|Ty],[X|Tx],Flag):-
-	compare(Order,Y,X),
-	dmyord_subset_2(Order,Y,Ty,X,Tx,Flag).
+    compare(Order,Y,X),
+    dmyord_subset_2(Order,Y,Ty,X,Tx,Flag).
 
 dmyord_subset_2(=,_Y,Ty,_X,Tx,Flag):-
-	dmyord_subset_2(Ty,Tx,Flag).
+    dmyord_subset_2(Ty,Tx,Flag).
 dmyord_subset_2(>,Y,Ty,_X,Tx,Flag):-
-	dmyord_subset_2([Y|Ty],Tx,Flag).
+    dmyord_subset_2([Y|Ty],Tx,Flag).
 dmyord_subset_2(<,_Y,_Ty,_X,_Tx,nosuperset).
 
 
@@ -1359,30 +1359,30 @@ dmyord_subset_2(<,_Y,_Ty,_X,_Tx,nosuperset).
 %-------------------------------------------------------------------------
 
 def_decide_arg([],Vars,Y,Z,Call,Succ):- !,
-	def_conjunct_constr(a(Vars,[(Z,[[Y]])]),Call,Succ).
+    def_conjunct_constr(a(Vars,[(Z,[[Y]])]),Call,Succ).
 def_decide_arg([X],Vars,Y,Z,Call,Succ):-
-	X == Y,!,
-	merge([Z],Vars,Ground),
-	def_conjunct_constr(a(Ground,[]),Call,Succ).
+    X == Y,!,
+    merge([Z],Vars,Ground),
+    def_conjunct_constr(a(Ground,[]),Call,Succ).
 def_decide_arg(_,Vars,_Y,_Z,Call,Succ):- 
-	def_conjunct_constr(a(Vars,[]),Call,Succ).
+    def_conjunct_constr(a(Vars,[]),Call,Succ).
 
 
 ord_subtract_flag([], _, [],_) :- !.
 ord_subtract_flag(Set1, [], Set1,_) :- !.
 ord_subtract_flag([Head1|Tail1], [Head2|Tail2], Difference,Flag) :-
-	compare(Order, Head1, Head2),
-	ord_subtract_flag(Order, Head1, Tail1, Head2, Tail2, Difference,Flag).
+    compare(Order, Head1, Head2),
+    ord_subtract_flag(Order, Head1, Tail1, Head2, Tail2, Difference,Flag).
 
 ord_subtract_flag(<, Head1, [], _, _, [Head1],_) :- !.
 ord_subtract_flag(<, Head0, [Head1|Tail1], Head2, Tail2, [Head0|Difference],Flag) :-
-	compare(Order, Head1, Head2),
-	ord_subtract_flag(Order, Head1, Tail1, Head2, Tail2, Difference,Flag).
+    compare(Order, Head1, Head2),
+    ord_subtract_flag(Order, Head1, Tail1, Head2, Tail2, Difference,Flag).
 ord_subtract_flag(=, _, Tail1, _, Tail2, Difference,yes) :-
-	ord_subtract_flag(Tail1, Tail2, Difference,_).
+    ord_subtract_flag(Tail1, Tail2, Difference,_).
 ord_subtract_flag(>, Head1, Tail1, _, [], [Head1|Tail1],_) :- !.
 ord_subtract_flag(>, Head1, Tail1, _, [Head2|Tail2], Difference,Flag) :-
-	compare(Order, Head1, Head2),
-	ord_subtract_flag(Order, Head1, Tail1, Head2, Tail2, Difference,Flag).
+    compare(Order, Head1, Head2),
+    ord_subtract_flag(Order, Head1, Tail1, Head2, Tail2, Difference,Flag).
 
 :- pop_prolog_flag(multi_arity_warnings).

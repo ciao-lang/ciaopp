@@ -5,12 +5,12 @@
 :- use_package(argnames).
 
 :- argnames as(module, status, type, head, compat, 
-	       call, succ, comp,
-               dic, locator, comment, fromwhere).
+           call, succ, comp,
+           dic, locator, comment, fromwhere).
 % fromwhere = read, asserted
 
 % :- regtype as(Module, Status, Type, Head, Compat, Call, Succ, Comp, Dic, 
-% 	        Locator, Comment, Fromwhere)
+%               Locator, Comment, Fromwhere)
 % #
 % "
 % @var{Module} module where the assertion is defined.

@@ -25,7 +25,7 @@ member_term(X, [_|L]) :- member_term(X, L).
 %% 
 %% append_disjunction((Lit;Body), Goals, (Lit;AppGoals)):- 
 %%         !,
-%% 	append_disjunction(Body, Goals, AppGoals).
+%%      append_disjunction(Body, Goals, AppGoals).
 %% append_disjunction(Lit, Goals, (Lit;Goals)).
 
 % Translation from typedef to clauses.
@@ -43,34 +43,34 @@ external_type_disjunction(_).
    @var{Pred}) in @var{Cls}.".
 
 typedef_to_pred((Or; Ors), Pred, [Clause|Cls]):- 
-        !,
-        one_disjunct_to_clause(Or, Pred, Clause),
-	typedef_to_pred(Ors, Pred, Cls).
+    !,
+    one_disjunct_to_clause(Or, Pred, Clause),
+    typedef_to_pred(Ors, Pred, Cls).
 typedef_to_pred(Or, Pred, [Clause]):-
-        one_disjunct_to_clause(Or, Pred, Clause).
+    one_disjunct_to_clause(Or, Pred, Clause).
 
 one_disjunct_to_clause(Or, Pred, clause(Head, Body)):-
-        copy_term((Or,Pred), (CopOr,CopPred)), 
-        create_param_type_call(CopPred, Arg_of_Head, Head),
-	typedef_to_pred0(CopOr, Arg_of_Head, Body).
+    copy_term((Or,Pred), (CopOr,CopPred)), 
+    create_param_type_call(CopPred, Arg_of_Head, Head),
+    typedef_to_pred0(CopOr, Arg_of_Head, Body).
 
 create_param_type_call(ParType, Arg, TypeCall):-
-        ParType =.. [Name|TypeArgs],
-        TypeCall =.. [Name, Arg|TypeArgs].
+    ParType =.. [Name|TypeArgs],
+    TypeCall =.. [Name, Arg|TypeArgs].
 
 typedef_to_pred0(Or, Arg, Body):-
-        typedef_to_pred1(Or, Arg, Body1),
-        (var(Body1) -> Body = true ; Body = Body1). % PLG
+    typedef_to_pred1(Or, Arg, Body1),
+    (var(Body1) -> Body = true ; Body = Body1). % PLG
 %PBC:    (var(Body1) -> Body = true ; Body = Body1).
-%PLG	fill_body(Body1,Body).
+%PLG    fill_body(Body1,Body).
 %PLG
  %% fill_body(Body1,Body):-
- %% 	var(Body1), !,
- %% 	Body = true.
+ %%     var(Body1), !,
+ %%     Body = true.
  %% fill_body((A,Body1),Body):- !,
- %% 	fill_body(A,A2),
- %% 	fill_body(Body1,Body2),
- %% 	build_body(A2,Body2,Body).
+ %%     fill_body(A,A2),
+ %%     fill_body(Body1,Body2),
+ %%     build_body(A2,Body2,Body).
  %% fill_body(Body,Body).
  %%
  %% build_body(true,Body,Body):- !.
@@ -79,28 +79,28 @@ typedef_to_pred0(Or, Arg, Body):-
 
 
 typedef_to_pred1(Type, Arg, _Lit):- 
-        constant_symbol(Type, CType), 
-        !,
-        Arg = CType.
+    constant_symbol(Type, CType), 
+    !,
+    Arg = CType.
 typedef_to_pred1(Type, Arg, Lit):- 
-        type_symbol(Type),
-        !,
-        Lit =.. [Type, Arg].
+    type_symbol(Type),
+    !,
+    Lit =.. [Type, Arg].
 typedef_to_pred1(Type, Arg, Lit):- 
-        par_rule_type_symbol(Type),
-        !,
-        create_param_type_call(Type, Arg, Lit).
+    par_rule_type_symbol(Type),
+    !,
+    create_param_type_call(Type, Arg, Lit).
 typedef_to_pred1(Type, Compound_Arg, Body):-
-        compound_pure_type_term(Type, Term, Name, Arity),
-        !,
-        functor(Compound_Arg, Name, Arity),
-        typedef_to_pred_compound(Arity, Term, Compound_Arg, _InBody, Body).
-        %PLG typedef_to_pred_compound(1, Arity, Term, X, Body).
+    compound_pure_type_term(Type, Term, Name, Arity),
+    !,
+    functor(Compound_Arg, Name, Arity),
+    typedef_to_pred_compound(Arity, Term, Compound_Arg, _InBody, Body).
+    %PLG typedef_to_pred_compound(1, Arity, Term, X, Body).
 typedef_to_pred1(Term, X, Body):- 
-        var(Term),
-        !,
-        Body = call(Term, X). 
-        %% Body = regtype(X, Term). % Commented out PLG 16-Jun-99 
+    var(Term),
+    !,
+    Body = call(Term, X). 
+    %% Body = regtype(X, Term). % Commented out PLG 16-Jun-99 
 
  %% create_param_type_call(ParType, Arg, TypeCall):-
  %%    nonvar(ParType),
@@ -115,14 +115,14 @@ typedef_to_pred1(Term, X, Body):-
 
 typedef_to_pred_compound(0, _Term, _Compound_Arg, Body, Body):-!. 
 typedef_to_pred_compound(N, Term, Compound_Arg, InBody, OutBody):-
-	N > 0, 
-        !,
-        arg(N, Term, TypeArg),
-	arg(N, Compound_Arg, Arg),
-	typedef_to_pred1(TypeArg, Arg, Body1),
-        create_new_body(InBody, Body1, NewBody),
-	N1 is N - 1,
-	typedef_to_pred_compound(N1, Term, Compound_Arg, NewBody, OutBody).
+    N > 0, 
+    !,
+    arg(N, Term, TypeArg),
+    arg(N, Compound_Arg, Arg),
+    typedef_to_pred1(TypeArg, Arg, Body1),
+    create_new_body(InBody, Body1, NewBody),
+    N1 is N - 1,
+    typedef_to_pred_compound(N1, Term, Compound_Arg, NewBody, OutBody).
 
 create_new_body(InBody, Body1, NewBody):-
        nonvar(Body1),
@@ -156,20 +156,20 @@ append_body(Lit, InBody, (Lit, InBody)).
  %% typedef_to_pred_compound(N, A, Term, X, Lit):- 
  %%         N = A, !,
  %%         arg(N, Term, ArgT),
- %% 	arg(N, X, ArgX),
- %% 	typedef_to_pred1(ArgT, ArgX, Lit).
+ %%     arg(N, X, ArgX),
+ %%     typedef_to_pred1(ArgT, ArgX, Lit).
  %% typedef_to_pred_compound(N, A, Term, X, Body):-
- %% 	N < A, 
+ %%     N < A, 
  %%         !,
  %%         arg(N, Term, ArgT),
- %% 	arg(N, X, ArgX),
- %% 	typedef_to_pred1(ArgT, ArgX, Lit),
+ %%     arg(N, X, ArgX),
+ %%     typedef_to_pred1(ArgT, ArgX, Lit),
  %%         (nonvar(Lit) -> 
  %%             Body = (Lit, Body1)
  %%             ;
  %%             Body = Body1),
- %% 	N1 is N + 1,
- %% 	typedef_to_pred_compound(N1, A, Term, X, Body1).
+ %%     N1 is N + 1,
+ %%     typedef_to_pred_compound(N1, A, Term, X, Body1).
 
 % End of translation from typedef to clauses.
 

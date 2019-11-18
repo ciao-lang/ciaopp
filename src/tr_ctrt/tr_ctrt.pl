@@ -96,17 +96,17 @@
 :- use_module(ciaopp(tr_syntax/tr_syntax), [traverse_clauses/5]).
 %:- use_module(ciaopp(preprocess_flags), [current_pp_flag/2]).
 :- use_module(ciaopp(p_unit/program_keys),
-	[ clause_key/2, rewrite_source_clause/3
-%	  inverse_rewrite_source_program/2
-	]).
+    [ clause_key/2, rewrite_source_clause/3
+%         inverse_rewrite_source_program/2
+    ]).
 :- use_module(ciaopp(p_unit), [add_directive/1]).
 :- use_module(ciaopp(p_unit/clause_db), [maybe_clause_locator/2, add_clause_locator/2]).
 :- use_module(library(vndict), [create_pretty_dict/2]). 
 :- use_module(ciaopp(p_unit/assrt_db), [
-	assertion_body/7,
-	assertion_read/9,
-	add_assertion_read/9,
-	pgm_assertion_read/9]).
+    assertion_body/7,
+    assertion_read/9,
+    add_assertion_read/9,
+    pgm_assertion_read/9]).
 :- use_module(library(lists), [member/2]).
 :- use_module(engine(runtime_control), [module_split/3]).
 :- use_module(engine(internals), [module_concat/3]).
@@ -117,18 +117,18 @@
 :- data nocall_added/1.
 
 cleanup_ctrt :-
-	retractall_fact(seen_pred(_,_)),
-	retractall_fact(nocall_added(_)).
+    retractall_fact(seen_pred(_,_)),
+    retractall_fact(nocall_added(_)).
 
 :- multifile transformation/4.
 transformation(ctrt,Cls,Ds,_Info) :-
-	cleanup_ctrt, % (just in case...)
-	% % take all keys out
-	% inverse_rewrite_source_program(Cls0,Cls1),
-	% Rewrite clauses
-	rewrite_clauses(Cls, Ds, NewCls, NewDs),
-	replace_program(NewCls, NewDs),
-	cleanup_ctrt.
+    cleanup_ctrt, % (just in case...)
+    % % take all keys out
+    % inverse_rewrite_source_program(Cls0,Cls1),
+    % Rewrite clauses
+    rewrite_clauses(Cls, Ds, NewCls, NewDs),
+    replace_program(NewCls, NewDs),
+    cleanup_ctrt.
 
 :- multifile transformation/1.
 transformation(ctrt).
@@ -138,25 +138,25 @@ transformation(ctrt).
 % Add wrappers
 rewrite_clauses([], [], [], []).
 rewrite_clauses([clause(H,B):Key|Cs0], [D|Ds0], Cs, Ds) :-
-	functor(H, N, A),
-	pred_needs_wrapper(N, A),
-	!,
-	( maybe_clause_locator(Key, Loc) -> true ; throw(no_locator(Key)) ),
-	% Assertions and link clause (only first time)
-	( seen_pred(N, A) ->
-	    Cs = Cs1,
-	    Ds = Ds1
-	; assertz_fact(seen_pred(N, A)),
-	  rewrite_assertions(N, A),
-	  % TODO: Add impl_defined link for analysis and recover it later!
-	  add_link_clause(N, A, Loc, Cs, Cs1, Ds, Ds1)
-	),
-	% Renamed as inner clauses
-	add_inner_clause(H, B, D, Loc, Cs1, Cs2, Ds1, Ds2),
-	%
-	rewrite_clauses(Cs0, Ds0, Cs2, Ds2).
+    functor(H, N, A),
+    pred_needs_wrapper(N, A),
+    !,
+    ( maybe_clause_locator(Key, Loc) -> true ; throw(no_locator(Key)) ),
+    % Assertions and link clause (only first time)
+    ( seen_pred(N, A) ->
+        Cs = Cs1,
+        Ds = Ds1
+    ; assertz_fact(seen_pred(N, A)),
+      rewrite_assertions(N, A),
+      % TODO: Add impl_defined link for analysis and recover it later!
+      add_link_clause(N, A, Loc, Cs, Cs1, Ds, Ds1)
+    ),
+    % Renamed as inner clauses
+    add_inner_clause(H, B, D, Loc, Cs1, Cs2, Ds1, Ds2),
+    %
+    rewrite_clauses(Cs0, Ds0, Cs2, Ds2).
 rewrite_clauses([C|Cs0], [D|Ds0], [C|Cs], [D|Ds]) :-
-	rewrite_clauses(Cs0, Ds0, Cs, Ds).
+    rewrite_clauses(Cs0, Ds0, Cs, Ds).
 
 :- use_module(ciaopp(p_unit/itf_base_db), [defines/3, impl_defines/2]).
 
@@ -164,91 +164,91 @@ rewrite_clauses([C|Cs0], [D|Ds0], [C|Cs], [D|Ds]) :-
 
 % % TODO: Adding impl_defined of the predicate does not work: assertions are not written
 % add_link_clause(N, A, Loc, Cs, Cs1, Ds, Ds1) :-
-% 	% 
-% 	( current_fact(itf_base_db:defines(N,A,_)) ->
-% 	    add_impl_defined(N, A, Loc)
-% 	; throw(not_defined(N,A))
-% 	),
-% 	Cs = Cs1,
-% 	Ds = Ds1.
+%       % 
+%       ( current_fact(itf_base_db:defines(N,A,_)) ->
+%           add_impl_defined(N, A, Loc)
+%       ; throw(not_defined(N,A))
+%       ),
+%       Cs = Cs1,
+%       Ds = Ds1.
 %
 add_link_clause(N, A, Loc, Cs, Cs1, Ds, Ds1) :-
-	% Ensure that '$ctrt_nocall'/1 is defined
-	( nocall_added(NoCall) ->
-	    true
-	; module_split(N, M, _),
-	  module_concat(M,'$ctrt_nocall',NoCall),
-	  add_impl_defined(NoCall, 1, Loc),
-	  assertz_fact(nocall_added(NoCall))
-	),
-	% Link clause
-	get_link(N, A, Hlink, Blink),
-	goal_module_split(Blink, _, Blink0),
-	Blink2 =.. [NoCall,Blink0], % 'M:$ctrt_nocall'(Blink0)
-	clause_key(Hlink, KeyLink), % create new key and copy locator
-	add_clause_locator(KeyLink, Loc),
-	rewrite_source_clause(clause(Hlink,Blink2),KeyLink,Clink), % add keys to atoms
-	Cs = [Clink:KeyLink|Cs1],
-	create_pretty_dict(Clink,Dlink),
-	Ds = [Dlink|Ds1].
+    % Ensure that '$ctrt_nocall'/1 is defined
+    ( nocall_added(NoCall) ->
+        true
+    ; module_split(N, M, _),
+      module_concat(M,'$ctrt_nocall',NoCall),
+      add_impl_defined(NoCall, 1, Loc),
+      assertz_fact(nocall_added(NoCall))
+    ),
+    % Link clause
+    get_link(N, A, Hlink, Blink),
+    goal_module_split(Blink, _, Blink0),
+    Blink2 =.. [NoCall,Blink0], % 'M:$ctrt_nocall'(Blink0)
+    clause_key(Hlink, KeyLink), % create new key and copy locator
+    add_clause_locator(KeyLink, Loc),
+    rewrite_source_clause(clause(Hlink,Blink2),KeyLink,Clink), % add keys to atoms
+    Cs = [Clink:KeyLink|Cs1],
+    create_pretty_dict(Clink,Dlink),
+    Ds = [Dlink|Ds1].
 
 add_inner_clause(H, B, D, Loc, Cs1, Cs2, Ds1, Ds2) :-
-	% make sure it is defined
-	get_inner(H, Hinner),
-	functor(Hinner, N, A),
-	ensure_defined(N, A),
-	clause_key(Hinner, KeyInner), % create new key and copy locator
-	add_clause_locator(KeyInner, Loc),
-	Cinner = clause(Hinner, B), % TODO: rewrite keys using KeyInner? (use inverse_rewrite_source_body/2)
-	Cs1 = [Cinner:KeyInner|Cs2],
-	Ds1 = [D|Ds2].
+    % make sure it is defined
+    get_inner(H, Hinner),
+    functor(Hinner, N, A),
+    ensure_defined(N, A),
+    clause_key(Hinner, KeyInner), % create new key and copy locator
+    add_clause_locator(KeyInner, Loc),
+    Cinner = clause(Hinner, B), % TODO: rewrite keys using KeyInner? (use inverse_rewrite_source_body/2)
+    Cs1 = [Cinner:KeyInner|Cs2],
+    Ds1 = [D|Ds2].
 
 % (ctchecks looks at defined predicates)
 ensure_defined(N, A) :-
-	module_split(N, M, _),
-	( current_fact(itf_base_db:defines(N,A,M)) ->
-	    true
-	; assertz_fact(itf_base_db:defines(N,A,M))
-	).
+    module_split(N, M, _),
+    ( current_fact(itf_base_db:defines(N,A,M)) ->
+        true
+    ; assertz_fact(itf_base_db:defines(N,A,M))
+    ).
 
 % N/A needs a wrapper if it has any check calls or success assertion
 pred_needs_wrapper(N, A) :-
-	functor(Goal, N, A),
-	assertion_read(Goal,_M,Status,Type,_Body,_Dict,_Source,_LB,_LE),
-	Status = check,
-	( Type = calls ; Type = success ),
-	!.
+    functor(Goal, N, A),
+    assertion_read(Goal,_M,Status,Type,_Body,_Dict,_Source,_LB,_LE),
+    Status = check,
+    ( Type = calls ; Type = success ),
+    !.
 
 :- use_module(library(aggregates), [findall/3]).
 
 % (See transformation example above for details)
 rewrite_assertions(N, A) :-
-	functor(Goal, N, A),
-	% Get all assertions
-	findall(a(Goal,M,Status,Type,Body,Dict,Source,LB,LE),
-	        retract_fact(pgm_assertion_read(Goal,M,Status,Type,Body,Dict,Source,LB,LE)),
-		As),
-	% Assert them back
-	( member(Asrt, As),
-	    rewrite_assertion(Asrt),
-	    fail
-	; true
-	).
+    functor(Goal, N, A),
+    % Get all assertions
+    findall(a(Goal,M,Status,Type,Body,Dict,Source,LB,LE),
+            retract_fact(pgm_assertion_read(Goal,M,Status,Type,Body,Dict,Source,LB,LE)),
+            As),
+    % Assert them back
+    ( member(Asrt, As),
+        rewrite_assertion(Asrt),
+        fail
+    ; true
+    ).
 
 rewrite_assertion(a(Goal,M,Status,Type,Body,Dict,Source,LB,LE)) :-
-	assertion_body(Goal,Compat,Call,Succ,Comp,Comm,Body),
-	get_inner(Goal, NewGoal),
-	assertion_body(NewGoal,Compat,Call,Succ,Comp,Comm,NewBody),
-	( link_assrt(Status, Type, Status2),
-	    add_assertion_read(Goal,M,Status2,Type,Body,Dict,Source,LB,LE),
-	    fail
-	; true
-	),
-	( inner_assrt(Status, Type, Status2, Type2),
-	    add_assertion_read(NewGoal,M,Status2,Type2,NewBody,Dict,Source,LB,LE),
-	    fail
-	; true
-	).
+    assertion_body(Goal,Compat,Call,Succ,Comp,Comm,Body),
+    get_inner(Goal, NewGoal),
+    assertion_body(NewGoal,Compat,Call,Succ,Comp,Comm,NewBody),
+    ( link_assrt(Status, Type, Status2),
+        add_assertion_read(Goal,M,Status2,Type,Body,Dict,Source,LB,LE),
+        fail
+    ; true
+    ),
+    ( inner_assrt(Status, Type, Status2, Type2),
+        add_assertion_read(NewGoal,M,Status2,Type2,NewBody,Dict,Source,LB,LE),
+        fail
+    ; true
+    ).
 
 % Trust success in link clause
 link_assrt(check, success, Status) :- !, Status = true.
@@ -256,12 +256,12 @@ link_assrt(Status, _Type, Status).
 
 % Trust calls in inner clause
 inner_assrt(check, calls, Status, Type) :- !,
-	( Status = check, Type = entry
-	; Status = check, Type = calls
-	).
+    ( Status = check, Type = entry
+    ; Status = check, Type = calls
+    ).
 % TODO: using 'trust' (to use more precise info if available) does not work as expected
 %inner_assrt(check, calls, Status, Type) :- !,
-%	Status = trust, Type = calls.
+%       Status = trust, Type = calls.
 inner_assrt(_, entry, _Status, _Type) :- !, fail. % omit user 'entry' in inner
 inner_assrt(Status, Type, Status, Type).
 
@@ -272,37 +272,37 @@ inner_assrt(Status, Type, Status, Type).
 
 % Obtain Hlink and Blink
 get_link(N, A, Hlink, Blink) :-
-	inner_name(N, Ninner),
-	functor(Hlink, N, A),
-	Hlink =.. [_|Vs],
-	Blink =.. [Ninner|Vs].
+    inner_name(N, Ninner),
+    functor(Hlink, N, A),
+    Hlink =.. [_|Vs],
+    Blink =.. [Ninner|Vs].
 
 % Obtain Hinner
 get_inner(H, Hinner) :-
-	% get renamed head
-	functor(H, N, _A),
-	H =.. [_|As],
-	inner_name(N, Ninner),
-	Hinner =.. [Ninner|As].
+    % get renamed head
+    functor(H, N, _A),
+    H =.. [_|As],
+    inner_name(N, Ninner),
+    Hinner =.. [Ninner|As].
 
 inner_name(N, Ninner) :-
-	atom_concat(N, '/i', Ninner).
+    atom_concat(N, '/i', Ninner).
 
 % ---------------------------------------------------------------------------
 
 % Add a impl_defined
 % TODO: move to other module
 add_impl_defined(MN, A, _Loc) :-
-	module_split(MN, M, N),
-	functor(Goal, MN, A),
-	assertz_fact(itf_base_db:impl_defines(Goal,M)),
-	add_directive(impl_defined([N/A])).
+    module_split(MN, M, N),
+    functor(Goal, MN, A),
+    assertz_fact(itf_base_db:impl_defines(Goal,M)),
+    add_directive(impl_defined([N/A])).
 
 % ---------------------------------------------------------------------------
 
 % TODO: duplicated?
 goal_module_split(MG, M, G) :-
-	MG =.. [MN|As],
-	module_split(MN, M, N),
-	G =.. [N|As].
+    MG =.. [MN|As],
+    module_split(MN, M, N),
+    G =.. [N|As].
 

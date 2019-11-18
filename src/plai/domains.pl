@@ -27,12 +27,12 @@
 ").
 
 :- doc(bug,"When interpreting assertions (and native) should take 
-	into account things like sourcename(X):- atom(X) and
-        true pred atom(X) => atm(X).").
+    into account things like sourcename(X):- atom(X) and
+    true pred atom(X) => atm(X).").
 :- doc(bug,"@pred{body_succ_builtin/9} seems to introduce spurious 
-	choice-points.").
+    choice-points.").
 :- doc(bug,"Property @tt{covered/2} is not well understood by the
-	domains.").
+    domains.").
 :- doc(bug,"Operation @tt{amgu/5} is missing.").
 
 % TODO: Define extend/5 and project/5 without the extra Subgoal
@@ -98,7 +98,7 @@
 :- doc(section, "Domain declaration").
 
 :- doc(aidomain(AbsInt),"Declares that @var{AbsInt} identifies
-	an abstract domain.").
+    an abstract domain.").
 :- multifile aidomain/1. % TODO: remove this multifile decl (and others)
 
 % ===========================================================================
@@ -119,9 +119,9 @@
 
 :- export(amgu/5).
 :- pred amgu(+AbsInt,+Sg,+Head,+ASub,-AMGU) : atm(AbsInt) + not_fails
-        #"Perform the abstract unification @var{AMGU} between @var{Sg} and
-          @var{Head} given an initial abstract substitution @var{ASub} and
-          abstract domain @var{AbsInt}.".
+    #"Perform the abstract unification @var{AMGU} between @var{Sg} and
+      @var{Head} given an initial abstract substitution @var{ASub} and
+      abstract domain @var{AbsInt}.".
 
 :- export(augment_asub/4).
 % augment_asub(+,+,+,-)
@@ -132,13 +132,13 @@
 :- export(augment_two_asub/4).
 % augment_two_asub(+,+,+,-)
 :- doc(augment_two_asub(AbsInt,ASub0,ASub1,ASub), "@var{ASub} is an
-           abstract substitution resulting of augmenting two abstract
-           substitutions: @var{ASub0} and @var{ASub1} whose domains are
-           disjoint.").
+       abstract substitution resulting of augmenting two abstract
+       substitutions: @var{ASub0} and @var{ASub1} whose domains are
+       disjoint.").
 
 :- export(call_to_entry/10).
 :- pred call_to_entry(+AbsInt,+Sv,+Sg,+Hv,+Head,+ClauseKey,+Fv,+Proj,-Entry,-ExtraInfo)
-        : (atm(AbsInt), list(Sv), list(Hv), list(Fv)) + not_fails
+    : (atm(AbsInt), list(Sv), list(Hv), list(Fv)) + not_fails
   #"Obtains the abstract substitution @var{Entry} which results from
    adding the abstraction of the unification @var{Sg} = @var{Head} to
    abstract substitution @var{Proj} (the call substitution for
@@ -152,7 +152,7 @@
 
 :- export(exit_to_prime/8).
 :- pred exit_to_prime(+AbsInt,+Sg,+Hv,+Head,+Sv,+Exit,?ExtraInfo,-Prime)
-        : (atm(AbsInt), list(Hv,var), list(Sv, var)) + not_fails
+    : (atm(AbsInt), list(Hv,var), list(Sv, var)) + not_fails
    #"Computes the abstract substitution @var{Prime} which results from
    adding the abstraction of the unification @var{Sg} = @var{Head} to
    abstract substitution @var{Exit} (the exit substitution for a
@@ -162,31 +162,31 @@
 % TODO:[new-resources] compatibility with project/5 (unbound Sg!)
 :- export(project/5).
 :- pred project(+AbsInt,+Vars,+HvFv_u,+ASub,-Proj)
-        : atm * list * list * term * term + not_fails
-        #"Projects the abstract substitution @var{ASub} onto the variables of
-         list @var{Vars} resulting in the projected abstract substitution
-         @var{Proj}.".
+    : atm * list * list * term * term + not_fails
+    #"Projects the abstract substitution @var{ASub} onto the variables of
+     list @var{Vars} resulting in the projected abstract substitution
+     @var{Proj}.".
 project(AbsInt,Vars,HvFv,ASub,Proj) :-
-	project(AbsInt,sg_not_provided,Vars,HvFv,ASub,Proj). % TODO: Unbound Sg is a problem! (IG) Using sg_not_provided instead (JF)
+    project(AbsInt,sg_not_provided,Vars,HvFv,ASub,Proj). % TODO: Unbound Sg is a problem! (IG) Using sg_not_provided instead (JF)
 
 % TODO:[new-resources] version with Sg, really needed?
 % TODO: check that HvFv is sorted?
 :- export(project/6). % TODO:[new-resources] (extra)
 :- pred project(+AbsInt,+Sg,+Vars,+HvFv_u,+ASub,-Proj)
-        : atm * term * list * list * term * term + not_fails
-        #"Projects the abstract substitution @var{ASub} onto the variables of
-          list @var{Vars} resulting in the projected abstract substitution
-          @var{Proj}.".
+    : atm * term * list * list * term * term + not_fails
+    #"Projects the abstract substitution @var{ASub} onto the variables of
+      list @var{Vars} resulting in the projected abstract substitution
+      @var{Proj}.".
 
 :- export(widencall/4).
 :- pred widencall(+AbsInt,+ASub0,+ASub1,-ASub) : atm(AbsInt)
-        #"@var{ASub} is the result of widening abstract substitution @var{ASub0}
-          and @var{ASub1}, which are supposed to be consecutive call patterns in
-         a fixpoint computation.
+    #"@var{ASub} is the result of widening abstract substitution @var{ASub0}
+      and @var{ASub1}, which are supposed to be consecutive call patterns in
+     a fixpoint computation.
 
-         @begin{alert} This predicate is allowed to fail and it fails if the
-         domain does not define a widening on calls.
-         @end{alert} ".
+     @begin{alert} This predicate is allowed to fail and it fails if the
+     domain does not define a widening on calls.
+     @end{alert} ".
 
 :- export(dual_widencall/4).
 % dual_widencall(+,+,+,-)
@@ -198,9 +198,9 @@ dual_widencall(_AbsInt,_ASub0,_ASub1,_ASub) :- fail.
 
 :- export(widen/4).
 :- pred widen(+AbsInt,+ASub0,+ASub1,-ASub) : atm(AbsInt) + not_fails
-        #"@var{ASub} is the result of widening abstract substitution @var{ASub0}
-          and @var{ASub1}, which are supposed to be consecutive approximations
-          to the same abstract value.".
+    #"@var{ASub} is the result of widening abstract substitution @var{ASub0}
+      and @var{ASub1}, which are supposed to be consecutive approximations
+      to the same abstract value.".
 
 :- export(dual_widen/4).
 % dual_widen(+,+,+,-)
@@ -210,7 +210,7 @@ dual_widencall(_AbsInt,_ASub0,_ASub1,_ASub) :- fail.
    value.").
 
 dual_widen(AbsInt,Prime0,Prime1,NewPrime) :-
-	compute_glb(AbsInt,[Prime0,Prime1],NewPrime).
+    compute_glb(AbsInt,[Prime0,Prime1],NewPrime).
 % TODO: [IG] I think this name is not correct to perform the glb
 % TODO: only used in fixpo_plai_gfp and fixpo_ops_gfp
 
@@ -227,8 +227,8 @@ normalize_asub(_AbsInt,Prime,Prime).
 
 :- export(compute_lub/3).
 :- pred compute_lub(+AbsInt,+ListASub,-LubASub) : atm * list * term
-        #"@var{LubASub} is the least upper bound of the abstract substitutions
-         in list @var{ListASub}.".
+    #"@var{LubASub} is the least upper bound of the abstract substitutions
+     in list @var{ListASub}.".
 
 :- export(compute_glb/3).
 % compute_glb(+,+,-)
@@ -236,7 +236,7 @@ normalize_asub(_AbsInt,Prime,Prime).
    greatest lower bound of the abstract substitutions in list @var{ListASub}.").
 % TODO:[new-resources] needed?
 compute_glb(AbsInt,[A,B],Glb) :-
-        glb(AbsInt,A,B,Glb). % For backwards compatibility
+    glb(AbsInt,A,B,Glb). % For backwards compatibility
 
 :- doc(hide,compute_clauses_lub/4).
 :- export(compute_clauses_lub/4).
@@ -251,38 +251,38 @@ compute_glb(AbsInt,[A,B],Glb) :-
 %% % returning the pattern (Goal,Proj,Prime)
 %% 
 %% lub_all(AbsInt,[(Goal0,Proj0,Prime0)|Patterns],Goal,Lub) :-
-%% 	varset(Goal,Hv),
-%% 	project_pattern(Goal0,Proj0,Prime0,AbsInt,Goal,Hv,Proj,Prime),
-%% 	lub_all0(Patterns,Goal,Hv,Proj,Prime,AbsInt,Lub).
+%%      varset(Goal,Hv),
+%%      project_pattern(Goal0,Proj0,Prime0,AbsInt,Goal,Hv,Proj,Prime),
+%%      lub_all0(Patterns,Goal,Hv,Proj,Prime,AbsInt,Lub).
 %% 
 %% lub_all0([(Goal0,Proj0,Prime0)|Patterns],Goal,Hv,Proj1,Prime1,AbsInt,Lub) :-
-%% 	project_pattern(Goal0,Proj0,Prime0,AbsInt,Goal,Hv,Proj2,Prime2),
-%% 	compute_lub_el(AbsInt,Proj1,Proj2,Proj),
-%% 	compute_lub_el(AbsInt,Prime1,Prime2,Prime),
-%% 	lub_all0(Patterns,Goal,Hv,Proj,Prime,AbsInt,Lub).
+%%      project_pattern(Goal0,Proj0,Prime0,AbsInt,Goal,Hv,Proj2,Prime2),
+%%      compute_lub_el(AbsInt,Proj1,Proj2,Proj),
+%%      compute_lub_el(AbsInt,Prime1,Prime2,Prime),
+%%      lub_all0(Patterns,Goal,Hv,Proj,Prime,AbsInt,Lub).
 %% lub_all0([],Goal,_Hv,Proj,Prime,_AbsInt,(Goal,Proj,Prime)).
 %% 
 %% project_pattern(Goal0,Proj0,Prime0,AbsInt,Goal,Hv,Proj,Prime) :-
-%% 	varset(Goal0,Sv),
-%% 	abs_sort(AbsInt,Proj0,Proj_s),
-%% 	call_to_entry0(Proj_s,AbsInt,Sv,Goal0,Hv,Goal,[],Proj,_),
-%% 	abs_sort(AbsInt,Prime0,Prime_s),
-%% 	call_to_entry0(Prime_s,AbsInt,Sv,Goal0,Hv,Goal,[],Prime,_).
+%%      varset(Goal0,Sv),
+%%      abs_sort(AbsInt,Proj0,Proj_s),
+%%      call_to_entry0(Proj_s,AbsInt,Sv,Goal0,Hv,Goal,[],Proj,_),
+%%      abs_sort(AbsInt,Prime0,Prime_s),
+%%      call_to_entry0(Prime_s,AbsInt,Sv,Goal0,Hv,Goal,[],Prime,_).
 %% 
 %% call_to_entry0('$bottom',_AbsInt,_Sv,_Goal0,_Hv,_Goal,_Fv,'$bottom',_E) :- !.
 %% call_to_entry0(Proj_s,AbsInt,Sv,Goal0,Hv,Goal,Fv,Proj,E) :-
-%% 	call_to_entry(AbsInt,Sv,Goal0,Hv,Goal,not_provided,Fv,Proj_s,Proj,E).
+%%      call_to_entry(AbsInt,Sv,Goal0,Hv,Goal,not_provided,Fv,Proj_s,Proj,E).
 
 :- export(identical_proj/5).
 :- pred identical_proj(+AbsInt,+Sg,+Proj,+Sg1,+Proj1) : atm(AbsInt)
-        #"Abstract patterns @var{Sg}:@var{Proj} and @var{Sg1}:@var{Proj1} are
-          equivalent in domain @var{AbsInt}. Note that @var{Proj} is assumed to
-          be already sorted.".
+    #"Abstract patterns @var{Sg}:@var{Proj} and @var{Sg1}:@var{Proj1} are
+      equivalent in domain @var{AbsInt}. Note that @var{Proj} is assumed to
+      be already sorted.".
 identical_proj(AbsInt,Sg,Proj,Sg1,Proj1) :-
-	variant(Sg,Sg1),
-	Sg = Sg1,
-	abs_sort(AbsInt,Proj1,Proj1_s),
-	identical_abstract(AbsInt,Proj,Proj1_s).
+    variant(Sg,Sg1),
+    Sg = Sg1,
+    abs_sort(AbsInt,Proj1,Proj1_s),
+    identical_abstract(AbsInt,Proj,Proj1_s).
 
 :- export(identical_proj_1/7).
 :- pred identical_proj_1(AbsInt,Sg,Proj,Sg1,Proj1,Prime1,Prime2)
@@ -291,38 +291,38 @@ identical_proj(AbsInt,Sg,Proj,Sg1,Proj1) :-
    already sorted. It is different from @tt{identical_proj/5} because it can be
    true although @var{Sg} and @var{Sg1} are not variant".
 identical_proj_1(AbsInt,Sg,Proj,Sg1,Proj1,Prime1,Prime2) :-
-	\+ variant(Sg,Sg1),
-	rtc_linear(Sg1),
-	%
-	varset(Sg1,Hv),
-	varset(Sg,Hvv),
-	%
-	functor(Sg,F,A),
-	functor(Norm,F,A),
-	varset(Norm,Hvnorm),
-	%
-	call_to_entry(AbsInt,_Sv,Sg,Hvnorm,Norm,not_provided,[],Proj,Entry,_), % TODO: add some ClauseKey? (JF)
-	call_to_entry(AbsInt,_Sv,Sg1,Hvnorm,Norm,not_provided,[],Proj1,Entry1,_), % TODO: add some ClauseKey? (JF)
-	identical_abstract(AbsInt,Entry,Entry1),
-	%
-	% call_to_entry(AbsInt,_Sv,Sg,Hv,Sg1,not_provided,[],Proj,Entry,_),
-        % abs_sort(AbsInt,Entry,Entry_s),
-        % abs_sort(AbsInt,Proj1,Proj1_s),
-	% identical_abstract(AbsInt,Proj1_s,Entry_s),
-	%
-	% call_to_entry(AbsInt,_Sv,Sg1,Hvv,Sg,not_provided,[],Proj1,Entry1,_),
-        % abs_sort(AbsInt,Entry1,Entry1_s),
-        % abs_sort(AbsInt,Proj,Proj_s),
-	% identical_abstract(AbsInt,Proj_s,Entry1_s),
-	%
-	each_abs_sort(Prime1,AbsInt,Prime1_s),
-	each_exit_to_prime(Prime1_s,AbsInt,Sg,Hv,Sg1,Hvv,(no,Proj),Prime2).
+    \+ variant(Sg,Sg1),
+    rtc_linear(Sg1),
+    %
+    varset(Sg1,Hv),
+    varset(Sg,Hvv),
+    %
+    functor(Sg,F,A),
+    functor(Norm,F,A),
+    varset(Norm,Hvnorm),
+    %
+    call_to_entry(AbsInt,_Sv,Sg,Hvnorm,Norm,not_provided,[],Proj,Entry,_), % TODO: add some ClauseKey? (JF)
+    call_to_entry(AbsInt,_Sv,Sg1,Hvnorm,Norm,not_provided,[],Proj1,Entry1,_), % TODO: add some ClauseKey? (JF)
+    identical_abstract(AbsInt,Entry,Entry1),
+    %
+    % call_to_entry(AbsInt,_Sv,Sg,Hv,Sg1,not_provided,[],Proj,Entry,_),
+    % abs_sort(AbsInt,Entry,Entry_s),
+    % abs_sort(AbsInt,Proj1,Proj1_s),
+    % identical_abstract(AbsInt,Proj1_s,Entry_s),
+    %
+    % call_to_entry(AbsInt,_Sv,Sg1,Hvv,Sg,not_provided,[],Proj1,Entry1,_),
+    % abs_sort(AbsInt,Entry1,Entry1_s),
+    % abs_sort(AbsInt,Proj,Proj_s),
+    % identical_abstract(AbsInt,Proj_s,Entry1_s),
+    %
+    each_abs_sort(Prime1,AbsInt,Prime1_s),
+    each_exit_to_prime(Prime1_s,AbsInt,Sg,Hv,Sg1,Hvv,(no,Proj),Prime2).
 
 :- export(identical_abstract/3).
 :- pred identical_abstract(+AbsInt,+ASub1,+ASub2) : atm(AbsInt)
-        #"Succeeds if, in the particular abstract domain, the two abstract
-          substitutions @var{ASub1} and @var{ASub2} are defined on the same
-          variables and are equivalent.".
+    #"Succeeds if, in the particular abstract domain, the two abstract
+      substitutions @var{ASub1} and @var{ASub2} are defined on the same
+      variables and are equivalent.".
 % TODO: [IG] This should be implemented in each domain
 
 :- doc(hide,fixpoint_covered/3).
@@ -333,8 +333,8 @@ identical_proj_1(AbsInt,Sg,Proj,Sg1,Proj1,Prime1,Prime2) :-
 
 :- export(abs_sort/3).
 :- pred abs_sort(+AbsInt,+ASub_u,ASub) : atm(AbsInt) + not_fails
-        #"@var{ASub} is the result of sorting abstract substitution
-         @var{ASub_u}.".
+    #"@var{ASub} is the result of sorting abstract substitution
+     @var{ASub_u}.".
 
 :- export(extend/6). % TODO:[new-resources] can Sg be avoided?
 :- pred extend(+AbsInt,+Sg,+Prime,+Sv,+Call,-Succ) : atm(AbsInt) + not_fails
@@ -352,19 +352,19 @@ identical_proj_1(AbsInt,Sg,Proj,Sg1,Proj1,Prime1,Prime2) :-
    #"Abstract pattern @var{Sg}:@var{Proj} is less general or equivalent to
     abstract pattern @var{Sg1}:@var{Proj1} in domain @var{AbsInt}.".
 less_or_equal_proj(AbsInt,Sg,Proj,Sg1,Proj1) :-
-	variant(Sg,Sg1),
-	Sg = Sg1,
-	abs_sort(AbsInt,Proj1,Proj1_s),
-	less_or_equal(AbsInt,Proj,Proj1_s).
+    variant(Sg,Sg1),
+    Sg = Sg1,
+    abs_sort(AbsInt,Proj1,Proj1_s),
+    less_or_equal(AbsInt,Proj,Proj1_s).
 
 :- export(less_or_equal/3).
 :- pred less_or_equal(+AbsInt,+ASub0,+ASub1) : atm(AbsInt)
-        #"Succeeds if @var{ASub1} is more general or equivalent to @var{ASub0}.".
+    #"Succeeds if @var{ASub1} is more general or equivalent to @var{ASub0}.".
 
 :- export(glb/4).
 :- pred glb(+AbsInt,+ASub0,+ASub1,-GlbASub) : atm(AbsInt) + not_fails
-        #"@var{GlbASub} is the greatest lower bound of abstract substitutions
-         @var{ASub0} and @var{ASub1}.".
+    #"@var{GlbASub} is the greatest lower bound of abstract substitutions
+     @var{ASub0} and @var{ASub1}.".
 
 % ===========================================================================
 :- doc(section, "Specialized operations (including builtin handling)").
@@ -383,17 +383,17 @@ less_or_equal_proj(AbsInt,Sg,Proj,Sg1,Proj1) :-
 
 :- export(call_to_success_fact/10). % TODO:[new-resources] (extra)
 :- pred call_to_success_fact(+AbsInt,+Sg,+Hv,+Head,+K,+Sv,+Call,+Proj,-Prime,-Succ)
-        : atm(AbsInt) + not_fails
-        #"Specialized version of call_to_entry + entry_to_exit + exit_to_prime
-          for a fact @var{Head}.".
+    : atm(AbsInt) + not_fails
+    #"Specialized version of call_to_entry + entry_to_exit + exit_to_prime
+      for a fact @var{Head}.".
 
 % TODO: fix modes, it was: special_builtin(+,+,+,-,-)
 :- export(special_builtin/6).
 :- pred special_builtin(+AbsInt,+SgKey,+Sg,?Subgoal,-Type,-Condvars) : atm(AbsInt)
-        #"Predicate @var{Sg} is considered a ""builtin"" of type @var{Type} in
-          domain @var{AbsInt}. Types are domain dependent. Domains may have two
-          different ways to treat these predicates: see
-          @tt{body_succ_builtin/9}.".
+    #"Predicate @var{Sg} is considered a ""builtin"" of type @var{Type} in
+      domain @var{AbsInt}. Types are domain dependent. Domains may have two
+      different ways to treat these predicates: see
+      @tt{body_succ_builtin/9}.".
 
 :- doc(hide,combined_special_builtin0/3).
 :- export(combined_special_builtin0/3).
@@ -404,7 +404,7 @@ less_or_equal_proj(AbsInt,Sg,Proj,Sg1,Proj1) :-
 % TODO: fix modes, it was: body_succ_builtin(+,+,+,+,+,+,+,+,-)
 :- export(body_succ_builtin/9).
 :- pred body_succ_builtin(+AbsInt,+Type,+Sg,?Vs,+Sv,+Hv,+Call,+Proj,-Succ) :
-        atm(AbsInt) + not_fails % this predicate should not fail
+    atm(AbsInt) + not_fails % this predicate should not fail
    #"Specialized version of call_to_entry + entry_to_exit + exit_to_prime +
     extend for predicate @var{Sg} considered a ""builtin"" of type @var{Type}
     in domain @var{AbsInt}. Whether a predicate is ""builtin"" in a domain is
@@ -417,7 +417,7 @@ less_or_equal_proj(AbsInt,Sg,Proj,Sg1,Proj1) :-
 :- doc(doinclude,success_builtin/7).
 :- export(success_builtin/7).
 :- pred success_builtin(AbsInt,Type,Sv,Condvars,HvFv_u,Call,Succ)
-        : atm(AbsInt) + not_fails
+    : atm(AbsInt) + not_fails
  #"@var{Succ} is the success substitution on domain @var{AbsInt} for a call
    @var{Call} to a goal of a ""builtin"" (domain dependent) type @var{Type}
    with variables @var{Sv}. @var{Condvars} can be used to transfer some
@@ -425,19 +425,19 @@ less_or_equal_proj(AbsInt,Sg,Proj,Sg1,Proj1) :-
 
 :- doc(doinclude,call_to_success_builtin/7).
 :- pred call_to_success_builtin(AbsInt,Type,Sg,Sv,Call,Proj,Succ) + not_fails
-        #"@var{Succ} is the success substitution on domain @var{AbsInt} for a
-          call @var{Call} to a goal @var{Sg} with variables @var{Sv} considered
-          of a ""builtin"" (domain dependent) type @var{Type}. @var{Proj} is
-          @var{Call} projected on @var{Sv}.".
+    #"@var{Succ} is the success substitution on domain @var{AbsInt} for a
+      call @var{Call} to a goal @var{Sg} with variables @var{Sv} considered
+      of a ""builtin"" (domain dependent) type @var{Type}. @var{Proj} is
+      @var{Call} projected on @var{Sv}.".
 
 % ===========================================================================
 :- doc(section, "Properties directly from domain").
 
 :- export(obtain_info/5).
 :- pred obtain_info(+AbsInt,+Prop,+Vars,+ASub,-Info) : atm(AbsInt)
-        #"Obtains variables @var{Info} for which property @var{Prop} holds given
-          abstract substitution @var{ASub} on variables @var{Vars} for domain
-          @var{AbsInt}.".
+    #"Obtains variables @var{Info} for which property @var{Prop} holds given
+      abstract substitution @var{ASub} on variables @var{Vars} for domain
+      @var{AbsInt}.".
 
 % ===========================================================================
 :- doc(section, "Properties to domain and viceversa").
@@ -452,24 +452,24 @@ less_or_equal_proj(AbsInt,Sg,Proj,Sg1,Proj1) :-
     native property, so that they are accumulated, and then calls
     @tt{input_user_interface/6}."). % TODO: Document MaybeCallASub
 info_to_asub(AbsInt,Kind,InputUser,Qv,ASub,Sg,MaybeCallASub) :-
-	info_to_asub_(InputUser,AbsInt,Kind,_,Input),
-	input_user_interface(AbsInt,Input,Qv,ASub,Sg,MaybeCallASub),
-	!. % TODO: make sure that cut is not needed
+    info_to_asub_(InputUser,AbsInt,Kind,_,Input),
+    input_user_interface(AbsInt,Input,Qv,ASub,Sg,MaybeCallASub),
+    !. % TODO: make sure that cut is not needed
 
 info_to_asub_([],_AbsInt,_Kind,Acc,Acc).
 info_to_asub_([I|Info],AbsInt,_Kind,Acc0,Acc) :-
-	( native_prop(I,P),
-	  input_interface(AbsInt,P,_Kind1,Acc0,Acc1) -> true
-	; Acc1=Acc0 ),
-	info_to_asub_(Info,AbsInt,_Kind2,Acc1,Acc).
+    ( native_prop(I,P),
+      input_interface(AbsInt,P,_Kind1,Acc0,Acc1) -> true
+    ; Acc1=Acc0 ),
+    info_to_asub_(Info,AbsInt,_Kind2,Acc1,Acc).
 
 %% Commented out by PLG 8 Jun 2003
 %% info_to_asub_([],_AbsInt,_Kind,Acc,Acc).
 %% info_to_asub_([I|Info],AbsInt,Kind,Acc0,Acc) :-
-%% 	( native_prop(I,P),
-%% 	  input_interface(AbsInt,P,Kind,Acc0,Acc1) -> true
-%% 	; Acc1=Acc0 ),
-%% 	info_to_asub_(Info,AbsInt,Kind,Acc1,Acc).
+%%      ( native_prop(I,P),
+%%        input_interface(AbsInt,P,Kind,Acc0,Acc1) -> true
+%%      ; Acc1=Acc0 ),
+%%      info_to_asub_(Info,AbsInt,Kind,Acc1,Acc).
 
 :- export(full_info_to_asub/5).
 :- doc(full_info_to_asub(AbsInt,InputUser,Qv,ASub,Sg),
@@ -478,16 +478,16 @@ info_to_asub_([I|Info],AbsInt,_Kind,Acc0,Acc) :-
     domain @var{AbsInt}.").
 
 full_info_to_asub(AbsInt,InputUser,Qv,ASub,Sg) :-
-	full_info_to_asub_(InputUser,AbsInt,_,Input),
-	input_user_interface(AbsInt,Input,Qv,ASub,Sg,no),
-	!. % TODO: make sure that cut is not needed
+    full_info_to_asub_(InputUser,AbsInt,_,Input),
+    input_user_interface(AbsInt,Input,Qv,ASub,Sg,no),
+    !. % TODO: make sure that cut is not needed
 
 full_info_to_asub_([],_AbsInt,Acc,Acc).
 full_info_to_asub_([I|Info],AbsInt,Acc0,Acc) :-
-	native_prop(I,P),
-	input_interface(AbsInt,P,perfect,Acc0,Acc1), !, % P is enough (PBC)
-	                                                % do not backtrack
-	full_info_to_asub_(Info,AbsInt,Acc1,Acc).       % into native_prop
+    native_prop(I,P),
+    input_interface(AbsInt,P,perfect,Acc0,Acc1), !, % P is enough (PBC)
+                                                    % do not backtrack
+    full_info_to_asub_(Info,AbsInt,Acc1,Acc).       % into native_prop
 
 :- doc(doinclude,input_interface/5).
 :- doc(input_interface(AbsInt,Prop,Kind,Struc0,Struc1),
@@ -513,18 +513,18 @@ full_info_to_asub_([I|Info],AbsInt,Acc0,Acc) :-
     bottom. It works by calling @tt{asub_to_native/6}.").
 
 asub_to_info(AbsInt,ASub,Qv,OutputUser,CompProps) :-
-	asub_to_native(AbsInt,ASub,Qv,no,Info,Comp),
-	native_props(Info,OutputUser),
-	native_props(Comp,CompProps).
+    asub_to_native(AbsInt,ASub,Qv,no,Info,Comp),
+    native_props(Info,OutputUser),
+    native_props(Comp,CompProps).
 
 :- doc(hide,asub_to_out/5).
 :- export(asub_to_out/5).
 asub_to_out(AbsInt,ASub,Qv,OutputUser,CompProps) :-
-	asub_to_native(AbsInt,ASub,Qv,yes,Info,Comp),
-	native_props(Info,OutputUser0),
-	native_props(Comp,CompProps0),
-	decide_low_level_format(OutputUser0,CompProps0,OutputUser,CompProps).
-	
+    asub_to_native(AbsInt,ASub,Qv,yes,Info,Comp),
+    native_props(Info,OutputUser0),
+    native_props(Comp,CompProps0),
+    decide_low_level_format(OutputUser0,CompProps0,OutputUser,CompProps).
+    
 :- export(asub_to_native/6).
 :- doc(asub_to_native(AbsInt,ASub,Qv,OutFlag,NativeStat,NativeComp),
    "@var{NativeStat} and @var{NativeComp} are the list of native (state and
@@ -543,12 +543,12 @@ asub_to_out(AbsInt,ASub,Qv,OutputUser,CompProps) :-
 % TODO: body_succ0('$var',...) passes unbound Sg (due to metacall), use call(Sg) (or similar) instead? (JF)
 :- export(unknown_call/5).
 :- pred unknown_call(+AbsInt,+Sg,+Vars,+Call,-Succ)
-        : (atm(AbsInt), callable(Sg), list(Vars)) + not_fails
-        #"@var{Succ} is the result of adding to @var{Call} the ``topmost''
-          abstraction in domain @var{AbsInt} of the variables @var{Vars}
-          involved in a literal @var{Sg} whose definition is not present in the
-          preprocessing unit. I.e., it is like the conjunction of the
-          information in @var{Call} with the top for a subset of its variables.".
+    : (atm(AbsInt), callable(Sg), list(Vars)) + not_fails
+    #"@var{Succ} is the result of adding to @var{Call} the ``topmost''
+      abstraction in domain @var{AbsInt} of the variables @var{Vars}
+      involved in a literal @var{Sg} whose definition is not present in the
+      preprocessing unit. I.e., it is like the conjunction of the
+      information in @var{Call} with the top for a subset of its variables.".
 
 :- export(unknown_entry/4).
 :- pred unknown_entry(+AbsInt,+Sg,+Vars,-Entry) : (atm(AbsInt), list(Vars)) + not_fails
@@ -557,9 +557,9 @@ asub_to_out(AbsInt,ASub,Qv,OutputUser,CompProps) :-
 
 :- export(empty_entry/4).
 :- pred empty_entry(+AbsInt,+Sg,+Vars,-Entry) : atm * callable * list * term + not_fails
-        #"@var{Entry} is the ""empty"" abstraction in domain @var{AbsInt} of
-          variables @var{Vars}. I.e., it is the abstraction of a substitution on
-          @var{Vars} in which all variables are unbound: free and unaliased.".
+    #"@var{Entry} is the ""empty"" abstraction in domain @var{AbsInt} of
+      variables @var{Vars}. I.e., it is the abstraction of a substitution on
+      @var{Vars} in which all variables are unbound: free and unaliased.".
 
 % ===========================================================================
 :- doc(section, "Other particular operations").
@@ -628,26 +628,26 @@ asub_to_out(AbsInt,ASub,Qv,OutputUser,CompProps) :-
 
 :- export(collect_types_in_abs/4).  % TODO: [IG] only used in typeslib/dumper.pl
 :- doc(collect_types_in_abs(ASub,AbsInt,Types,Tail), "Collects
-	the type symbols occurring in @var{ASub} of domain @var{AbsInt}
-        in a difference list @var{Types}-@var{Tail}.").
+    the type symbols occurring in @var{ASub} of domain @var{AbsInt}
+    in a difference list @var{Types}-@var{Tail}.").
 
 collect_types_in_abs('$bottom',_AbsInt,Types0,Types) :- !,
-	Types = Types0.
+    Types = Types0.
 collect_types_in_abs(ASub,AbsInt,Types0,Types) :-
-	collect_abstypes_abs(AbsInt,ASub,Types0,Types).
+    collect_abstypes_abs(AbsInt,ASub,Types0,Types).
 
 % :- export(collect_abstypes_abs/4).
 
 :- export(rename_types_in_abs/4).  % TODO: [IG] only used in typeslib/dumper.pl
 :- doc(rename_types_in_abs(ASub0,AbsInt,Dict,ASub1), "Renames
-	the type symbols occurring in @var{ASub0} of domain @var{AbsInt}
-        for the corresponding symbols as in (avl-tree) @var{Dict}
-        yielding @var{ASub1}.").
+    the type symbols occurring in @var{ASub0} of domain @var{AbsInt}
+    for the corresponding symbols as in (avl-tree) @var{Dict}
+    yielding @var{ASub1}.").
 
 rename_types_in_abs('$bottom',_AbsInt,_Dict,ASub) :- !,
-	ASub = '$bottom'.
+    ASub = '$bottom'.
 rename_types_in_abs(ASub0,AbsInt,Dict,ASub1) :-
-	rename_abstypes_abs(AbsInt,ASub0,Dict,ASub1).
+    rename_abstypes_abs(AbsInt,ASub0,Dict,ASub1).
 
 % :- export(rename_abstypes_abs/4).
 
@@ -658,19 +658,19 @@ rename_types_in_abs(ASub0,AbsInt,Dict,ASub1) :-
 
 :- export(abstract_instance/5).
 :- pred abstract_instance(AbsInt,Sg1,Proj1,Sg2,Proj2) # "The pair
-	<Sg1,Proj1> is an abstract instance of the pair <Sg2,Proj2>, i.e., the
-        concretization of <Sg1,Proj1> is included in the concretization of
-        <Sg2,Proj2>.".
+    <Sg1,Proj1> is an abstract instance of the pair <Sg2,Proj2>, i.e., the
+    concretization of <Sg1,Proj1> is included in the concretization of
+    <Sg2,Proj2>.".
 
 abstract_instance(AbsInt,Sg1,Proj1,Sg2,Proj2) :- 
-	part_conc(AbsInt,Sg1,Proj1,Sg1C,Proj1C),
-	part_conc(AbsInt,Sg2,Proj2,Sg2C,Proj2C),
-	instance(Sg1C,Sg2C),
-	varset(Sg2C,S2Cv),
-	varset(Sg1C,S1Cv),
-	call_to_entry(AbsInt,S2Cv,Sg2C,S1Cv,Sg1C,not_provided,[],Proj2C,Entry,_ExtraInfo), % TODO: add some ClauseKey? (JF)
-	Entry \== '$bottom',
-	less_or_equal(AbsInt,Proj1C,Entry).
+    part_conc(AbsInt,Sg1,Proj1,Sg1C,Proj1C),
+    part_conc(AbsInt,Sg2,Proj2,Sg2C,Proj2C),
+    instance(Sg1C,Sg2C),
+    varset(Sg2C,S2Cv),
+    varset(Sg1C,S1Cv),
+    call_to_entry(AbsInt,S2Cv,Sg2C,S1Cv,Sg1C,not_provided,[],Proj2C,Entry,_ExtraInfo), % TODO: add some ClauseKey? (JF)
+    Entry \== '$bottom',
+    less_or_equal(AbsInt,Proj1C,Entry).
 
 :- export(contains_parameters/2).
 :- doc(contains_parameters(AbsInt,Subst), "True if an abstract substitution
@@ -691,39 +691,39 @@ abstract_instance(AbsInt,Sg1,Proj1,Sg2,Proj2) :-
 absub_eliminate_equivalent([],_AbsInt,[]).
 absub_eliminate_equivalent([ASub],_AbsInt,[ASub]) :- !.
 absub_eliminate_equivalent([ASub|LASub],AbsInt,[ASub|NLASub]) :-
-	take_equivalent_out(LASub,ASub,AbsInt,TmpLASub),
-	absub_eliminate_equivalent(TmpLASub,AbsInt,NLASub).
+    take_equivalent_out(LASub,ASub,AbsInt,TmpLASub),
+    absub_eliminate_equivalent(TmpLASub,AbsInt,NLASub).
 
 take_equivalent_out([],_ASub,_AbsInt,[]).
 take_equivalent_out([ASub0|LASub],ASub,AbsInt,NLASub) :-
-	equivalent_or_not(ASub0,ASub,AbsInt,NLASub,Tail),
-	take_equivalent_out(LASub,ASub,AbsInt,Tail).
+    equivalent_or_not(ASub0,ASub,AbsInt,NLASub,Tail),
+    take_equivalent_out(LASub,ASub,AbsInt,Tail).
 
 equivalent_or_not(ASub0,ASub,AbsInt,NLASub,Tail) :-
-	identical_abstract(AbsInt,ASub0,ASub), !,
-	NLASub=Tail.
+    identical_abstract(AbsInt,ASub0,ASub), !,
+    NLASub=Tail.
 equivalent_or_not(ASub0,_ASub,_AbsInt,[ASub0|Tail],Tail).
 
 :- export(absub_fixpoint_covered/3).
 absub_fixpoint_covered(AbsInt,Prime0,Prime1) :-
-	( current_pp_flag(multi_call,on) ->
-	    identical_abstract(AbsInt,Prime0,Prime1)
-	; current_pp_flag(multi_call,off) ->
-	    less_or_equal(AbsInt,Prime0,Prime1)
-	; fail % TODO: anything else?
-	).
+    ( current_pp_flag(multi_call,on) ->
+        identical_abstract(AbsInt,Prime0,Prime1)
+    ; current_pp_flag(multi_call,off) ->
+        less_or_equal(AbsInt,Prime0,Prime1)
+    ; fail % TODO: anything else?
+    ).
 
 :- export(body_builtin/9).
 body_builtin(AbsInt,special(SgKey),Sg,_Condvs,Sv,_HvFv_u,Call,Proj,Succ) :- !,
-	call_to_success_builtin(AbsInt,SgKey,Sg,Sv,Call,Proj,Succ).
+    call_to_success_builtin(AbsInt,SgKey,Sg,Sv,Call,Proj,Succ).
 body_builtin(AbsInt,Type,_Sg,Condvs,Sv,HvFv_u,Call,_Proj,Succ) :-
-	success_builtin(AbsInt,Type,Sv,Condvs,HvFv_u,Call,Succ), !.
+    success_builtin(AbsInt,Type,Sv,Condvs,HvFv_u,Call,Succ), !.
 body_builtin(AbsInt,Type,_Sg,_Condvs,_Sv,_HvFv_u,_Call,_Proj,'$bottom') :-
-	warning_message("body_builtin: the builtin key ~q is not defined in domain ~w",
-	                [Type,AbsInt]).
+    warning_message("body_builtin: the builtin key ~q is not defined in domain ~w",
+                    [Type,AbsInt]).
 
 :- export(undef_call_to_success_builtin/2).
 undef_call_to_success_builtin(AbsInt,SgKey) :-
-        warning_message("call_to_success_builtin: the builtin key ~q is not defined in domain ~w",
-	                [special(SgKey),AbsInt]).
+    warning_message("call_to_success_builtin: the builtin key ~q is not defined in domain ~w",
+                    [special(SgKey),AbsInt]).
 
