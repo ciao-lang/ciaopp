@@ -1,10 +1,10 @@
-:- module(readprog, [sortClauses/3, 
-                 user_clauses/3,
-                 jpg_program_format/3], []).
+:- module(_, [sortClauses/3, 
+              user_clauses/3,
+              jpg_program_format/3], []).
 
 :- use_module(library(lists)).
 
-:- use_module(canonical).
+:- use_module(chclibs_canonical).
 
 :- op(750,fx,type).
 

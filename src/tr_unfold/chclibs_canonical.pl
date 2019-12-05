@@ -1,10 +1,10 @@
-:- module(canonical, [canonical/1,
-                  canonical_pretty/1,
-                  canonical_each/1,
-                  melt/2,
-                  melt1/3,
-                  melteach/2,
-                  variable/1], []).
+:- module(_, [canonical/1,
+              canonical_pretty/1,
+              canonical_each/1,
+              melt/2,
+              melt1/3,
+              melteach/2,
+              variable/1], []).
 
 :- use_module(library(write), [numbervars/3, prettyvars/1]).
 

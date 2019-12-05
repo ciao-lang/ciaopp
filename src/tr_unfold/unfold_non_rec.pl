@@ -20,7 +20,7 @@
 :- use_module(ciaopp(p_unit/itf_db), [curr_file/2]).
 :- use_module(ciaopp(preprocess_flags)).
 :- use_module(unfold_core).
-:- use_module(readprog).
+:- use_module(chclibs_readprog).
 
 :- if(defined(has_ciaopp_extra)).
 :- use_module(ciao_llvm(xs1_transformation), [preds2unfold/2]). % TODO: this should not be here

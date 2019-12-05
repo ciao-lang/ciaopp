@@ -1,4 +1,4 @@
-:- module(unfold_core,[unfold/3],[assertions]).
+:- module(_, [unfold/3], [assertions]).
 
 :- doc(title, "Unfold Transformation").
 :- doc(author, "John Gallagher").
@@ -36,9 +36,9 @@ Note: Such structure of is common in transformed code that has nested loops.
 :- use_module(library(aggregates)).
 :- use_module(library(lists)).
 
-:- use_module(canonical).
-:- use_module(readprog).
-:- use_module(scc).
+:- use_module(chclibs_canonical).
+:- use_module(chclibs_readprog).
+:- use_module(chclibs_scc).
 
 :- op(1150, fx, entry).
 

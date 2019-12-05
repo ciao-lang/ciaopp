@@ -1,11 +1,11 @@
-:- module(balanced_tree, [insert_tree/4,
-                      search_tree/3,
-                      maketree/2,
-                      search_replace_tree/5,
-                      traverse_tree/2,
-                      traverseVal_tree/2,
-                      traversekey_tree/2,
-                      add_treeset/3], []).
+:- module(_, [insert_tree/4,
+              search_tree/3,
+              maketree/2,
+              search_replace_tree/5,
+              traverse_tree/2,
+              traverseVal_tree/2,
+              traversekey_tree/2,
+              add_treeset/3], []).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Insertion and search in 234-trees.  %
