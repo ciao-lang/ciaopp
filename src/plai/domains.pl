@@ -24,6 +24,50 @@
    always be sorted. Abstract substitutions are referred to as @tt{ASub}, 
    and are also supposed sorted (except where indicated), although this 
    depends on the domain.
+
+@section{Variable naming convention for CiaoPP domains}
+
+Both in the PLAI fixpoints and domains, for simplicity, we use the following
+variable names meaning:
+
+ @begin{itemize}
+@item @var{AbsInt}  : identifier of the abstract interpreter being used.
+@item @var{Sg}      : Subgoal being analysed.
+@item @var{SgKey}   : Subgoal key (represented by functor/arity).
+@item @var{Head}    : Head of the clause being analysed.
+@item @var{Sv}      : Subgoal variables.
+@item @var{Hv}      : Head variables.
+@item @var{Fv}      : Free variables in the body of the clause being considered.
+@item @var{Vars}    : Any possible set of variables.
+@item @var{Call}    : Abstract call substitution.
+@item @var{Proj}    : @var{Call} projected onto @var{Sv}.
+@item @var{Entry}   : Abstract entry substitution (i.e. the abstract subtitution
+      obtained after the abstract unification of @var{Sg} and @var{Head}
+       projected onto @var{Hv} + @var{Fv}).
+@item @var{Exit}    : Abstract exit substitution (i.e. the abstract subtitution
+obtained after the analysis of the clause being considered
+ projected onto @var{Hv}).
+@item @var{Prime}   : Abstract prime substitution (i.e. the abstract subtitution
+       obtained after the analysis of the clause being considered
+        projected onto @var{Sv}).
+@item @var{Succ}    : Abstract success substitution (i.e. the abstract subtitution
+        obtained after the analysis of the clause being considered
+        extended to the variables of the clause in which Sg appears).
+@item @var{ASub}    : Any possible abstract substitution.
+@item @var{R_flag}  : Flag which represents the recursive characteristics of a
+        predicate. It will be ``nr'' in case the predicate be non
+        recursive. Otherwise it will be r (recursive).
+@item @var{List}     : (can be represented as @var{OldList},@var{List},@var{AddList},@var{IdList},@var{NewList})
+        current the list of nodes which a given node depends on.
+@item @var{_s}       : The suffix @var{_s} means that the term to which the variable is
+        bound to has been sorted. By default they are always sorted
+        thus @var{_s} is added only when it appears neccessary to say it
+        explicitely.
+@item @var{_uns}     : The suffix @var{_uns} means that the term to which the variable
+        is bound is not sorted.
+@item @var{ExtraInfo}: Info computed during the @pred{call_to_entry} that can be reused
+        during the @pred{exit_to_prime} step.
+ @end{itemize}
 ").
 
 :- doc(bug,"When interpreting assertions (and native) should take 

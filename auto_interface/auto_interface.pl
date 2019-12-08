@@ -23,7 +23,7 @@
 :- use_package(menu).
 
 :- doc(title,"The CiaoPP high-level interface").
-:- doc(author, "David Trallero Mena").
+:- doc(author, "CiaoPP development team").
 
 :- use_module(ciaopp(frontend_driver), [module/1, output/0, output/1]).
 :- use_module(ciaopp(analyze_driver), [analyze/1, acheck_summary/1, acheck/0]).
@@ -199,62 +199,54 @@
 :- doc(hide, set_last_file/1).
 :- doc(hide, get_last_file/1).
 
-:- doc(module,
-"This module defines a simplified user-level interface for CiaoPP.  It
- complements the more expert-oriented interface defined in @ref{The CiaoPP
- low-level programming interface}. This is also the interface called
- by the shortcuts available in menus and toolbars in the emacs mode.
+:- doc(module, "This module defines the high-level interface for
+   CiaoPP, which makes it easy to perform some analysis and
+   transformation tasks, such as checking program assertions (i.e.,
+   types, modes, determinacy, non-failure, cost, etc.), and performing
+   optimizations such as specialization and parallelization. The
+   results can be observed both as CiaoPP messages and as a
+   transformed annotated program. 
 
- The idea of this interface is to make it easy to perform some
- fundamental, prepackaged tasks, such as checking assertions in
- programs (i.e., types, modes, determinacy, non-failure, cost, etc.),
- performing several types of analysis of the program, and
- performing optimizations such as specialization and parallelization.
- The results
- can be observed as new or transformed assertions and predicates in a
- new version of the program.
+   In the @apl{emacs} environment these actions can be performed by
+   clicking on the corresponding button in the toolbar or in the
+   CiaoPP menus. The high-level interface allows calling these actions
+   as predicates from a @bf{CiaoPP top-level} shell:
 
- In order to use CiaoPP, the user must provide two kinds of
- information: first, a number of preprocessing options must be set if
- necessary in order to configure the system; and then, the action that
- has to be done must be selected (analysis, assertion checking,
- optimization).  Those options are controlled by a set of so-called
- flags.  By default, all flags are initialized to the appropriate
- values in most of the cases.  If the value of any of the flags has to
- be changed by the user, the flag must be changed before performing
- the corresponding action.  There are two ways to change the flag
- values. The usual way consists in calling
- @pred{customize_and_preprocess/1} from the CiaoPP top-level shell with the
- file name as argument. In the @apl{emacs} environment this can be done
- easily by clicking on the options button in the toolbar or in
- the CiaoPP menus.  It will prompt (with help) for the value of the
- different options and flags.
+   @begin{itemize}
+   @item @tt{auto_check_assert(File)}: check assertions in File
+   @item @tt{auto_analyze(File)}: analyze File
+   @item @tt{auto_optimize(File)}: optimize File
+   @end{itemize}
 
- The second way to change flag values consist in executing in the
- CiaoPP top-level shell a number of calls to @pred{set_menu_flag/3}
- with the right values, and then calling one of the following
- predicates:
+   The actions above can be controlled by a set of so-called
+   @bf{preprocessor flags}. Note that, depending on flags, processing can
+   be of one module or also all the related modules. The default
+   values of CiaoPP flags can be changed with the following
+   predicates:
 
-    @begin{itemize}
+   @begin{itemize}
+   @item @tt{customize(all)}: select (interactively) the values for
+      the different options (do not perform any action).
+   @item @pred{set_menu_flag/3}: select flag values non-interactively.
+   @end{itemize}
 
-    @item @pred{auto_check_assert/1} with the file name as
-    argument to @bf{check a program}.
+   The customization menus can be configured to show more or less
+   detailed options, depending on the level of expertise of the
+   user. This can be configured in the menu changing the @tt{Menu
+   Level} flag (naive or expert).  The following predicates are
+   provide handy shortcuts to perform customization and preprocessing
+   actions:
 
-    @item @pred{auto_analyze/1} with the file name as argument
-    to @bf{analyze a program}.
+   @begin{itemize}
+   @item @tt{customize_and_preprocess(File)}: enter a menu to select
+     the preprocessing action and options to be performed on file
+     @var{File} (or @var{File} and its related modules), select the
+     different options, and then perform the action.
 
-    @item @pred{auto_optimize/1} with the file name as argument to
-    @bf{optimize (transform) a program}.
-    @end{itemize}
-
- In the @apl{emacs} environment these actions can be performed
- by clicking on the corresponding button in the toolbar or in
- the CiaoPP menus.
-
- The customization menus can be configured to show more or less detailed
- options, depending on the level of expertise of the user. This can be
- configured in menu changing the @tt{Menu Level} flag (naive or expert).
-
+   @item @tt{again}: perform again the last actions selected for
+      @pred{customize_and_preprocess/1} on the same file (useful for
+      re-processing after changing a file).
+   @end{itemize}
 ").
 
 %%  These appear already as separate predicates in the manual.

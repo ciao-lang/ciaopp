@@ -10,21 +10,49 @@
 %
 % ---------------------------------------------------------------------------
 
-:- doc(module, "This module includes low-level primitives for
-   interacting with CiaoPP.
+:- doc(module, "This module includes the low-level predicates for
+interacting with CiaoPP. In this interaction model the user performs a
+sequence of commands to obtain a certain result (e.g., load program,
+analyze, check assertions).
 
-@section{Available abstract domains}
-The available domains are:
-@include{analysis.lpdoc}
+The basic commands are:
+@begin{itemize}
+@item @tt{module(File)}: loads a (main) module into the preprocessor.
 
-@section{More flags related with program analysis}
+@item @tt{analyze(A)}: perform analysis @var{A} (see @ref{Available
+  abstract domains}) on the loaded module.
 
-In this section the flags related with program analysis are explained in
-some detail. In particular, special attention is given to inter-modular
-program analysis and partial deduction (performed in CiaoPP during 
-analysis).
+@item @tt{acheck}: check assertions (using current analysis information).
 
-@include{analysis_more.lpdoc}
+@item @tt{transform(T)}: perform transformation @var{T} on the loaded module.
+
+@item @tt{output}: output a file with the current program state (i.e.,
+      the output includes transformations, analysis info, assertion
+      checking, etc.  as controlled by the flags set and the actions
+      performed).
+
+@item @tt{output(File)}: same as @pred{output/0} but output to @var{File}.
+@end{itemize}
+
+The analyses and transformations are controlled by preprocessor flags. 
+These flags can be modified or consulted with:
+
+@begin{itemize}
+@item @tt{current_pp_flag(F, V)}: consult the current value @var{V} of flag @var{F}.
+@item @tt{set_pp_flag(F, V)}: change the value of flag @var{F} to @var{V}.
+@item @tt{pp_flag(F)}: @var{F} is a preprocessor flag.
+@item @tt{dump_flags(K)}: dump the set of flags identified by @var{K} (@tt{all} for all).
+@end{itemize}
+
+Other commands useful when developing or debugging CiaoPP:
+
+@begin{itemize}
+@item @tt{show_asr(File)}: displays the content of a .asr file.
+
+@item @tt{show_dump(File)}: displays the content of a .dump file.
+
+@item @tt{show_types}: display all current types (inferred or read).
+@end{itemize}
 ").
 
 % ---------------------------------------------------------------------------
@@ -37,22 +65,16 @@ analysis).
 :- prop analysis(Analysis)
     # "@var{Analysis} is a valid analysis identifier.".
 
-:- doc(analysis/1,"Analyses can be integrated in CiaoPP in an ad-hoc
-   way (see the Internals manual), in which the CiaoPP menu would not
-   be aware of them.  The current analyses supported in the menu are
-   in @ref{Available abstract domains}.").
+:- doc(analysis/1, "The current supported analyses are in
+   @ref{Available abstract domains}.").
 
 %:- multifile transformation/1.
 :- impl_defined(transformation/1).
 :- prop transformation(Transformation)
     # "@var{Transformation} is a valid transformation identifier.".
 
-:- doc(transformation/1,"Transformations can be integrated in CiaoPP
-   in an ad-hoc way (see the Internals manual), in which the CiaoPP
-   menu would not be aware of them.  The current transformations
-   supported in the menu are:
-
-   @include{transformation.lpdoc}").
+:- doc(transformation/1, "The current supported transformations are in
+   @ref{Available program transformations}.").
 
 % ---------------------------------------------------------------------------
 
@@ -156,17 +178,6 @@ analysis).
 :- impl_defined(get_menu_flag/3).
 :- export(set_menu_flag/3).
 :- impl_defined(set_menu_flag/3).
-:- endif.
-
-% -----------------------------------------------------------------------
-% TODO: optional?
-
-:- if(defined(with_fullpp)).
-:- reexport(auto_interface(auto_help)).
-:- doc(hide,help/1).
-:- doc(doinclude,help/0).
-:- pred help/0.
-help.
 :- endif.
 
 % -----------------------------------------------------------------------

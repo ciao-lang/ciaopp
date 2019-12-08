@@ -3,7 +3,7 @@
 % Definition of aidomain in PLAI
 :- use_package(aidomain).
 
-% TODO: See analysis.lpdoc for documentation
+% TODO: See part_domains.pl for documentation
 
 :- dom_op(init_abstract_domain/1).
 :- dom_op(amgu/4).

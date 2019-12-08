@@ -34,4 +34,3 @@ with some basic domains, transformations, and language support. Other
 features are distributed as separate bundles.
 
 CiaoPP is distributed under the GNU general public license.
-
