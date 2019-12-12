@@ -1,3 +1,5 @@
+% (included from typeslib.pl)
+
 % ===========================================================================
 % TODO:[new-resources] preliminary support for var_type (for etermsvar)
 % TODO: partially duplicates code from ppoint.pl

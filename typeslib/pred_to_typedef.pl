@@ -1,3 +1,5 @@
+% (included from typeslib.pl)
+
 % UTILITIES
 
 %% var_intersection([], _L, []).

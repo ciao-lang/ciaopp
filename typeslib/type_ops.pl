@@ -1,3 +1,4 @@
+% (included from typeslib.pl)
 
 :- op(1190, fx,(typedef)).   :- op(1190,xfx,(typedef)).
 :- op(25,   fy,(^)).

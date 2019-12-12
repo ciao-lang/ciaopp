@@ -1,3 +1,4 @@
+% (included from typeslib.pl)
 
  %% assert_type_lattice(Lattice):-
  %%    (Lattice == fdtypes ; Lattice == regtypes),

@@ -1,3 +1,5 @@
+% (included from typeslib.pl)
+
 %% :- pred regular_type_pred_definition(+Clauses)
 %% 
 %% # "Checks that @var{Clauses} define a valid regular type.".

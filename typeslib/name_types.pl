@@ -1,3 +1,4 @@
+% (included from typeslib.pl)
 
 :- data(pgm_type_name/3). %% User programs type names.
 :- data(lib_type_name/3). %% Library type names.

@@ -1,3 +1,5 @@
+% (included from typeslib.pl)
+
 % Validation of regular types in rule format 
 
 %% :- pred valid_regular_type_rule(R)

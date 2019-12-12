@@ -1,3 +1,5 @@
+% (included from typeslib.pl)
+
 % Begin equal to non-failure analysis.
 
 %% Operations on type assignments.

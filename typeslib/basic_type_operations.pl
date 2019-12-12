@@ -1,3 +1,5 @@
+% (included from typeslib.pl)
+
 %% :- module(basic_type_operations,
 %%      [ belongs_to_type/2,
 %%        dz_equivalent_types/2,
