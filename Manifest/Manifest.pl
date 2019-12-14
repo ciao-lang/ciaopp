@@ -1,8 +1,9 @@
 :- bundle(ciaopp).
 depends([
-  core,
-  ciaopp_extra-[optional],
-  davinci-[optional] % (for interactive trace)
+    core,
+    typeslib,
+    ciaopp_extra-[optional],
+    davinci-[optional] % (for interactive trace)
 ]).
 
 alias_paths([
@@ -14,7 +15,6 @@ alias_paths([
     %
     ciaopp_docsrc = 'doc',
     %
-    typeslib = 'typeslib',
     spec = 'spec'
 ]).
 
@@ -24,7 +24,6 @@ lib('domains').
 %
 lib('lib').
 %
-lib('typeslib').
 lib('spec').
 
 cmd('cmds/ciaopp-dump-fmt').
