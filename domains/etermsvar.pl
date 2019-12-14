@@ -130,6 +130,7 @@ Type is a pure type term @cite{Dart-Zobel}.
         equiv_types/2,
         generate_a_type_assigment/3,
         generate_a_type_assigment_special_var/3,
+        get_typedefinition/2,
         get_type_definition/2,
         get_type_name/2,
         get_equiv_name/2,
@@ -141,10 +142,9 @@ Type is a pure type term @cite{Dart-Zobel}.
         new_type_name/1,
         new_type_symbol/1,
         pure_type_term/1,
-        recorda_required_types/1,
+        assert_required_type/1,
         retract_rule/1,
         retract_type_name/3,
-        rule_type_symbol/1,
         set_atom_type/1,
         set_float_type/1,
         set_int_type/1,
@@ -159,7 +159,7 @@ Type is a pure type term @cite{Dart-Zobel}.
         type_intersection_2/3,
         type_intersection_2_special_var/3,
         type_symbol/1,
-        unfold_type_union_1/4
+        unfold_type_union/3
     ]).
 
 % CiaoPP library
@@ -175,6 +175,7 @@ Type is a pure type term @cite{Dart-Zobel}.
 % DTM: types for assertions
 :- use_module(domain(gr), [extrainfo/1]).
 :- use_module(domain(termsd), [concrete/4,      revert_types/4]).
+:- use_module(domain(termsd), [recorda_required_types/2]).
 
 :- use_module(library(hiordlib), [maplist/3]).
 :- use_module(engine(io_basic)).
@@ -330,7 +331,7 @@ type_union(Type1,Type2,Type3):-
         asserta_fact(uniontriple(Type1,Type2,Type3)),
         make_deterministic(Def_nnat,Defnew), 
         merge(Def_natun,Defnew,Def),
-        unfold(Type3,Def,UDef),     %  unfold test test
+        unfold_type_union(Type3,Def,UDef),     %  unfold test test
         SDef = UDef,  %    simplify_def(UDef,SDef,Type3),
         sort(SDef,SDef_s),
         retract_rule(Type3),
@@ -384,36 +385,6 @@ union_elem_native_type(T,[T1|R],[T|R]):-
 union_elem_native_type(T,[T1|R],[T1|R1]):-
     union_elem_native_type(T,R,R1).
 
-
-
-:- pred get_typedefinition(+Type,-Def): pure_type_term * list(pure_type_term) #
-"
-Return the definition of @var{Type} if Type is a type simbol. Otherwise return [Type].
-".
-
-get_typedefinition(Type,Def):-
-       ( 
-       rule_type_symbol(Type) ->
-       get_type_definition(Type,Def)
-       ;
-       Def = [Type]
-       ).
-
-:- pred unfold(+TS, +Def,-UDef): list * list(pure_type_term) * list(pure_type_term) #
-"
-Each type term in Def is unfolded in the following way:
-@begin{itemize} 
-@item if it is a type symbol and its definition consists of only one
-type term, replace the type symbol by the type term.
-@item if it is a compound pure type term return the same compound term
-with its arguments unfolded.
-@item otherwise the type term is unchanged.
-@end{itemize}
-".
-
-unfold(TypSymbol,Defin,OuDefin):-
-    unfold_type_union_1(Defin, [TypSymbol], [], TmpDefin),
-    reverse(TmpDefin, OuDefin).
 
 :- pred make_deterministic(+Def1,+Def2):  
  list(pure_type_term) * list(pure_type_term)#  
@@ -2055,7 +2026,7 @@ etermsvar_asub_to_native(ASub,_Qv,Flag,OutputUser,[]):-
 etermsvar_asub_to_native1(OutputUser1,Flag,OutputUser):-
     equiv_types(OutputUser1,OutputUser2),
     revert_types(OutputUser2,OutputUser,Symbols,[]),
-    recorda_required_types_(Flag,Symbols).
+    recorda_required_types(Flag,Symbols).
 
 etermsvar_asub_to_native0([X:(_N,T)|ASub],[Type|OutputUser]):-
     revert_type(T,X,Type),
@@ -2068,10 +2039,6 @@ revert_type(T,X,Type):-
     arg(1,Type,X).
 %       Type=..[T,X].
 revert_type(T,X,(X=T)).      
-
-recorda_required_types_(no,_Symbols).
-recorda_required_types_(yes,Symbols):-
-    recorda_required_types(Symbols).
 
 %------------------------------------------------------------------------%
 % etermsvar_output_interface(+ASub,-Output)                                  %
@@ -2397,7 +2364,7 @@ gettpos([_|Def],F,A,NT):-
 
 replacetypeinpos(_Tx,[],TTy,TTy).
 replacetypeinpos(Tx,[F/A|S],TTy,Txn):-
-    get_type_definition(Tx,Def),
+    get_type_definition(Tx,Def), % TODO: why not get_typedefinition/2? !!!
     replacetypeinposdef(Def,F,A,S,TTy,NDef),
     new_type_symbol(Txn),
     insert_rule(Txn,NDef).

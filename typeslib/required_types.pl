@@ -1,3 +1,4 @@
+% (included from typeslib.pl)
 
 :- data pgm_required_type/1. %% For user programs.
 :- data lib_required_type/1. %% For libraries.
@@ -9,21 +10,9 @@ required_type(T):-
 
 :- use_module(library(assoc), [get_assoc/3]).
 
-%% is_required_type(T):-
-%%      required_type(T).
-
-recorda_required_types([T|Types]):-
-    assert_required_type(T),
-    recorda_required_types(Types).
-recorda_required_types([]).
-
+:- export(assert_required_type/1).
 assert_required_type(T):-
     required_type(T), !.
-assert_required_type(T):-
-    functor(T,F,A),
-    A1 is A+1,
-    functor(G,F,A1),
-    type_of_goal(imported,G), !.
 assert_required_type(T):-
     asserta_fact(pgm_required_type(T)).
 

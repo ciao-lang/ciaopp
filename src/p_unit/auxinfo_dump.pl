@@ -1,4 +1,4 @@
-:- module(dumper,
+:- module(_,
     [ acc_auxiliary_info/2,
       dump_auxiliary_info/1,
       imp_auxiliary_info/4,
@@ -6,33 +6,33 @@
     ],
     [assertions, hiord, datafacts]).
 
+:- doc(module,"This library helps in managing auxiliary info that has
+    to be saved together with plai's analysis info when this one is
+    stored in separate buffers, e.g., copied in a separate table,
+    saved to a file, etc. The process of saving the info is called a
+    dump, the process of recovering the info is called a restore.").
+
 :- use_module(ciaopp(infer/infer_dom), [knows_of/2]).
 :- use_module(ciaopp(plai/domains), [collect_types_in_abs/4, rename_types_in_abs/4]).
 :- use_module(typeslib(typeslib), 
     [get_necessary_rules/2,insert_renamed_type_defs/2,new_type_symbol/1,
      is_param_type_symbol/1, new_param_type_symbol/1,internally_defined_type_symbol/2,
+     is_user_defined_type_symbol/1,
      param_type_symbol_renaming/2,compute_transitive_closure/3,
      assert_just_param_renaming/2]).
 
 :- use_module(ciaopp(preprocess_flags), [current_pp_flag/2]).
-:- use_module(ciaopp(p_unit/itf_db), [current_itf/3]).
-:- use_module(ciaopp(p_unit/aux_filenames), [is_library/1]).
 
-:- use_module(engine(runtime_control), [module_split/3]).
 :- use_module(library(sort), [sort/2]).
 :- use_module(library(assoc), [ord_list_to_assoc/2]).
 :- use_module(library(lists), [append/3]).
 
-:- doc(module,"This library helps in managing auxiliary info that has
-    to be saved together with plai's analysis info when this one is
-    stored in separate buffers, e.g., copied in a separate table,
-    saved to a file, etc. The process of saving the info is called
-    a dump, the process of recovering the info is called a restore.").
 
 :- data all_the_types/1. % accumulates required types
 :- data all_the_type_renamings/4.
                      % accumulates necessary dictionaries
 
+:- meta_predicate retract_if_still(?,fact,?).
 retract_if_still(_,X,_):- retract_fact(X), !.
 retract_if_still(X,_,X).
 
@@ -52,8 +52,8 @@ acc_auxiliary_info(_AbsInt,_ASubs).
 collect_all_types_in_abs([ASub|More],AbsInt,AbsTypes0,AbsTypes):-
     collect_types_in_abs(ASub,AbsInt,AbsTypes0,AbsTypes1),
     ( current_pp_flag(types, deftypes) ->
-      compute_transitive_closure(AbsTypes1,[],AbsTypes15),
-      filter_out_lib_types(AbsTypes15,AbsTypes2)      
+        compute_transitive_closure(AbsTypes1,[],AbsTypes15),
+        filter_out_lib_types(AbsTypes15,AbsTypes2)      
     ; AbsTypes1 = AbsTypes2
     ),
     collect_all_types_in_abs(More,AbsInt,AbsTypes2,AbsTypes).
@@ -72,12 +72,7 @@ accept_type(T) :-
 accept_type(T) :-
     internally_defined_type_symbol(T,_),!.
 accept_type(T) :-
-    user_defined_type(T).
-
-user_defined_type(T) :-
-    module_split(T,M,_),
-    \+ ( current_itf(defines_module,M,Base), is_library(Base) ).
-
+    is_user_defined_type_symbol(T).
 
 :- doc(dump_auxiliary_info(Goal),"Dumps auxiliary info collected
     previously. The dumping is performed by calling @var{Goal}(Info)
@@ -91,8 +86,8 @@ dump_auxiliary_info(Goal):-
     retract_if_still([],all_the_types(AbsTypes),AbsTypes),
     get_necessary_rules(AbsTypes,UsedRules0),
     ( current_pp_flag(types, deftypes) ->
-      filter_out_rules(UsedRules0,UsedRules1),
-      get_necessary_param_renamings(AbsTypes,UsedRules1,UsedRules)
+        filter_out_rules(UsedRules0,UsedRules1),
+        get_necessary_param_renamings(AbsTypes,UsedRules1,UsedRules)
     ; UsedRules = UsedRules0
     ),
     asserta_all(UsedRules,Goal), !. 
@@ -101,7 +96,7 @@ dump_auxiliary_info(_Goal).
 filter_out_rules([],[]).
 filter_out_rules([typedef(T,Def)|Rules],FRules) :-
     ( accept_type(T) ->
-      FRules = [typedef(T,Def)|FRules1]
+        FRules = [typedef(T,Def)|FRules1]
     ; FRules = FRules1
     ),
     filter_out_rules(Rules,FRules1).
@@ -212,7 +207,7 @@ rename_all_types_in_abs([],_AbsInt,_Dict,[]).
 %% :- module(dump_example,[dump/1,restore/1]).
 %% 
 %% :- use_module(ciaopp(plai/plai_db), [complete/7]).
-%% :- use_module(typeslib(dumper)).
+%% :- use_module(ciaopp(p_unit/auxinfo_dump)).
 %% 
 %% :- data my_complete/7.  % stores copies of complete/7
 %% :- data aux/1.          % stores required type definitions

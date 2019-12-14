@@ -1,4 +1,4 @@
-:- module(sharing, [], [assertions, isomodes]).
+:- module(sharing, [], [assertions, regtypes, isomodes]).
 
 :- doc(title, "sharing (abstract domain)").
 :- doc(author, "Kalyan Muthukumar"). % started: 5/2/89
@@ -62,7 +62,6 @@
 %------------------------------------------------------------------------%
 
 :- use_module(domain(s_grshfr), [new1_gvars/4, projected_gvars/3]).
-:- use_module(domain(deftypes), [absu/1]).
 
 :- use_module(library(sets), 
     [ insert/3, 
@@ -94,6 +93,11 @@
 :- use_module(typeslib(typeslib), [is_ground_type/1]).
 :- use_module(domain(eterms), [eterms_input_interface/4]).
 :- use_module(domain(share_aux)).
+
+%------------------------------------------------------------------------%
+
+:- regtype absu(A) # "@var{A} is an abstract substitution".
+absu(_). % TODO: define properly for this domain
 
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%

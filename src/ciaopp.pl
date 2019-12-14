@@ -189,6 +189,42 @@ Other commands useful when developing or debugging CiaoPP:
 :- doc(hide,show_types/0).
 :- endif.
 
+:- use_module(ciaopp(preprocess_flags), [current_pp_flag/2]).
+:- use_module(ciaopp(p_unit/itf_db), [current_itf/3, preloaded_module/2]).
+:- use_module(ciaopp(p_unit/aux_filenames), [is_library/1]).
+:- use_module(engine(runtime_control), [module_split/3]).
+
+% TODO: move somewhere else?
+% Provide hook definitions for typeslib
+:- include(typeslib(typeslib_hooks)).
+
+% (hook)
+typeslib_flag(typedefs_simp) :- current_pp_flag(typedefs_simp, yes).
+typeslib_flag(use_deftypes) :- current_pp_flag(types, deftypes).
+typeslib_flag(type_output_all) :- current_pp_flag(type_output, all). % \+ current_pp_flag(type_output, defined).
+
+% (hook)
+typeslib_is_user_type(T) :-
+    module_split(T,M,_),
+    current_itf(defines_module,M,Base), !, % TODO: dangling choice points?
+    \+ is_library(Base).
+
+% (hook)
+typeslib_interesting_type(T, Mode) :-
+    atom(T),
+    module_split(T,M,_),
+    interesting_module(M,Mode).
+
+interesting_module(M,build) :-
+    preloaded_module(M,_Base),!,fail.
+interesting_module(basic_props,_).
+interesting_module(arithmetic,_).
+interesting_module(assertions_props,_).
+interesting_module(term_typing,_).
+interesting_module(Module,_) :- 
+    current_itf(defines_module,Module,Base), !, % TODO: dangling choice points?
+    \+ is_library(Base).
+
 % -----------------------------------------------------------------------
 % TODO: optional?
 

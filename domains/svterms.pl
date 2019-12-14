@@ -116,7 +116,6 @@
 %           em_defined_type_symbol/2,
 %           equiv_types/2,
 %           generate_a_type_assigment/3,
-%           get_type_definition/2,
 %           get_type_name/2,
 %           insert_rule/2,
 %           insert_type_name/3,
@@ -125,10 +124,8 @@
 %           new_type_symbol/1,
 %           param_type_symbol_renaming/2,
 %           pure_type_term/1,
-%           recorda_required_types/1,
 %           retract_rule/1,
 %           retract_type_name/3,
-%           rule_type_symbol/1,
 %           set_atom_type/1,
 %           set_float_type/1,
 %           set_int_type/1,
@@ -138,8 +135,7 @@
 %           top_type/1,
 %           type_escape_term_list/2,
 %           type_intersection_2/3,
-%           type_symbol/1,
-%           unfold_type_union_1/4
+%           type_symbol/1
 %       ]).
 
 %:- reexport(typeslib(typeslib),[insert_rule/2,insert_type_name/2]). % debug

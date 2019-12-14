@@ -75,7 +75,7 @@
 :- use_module(ciaopp(preprocess_flags), [current_pp_flag/2]).
 :- use_module(ciaopp(plai/plai_db),   [complete/7, get_parent_key/4]).
 :- use_module(ciaopp(plai/domains),   [identical_proj/5, less_or_equal_proj/5, abs_sort/3]).
-:- use_module(typeslib(dumper),         
+:- use_module(ciaopp(p_unit/auxinfo_dump),         
     [ acc_auxiliary_info/2, dump_auxiliary_info/1, imp_auxiliary_info/4, restore_auxiliary_info/2]).
 :- use_module(ciaopp(p_unit/aux_filenames), 
     [ get_module_filename/3, just_module_name/2, is_library/1, get_loaded_module_name/3]).
@@ -542,17 +542,17 @@ update_current_typedefs(CurrModule):-
         get_imdg_asubs(ImdgList,ImdgSubsList),
         get_chdg_asubs(Chdg,ChdgSubs),
         append(ChdgSubs, ImdgSubsList, DepsASubs),
-        dumper:acc_auxiliary_info(AbsInt,[Call,Succ|DepsASubs]),
+        auxinfo_dump:acc_auxiliary_info(AbsInt,[Call,Succ|DepsASubs]),
         fail
     ; true
     ),
-    dumper:dump_auxiliary_info(store_typedef).
+    auxinfo_dump:dump_auxiliary_info(store_typedef).
 
 add_imported_typedefs(AbsInt,Module,ASubs):-
 %       retractall_fact(typedef_already_loaded(Module)),
     set_fact(tmp_current_module(Module)),
-    dumper:acc_auxiliary_info(AbsInt,ASubs),
-    dumper:dump_auxiliary_info(store_typedef), !.
+    auxinfo_dump:acc_auxiliary_info(AbsInt,ASubs),
+    auxinfo_dump:dump_auxiliary_info(store_typedef), !.
 
 store_typedef(TypeDef):-
     current_fact(tmp_current_module(CurrModule)),
@@ -976,14 +976,14 @@ check_registry_already_read(Module):-
 upload_typedefs(AbsInt,Module):-
     %%% uploading typedefs, and updating registry information with typedef renamings.
     set_fact(tmp_current_module(Module)),
-    dumper:restore_auxiliary_info(restore_types,Dict),
+    auxinfo_dump:restore_auxiliary_info(restore_types,Dict),
     ( % (failure-driven loop)
       current_fact(registry(SgKey,Module,OldReg),Ref),
         OldReg = regdata(Id,AbsInt,Sg,Call0,Succ0,SpecName,ImdgList0,Chdg0,Mark),
         get_imdg_asubs(ImdgList0,ImdgSubsList0),
         get_chdg_asubs(Chdg0,ChdgSubs0),
         append(ChdgSubs0, ImdgSubsList0, DepsSubs0),
-        dumper:imp_auxiliary_info(AbsInt,Dict,[Call0,Succ0|DepsSubs0],[Call,Succ|DepsSubs]),
+        auxinfo_dump:imp_auxiliary_info(AbsInt,Dict,[Call0,Succ0|DepsSubs0],[Call,Succ|DepsSubs]),
         replace_chdg_subs(Chdg0,DepsSubs,Chdg,ImdgSubsList),
         replace_imdg_subs(ImdgList0,ImdgSubsList,ImdgList),
         erase(Ref),

@@ -1,4 +1,4 @@
-:- module(sharefree, [], [assertions, isomodes, datafacts]).
+:- module(sharefree, [], [assertions, regtypes, isomodes, datafacts]).
 
 :- doc(title, "sharing+freeness (abstract domain)").
 % started: 4/2/91
@@ -143,7 +143,10 @@
 % Plai lib, auxiliary
 :- use_module(domain(s_eqs), [free_peel/4, simplify_equations/3]).
 
-:- use_module(domain(deftypes), [absu/1]).
+%------------------------------------------------------------------------%
+
+:- regtype absu(A) # "@var{A} is an abstract substitution".
+absu(_). % TODO: define properly for this domain
 
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%

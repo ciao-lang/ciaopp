@@ -1,6 +1,4 @@
 :- module(termsd,[
-%       replace/6,  % delete
-%       get_typedefinition/2, % delete
     terms_init_abstract_domain/1,
     %
     terms_call_to_entry/9,
@@ -95,14 +93,13 @@ variable and Type is a pure type term @cite{Dart-Zobel}.
         equiv_type/2,
         equiv_types/2,
         generate_a_type_assigment/3,
-        get_type_definition/2,
         insert_rule/2,
         internally_defined_type_symbol/2,
         new_type_symbol/1,
         param_type_symbol_renaming/2,
         pure_type_term/1,
-        recorda_required_types/1,
-        rule_type_symbol/1,
+        assert_required_type/1,
+        get_typedefinition/2,
         set_atom_type/1,
         set_float_type/1,
         set_int_type/1,
@@ -112,7 +109,7 @@ variable and Type is a pure type term @cite{Dart-Zobel}.
         type_escape_term_list/2,
         type_intersection_2/3,
         type_symbol/1,
-        unfold_type_union_1/4,
+        unfold_type_union/3,
         get_module_types/1,
         contain_this_type/3,
         minimaltype/2
@@ -322,42 +319,10 @@ type_union(Type1,Type2,Type3,Seen):-
         get_typedefinition(Type2,Def2),
         sort(Def1,Def1_s),sort(Def2,Def2_s),
         deterministic_union(Def1_s,Def2_s,Def,[(Type1,Type2,Type3)|Seen]),
-        unfold(Type3,Def,UDef),         % change unfold test test
+        unfold_type_union(Type3,Def,UDef),         % change unfold test test
         sort(UDef,UDef_s),
         insert_rule(Type3,UDef_s)
     ).
-
-:- pred get_typedefinition(+Type,-Def): pure_type_term * list(pure_type_term) #
-"
-Return the definition of @var{Type} if Type is a type simbol. Otherwise return [Type].
-".
-
-get_typedefinition(Type,Def):-
-       ( 
-       rule_type_symbol(Type) ->
-%          em_defined_type_symbol(Type, Defin) -> 
-       get_type_definition(Type,Def)
-%          Def = Defin
-       ;
-       Def = [Type]
-       ).
-
-:- pred unfold(+TS,+Def,-UDef)
-    : term * list(pure_type_term) * list(pure_type_term) #
-"
-Each type term in Def is unfolded in the following way:
-@begin{itemize} 
-@item if it is a type symbol and its definition consists of only one
-type term, replace the type symbol by the type term.
-@item if it is a compound pure type term return the same compound term
-with its arguments unfolded.
-@item otherwise the type term is unchanged.
-@end{itemize}
-".
-
-unfold(TypSymbol,Defin,OuDefin):-
-    unfold_type_union_1(Defin, [TypSymbol], [], TmpDefin),
-    reverse(TmpDefin, OuDefin).
 
 % unfold([],[]).
 % unfold([Type|Def],[UnfType|Def1]):-
@@ -550,7 +515,7 @@ terms_naive_ewiden_el(T,T2):-
 %%                       T = T2
 %%                   ;
 %%                       T = NT,
-%%                       unfold(T,NewDef,NewDef_u),
+%%                       unfold_type_union(T,NewDef,NewDef_u),
 %%                       sort(NewDef_u,NewDef_u_s),
 %%                       insert_rule(T,NewDef_u_s)
 %%                   )
@@ -599,7 +564,7 @@ terms_naive_ewiden_el(T,T2):-
 %%          ord_subset_diff(DefPrime,Def_s,DiffDef) -> 
 %%          insert(DiffDef,NewNode,NewDef),
 %%          new_type_symbol(NewT), 
-%%          unfold(NewT,NewDef,NewDef_u),           
+%%          unfold_type_union(NewT,NewDef,NewDef_u),           
 %%          sort(NewDef_u,NewDef_u_s),
 %% % do we also have to replace in NewDef?
 %% %        ( 
@@ -617,7 +582,7 @@ terms_naive_ewiden_el(T,T2):-
 %%              append(DefPrime,DiffDef2,Ddef),
 %%              NT = NewT,
 %%              replace_def(Ddef,Ddef2,T,TPrime,NT,Seen), %Seen
-%%              unfold(NT,Ddef2,Ddef_u),
+%%              unfold_type_union(NT,Ddef2,Ddef_u),
 %%              sort(Ddef_u,Ddef_u_s),
 %%              insert_rule(NT,Ddef_u_s)
 %%              )
@@ -625,7 +590,7 @@ terms_naive_ewiden_el(T,T2):-
 %%          ;
 %%              NT = NewT,
 %%              replace_def(NewDef_u_s,NDef,T,T,NT,Seen), % Seen
-%%              unfold(NT,NDef,NDef_u), 
+%%              unfold_type_union(NT,NDef,NDef_u), 
 %%              sort(NDef_u,NDef_u_s),    
 %%              insert_rule(NT,NDef_u_s) % do we also have to replace in NewDef?
 %%          )
@@ -641,7 +606,7 @@ terms_naive_ewiden_el(T,T2):-
 %%              ;
 %%                  new_type_symbol(NT),
 %%                  replace_def(NewDef,NewDef2,T,T,NT,Seen), % Seen
-%%                  unfold(NT,NewDef2,NewDef2_u),
+%%                  unfold_type_union(NT,NewDef2,NewDef2_u),
 %%                  sort(NewDef2_u,NewDef2_u_s),
 %%                  insert_rule(NT,NewDef2_u_s)
 %%              )
@@ -685,7 +650,7 @@ shortening_el(T,ST):-
     em_defined_type_symbol(Node, Defin),
     new_type_symbol(NewNode),
     replace_def(Defin,NewDefin,N,Anc,NewNode,[]),
-    unfold(NewNode,NewDefin,NewDefin_u),    
+    unfold_type_union(NewNode,NewDefin,NewDefin_u),    
     sort(NewDefin_u,NewDefin_u_s),
     insert_rule(NewNode,NewDefin_u_s),
     replace(T,Anc,Anc,NewNode,NT,[]),
@@ -706,7 +671,7 @@ replace(T,T1,T2,NewNode,NT,Seen):-
         ;
             new_type_symbol(NT),            
             replace_def(NewDef,NewDef2,T,T,NT,Seen),  %  Seen
-            unfold(NT,NewDef2,NewDef2_u), 
+            unfold_type_union(NT,NewDef2,NewDef2_u), 
             sort(NewDef2_u,NewDef2_u_s),
             insert_rule(NT,NewDef2_u_s)
         )
@@ -718,7 +683,7 @@ replace(T,T1,T2,NewNode,NT,Seen):-
 %       ;
 %           new_type_symbol(NT),
 %           replace_def(Def,NewDef,T1,T2,NewNode,[(T,NT)|Seen]),
-%           unfold(NT,NewDef,NewDef_u), % test test test test
+%           unfold_type_union(NT,NewDef,NewDef_u), % test test test test
 %           insert_rule(NT,NewDef_u)
 %       ).
 replace(T,T1,T2,NewNode,NT,Seen):-
@@ -805,7 +770,7 @@ find_path_arg(A,Term,Anc,N,Seen,Depth,Flag):-
 %% 
 %% insert_rules([]).
 %% insert_rules([(S,Def)|Rules]):-
-%%      unfold(S,Def,Def_u), % test test test test      
+%%      unfold_type_union(S,Def,Def_u), % test test test test      
 %%      sort(Def_u,Def_u_s),
 %%      insert_rule(S,Def_u_s),
 %%      insert_rules(Rules).
@@ -1555,7 +1520,7 @@ terms_asub_to_native(ASub,_Qv,Flag,OutputUser,[]):-
     terms_asub_to_native0(ASub,OutputUser1),
     equiv_types(OutputUser1,OutputUser2),
     revert_types(OutputUser2,OutputUser,Symbols,[]),
-    recorda_required_types_(Flag,Symbols).
+    recorda_required_types(Flag,Symbols).
 
 terms_asub_to_native0([X:T|ASub],[Type|OutputUser]):-
     revert_type(T,X,Type),
@@ -1614,9 +1579,25 @@ symbols_of0(N,Term,Symbols,Rest):-
     N1 is N - 1,
     symbols_of0(N1,Term,Rest1,Rest).
 
-recorda_required_types_(no,_Symbols).
-recorda_required_types_(yes,Symbols):-
-    recorda_required_types(Symbols).
+:- export(recorda_required_types/2).
+recorda_required_types(no,_Symbols).
+recorda_required_types(yes,Symbols):-
+    recorda_required_types_(Symbols).
+
+recorda_required_types_([T|Types]):-
+    ( imported_type(T) -> true
+    ; assert_required_type(T)
+    ),
+    recorda_required_types_(Types).
+recorda_required_types_([]).
+
+:- use_module(ciaopp(p_unit), [type_of_goal/2]).
+
+imported_type(T) :-
+    functor(T,F,A),
+    A1 is A+1,
+    functor(G,F,A1),
+    type_of_goal(imported,G), !.
 
 %------------------------------------------------------------------------%
 % terms_output_interface(+ASub,-Output)                                  %

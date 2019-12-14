@@ -78,7 +78,7 @@ according to the strategy defined.
 :- use_module(ciaopp(plai/incanal/incanal_deletion)). % low level deletion functionality
 :- use_module(ciaopp(plai/incanal/incanal_db), [init_clids/0,
     clean_incremental_db/0, get_changed_registry/4]).
-:- use_module(typeslib(dumper),
+:- use_module(ciaopp(p_unit/auxinfo_dump),
     [restore_auxiliary_info/2, imp_auxiliary_info/4]).
 
 :- use_module(ciaopp(analysis_stats)).

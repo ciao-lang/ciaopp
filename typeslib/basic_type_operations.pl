@@ -658,23 +658,23 @@ determine_type_union(Type, Defin):-
        -> get_type_definition(Type, Defin) 
        ;  Defin = [Type]).
 
-
-:- use_module(domain(deftypes), [approx_as_defined/2]).
+:- use_module(typeslib(typeslib_deftypes), [approx_as_defined/2]). % TODO: other definition?
 
 type_intersection2(Typ1, Typ2, TypUnion1, TypUnion2, NewIntersec):-
-  new_type_symbol(Intersec),
-  asserta_fact(computed_type_intersec(Typ1, Typ2, Intersec)),
-  % asserta(no_simplified_type(Intersec)), % This is done by insert_new_type_rule 
-  cp_intersec(TypUnion1, TypUnion2, [], Union),
-  (Union == [] 
-     -> set_bottom_type(X), NUnion = [X] 
-     ;  NUnion = Union),
-   insert_new_type_rule(Intersec, NUnion),
-  ( current_pp_flag(types,deftypes) ->
-    deftypes:approx_as_defined(Intersec,NewIntersec),
-    remove_rule(Intersec)
-  ; NewIntersec = Intersec
-  ).
+    new_type_symbol(Intersec),
+    asserta_fact(computed_type_intersec(Typ1, Typ2, Intersec)),
+    % asserta(no_simplified_type(Intersec)), % This is done by insert_new_type_rule 
+    cp_intersec(TypUnion1, TypUnion2, [], Union),
+    ( Union == [] ->
+        set_bottom_type(X), NUnion = [X] 
+    ; NUnion = Union
+    ),
+    insert_new_type_rule(Intersec, NUnion),
+    ( typeslib_flag(use_deftypes) ->
+        typeslib_deftypes:approx_as_defined(Intersec,NewIntersec),
+        remove_rule(Intersec)
+    ; NewIntersec = Intersec
+    ).
 
 cp_intersec([], _TypUnion2, Union, Union):-!.
 cp_intersec([Typ1|Union1], TypUnion2, Union, NUnion):-

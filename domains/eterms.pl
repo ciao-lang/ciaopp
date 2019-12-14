@@ -31,9 +31,6 @@
     eterms_part_conc/4,
     eterms_multi_part_conc/3,
     get_type/3,
-    resetunion/0,
-    type_union/3,
-    make_deterministic/2, 
     make_determ_wide_rules/1,
     precondition_builtin/2,
     postcondition_builtin/4,
@@ -78,6 +75,7 @@ Type is a pure type term @cite{Dart-Zobel}.
         equiv_types/2,
         generate_a_type_assigment/3,
         get_type_definition/2,
+        get_typedefinition/2, % TODO: !!!
         get_type_name/2,
         get_equiv_name/2,
         insert_equiv_name/2,
@@ -88,10 +86,8 @@ Type is a pure type term @cite{Dart-Zobel}.
         new_type_name/1,
         new_type_symbol/1,
         pure_type_term/1,
-        recorda_required_types/1,
         retract_rule/1,
         retract_type_name/3,
-        rule_type_symbol/1,
         set_atom_type/1,
         set_float_type/1,
         set_int_type/1,
@@ -102,7 +98,9 @@ Type is a pure type term @cite{Dart-Zobel}.
         type_escape_term_list/2,
         type_intersection_2/3,
         type_symbol/1,
-        unfold_type_union_1/4
+        resetunion/0,
+        type_union/3,
+        make_deterministic/2
     ]).
 
 :- include(ciaopp(plai/plai_domain)).
@@ -151,6 +149,7 @@ Type is a pure type term @cite{Dart-Zobel}.
 % DTM: types for assertions
 :- use_module(domain(gr), [extrainfo/1]).
 :- use_module(domain(termsd), [concrete/4,      revert_types/4]).
+:- use_module(domain(termsd), [recorda_required_types/2]).
 
 :- use_module(library(hiordlib), [maplist/2, maplist/3]).
 :- use_module(library(messages)).
@@ -222,10 +221,6 @@ eterms_compute_lub([ASub],ASub).
 
 %------------------------------------------------------------------%
 
-resetunion:-
-    retractall_fact(uniontriple(_,_,_)).
-
-
 eterms_compute_lub_el('$bottom',ASub,ASub):- !.
 eterms_compute_lub_el(ASub,'$bottom',ASub):- !.
 eterms_compute_lub_el(ASub1,ASub2,ASub3):-
@@ -250,195 +245,11 @@ eterms_lub0([X:(N1_e,T1)|ASub1],[Y:(N2_e,T2)|ASub2],[X:(N2,T3)|ASub3]):-
     eterms_lub0(ASub1,ASub2,ASub3).
 eterms_lub0([],[],[]).
 
-
-%---------------------------------------------------------------------%  
-%---------------------------------------------------------------------%  
-%-----------------------Deterministic Union --------------------------%  
-%---------------------------------------------------------------------%  
-%---------------------------------------------------------------------%  
-
-:- data uniontriple/3.
-
-
-:- pred type_union(+Type1,+Type2,-Type3): pure_type_term * pure_type_term * pure_type_term #
-"
-@var{Type3} is the union of @var{Type1} and @var{Type2} and is defined
-by a deterministic type rule.
- This is done as follows: 
-@begin{itemize} 
-@item if @var{Type1} is included in @var{Type2} the union is @var{Type2}.
-@item if @var{Type2} is included in @var{Type1} the union is @var{Type1}.
-@item Otherwise, if (Type1,Type2,Type3) in @var{Seen} (i.e. the union
-of Type1 and Type2 was previously evaluated) the union is
-@var{Type3}. Otherwise, it will create a new type simbol Type3, merge
-the definitions of Type1 and Type2 in a deterministic way, unfold the
-new definition, and insert the new rule.
-@end{itemize}
-".
-
-
-
-type_union(Type1,Type2,Type3):-
-        uniontriple(Type1,Type2,Type3),!.
-type_union(Type1,Type2,Type3):-
-    dz_type_included(Type1,Type2),!,
-    Type3=Type2.
-type_union(Type1,Type2,Type3):-
-    dz_type_included(Type2,Type1),!,
-    Type3=Type1.
-type_union(Type1,Type2,Type3):-
-        new_type_symbol(Type3),
-        get_typedefinition(Type1,Def1),
-        get_typedefinition(Type2,Def2),
-        merge(Def1,Def2,Def_s),
-        insert_rule(Type3,Def_s),
-        get_native_type_symbols(Def_s,Def_n,Def_nnat),
-        union_of_native_types(Def_n,[],Def_natun),
-        asserta_fact(uniontriple(Type1,Type2,Type3)),
-        make_deterministic(Def_nnat,Defnew), 
-        merge(Def_natun,Defnew,Def),
-        unfold(Type3,Def,UDef),     %  unfold test test
-        SDef = UDef,  %    simplify_def(UDef,SDef,Type3),
-        sort(SDef,SDef_s),
-        retract_rule(Type3),
-        insert_rule(Type3,SDef_s).
-
-
-
-
-% simplify_def([],[],_Root).
-% simplify_def([Type|UDef],[NType|SDef],Root):-
-%       compound_pure_type_term(Type,Term,F,A),!,
-%       functor(NewTerm,F,A),
-%         simplify_arg(A,Term,NewTerm,Root),
-%       construct_compound_pure_type_term(NewTerm,NType),
-%         simplify_def(UDef,SDef,Root).
-% simplify_def([Type|UDef],[Type|SDef],Root):-
-%         simplify_def(UDef,SDef,Root).
-
-% simplify_arg(0,_Term,_NewTerm,_Root).
-% simplify_arg(A,Term,NewTerm,Root):-
-%       arg(A,Term,Type),
-%       ( 
-%           dz_equivalent_types(Type,Root) ->
-%           arg(A,NewTerm,Root)
-%       ;
-%           arg(A,NewTerm,Type)
-%       ),
-%       A1 is A - 1,
-%         simplify_arg(A1,Term,NewTerm,Root).
-
-
-
-get_native_type_symbols([],[],[]).
-get_native_type_symbols([T|Def_s],[T|Def_n],Def_nnat):-
-    native_type_symbol(T),!,
-    get_native_type_symbols(Def_s,Def_n,Def_nnat).
-get_native_type_symbols([T|Def_s],Def_n,[T|Def_nnat]):-
-    get_native_type_symbols(Def_s,Def_n,Def_nnat).
-
-
-union_of_native_types([],L,L).
-union_of_native_types([T|L],A,R):-
-    union_elem_native_type(T,A,A1),
-    union_of_native_types(L,A1,R).
-
-union_elem_native_type(T,[],[T]) :- !.
-union_elem_native_type(T,[T1|R],[T1|R]):-
-    dz_type_included(T,T1),!.
-union_elem_native_type(T,[T1|R],[T|R]):-
-    dz_type_included(T1,T),!.
-union_elem_native_type(T,[T1|R],[T1|R1]):-
-    union_elem_native_type(T,R,R1).
-
-
-
-:- pred get_typedefinition(+Type,-Def): pure_type_term * list(pure_type_term) #
-"
-Return the definition of @var{Type} if Type is a type simbol. Otherwise return [Type].
-".
-
-get_typedefinition(Type,Def):-
-       ( 
-       rule_type_symbol(Type) ->
-       get_type_definition(Type,Def)
-       ;
-       Def = [Type]
-       ).
-
-:- pred unfold(+TS, +Def,-UDef): list * list(pure_type_term) * list(pure_type_term) #
-"
-Each type term in Def is unfolded in the following way:
-@begin{itemize} 
-@item if it is a type symbol and its definition consists of only one
-type term, replace the type symbol by the type term.
-@item if it is a compound pure type term return the same compound term
-with its arguments unfolded.
-@item otherwise the type term is unchanged.
-@end{itemize}
-".
-
-unfold(TypSymbol,Defin,OuDefin):-
-    unfold_type_union_1(Defin, [TypSymbol], [], TmpDefin),
-    reverse(TmpDefin, OuDefin).
-
-:- pred make_deterministic(+Def1,+Def2):  
- list(pure_type_term) * list(pure_type_term)#  
-"
-@var{Def1} and @var{Def2} are two sorted lists of type terms with
-compound type terms of different functor/arity. @var{Def1} is the
-merge of both definitions, if two compound type terms have the same
-functor/arity, both are replaced by a new compound type terms whose
-arguments are the deterministic union of the formers.
-".
-
-
-make_deterministic([],[]):- !. 
-make_deterministic([X],[X]):- !. 
-make_deterministic([TermType1,TermType2|Def1],Def):- 
-    compare(Order,TermType1,TermType2),
-    make_deterministic0(Order,TermType1,TermType2,Def1,Def). 
-
-make_deterministic0(=,_TermType1,TermType2,Def1,Def):- 
-    make_deterministic([TermType2|Def1],Def),!. 
-make_deterministic0(_,TermType1,TermType2,Def1,Def):- 
-    compound_pure_type_term(TermType1,Term1,Name,Arity),
-    compound_pure_type_term(TermType2,Term2,Name,Arity),!,
-    functor(Term,Name,Arity),
-    obtain_new_term(Arity,Term1,Term2,Term),
-    construct_compound_pure_type_term(Term,TermType),
-    make_deterministic([TermType|Def1],Def). 
-make_deterministic0(_,TermType1,TermType2,Def1,[TermType1|Def]):- 
-    make_deterministic([TermType2|Def1],Def).
-
-
-obtain_new_term(0,_,_,_) :- !.
-obtain_new_term(N,Term1,Term2,Term):-
-    arg(N,Term1,Arg1),
-    arg(N,Term2,Arg2),
-    type_union(Arg1,Arg2,Arg),
-    arg(N,Term,Arg),
-    N1 is N - 1,
-    asserta_fact(uniontriple(Arg1,Arg2,Arg)),
-    obtain_new_term(N1,Term1,Term2,Term).
-
-
-
-%---------------------------------------------------------------------%  
-%---------------------------------------------------------------------%  
-%----------------------END-Deterministic-Union------------------------%  
-%---------------------------------------------------------------------%  
-%---------------------------------------------------------------------%  
-
-
-
-
 %---------------------------------------------------------------------%  
 %---------------------------------------------------------------------%  
 %--------------------------WIDENING----------------------------------%
 %---------------------------------------------------------------------%  
 %---------------------------------------------------------------------%  
-
 
 eterms_widencall(Prime0,Prime1,Result):-
 %       display(user,'widencall'),
@@ -1935,7 +1746,7 @@ eterms_asub_to_native(ASub,_Qv,Flag,OutputUser,[]):-
 eterms_asub_to_native1(OutputUser1,Flag,OutputUser):-
     equiv_types(OutputUser1,OutputUser2),
     revert_types(OutputUser2,OutputUser,Symbols,[]),
-    recorda_required_types_(Flag,Symbols).
+    recorda_required_types(Flag,Symbols).
 
 eterms_asub_to_native0([X:(_N,T)|ASub],[Type|OutputUser]):-
     revert_type(T,X,Type),
@@ -1948,10 +1759,6 @@ revert_type(T,X,Type):-
     arg(1,Type,X).
 %       Type=..[T,X].
 revert_type(T,X,(X=T)).      
-
-recorda_required_types_(no,_Symbols).
-recorda_required_types_(yes,Symbols):-
-    recorda_required_types(Symbols).
 
 %------------------------------------------------------------------------%
 % eterms_output_interface(+ASub,-Output)                                  %
@@ -2277,7 +2084,7 @@ gettpos([_|Def],F,A,NT):-
 
 replacetypeinpos(_Tx,[],TTy,TTy) :- !.
 replacetypeinpos(Tx,[F/A|S],TTy,Txn):-
-    get_type_definition(Tx,Def),
+    get_type_definition(Tx,Def), % TODO: why not get_typedefinition/2? !!!
     replacetypeinposdef(Def,F,A,S,TTy,NDef),
     new_type_symbol(Txn),
     insert_rule(Txn,NDef), !.

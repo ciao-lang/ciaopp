@@ -100,7 +100,7 @@
       simplify_step1/0,
       create_defined_types_filters/0
     ]).
-:- use_module(domain(deftypes), [build_defined_types_lattice/0]).
+:- use_module(typeslib(typeslib_deftypes), [build_defined_types_lattice/0]).
 
 :- use_module(ciaopp(preprocess_flags)).
 

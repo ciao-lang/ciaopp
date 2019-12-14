@@ -1,3 +1,5 @@
+% (included from typeslib.pl)
+
 %% :- module(regtype_rules,
 %%      [ % type symbols
 %%          internally_defined_type_symbol/2,
@@ -122,6 +124,8 @@ is_param_type_symbol(F):-
     atom_number(N,_),
     !.
 
+% TODO: see accept_type/1, add type props
+is_user_defined_type_symbol(T) :- typeslib_is_user_type(T).
 
 :- pred get_last_type_symbol_counter(-LastCount)
 

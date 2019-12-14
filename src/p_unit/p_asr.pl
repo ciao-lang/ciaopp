@@ -1122,13 +1122,13 @@ save_itf_of_to_asr(_Base, _M).
 %% ---------------------------------------------------------------------------
 
 :- use_module(ciaopp(p_unit/itf_db), [cleanup_lib_itf/0]).
-:- use_module(typeslib(typeslib),   [gen_lib_type_info/1,
-            load_lib_type_info/1, cleanup_lib_type_info/0]).
-:- use_module(typeslib(regtype_basic_lattice), [gen_lib_param_symbol/1,
-            load_lib_param_symbol/1, cleanup_lib_param_symbol/0]).
-%jcf%:- use_module(ciaopp(p_unit),[assert_curr_module/1,assert_curr_file/2]).
-:- use_module(domain(deftypes), [pre_build_defined_types_lattice/1,
-            load_lib_deftypes/1]).
+
+:- use_module(typeslib(typeslib), [
+    gen_lib_type_info/1, load_lib_type_info/1, cleanup_lib_type_info/0]).
+:- use_module(typeslib(regtype_basic_lattice), [
+    gen_lib_param_symbol/1, load_lib_param_symbol/1, cleanup_lib_param_symbol/0]).
+:- use_module(typeslib(typeslib_deftypes), [
+    pre_build_defined_types_lattice/1, load_lib_deftypes/1]).
 
 :- pred cleanup_lib_sources
     # "Cleans up all preloaded assertion information.".

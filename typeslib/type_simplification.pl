@@ -129,15 +129,13 @@ simplify_step1:-
     add_type_symbols_used_to_colapse_others(NoAutoTypes1).
 %       retractall(pgm_typedef(_,_)).
 
-
-:- doc(simplify_step2, "If @verb{type_output} flag value is
-    @verb{all}, then simplifies types in the database by creating
-    classes of equivalent types. All types in a class can then be
-    collapsed to the canonical representative of the class. This
-    one is chosen as follows: first, a parametric type, if there
-    is one in the class; second, one of the types resulting from
-    step1 of simplification, if there is one in the class; third,
-    any type in the class.").
+:- doc(simplify_step2, "If @tt{typeslib_flag(type_output_all)} flag is
+    set, then simplifies types in the database by creating classes of
+    equivalent types. All types in a class can then be collapsed to
+    the canonical representative of the class. This one is chosen as
+    follows: first, a parametric type, if there is one in the class;
+    second, one of the types resulting from step1 of simplification,
+    if there is one in the class; third, any type in the class.").
 
 % Old version
  %% simplify_step2 :- 
@@ -149,23 +147,21 @@ simplify_step2 :- tabling_simplify_step2. % tabling version. PLG
 
 % tabling version. PLG
 tabling_simplify_step2 :-
-    (current_pp_flag(type_output,defined) ->
-    simplify_some_typedefs_user
-    ; 
-    get_analysis_types(TypeRules),
-    % get_required_types(TypeRules), % PLG
-    select_simplify_some_typedefs(TypeRules, _NewRules)
+    ( \+ typeslib_flag(type_output_all) ->
+        simplify_some_typedefs_user
+    ; get_analysis_types(TypeRules),
+      % get_required_types(TypeRules), % PLG
+      select_simplify_some_typedefs(TypeRules, _NewRules)
     ).
 
 %% % cache + tabling version. PLG 
 %% select_simplify_step2 :-
 %%     current_simplified_type_symbol_counter(Count),
-%%     (current_pp_flag(type_output,defined) ->
+%%     ( \+ typeslib_flag(type_output_all) ->
 %%         simplify_some_typedefs_user
-%%         ; 
-%%         get_no_simplified_rules(Count, TypeRules),
-%%         % get_required_types(TypeRules), % PLG
-%%         select_simplify_some_typedefs(TypeRules, _NewRules)
+%%     ; get_no_simplified_rules(Count, TypeRules),
+%%       % get_required_types(TypeRules), % PLG
+%%       select_simplify_some_typedefs(TypeRules, _NewRules)
 %%     ),
 %%     assert_simplified_type_symbol_counter.   
 
@@ -1617,8 +1613,24 @@ unfold_type_rules([Rule|RuList], InRules, OutRules):-
 
 unfold_type_rule(Rule, typedef(TypSymbol, OuDefin)):-
      Rule = typedef(TypSymbol, Defin), 
-     unfold_type_union_1(Defin, [TypSymbol], [], TmpDefin),
-     reverse(TmpDefin, OuDefin). % sort? PLG
+     unfold_type_union(TypSymbol,Defin,OuDefin). % reverse/2 -> sort? PLG
+
+:- export(unfold_type_union/3).
+:- pred unfold_type_union(+TS, +Def,-UDef): list * list(pure_type_term) * list(pure_type_term) #
+"
+Each type term in Def is unfolded in the following way:
+@begin{itemize} 
+@item if it is a type symbol and its definition consists of only one
+type term, replace the type symbol by the type term.
+@item if it is a compound pure type term return the same compound term
+with its arguments unfolded.
+@item otherwise the type term is unchanged.
+@end{itemize}
+".
+
+unfold_type_union(TypSymbol,Defin,OuDefin):-
+    unfold_type_union_1(Defin, [TypSymbol], [], TmpDefin),
+    reverse(TmpDefin, OuDefin).
 
 unfold_type_union_1([], _Seen, InDefin, InDefin):-
      !.
@@ -1714,11 +1726,8 @@ put_user_types_first(AllTypes,Sorted) :-
 
 partition_user_lib([],[],[]).
 partition_user_lib([typedef(T,Def)|Ts],User,Lib) :-
-    atom_concat(Module,Post,T),
-    atom_concat(':',_,Post),
-    current_itf(defines_module,Module,Base),
-    ( is_library(Base) -> 
-      Lib = [typedef(T,Def)|Lib1], User = User1
-    ; Lib = Lib1, User = [typedef(T,Def)|User1]
+    ( is_user_defined_type_symbol(T) -> 
+        Lib = Lib1, User = [typedef(T,Def)|User1]
+    ; Lib = [typedef(T,Def)|Lib1], User = User1
     ),
     partition_user_lib(Ts,User1,Lib1).

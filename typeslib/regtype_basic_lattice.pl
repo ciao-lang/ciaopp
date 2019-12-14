@@ -53,7 +53,7 @@ var         gnd            struct
                                set_param_matching_mode/1,
                                typedef/2,
                                pgm_dz_pair/2]).
-:- use_module(domain(eterms), [type_union/3, resetunion/0]).
+:- use_module(typeslib(typeslib), [type_union/3, resetunion/0]).
 :- use_module(library(lists), [append/3]).
 :- use_module(library(aggregates), [findall/3]).
 
@@ -192,11 +192,13 @@ dz_subset_fdtypes(Type1, Type2) :-
     ; insert_rule(Type2,[bot])
     ),
     set_param_matching_mode(off),
+    % TODO: too complex? save/restore + dependency to eterms (JFMC)
     resetunion,  % in eterms
     save_dz_pairs(DZPairs), % type_union/3 calls dz_type_included
                             % and retracts dz_pair/2 collected so far
     type_union(Type2,Type1,UType),
     restore_dz_pairs(DZPairs),
+    %
     ( typedef(UType,NewDef) ; NewDef = [UType] ),
     set_param_matching_mode(on),
     retract_rule(Type2),

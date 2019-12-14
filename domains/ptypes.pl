@@ -7,7 +7,7 @@
 :- doc(module,"This module implements the topological clash widening
    operator for types domain.").
 
-:- use_module(library(lists), [member/2, reverse/2]).
+:- use_module(library(lists), [member/2]).
 :- use_module(library(sort), [sort/2]).
 
 :- use_module(domain(termsd)).
@@ -18,7 +18,7 @@
         em_defined_type_symbol/2,
         insert_rule/2,
         new_type_symbol/1,
-        unfold_type_union_1/4
+        unfold_type_union/3
     ]).
 
 :- use_module(ciaopp(preprocess_flags), [push_pp_flag/2]).
@@ -199,8 +199,7 @@ hentenwid(T1,T2,T,Seen,Prev,Flag):-
                      T = T2
                  ;
                      T = NT,
-                     unfold_type_union_1(NewDef, [T], [], TmpDefin),
-                     reverse(TmpDefin,NewDef_u),
+                     unfold_type_union(T,NewDef,NewDef_u),
                      sort(NewDef_u,NewDef_u_s),
                      insert_rule(T,NewDef_u_s)
                  )

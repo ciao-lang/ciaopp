@@ -33,7 +33,7 @@ instances of the ciaopp analysis database.
 
 % TODO: automatically detect abstract domain (add data to registry)
 
-:- use_module(typeslib(dumper), [acc_auxiliary_info/2, dump_auxiliary_info/1]).
+:- use_module(ciaopp(p_unit/auxinfo_dump), [acc_auxiliary_info/2, dump_auxiliary_info/1]).
 :- use_module(typeslib(typeslib), [show_types/0]).
 
 process_diff_item(abs_diff(_,_,_, Sg:Call, Succ, new)) :- !,

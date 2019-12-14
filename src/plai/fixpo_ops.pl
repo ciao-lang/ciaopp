@@ -86,8 +86,9 @@
 :- use_module(ciaopp(p_unit), [language/1]).
 :- use_module(ciaopp(p_unit/program_keys), [predkey_from_sg/2]).
 
-:- use_module(typeslib(dumper), [dump_auxiliary_info/1, acc_auxiliary_info/2,
-                             restore_auxiliary_info/2, imp_auxiliary_info/4]).
+:- use_module(ciaopp(p_unit/auxinfo_dump), [
+    dump_auxiliary_info/1, acc_auxiliary_info/2,
+    restore_auxiliary_info/2, imp_auxiliary_info/4]).
 
 :- use_module(library(messages), [warning_message/3, warning_message/2]).
 :- use_module(library(sort), [sort/2]).

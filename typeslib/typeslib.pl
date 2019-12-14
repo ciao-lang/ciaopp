@@ -5,7 +5,6 @@
         dz_equivalent_types/2,
         is_ground_type/1,
         type_intersection_2/3,  % for eterms domain
-        unfold_type_union_1/4,
         is_infinite_type/1, % for non-failure
         belongs_to_type/2,
         create_new_type_rule/2,
@@ -27,7 +26,7 @@
         em_defined_type_symbol/2,
         internally_defined_type_symbol/2,
         new_type_symbol/1,
-        rule_type_symbol/1,
+        rule_type_symbol/1, % (internal)
       % type terms
         generate_a_type_assigment/3,
         type_escape_term_list/2,
@@ -55,9 +54,8 @@
         equiv_types/2,
         get_necessary_rules/2,
         get_required_types/1,
-%%          is_required_type/1,
         pretty_type_lit_rules/4,
-        recorda_required_types/1,
+        assert_required_type/1,
         remove_parametric_types_from_rules/0,
         show_types/0,
         show_type_db/0,
@@ -85,6 +83,7 @@
         is_param_type_symbol/1,
         non_parametric_type_rule_symbol_def/3,
         parametric_type_rule_symbol_def/3,
+        is_user_defined_type_symbol/1,
         assert_and_propagate_type_equivalence/2,
         compute_transitive_closure/3,
         contains_type_param/1
@@ -133,7 +132,12 @@
                  'basic_props:list'('basic_props:gnd'),pt3).
     See bugs/assumed_bot.pl").
 
-% -----------------------------------------------------------------------
+% ---------------------------------------------------------------------------
+% (options for typeslib)
+
+:- include(typeslib(typeslib_hooks)).
+
+% ---------------------------------------------------------------------------
 
 % ciao library
 :- use_module(library(aggregates)).
@@ -148,12 +152,6 @@
 %:- use_module(library(sets), [insert/4]).
 %:- use_module(library(assoc),[get_assoc/3]).
 
-% ciaopp library
-:- use_module(ciaopp(p_unit), [type_of_goal/2]).
-:- use_module(ciaopp(preprocess_flags), [current_pp_flag/2]).
-:- use_module(ciaopp(p_unit/aux_filenames), [is_library/1]).
-:- use_module(ciaopp(p_unit/itf_db), [current_itf/3]).
-% :- use_module(ciaopp(p_unit/program_keys), [rewrite_cls/2, null_directive_key/1]).
 % own library
 :- use_module(typeslib(type_errors)).
 :- use_module(typeslib(type_support)).
@@ -166,6 +164,7 @@
 %:- include(typeslib(type_intersec)).
 :- include(typeslib(basic_type_operations)).
 :- include(typeslib(operations)).
+:- include(typeslib(detunion)).
 :- include(typeslib(type_simplification)).
 :- include(typeslib(type_translate)).
 :- include(typeslib(ppoint)).
@@ -194,9 +193,7 @@
 :- export(generate_a_type_assigment_special_var/3).
 :- include(typeslib(ppoint_vr)).
 
-% -----------------------------------------------------------------------
-
-simp_typedefs(X):- current_pp_flag(typedefs_simp,X).
+% ---------------------------------------------------------------------------
 
 undoall_types:- 
     undoall_type_equivs,

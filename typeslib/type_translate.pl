@@ -34,10 +34,10 @@ format. @var{TypeSymbolList} is a list with the type symbols appearing
 in @var{PreType}.".
 
 pretty_type_lit(Type, PreType, TypeSymbolList):-
-    (simp_typedefs(yes) ->
-     no_simp_pretty_type_lit(Type, PreType, TypeSymbolList)
-     ;
-     simp_pretty_type_lit(Type, PreType, TypeSymbolList)).
+    ( typeslib_flag(typedefs_simp) ->
+        no_simp_pretty_type_lit(Type, PreType, TypeSymbolList)
+    ; simp_pretty_type_lit(Type, PreType, TypeSymbolList)
+    ).
 
 :- pred no_simp_pretty_type_lit(+Type, -PreType, -TypeSymbolList)
 
@@ -75,7 +75,7 @@ pretty_type_lit_rules(Type, PreType, TypeSymbolList, TypeRuleList):-
 
 %%  %% 
 %%  %% pretty_type_lit_rules(Type, PreType, TypeSymbolList, TypeRuleList):-
-%%  %%      (simp_typedefs(yes) ->
+%%  %%      ( typeslib_flag(typedefs_simp) ->
 %%  %%            no_simp_pretty_type_lit_rules(Type, PreType, TypeSymbolList, TypeRuleList)
 %%  %%            ;
 %%  %%            simp_pretty_type_lit_rules(Type, PreType, TypeSymbolList, TypeRuleList)).
@@ -263,6 +263,7 @@ pretty_type_lit_rules(Type, PreType, TypeSymbolList, TypeRuleList):-
 %% 
 %% 
 %% % End of version for parametric types.
+%% :- use_module(ciaopp(p_unit/program_keys), [rewrite_cls/2, null_directive_key/1]).
 %% 
 %% rules_to_pred_defs([], []).
 %% rules_to_pred_defs([Rule|L], DefList) :- 

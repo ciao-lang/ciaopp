@@ -5,93 +5,78 @@
     evalterms_special_builtin/5
    ], [assertions,regtypes,basicmodes,datafacts]).
 
-:- use_module(domain(eterms), 
-    [
-        eterms_less_or_equal/2,
-        eterms_compute_lub_el/3,
-        eterms_identical_abstract/2,
-        eterms_call_to_success_fact/9,
-        eterms_project/5,
-        eterms_exit_to_prime/7,
-        eterms_call_to_entry/9,
-        eterms_glb/3,
-        eterms_extend/5,
-        resetunion/0,
-        type_union/3,
-        make_determ_wide_rules/1,
-        precondition_builtin/2,
-        postcondition_builtin/4,
-        get_type/3
-    ]).
+:- use_module(spec(unfold_builtins), [can_be_evaluated/1]).
 
-
-:- use_module(spec(unfold_builtins), 
-    [can_be_evaluated/1]).
-
-
-:- use_module(domain(termsd), 
-    [ 
+:- use_module(domain(eterms), [
+    eterms_less_or_equal/2,
+    eterms_compute_lub_el/3,
+    eterms_identical_abstract/2,
+    eterms_call_to_success_fact/9,
+    eterms_project/5,
+    eterms_exit_to_prime/7,
+    eterms_call_to_entry/9,
+    eterms_glb/3,
+    eterms_extend/5,
+    make_determ_wide_rules/1,
+    precondition_builtin/2,
+    postcondition_builtin/4,
+    get_type/3]).
+:- use_module(domain(termsd), [
     concrete/4,
-    shortening_el/2 
-    ]).
+    shortening_el/2]).
 
-
-:- use_module(library(lists), 
-    [
-        member/2,
-        append/3,
-        dlist/3
-    ]).
-
-:- use_module(library(aggregates), 
-    [
-        (^)/2,
-        findall/4,
-        setof/3
-    ]).
-
-:- use_module(library(terms_vars), 
-    [
-      varset/2
-    ]).
-
-:- use_module(library(sets), 
-    [ 
-        merge/3,
-        ord_delete/3
-    ]).
-:- use_module(library(sort), 
-    [
-        sort/2
-    ]).
-
+:- use_module(library(lists), [
+    member/2,
+    append/3,
+    dlist/3]).
+:- use_module(library(aggregates), [
+    (^)/2,
+    findall/4,
+    setof/3]).
+:- use_module(library(terms_vars), [varset/2]).
+:- use_module(library(sets), [merge/3, ord_delete/3]).
+:- use_module(library(sort), [sort/2]).
 :- use_module(library(hiordlib), [maplist/2]).
 
-:- use_module(typeslib(typeslib), 
-    [
-        compound_pure_type_term/4,
-        construct_compound_pure_type_term/2,
-        dz_type_included/2,
-        em_defined_type_symbol/2,
-        get_type_definition/2,
-        get_type_name/2,
-        insert_rule/2,
-        insert_type_name/3,
-        new_type_name/1,
-        new_type_symbol/1,
-        pure_type_term/1,
-        retract_rule/1,
-        retract_type_name/3,
-        rule_type_symbol/1,
-        set_atom_type/1,
-        set_int_type/1,
-        set_top_type/1,
-        top_type/1,
-        type_escape_term_list/2
-    ]).
+:- use_module(typeslib(typeslib), [
+    compound_pure_type_term/4,
+    construct_compound_pure_type_term/2,
+    dz_type_included/2,
+    em_defined_type_symbol/2,
+    get_typedefinition/2,
+    get_type_name/2,
+    insert_rule/2,
+    insert_type_name/3,
+    new_type_name/1,
+    new_type_symbol/1,
+    pure_type_term/1,
+    retract_rule/1,
+    retract_type_name/3,
+    set_atom_type/1,
+    set_int_type/1,
+    set_top_type/1,
+    top_type/1,
+    type_escape_term_list/2,
+    resetunion/0,
+    type_union/3]).
 
-:- use_module(domain(deftypes), [absu/1]).
+% ---------------------------------------------------------------------------
 
+:- regtype absu(A) # "@var{A} is an abstract substitution".
+
+absu('$bottom').
+absu([]).
+absu([Elem|Absu]):- 
+    absu_elem(Elem),
+    absu(Absu).
+
+:- regtype absu_elem(E) # "@var{E} is a single substitution".
+
+absu_elem(Var:Type):-
+    var(Var),
+    pure_type_term(Type).
+
+% ---------------------------------------------------------------------------
 
 evalterms_special_builtin('!/0',_Sg,_Subgoal,id,[]).
 evalterms_special_builtin('@=</2',_Sg,_Subgoal,id,[]).
@@ -146,22 +131,6 @@ evalterms_very_special_builtin('functor/3').
 evalterms_very_special_builtin('arg/3').
 evalterms_very_special_builtin(Key):-
     can_be_evaluated(Key).
-
-
-:- pred get_typedefinition(+Type,-Def): pure_type_term * list(pure_type_term) #
-"
-Return the definition of @var{Type} if Type is a type simbol. Otherwise return [Type].
-".
-
-get_typedefinition(Type,Def):-
-       ( 
-       rule_type_symbol(Type) ->
-%          em_defined_type_symbol(Type, Defin) -> 
-       get_type_definition(Type,Def)
-%          Def = Defin
-       ;
-       Def = [Type]
-       ).
 
 
 do_not_lub([X:(N1,_T1)|ASub1],[Y:(N2,T2)|ASub2],[X:(N1,T2)|ASub3]):-
