@@ -65,15 +65,15 @@ amgu(X,T,ASub,AMGU):-
     sort(ASub,SASub),
     ord_union([X],V_t,V_xt), 
     split_list_of_lists([X],SASub,Rel_x,_),
-    %simple_message("Rel_x: ~q",[Rel_x]),
+    %message(inform, ['{Rel_x: ', ~~(Rel_x), '}']),
     split_list_of_lists(V_t,SASub,Rel_t,_),
-    %simple_message("Rel_t: ~q",[Rel_t]),
+    %message(inform, ['{Rel_t: ', ~~(Rel_t), '}']),
     split_list_of_lists(V_xt,SASub,_,Irrel_xt),     
-    %simple_message("Irrel_xt: ~q",[Irrel_xt]),
+    %message(inform, ['{Irrel_xt: ', ~~(Irrel_xt), '}']),
     bin_union(Rel_x,Rel_t,BinUnion),
-    %simple_message("BinUnion: ~q",[BinUnion]),
+    %message(inform, ['{BinUnion: ', ~~(BinUnion), '}']),
     star(BinUnion,BinUnionStar),
-    %simple_message("Star: ~q",[BinUnionStar]),
+    %message(inform, ['{Star: ', ~~(BinUnionStar), '}']),
     ord_union(Irrel_xt,BinUnionStar,AMGU).
 
 :- pop_prolog_flag(multi_arity_warnings).

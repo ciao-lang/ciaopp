@@ -1,17 +1,16 @@
-:- module(trace_fixp,
-    [ fixpoint_trace/7,
-      trace_fixp/1,
-      cleanup/0,
-      memotable_trace/3,
-      show_spypoint_info/0,
-      show_updated_memotable/3,
+:- module(trace_fixp, [
+    fixpoint_trace/7,
+    trace_fixp/1,
+    cleanup/0,
+    memotable_trace/3,
+    show_spypoint_info/0,
+    show_updated_memotable/3,
     trace_init/0,
     trace_end/0
-    ],
-    [assertions, regtypes, datafacts]).
+], [assertions, regtypes, datafacts]).
 
 :- use_module(library(aggregates), [findall/3]).
-:- use_module(library(messages)).
+:- use_module(engine(messages_basic)).
 :- use_module(engine(stream_basic)).
 :- use_module(engine(io_basic)).
 :- use_module(library(format), [format/2]).
@@ -125,17 +124,17 @@ trace_fixp0([F|Fs]):-
 :- push_prolog_flag(multi_arity_warnings,off).
 
 trace_fixpoint(Mess,Id,_L,Sg,Proj):-
-  trace_fixpoint(Mess), !,
-  ( current_pp_flag(timestamp_trace,on) ->
-      pp_statistics(runtime, [Tn, _]),
-      init_time(T0),
-      T is Tn - T0,
-      simple_message("[~3f] ~w for node ~w",[T,Mess,Id])
-  ; true
-  ),
-  simple_message("~w for node ~w",[Mess,Id]),
+    trace_fixpoint(Mess), !,
+    ( current_pp_flag(timestamp_trace,on) ->
+        pp_statistics(runtime, [Tn, _]),
+        init_time(T0),
+        T is Tn - T0,
+        message(inform, ['{[', ~~(T), '] ', ~~(Mess), ' for node ', ~~(Id), '}'])
+    ; true
+    ),
+    message(inform, ['{', ~~(Mess), ' for node ', ~~(Id), '}']),
     \+ \+ ( numbervars(p(Sg,Proj),0,_),
-            simple_message("~q   ~q",[Sg,Proj])
+            message(inform, ['{', ~~(Sg), '   ', ~~(Proj), '}'])
           ).
 trace_fixpoint(_Mess,_Id,_L,_Sg,_Proj).
 
@@ -192,13 +191,13 @@ update_fixpoint_info('fixpoint iteration').
 % if and only if trace_fixp/1 includes the option trace.
 show_spypoint_info:-
     fixpoint_trace(info),!,
-    simple_message('The following information contains certain spy points of the analysis'),
+    message(inform, ['{The following information contains certain spy points of the analysis}']),
     show_spypoint_info_.
 show_spypoint_info.
 
 show_spypoint_info_:-
     current_fact(fixpoint_info(Id,Mess,N)),
-    simple_message("~q ~q ~q",[Id,Mess,N]),
+    message(inform, ['{', ~~(Id), ' ', ~~(Mess), ' ', ~~(N), '}']),
     fail.
 show_spypoint_info_.
 
@@ -212,7 +211,7 @@ show_spypoint_info_.
 
 memotable_trace(IdMess,Id,SgKey):-
     (fixpoint_trace(trace), trace_memotable(IdMess,Mess)),!,        
-    simple_message("~w for node ~w and ~w",[Mess,Id,SgKey]),
+    message(inform, ['{', ~~(Mess), ' for node ', ~~(Id), ' and ', ~~(SgKey), '}']),
     show_updated_memotable(IdMess,Id,SgKey).
 memotable_trace(_IdMess,_Id,_SgKey).
     

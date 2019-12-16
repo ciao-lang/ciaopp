@@ -8,10 +8,10 @@
       iterate/2,        % for debugging purposes
       debug_complete/6  % for debugging purposes
     ],
-    [ assertions
-    , datafacts, ciaopp(ciaopp_options)]).
+    [ assertions, datafacts, ciaopp(ciaopp_options)]).
 
-:- use_module(library(messages)).
+:- use_module(engine(messages_basic)).
+:- use_module(library(messages), [debug_message/2]).
 :- use_module(library(terms), [atom_concat/2]).
 :- use_module(library(terms_vars), [varset/2]).
 :- use_module(library(sort), [sort/2]).
@@ -73,7 +73,7 @@ tp(AbsInt):-
     !,
     pp_statistics( walltime, [ _, T1 ] ),
     is_analysis_option(AbsInt,AbsIntOpt),
-    simple_message("analyzed by bu using ~q in ~q msec",[AbsIntOpt,T1]).
+    message(inform, ['{analyzed by bu using ', ~~(AbsIntOpt), ' in ', ~~(T1), ' msec}']).
 
 one_iteration(SgKey,ClKey,Head,Vars_u,Body,AbsInt):-
     varset(Head,Hv),
@@ -159,7 +159,7 @@ is_analysis(bshare).
 :- endif.
 is_analysis(share_amgu).
 is_analysis(AbsInt):- 
-    error_message("~q is not a valid analysis",[AbsInt]),!,fail.
+    throw(error(unsupported_domain(AbsInt), 'fixpo_bu:is_analysis'/1)).
 
 incr_iterate(AbsInt,Val):-
     retract_fact(iterate(AbsInt,V)),!,
@@ -192,7 +192,7 @@ show_if_debug(Sh,Op,SgKey,share_amgu):-
 
 bu_output(AbsInt):-
     current_fact(iterate(AbsInt,N)),
-    simple_message("Number of iterations: ~q",[N]),
+    message(inform, ['{Number of iterations: ', ~~(N), '}']),
     bu_output_(AbsInt).
 :- if(defined(has_ciaopp_extra)).
 bu_output_(bshare):-
@@ -200,7 +200,7 @@ bu_output_(bshare):-
 :- endif.
 bu_output_(share_amgu):-
     current_fact(complete(_SgKey,share_amgu,Sg,Proj,[Prime],_Id,_Parents)),
-    simple_message("~q: ~q -> ~q",[Sg,Proj,Prime]),
+    message(inform, ['{', ~~(Sg) ,': ', ~~(Proj), ' -> ', ~~(Prime), '}']),
     fail.
 bu_output_(_).
 
