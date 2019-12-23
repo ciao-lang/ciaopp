@@ -534,7 +534,7 @@ set_union_VR([T1,T2|L],T):-
 
 :- dom_impl(etermsvar, call_to_success_builtin/6).
 :- export(etermsvar_call_to_success_builtin/6).
-:- pred etermvar_call_to_success_builtin(+SgKey,+Sg,+Sv,+Call,+Proj,-Succ).
+:- pred etermsvar_call_to_success_builtin(+SgKey,+Sg,+Sv,+Call,+Proj,-Succ).
 
 etermsvar_call_to_success_builtin('arg/3',Sg,Sv,Call,Proj,Succ):-
     sort([X,Y,Z],Hv),
@@ -719,7 +719,7 @@ etermsvar_input_interface_convert_free_and_ground_args([A|R],[AConv|RConv]) :-
 %------------------------------------------------------------------------%
 :- dom_impl(etermsvar, asub_to_native/5).
 :- export(etermsvar_asub_to_native/5).
-:- pred eterms_asub_to_native(+ASub,+Qv,+Flag,-OutputUser,-Comps)
+:- pred eterms_asub_to_native(+ASub,+Qv,+Flag,-OutputUser,-Comps).
 
 etermsvar_asub_to_native(ASub,Qv,Flag,OutputUser,[]):-
     eterms_asub_to_native(ASub,Qv,Flag,OutputUserPre,[]),
@@ -727,7 +727,7 @@ etermsvar_asub_to_native(ASub,Qv,Flag,OutputUser,[]):-
 
 %------------------------------------------------------------------------%
 :- export(etermsvar_output_interface/2).
-:- pred eterms_output_interface(+ASub,-Output).
+:- pred etermsvar_output_interface(+ASub,-Output).
 
 etermsvar_output_interface(ASub,ASub).
 

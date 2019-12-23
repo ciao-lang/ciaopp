@@ -964,7 +964,7 @@ eterms_obtain_info(_Prop,Vars,ASub,Info) :- asub_to_info(eterms,ASub,Vars,Info,_
 :- export(eterms_input_user_interface/5).
 :- pred eterms_input_user_interface(+InputUser,+Qv,-ASub,+Sg,+MaybeCallASub)
    # "Obtains the abstract substitution @var{ASub} from user supplied
-   information."
+   information.".
 
 eterms_input_user_interface(InputUser,Qv,ASub,_Sg,_MaybeCallASub):-
     obtain_Asub_user(InputUser,ASub0),
