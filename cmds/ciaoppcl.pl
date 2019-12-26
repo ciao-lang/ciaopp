@@ -308,7 +308,7 @@ ciaopp_toplevel(Opts2) :-
         '-e', 'use_module(ciaopp(transform_driver), [])',
         '-e', 'use_module(ciaopp(preprocess_flags), [])',
         '-e', 'use_module(auto_interface(auto_interface), [])',
-        '-e', 'use_module(typeslib(typeslib), [])',
+        % '-e', 'use_module(typeslib(typeslib), [])',
         '-e', 'use_module(ciaopp(p_unit/p_asr), [])',
         '-u', ciaopp(ciaopp),
         %
