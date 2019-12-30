@@ -55,9 +55,7 @@
 :- use_module(spec(abs_exec),      [abs_exec/4, determinable/2]).
 :- use_module(spec(abs_exec_cond), [cond/4]).
 :- use_module(domain(eterms),      [eterms_asub_to_native1/3]).
-:- use_module(typeslib(typeslib), 
-    [assert_param_type_instance/2, 
-     equivalent_to_top_type/1]).
+:- use_module(typeslib(typeslib), [make_prop_type_unary/2, equivalent_to_top_type/1]).
 %
 :- use_module(library(keys), [key_lookup/4]).
 :- use_module(library(terms_vars), [varset/2]).
@@ -431,7 +429,7 @@ abs_execute_with_info(Dom,Info,Prop,Sense):-
     knows_of(regtypes, Dom),
     functor(Prop,F,2),
     statically_comp(Dom,F/2,Sense,Cond),
-    make_type_unary(Prop,UProp),
+    make_prop_type_unary(Prop,UProp),
     functor(UProp,UF,1),
     convert_cond(Cond,UF,NewCond),
     cond(NewCond,Dom,UProp,Info), !.
@@ -833,14 +831,6 @@ det_included(possibly_nondet,_Det).
 :- endif.
 
 % ------------------------------------------------------------------------
-
-make_type_unary(Type, NonParamType) :-
-    functor(Type, _, 2), 
-    !,
-    arg(1, Type, Var),
-    assert_param_type_instance(Type,NewTypeName),
-    NonParamType =..[NewTypeName, Var].
-make_type_unary(Type,Type).
 
 convert_cond(type_incl(N,_),NU,type_incl(N,NU)).
 convert_cond(incomp_type(N,_),NU,incomp_type(N,NU)).

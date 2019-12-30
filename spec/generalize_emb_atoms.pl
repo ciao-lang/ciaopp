@@ -187,11 +187,12 @@ pt_term_to_mask(PT,Mask) :-
     get_type_definition(PT,PTDefs),
     PTDefs \== [bot],!,
     findall(Maski,
-            (member(PTDefi,PTDefs),pt_term_to_mask(PTDefi,Maski)),
+            ( member(PTDefi,PTDefs), pt_term_to_mask(PTDefi,Maski) ),
             PossibleMasks),
-    (PossibleMasks = [Mask] 
-        -> true
-        ; Mask =..[;|PossibleMasks]).
+    ( PossibleMasks = [Mask] ->
+        true
+    ; Mask =..[;|PossibleMasks]
+    ).
 pt_term_to_mask(PT,Mask) :-
     get_type_definition(PT,PTDefs),
     PTDefs == [bot],!,
@@ -201,9 +202,11 @@ pt_term_to_mask(PT,Mask) :-
 pt_term_to_mask([],[]).
 pt_term_to_mask([PT1|RestPTs],Masks) :-
     pt_term_to_mask(PT1,Mask1),
-    ((get_type_definition(RestPTs,RestDef),RestDef = [[],[PT1|_]])
-        -> Masks = [Mask1]
-        ; pt_term_to_mask(RestPTs,RestMasks),Masks = [Mask1|RestMasks]).
+    ( ( get_type_definition(RestPTs,RestDef), RestDef = [[],[PT1|_]] ) ->
+        Masks = [Mask1]
+    ; pt_term_to_mask(RestPTs,RestMasks),
+      Masks = [Mask1|RestMasks]
+    ).
 
 basic_petype(T,V) :- basic_petype_(T,V),!.
 basic_petype(T,V) :-

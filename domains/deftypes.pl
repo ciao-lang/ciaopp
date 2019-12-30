@@ -37,8 +37,12 @@
 
 :- use_module(ciaopp(p_unit), [new_internal_predicate/3]).
 
-:- use_module(typeslib(typeslib_deftypes)).
 :- use_module(typeslib(typeslib), [
+    def_type_approx_as_defined/2,
+    def_subtype/2,
+    def_type_lub/3,
+    def_type_glb/3,
+    def_equivalent_types/2,
     % type_intersection_2/3,
     contains_type_param/1,
     pure_type_term/1]).
@@ -284,7 +288,7 @@ unify_term_and_type_term_approx(Term1,Tv,Term2,ASub,NewASub):-
 
 approx_asub([],[]).
 approx_asub([X:Type|ASub],[X:NType|NASub]):-
-    approx_as_defined(Type,NType),
+    def_type_approx_as_defined(Type,NType),
 %   remove_rule(NType0). % TODO: only if new % TODO: it was commented out
     approx_asub(ASub,NASub).
 
@@ -444,7 +448,8 @@ reduce_same_var__(Y,TY,X,TX,ASub,[X:TX|NewASub]):-
 % inverse_terms_asub_to_native([],[]).
 
 %------------------------------------------------------------------------%
-% TODO: use def_equiv_types instead of equiv_types? (JFMC)
+% TODO: OK? terms_asub_to_native depends internally on equiv_type/2
+%   instead of def_equiv_type/2 (JFMC)
 
 :- dom_impl(deftypes, asub_to_native/5).
 :- export(deftypes_asub_to_native/5).

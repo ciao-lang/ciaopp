@@ -24,10 +24,10 @@
     assertion_set_success/3,
     assertion_set_comp/3]).
 :- use_module(ciaopp(p_unit/p_unit_basic), [type_of_goal/2]).
-:- use_module(typeslib(typeslib), 
-           [get_type_rule/2, 
-            pretty_type_lit_rules/4, 
-            equiv_type/2]).
+:- use_module(typeslib(typeslib), [
+    get_type_rule/2, 
+    pretty_type_lit_rules/4, 
+    equiv_type/2]).
 :- use_module(ciaopp(plai/domains), [asub_to_info/5, project/5,project/6]).
 :- use_module(ciaopp(p_unit/assrt_norm), [denorm_goal_prop/3]).
 :- use_module(ciaopp(preprocess_flags)).
@@ -650,10 +650,11 @@ collect_rules_all(G,[I|Is],RIn,ROut,[NewI|NewIs]) :-
     inline_types(CI),
     CG =.. [_Fun|Types],
     ( pretty_type_lit_rules(CG,_PrintGoal,TypesInRules,Rules0) ->
-      true
-    ; display(pretty_type_lit_rules(CG,_PrintGoal,TypesInRules,Rules0)), nl,
+        true
+    ; display(pretty_type_lit_rules(CG,_PrintGoal,TypesInRules,Rules0)), nl, % TODO: bug?
       TypesInRules = [],
-      Rules0 = []),
+      Rules0 = []
+    ),
     add_missing_rules(Types,TypesInRules,MissingRules), % de-simplify type rules
     append(MissingRules,Rules0,Rules),                  % just a bit :-)   
     filter_required_rules(Rules,RIn,RInter),

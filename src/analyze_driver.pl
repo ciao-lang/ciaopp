@@ -156,8 +156,7 @@ analysis(Analysis) :- lazy_analysis(Analysis), !.
 :- use_module(ciaopp(infer/inferseff), [analyze_side_effects/1]).
 :- use_module(ciaopp(infer/infer_db), [cleanup_infer_db/1]).
 
-:- use_module(typeslib(typeslib),
-    [ /*simplify_step1/0,*/ simplify_step2/0 ]).
+:- use_module(typeslib(typeslib), [simplify_step2/0]).
 
 % statistics (from intermod)
 :- use_module(ciaopp(analysis_stats)).
@@ -259,7 +258,7 @@ analyze_(res_plai,Cls,Ds,Info,step1):-!,
     analyze_(nf,Cls,Ds,_InfoNf,_),
     % Compute type information
     analyze_(etermsvar,Cls,Ds,_InfoEtermsVar,_),
-    %simplify_step1,
+    %typeslib:simplify_step1,
     ( simplify_step2 -> true ; true ), % TODO:[new-resources] this should not fail!
     % Analyze resources
     % ( current_pp_flag(perform_static_profiling,yes) ->
@@ -282,7 +281,7 @@ analyze_(res_plai_stprf,Cls,Ds,Info,step1):-!,
     analyze_(nf,Cls,Ds,_InfoNf,_),
     % Compute type information
     analyze_(etermsvar,Cls,Ds,_InfoEtermsVar,_),
-    %simplify_step1,
+    %typeslib:simplify_step1,
     ( simplify_step2 -> true ; true ), % TODO:[new-resources] this should not fail!
     % Analyze resources
     analyze_(res_plai_stprf,Cls,Ds,Info,step2),

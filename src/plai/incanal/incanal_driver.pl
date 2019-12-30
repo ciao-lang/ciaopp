@@ -549,10 +549,11 @@ restore_types_mod(Mod, Dict) :-
     set_fact(restore_module(Mod)),
     restore_auxiliary_info(enum_types,Dict).
 
-:- use_module(ciaopp(p_unit/p_abs), [curr_mod_entry/4, typedef/2]).
+:- use_module(ciaopp(p_unit/p_abs), [curr_mod_entry/4, typedb/2]).
 
 :- data restore_module/1.
 
+% TODO: bad indexing for smart_new_type_symbol/4; see p_abs:restore_types/1
 enum_types(TypeDef):-
     current_fact(restore_module(Module)),
-    current_fact(typedef(Module,TypeDef)).
+    current_fact(typedb(Module,TypeDef)).

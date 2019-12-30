@@ -1,10 +1,4 @@
-:- module(_,
-    [ acc_auxiliary_info/2,
-      dump_auxiliary_info/1,
-      imp_auxiliary_info/4,
-      restore_auxiliary_info/2
-    ],
-    [assertions, hiord, datafacts]).
+:- module(_, [], [assertions, hiord, datafacts]).
 
 :- doc(module,"This library helps in managing auxiliary info that has
     to be saved together with plai's analysis info when this one is
@@ -14,6 +8,7 @@
 
 :- use_module(ciaopp(infer/infer_dom), [knows_of/2]).
 :- use_module(ciaopp(plai/domains), [collect_types_in_abs/4, rename_types_in_abs/4]).
+
 :- use_module(typeslib(typeslib), 
     [get_necessary_rules/2,insert_renamed_type_defs/2,new_type_symbol/1,
      is_param_type_symbol/1, new_param_type_symbol/1,internally_defined_type_symbol/2,
@@ -27,7 +22,7 @@
 :- use_module(library(assoc), [ord_list_to_assoc/2]).
 :- use_module(library(lists), [append/3]).
 
-
+% TODO: very bad complexity!
 :- data all_the_types/1. % accumulates required types
 :- data all_the_type_renamings/4.
                      % accumulates necessary dictionaries
@@ -36,6 +31,7 @@
 retract_if_still(_,X,_):- retract_fact(X), !.
 retract_if_still(X,_,X).
 
+:- export(acc_auxiliary_info/2).
 :- doc(acc_auxiliary_info(AbsInt,ASubs),"Accumulates auxiliary info
     from the list of abstract substitutions @var{ASubs} of domain
     @var{AbsInt}. It is expected that you issue a call to this one
@@ -52,7 +48,7 @@ acc_auxiliary_info(_AbsInt,_ASubs).
 collect_all_types_in_abs([ASub|More],AbsInt,AbsTypes0,AbsTypes):-
     collect_types_in_abs(ASub,AbsInt,AbsTypes0,AbsTypes1),
     ( current_pp_flag(types, deftypes) ->
-        compute_transitive_closure(AbsTypes1,[],AbsTypes15),
+        compute_transitive_closure(AbsTypes1,[],AbsTypes15), % TODO: do it later? (once we are finished) or from deftypes domain
         filter_out_lib_types(AbsTypes15,AbsTypes2)      
     ; AbsTypes1 = AbsTypes2
     ),
@@ -74,6 +70,7 @@ accept_type(T) :-
 accept_type(T) :-
     is_user_defined_type_symbol(T).
 
+:- export(dump_auxiliary_info/1).
 :- doc(dump_auxiliary_info(Goal),"Dumps auxiliary info collected
     previously. The dumping is performed by calling @var{Goal}(Info)
     on every Info item collected. It is expected that you issue a call
@@ -126,6 +123,7 @@ asserta_all([X|Xs],Goal):-
     Goal(X),
     asserta_all(Xs,Goal).
 
+:- export(restore_auxiliary_info/2).
 :- doc(restore_auxiliary_info(Goal,Dict),"Restores the auxiliary
     info dumped with dump_auxiliary_info. The dumped info is obtained
     calling @var{Goal}(Info). Some data necessary for processing your
@@ -186,6 +184,7 @@ smart_new_type_symbol(Type,_,RenType,nopar) :-
     new_type_symbol(RenType).
 smart_new_type_symbol(Type,_,Type,nopar).
 
+:- export(imp_auxiliary_info/4).
 :- doc(imp_auxiliary_info(AbsInt,Dict,ASubs,NewASubs),"Processes the 
     list of abstract substitutions @var{ASubs} of domain @var{AbsInt}
     through the auxiliary info structure @var{Dict}, obtaining the list

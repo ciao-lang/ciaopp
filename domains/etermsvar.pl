@@ -79,7 +79,6 @@
 
 :- use_module(typeslib(typeslib), [
     dz_type_included/2,
-    generate_a_type_assigment_VR/3,
     insert_rule/2,
     insert_type_name/3,
     new_type_name/1,
@@ -274,7 +273,7 @@ unify_term_and_type_term_exit(Term1,Tv,Term2,ASub,Proj,NewASub):-
     Term1 =.. [_|Args],
     type_escape_term_list(Types,EscTypes),
     apply(ASub0),
-    generate_a_type_assigment_VR(EscTypes,Args,TypeAss),
+    generate_a_type_assignment_VR(EscTypes,Args,TypeAss),
     ( 
         member(_:bot,TypeAss) -> fail
     ;
@@ -299,7 +298,7 @@ unify_term_and_type_term(Term1,Tv,Term2,ASub,NewASub):-
     Term1 =.. [_|Args],
     type_escape_term_list(Types,EscTypes),
     apply(ASub0),
-    generate_a_type_assigment_VR(EscTypes,Args,TypeAss),
+    generate_a_type_assignment_VR(EscTypes,Args,TypeAss),
     ( 
         member(_:bot,TypeAss) -> fail
     ;
@@ -322,6 +321,74 @@ apply([X:(_N,Term)|ASub]):-
     X=Term,
     apply(ASub).
 apply([]).
+
+generate_a_type_assignment_VR(Type_List, Term_List, TypeAss):- 
+    varset(Term_List, Term_Vars),
+    get_var_types_by_unification(Type_List, Term_List, Types),
+    intersec_types_2_VR(Term_Vars, Types, [], TypeAss).
+
+% TODO:[new-resources] preliminary support for var_type (for etermsvar)
+% TODO: merge with intersec_types_2/4
+
+% ASM, 6 Sep 2012
+% Special intersection for type assignment
+% Variables which do not have type are assigned the top type.
+% If a variable may be assigned the type var, a special case is used:
+% - if only var is present, the resulting type is var
+% - if not, the resulting type is the intersection without any var
+
+intersec_types_2_VR([], _Var_Types, OTypeAss, OTypeAss):- !.
+intersec_types_2_VR([Var|List], Var_Types, ITypeAss, OTypeAss):-
+    find_list_entry(Var_Types, Var, Entry),
+    ( var(Entry) ->
+        Types = _
+    ; Entry = vt(_, Types)
+    ),
+    set_top_type(Top),
+    ( contains_var_type(Types) ->
+        delete_var_type(Types,DTypes),
+        ( var(DTypes) -> % Is list empty?
+            set_var_type(LType)
+        ; intersec_type_list_2_VR(DTypes, Top, LType)
+        )
+    ; intersec_type_list_2_VR(Types, Top, LType)
+    ),
+    % \+ bot_type(LType),
+    intersec_types_2_VR(List, Var_Types, [Var:LType|ITypeAss], OTypeAss).
+
+contains_var_type([Type|_]) :-
+    nonvar(Type),
+    var_type(Type),
+    !.
+contains_var_type([_|List]) :-
+    nonvar(List),
+    contains_var_type(List).
+
+delete_var_type(Type_List,Type_List) :-
+    var(Type_List),
+    !.
+delete_var_type([Type|List],DList) :-
+    var_type(Type),
+    !,
+    delete_var_type(List,DList).
+delete_var_type([Type|List],[Type|DList]) :-
+    delete_var_type(List,DList).
+
+intersec_type_list_2_VR(Type_List, Type, Type):-
+    var(Type_List), 
+    !.
+intersec_type_list_2_VR(Type_List, InType, OutType):-
+    nonvar(Type_List),
+    Type_List = [Type|List],
+    ( var_type(Type) ->
+        intersec_type_list_2_VR(List, InType, Intersec),
+        ( ( top_type(Intersec) ; var_type(Intersec) ) ->
+            set_var_type(OutType)
+        ; OutType = Intersec
+        )
+    ; type_intersection_2_VR(InType, Type, Intersec),
+      intersec_type_list_2_VR(List, Intersec, OutType)
+    ).
 
 %------------------------------------------------------------------%
 :- dom_impl(etermsvar, project/5).
@@ -405,7 +472,7 @@ etermsvar_glb0_without_var([X:(_N1,T1)|ASub1],[Y:(N2,T2)|ASub2],[X:(N2,T3)|ASub3
     X==Y,
     ( var_type(T1) -> T3 = T2
     ; var_type(T2) -> T3 = T1
-    ; type_intersection_2(T1,T2,T3)
+    ; type_intersection_2(T1,T2,T3) % TODO: why not _VR?
     ),
     ( T3==bot ->
         fail 
@@ -808,4 +875,6 @@ etermsvar_part_conc(A,ASub,NA,NASub):-
     eterms_multi_part_conc/3,
     eterms_part_conc/4
 ]).
-
+:- use_module(domain(termsd), [
+    find_list_entry/3,
+    get_var_types_by_unification/3]).

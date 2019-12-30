@@ -93,14 +93,10 @@
 
 :- use_module(ciaopp(p_unit/p_asr), [cleanup_pasr/0, preprocessing_unit_opts/4]).
 :- use_module(ciaopp(tr_syntax), [cleanup_tr_syntax/0, traverse_clauses/5]).
-:- use_module(typeslib(typeslib), 
-    [ legal_user_type_pred/1, 
-      insert_user_type_pred_def/2,
-      remove_parametric_types_from_rules/0,
-      simplify_step1/0,
-      create_defined_types_filters/0
-    ]).
-:- use_module(typeslib(typeslib_deftypes), [build_defined_types_lattice/0]).
+:- use_module(typeslib(typeslib), [
+    legal_user_type_pred/1, 
+    insert_user_type_pred_def/2,
+    post_init_types/0]).
 
 :- use_module(ciaopp(preprocess_flags)).
 
@@ -178,20 +174,11 @@ preprocessing_unit_list(Fs,Ms,E):-
     init_native_props,
     % setup type definitions
     init_types,
-    remove_parametric_types_from_rules,
-    simplify_step1,
-    ( \+ current_pp_flag(type_precision,defined), current_pp_flag(types,deftypes)  ->
-      create_defined_types_filters
-    ; true
-    ),
+    post_init_types,
     % TODO: code seems to work without this; perhaps because some other ensure_registry_file; however it seems necessary at least to upload types from the registry (see patch_registry_file_/3)
+    % TODO: this was done just before build_defined_types_lattice/0 (when current_pp_flag(types,deftypes)), is it fine here?
     ( \+ current_pp_flag(intermod,off) ->
         ensure_registry_current_files(quiet) % [IG] mixed modular
-    ; true
-    ),
-    %
-    ( current_pp_flag(types,deftypes)  ->
-        build_defined_types_lattice    % in deftypes for now
     ; true
     ),
     % remove disjunctions and all that stuff
@@ -239,11 +226,11 @@ init_types:-
     % definable (i.e., not basic --top, num, etc.-- not [] nor [_|_])
     legal_user_type_pred(Head),
     ( Head==Prop ->
-      findall( (Head:-Body),
+        findall((Head:-Body),
                 ( one_type_clause(Head,Body0),
                   unexpand_meta_calls(Body0,Body)
-                ), Cls )
-     ; Cls=[(Head:-Prop)]
+                ), Cls)
+    ; Cls=[(Head:-Prop)]
     ),
     ( Cls=[] -> true
     ; insert_user_type_pred_def(Head,Cls)

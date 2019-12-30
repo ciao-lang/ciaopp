@@ -1,26 +1,24 @@
-:- module(p_asr,
-        [
-            preprocessing_unit_opts/4,
-            do_cache/0,
-            show_asr/1,
-            cleanup_code_and_related_assertions/0,
-            cleanup_pasr/0,
-            load_related_files/2,
-            load_lib_sources/1,
-            gen_lib_sources/1, % TODO: do_cache/0?
+:- module(p_asr, [
+    preprocessing_unit_opts/4,
+    do_cache/0,
+    show_asr/1,
+    cleanup_code_and_related_assertions/0,
+    cleanup_pasr/0,
+    load_related_files/2,
+    load_lib_sources/1,
+    gen_lib_sources/1, % TODO: do_cache/0?
     loaded_lib_sources/0,
-            cleanup_lib_sources/0,
-            % regtypes
-            preprocessing_opts/1
-        ],
-        [
-            assertions,
-            basicmodes,
-            regtypes,
-            datafacts,
-            hiord_old,
-            ciaopp(ciaopp_options)
-        ]).
+    cleanup_lib_sources/0,
+    % regtypes
+    preprocessing_opts/1
+], [
+    assertions,
+    basicmodes,
+    regtypes,
+    datafacts,
+    hiord_old,
+    ciaopp(ciaopp_options)
+]).
 
 %% :- doc(doinclude,assertion_read/9).
 %% :- doc(doinclude,clause_read/7).
@@ -189,13 +187,13 @@ importing libraries @lib{ciaopp/p_unit}, @lib{ciaopp/p_unit/itf_db},
 :- use_module(ciaopp(p_unit/assrt_db)).
 :- use_module(ciaopp(p_unit/assrt_norm)).
 :- use_module(ciaopp(p_unit/clause_db)).
-:- use_module(ciaopp(p_unit/itf_db), [current_itf/3,
-            assert_itf/5,
-            curr_file/2,
-            preloaded_module/2,
-            dump_lib_itf/1,
-            load_lib_itf/1
-        ]).
+:- use_module(ciaopp(p_unit/itf_db), [
+    current_itf/3,
+    assert_itf/5,
+    curr_file/2,
+    preloaded_module/2,
+    dump_lib_itf/1,
+    load_lib_itf/1]).
 
 % asr files
 :- use_module(ciaopp(p_unit/aux_filenames), [get_module_filename/3]).
@@ -1124,10 +1122,9 @@ save_itf_of_to_asr(_Base, _M).
 :- use_module(ciaopp(p_unit/itf_db), [cleanup_lib_itf/0]).
 
 :- use_module(typeslib(typeslib), [
-    gen_lib_type_info/1, load_lib_type_info/1, cleanup_lib_type_info/0]).
-:- use_module(typeslib(regtype_basic_lattice), [
-    gen_lib_param_symbol/1, load_lib_param_symbol/1, cleanup_lib_param_symbol/0]).
-:- use_module(typeslib(typeslib_deftypes), [
+    % TODO: merge in a single pred
+    gen_lib_type_info/1, load_lib_type_info/1, cleanup_lib_type_info/0,
+    gen_lib_param_symbol/1, load_lib_param_symbol/1, cleanup_lib_param_symbol/0,
     pre_build_defined_types_lattice/1, load_lib_deftypes/1]).
 
 :- pred cleanup_lib_sources
@@ -1135,7 +1132,7 @@ save_itf_of_to_asr(_Base, _M).
 cleanup_lib_sources :-
     assrt_db:cleanup_lib_assrt,
     typeslib:cleanup_lib_type_info,
-    regtype_basic_lattice:cleanup_lib_param_symbol,
+    typeslib:cleanup_lib_param_symbol,
     clause_db:cleanup_lib_props,
     itf_db:cleanup_lib_itf.
 
@@ -1153,7 +1150,7 @@ load_lib_sources(Path) :-
     close(S2),
     atom_concat(Path, '/lib_param_symbols.pl', F2b),
     open(F2b, read, S2b),
-    regtype_basic_lattice:load_lib_param_symbol(S2b),
+    typeslib:load_lib_param_symbol(S2b),
     close(S2b),
     atom_concat(Path, '/lib_prop_clause_read.pl', F3),
     open(F3, read, S3),
@@ -1180,18 +1177,18 @@ loaded_lib_sources :-
 :- pred gen_lib_sources(Path) # "Generates source files for preloading
     info from assertions.  Files are generated in directory @var{Path}.".
 gen_lib_sources(Path) :-
-  push_prolog_flag(write_strings, on),
+    push_prolog_flag(write_strings, on),
     atom_concat(Path, '/lib_assertion_read.pl', F1),
     open(F1, write, S1),
-    display(S1,'%% Do not modify this file: it is generated automatically.'),
- nl( S1),
+    display(S1, '%% Do not modify this file: it is generated automatically.'),
+    nl(S1),
     assrt_db:gen_lib_assrt(S1),
     close(S1),
     atom_concat(Path, '/lib_param_symbols.pl', F2b),
     open(F2b, write, S2b),
     display(S2b,'%% Do not modify this file: it is generated automatically.'),
     nl(S2b),
-    regtype_basic_lattice:gen_lib_param_symbol(S2b),
+    typeslib:gen_lib_param_symbol(S2b),
     close(S2b),
     atom_concat(Path, '/lib_prop_clause_read.pl', F3),
     open(F3, write, S3),

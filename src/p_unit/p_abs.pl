@@ -164,14 +164,14 @@ regdata_set_mark(OldReg, Mark, NewReg) :-
 
 %% --------------------------------------------------------------------
 
-:- export(typedef/2).
-:- pred typedef(Module,TypeDef) :: atm * term
+:- export(typedb/2).
+:- pred typedb(Module,TypeDef) :: atm * term
 # "Data predicate to locally store information about the types used in
   the registry of one or several modules. @var{Module} is the name of
   the module for which the type definition @var{TypeDef} is referenced
   in the registry file. The original definition of @var{TypeDef} may
   not reside in @var{Module}, but in a related module.".
-:- data typedef/2.
+:- data typedb/2.
 
 %% :- pred typedef_already_loaded(Module) : atm
 %%
@@ -296,7 +296,7 @@ cleanup_p_abs_all:-
 cleanup_registry(Module):-
     retractall_fact(registry(_,Module,_)),
     retractall_fact(registry_headers(Module,_)),
-    retractall_fact(typedef(Module,_)),
+    retractall_fact(typedb(Module,_)),
 %       retractall_fact(typedef_already_loaded(Module)).
     true.
 
@@ -532,7 +532,7 @@ may_be_improved_mark(bottom_up,'+').  % Is this right?
 :- data tmp_current_module/1.
 
 update_current_typedefs(CurrModule):-
-    retractall_fact(typedef(CurrModule,_TypeDef)),
+    retractall_fact(typedb(CurrModule,_TypeDef)),
 %       retractall_fact(typedef_already_loaded(CurrModule)),
     set_fact(tmp_current_module(CurrModule)),
     %
@@ -556,11 +556,11 @@ add_imported_typedefs(AbsInt,Module,ASubs):-
 
 store_typedef(TypeDef):-
     current_fact(tmp_current_module(CurrModule)),
-    ( current_fact(typedef(CurrModule,TypeDef)) ->
+    ( current_fact(typedb(CurrModule,TypeDef)) ->
         %%%NOTE: TypeDef comparison should be smarter!!!!!!!
         true
     ;
-        asserta_fact(typedef(CurrModule,TypeDef))
+        asserta_fact(typedb(CurrModule,TypeDef))
     ).
 
 %% If substitution is a free var, there is nothing to sort.
@@ -910,13 +910,13 @@ patch_registry_(Module,Base,NeedsTreat):-
 % Reads types from std. input. The last tuple read (immediately after the last type read) is 
 % returned in NextTuple.
 read_types_data_loop(Module,NextTuple):-
-    retractall_fact(typedef(Module,_)),
+    retractall_fact(typedb(Module,_)),
 %       retractall_fact(typedef_already_loaded(Module)),
     repeat,
     ( fast_read(NextTuple) ->
         ( % NextTuple = typedef(TypeName,TypeDef) ->
           is_type_related(NextTuple) ->
-            assertz_fact(typedef(Module,NextTuple)),
+            assertz_fact(typedb(Module,NextTuple)),
             fail
         ; 
             true
@@ -1002,9 +1002,10 @@ upload_typedefs_all_domains(Module):-
     upload_typedefs(_AbsInt,Module).
 
 % Returns the type definitions on backtracking from the temporary pred tmp_restore_types/1.
+% TODO: bad indexing for smart_new_type_symbol/4
 restore_types(TypeDef):-
     current_fact(tmp_current_module(Module)),
-    retract_fact(typedef(Module,TypeDef)).
+    retract_fact(typedb(Module,TypeDef)).
 
 % Given a list of imdg tuples, obtains the list of asubs for those imdg tuples.
 get_imdg_asubs([],[]).
@@ -1861,7 +1862,7 @@ write_registry_file(Base,Module,Verb):-
     verb_message(Verb,'}').
 
 write_registry_file_types(Module):-
-    current_fact(typedef(Module,TypeDef)),
+    current_fact(typedb(Module,TypeDef)),
     fast_write(TypeDef),
     fail.
 write_registry_file_types(_Module).

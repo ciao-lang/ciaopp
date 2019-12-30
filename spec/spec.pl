@@ -58,7 +58,7 @@
 :- use_module(ciaopp(p_unit), [predicate_names/1]).
 :- use_module(ciaopp(p_unit/program_keys), [get_predkey/3, predkey_from_sg/2]).
 
-:- use_module(typeslib(regtype_basic_lattice), [translate_lattice_types/4]).
+:- use_module(typeslib(typeslib), [translate_lattice_types/4]).
 
 :- use_module(engine(messages_basic), [message/2]).
 :- use_module(library(aggregates)).

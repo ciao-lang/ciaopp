@@ -62,8 +62,7 @@ to avoid recomputation), but it not implemented yet.").
 :- use_module(ciaopp(preprocess_flags), [current_pp_flag/2, typeanalysis/1]).
 :- use_module(ciaopp(plai/transform), [trans_clause/3, cleanup_trans_clauses/0]).
 :- use_module(ciaopp(plai/plai_db), [complete/7, memo_table/6]).
-:- use_module(typeslib(typedef), [typedef/2]).
-:- use_module(typeslib(typeslib), [show_types/0]).
+:- use_module(typeslib(typeslib), [show_types/0, show_types_raw_printer/0]).
 :- use_module(ciaopp(p_unit/p_abs), [registry_headers/2, registry/3]).
 :- use_module(ciaopp(plai), [generate_trans_clauses/4]).
 :- use_module(ciaopp(plai/fixpo_dd), ['$change_list'/2]).
@@ -110,17 +109,11 @@ show_analysis :-
     fail.
 show_analysis :-
     nl,
-    \+ \+ complete(_,eterms,_,_,_,_,_),
-    typedef:typedef(A, B),
-    is_new_type(A),
-    show_data(typedef(A, B)),
+    \+ \+ complete(_,eterms,_,_,_,_,_), % TODO: other type domains?
+    show_types_raw_printer,
     fail.
 show_analysis :-
     nl.
-
-is_new_type(A) :-
-    atom_codes(A, AC),
-    append("rt", _, AC), !.
 
 :- doc(show_registry_info/0, "Shows information about the modular
 analysis registries.").
@@ -161,7 +154,7 @@ show_dep_list_([E|Es]) :-
     format(user,' ~w, ', [E]),
     show_dep_list_(Es).
 
-:- use_module(ciaopp(p_unit/p_abs), [typedef/2]).
+:- use_module(ciaopp(p_unit/p_abs), [typedb/2]).
 
 :- pred show_global_answer_table(AbsInt) #"Shows de global answer
     table for modular analysis with domain @var{AbsInt}".
@@ -173,10 +166,11 @@ show_global_answer_table(AbsInt) :-
 show_global_answer_table(_) :-
     display(user, '------+---------+------+---------'), nl,
     ( % failure-driven loop
-      p_abs:typedef(A, B),
-        show_data(typedef(A, B)),
+      p_abs:typedb(A, B),
+        show_data(typedb(A, B)),
         fail
-    ; true).
+    ; true
+    ).
 
 show_gat_header(AbsInt) :-
     format('Global answer table for ~w~n', [AbsInt]),

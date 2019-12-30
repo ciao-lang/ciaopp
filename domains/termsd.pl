@@ -28,11 +28,10 @@
 
 :- use_module(ciaopp(p_unit), [new_internal_predicate/3]).
 :- use_module(typeslib(typeslib), [
-    assert_param_type_instance/2,
+    make_prop_type_unary/2,
     dz_equivalent_types/2,
+    belongs_to_type/2,
     dz_type_included/2,
-    equiv_types/2,
-    generate_a_type_assigment/3,
     insert_rule/2,
     normalize_type/2,
     new_type_symbol/1,
@@ -44,7 +43,11 @@
     set_numeric_type/1,
     set_numexp_type/1,
     set_top_type/1,
+    var_type/1,
+    compound_pure_type_term/4,
     type_escape_term_list/2,
+    equivalent_to_top_type/1,
+    get_compatible_types/4,
     type_intersection_2/3,
     type_union_NoDB/4,
     terms_naive_ewiden_el/2,
@@ -72,16 +75,10 @@ absu_elem(Var:Type):-
 
 :- dom_impl(terms, input_interface/4).
 :- export(terms_input_interface/4).
+% TODO: factorize as prop_to_type?
 terms_input_interface(ground(X),perfect,Acc,[gnd(X)|Acc]).
-terms_input_interface(regtype(T),perfect,Acc,[T|Acc]):-
-    functor(T,_,1),!,
-    may_be_var(Acc).
-terms_input_interface(regtype(T),perfect,Acc,[NonPT|Acc]):-
-    functor(T,_,2),!,
-    arg(1,T,V),
-    assert_param_type_instance(T,NonPType),
-    functor(NonPT,NonPType,1),
-    arg(1,NonPT,V),
+terms_input_interface(regtype(T),perfect,Acc,[T2|Acc]):- !,
+    make_prop_type_unary(T,T2),
     may_be_var(Acc).
 terms_input_interface(member(X,L),perfect,Acc,[P|Acc]):-
     type_escape_term_list(L,Def),
@@ -322,7 +319,7 @@ unify_term_and_type_term(Term1,Tv,Term2,ASub,NewASub):-
     Term1 =.. [_|Args],
     type_escape_term_list(Types,EscTypes),
     apply(ASub0),
-    generate_a_type_assigment(EscTypes,Args,TypeAss),
+    generate_a_type_assignment(EscTypes,Args,TypeAss),
     ( member(_:bot,TypeAss) ->
         fail
     ; terms_abs_sort(TypeAss,ASub1),
@@ -344,6 +341,231 @@ apply([X:Term|ASub]):-
     X=Term,
     apply(ASub).
 apply([]).
+
+:- export(generate_a_type_assignment/3).
+generate_a_type_assignment(Type_List, Term_List, TypeAss):- 
+    varset(Term_List, Term_Vars),
+    get_var_types_by_unification(Type_List, Term_List, Types),
+    intersec_types_2(Term_Vars, Types, [], TypeAss).
+
+ %% generate_a_type_assignment(Type_List, Term_List, TypeAss):- 
+ %%    varset(Term_List, Term_Vars),     
+ %%    (get_var_types_by_unification(Type_List, Term_List, Types)
+ %%       -> intersec_types_2(Term_Vars, Types, [], TypeAss)
+ %%        ; create_bottom_type_ass(Term_Vars, TypeAss)).
+
+:- export(get_var_types_by_unification/3). % (shared with etermsvar.pl)
+get_var_types_by_unification([], [], _Types):- !.
+get_var_types_by_unification([Type|Type_List], [Term|Term_List], Types):-
+    compute_type(Term, Type, Types),
+    get_var_types_by_unification(Type_List, Term_List, Types).
+
+:- export(compute_type/3).
+:- pred compute_type(+Term, +Type, -Types)
+   # "Given the term @var{Term} and a type @var{Type}, computes the
+      type corresponding to each variable in @var{Term}, and store it
+      in the data structure @var{Types}.  @var{Types} have the
+      structure [vt(Var1, TypeList1), ..., vt(VarN, TypeListN)|_],
+      where TypeListN is the list of types corresponding to variable
+      VarN.".
+
+% Note: \+ bot_type(Type) will always fail if we do not allow to have empty
+% types in type assignments.
+
+compute_type(Term, Type, Types):-
+    equivalent_to_top_type(Type), 
+    % top_type(Type), 
+    !, 
+    insert_top_type(Term, Types).
+compute_type(Term, Type, Types):-
+    var(Term), 
+    !, 
+    insert_type(Types, Term, Type).
+compute_type(Term, Type, _Types):-
+    atomic(Term), 
+    !, 
+    ( belongs_to_type(Term, Type) -> true
+    ; var_type(Type) % TODO:[new-resources] for etermsvar
+    ).
+ %%     escaped_type(Term, TypeTerm),
+ %%     dz_type_included(TypeTerm, Type).
+compute_type(Term, Type, Types):-
+    nonvar(Term), 
+    functor(Term, F, A),
+    get_compatible_types(F/A, Type, [], CompTypes),
+    \+ (CompTypes = []),
+    ( there_are_only_one_compa_type(CompTypes, CompTerm) -> 
+        compute_args_type(A, Term, CompTerm, Types)
+    ; insert_top_type(Term, Types)
+    ).
+
+there_are_only_one_compa_type(CompTypes, CompTerm):-
+    CompTypes = [CType],
+    compound_pure_type_term(CType, CompTerm, _Name, _Arity).
+  
+compute_args_type(A, _Term, _CompType, _Types):-
+    A =:= 0, !.
+compute_args_type(A, Term, CompType, Types):-
+    A > 0, 
+    arg(A, Term, Term_Arg),
+    arg(A, CompType, Type_Arg), 
+    compute_type(Term_Arg, Type_Arg, Types),
+    A1 is A - 1, 
+    compute_args_type(A1, Term, CompType, Types).
+
+% % TODO: Other version from deftypes.pl, is it older?
+% insert_top_type(Term, Types):-
+%     varset(Term,TVs),
+%     set_top_type(TopType),
+%     insert_top_forall(TVs,TopType,Types).
+% 
+% insert_top_forall([V|Vs],TopType,Types) :-
+%     insert_type(Types,V,TopType),
+%     insert_top_forall(Vs,TopType,Types).
+% insert_top_forall([],_,_).
+
+%% insert_top_type(Term, Types):
+%% Purpose: Adds the type "top" to the list of types (expressed in Types) 
+%% corresponding to each variable appearing in Term.
+
+insert_top_type(Term, Types):-
+    ( var(Term) ->
+        set_top_type(TopType),
+        insert_type(Types, Term, TopType)
+    ; functor(Term, _F, A),
+      insert_top_type_3(A, Term, Types)
+    ).
+
+insert_top_type_3(A, Term, Types):-
+    ( A = 0 ->
+        true
+    ; arg(A, Term, Term_Arg),
+      insert_top_type(Term_Arg, Types),
+      A1 is A - 1,
+      insert_top_type_3(A1, Term, Types)
+    ).
+
+insert_type(NVarList, Var, NVar):- 
+    insert_list_entry(NVarList, Var, vt(Var, VList)),
+    ins_without_dup(VList, NVar).
+
+insert_list_entry(VT, Var, Entry) :- 
+    var(VT), !,
+    Entry = vt(Var, _),
+    VT = [Entry|_].
+insert_list_entry(VT, Var, Entry) :- 
+    nonvar(VT),
+    VT = [E|_],
+    E = vt(EVar, _),
+    EVar == Var, !,
+    Entry = E.
+insert_list_entry(VT, Var, Entry) :- 
+    nonvar(VT),
+    VT = [E|S],
+    E = vt(EVar, _),
+    EVar \== Var,
+    insert_list_entry(S, Var, Entry).
+
+% Insert an item in a list if it isn't in yet.
+ins_without_dup(L,I) :- 
+    var(L), !,
+    L = [I|_].
+ins_without_dup(L,I) :- 
+    nonvar(L),
+    L = [Item|_],
+    Item==I, !.
+ins_without_dup(L,I) :- 
+    nonvar(L),
+    L = [Item|List],
+    I \== Item,
+    ins_without_dup(List,I).
+
+% Variables which do not have type are assigned the top type.
+intersec_types_2([], _Var_Types, OTypeAss, OTypeAss) :- !.
+intersec_types_2([Var|List], Var_Types, ITypeAss, OTypeAss) :-
+    find_list_entry(Var_Types, Var, Entry),
+    ( var(Entry) ->
+        Types = _
+    ; Entry = vt(_, Types)
+    ),
+    set_top_type(Top),
+    intersec_type_list_2(Types, Top, LType),
+    % \+ bot_type(LType),
+    intersec_types_2(List, Var_Types, [Var:LType|ITypeAss], OTypeAss).
+
+intersec_type_list_2(Type_List, Type, Type):-
+    var(Type_List), 
+    !.
+intersec_type_list_2(Type_List, InType, OutType):-
+    nonvar(Type_List),
+    Type_List = [Type|List],
+    type_intersection_2(InType, Type, Intersec),
+    intersec_type_list_2(List, Intersec, OutType).
+
+:- export(find_list_entry/3).
+find_list_entry(VT, _, _) :- 
+    var(VT), !.
+find_list_entry(VT, Var, Entry) :- 
+    nonvar(VT),
+    VT = [E|_],
+    E = vt(EVar, _),
+    EVar == Var, !,
+    Entry = E.
+find_list_entry(VT, Var, Entry) :- 
+    nonvar(VT),
+    VT = [E|S],
+    E = vt(EVar, _),
+    EVar \== Var,
+    find_list_entry(S, Var, Entry).
+
+%% %% Operations on type assignments.
+%% 
+%% % intersect_type_assigments(TypeAss1, TypeAss2, OutTypeAss)
+%% 
+%% intersect_type_assigments([], _TypAss2, []):-!.
+%% intersect_type_assigments([Var:Type1|TypAss1], TypAss2, [Var:OutType|OutTypAss]):-
+%%    (find_type(TypAss2, Var, Type2) ->
+%%       type_intersection_2(Type1, Type2, OutType)
+%%       ;
+%%       OutType = Type1),
+%%    intersect_type_assigments(TypAss1, TypAss2, OutTypAss).
+
+%% :- pred project_literal_type(Literal, PredType, InSubst, OutSubst)
+%% 
+%% # "Get the type of the variables in @var{Literal} by performing a type
+%%    unification with the typing @var{PredType}, and put these types in
+%%    the output abstract type substitution @var{OutSubst}. Fails if type
+%%    unification fails, in which case @var{OutSubst} is set to the
+%%    bottom substitution.".
+%% 
+%% project_literal_type(Literal, _PredType, InSubst, OutSubst):-
+%%       varset(Literal, []),
+%%       !,
+%%       debug_message("Literal ~q has no variables.", [Literal]),
+%%       OutSubst = InSubst.
+%% project_literal_type(Literal, PredType, InSubst, OutSubst):-
+%%       debug_message("project_literal_type(~q, ~q,", [Literal, PredType]),
+%%       debug_message("~q,", [InSubst]),
+%%       debug_message("~q).", [OutSubst]),
+%%       %
+%%       % Get the types of the variables in Literal by performing type unification with PredType. 
+%%       Literal =.. [_F|Args], % Get the arguments of Literal.
+%%       % Literal =.. [_F|LitArgs], % Get the arguments of Literal.
+%%       % type_escape_term_list(LitArgs, Args),
+%%       PredType =.. [_P|Types], % Get the arguments of PredType.
+%%       generate_a_type_assignment(Types, Args, TypeAss),
+%%       %
+%%       % TypAss contains an item Variable:Type for each variable in Args (and only for these variables).  
+%%       get_data_from_substitution(InSubst, Var_List, _InType_List, Term_List, InTypeAss),
+%%       debug_message("Intersecting type assignments of the input substitution and the projection"),
+%%       %% Note: is really neccessary this intersection? PLG
+%%       debug_message("intersect_type_assignments(~q, ~q, ~q)", [InTypeAss, TypeAss, OutTypeAss]),
+%%       intersect_type_assignments(InTypeAss, TypeAss, OutTypeAss),
+%%       % OutTypeAss has the same variables that InTypeAss. 
+%%       debug_message("intersect_type_assignments(~q, ~q, ~q)", [InTypeAss, TypeAss, OutTypeAss]),
+%%       rewrite_terms_as_pure_type_terms(Term_List, OutTypeAss, OutType_List),  
+%%       rewrite_as_type_symbols(OutType_List, OutTypeSymbolList),
+%%       create_a_type_substitution(Var_List, OutTypeSymbolList, Term_List, OutTypeAss, OutSubst). 
 
 %------------------------------------------------------------------%
 :- dom_impl(terms, project/5).
@@ -581,12 +803,12 @@ terms_very_special_builtin('=/2').
 
 :- dom_impl(terms, success_builtin/6).
 :- export(terms_success_builtin/6).
-terms_success_builtin(id,_Sv_uns,_Condvars,_HvFv_u,Call,Call).
-terms_success_builtin(bot,_Sv_uns,_Condvars,_HvFv_u,_Call,'$bottom').
-terms_success_builtin(type(T),_Sv_uns,Condvars,_HvFv_u,Call,Succ):-
+terms_success_builtin(id,_Sv_uns,_Condvars,_HvFv_u,Call,Call) :- !.
+terms_success_builtin(bot,_Sv_uns,_Condvars,_HvFv_u,_Call,'$bottom') :- !.
+terms_success_builtin(type(T),_Sv_uns,Condvars,_HvFv_u,Call,Succ) :- !,
     keys_same_value(Condvars,T,Prime),
     terms_extend(not_provided_Sg,Prime,Condvars,Call,Succ).
-terms_success_builtin(Key,_Sv_uns,_Condvars,_HvFv_u,Call,Call):-
+terms_success_builtin(Key,_Sv_uns,_Condvars,_HvFv_u,Call,Call) :-
     warning_message("the builtin key ~q is not defined",[Key]).
 
 keys_same_value([K|Ks],V,[K:V|ASub]):-
@@ -830,8 +1052,7 @@ reduce_same_var__(Y,TY,X,TX,ASub,[X:TX|NewASub]):-
    # "Transforms abstract substitution ASub to user friendly format.".
 
 terms_asub_to_native(ASub,_Qv,Flag,OutputUser,[]):-
-    terms_asub_to_native0(ASub,OutputUser1),
-    equiv_types(OutputUser1,OutputUser2),
+    terms_asub_to_native0(ASub,OutputUser2),
     revert_types(OutputUser2,OutputUser,new_internal_predicate,Symbols,[]),
     recorda_required_types(Flag,Symbols).
 

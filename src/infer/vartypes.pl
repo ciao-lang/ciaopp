@@ -1,4 +1,4 @@
-:- module(vartypes,[gather_vartypes/2,get_vartype/4],[assertions, datafacts]).
+:- module(vartypes,[],[assertions, datafacts]).
 
 :- use_module(ciaopp(infer/infer), [get_info/5]).
 :- use_module(ciaopp(infer/infer_db), [inferred/3]).
@@ -16,6 +16,7 @@
 
 %-------------------------------------------------------------------------
 
+:- export(gather_vartypes/2).
 gather_vartypes(Cls,Trusts):-
     get_type_trusts(Cls,0,Trusts,[]).
 
@@ -40,6 +41,7 @@ get_one_type_trust(_Key,_Goal,Trusts,Trusts).
 
 %-------------------------------------------------------------------------
 
+:- export(get_vartype/4).
 get_vartype(Key,Goal,Call,Succ):-
     current_fact(inferred(vartypes,Key,vartype(Goal,Call,Succ))).
 get_vartype(Key,Goal,Call,Succ):-
@@ -83,3 +85,4 @@ any_to_free_one(X,_Fr,Gr,_Type,Types,Types0):-
     memberchk(X,Gr), !,
     Types=[gnd(X)|Types0].
 any_to_free_one(_,_Fr,_Gr,Type,[Type|Types0],Types0).
+

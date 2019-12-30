@@ -16,8 +16,8 @@
 :- use_module(ciaopp(infer/inferseff), [side_effect_builtin/2]).
 :- use_module(ciaopp(infer/vartypes),  [get_vartype/4]).
 
-:- use_module(typeslib(typeslib), 
-    [dz_type_included/2, get_type_rule/2, insert_rule/2, new_type_symbol/1]).
+:- use_module(typeslib(typeslib), [
+    dz_type_included/2, get_type_rule/2, insert_rule/2, new_type_symbol/1]).
 :- use_module(ciaopp(plai/domains), 
     [abs_sort/3,asub_to_info/5,call_to_entry/10,
      compute_lub/3, %do_compute_lub/3,

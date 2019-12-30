@@ -29,15 +29,12 @@
 :- use_module(ciaopp(p_unit), [new_internal_predicate/3]).
 
 :- use_module(typeslib(typeslib), [
-    assert_param_type_instance/2,
     compound_pure_type_term/4,
     construct_compound_pure_type_term/2,
     dz_equivalent_types/2,
     dz_type_included/2,
-    equiv_types/2,
-    generate_a_type_assigment/3,
     get_type_definition/2,
-    get_typedefinition/2, % TODO: !!!
+    maybe_get_type_definition/2,
     get_type_name/2,
     get_equiv_name/2,
     insert_equiv_name/2,
@@ -63,6 +60,10 @@
     concrete/4,
     partial_concrete/4,
     revert_type/3, revert_types/5]).
+:- use_module(domain(termsd), [
+    terms_input_interface/4,
+    recorda_required_types/2,
+    generate_a_type_assignment/3]).
 
 % CiaoPP library
 :- use_module(ciaopp(preprocess_flags), [current_pp_flag/2]).
@@ -73,10 +74,6 @@
 :- use_module(engine(hiord_rt), ['$meta_call'/1]).
 
 :- use_module(ciaopp(plai/apply_assertions_old), [apply_trusted0/7]).
-
-% DTM: types for assertions
-:- use_module(domain(gr), [extrainfo/1]).
-:- use_module(domain(termsd), [recorda_required_types/2]).
 
 :- use_module(library(hiordlib), [maplist/2, maplist/3]).
 :- use_module(library(messages)).
@@ -201,6 +198,10 @@ ewiden([X:T1|Prime0],[X:T2|Prime],[X:T|NewPrime]):-
     ewiden(Prime0,Prime,NewPrime).
     
 %------------------------------------------------------------------%
+
+:- regtype extrainfo(_).
+extrainfo(_). % TODO: define
+
 :- dom_impl(eterms, call_to_entry/9).
 :- export(eterms_call_to_entry/9).
 :- pred eterms_call_to_entry(+Sv,+Sg,+Hv,+Head,+K,+Fv,+Proj,-Entry,-ExtraInfo)
@@ -343,7 +344,7 @@ unify_term_and_type_term_exit(Term1,Tv,Term2,ASub,Proj,NewASub):-
     Term1 =.. [_|Args],
     type_escape_term_list(Types,EscTypes),
     apply(ASub0),
-    generate_a_type_assigment(EscTypes,Args,TypeAss),
+    generate_a_type_assignment(EscTypes,Args,TypeAss),
     ( member(_:bot,TypeAss) ->
         fail
     ; 
@@ -368,7 +369,7 @@ unify_term_and_type_term(Term1,Tv,Term2,ASub,NewASub):-
     Term1 =.. [_|Args],
     type_escape_term_list(Types,EscTypes),
     apply(ASub0),
-    generate_a_type_assigment(EscTypes,Args,TypeAss),
+    generate_a_type_assignment(EscTypes,Args,TypeAss),
     ( member(_:bot,TypeAss) ->
         fail
     ;
@@ -1006,26 +1007,8 @@ reduce_same_var__(Y,NameY,TY,X,NameX,TX,ASub,[X:(NameX,TX)|NewASub]):-
 
 :- dom_impl(eterms, input_interface/4).
 :- export(eterms_input_interface/4).
-% TODO: factorize as prop_to_type?
-eterms_input_interface(ground(X),perfect,Acc,[gnd(X)|Acc]).
-eterms_input_interface(regtype(T),perfect,Acc,[T|Acc]):-
-    functor(T,_,1),!,
-    may_be_var(Acc).
-eterms_input_interface(regtype(T),perfect,Acc,[NonPT|Acc]):-
-    functor(T,_,2),!,
-    arg(1,T,V),
-    assert_param_type_instance(T,NonPType),
-    functor(NonPT,NonPType,1),
-    arg(1,NonPT,V),
-    may_be_var(Acc).
-eterms_input_interface(member(X,L),perfect,Acc,[P|Acc]):-
-    type_escape_term_list(L,Def),
-    new_type_symbol(T),
-    insert_rule(T,Def),
-    P =.. [T,X].
-
-may_be_var([]):- !.
-may_be_var(_Acc).
+eterms_input_interface(P,Kind,Acc0,Acc1) :-
+    terms_input_interface(P,Kind,Acc0,Acc1).
 
 %------------------------------------------------------------------------%
 :- dom_impl(eterms, asub_to_native/5).
@@ -1039,8 +1022,7 @@ eterms_asub_to_native(ASub,_Qv,Flag,OutputUser,[]):-
     eterms_asub_to_native1(OutputUser1,Flag,OutputUser).
 
 :- export(eterms_asub_to_native1/3).
-eterms_asub_to_native1(OutputUser1,Flag,OutputUser):-
-    equiv_types(OutputUser1,OutputUser2),
+eterms_asub_to_native1(OutputUser2,Flag,OutputUser):-
     revert_types(OutputUser2,OutputUser,new_internal_predicate,Symbols,[]),
     recorda_required_types(Flag,Symbols).
 
@@ -1103,7 +1085,7 @@ eterms_identical_abstract0([],[]).
 
 :- export(getargtypes/6).
 getargtypes(Type,Args,ValuesX,Rest,Selectors,RestSel):-
-    get_typedefinition(Type,Def),
+    maybe_get_type_definition(Type,Def),
     getargtypes_(Def,Args,ValuesX,Rest,Selectors,RestSel).
 
 getargtypes_([],_,Rest,Rest,RestSel,RestSel).
@@ -1131,7 +1113,7 @@ replacetype(Z,[X:(N,T)|Entry],TZ,[X:(N,T)|Prime]):-
 
 :- export(getfunctors/2). % (shared with etermsvar.pl)
 getfunctors(Type,ValuesX):-
-    get_typedefinition(Type,Def),
+    maybe_get_type_definition(Type,Def),
     getfunctors_(Def,ValuesX).
 
 getfunctors_([],[]).
@@ -1322,7 +1304,7 @@ existpos(T,_,Seen):-
     fail.
 existpos(T,[F/A|S],Seen):-
 %       get_type_definition(T,Def),
-    get_typedefinition(T,Def),
+    maybe_get_type_definition(T,Def),
     gettpos(Def,F,A,NT),
     !,
     existpos(NT,S,[T|Seen]).
@@ -1330,7 +1312,7 @@ existpos(T,[F/A|S],Seen):-
 gettypeinpos(T,[],T) :- !.
 gettypeinpos(T,[F/A|S],ST):-
 %       get_type_definition(T,Def),
-    get_typedefinition(T,Def),
+    maybe_get_type_definition(T,Def),
     gettpos(Def,F,A,NT),
     !,
     gettypeinpos(NT,S,ST).
@@ -1345,7 +1327,7 @@ gettpos([_|Def],F,A,NT):-
 
 replacetypeinpos(_Tx,[],TTy,TTy) :- !.
 replacetypeinpos(Tx,[F/A|S],TTy,Txn):-
-    get_type_definition(Tx,Def), % TODO: why not get_typedefinition/2? !!!
+    get_type_definition(Tx,Def), % TODO: why not maybe_get_type_definition/2? !!!
     replacetypeinposdef(Def,F,A,S,TTy,NDef),
     new_type_symbol(Txn),
     insert_rule(Txn,NDef), !.
@@ -1483,7 +1465,7 @@ get_det_conc(Type,A,A,[A:(N,Type)|ASub],ASub):-
     new_type_name(N),
     insert_type_name(N,[],0).
 get_det_conc(Type,A,NA,NASub,ASub):-
-    get_typedefinition(Type,[SingletonDef]),!,
+    maybe_get_type_definition(Type,[SingletonDef]),!,
     get_det_conc_(SingletonDef,A,NA,NASub,ASub).    
 get_det_conc(Type,A,A,[A:(N,Type)|ASub],ASub):-
     new_type_name(N),

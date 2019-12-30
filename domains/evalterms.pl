@@ -436,7 +436,7 @@ postcondition_builtin('name/2',name(X1,Y1),Vars,Exit):-
 
 % abs_eval_functor(X,Y,Z,Proj,NProj):-  
 %       get_type(X,Proj,TypeX),
-%       get_typedefinition(TypeX,DefX),
+%       maybe_get_type_definition(TypeX,DefX),
 %       maplist(functor(_Y),DefX,DefZ),
 %       maplist(myfunctor(_Z),DefX,DefY),
 %       new_type_symbol(TY),

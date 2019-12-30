@@ -45,20 +45,16 @@
  
 :- use_module(library(lists), [member/2]).
 :- use_module(library(terms_vars), [varset/2]).
-:- use_module(library(sets), 
-    [ 
-        insert/3,
-        ord_subtract/3, 
-        ord_member/2, 
-        merge/3
-    ]).
-:- use_module(typeslib(typeslib), 
-    [dz_type_included/2,
-     type_intersection_2/3,
-     is_ground_type/1
-    ]).
- 
-:- use_module(typeslib(typeslib), [is_empty_type/1]). % DTM: was regtype_basic_lattice
+:- use_module(library(sets), [ 
+    insert/3,
+    ord_subtract/3, 
+    ord_member/2, 
+    merge/3]).
+:- use_module(typeslib(typeslib), [
+    dz_type_included/2,
+    type_intersection_2/3,
+    is_ground_type/1,
+    is_empty_type/1]).
 
 :- use_module(ciaopp(infer), [get_memo_lub/5]).
 

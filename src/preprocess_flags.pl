@@ -630,6 +630,7 @@ pp_flag(type_eval, 'Whether to attempt concrete evaluation of types being inferr
 current_pp_flags(  type_eval          , off).
 valid_flag_values( type_eval          , member(_,[on,off])).
 
+% TODO: type_precision=defined vs types=deftypes?
 pp_flag(type_precision).
 pp_flag(type_precision, 'To use during type analysis only types defined at visible modules or also types inferred anew.').
 current_pp_flags(  type_precision     , all).
