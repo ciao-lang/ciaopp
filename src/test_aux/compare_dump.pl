@@ -169,7 +169,7 @@ human_display_list([X|Xs]) :-
 %show_auxiliary_info_list(X) :-
 %       show_types, nl, fail.
 show_auxiliary_info_list(Sub) :-
-    acc_auxiliary_info(eterms, Sub), !,
+    acc_auxiliary_info(eterms, Sub), !, % TODO: eterms is hardwired here
     dump_auxiliary_info(display_nl).
 %show_auxiliary_info_list([Sub|Subs]) :-
 %       acc_auxiliary_info(eterms, Sub),

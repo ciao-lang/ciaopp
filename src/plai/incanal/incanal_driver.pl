@@ -511,7 +511,7 @@ filter_comps_mod([Comp|Cs], Mod, NCs, [Comp|RestCs]) :-
 
 :- pred apply_changes_imported_mod/3 + not_fails.
 apply_changes_imported_mod(Comps, CMod, Mod) :-
-    restore_types_mod(Mod, Dict), % restore module types
+    restore_auxinfo_mod(Mod, Dict), % restore module types
     findall((SgKey, Reg), get_changed_registry(SgKey, CMod, Mod, Reg), ChRegs),
     decide_apply_changed_registries(ChRegs, Mod, Comps, Dict).
 
@@ -519,7 +519,7 @@ apply_changes_imported_mod(Comps, CMod, Mod) :-
 decide_apply_changed_registries([], _, _, _).
 decide_apply_changed_registries([(SgKey,ChReg)|ChRegs], Mod, Comps, Dict) :-
     ChReg = regdata(_,AbsInt,Sg,RegProj,RegPrime,_,_,_,_),
-    ( AbsInt = eterms -> % TODO: generalize % Importing should be a domain action
+    ( AbsInt = eterms -> % TODO: generalize % Importing should be a domain action % TODO: use knows_of/2 (JFMC)
         imp_auxiliary_info(AbsInt, Dict, [RegProj,RegPrime],[Proj,Prime])
     ;
         Proj = RegProj, Prime = RegPrime
@@ -545,15 +545,15 @@ apply_changes_imported_comps([Comp|Comps],SgKey,Sg,ImpProj,ImpPrime,Comps) :-
 apply_changes_imported_comps([Comp|Comps], SgKey, Sg, ImpProj, ImpPrime, [Comp|NComps]) :-
     apply_changes_imported_comps(Comps, SgKey, Sg, ImpProj, ImpPrime, NComps).
 
-restore_types_mod(Mod, Dict) :-
+restore_auxinfo_mod(Mod, Dict) :-
     set_fact(restore_module(Mod)),
-    restore_auxiliary_info(enum_types,Dict).
+    restore_auxiliary_info(current_typedb,Dict).
 
 :- use_module(ciaopp(p_unit/p_abs), [curr_mod_entry/4, typedb/2]).
 
 :- data restore_module/1.
 
-% TODO: bad indexing for smart_new_type_symbol/4; see p_abs:restore_types/1
-enum_types(TypeDef):-
+% TODO: merge with p_abs:current_typedb/1
+current_typedb(TypeDef):-
     current_fact(restore_module(Module)),
     current_fact(typedb(Module,TypeDef)).

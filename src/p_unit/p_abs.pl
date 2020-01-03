@@ -976,7 +976,7 @@ check_registry_already_read(Module):-
 upload_typedefs(AbsInt,Module):-
     %%% uploading typedefs, and updating registry information with typedef renamings.
     set_fact(tmp_current_module(Module)),
-    auxinfo_dump:restore_auxiliary_info(restore_types,Dict),
+    auxinfo_dump:restore_auxiliary_info(current_typedb,Dict),
     ( % (failure-driven loop)
       current_fact(registry(SgKey,Module,OldReg),Ref),
         OldReg = regdata(Id,AbsInt,Sg,Call0,Succ0,SpecName,ImdgList0,Chdg0,Mark),
@@ -1001,9 +1001,8 @@ upload_typedefs(AbsInt,Module):-
 upload_typedefs_all_domains(Module):-
     upload_typedefs(_AbsInt,Module).
 
-% Returns the type definitions on backtracking from the temporary pred tmp_restore_types/1.
-% TODO: bad indexing for smart_new_type_symbol/4
-restore_types(TypeDef):-
+% Returns the type definitions on backtracking from the temporary pred typedb/2 for tmp_current_module/1.
+current_typedb(TypeDef):-
     current_fact(tmp_current_module(Module)),
     retract_fact(typedb(Module,TypeDef)).
 
