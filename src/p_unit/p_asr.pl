@@ -1122,49 +1122,36 @@ save_itf_of_to_asr(_Base, _M).
 :- use_module(ciaopp(p_unit/itf_db), [cleanup_lib_itf/0]).
 
 :- use_module(typeslib(typeslib), [
-    % TODO: merge in a single pred
-    gen_lib_type_info/1, load_lib_type_info/1, cleanup_lib_type_info/0,
-    gen_lib_param_symbol/1, load_lib_param_symbol/1, cleanup_lib_param_symbol/0,
-    pre_build_defined_types_lattice/1, load_lib_deftypes/1]).
+    gen_lib_type_info/1,
+    load_lib_type_info/1,
+    cleanup_lib_type_info/0]).
 
 :- pred cleanup_lib_sources
     # "Cleans up all preloaded assertion information.".
 cleanup_lib_sources :-
     assrt_db:cleanup_lib_assrt,
     typeslib:cleanup_lib_type_info,
-    typeslib:cleanup_lib_param_symbol,
     clause_db:cleanup_lib_props,
     itf_db:cleanup_lib_itf.
 
 :- pred load_lib_sources(Path) # "Loads source files for preloading
     assertion info.  Files are loaded from directory @var{Path}.".
 load_lib_sources(Path) :-
-%       current_pp_flag(library_preloading,on),!,
-    atom_concat(Path, '/lib_assertion_read.pl', F1),
-    open(F1, read, S1),
-    assrt_db:load_lib_assrt(S1),
-    close(S1),
-    atom_concat(Path, '/lib_typedefs.pl', F2),
-    open(F2, read, S2),
-    typeslib:load_lib_type_info(S2),
-    close(S2),
-    atom_concat(Path, '/lib_param_symbols.pl', F2b),
-    open(F2b, read, S2b),
-    typeslib:load_lib_param_symbol(S2b),
-    close(S2b),
-    atom_concat(Path, '/lib_prop_clause_read.pl', F3),
-    open(F3, read, S3),
-    clause_db:load_lib_props(S3),
-    close(S3),
-    atom_concat(Path, '/lib_itf_db.pl', F4),
-    open(F4, read, S4),
-    itf_db:load_lib_itf(S4),
-    close(S4),
-    atom_concat(Path, '/lib_deftypes.pl', F5),
-    open(F5, read, S5),
-    load_lib_deftypes(S5),
-    close(S5).
-load_lib_sources(_Path).
+    % current_pp_flag(library_preloading,on),!,
+    load_from_file(Path, 'lib_assertion_read.pl', assrt_db:load_lib_assrt),
+    load_from_file(Path, 'lib_prop_clause_read.pl', clause_db:load_lib_props),
+    load_from_file(Path, 'lib_itf_db.pl', itf_db:load_lib_itf),
+    load_from_file(Path, 'lib_typedb.pl', typeslib:load_lib_type_info).
+%load_lib_sources(_Path).
+
+:- use_module(library(pathnames)).
+
+:- meta_predicate load_from_file(?, ?, pred(1)).
+load_from_file(Path, Name, Pred) :-
+    path_concat(Path, Name, F),
+    open(F, read, InS),
+    Pred(InS),
+    close(InS).
 
 :- pred loaded_lib_sources/0 #"Checks if the library sources are already
     preloaded. This predicate assumes that the lib cache contains at least
@@ -1178,45 +1165,20 @@ loaded_lib_sources :-
     info from assertions.  Files are generated in directory @var{Path}.".
 gen_lib_sources(Path) :-
     push_prolog_flag(write_strings, on),
-    atom_concat(Path, '/lib_assertion_read.pl', F1),
-    open(F1, write, S1),
-    display(S1, '%% Do not modify this file: it is generated automatically.'),
-    nl(S1),
-    assrt_db:gen_lib_assrt(S1),
-    close(S1),
-    atom_concat(Path, '/lib_param_symbols.pl', F2b),
-    open(F2b, write, S2b),
-    display(S2b,'%% Do not modify this file: it is generated automatically.'),
-    nl(S2b),
-    typeslib:gen_lib_param_symbol(S2b),
-    close(S2b),
-    atom_concat(Path, '/lib_prop_clause_read.pl', F3),
-    open(F3, write, S3),
-    display(S3,'%% Do not modify this file: it is generated automatically.'),
-    nl(S3),
-    gen_lib_props(S3),
-    close(S3),
-    atom_concat(Path, '/lib_itf_db.pl', F4),
-    open(F4, write, S4),
-    display(S4,'%% Do not modify this file: it is generated automatically.'),
-    nl(S4),
-    dump_lib_itf(S4),
-    close(S4),
-    atom_concat(Path, '/lib_deftypes.pl', F5),
-    open(F5, write, S5),
-    display(S5,'%% Do not modify this file: it is generated automatically.'),
-    nl(S5),
-    pre_build_defined_types_lattice(S5),
-    close(S5),
-    atom_concat(Path, '/lib_typedefs.pl', F2),
-    open(F2, write, S2),
-    display(S2,'%% Do not modify this file: it is generated automatically.'),
-    nl(S2),
-    typeslib:gen_lib_type_info(S2),
-    close(S2),
+    write_to_file(Path, 'lib_assertion_read.pl', assrt_db:gen_lib_assrt),
+    write_to_file(Path, 'lib_prop_clause_read.pl', gen_lib_props),
+    write_to_file(Path, 'lib_itf_db.pl', dump_lib_itf),
+    write_to_file(Path, 'lib_typedb.pl', typeslib:gen_lib_type_info),
     pop_prolog_flag(write_strings).
 
-%%--
+:- meta_predicate write_to_file(?, ?, pred(1)).
+write_to_file(Path, Name, Pred) :-
+    path_concat(Path, Name, F),
+    open(F, write, OutS),
+    display(OutS, '%% Do not modify this file: it is generated automatically.'),
+    nl(OutS),
+    Pred(OutS),
+    close(OutS).
 
 %% ---------------------------------------------------------------------------
 %% Checking for properties in assertions
