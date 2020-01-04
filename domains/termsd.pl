@@ -75,7 +75,7 @@ absu_elem(Var:Type):-
 
 :- dom_impl(terms, input_interface/4).
 :- export(terms_input_interface/4).
-% TODO: factorize as prop_to_type?
+% TODO: see prop_to_type?
 terms_input_interface(ground(X),perfect,Acc,[gnd(X)|Acc]).
 terms_input_interface(regtype(T),perfect,Acc,[T2|Acc]):- !,
     make_prop_type_unary(T,T2),
