@@ -75,12 +75,19 @@
 :- use_module(ciaopp(preprocess_flags), [current_pp_flag/2]).
 :- use_module(ciaopp(plai/plai_db),   [complete/7, get_parent_key/4]).
 :- use_module(ciaopp(plai/domains),   [identical_proj/5, less_or_equal_proj/5, abs_sort/3]).
-:- use_module(ciaopp(p_unit/auxinfo_dump),         
-    [ acc_auxiliary_info/2, dump_auxiliary_info/1, imp_auxiliary_info/4, restore_auxiliary_info/2]).
-:- use_module(ciaopp(p_unit/aux_filenames), 
-    [ get_module_filename/3, just_module_name/2, is_library/1, get_loaded_module_name/3]).
-:- use_module(ciaopp(p_unit/program_keys),
-    [decode_litkey/5, predkey_from_sg/2, get_predkey/3]).
+:- use_module(ciaopp(p_unit/auxinfo_dump), [
+    acc_auxiliary_info/2,
+    dump_auxiliary_info/1,
+    is_dump_auxiliary_fact/1,
+    imp_auxiliary_info/4,
+    restore_auxiliary_info/2]).
+:- use_module(ciaopp(p_unit/aux_filenames), [
+    get_module_filename/3,
+    just_module_name/2,
+    is_library/1,
+    get_loaded_module_name/3]).
+:- use_module(ciaopp(p_unit/program_keys), [
+    decode_litkey/5, predkey_from_sg/2, get_predkey/3]).
 :- use_module(ciaopp(plai/tarjan), [step2/2]).
 
 :- use_module(spec(spec_multiple), [publish_pred_name/2, get_version_name/4]).
@@ -915,7 +922,7 @@ read_types_data_loop(Module,NextTuple):-
     repeat,
     ( fast_read(NextTuple) ->
         ( % NextTuple = typedef(TypeName,TypeDef) ->
-          is_type_related(NextTuple) ->
+          is_dump_auxiliary_fact(NextTuple) ->
             assertz_fact(typedb(Module,NextTuple)),
             fail
         ; 
@@ -924,9 +931,6 @@ read_types_data_loop(Module,NextTuple):-
     ;
         NextTuple = end_of_file
     ).
-
-is_type_related(typedef(_,_)).
-is_type_related(param_type_symbol_renaming(_,_)).
 
 %% --------------------------------------------------------------------
 
