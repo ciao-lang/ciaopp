@@ -30,12 +30,12 @@
 :- use_module(spec(abs_exec_cond), [abs_exec_conj_props/3]).
 :- use_module(spec(sp_clauses), [collect_one_orig_clause/3]).
 :- use_module(spec(unfold_builtins), [can_be_evaluated/1, has_cuts/2, is_memo/1]).
+:- use_module(spec(unfold_builtins), [translate_lattice_types/4]).
 :- use_module(spec(spec_support), [non_static/1]).
 :- use_module(spec(arith_simplify), [arith_simp/2]).
 
 :- use_module(spec(generalize_emb_atoms), [add_gen_memo_hint/1]).
 
-:- use_module(typeslib(typeslib), [translate_lattice_types/4]).
 :- use_module(ciaopp(plai/domains), [call_to_entry/10]).
 :- use_module(ciaopp(plai/transform), [trans_clause/3]).
 

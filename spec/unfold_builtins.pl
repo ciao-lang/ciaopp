@@ -9,7 +9,8 @@
      is_memo/1,
      execute/1,
      check_not_ignore/2,
-     load_modules_with_eval/0
+     load_modules_with_eval/0,
+     translate_lattice_types/4
     ],
     [assertions, datafacts]).
 
@@ -228,4 +229,36 @@ use_all_modules([M|Ms]):-
     current_itf(defines_module,M,File),
     use_module(File),
     use_all_modules(Ms).
+
+% ---------------------------------------------------------------------------
+% (moved from typeslib) (JFMC)
+
+:- pred translate_lattice_types(Functor, Arity, Goal, NGoal)
+    # "Some type checking predicates correspond to basic types in
+      the lattice but with a different name. This predicate makes
+      the conversion from the type check to the basic type. This
+      allows using @tt{native_prop(NGoal, regtype(_))} to determine
+      whether @var{Goal} is a regular type check.".
+
+translate_lattice_types('term_typing:integer', 1, Goal, NGoal) :-
+    !,
+    functor(NGoal, 'basic_props:int', 1),
+    arg(1, Goal, Arg),
+    arg(1, NGoal, Arg).
+translate_lattice_types('term_typing:float', 1, Goal, NGoal) :-
+    !,
+    functor(NGoal, 'basic_props:flt', 1),
+    arg(1, Goal, Arg),
+    arg(1, NGoal, Arg).
+translate_lattice_types('term_typing:number', 1, Goal, NGoal) :-
+    !,
+    functor(NGoal, 'basic_props:num', 1),
+    arg(1, Goal, Arg),
+    arg(1, NGoal, Arg).
+translate_lattice_types('term_typing:atom', 1, Goal, NGoal) :-
+    !,
+    functor(NGoal, 'basic_props:atm', 1),
+    arg(1, Goal, Arg),
+    arg(1, NGoal, Arg).
+translate_lattice_types(_, _, Goal, Goal).
 

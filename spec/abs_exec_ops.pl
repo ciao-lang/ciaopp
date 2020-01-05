@@ -82,3 +82,4 @@ regtype_exec_in_clause(SPred,NHead,NewInfo,Abs,Sense):-
 regtype_exec_in_clause(SPred,NHead,NewInfo,Abs,Sense):-
     cond(incomp_type(1,SPred),Abs,NHead,NewInfo),!,
     Sense = fail.
+

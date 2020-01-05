@@ -40,12 +40,12 @@
 
 :- use_module(spec(unfold_operations), [filter_pops/2]).
 :- use_module(spec(unfold_builtins), [can_be_evaluated/1, has_cuts/2, is_memo/1]).
+:- use_module(spec(unfold_builtins), [translate_lattice_types/4]).
 :- use_module(spec(mem_usage), [update_mem_usage/0]).
 :- use_module(spec(spec_support), [non_static/1]).
 :- use_module(spec(arith_simplify), [arith_simp/2]).
 :- use_module(spec(generalize_emb_atoms), [add_gen_memo_hint/1]).
 
-:- use_module(typeslib(typeslib), [translate_lattice_types/4]).
 :- use_module(ciaopp(plai/domains), [call_to_entry/10]).
 :- use_module(ciaopp(plai/transform), [trans_clause/3]).
 
