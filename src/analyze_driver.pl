@@ -536,7 +536,7 @@ acheck_summary(ok).
 % ---------------------------------------------------------------------------
 % TODO: cleanup for transform?
 
-:- use_module(typeslib(typeslib), [undoall_types/0]).
+:- use_module(typeslib(typeslib), [cleanup_types/0]).
 
 :- use_module(ciaopp(plai), [cleanup_plai/1]).
 :- use_module(ciaopp(infer/infer_db), [cleanup_infer_db/1]).
@@ -554,7 +554,7 @@ clean_analysis_info :-
     cleanup_infer_db(_),
     cleanup_seff,
     cleanup_domain,
-    % undoall_types, % TODO: why not? JF
+    % cleanup_types, % TODO: why not? JF
     cleanup_errors.
 
 :- export(clean_analysis_info0/0).
@@ -565,7 +565,7 @@ clean_analysis_info0 :-
 %       cleanup_seff,
 %       cleanup_p_abs,
 %       cleanup_errors,
-    undoall_types,
+    cleanup_types,
     cleanup_domain.
 
 :- if(defined(with_fullpp)).
@@ -582,7 +582,7 @@ cleanup_for_codegen :-
     cleanup_infer_db(_),
     cleanup_seff,
     cleanup_p_abs,
-    undoall_types,
+    cleanup_types,
     cleanup_domain.
     % cleanup_errors. % TODO: why not?
 

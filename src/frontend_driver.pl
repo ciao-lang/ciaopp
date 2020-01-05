@@ -220,7 +220,7 @@ module_(ModList, Info):-
 :- endif. % with_fullpp
 module_(ModList, Info):-
     pp_statistics(runtime,_),
-    clean_analysis_info0, % TODO: merge! see definition, undoall_types/0?
+    clean_analysis_info0, % TODO: merge! see definition, cleanup_types/0?
     cleanup_all,
   ensure_lib_sources_loaded,
     % load 

@@ -134,7 +134,7 @@ generated when transforming the code can be modified.
 :- use_module(ciaopp(preprocess_flags), [current_pp_flag/2, set_pp_flag/2]).
 :- use_module(ciaopp(p_unit/clause_db), [cleanup_clause_db/0]).
 :- use_module(ciaopp(plai/fixpo_dd), ['$change_list'/2]).
-:- use_module(typeslib(typeslib), [undoall_types/0]).
+:- use_module(typeslib(typeslib), [cleanup_types/0]).
 
 % incanal
 :- use_module(ciaopp(plai/incanal/incanal_driver)).
@@ -183,7 +183,7 @@ incremental_module_(Files, Stats) :-
 % TODO: Possible missing type definitions
 update_modules(Files, Stats) :- % Reload files (keeps prev analysis)
     clean_analysis_info,
-    undoall_types,
+    cleanup_types,
     simple_module(Files, Stats),
     get_current_clauses(NCls),
   get_current_assertions(NAssrts),
