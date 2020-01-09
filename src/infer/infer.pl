@@ -17,7 +17,7 @@
 :- use_module(ciaopp(infer/vartypes),  [get_vartype/4]).
 
 :- use_module(typeslib(typeslib), [
-    dz_type_included/2, get_type_rule/2, insert_rule/2, new_type_symbol/1]).
+    dz_type_included/2, insert_rule/2, new_type_symbol/1]).
 :- use_module(ciaopp(plai/domains), 
     [abs_sort/3,asub_to_info/5,call_to_entry/10,
      compute_lub/3, %do_compute_lub/3,
@@ -376,8 +376,9 @@ type_fails(K,Goal,TypeList):-
 % untestable type2measure/3 EMM
 type2measure(Goal0,Typings0,Measures):-
     % TODO: ugly, load this type somewhere else
-    ( get_type_rule('$$list',_) -> true
-    ; insert_rule('$$list',[[],[term|'$$list']]) ),
+    %( get_type_rule('$$list',_) -> true
+    %; insert_rule('$$list',[[],[term|'$$list']]) ),
+    insert_rule('$$list',[[],[term|'$$list']]), % TODO: insert_rule/2 already checks if type is defined twice (JFMC)
     %
     copy_term((Goal0,Typings0),(Goal,Typings)),
     type_names(Typings),

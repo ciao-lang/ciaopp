@@ -677,36 +677,30 @@ write_list_types([Rule|L], S) :-
     write_one_type(Rule, S),
     write_list_types(L, S).
 
+:- export(write_one_type/2).
 write_one_type(typedef(::=(Pred, Def)), S) :-
     p_unit:internal_predicate_names(InternalNames),
     functor(Pred, TypeName, Ari),
     PredAri is Ari + 1,
     curr_file(_, M),
-    (
-        member((TypeName, PredAri, Name), InternalNames)
-    ->
+    ( member((TypeName, PredAri, Name), InternalNames) ->
         true
-    ;
-        Name=TypeName
+    ; Name=TypeName
     ),
     transform_name(Name, M, NameT),
-    format(S, ":- regtype ~q/~w.~n~n", [NameT, PredAri]),
+    format(S, ":- regtype ~q/~w.~n", [NameT, PredAri]),
     transform_one_type_clause(Def, (TypeName, NameT), DefT),
     typedef_to_pred(DefT, NameT, Cls),
     transform_clause_list(Cls, M, ClsT),
 %       transform_types_clauses( ClsT , (TypeName , NameT) , ClsTT ),
     pretty_print(S, ClsT, [], _),
-    nl(S),
     nl(S).
 
 transform_one_type_clause(TH, (N, NT), THT) :-
     functor(TH, F, A),
-    (
-        F==N
-    ->
+    ( F==N ->
         FT = NT
-    ;
-        FT = F
+    ; FT = F
     ),
     TH =.. [_|Args],
     THT =.. [FT|Args],

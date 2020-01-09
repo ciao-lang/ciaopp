@@ -24,9 +24,9 @@
     assertion_set_success/3,
     assertion_set_comp/3]).
 :- use_module(ciaopp(p_unit/p_unit_basic), [type_of_goal/2]).
+:- use_module(ciaopp(frontend_driver), [write_one_type/2]). % TODO: move somewhere else
 :- use_module(typeslib(typeslib), [
-    get_type_rule/2, 
-    pretty_type_lit_rules/4, 
+    pretty_type_lit_rules_desimp/2, 
     equiv_type/2]).
 :- use_module(ciaopp(plai/domains), [asub_to_info/5, project/5,project/6]).
 :- use_module(ciaopp(p_unit/assrt_norm), [denorm_goal_prop/3]).
@@ -544,12 +544,11 @@ portray('$dom'(Dom,Res,Rules,Tab)) :-
       write(ResConj), nl
     ; write_info(Res, Tab)
     ),
-    (  Rules = [] ->
-       nl
-    ;
-       format("~nwith: ",[]),
-       % Flag for a format of rules here 
-       write_rules(Rules)
+    ( Rules = [] ->
+        nl
+    ; format("~nwith:~n~n",[]),
+      % Flag for a format of rules here 
+      write_rules(Rules)
     ).
 
 write_results([]).
@@ -569,11 +568,12 @@ write_info([A|As],Tab) :-
 
 write_rules([]).
 write_rules([typedef(::=(H,B))|Rules]) :-
-    format("~w ::= ~w~n",[H,B]),
-    ( Rules \== [] ->
-      format("      ",[])
-    ; true
-    ),
+    write_one_type(typedef(::=(H,B)), user_output),
+%     format("~w ::= ~w~n",[H,B]),
+%     ( Rules \== [] ->
+%         format("      ",[])
+%     ; true
+%     ),
     write_rules(Rules).
 
 write_spaces(Zero) :- 0 is Zero,!.
@@ -598,8 +598,7 @@ find_max(_,B,B).
 
 % a bit different from that in ctchecks_messages.pl
 filter_required_rules([typedef(::=(T,_))|Ds],Rs,RsOut):-
-    functor(G,T,1),
-    ( native_prop(G,regtype(_Prop)) % not inferred
+    ( functor(G,T,1), native_prop(G,regtype(_Prop)) % not inferred
     ; equiv_type(T,_)               % an equivalent type will be shown 
     ), 
     !, 
@@ -638,8 +637,6 @@ prepare_output_info([D|Ds],[I|Is],H,Type,AInfoOut) :-
     prepare_output_info(Ds,Is,H,Type,AInfo).
 
 
-
-
 % collect type rules for each and every complete
 collect_rules(G,Info,Rules,NewInfo):-
     collect_rules_all(G,Info,[],Rules,NewInfo).
@@ -648,33 +645,10 @@ collect_rules_all(_G,[],R,R,[]).
 collect_rules_all(G,[I|Is],RIn,ROut,[NewI|NewIs]) :-
     copy_term((G,I),(CG,CI)),
     inline_types(CI),
-    CG =.. [_Fun|Types],
-    ( pretty_type_lit_rules(CG,_PrintGoal,TypesInRules,Rules0) ->
-        true
-    ; display(pretty_type_lit_rules(CG,_PrintGoal,TypesInRules,Rules0)), nl, % TODO: bug?
-      TypesInRules = [],
-      Rules0 = []
-    ),
-    add_missing_rules(Types,TypesInRules,MissingRules), % de-simplify type rules
-    append(MissingRules,Rules0,Rules),                  % just a bit :-)   
+    pretty_type_lit_rules_desimp(CG,Rules),
     filter_required_rules(Rules,RIn,RInter),
     replace_equiv(I,NewI),
     collect_rules_all(G,Is,RInter,ROut,NewIs).
-
-add_missing_rules([],_,[]) :-!.
-add_missing_rules([T|Ts],TR,Rules) :-
-    ( member(T,TR)
-    ; \+ atom(T)
-    ; equiv_type(T,_)
-    ; functor(G,T,1),
-      native_prop(G,regtype(_Prop))
-    ),
-    !,
-    add_missing_rules(Ts,TR,Rules).
-add_missing_rules([T|Ts],TR,[typedef(::=(T,D))|Rules]) :-
-    get_type_rule(T,[D]), % TODO: why is this correct? (def always seems to be of length 1 in this case)
-    add_missing_rules(Ts,TR,Rules).
-
 
 replace_equiv((A,B),(A1,B1)) :-!,
     replace_equiv(A,A1),
