@@ -375,8 +375,10 @@ type_fails(K,Goal,TypeList):-
 
 % untestable type2measure/3 EMM
 type2measure(Goal0,Typings0,Measures):-
+    % TODO: ugly, load this type somewhere else
     ( get_type_rule('$$list',_) -> true
     ; insert_rule('$$list',[[],[term|'$$list']]) ),
+    %
     copy_term((Goal0,Typings0),(Goal,Typings)),
     type_names(Typings),
     functor(Goal,_,A),

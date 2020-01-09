@@ -672,7 +672,7 @@ add_missing_rules([T|Ts],TR,Rules) :-
     !,
     add_missing_rules(Ts,TR,Rules).
 add_missing_rules([T|Ts],TR,[typedef(::=(T,D))|Rules]) :-
-    get_type_rule(T,[D]),
+    get_type_rule(T,[D]), % TODO: why is this correct? (def always seems to be of length 1 in this case)
     add_missing_rules(Ts,TR,Rules).
 
 
