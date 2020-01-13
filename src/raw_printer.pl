@@ -253,14 +253,14 @@ decide_print_assertions(_, _).
 
 output_raw_inferred_assertions(PredKey, S) :-
     findall(comp(Sg,Proj,Prime,(complete_id(Id), domain(AbsInt), callers(Parents))), complete(PredKey,AbsInt,Sg,Proj,Prime,Id,Parents), Completes),
-    write_assertions(Completes, S).
+    write_assertions(Completes, S), nl(S).
 
 write_assertions([], _).
 write_assertions([C|Cs], S) :-
     C = comp(Sg,Proj,Prime,Comps),
     assertion_body(Sg, [], [Proj], Prime, [Comps], [], Body),
     numbervars(Body, 0, _), % Not dangerous because it was copied
-    write_assertion(S, Sg, true, pred, Body, [], status),
+    write_assertion(S, Sg, true, pred, Body, [], status), nl(S),
     write_assertions(Cs, S).
 
 add_ppoints(g(LitKey, _, _, _, Goal), Vars, Clause) :-
