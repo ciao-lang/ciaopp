@@ -380,26 +380,21 @@ print_assrt(As, S) :-
         ),
         ( From == commented ->
             ( Type == pred ->
-                write_assertion_as_double_comment(
-                    S,
+                \+ \+ write_assertion_as_double_comment(S,
                     HeadT, Status, Type,
                     BodyT2, VN,
-                    WriteStatus),
-                nl(S)
+                    WriteStatus)
             ;
-                write_assertion_as_comment(
-                    S,
+                \+ \+ write_assertion_as_comment(S,
                     HeadT, Status, Type,
                     BodyT2, VN,
-                    WriteStatus),
-                nl(S)
+                    WriteStatus)
             )
         ; Type == test ->
             true % Don't write test assertions here
         ;
-            write_assertion(S, HeadT, Status, Type, BodyT2,
-                            VN, WriteStatus),
-            nl(S)
+            \+ \+ write_assertion(S, HeadT, Status, Type, BodyT2,
+                VN, WriteStatus)
         )
     ).
 
