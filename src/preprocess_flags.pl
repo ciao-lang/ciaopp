@@ -474,6 +474,7 @@ current_pp_flags(  fixpoint           , plai).
 :- if(defined(has_ciaopp_extra)).
 valid_flag_values( fixpoint           , member(_,[plai,
                                               plai_gfp, plai_sp, % TODO:[new-resources] from new-resources branch, check
+                                              plai_wc, plai_tab,
                                               dd, di, check_di,
                                               check_di2, check_di3, 
                                               check_di4, check_di5,

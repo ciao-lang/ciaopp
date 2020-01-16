@@ -45,6 +45,8 @@
 :- use_module(ciaopp(plai/normalize_args), [normalize_args/4]).
 :- use_module(ciaopp(plai/plai_errors), [undo_errors/0]).
 :- use_module(ciaopp(plai/fixpo_plai), [query/8, init_fixpoint/0, cleanup_fixpoint/1]).
+:- use_module(ciaopp(plai/fixpo_plai_with_comments), [query/8, init_fixpoint/0, cleanup_fixpoint/1]).
+:- use_module(ciaopp(plai/fixpo_plai_tabling), [query/8, init_fixpoint/0, cleanup_fixpoint/1]).
 :- use_module(ciaopp(plai/fixpo_dd), [query/8, init_fixpoint/0, cleanup_fixpoint/1]).
 :- use_module(ciaopp(plai/fixpo_di), [query/8, init_fixpoint/0, cleanup_fixpoint/1]).
 :- use_module(ciaopp(plai/fixpo_check_di), [query/8, init_fixpoint/0, cleanup_fixpoint/1]).
@@ -93,6 +95,8 @@ cleanup_plai(AbsInt):-
     fixpo_plai:cleanup_fixpoint(AbsInt),
     %fixpo_plai_with_static_profiling_info:cleanup_fixpoint(AbsInt),
     fixpo_plai_gfp:cleanup_fixpoint(AbsInt),
+    fixpo_plai_with_comments:cleanup_fixpoint(AbsInt),
+    fixpo_plai_tabling:cleanup_fixpoint(AbsInt),
     fixpo_dd:cleanup_fixpoint(AbsInt),
     fixpo_di:cleanup_fixpoint(AbsInt),
     fixpo_check_di:cleanup_fixpoint(AbsInt),
@@ -114,6 +118,8 @@ cleanup_pcpe.
 init_fixpoint(plai):- fixpo_plai:init_fixpoint.
 %init_fixpoint(plai_sp):- fixpo_plai_with_static_profiling_info:init_fixpoint.
 init_fixpoint(plai_gfp):- fixpo_plai_gfp:init_fixpoint.
+init_fixpoint(plai_wc):- fixpo_plai_with_comments:init_fixpoint.
+init_fixpoint(plai_tab):- fixpo_plai_tabling:init_fixpoint.
 init_fixpoint(dd):- fixpo_dd:init_fixpoint.
 init_fixpoint(di):- fixpo_di:init_fixpoint.
 init_fixpoint(check_di):- fixpo_check_di:init_fixpoint.
@@ -223,7 +229,7 @@ preprocess(poly_spec,_AbsInt,_Cls,_Ds,_Ps):-!,
     heuristic_pcpe:cleanup_fixpoint.
 :- endif.
 preprocess(Fixp,AbsInt,Cls,Ds,Ps):-
-    ( Fixp == plai ; Fixp == plai_sp ; Fixp == plai_gfp ; Fixp == dd), !,
+    ( Fixp == plai ; Fixp == plai_sp ; Fixp == plai_gfp ; Fixp == plai_wc ;Fixp == plai_tab ; Fixp == dd), !,
       % TODO:[new-resources] plai_sp is not used? it was in fixpo_plai_with_static_profiling_info.pl
     generate_trans_clauses(Cls,Ds,AbsInt,Ps).
 preprocess(bu,AbsInt,Cls,Ds,Ps):- !,
@@ -280,6 +286,14 @@ analyze(plai_gfp,AbsInt,RFlag,Goal,Gv,Call,Name):-
     functor(Goal,F,A),
     get_predkey(F,A,K),
     fixpo_plai_gfp:query(AbsInt,K,Goal,Gv,RFlag,Name,Call,_Succ).
+analyze(plai_wc,AbsInt,RFlag,Goal,Gv,Call,Name):-
+    functor(Goal,F,A),
+    get_predkey(F,A,K),
+    fixpo_plai_with_comments:query(AbsInt,K,Goal,Gv,RFlag,Name,Call,_Succ).
+analyze(plai_tab,AbsInt,RFlag,Goal,Gv,Call,Name):-
+    functor(Goal,F,A),
+    get_predkey(F,A,K),
+    fixpo_plai_tabling:query(AbsInt,K,Goal,Gv,RFlag,Name,Call,_Succ).
 analyze(dd,AbsInt,RFlag,Goal,Gv,Call,Name):-
     functor(Goal,F,A),
     get_predkey(F,A,K),
@@ -320,15 +334,15 @@ analyze(check_di5,AbsInt,_RFlag,Goal,Gv,Call,Name):-
     fixpo_check_di5:query(AbsInt,K,Goal,Gv,_,Name,Call,_Succ),
     pop_pp_flag(reuse_fixp_id).
 
-entry_point(AbsInt,Goal,Qv,Call,Name):-
-    ( type_of_goal(exported,Goal)
-    ; type_of_goal(multifile,Goal)),
-    functor(Goal,F,A),
-    functor(G,F,A),
-    \+ entry_assertion(G,_Call,_Name),
-    get_predkey(F,A,Name), % Name the unique topmost version of F/A
-    varset(Goal,Qv),  
-    unknown_entry(AbsInt,Goal,Qv,Call).
+% entry_point(AbsInt,Goal,Qv,Call,Name):-
+%     ( type_of_goal(exported,Goal)
+%     ; type_of_goal(multifile,Goal)),
+%     functor(Goal,F,A),
+%     functor(G,F,A),
+%     \+ entry_assertion(G,_Call,_Name),
+%     get_predkey(F,A,Name), % Name the unique topmost version of F/A
+%     varset(Goal,Qv),  
+%     unknown_entry(AbsInt,Goal,Qv,Call).
 entry_point(AbsInt,Name,[],Call,Name):-
     setcounter(0,0),
     ( type_of_directive(initialization,Body)
