@@ -16,7 +16,6 @@
 % ---------------------------------------------------------------------------
 
 :- use_module(domain(termsd), [
-    recorda_required_types/2,
     substitution/3,
     variables_are_variable_type/2,
     variables_are_top_type/2,
@@ -453,11 +452,12 @@ reduce_same_var__(Y,TY,X,TX,ASub,[X:TX|NewASub]):-
 
 :- dom_impl(deftypes, asub_to_native/5).
 :- export(deftypes_asub_to_native/5).
-:- pred deftypes_asub_to_native(+ASub,+Qv,+Flag,-OutputUser,-Comps)
-   # "Transforms abstract substitution ASub to user friendly format.".
+:- pred deftypes_asub_to_native(+ASub,+Qv,+OutFlag,-OutputUser,-Comps)
+   # "Transforms abstract substitution @var{ASub} to user friendly format.
+      Record relevant symbols for output if @var{OutFlag} is @tt{yes}.".
 
-deftypes_asub_to_native(ASub,Qv,Flag,OutputUser,Comps):-
-    terms_asub_to_native(ASub,Qv,Flag,OutputUser,Comps).
+deftypes_asub_to_native(ASub,Qv,OutFlag,OutputUser,Comps):-
+    terms_asub_to_native(ASub,Qv,OutFlag,OutputUser,Comps).
 
 %------------------------------------------------------------------------%
 

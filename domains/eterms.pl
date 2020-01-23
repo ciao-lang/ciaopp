@@ -26,8 +26,6 @@
 :- include(ciaopp(plai/plai_domain)).
 :- dom_def(eterms).
 
-:- use_module(ciaopp(p_unit), [new_internal_predicate/3]).
-
 :- use_module(typeslib(typeslib), [
     compound_pure_type_term/4,
     construct_compound_pure_type_term/2,
@@ -59,10 +57,10 @@
     get_canonical_name/2,
     concrete/4,
     partial_concrete/4,
-    revert_type/3, revert_types/5]).
+    revert_type_internal/3]).
 :- use_module(domain(termsd), [
     terms_input_interface/4,
-    recorda_required_types/2,
+    terms_internal_to_native/3,
     generate_a_type_assignment/3]).
 
 % CiaoPP library
@@ -1013,23 +1011,18 @@ eterms_input_interface(P,Kind,Acc0,Acc1) :-
 %------------------------------------------------------------------------%
 :- dom_impl(eterms, asub_to_native/5).
 :- export(eterms_asub_to_native/5).
-:- pred eterms_asub_to_native(+ASub,+Qv,+Flag,-OutputUser,-Comps)
+:- pred eterms_asub_to_native(+ASub,+Qv,+OutFlag,-OutputUser,-Comps)
    # "Transforms abstract substitution @var{ASub} to user friendly
    format.".
 
-eterms_asub_to_native(ASub,_Qv,Flag,OutputUser,[]):-
-    eterms_asub_to_native0(ASub,OutputUser1),
-    eterms_asub_to_native1(OutputUser1,Flag,OutputUser).
+eterms_asub_to_native(ASub,_Qv,OutFlag,OutputUser,[]):-
+    eterms_asub_to_internal(ASub,OutputUser1),
+    terms_internal_to_native(OutputUser1,OutFlag,OutputUser).
 
-:- export(eterms_asub_to_native1/3).
-eterms_asub_to_native1(OutputUser2,Flag,OutputUser):-
-    revert_types(OutputUser2,OutputUser,new_internal_predicate,Symbols,[]),
-    recorda_required_types(Flag,Symbols).
-
-eterms_asub_to_native0([X:(_N,T)|ASub],[Type|OutputUser]):-
-    revert_type(T,X,Type),
-    eterms_asub_to_native0(ASub,OutputUser).
-eterms_asub_to_native0([],[]).
+eterms_asub_to_internal([X:(_N,T)|ASub],[Type|OutputUser]):-
+    revert_type_internal(T,X,Type),
+    eterms_asub_to_internal(ASub,OutputUser).
+eterms_asub_to_internal([],[]).
 
 %------------------------------------------------------------------------%
 :- export(eterms_output_interface/2).

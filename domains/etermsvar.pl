@@ -786,10 +786,10 @@ etermsvar_input_interface_convert_free_and_ground_args([A|R],[AConv|RConv]) :-
 %------------------------------------------------------------------------%
 :- dom_impl(etermsvar, asub_to_native/5).
 :- export(etermsvar_asub_to_native/5).
-:- pred eterms_asub_to_native(+ASub,+Qv,+Flag,-OutputUser,-Comps).
+:- pred eterms_asub_to_native(+ASub,+Qv,+OutFlag,-OutputUser,-Comps).
 
-etermsvar_asub_to_native(ASub,Qv,Flag,OutputUser,[]):-
-    eterms_asub_to_native(ASub,Qv,Flag,OutputUserPre,[]),
+etermsvar_asub_to_native(ASub,Qv,OutFlag,OutputUser,[]):-
+    eterms_asub_to_native(ASub,Qv,OutFlag,OutputUserPre,[]),
     etermsvar_input_interface_convert_free_and_ground_args(OutputUser,OutputUserPre).
 
 %------------------------------------------------------------------------%

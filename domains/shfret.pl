@@ -271,12 +271,12 @@ shfret_input_user_interface(Struct,Qv,ASub,Sg,MaybeCallASub):-
 
 %------------------------------------------------------------------------%
 % shfret_asub_to_native(+,+,+,-,-)                                       %
-% shfret_asub_to_native(ASub,Qv,Flag,Props,Comps)                        %
+% shfret_asub_to_native(ASub,Qv,OutFlag,Props,Comps)                        %
 %------------------------------------------------------------------------%
-shfret_asub_to_native(ASub,Qv,Flag,Props,Comps):-
+shfret_asub_to_native(ASub,Qv,OutFlag,Props,Comps):-
     asub(ASub,ATypes,AModes),
-    shfr_asub_to_native(AModes,Qv,Flag,Props1,Comps1),
-    eterms_asub_to_native(ATypes,Qv,Flag,Props2,Comps2),
+    shfr_asub_to_native(AModes,Qv,OutFlag,Props1,Comps1),
+    eterms_asub_to_native(ATypes,Qv,OutFlag,Props2,Comps2),
     append(Props1,Props2,Props),
     append(Comps1,Comps2,Comps).
 

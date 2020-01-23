@@ -26,7 +26,6 @@
     insert/3]).
 :- use_module(library(sort), [sort/2]).
 
-:- use_module(ciaopp(p_unit), [new_internal_predicate/3]).
 :- use_module(typeslib(typeslib), [
     make_prop_type_unary/2,
     dz_equivalent_types/2,
@@ -36,7 +35,6 @@
     normalize_type/2,
     new_type_symbol/1,
     pure_type_term/1,
-    assert_required_type/1,
     set_atom_type/1,
     set_float_type/1,
     set_int_type/1,
@@ -46,13 +44,13 @@
     var_type/1,
     compound_pure_type_term/4,
     type_escape_term_list/2,
+    revert_type_internal/3, 
     equivalent_to_top_type/1,
     get_compatible_types/4,
     type_intersection_2/3,
     type_union_NoDB/4,
     terms_naive_ewiden_el/2,
     shortening_el/3,
-    revert_type/3, revert_types/5,
     concrete/4]).
 
 :- use_module(ciaopp(preprocess_flags), [current_pp_flag/2]).
@@ -1048,22 +1046,34 @@ reduce_same_var__(Y,TY,X,TX,ASub,[X:TX|NewASub]):-
 
 :- dom_impl(terms, asub_to_native/5).
 :- export(terms_asub_to_native/5).
-:- pred terms_asub_to_native(+ASub,+Qv,+Flag,-OutputUser,-Comps)
-   # "Transforms abstract substitution ASub to user friendly format.".
+:- pred terms_asub_to_native(+ASub,+Qv,+OutFlag,-OutputUser,-Comps)
+   # "Transforms abstract substitution @var{ASub} to user friendly format.
+      Record relevant symbols for output if @var{OutFlag} is @tt{yes}.".
 
-terms_asub_to_native(ASub,_Qv,Flag,OutputUser,[]):-
-    terms_asub_to_native0(ASub,OutputUser2),
-    revert_types(OutputUser2,OutputUser,new_internal_predicate,Symbols,[]),
-    recorda_required_types(Flag,Symbols).
+terms_asub_to_native(ASub,_Qv,OutFlag,OutputUser,[]):-
+    terms_asub_to_internal(ASub,OutputUser2),
+    terms_internal_to_native(OutputUser2,OutFlag,OutputUser).
 
-terms_asub_to_native0([X:T|ASub],[Type|OutputUser]):-
-    revert_type(T,X,Type),
-    terms_asub_to_native0(ASub,OutputUser).
-terms_asub_to_native0([],[]).
+% from asub to internal types format (see revert_type_internal/3)
+terms_asub_to_internal([X:T|ASub],[Type|OutputUser]):-
+    revert_type_internal(T,X,Type),
+    terms_asub_to_internal(ASub,OutputUser).
+terms_asub_to_internal([],[]).
 
 % ---------------------------------------------------------------------------
 
-:- export(recorda_required_types/2).
+:- use_module(ciaopp(p_unit), [new_internal_predicate/3]).
+:- use_module(ciaopp(p_unit), [type_of_goal/2]).
+:- use_module(typeslib(typeslib), [revert_types/5, assert_required_type/1]).
+
+% from internal types to user friendly + record required
+% (this is shared by other type domains)
+:- export(terms_internal_to_native/3).
+terms_internal_to_native(OutputUser2,OutFlag,OutputUser) :-
+    revert_types(OutputUser2,OutputUser,new_internal_predicate,Symbols,[]),
+    recorda_required_types(OutFlag,Symbols).
+
+%:- export(recorda_required_types/2).
 recorda_required_types(no,_Symbols).
 recorda_required_types(yes,Symbols):-
     recorda_required_types_(Symbols).
@@ -1074,8 +1084,6 @@ recorda_required_types_([T|Types]):-
     ),
     recorda_required_types_(Types).
 recorda_required_types_([]).
-
-:- use_module(ciaopp(p_unit), [type_of_goal/2]).
 
 imported_type(T) :-
     functor(T,F,A),

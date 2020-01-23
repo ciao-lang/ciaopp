@@ -36,7 +36,6 @@
     eterms_input_interface/4,
     eterms_input_user_interface/5,
     eterms_asub_to_native/5,
-    eterms_asub_to_native1/3,
     eterms_identical_abstract/2,
     eterms_widen/3,
     eterms_widencall/3,
@@ -588,13 +587,9 @@ svterms_input_interface(InputUser,Kind,Struct0,Struct1):-
 %--------------------------------------------------------------%        
 :- dom_impl(svterms, asub_to_native/5).
 :- export(svterms_asub_to_native/5).
-svterms_asub_to_native(ASub,Qv,Flag,OutputUser,Comps):-
+svterms_asub_to_native(ASub,Qv,OutFlag,OutputUser,Comps):-
     abssubst(ASub,TASub,_SV1),      
-    eterms_asub_to_native(TASub,Qv,Flag,OutputUser,Comps).
-
-:- export(svterms_asub_to_native1/3).
-svterms_asub_to_native1(OutputUser1,Flag,OutputUser):-
-    eterms_asub_to_native1(OutputUser1,Flag,OutputUser).
+    eterms_asub_to_native(TASub,Qv,OutFlag,OutputUser,Comps).
 
 %--------------------------------------------------------------%        
 :- export(svterms_output_interface/2). % TODO: used?

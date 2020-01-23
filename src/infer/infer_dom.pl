@@ -54,7 +54,7 @@
 :- use_module(ciaopp(p_unit/assrt_norm), [norm_goal_prop/3]).
 :- use_module(spec(abs_exec),      [abs_exec/4, determinable/2]).
 :- use_module(spec(abs_exec_cond), [cond/4]).
-:- use_module(domain(eterms),      [eterms_asub_to_native1/3]).
+:- use_module(domain(termsd), [terms_internal_to_native/3]).
 :- use_module(typeslib(typeslib), [make_prop_type_unary/2, equivalent_to_top_type/1]).
 %
 :- use_module(library(keys), [key_lookup/4]).
@@ -82,11 +82,11 @@
 % ------------------------------------------------------------------------
 
 asub_to_out(nfg,_Goal,nf(Call0,Succ0,Fail,Cover),Call,Succ,[Fail,Cover]):- !,
-    eterms_asub_to_native1(Call0,yes,Call),
-    eterms_asub_to_native1(Succ0,yes,Succ).
+    terms_internal_to_native(Call0,yes,Call),
+    terms_internal_to_native(Succ0,yes,Succ).
 asub_to_out(detg,_Goal,nf(Call0,Succ0,Fail,Cover),Call,Succ,[Fail,Cover]):- !,
-    eterms_asub_to_native1(Call0,yes,Call),
-    eterms_asub_to_native1(Succ0,yes,Succ).
+    terms_internal_to_native(Call0,yes,Call),
+    terms_internal_to_native(Succ0,yes,Succ).
 asub_to_out(An,Goal,Abs,Call,Succ,Info):-
     asub_to_info(An,Goal,Abs,Call,Succ,Info0),
     norm_goal_props(Info0,Info,Goal).
@@ -100,24 +100,24 @@ asub_to_info(tp,_Goal,Abs,[],[],[Abs]).
 asub_to_info(seff,Goal,Abs,[],[],[Prop]):-
     seff_property(Abs,Goal,Prop).
 asub_to_info(nfg,_Goal,nf(Call0,Succ0,Fail,Cover),Call,Succ,[Fail,Cover]):-
-    eterms_asub_to_native1(Call0,no,Call),
-    eterms_asub_to_native1(Succ0,no,Succ).
+    terms_internal_to_native(Call0,no,Call),
+    terms_internal_to_native(Succ0,no,Succ).
 asub_to_info(detg,_Goal,nf(Call0,Succ0,Fail,Cover),Call,Succ,[Fail,Cover]):-
-    eterms_asub_to_native1(Call0,no,Call),
-    eterms_asub_to_native1(Succ0,no,Succ).
+    terms_internal_to_native(Call0,no,Call),
+    terms_internal_to_native(Succ0,no,Succ).
 :- if(defined(has_ciaopp_extra)).
 asub_to_info(resources,Goal,Abs,Call,Succ,Comp):-
     get_vartypes_from_resource_info(Abs, Call_VarType, Succ_VarType),
     complexity_property(Abs,resources,Goal,Succ0,Comp),
-    eterms_asub_to_native1(Call_VarType,no,Call),
-    eterms_asub_to_native1(Succ_VarType,no,New_Succ_VarType),
+    terms_internal_to_native(Call_VarType,no,Call),
+    terms_internal_to_native(Succ_VarType,no,New_Succ_VarType),
     append(New_Succ_VarType, Succ0, Succ).
 asub_to_info(An,Goal,Abs,Call,Succ,Comp):-
     is_complexity_analysis(An), % TODO: missing cut?
     get_vartypes_from_complexity_info(Abs, Call_VarType, Succ_VarType),
     complexity_property(Abs,An,Goal,Succ0,Comp),
-    eterms_asub_to_native1(Call_VarType,no,Call),
-    eterms_asub_to_native1(Succ_VarType,no,New_Succ_VarType),
+    terms_internal_to_native(Call_VarType,no,Call),
+    terms_internal_to_native(Succ_VarType,no,New_Succ_VarType),
     append(New_Succ_VarType, Succ0, Succ).
 :- endif.
 asub_to_info(Anal,Goal,Abs,Call,Succ,Comp):-
