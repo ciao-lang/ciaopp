@@ -1,57 +1,56 @@
-:- module(p_unit,
-    [ preprocessing_unit/3,
-      program/2,
-      replace_program/2,
-      %
-      entry_assertion/3,
-      exit_assertion/3, % TODO: Not imported anywhere
-      native_prop/2,
-      native_props/2,
-      dynamic_or_unknown_predicate/1,
-      % Assertions
-      get_assertion/2,
-      add_assertions/1, add_assertion/1,
-      % Directives
-      add_directive/1, erase_directive/1,
-      type_of_directive/2, % TODO: check (see code)
-      % Predicate index
-      pr_key_clean/0,
-      pr_key_add/1, % TODO: only from p_unit (and tgd)
-      pr_key_get/1, % TODO: only from p_printer (and tgd)
-      add_defined_pred/2,
-      new_internal_predicate/3,
-      new_predicate/3,
-      internal_predicate_names/1,
-      predicate_names/1,
-      %
-      language/1,
-      %
-      push_history/1,
-      pop_history/1,
-      get_output_path/2,
-      %
-      inject_output_package/1,
-      %
-      % TODO: move to clause_db or similar?
-      add_output_package/1,
-      get_output_package/1,
-      add_output_operator/3,
-      get_output_operator/3,
-      % Comments
-      add_comment/1,
-      get_comment/1,
-      cleanup_comment_db/0,
-      % Commented (%) assertions
-      cleanup_commented_assrt/0,
-      get_commented_assertion/2,
-      add_commented_assertions/1,
-      add_commented_assertion/1,
-      %
-      cleanup_punit/0, % TODO: update with other cleanup_* preds here
-      %
-      get_call_from_call_assrt/7
-    ],
-    [assertions, basicmodes, regtypes, datafacts, hiord]).
+:- module(p_unit, [
+    preprocessing_unit/3,
+    program/2,
+    replace_program/2,
+    %
+    entry_assertion/3,
+    exit_assertion/3, % TODO: Not imported anywhere
+    native_prop/2,
+    native_props/2,
+    dynamic_or_unknown_predicate/1,
+    % Assertions
+    get_assertion/2,
+    add_assertions/1, add_assertion/1,
+    % Directives
+    add_directive/1, erase_directive/1,
+    type_of_directive/2, % TODO: check (see code)
+    % Predicate index
+    pr_key_clean/0,
+    pr_key_add/1, % TODO: only from p_unit (and tgd)
+    pr_key_get/1, % TODO: only from p_printer (and tgd)
+    add_defined_pred/2,
+    new_internal_predicate/3,
+    new_predicate/3,
+    internal_predicate_names/1,
+    predicate_names/1,
+    %
+    language/1,
+    %
+    push_history/1,
+    pop_history/1,
+    get_output_path/2,
+    %
+    inject_output_package/1,
+    %
+    % TODO: move to clause_db or similar?
+    add_output_package/1,
+    get_output_package/1,
+    add_output_operator/3,
+    get_output_operator/3,
+    % Comments
+    add_comment/1,
+    get_comment/1,
+    cleanup_comment_db/0,
+    % Commented (%) assertions
+    cleanup_commented_assrt/0,
+    get_commented_assertion/2,
+    add_commented_assertions/1,
+    add_commented_assertion/1,
+    %
+    cleanup_punit/0, % TODO: update with other cleanup_* preds here
+    %
+    get_call_from_call_assrt/7
+], [assertions, basicmodes, regtypes, datafacts, hiord]).
 
 :- use_package(ciaopp(p_unit/p_unit_argnames)).
 
@@ -76,7 +75,8 @@
 % CiaoPP library
 :- reexport(ciaopp(p_unit/p_canonical)).
 :- use_module(ciaopp(p_unit/itf_db)).
-:- use_module(ciaopp(p_unit/assrt_db), [assertion_read/9, assertion_body/7]).
+:- use_module(library(assertions/assrt_lib), [assertion_body/7]).
+:- use_module(ciaopp(p_unit/assrt_db), [assertion_read/9]).
 :- use_module(ciaopp(p_unit/clause_db)).
 :- use_module(ciaopp(p_unit/program_keys),
     [clause_key/2,cleanup_program_keys/0,rewrite_source_clause/3, clause/1]).
@@ -475,8 +475,10 @@ dynamic_or_unknown_predicate(Goal):- type_of_goal(impl_defined,Goal), !.
 % ---------------------------------------------------------------------------
 :- doc(section, "Assertions").
 
-:- use_module(ciaopp(p_unit/assrt_db),
-    [assertion_body/7,      add_assertion_read/9,   ref_assertion_read/10]).
+:- use_module(library(assertions/assrt_lib), [assertion_body/7]).
+:- use_module(ciaopp(p_unit/assrt_db), [
+    add_assertion_read/9,
+    ref_assertion_read/10]).
 
 get_assertion(ClKey, Ass) :-
     Ass = as${module => M,

@@ -1,8 +1,10 @@
 :- module(assrt_norm, [], [assertions, basicmodes, regtypes, datafacts]).
 
-:- doc(module,"This module normalizes assertions so that they have
-   an standard format with all fields, as defined by
-   @tt{assrt_db:assertion_body/7}.").
+:- doc(title, "Assertion normalization").
+
+:- doc(module, "This module defines an instance of the assertion
+   normalization (@lib{library(assertions/assrt_norm_common)})
+   connected with the program databases from @tt{p_unit}").
 
 % TODO: review bug list, see assrt_lib.pl
 :- doc(bug,"1. Check that conjunctions and disjunctions in bodies of
@@ -17,14 +19,14 @@
 :- doc(bug,"6. Have a look to modes. See: user:call/2 used in an 
    assertion for user:+/2 is not a property.").
 
-:- use_module(library(formulae), [asbody_to_conj/2]).
-
-%% Databases
-:- use_module(library(compiler/c_itf), [clause_of/7]).
-:- use_module(ciaopp(p_unit/assrt_db), [assertion_of/9, assertion_body/7]).
-
 % ===========================================================================
 % Assertion normalization
+
+:- use_module(library(formulae), [asbody_to_conj/2]).
+:- use_module(library(assertions/assrt_lib), [assertion_body/7]).
+
+:- use_module(library(compiler/c_itf), [clause_of/7]).
+:- use_module(ciaopp(p_unit/assrt_db), [assertion_of/9]).
 
 :- export(normalize_assertions/3).
 :- export(normalize_assertion/9).

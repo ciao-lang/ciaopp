@@ -1,14 +1,14 @@
-:- module(generalize_emb_atoms,
-    [add_gen_emb_hint/2, 
-     add_gen_memo_hint/1,
-     cleanup_gen_hints/0,
-     cleanup_petype_masks/0,
-     there_is_gen_hint/2,
-     decide_lc_filter/2,
-     decide_lc_filter_f/2,
-     decide_generalize_atom/2,
-     get_petype_mask/2
-    ],[assertions, isomodes, datafacts]).
+:- module(generalize_emb_atoms, [
+    add_gen_emb_hint/2, 
+    add_gen_memo_hint/1,
+    cleanup_gen_hints/0,
+    cleanup_petype_masks/0,
+    there_is_gen_hint/2,
+    decide_lc_filter/2,
+    decide_lc_filter_f/2,
+    decide_generalize_atom/2,
+    get_petype_mask/2
+], [assertions, isomodes, datafacts]).
 
 :- use_package(spec(no_debug)).
 
@@ -31,7 +31,8 @@
 :- use_module(library(term_filtering/term_filtering), [filter_term/4]).
 :- use_module(library(term_filtering/fr_notation), [term_to_fr/3]).
 :- use_module(library(terms), [atom_concat/2]).
-:- use_module(ciaopp(p_unit/assrt_db), [assertion_read/9, assertion_body/7]).
+:- use_module(library(assertions/assrt_lib), [assertion_body/7]).
+:- use_module(ciaopp(p_unit/assrt_db), [assertion_read/9]).
 :- use_module(library(aggregates), [findall/3]).
 :- use_module(ciaopp(preprocess_flags)).
 :- use_module(unfold_builtins, [check_not_ignore/2]).

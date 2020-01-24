@@ -1,24 +1,22 @@
-:- module(unfold_builtins,
-    [can_be_evaluated/1,
-     pure/3,
-     bind_ins/3,
-     init_cut_predicates/0,
-     decide_has_cuts/3,
-     has_cuts/2,
-     no_side_effects/1,
-     is_memo/1,
-     execute/1,
-     check_not_ignore/2,
-     load_modules_with_eval/0,
-     translate_lattice_types/4
-    ],
-    [assertions, datafacts]).
+:- module(unfold_builtins, [
+    can_be_evaluated/1,
+    pure/3,
+    bind_ins/3,
+    init_cut_predicates/0,
+    decide_has_cuts/3,
+    has_cuts/2,
+    no_side_effects/1,
+    is_memo/1,
+    execute/1,
+    check_not_ignore/2,
+    load_modules_with_eval/0,
+    translate_lattice_types/4
+], [assertions, datafacts]).
 
 :- use_package(spec(no_debug)).
 
-:- use_module(ciaopp(p_unit/assrt_db), 
-    [assertion_read/9, 
-     assertion_body/7]).
+:- use_module(library(assertions/assrt_lib), [assertion_body/7]).
+:- use_module(ciaopp(p_unit/assrt_db), [assertion_read/9]).
 
 :- use_module(ciaopp(p_unit/itf_db), [current_itf/3]).
 

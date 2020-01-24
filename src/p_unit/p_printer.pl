@@ -25,15 +25,14 @@
 :- use_module(ciaopp(p_unit), [get_output_operator/3]).
 
 :- use_module(ciaopp(frontend_driver), [check_global_props/2]). % TODO: move this pred somewhere else
-:- use_module(ciaopp(p_unit/assrt_db), [assertion_body/7]).
+:- use_module(library(assertions/assrt_lib), [assertion_body/7]).
 :- use_module(ciaopp(p_unit/clause_db), [source_clause/3, clause_locator/2]).
 :- use_module(ciaopp(p_unit/unexpand), [
-            transform_clause_list/3,
-            transform_assrt_body/3,
-            transform_head/3,
-            transform_body/3,
-            transform_assrt_body/3
-        ]).
+    transform_clause_list/3,
+    transform_assrt_body/3,
+    transform_head/3,
+    transform_body/3,
+    transform_assrt_body/3]).
 :- use_module(ciaopp(p_unit/itf_db), [curr_file/2]).
 
 :- use_module(engine(runtime_control), [push_prolog_flag/2, pop_prolog_flag/1]). % TODO: find a better solution

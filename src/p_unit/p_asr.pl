@@ -184,6 +184,7 @@ importing libraries @lib{ciaopp/p_unit}, @lib{ciaopp/p_unit/itf_db},
 :- use_module(engine(messages_basic), [message/2]).
 
 % Own libraries
+:- use_module(library(assertions/assrt_lib), [assertion_body/7]).
 :- use_module(ciaopp(p_unit/assrt_db)).
 :- use_module(ciaopp(p_unit/assrt_norm)).
 :- use_module(ciaopp(p_unit/clause_db)).

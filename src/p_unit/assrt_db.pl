@@ -6,11 +6,10 @@
       ref_assertion_read/10,
       reload_assertion_read/0,
       assertion_of/9,
-      assertion_body/7,
       cleanup_assrt_db/0,
       load_lib_assrt/1,
       gen_lib_assrt/1,
-    loaded_lib_assrt/0,
+      loaded_lib_assrt/0,
       cleanup_lib_assrt/0
     ],
     [assertions, datafacts]).
@@ -117,19 +116,12 @@ reload_assertion_read:-
     display(user_error,'Not implemented yet.'),
     nl(user_error).
 
-% TODO: This property should be merged with the other assertion readers
-:- prop assertion_body(Pred,Compat,Call,Succ,Comp,Comm,Body)
-   # "@var{Body} has the structure of the body of an assertion for @var{Pred} 
-      with the fields @var{Compat}, @var{Call}, @var{Succ}, @var{Comp}, and
-      @var{Comm}.".
-assertion_body(Pred,Compat,Call,Succ,Comp,Comm,
-          (Pred::Compat:Call=>Succ+Comp#Comm)).
-
 %% ---------------------------------------------------------------------------
 
 :- use_module(engine(io_basic)).
 :- use_module(library(write), [writeq/2]).
 :- use_module(library(read), [read/2]).
+:- use_module(library(assertions/assrt_lib), [assertion_body/7]).
 
 :- pred load_lib_assrt(Stream)
 # "Loads the facts for lib_assertion_read/9 from the stream @var{Stream}.".

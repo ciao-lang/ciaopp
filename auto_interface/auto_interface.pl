@@ -18,7 +18,7 @@
     clean_aux_files/1
     %                         ,opt_menu_branch/2
     %                         ,all_menu_branch/2
-  ], [assertions, fsyntax, dcg, datafacts, ciaopp(ciaopp_options)]).
+], [assertions, fsyntax, dcg, datafacts, ciaopp(ciaopp_options)]).
 
 :- use_package(menu).
 
@@ -41,7 +41,8 @@
      valid_mod_analysis/1, cleanreg/1, get_modules_analyzed/1]).
 
 :- use_module(ciaopp(infer/infer_db),        [domain/1]).
-:- use_module(ciaopp(p_unit/assrt_db),      [assertion_read/9, assertion_body/7]).
+:- use_module(library(assertions/assrt_lib), [assertion_body/7]).
+:- use_module(ciaopp(p_unit/assrt_db),      [assertion_read/9]).
 :- use_module(ciaopp(p_unit),        [native_prop/2]).
 :- use_module(ciaopp(p_unit/itf_db),        [curr_file/2]).
 :- use_module(ciaopp(p_unit/aux_filenames), [is_library/1]).

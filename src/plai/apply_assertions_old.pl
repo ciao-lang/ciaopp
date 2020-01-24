@@ -1,13 +1,14 @@
-:- module(apply_assertions_old,
-    [apply_trusted/7, apply_trusted0/7, apply_trusted_each/7, cleanup_trusts/1],
-     [assertions, isomodes, datafacts]).
+:- module(apply_assertions_old, [
+    apply_trusted/7, apply_trusted0/7, apply_trusted_each/7, cleanup_trusts/1
+], [assertions, isomodes, datafacts]).
 
 :- use_module(library(lists), [append/3]).
 :- use_module(library(terms_check), [variant/2]).
 :- use_module(library(terms_vars), [varset/2]).
 :- use_module(library(messages), [warning_message/3,warning_message/2]).
 
-:- use_module(ciaopp(p_unit/assrt_db), [assertion_read/9, assertion_body/7]).
+:- use_module(library(assertions/assrt_lib), [assertion_body/7]).
+:- use_module(ciaopp(p_unit/assrt_db), [assertion_read/9]).
 :- use_module(ciaopp(p_unit/clause_db), [maybe_clause_locator/2]).
 :- use_module(ciaopp(p_unit), [type_of_goal/2, dynamic_or_unknown_predicate/1,
                            get_call_from_call_assrt/7]).

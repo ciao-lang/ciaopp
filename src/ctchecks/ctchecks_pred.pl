@@ -18,8 +18,8 @@
      assertion_set_calls/3, assertion_set_success/3, assertion_set_comp/3]).
 :- use_module(ciaopp(p_unit/program_keys), [predkey_from_sg/2]).
 :- use_module(ciaopp(p_unit/p_unit_basic), [type_of_goal/2]).
-:- use_module(ciaopp(p_unit/assrt_db),
-    [assertion_body/7,      ref_assertion_read/10]).
+:- use_module(library(assertions/assrt_lib), [assertion_body/7]).
+:- use_module(ciaopp(p_unit/assrt_db), [ref_assertion_read/10]).
 
 :- use_module(ciaopp(infer), [get_completes_lub/6, get_completes/4, get_info/5]).
 :- use_module(ciaopp(ctchecks/ctchecks_common)).

@@ -1,22 +1,19 @@
-:- module(filter,[decide_predicate_filter/6],[]).
+:- module(filter, [decide_predicate_filter/6], [assertions]).
 
-:- use_package(assertions).
 :- use_package(spec(no_debug)).
 
 :- doc(title,"Filters for Abstraction at the Global Control Level").
-
 :- doc(author, "Germ@'{a}n Puebla").
 
-:- doc(module," This module contains the predicates required in
-    order to handle filter assertions which can be interpreted as
-    guides on when and how to lose information at the global control
-    level in order to guarantee termination.").
+:- doc(module, "This module contains the predicates required in order
+   to handle filter assertions which can be interpreted as guides on
+   when and how to lose information at the global control level in
+   order to guarantee termination.").
 
 :- use_module(spec(unfold_builtins), [execute/1]).
 
-:- use_module(ciaopp(p_unit/assrt_db), 
-    [assertion_read/9, 
-     assertion_body/7]).
+:- use_module(library(assertions/assrt_lib), [assertion_body/7]).
+:- use_module(ciaopp(p_unit/assrt_db), [assertion_read/9]).
 
 :- use_module(library(lists), [member/2]).
 

@@ -1,11 +1,13 @@
-:- module(homeo_emb, [homeomorphic_embedded/2,homeomorphic_embedded_num/2,
-                  homeomorphic_embedded_type/2],[]).
-
-:- use_package(assertions).
+:- module(homeo_emb, [
+    homeomorphic_embedded/2,
+    homeomorphic_embedded_num/2,
+    homeomorphic_embedded_type/2
+], [assertions]).
 
 :- use_module(library(lists), [member/2, length/2]).
 :- use_module(library(terms_check), [ask/2]).
-:- use_module(ciaopp(p_unit/assrt_db), [assertion_read/9, assertion_body/7]).
+:- use_module(library(assertions/assrt_lib), [assertion_body/7]).
+:- use_module(ciaopp(p_unit/assrt_db), [assertion_read/9]).
 :- use_module(library(aggregates), [findall/3]).
 :- use_module(typeslib(typeslib), [get_type_definition/2]).
 

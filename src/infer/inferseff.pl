@@ -1,10 +1,9 @@
 /*             Copyright (C)1990-94 UPM-CLIP                            */
 
-:- module(inferseff,
-    [ analyze_side_effects/1, side_effect_builtin/2,
-      seff_property/3, cleanup_seff/0
-    ],
-    [assertions, datafacts]).
+:- module(inferseff, [
+    analyze_side_effects/1, side_effect_builtin/2,
+    seff_property/3, cleanup_seff/0
+], [assertions, datafacts]).
 
 :- use_module(library(lists), [member/2]).
 :- use_module(library(idlists), [memberchk/2]).
@@ -15,7 +14,8 @@
 
 :- use_module(ciaopp(pool), [meta_call/1, peel_meta_call/4]).
 :- use_module(ciaopp(p_unit), [native_prop/2, type_of_goal/2]).
-:- use_module(ciaopp(p_unit/assrt_db), [assertion_read/9, assertion_body/7]).
+:- use_module(library(assertions/assrt_lib), [assertion_body/7]).
+:- use_module(ciaopp(p_unit/assrt_db), [assertion_read/9]).
 
 %====================================================================
 %  Copyright(C) 1988, K.Muthukumar, All rights reserved

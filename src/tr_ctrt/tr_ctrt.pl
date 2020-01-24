@@ -102,8 +102,8 @@
 :- use_module(ciaopp(p_unit), [add_directive/1]).
 :- use_module(ciaopp(p_unit/clause_db), [maybe_clause_locator/2, add_clause_locator/2]).
 :- use_module(library(vndict), [create_pretty_dict/2]). 
+:- use_module(library(assertions/assrt_lib), [assertion_body/7]).
 :- use_module(ciaopp(p_unit/assrt_db), [
-    assertion_body/7,
     assertion_read/9,
     add_assertion_read/9,
     pgm_assertion_read/9]).

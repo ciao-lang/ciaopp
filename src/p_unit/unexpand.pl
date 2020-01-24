@@ -1,18 +1,17 @@
-:- module(unexpand,
-    [ module_spec/2,
-      transform_clause_list/3, 
-      transform_head/3,
-      transform_body/3,
-      transform_assrt_body/3,
-      unexpand_meta_calls/2,
-      transform_name/3,
-      generate_unexpanded_data/1,
-      clean_unexpanded_data/0, 
-      add_head_unexpanded_data/1,
-      unexpanded_import/3,
-      transform_metapred/3
-    ],
-    [assertions, datafacts]).
+:- module(unexpand, [
+    module_spec/2,
+    transform_clause_list/3, 
+    transform_head/3,
+    transform_body/3,
+    transform_assrt_body/3,
+    unexpand_meta_calls/2,
+    transform_name/3,
+    generate_unexpanded_data/1,
+    clean_unexpanded_data/0, 
+    add_head_unexpanded_data/1,
+    unexpanded_import/3,
+    transform_metapred/3
+], [assertions, datafacts]).
 
 % TODO: this is the inverse of mexpand.pl; synchronize! --JF
 
@@ -24,7 +23,7 @@
 :- use_module(library(idlists), [subtract/3]).
 :- use_module(library(lists), [append/3, length/2]).
 
-:- use_module(ciaopp(p_unit/assrt_db), [assertion_body/7]).
+:- use_module(library(assertions/assrt_lib), [assertion_body/7]).
 :- use_module(ciaopp(p_unit/p_unit_basic), [type_of_goal/2, meta_to_list/2]).
 
 :- use_module(ciaopp(p_unit/itf_db), [curr_file/2]).

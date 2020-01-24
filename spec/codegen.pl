@@ -1,8 +1,12 @@
-:- module(codegen,[codegen/4,codegen_af/4,codegen_min/4, create_all_dicts/2],[datafacts]).
+:- module(codegen, [
+    codegen/4,
+    codegen_af/4,
+    codegen_min/4,
+    create_all_dicts/2
+], [assertions, datafacts]).
 
 :- use_package(spec(no_debug)).
 :- use_package(spec(nomem_usage)).
-:- use_package(assertions).
 
 :- use_module(spec(global_control), 
     [spec_def_for/8, spec_wrt/3, locate_spec_definition/3]).
@@ -34,10 +38,10 @@
 :- use_module(ciaopp(p_unit/program_keys),
     [decode_litkey/5, decode_clkey/4, rewrite_source_all_clauses/2,
      cleanup_program_keys/0, get_predkey/3, get_predkeys/2]).
-:- use_module(ciaopp(p_unit/assrt_db), 
-    [assertion_read/9,
-     add_assertion_read/9, 
-     assertion_body/7]).
+:- use_module(library(assertions/assrt_lib), [assertion_body/7]).
+:- use_module(ciaopp(p_unit/assrt_db), [
+    assertion_read/9,
+    add_assertion_read/9]).
 :- use_module(ciaopp(plai/fixpo_ops), [collect_exported_completes/2]).
 
 :- use_module(engine(messages_basic), [message/2]).

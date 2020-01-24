@@ -10,8 +10,6 @@
         ciaopp(ciaopp_options)
     ]).
 
-%------------------------------------------------------------------------
-
 :- doc(title, "Frontend driver (monolithic)").
 % TODO: add incrental/modular (with parts as a plugin)?
 
@@ -717,7 +715,7 @@ transform_one_type_clause_args(N, Pred, T) :-
 
 % ---------------------------------------------------------------------------
 
-:- use_module(ciaopp(p_unit/assrt_db), [assertion_body/7]).
+:- use_module(library(assertions/assrt_lib), [assertion_body/7]).
 
 :- export(check_global_props/2).
 check_global_props(In, Out) :-

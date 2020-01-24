@@ -1,5 +1,4 @@
-:- module(assrt_ctchecks_common,
-    [
+:- module(assrt_ctchecks_common, [
     check_type_calls/2,
     get_assertions/3,
     get_calls_assertion/4,
@@ -11,14 +10,13 @@
     synt_compose_conj/3,
     synt_compose_list/3
 %       native_props/2  %% GP: exported for use in ctchecks.pl. Is this OK?
-    ],
-    [assertions, regtypes, isomodes, datafacts]).
+], [assertions, regtypes, isomodes, datafacts]).
 
 :- use_module(library(formulae), [list_to_conj/2]).
 
+:- use_module(library(assertions/assrt_lib), [assertion_body/7]).
 :- use_module(ciaopp(p_unit/assrt_db), [
     assertion_read/9,
-    assertion_body/7, 
     add_assertion_read/9, 
     remove_assertion_read/9]).
 :- use_module(ciaopp(p_unit/itf_db), [curr_file/2]).

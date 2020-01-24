@@ -1,9 +1,6 @@
-:- module(assrt_ctchecks_pp,
-    [
+:- module(assrt_ctchecks_pp, [
     pp_compile_time_prog_types/3
-    ],
-    [ assertions
-    ]).
+], [assertions]).
 
 :- use_module(library(lists), [member/2]).
 :- use_module(library(formulae), [list_to_conj/2]).
@@ -27,7 +24,8 @@
 %%      ]).
 :- use_module(ciaopp(infer), [get_memo_lub/5]).
 :- use_module(ciaopp(infer/infer_dom), [abs_execute_with_info/4]).
-:- use_module(ciaopp(p_unit/assrt_db), [assertion_read/9, assertion_body/7]).
+:- use_module(library(assertions/assrt_lib), [assertion_body/7]).
+:- use_module(ciaopp(p_unit/assrt_db), [assertion_read/9]).
 :- use_module(ciaopp(p_unit/itf_db), [curr_file/2]).
 :- use_module(spec(s_simpspec), 
     [   next_pred/2,

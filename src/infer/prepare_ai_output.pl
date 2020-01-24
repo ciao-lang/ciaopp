@@ -1,8 +1,7 @@
-:- module(prepare_ai_output,
-    [ cleanup_output/1,
-      prepare_ai_output/4
-    ],
-    [assertions, datafacts, ciaopp(ciaopp_options)]).
+:- module(prepare_ai_output, [
+    cleanup_output/1,
+    prepare_ai_output/4
+], [assertions, datafacts, ciaopp(ciaopp_options)]).
 
 :- use_module(engine(io_basic)).
 :- use_module(library(aggregates), [findall/3]).
@@ -22,8 +21,8 @@
     ]).
 :- use_module(ciaopp(plai/plai_db)).
 :- use_module(ciaopp(p_unit), [type_of_goal/2]).
+:- use_module(library(assertions/assrt_lib), [assertion_body/7]).
 :- use_module(ciaopp(p_unit/assrt_db), [
-    assertion_body/7,
     removeall_assertion_read/9,
     add_assertion_read/9]).
 :- use_module(ciaopp(p_unit/itf_db), [curr_file/2]).
