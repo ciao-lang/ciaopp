@@ -82,28 +82,23 @@
 
 % interface
 
-:- use_module(spec(spec_support), 
-    [
-     simplify_indep/4,
-     simplify_ground/4,
-     special_simp_indep/4,
-     special_simp_ground/4,
-     no_repetitions/5,
-     change_call/3,
-     do_spec/0,
-     set_spec_flag/1,
-     add_simplif/3,
-     replace/3,
-     simp/2,
-     non_static/1
-     ]).
+:- use_module(spec(spec_support), [
+    simplify_indep/4,
+    simplify_ground/4,
+    special_simp_indep/4,
+    special_simp_ground/4,
+    no_repetitions/5,
+    change_call/3,
+    do_spec/0,
+    set_spec_flag/1,
+    add_simplif/3,
+    replace/3,
+    simp/2,
+    non_static/1]).
 
 :- use_module(spec(spec_delay)).
-
-%% :- use_module(spec(unfold_builtins),
-%%      [peel_call/2]).
-
-:- use_module(ciaopp(p_unit), [native_prop/2]).
+%% :- use_module(spec(unfold_bultins), [peel_call/2]).
+:- use_module(ciaopp(p_unit), [prop_to_native/2]).
 
 :- doc(bug,"Types defined but not called dissapear!").
 
@@ -434,7 +429,7 @@ simp_body_list(F/A,[(Goal:K)|Goals],NewGoals,Vars,Result,Abs):-
 simp_body_list(F/A,[(Goal:K)|Goals],NewGoals,Vars,Result,Abs):-
     determinable(Abs,types),
     translate_lattice_types(F,A,Goal,NGoal),
-    native_prop(NGoal,regtype(SPred)),
+    prop_to_native(NGoal,regtype(SPred)),
     get_memo_lub(K,Vars,Abs,yes,Info),
     abs_exec_regtype_in_clause(Abs,SPred,F,A,Goal,Vars,Info,Sense),!,
     simp_abs_ex_body_list(Sense,[(Goal:K)|Goals],NewGoals,Vars,Result,Abs).

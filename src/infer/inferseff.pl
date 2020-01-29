@@ -13,7 +13,7 @@
 :- use_module(ciaopp(infer/infer_db), [inferred/3]).
 
 :- use_module(ciaopp(pool), [meta_call/1, peel_meta_call/4]).
-:- use_module(ciaopp(p_unit), [native_prop/2, type_of_goal/2]).
+:- use_module(ciaopp(p_unit), [native_to_prop/2, type_of_goal/2]).
 :- use_module(library(assertions/assrt_lib), [assertion_body/7]).
 :- use_module(ciaopp(p_unit/assrt_db), [assertion_read/9]).
 
@@ -221,7 +221,7 @@ side_effect_builtin(true/0,pure):-!.
 side_effect_builtin(F/A,Type):-
     functor(Goal,F,A),
     Prop=sideff(Goal,_),
-    native_prop(Seff,Prop),
+    native_to_prop(Prop,Seff),
     type_of_goal(imported(_M0),Goal),
     % M0 and M do not match!!
     assertion_read(Goal,_M,Status,comp,Body,_Dict,_Source,_LB,_LE),

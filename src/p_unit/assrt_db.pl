@@ -73,7 +73,7 @@ assertion_type(pgm_assertion_read(_,_,_,Type,_,_,_,_,_),Type).
 add_assertion_read(Goal,M,Status,Type,Body,Dict,Source,LB,LE):-
     functor(Goal,F,A),
     functor(Goal0,F,A),
-    ( variant(Goal,Goal0) ->
+    ( variant(Goal,Goal0) -> % TODO: in practice, no dup variables in head
         assertz_fact(pgm_assertion_read(Goal,M,Status,Type,Body,Dict,Source,LB,LE))
     ;
         warning_message(loc(Source, LB, LE), "Assertion head syntax ~q, assertion ignored.", [Goal])

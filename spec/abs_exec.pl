@@ -1,32 +1,16 @@
-:- module(abs_exec,
-    [ abs_exec/4,
-      dyn_abs_exec/4,
-      determinable/2
-    ],
-    [ ]).
+:- module(abs_exec, [
+    abs_exec/4,
+    dyn_abs_exec/4,
+    determinable/2
+], [assertions]).
 
-:- use_package(assertions).
+:- use_module(spec(static_abs_exec_table), [abs_ex/4]).
+:- use_module(spec(abs_exec_ops), [abs_exec_regtype/3]).
+%% :- use_module(spec(unfold_builtins), [peel_call/2]).
+:- use_module(spec(modular_spec), [dyn_abs_spec/5]).
+:- use_module(ciaopp(p_unit), [prop_to_native/2]).
+:- use_module(library(assertions/assrt_lib), [denorm_goal_prop/3]).
 
-:- use_module(spec(static_abs_exec_table), 
-    [abs_ex/4]).
-
-:- use_module(spec(abs_exec_ops), 
-    [abs_exec_regtype/3]).
-
-%% :- use_module(spec(unfold_builtins),
-%%      [peel_call/2]).
-
-:- use_module(spec(modular_spec), 
-    [dyn_abs_spec/5]).
-
-:- use_module(ciaopp(p_unit), 
-    [native_prop/2]).
-
-:- use_module(library(assertions/assrt_lib), 
-    [denorm_goal_prop/3]).
-
-
-        
 /*             Copyright (C)1990-94 UPM-CLIP                       */
 
 %-------------------------------------------------------------------%
@@ -53,7 +37,7 @@
 abs_exec(Abs,F/A,Sense,Cond):-
     find_original_pred_if_needed(F,A,OrigF,OrigA),
     functor(Pred,OrigF,OrigA),
-    native_prop(Pred,NPred),
+    prop_to_native(Pred,NPred),
     functor(NPred,NF,NA),
     (NF == regtype ->
         determinable(Abs,types),

@@ -5,8 +5,9 @@
     %
     entry_assertion/3,
     exit_assertion/3, % TODO: Not imported anywhere
-    native_prop/2,
-    native_props/2,
+    native_to_prop/2,
+    prop_to_native/2,
+    native_to_props_visible/2,
     dynamic_or_unknown_predicate/1,
     % Assertions
     get_assertion/2,
@@ -219,7 +220,7 @@ cleanup_punit :-
 
 % Fill type definition for all regtypes
 init_types:-
-    native_prop(Head,regtype(Prop)),
+    enum_regtype(Head,Prop),
     get_module_from_sg(Head,Module),%% JCF
     \+ preloaded_module(Module,_),  %% JCF: preloaded modules are processed already.
 %       displayq( init_types( Head , Prop ) ),nl,
@@ -679,27 +680,13 @@ new_internal_predicate(F,A,NewF):-
 % ---------------------------------------------------------------------------
 :- doc(section, "Native props").
 
-:- redefining(native/2). % also in basic_props
+:- use_module(library(streams)).
+
+:- redefining(native/2). % also in basic_props % TODO: rename?
 :- data native/2.
 :- data regtype/2.
 
-:- pred native_prop(Goal,Prop) => callable * native_prop_term
-      # "@var{Goal} is an atom of a predicate which
-    corresponds to the native property (atom) @var{Prop}.".
-native_prop(Goal,regtype(Prop)):-
-    current_fact(regtype(Goal,Prop0)),
-    ( native_prop_(Goal,Prop) -> true
-    ; Prop=Prop0
-    ).
-native_prop(Goal,Prop):-
-    native_prop_(Goal,Prop).
-
-native_prop_(Goal,Prop):-
-    current_fact(p_unit:native(Goal,Prop)).
-native_prop_(Goal,Prop):-
-    native_property(Goal,Prop). % builtin tables
-
-% Fill p_unit:native/2 from assertions
+% Fill p_unit:native/2 and regtype/2 from assertions
 init_native_props:-
     % (failure-driven loop)
 %Nop!   current_itf(visible,Goal,_),
@@ -714,15 +701,15 @@ init_native_props:-
       member(Native,Comp),
 %         displayq( native_props( Goal , Prop ) ), nl,
       asserta_fact(p_unit:native(Goal,Prop))
-     ; true
+    ; true
     ),
     % can be regtype only once
     ( builtin(regtype(Prop0),Regtype),
-      member(Regtype,Comp)
-    -> unexpand_meta_calls(Prop0,Type),
-%         displayq( regtype( Goal , Prop ) ), nl,
-       asserta_fact(regtype(Goal,Type))
-     ; true
+      member(Regtype,Comp) ->
+        unexpand_meta_calls(Prop0,Type), % TODO: why? (JF)
+        % displayq(regtype(Goal,Type)), nl,
+        asserta_fact(regtype(Goal,Type))
+    ; true
     ),
     fail.
 %% init_native_props:-
@@ -731,41 +718,90 @@ init_native_props:-
 %%      fail.
 init_native_props.
 
+% enum_regtype(-Goal, -NProp)
+enum_regtype(Goal, NProp) :-
+    current_fact(regtype(Goal,NProp0)),
+    % TODO: equivalent to prop_to_native/2 in this case
+    ( prop_to_native_(Goal,NProp) -> true
+    ; NProp=NProp0
+    ).
+
+:- pred prop_to_native(+Prop,-NProp) => callable * native_prop_term
+   # "Obtain the native property (lit) @var{NProp} that corresponds to
+   the (lit) @var{Prop} user predicate.".
+
+prop_to_native(Prop,_NProp):-
+    var(Prop), !, throw(error(instantiation_error(Prop), prop_to_native/2)).
+prop_to_native(Prop,NProp2):-
+    current_fact(regtype(Prop,NProp0)), !,
+    NProp2=regtype(NProp),
+    ( prop_to_native_(Prop,NProp) -> true % TODO: why?
+    ; NProp=NProp0
+    ).
+prop_to_native(Prop,NProp):-
+    prop_to_native_(Prop,NProp).
+
+prop_to_native_(Prop,NProp):-
+    current_fact(p_unit:native(Prop,NProp)).
+prop_to_native_(Prop,NProp):-
+    native_property(Prop,NProp). % builtin tables
+
+:- pred native_to_prop(+NProp,-Prop) => native_prop_term * callable
+   # "Obtain the user predicate (lit) @var{Prop} that corresponds to
+   the native property (lit) @var{NProp}.".
+
+% TODO: why? simplify
+native_to_prop(NProp2,Prop) :-
+    ( NProp2 = regtype(NProp) -> RegType=yes ; NProp=NProp2, RegType=no ),
+    %
+    ( current_fact(p_unit:native(Prop0,NProp)) -> Prop=Prop0 % TODO: bad indexing
+    ; native_property(Prop0,NProp) -> Prop=Prop0 % builtin tables % TODO: bad indexing
+    ; RegType=yes, current_fact(regtype(Prop0,NProp)) -> Prop=Prop0 % TODO: bad indexing
+    ; fail
+    ).
+
 %% ---------------------------------------------------------------------------
 
-% TODO: change name! (this is the reverse map)
-:- pred native_props(Props,Goals) :: list(callable) * list(callable)
+:- pred native_to_props_visible(Props,Goals) :: list(callable) * list(callable)
     # "Maps native @var{Props} into their corresponding @var{Goals}
       visible in the current module.".
-native_props([],[]).
-native_props([I|Info],OutputUser):-
-    do_native_prop(I,OutputUser,OutputUser1),
-    native_props(Info,OutputUser1).
+native_to_props_visible([],[]).
+native_to_props_visible([I|Info],OutputUser):-
+    native_to_props_visible_(I,OutputUser,OutputUser1),
+    native_to_props_visible(Info,OutputUser1).
 
-do_native_prop(Prop,OutputUser,OutputUser1):-
+native_to_props_visible_(Prop,OutputUser,OutputUser1):-
     native_prop_map(Prop,P,Vars), !,
-    do_for_each(Vars,P,OutputUser,OutputUser1).
-do_native_prop(Prop,[O|OutputUser],OutputUser):-
-    do_native_prop_(Prop,O).
+    each_to_prop(Vars,P,OutputUser,OutputUser1).
+native_to_props_visible_(Prop,[O|OutputUser],OutputUser):-
+    native_to_prop_visible(Prop,O).
 
-do_native_prop_(I,O):-
-    native_prop(O,I),
-    current_itf(visible,O,_), !.
-do_native_prop_(I,O):-
-    native_property(O,I). % builtin tables
+each_to_prop([V|Vars],P,[O|OutputUser],OutputUser1):-
+    functor(Prop,P,1),
+    arg(1,Prop,V),
+    native_to_prop_visible(Prop,O),
+    each_to_prop(Vars,P,OutputUser,OutputUser1).
+each_to_prop([],_P,OutputUser,OutputUser).
+
+% TODO: document why?
+native_to_prop_visible(NProp,Prop):-
+    native_to_prop(NProp,Prop),
+    current_itf(visible,Prop,_), !.
+native_to_prop_visible(NProp,Prop):-
+    native_property(Prop,NProp), !. % builtin tables % TODO: bad indexing
 % should be:
-%% do_native_prop_(I,O):-
-%%      native_prop(O,I), !,
-%%      make_prop_visible(O).
-do_native_prop_(I,I).
+%% native_to_prop_visible(NProp,Prop):-
+%%      native_to_prop(NProp,Prop), !,
+%%      make_prop_visible(Prop).
+native_to_prop_visible(NProp,NProp).
 
 % % TYPE_SYMBOLS_NOT_WHAT_WE_WANT
-% do_native_prop_(I,O):-
-%       functor(I,T,1),
+% native_to_prop_visible(NProp,Prop):-
+%       functor(NProp,T,1),
 % % not really: should check that it is indeed a type!!!
 %       rule_type_symbol(T), !,
-%       O=I.
-% do_native_prop_(I,I):-
+%       Prop=NProp.
+% native_to_prop_visible(NProp,NProp):-
 %       curr_module(M),
 %       builtin_package(B),
 %       ( clause_read(M,0,use_package(B),_,_Source,_LB,_LE)
@@ -773,15 +809,8 @@ do_native_prop_(I,I).
 %        ; assertz_fact( clause_read(M,0,use_package(B),no,0,0,0) )
 %       ).
 
-do_for_each([V|Vars],P,[O|OutputUser],OutputUser1):-
-    functor(Prop,P,1),
-    arg(1,Prop,V),
-    do_native_prop_(Prop,O),
-    do_for_each(Vars,P,OutputUser,OutputUser1).
-do_for_each([],_P,OutputUser,OutputUser).
-
-% make_prop_visible(O):-
-%       functor(O,F,A),
+% make_prop_visible(Prop):-
+%       functor(Prop,F,A),
 %       extract_module(F,M),
 %       module_spec(Spec,M), % if it was reversible!
 %       functor(G,F,A),

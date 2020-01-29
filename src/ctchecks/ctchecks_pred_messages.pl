@@ -16,7 +16,7 @@
 :- use_module(library(formulae), [list_to_conj/2]).
 :- use_module(library(messages), [show_message/3, warning_message/2, error_message/2, note_message/2]).
 
-:- use_module(ciaopp(p_unit), [native_prop/2]).
+:- use_module(ciaopp(p_unit), [prop_to_native/2]).
 :- use_module(ciaopp(p_unit), [
     add_assertion/1,
     assertion_set_status/3,
@@ -598,7 +598,7 @@ find_max(_,B,B).
 
 % a bit different from that in ctchecks_messages.pl
 filter_required_rules([typedef(::=(T,_))|Ds],Rs,RsOut):-
-    ( functor(G,T,1), native_prop(G,regtype(_Prop)) % not inferred
+    ( functor(G,T,1), prop_to_native(G,regtype(_Prop)) % not inferred
     ; equiv_type(T,_)               % an equivalent type will be shown 
     ), 
     !, 
@@ -657,7 +657,7 @@ replace_equiv(A,B) :-
     A =.. [T,Arg],
     equiv_type(T,ET),
     B =.. [ET,Arg],
-%       native_prop(B,regtype(_Prop)), % not inferred
+%       prop_to_native(B,regtype(_Prop)), % not inferred
     !.
 replace_equiv(A,A).
 

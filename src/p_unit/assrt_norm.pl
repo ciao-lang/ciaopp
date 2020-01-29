@@ -23,6 +23,7 @@
 % Assertion normalization
 
 :- use_module(library(formulae), [asbody_to_conj/2]).
+:- use_module(library(assertions/assrt_lib), [prop_apply/3]).
 :- use_module(library(assertions/assrt_lib), [assertion_body/7]).
 
 :- use_module(library(compiler/c_itf), [clause_of/7]).

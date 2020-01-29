@@ -235,7 +235,7 @@ use_all_modules([M|Ms]):-
     # "Some type checking predicates correspond to basic types in
       the lattice but with a different name. This predicate makes
       the conversion from the type check to the basic type. This
-      allows using @tt{native_prop(NGoal, regtype(_))} to determine
+      allows using @tt{prop_to_native(NGoal, regtype(_))} to determine
       whether @var{Goal} is a regular type check.".
 
 translate_lattice_types('term_typing:integer', 1, Goal, NGoal) :-

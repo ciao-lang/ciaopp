@@ -122,7 +122,7 @@ change_body(Body,Body).
 %% inverse_native_props(I,[N]):-
 %%      native_prop_(N,I).
 %% 
-%% native_prop_(I,N):- native_prop(I,N), !.
+%% native_prop_(I,N):- native_to_prop(I,N), !.
 %% native_prop_(I,I).
 
 get_calls_assertion(Goal,pred,BA,BA0):-

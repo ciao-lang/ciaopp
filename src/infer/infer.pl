@@ -388,7 +388,7 @@ type2measure(Goal0,Typings0,Measures):-
 type_names([T|Ts]):-
     (type_of_goal(builtin(BT),T) -> true ; BT = T), 
     functor(BT,F,_),
-    (arg(1,BT,F)->true;true),
+    (arg(1,BT,F)->true;true), % TODO: is arity=1? wrong with param types (JF)
     type_names(Ts).
 type_names([]).
 

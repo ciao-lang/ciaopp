@@ -916,8 +916,7 @@ fix_assrt_args([A|Args],[_MetaArg|MetaArgs],M,[NA|NArgs]) :-
 
 expand_subbody(C, M, Dict, CO, loc(Source, L0, L1)) :-
     asbody_to_conj(C, CC),
-    module_expand(in_assertion_body, CC, M, Dict, _, EC, Source, L0,
-        L1),
+    module_expand(in_assertion_body, CC, M, Dict, _, EC, Source, L0, L1),
     asbody_to_conj(CO, EC).
 
 % build_a_fake_body(Co,Ca,Su,Cp,(CCo;CCa;CSu;CCp)):-

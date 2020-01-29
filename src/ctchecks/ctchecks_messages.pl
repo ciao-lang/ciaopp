@@ -22,7 +22,7 @@
 :- use_module(ciaopp(p_unit/assrt_norm), [denorm_goal_prop/3]).
 :- use_module(ciaopp(p_unit/clause_db), [maybe_clause_locator/2]).
 %:- use_module(ciaopp(p_unit/clause_db), [clause_locator/2]).
-:- use_module(ciaopp(p_unit), [native_prop/2]).
+:- use_module(ciaopp(p_unit), [prop_to_native/2]).
 
 :- use_module(typeslib(typeslib), [pretty_type_lit_rules/4]).
 :- use_module(ciaopp(plai/domains), [asub_to_info/5, project/6, abs_sort/3]).
@@ -435,7 +435,7 @@ filter_required_rules([typedef(::=(T,D))|Ds],[T,D|Rs],"~n    ~w ::= ~w"||Fs):-
 filter_required_rules([],[],[]).
 
 % only user types (not inferred!)
-type(Goal):- native_prop(Goal,regtype(_Prop)).
+type(Goal):- prop_to_native(Goal,regtype(_Prop)).
 
 not_to_escape(A) :- 
     G =.. [A,_],

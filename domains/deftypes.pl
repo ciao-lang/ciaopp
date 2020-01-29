@@ -422,7 +422,7 @@ deftypes_input_user_interface(InputUser,Qv,ASub,_Sg,_MaybeCallASub):-
 obtain_Asub_user([],[]):- !.
 obtain_Asub_user([User|InputUser],[X:T|ASub]):-
     functor(User,T,_),
-    arg(1,User,X),
+    arg(1,User,X), % note: expected arity 1, parametric types already renamed
     obtain_Asub_user(InputUser,ASub).
 
 reduce_same_var([X:T|ASub],NewASub):-

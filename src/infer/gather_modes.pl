@@ -400,7 +400,7 @@ vartypes_to_modes(Vartypes, Modes) :-
 
 vartype_names([T|Ts]) :-
     (type_of_goal(builtin(BT), T) -> true; BT = T),
-    BT =.. [F, V|R],
+    BT =.. [F, V|R], % TODO: use prop_unapply? (JF)
     V =.. [F|R],
     vartype_names(Ts).
 vartype_names([]).

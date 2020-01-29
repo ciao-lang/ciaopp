@@ -49,7 +49,7 @@
 :- use_module(ciaopp(plai/domains), [call_to_entry/10]).
 :- use_module(ciaopp(plai/transform), [trans_clause/3]).
 
-:- use_module(ciaopp(p_unit), [type_of_goal/2, native_prop/2]).
+:- use_module(ciaopp(p_unit), [type_of_goal/2, prop_to_native/2]).
 :- use_module(ciaopp(p_unit/program_keys), [predkey_from_sg/2]).
 
 :- use_module(ciaopp(preprocess_flags), [current_pp_flag/2]).
@@ -103,15 +103,16 @@ can_continue(e(AbsInt,OldSg,OldSv,OldProj),L,_Lit,Sg,Case):-
     determinable(AbsInt,types),
     functor(L,F,A),
     translate_lattice_types(F,A,L,NL),
-    native_prop(NL,regtype(SPred)),
-
+    prop_to_native(NL,regtype(SPred)),
+    %
     varset(Sg,Sv),
     varset(L,BodyVars),
     ord_subtract(BodyVars,Sv,Fv),
     call_to_entry(AbsInt,OldSv,OldSg,Sv,Sg,not_provided,Fv,OldProj,Entry,_),
-
-    abs_exec_regtype_in_clause(AbsInt,SPred,F,A,L,BodyVars,Entry,Sense),!,
-
+    %
+    abs_exec_regtype_in_clause(AbsInt,SPred,F,A,L,BodyVars,Entry,Sense),
+    !,
+    %
     Case = Sense,
     debug('abstractly executed ').
 can_continue(e(_AbsInt,_OldSg,_OldSv,_OldProj),L,Lit,_Sg,Case):-
@@ -138,7 +139,7 @@ can_continue(a(AbsInt,OldSg,OldSv,OldProj),L,Lit,Sg,Case):-
             ((determinable(AbsInt,types),
               functor(L,F,A),
               translate_lattice_types(F,A,L,NL),
-              native_prop(NL,regtype(SPred)),
+              prop_to_native(NL,regtype(SPred)),
 
 %%                varset(Sg,Sv),
 %%                varset(L,BodyVars),

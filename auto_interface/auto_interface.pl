@@ -43,7 +43,7 @@
 :- use_module(ciaopp(infer/infer_db),        [domain/1]).
 :- use_module(library(assertions/assrt_lib), [assertion_body/7]).
 :- use_module(ciaopp(p_unit/assrt_db),      [assertion_read/9]).
-:- use_module(ciaopp(p_unit),        [native_prop/2]).
+:- use_module(ciaopp(p_unit), [prop_to_native/2]).
 :- use_module(ciaopp(p_unit/itf_db),        [curr_file/2]).
 :- use_module(ciaopp(p_unit/aux_filenames), [is_library/1]).
 :- use_module(ciaopp(infer/infer_dom),       [knows_of/2]).
@@ -1438,7 +1438,7 @@ get_one_prop(M,P) :-
     take_assertion(M,M1,Kind,Base),
     assertion_body(_,_,Call,Succ,Comp,_,Body),
     ( member(Prop,Succ) ; member(Prop,Call) ; member(Prop,Comp) ),
-    native_prop(Prop,P).
+    prop_to_native(Prop,P).
 
 take_assertion(M,M1,Kind,Base) :-
     M \== M1,

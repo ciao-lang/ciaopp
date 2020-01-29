@@ -50,7 +50,7 @@
     ]).
 :- endif.
 %
-:- use_module(ciaopp(p_unit),     [native_prop/2]).
+:- use_module(ciaopp(p_unit), [prop_to_native/2]).
 :- use_module(ciaopp(p_unit/assrt_norm), [norm_goal_prop/3]).
 :- use_module(spec(abs_exec),      [abs_exec/4, determinable/2]).
 :- use_module(spec(abs_exec_cond), [cond/4]).
@@ -417,7 +417,7 @@ abs_execute_with_info(Dom,Info,'basic_props:compat'(X,_Prop),true):-
     abs_execute_with_info(Dom,Info,var(X),true),!.
 abs_execute_with_info(Dom,Info,'basic_props:compat'(X,Prop),Sense):-!,
     Prop =.. [F|Args],
-    NewProp =.. [F,X|Args],
+    NewProp =.. [F,X|Args], % TODO: use prop_apply? (JF)
     abs_execute_with_info(Dom,Info,NewProp,Sense0),
     ( Sense0 = NewProp -> 
       Sense = 'basic_props:compat'(X,Prop)
@@ -456,7 +456,7 @@ statically_comp(AbsInt,indep/2,fail,not_indep(1,2)):-
 statically_comp(AbsInt,F/1,Sense,Condition):-
     determinable(AbsInt,free),
     functor(FAtom,F,1),
-    native_prop(FAtom,regtype(_)),
+    prop_to_native(FAtom,regtype(_)),
     \+ (equivalent_to_top_type(F)),
     Sense = fail,
     Condition = free(1).
@@ -702,7 +702,7 @@ exp_greater_eq_than_byvalue(A, C, X):-
 
 %/---- byvalue --------
 find_property_value(PropName, Var, [Prop|_], Value):-
-    Prop =.. [PropName,A,V],
+    Prop =.. [PropName,A,V], % TODO: use prop_unapply? (JF)
     A == Var,
     !,
     Value = V.

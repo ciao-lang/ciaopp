@@ -31,6 +31,7 @@
 :- use_module(ciaopp(p_unit/program_keys), [decode_litkey/5, is_clkey/1]).
 
 % ciao libs
+:- use_module(library(assertions/assrt_lib), [prop_apply/3,prop_unapply/3]).
 :- use_module(library(lists), [member/2]).
 :- use_module(library(idlists), [member_0/2]).
 :- use_module(library(terms_vars), [varset/2]).
@@ -94,8 +95,8 @@ how(Abs,SgKey,Mode,Lit,AssProps,Where) :-
 
 rename_props([],[],[]).
 rename_props([P|Ps],[V|Vs],[RP|RPs]) :-
-    P =.. [F,_|Args],
-    RP =.. [F,V|Args],
+    prop_unapply(P,P0,_),
+    prop_apply(P0,V,RP),
     rename_props(Ps,Vs,RPs).
 
 get_init_vars(Lit0,Lit,Vars,Vars0) :-
@@ -111,7 +112,6 @@ filter_vars([LV|LVs],[LV0|LVs0],Vs, Vars0) :-
     ),
     filter_vars(LVs,LVs0,Vs, Vs0).
  
-    
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % how_body/10

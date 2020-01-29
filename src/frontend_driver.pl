@@ -721,7 +721,7 @@ transform_one_type_clause_args(N, Pred, T) :-
 check_global_props(In, Out) :-
     assertion_body(Pred, Compat, Call0, Succ, Comp0, Comm, In),
     compact_props(Call0, compact_calls_prop, Call),
-    compact_props(Comp0, remove_first_argument, Comp1),
+    compact_props(Comp0, comp_remove_first_argument, Comp1),
     compact_props(Comp1, compact_global_prop, Comp),
     assertion_body(Pred, Compat, Call, Succ, Comp, Comm, Out).
 
@@ -733,14 +733,14 @@ compact_props([A0|B0], CompactProp, [A|B]) :- !,
 compact_props(A, CompactProp, B) :-
     CompactProp(A, B).
 
-remove_first_argument(M:A, M:B) :-
-    !,
-    remove_first_argument(A, B).
-remove_first_argument(A, B) :-
+% TODO: rename by comp_remove_goal_arg or comp_unapply? (similar to prop_unapply)
+comp_remove_first_argument(M:A, M:B) :- !,
+    comp_remove_first_argument(A, B).
+comp_remove_first_argument(A, B) :-
     A =.. [F, _|Args],
     !,
     B =.. [F|Args].
-remove_first_argument(A, B) :-
+comp_remove_first_argument(A, B) :-
     A =.. [B].
 
 % TODO: compact_global_prop/2 is a hook, and its implementation

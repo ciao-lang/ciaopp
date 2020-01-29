@@ -1,13 +1,12 @@
-:- module(comp_ctchecks,
-           [abs_execute_comp/5,
-            abs_execute_sizes/5
-           ],
-      [assertions]).
+:- module(comp_ctchecks, [
+    abs_execute_comp/5,
+    abs_execute_sizes/5
+], [assertions]).
 
 :- use_module(ciaopp(infer/infer), [get_info/5]).
 :- use_module(ciaopp(infer/infer_dom), [abs_execute_with_info/4, knows_of/2]).
 :- use_module(ciaopp(p_unit/assrt_norm), [denorm_goal_prop/3]).
-:- use_module(ciaopp(p_unit),     [native_prop/2]).
+:- use_module(ciaopp(p_unit), [prop_to_native/2]).
 :- use_module(library(lists),      [append/3, list_concat/2]).
 :- use_module(library(aggregates)).
 
@@ -60,7 +59,7 @@ abs_execute_sizes(Goal,Size,ASize,NewSize,Status):-
 
 check_comp_info([],_Cost,_Nf,_Det,Status,Status,[]).
 check_comp_info([C|Comp],Cost,Nf,Det,Status0,Status,NewComp):-
-    native_prop(C,Prop0),
+    prop_to_native(C,Prop0),
     denorm_goal_prop(Prop0,Prop,_),
     check_comp_info_one(Prop,Cost,Nf,Det,Status1),
     compose_status(Status0,Status1,Status2),
@@ -82,7 +81,7 @@ check_comp_info_one(_C,_Cost,_Nf,_Det,check).
 
 check_size_info([],_Size,Status,Status,[]).
 check_size_info([C|Comp],Size,Status0,Status,NewComp):-
-    native_prop(C,Prop),
+    prop_to_native(C,Prop),
     check_size_info_one(Prop,Size,Status1),
     compose_status(Status0,Status1,Status2),
     new_comp(Status1,C,NewComp1,NewComp),

@@ -4,7 +4,7 @@
 :- use_module(ciaopp(infer/infer_db), [inferred/3]).
 :- use_module(ciaopp(infer/infer_dom), [knows_of/2]).
 
-:- use_module(ciaopp(p_unit), [native_prop/2]).
+:- use_module(ciaopp(p_unit), [prop_to_native/2]).
 :- use_module(ciaopp(p_unit/program_keys), [get_predkey/3]).
 
 :- use_module(typeslib(typeslib), [set_top_type/1]).
@@ -72,7 +72,7 @@ any_to_free([Type|Types0],T,Fr,Gr,Types):-
 any_to_free([],_Top,_Fr,_Gr,[]).
 
 any_or_type(Type,T,Fr,Gr,Types,Types0):- 
-    native_prop(Type,regtype(Native)),
+    prop_to_native(Type,regtype(Native)),
     functor(Native,T,1), !,
     arg(1,Type,X),
     any_to_free_one(X,Fr,Gr,Type,Types,Types0).

@@ -978,7 +978,7 @@ eterms_input_user_interface(InputUser,Qv,ASub,_Sg,_MaybeCallASub):-
 obtain_Asub_user([],[]):- !.
 obtain_Asub_user([User|InputUser],[X:(Name,T)|ASub]):-
     functor(User,T,_),
-    arg(1,User,X),
+    arg(1,User,X), % note: expected arity 1, parametric types already renamed
     new_type_name(Name),
     insert_type_name(Name,[],0),
     obtain_Asub_user(InputUser,ASub).

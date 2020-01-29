@@ -85,7 +85,7 @@ obtained after the analysis of the clause being considered
 
 % ===========================================================================
 
-:- use_module(ciaopp(p_unit), [native_prop/2, native_props/2]).
+:- use_module(ciaopp(p_unit), [native_to_props_visible/2, prop_to_native/2]).
 :- use_module(ciaopp(plai/fixpo_ops), [each_exit_to_prime/8, each_abs_sort/3]).
 
 :- use_module(library(terms_check), [variant/2]).
@@ -500,9 +500,10 @@ info_to_asub(AbsInt,Kind,InputUser,Qv,ASub,Sg,MaybeCallASub) :-
     input_user_interface(AbsInt,Input,Qv,ASub,Sg,MaybeCallASub),
     !. % TODO: make sure that cut is not needed
 
+% TODO: Kind is ignored! why?
 info_to_asub_([],_AbsInt,_Kind,Acc,Acc).
 info_to_asub_([I|Info],AbsInt,_Kind,Acc0,Acc) :-
-    ( native_prop(I,P),
+    ( prop_to_native(I,P),
       input_interface(AbsInt,P,_Kind1,Acc0,Acc1) -> true
     ; Acc1=Acc0 ),
     info_to_asub_(Info,AbsInt,_Kind2,Acc1,Acc).
@@ -510,7 +511,7 @@ info_to_asub_([I|Info],AbsInt,_Kind,Acc0,Acc) :-
 %% Commented out by PLG 8 Jun 2003
 %% info_to_asub_([],_AbsInt,_Kind,Acc,Acc).
 %% info_to_asub_([I|Info],AbsInt,Kind,Acc0,Acc) :-
-%%      ( native_prop(I,P),
+%%      ( prop_to_native(I,P),
 %%        input_interface(AbsInt,P,Kind,Acc0,Acc1) -> true
 %%      ; Acc1=Acc0 ),
 %%      info_to_asub_(Info,AbsInt,Kind,Acc1,Acc).
@@ -528,7 +529,7 @@ full_info_to_asub(AbsInt,InputUser,Qv,ASub,Sg) :-
 
 full_info_to_asub_([],_AbsInt,Acc,Acc).
 full_info_to_asub_([I|Info],AbsInt,Acc0,Acc) :-
-    native_prop(I,P),
+    prop_to_native(I,P),
     input_interface(AbsInt,P,perfect,Acc0,Acc1), !, % P is enough (PBC)
                                                     % do not backtrack
     full_info_to_asub_(Info,AbsInt,Acc1,Acc).       % into native_prop
@@ -558,15 +559,15 @@ full_info_to_asub_([I|Info],AbsInt,Acc0,Acc) :-
 
 asub_to_info(AbsInt,ASub,Qv,OutputUser,CompProps) :-
     asub_to_native(AbsInt,ASub,Qv,no,Info,Comp),
-    native_props(Info,OutputUser),
-    native_props(Comp,CompProps).
+    native_to_props_visible(Info,OutputUser),
+    native_to_props_visible(Comp,CompProps).
 
 :- doc(hide,asub_to_out/5).
 :- export(asub_to_out/5).
 asub_to_out(AbsInt,ASub,Qv,OutputUser,CompProps) :-
     asub_to_native(AbsInt,ASub,Qv,yes,Info,Comp),
-    native_props(Info,OutputUser0),
-    native_props(Comp,CompProps0),
+    native_to_props_visible(Info,OutputUser0),
+    native_to_props_visible(Comp,CompProps0),
     decide_low_level_format(OutputUser0,CompProps0,OutputUser,CompProps).
     
 :- export(asub_to_native/6).

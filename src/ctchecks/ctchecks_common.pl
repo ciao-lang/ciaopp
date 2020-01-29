@@ -126,7 +126,7 @@ get_info(_,_,_Vars,([],[])).
 
 
 % my_native_prop( I , O2 ) :-
-%       native_prop( I , O ),
+%       prop_to_native( I , O ),
 % %     ( current_itf(visible,I,_), ! ;
 % %         current_itf(visible,O,_) 
 % %     ),
