@@ -16,7 +16,7 @@
     basicmodes,
     regtypes,
     datafacts,
-    hiord_old,
+    hiord,
     ciaopp(ciaopp_options)
 ]).
 
@@ -222,7 +222,7 @@ cleanup_code_and_related_assertions :-
 
 :- regtype filenames/1.
 filenames(X) :- filename(X).
-filenames(X) :- list(X, filenames).
+filenames(X) :- list(filenames, X).
 
 :- regtype preprocessing_opts/1
    # "Defines the possible options when loading a module:
@@ -430,7 +430,7 @@ load_related_files([], M) :-
     erase(Ref),
     !.
 
-process_main_info_file(Base, M, Verb, Opts) :-
+process_main_info_file(M, Verb, Opts, Base) :-
     verb_message(Verb, '{Processing main module '),
     defines_module(Base, M),
     assertz_fact(processed_file(Base)),
@@ -579,7 +579,7 @@ user_module(user). %% 'user' module cannot be treated as a normal module.
 do_nothing(_).
 
 % fail ==> force generation of .asr
-asr_readable(Base, Verb) :-
+asr_readable(Verb, Base) :-
 % DTM: If you suspect that asr files are being 
 %     reading more than once, uncomment these lines
 %
@@ -985,7 +985,7 @@ module_expansion(H, B, Module, Dict, Mode, Src, Ln0, Ln1, H1, B1, H2, B2):-
 
 :- data generate_asr_file/1.
 
-process_related_file(Base, Rel, Verb, Opts) :-
+process_related_file(Rel, Verb, Opts, Base) :-
     defines_module(Base, M),
     assertz_fact(processed_file(Base)),
 %       display( processed_file( Base ) ), nl,

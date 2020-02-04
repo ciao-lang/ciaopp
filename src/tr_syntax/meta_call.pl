@@ -18,8 +18,7 @@ meta_call(Goal):-
 %-------------------------------------------------------------------------
 
 :- pred peel_meta_call(Goal,GList,NoGList,Args) 
-    : callable(Goal) => (list(GList,callable), list(NoGList), list(Args))
-
+    : callable(Goal) => (list(callable,GList), list(NoGList), list(Args))
 # "Given a meta-predicate call @var{Goal}, returns in @var{GList} the
   list of arguments which are goals, and the arguments which are not goals in
   @var{NoGList}. On return @var{Args} contains the list of all arguments.".
@@ -40,8 +39,7 @@ peel_meta_call_([A|Args],[_|Metaargs],GList,[A|NoGList]):-
 %-------------------------------------------------------------------------
 
 :- pred build_meta_call(Pred,GList,Args,Goal)
-    : (predname(Pred), list(GList,callable), list(Args)) => callable(Goal)
-
+    : (predname(Pred), list(callable,GList), list(Args)) => callable(Goal)
 # "Returns in @var{Goal} a goal to a meta-predicate named @var{Pred}
   with arguments @var{Args}, but replacing the arguments in @var{Args}
   which are goals by the elements of @var{GList}.".

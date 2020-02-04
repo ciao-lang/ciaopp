@@ -84,7 +84,6 @@ get_stored_stat_nofail(_, 0).
 get_stat(Stats, X) :-
     member(X, Stats), !.
 
-:- regtype ciaopp_operation_stat/2.
 % TODO: multifile predicate??
 % MODULE STATISTICS
 ciaopp_operation_stat(module, comp_diff).
@@ -107,7 +106,6 @@ ciaopp_operation_stat(analysis, bu_delete).
 %% test stats here
 
 % summarize type of stats that are being used
-:- regtype ciaopp_stat/2.
 ciaopp_stat(time, prep). % analysis stats
 ciaopp_stat(time, ana).
 % intermod specific stats

@@ -39,7 +39,7 @@
     registry_is_empty/3,
 %%%Resource intermodule-analysis (JNL)
     get_imported_calls/1 % used only in resources/intermod
- ],[assertions,regtypes,basicmodes,isomodes,datafacts,hiord_old]).
+ ],[assertions,regtypes,basicmodes,isomodes,datafacts,hiord]).
 
 :- use_module(engine(hiord_rt), [call/1]). % TODO: review uses here
 
@@ -1135,7 +1135,7 @@ get_all_modules(TopLevelFile,ModList):-
 
 :- pred get_all_modules(+TopLevelFile, -ModList, -IncludeList) 
     : filename(TopLevelFile) 
- => (list(ModList,filename), list(IncludeList,filename))
+ => (list(filename,ModList), list(filename,IncludeList))
 # "The same as @pred{get_all_modules/2}, but a list of included files
   is also returned.  This list includes not only files explicitly
   included with @code{:- include} declarations, but also packages
@@ -1722,9 +1722,9 @@ basenames([File|Files],[Base|Bases]) :-
     basenames(Files,Bases).
 
 %% Checks if module traversal must stop at current Base (not reading below it).
-check_stop_one_module(Base,_GoalBeforeLoading) :-
+check_stop_one_module(_GoalBeforeLoading,Base) :-
     \+ module_is_processable(Base), !.
-check_stop_one_module(Base,GoalBeforeLoading) :-
+check_stop_one_module(GoalBeforeLoading,Base) :-
     \+ call_once_with_extra_arg(Base,GoalBeforeLoading),
     % TODO:{JF} not reachable? never?
     asserta_fact(intermodule_list(Base)),  %% There is no need to load Base, but 

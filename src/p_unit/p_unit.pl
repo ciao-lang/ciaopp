@@ -148,7 +148,7 @@
 %% ---------------------------------------------------------------------------
 
 :- pred preprocessing_unit(Fs,Ms,E)
-    :  list(Fs,filename) => (list(Ms,moddesc), switch(E))
+    :  list(Fs,filename) => (list(moddesc,Ms), switch(E))
     # "Loads the preprocessing unit of @var{Fs} defining @var{Ms}.".
 :- pred preprocessing_unit(F,M,E) : filename(F) => ( moddesc(M), switch(E) )
     # "Loads the preprocessing unit of @var{F} defining @var{M}.".

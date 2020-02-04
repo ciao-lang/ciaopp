@@ -89,11 +89,11 @@ trace_option(view).
     spy points during analysis (X=trace), and/or display the analysis 
      graph which is being constructed (X=view). The information added up 
      can be seen at end of analysis with @tt{ciao:fixpoint_info.}").
-:- pred trace_fixp(X) : var(X)=> list(X,trace_option)
+:- pred trace_fixp(X) : var(X)=> list(trace_option,X)
     # "Mode for querying the current flag value.".
 :- pred trace_fixp(X) : trace_option(X) + not_further_inst(X)
     # "Mode for setting the current flag to a single value.".
-:- pred trace_fixp(X) : list(X, trace_option)   + not_further_inst(X)
+:- pred trace_fixp(X) : list(trace_option, X)   + not_further_inst(X)
     # "Mode for setting the current flag to several values.".
 
 trace_fixp(F):-

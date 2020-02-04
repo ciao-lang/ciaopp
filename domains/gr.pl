@@ -147,8 +147,7 @@ extrainfo((A,B)):-
 
 :- regtype binds(B) # "@var{B} is a list of bindings".
 
-binds(B) :-
-    list(B,binding).
+binds(B) :- list(binding,B).
 
 :- regtype binding(B) # "@var{B} is a triple (X,Term,Vars), where X is
 a variable, Term is a term and Vars is the set of variables in Term".

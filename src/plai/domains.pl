@@ -196,7 +196,7 @@ obtained after the analysis of the clause being considered
 
 :- export(exit_to_prime/8).
 :- pred exit_to_prime(+AbsInt,+Sg,+Hv,+Head,+Sv,+Exit,?ExtraInfo,-Prime)
-    : (atm(AbsInt), list(Hv,var), list(Sv, var)) + not_fails
+    : (atm(AbsInt), list(var,Hv), list(var, Sv)) + not_fails
    #"Computes the abstract substitution @var{Prime} which results from
    adding the abstraction of the unification @var{Sg} = @var{Head} to
    abstract substitution @var{Exit} (the exit substitution for a

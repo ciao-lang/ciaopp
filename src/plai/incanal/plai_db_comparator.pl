@@ -41,7 +41,7 @@ example of use of this module.
 :- data equivalent/4.
 :- data abs_diff/6.
 
-:- pred compare(DBId1, DBId2, AbsInt, Diff) : atm * atm * atm * var => list(Diff, abs_diff_type)
+:- pred compare(DBId1, DBId2, AbsInt, Diff) : atm * atm * atm * var => atm * atm * atm * list(abs_diff_type)
     #"Compares two previously loaded abstract databases of domain
      @var{AbsInt}, @var{DBId1} and @var{DBId2} to produce a list
      with the differences in @var{Diff}, expressed relative to

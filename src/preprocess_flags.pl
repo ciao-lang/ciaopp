@@ -1098,8 +1098,8 @@ sublist2(X, L) :-
 :- regtype flag_value(V)  
     # "@var{V} is a value for a flag.".
 
-flag_value( X ) :- atm( X ).
-flag_value( X ) :- list( X , atm ).
+flag_value(X) :- atm(X).
+flag_value(X) :- list(atm, X).
 
 %------------------------------------------------------------------------
 :- pred current_pp_flag(Name,?Value)

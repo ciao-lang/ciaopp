@@ -1,4 +1,4 @@
-:- module(_, [type_of_goal/2, meta_to_list/2], [assertions,hiord_old]).
+:- module(_, [type_of_goal/2, meta_to_list/2], [assertions,hiord]).
 
 :- use_module(ciaopp(p_unit/native), [
     builtin/2,
@@ -9,6 +9,7 @@
 :- use_module(ciaopp(p_unit/assrt_db), [assertion_read/9]).
 :- use_module(library(lists),    [member/2, length/2]).
 :- use_module(ciaopp(p_unit/itf_db),   [current_itf/3]).
+:- use_module(library(hiordlib), [maplist/2]).
 
 %% ---------------------------------------------------------------------------
 :- pred type_of_goal(Type, Goal) :: ( callable(Goal),
@@ -47,7 +48,7 @@ type_of_goal(metapred(apply(X, Args), Meta),          Goal) :-
     Goal=..[call, X|Args],
     A1 is A-1,
     length(L, A1),
-    list(L, =(?)),
+    maplist(=(?), L),
     Meta=..[call, goal|L].
 type_of_goal(metapred(Type, Meta), Goal) :-
     current_itf(meta, Goal, Meta),

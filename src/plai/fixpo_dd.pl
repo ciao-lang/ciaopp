@@ -161,7 +161,7 @@ init_fixpoint_(SgKey,Call,Proj,Sg,Sv,AbsInt,F,N,Id,Prime):-
 % [IG] add compute_clauses_lub (resources) and ready to merge with fixpo_plai
 :- export(proj_to_prime_nr/9).
 :- pred proj_to_prime_nr(+SgKey,+Sg,+Sv,+Call,+Proj,+AbsInt,+Clid,-ListPrime,+Id)
- : (atm(SgKey), list(Sv,var), atm(AbsInt), plai_db_id(Id))
+ : (atm(SgKey), list(var,Sv), atm(AbsInt), plai_db_id(Id))
  => (list(ListPrime)) + not_fails
  #"This predicate obtains the list of Prime corresponding to each non
    recursive clause of Sg for a given Call. It first reads those non

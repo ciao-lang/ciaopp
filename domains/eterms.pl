@@ -1,4 +1,4 @@
-:- module(eterms, [], [assertions,regtypes,basicmodes,datafacts,hiord_old]).
+:- module(eterms, [], [assertions,regtypes,basicmodes,datafacts,hiord]).
 
 :- doc(title,"eterms: types with lnewiden_el/4 (abstract domain)").
 :- doc(author, "Claudio Vaucheret").
@@ -1394,7 +1394,7 @@ eterms_multi_part_conc(A,ASub,List):-
     maplist(splitlist,Llist,R),
     maplist(build_concr(A,Vars_s,AVars),R,List).
 
-build_concr((LT,S),A,Vars_s,AVars,(NA,S)):-
+build_concr(A,Vars_s,AVars,(LT,S),(NA,S)):-
     copy_term(A,NA),
     varsbag(NA,NAVars,[]),
     assign_terms(Vars_s,LT,AVars,NAVars).

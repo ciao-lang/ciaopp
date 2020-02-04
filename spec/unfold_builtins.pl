@@ -203,12 +203,14 @@ has_cuts(F,A):-
     pred_has_cuts(F,A).
 
 check_not_ignore(L,M) :-
-    list(L,atom),
+    atom_list(L),
     member(M,L),!,
     fail.
 check_not_ignore(all,_M) :- !,fail.
 check_not_ignore(_,_M).
 
+atom_list([]).
+atom_list([X|Xs]) :- atom(X), atom_list(Xs).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 module_has_eval(M):-

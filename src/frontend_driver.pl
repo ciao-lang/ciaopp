@@ -107,8 +107,8 @@ language_output_extension(xc_assembly, '.pl').
 
 :- export(translate_input_file/5).
 :- pred translate_input_file(L,In,O,M,Out)
-    : (language(L),file_name(In),list(O,atom),module_name(M),var(Out))
-       => (language(L),file_name(In),list(O,atom),module_name(M),file_name(Out)).
+    : (language(L),file_name(In),list(atm,O),module_name(M),var(Out))
+       => (language(L),file_name(In),list(atm,O),module_name(M),file_name(Out)).
 :- doc(translate_input_file(L,In,O,M,Out),
     "This is the main predicate called when the file @var{In}
      needs to be translated from language @var{L} into Ciao Prolog.
@@ -140,7 +140,7 @@ translate_input_file(xc_assembly, I, _, _, Pl) :-
 :- export(initial_transformations/2).
 :- pred initial_transformations(L,T)
     : (language(L), var(T))
-       => (language(L), list(T,transformation)).
+       => (language(L), list(transformation,T)).
 :- doc(initial_transformations(L,T), "@var{T} is the initial list of
     transformations needed for language @var{L} after it has been
     loaded as clauses.").
@@ -423,7 +423,7 @@ perform_transformations([E|Ls]) :-
 %%      collapse_ai_versions is turned off, info should not be collapsed 
 %%         but instead shown as different possibilities").
 %% :- doc(bug,"12. Unexpand module names in meta-arguments. This shows
-%%      in list(A,'basic_props:atm') in e.g. analisis.pl. Also in true(G)
+%%      in list('basic_props:atm',A) in e.g. analisis.pl. Also in true(G)
 %%         for the pp_info of an analysis.").
 %% :- doc( bug, "13. When Asseritiong Body has ([A];[B]), A and B are
 %%                   not well printed. Look at:

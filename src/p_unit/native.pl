@@ -3,7 +3,7 @@
       native_prop_map/3, native_prop_term/1,
       native_builtin/2, native_property/2,
       wam_builtin/2],
-    [assertions, regtypes, hiord_old, nortchecks, ciaopp(ciaopp_options)]).
+    [assertions, regtypes, hiord, nortchecks, ciaopp(ciaopp_options)]).
 
 :- use_module(library(lists), [member/2, append/3]).
 :- use_module(engine(runtime_control), [module_split/3]).
@@ -65,15 +65,15 @@ native_prop_term(regtype(Prop)):- callable(Prop).
 :- regtype native/1.
 
 % state
-native(covered(V,L)):- var(V), list(L,var).
+native(covered(V,L)):- var(V), list(var,L).
 native(free(L)):- vlist(L).
 native(ground(L)):- vlist(L).
-native(indep(L)):- list(L,list(var)).
+native(indep(L)):- list(list(var), L).
 native(instance(V,T)):- var(V), nonvar(T).
 native(linear(L)):- vlist(L).
 native(not_free(L)):- vlist(L).
 native(not_ground(L)):- vlist(L).
-native(sharing(L)):- list(L,list(var)).
+native(sharing(L)):- list(list(var),L).
 % computation
 native(covered).
 native(fails).
@@ -110,7 +110,7 @@ resource_exp(_). % Not implemented yet --EMM
 :- regtype vlist/1.
 
 vlist(L):- var(L).
-vlist(L):- list(L,var).
+vlist(L):- list(var,L).
 
 :- doc(native_prop_map(Prop,P,Vars),
    "@var{Prop} is a property @var{P}(@var{Vars}) representing a mapping

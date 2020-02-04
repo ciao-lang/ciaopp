@@ -254,7 +254,7 @@ head(0).
 head(1).
 head(X):- callable(X).
 
-:- pred clauses_keys(H,ClIds) : callable * var => list(ClIds,clkey)
+:- pred clauses_keys(H,ClIds) : callable * var => callable * list(clkey)
     # "@var{ClIds} are the clause keys of all clauses already known
        for predicate @var{H}.".
 clauses_keys(H,Keys):-
@@ -650,7 +650,7 @@ get_predkey(F,A,Key) :-
     make_atom_internal([F,A],Key).
 
 :- export(get_predkeys/2).
-:- pred get_predkeys(Preds,Keys) : list(Preds) => list(Keys, predkey)
+:- pred get_predkeys(Preds,Keys) : list(Preds) => list(predkey, Keys)
     #"@var{Keys} is the list of atoms obtained from @var{Preds}.".
 get_predkeys([],[]).
 get_predkeys([(N/A)|Preds],[Key|Keys]):-

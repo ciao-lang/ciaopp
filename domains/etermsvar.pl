@@ -1,4 +1,4 @@
-:- module(etermsvar, [], [assertions,regtypes,basicmodes,datafacts,hiord_old]).
+:- module(etermsvar, [], [assertions,regtypes,basicmodes,datafacts]).
 
 :- doc(title,"etermsvar: eterms with variables (abstract domain)").
 :- doc(author, "Claudio Vaucheret").
