@@ -94,6 +94,7 @@ pdb_very_special_builtin('=/2').
 pdb_very_special_builtin('\==/2').
 
 :- export(pdb_success_builtin/6).
+pdb_success_builtin(bottom,_,_,_,_,'$bottom') :- !.
 pdb_success_builtin(_unchanged,_,_,_,Lda,Lda).
 
 :- export(pdb_asub_to_native/5).
