@@ -93,7 +93,6 @@
       change_values_insert/4,
       collect_vars_freeness/2,
       create_values/3,
-      impossible/3,
       member_value_freeness/3, 
       projected_gvars/3,
       var_value/3
@@ -131,7 +130,8 @@
       ord_intersection/3,
       ord_intersection_diff/4,
       ord_member/2, 
-      ord_subset/2, 
+      ord_subset/2,
+      ord_subset_diff/3,
       ord_subtract/3,
       ord_test_member/3
     ]).
@@ -1265,14 +1265,22 @@ shfr_success_builtin('list/1',_,p(X),_,Call,Succ):-
     change_values_if_f(Coupled,Call_fr,Succ_fr,nf),
     Succ = (Call_sh,Succ_fr).
 shfr_success_builtin('list/1',_,_,_,_Call,'$bottom').
-shfr_success_builtin('free/1',[X],p(X),_,Call,Succ):- 
+shfr_success_builtin('free/1',[X],p(X),_,Call,Succ) :-
+    var(X),
     Call = (Call_sh,Call_fr),
     var_value(Call_fr,X,Valuex),
     Valuex \== g,
-    member_value_freeness(Call_fr,FreeVars,f),
-    \+ (mynonvar([X],Call_sh,FreeVars)),
-    change_values([X],Call_fr,Succ_fr,f),
-    Succ = (Call_sh,Succ_fr).
+    (Valuex == f ->
+        Succ = Call % assumed that Call is already consistent and refined
+    ;
+        member_value_freeness(Call_fr,DefinitelyFreeVars,f),
+        insert(DefinitelyFreeVars,X,AssumedFree),
+        share_project(not_provided_Sg,AssumedFree,not_provided_HvFv_u,Call_sh,NewSh),
+        sh_fv_compatible(NewSh,AssumedFree),
+        change_values([X],Call_fr,Succ_fr,f),
+        Succ = (Call_sh,Succ_fr)
+        % TODO: refine Sh
+    ).
 shfr_success_builtin('free/1',_,_,_,_,'$bottom').
 
 % the case of arg/3
@@ -2014,18 +2022,28 @@ obtain_prime_var_var([X/_,Y/_],Call,Succ):-
     Prime = ([[X,Y]],[X/nf,Y/nf]),
     shfr_extend(not_provided_Sg,Prime,[X,Y],Call,Succ).
 
+
 %-------------------------------------------------------------------------
-% mynonvar(+,+,+)                                                        |
-% mynonvar(Vars,Sh,Fv)                                                   |
-% Satisfied if the variables in Vars are definitely nonvariables         |
+% sh_fv_compatible(+,+)                                                  |
+% sh_fv_compatible(Sh, Fv)                                                |
+% Satisfied if a list of free variables Fv and a potential sharing       |
+% set Sh over those variables are compatible. This happens if and        |
+% only if there is a subset of Sh that is a disjunt partition of Fv      |
 %-------------------------------------------------------------------------
-mynonvar([],_Sh,_Free).
-mynonvar([F|Rest],Sh,Free):-
-    insert(Free,F,Vars),
-    share_project(not_provided_Sg,Vars,not_provided_HvFv_u,Sh,NewSh),
-    impossible(NewSh,NewSh,Vars),!,
-    mynonvar(Rest,Sh,Free).
-    
+:- export(sh_fv_compatible/2).
+sh_fv_compatible(Sh, Fv) :-
+    there_is_partition(Sh,Fv).
+% TODO: refine Sh by excluding the sets that do not occur in any of
+% the possible paritions?
+
+there_is_partition([Ws|Sh],Vs) :-
+    ord_subset_diff(Ws,Vs,NewVs),
+    (NewVs=[] ; there_is_partition(Sh,NewVs)),
+    !.
+there_is_partition([_|Sh],Vs) :-
+    there_is_partition(Sh,Vs).
+
+
 non_free_to_ground((_,Lcall_fr),(Lsucc_sh,Lsucc_fr),(Lsucc_sh,Lsucc_fr)):-
     compare_free_to_ground(Lcall_fr,Lsucc_fr), !.
 non_free_to_ground(_,_,'$bottom').

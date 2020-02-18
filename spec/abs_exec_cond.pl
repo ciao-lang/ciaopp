@@ -35,11 +35,12 @@
 :- use_module(domain(s_grshfr), 
     [ 
         change_values_if_differ/5,
-        impossible/3,
         member_value_freeness/3,
         projected_gvars/3,
         var_value/3
     ]).
+
+:- use_module(domain(sharefree), [sh_fv_compatible/2]).
      
 :- use_module(library(lsets), [ord_split_lists/4]).
  
@@ -419,7 +420,7 @@ test_not_free(nf,X,(SharingComponent,FreeComponent)):-
     member_value_freeness(FreeComponent,FreeVars,f),
     insert(FreeVars,X,AssumedFree),
     share_project(not_provided_Sg,AssumedFree,not_provided_HvFv_u,SharingComponent,NewSh),
-    impossible(NewSh,NewSh,AssumedFree).
+    \+ sh_fv_compatible(NewSh,AssumedFree).
 
 %-------------------------------------------------------------------%
 % not_independent(+,+,+,+)                                          %

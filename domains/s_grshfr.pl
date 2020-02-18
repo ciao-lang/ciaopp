@@ -3,7 +3,6 @@
       asubs_to_dep/3,
       dep_to_indep/3,
       ground_conds/3,
-      impossible/3,
       indep_conds_one_var/4,
       indep_cond_one_var_ordered/5,
       indep_conds/4,
@@ -144,28 +143,48 @@ not_indep_cond_one_var_ordered(<,X,V,[not(indep(X,V))|Tail],Tail).
 not_indep_cond_one_var_ordered(>,X,V,[not(indep(V,X))|Tail],Tail).
 not_indep_cond_one_var_ordered(=,_X,_V,Tail,Tail).
 
-impossible([Element|Sh],Sh1,Vars):-
-    possible(Element,Sh1,Vars,Temp), !,
-    sort([Element|Temp],Elements),
-    ord_subtract(Sh,Elements,NewSh),
-    impossible(NewSh,Sh1,Vars).
-impossible(X,_,_):-
-    X = [_|_].
-    
-possible(Vars,_Sh1,OldVars,Elements):- 
-    Vars == OldVars,!,
-    Elements = [].
-possible(Vars,Sh1,OldVars,[S|NewElements]):-
-    take_element_free(Sh1,Vars,NewSh1,S),
-    merge(S,Vars,NewVars),
-    possible(NewVars,NewSh1,OldVars,NewElements).
-    
-take_element_free([S|Sh],OldVars,NewSh,NewS):-
-    \+ (ord_intersect(S,OldVars)),!,
-    NewSh = Sh,
-    NewS = S.
-take_element_free([S|Sh],OldVars,[S|NewSh],NewS):-
-    take_element_free(Sh,OldVars,NewSh,NewS).
+
+%-----------------------------------------------------------------------
+% impossible(+,+,+)
+% impossible(ShDef,ShPot,Fv)
+%
+% Previously used ins sharefree:mynonvar/3 (commented below), which
+% was used in the handler of the var/free builtin in the sharing
+% freeness domain. However either impossible/3 had bugs or using it in
+% mynonvar/3 was itself a bug. Commented out since is no longer used.
+%
+%
+% mynonvar([],_Sh,_Free).
+% mynonvar([F|Rest],Sh,Free):-
+%     insert(Free,F,Vars),
+%     share_project(not_provided_Sg,Vars,not_provided_HvFv_u,Sh,NewSh),
+%     impossible(NewSh,NewSh,Vars),!,
+%     mynonvar(Rest,Sh,Free).
+%
+%
+% -----------------------------------------------------------------------
+%% impossible([Element|Sh],Sh1,Vars):-
+%%     possible(Element,Sh1,Vars,Temp), !,
+%%     sort([Element|Temp],Elements),
+%%     ord_subtract(Sh,Elements,NewSh),
+%%     impossible(NewSh,Sh1,Vars).
+%% impossible(X,_,_):-
+%%     X = [_|_].
+
+%% possible(Vars,_Sh1,OldVars,Elements):-
+%%     Vars == OldVars,!,
+%%     Elements = [].
+%% possible(Vars,Sh1,OldVars,[S|NewElements]):-
+%%     take_element_free(Sh1,Vars,NewSh1,S),
+%%     merge(S,Vars,NewVars),
+%%     possible(NewVars,NewSh1,OldVars,NewElements).
+
+%% take_element_free([S|Sh],OldVars,NewSh,NewS):-
+%%     \+ (ord_intersect(S,OldVars)),!,
+%%     NewSh = Sh,
+%%     NewS = S.
+%% take_element_free([S|Sh],OldVars,[S|NewSh],NewS):-
+%%     take_element_free(Sh,OldVars,NewSh,NewS).
 
 %------------------------------------------------------------------------
 % not_indep(+,+,-,?)
