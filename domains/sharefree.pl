@@ -955,6 +955,7 @@ shfr_not_that_special_builtin('=/2').
 shfr_not_that_special_builtin('C/3').
 shfr_not_that_special_builtin('keysort/2').
 shfr_not_that_special_builtin('sort/2').
+shfr_not_that_special_builtin('\\=/2').
 
 %-------------------------------------------------------------------------
 % shfr_success_builtin(+,+,+,+,+,-)                                      |
@@ -1382,6 +1383,16 @@ shfr_call_to_success_builtin('sort/2',sort(X,Y),Sv,Call,Proj,Succ):-
     change_values_if_f([Z],Fr,TFr,nf),
     shfr_call_to_success_fact('='(X,Y),Vars,'='(Xterm,Xterm),not_provided,Sv,(Call_sh,Temp_fr),(Sh,TFr),_Prime,Succ). % TODO: add some ClauseKey?
 shfr_call_to_success_builtin('sort/2',_,_,_,_,'$bottom').
+
+shfr_call_to_success_builtin('\\=/2','\\='(X,Y),_Sv,Call,_Proj,Succ) :-
+    Call=(_Sh,Fr),
+    (var(X), var_value(Fr,X,f)) ; (var(Y), var_value(Fr,Y,f)), !,
+    % if one of them is a free variable, unification always succeed (we
+    % are ignoring occurs check), and therefore \= fails.
+    Succ='$bottom'.
+    % TODO: detect more failure scenarios
+shfr_call_to_success_builtin('\\=/2','\\='(_X,_Y),_Sv,Call,_Proj,Call).
+% Otherwise, we leave the abstract substitution unchanged.
 
 %------------------------------------------------------------------------%
 %            Intermediate Functions                                      |
