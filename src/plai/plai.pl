@@ -411,7 +411,7 @@ mod_topdown_analysis(AbsInt,Fixp,Ps):-
     functor(Goal,F,A),
     inccounter(1,C),
     make_atom([F,A,C],Name),
-  determine_r_flag(Ps,F/A,RFlag),
+    determine_r_flag(Ps,F/A,RFlag),
     ( analyze(Fixp,AbsInt,RFlag,Goal,Gv,Call,Name) -> true ),
     fail.
 mod_topdown_analysis(_AbsInt,_Fixp,_Ps).

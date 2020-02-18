@@ -60,8 +60,8 @@ get_entry_info(AbsInt,Sg,AProj):-
     retractall_fact(curr_entry_id_(_)),
     current_pp_flag(entry_policy,Policy),
     call_pattern(Policy,AbsInt,Sg,Proj,Id),
-  varset(Sg,Sv),
-  apply_assrt_call_to_success(AbsInt,Sg,Sv,Proj,Sv,Proj,AProj,_),
+    varset(Sg,Sv),
+    apply_assrt_call_to_success(AbsInt,Sg,Sv,Proj,Sv,Proj,AProj,_),
     assertz_fact(curr_entry_id_(Id)).
 
 :- pred call_pattern(+Policy,+AbsInt,-Sg,-Call,-Id)
@@ -109,7 +109,7 @@ call_pattern(Policy,AbsInt,Sg,Call_s,Id):-
     !,
     curr_file(_,CurrModule),
     registry(_,CurrModule,regdata(Id,AbsInt,Sg,Call,_Succ,_Spec,_,_,Mark)),
-  current_pp_flag(success_policy,SP),
+    current_pp_flag(success_policy,SP),
     (may_be_improved_mark(SP,Mark) ; not_valid_mark(SP,Mark)),
     abs_sort(AbsInt,Call,Call_s).
 

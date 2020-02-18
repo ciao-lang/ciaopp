@@ -91,8 +91,8 @@ cleanup_plai_db(AbsInt):-
     retractall_fact(complete_parent(_,_)),
     retractall_fact(pragma(_,_,_,_,_)),
     retractall_fact(complete_key(_,_,_)),
-  retractall_fact(invalid_call(_,AbsInt,_,_,_,_)),
-  retractall_fact(raw_success(_,AbsInt,_,_,_,_)),
+    retractall_fact(invalid_call(_,AbsInt,_,_,_,_)),
+    retractall_fact(raw_success(_,AbsInt,_,_,_,_)),
     cleanup_trans_clauses.
 
 :- export(get_parent_key/4).
@@ -304,8 +304,8 @@ erase_previous_memo_table_and_parents_one_goal(g(Key,_,Info,SgKey,Sg),AbsInt,ClK
     get_memo_table(Key,AbsInt,Id,Son,_,_Info,Ref),
     erase(Ref),
     ( Info = '$meta'(_,LGoals,_) ->
-      listbody_to_body(LGoals,MetaGoals),
-      erase_previous_memo_tables_and_parents(MetaGoals,AbsInt,ClKey,Id)
+        listbody_to_body(LGoals,MetaGoals),
+        erase_previous_memo_tables_and_parents(MetaGoals,AbsInt,ClKey,Id)
     ;   true
     ),
     Goal = (SgKey,Info,Sg),
@@ -442,8 +442,8 @@ add_invalid_call(SgKey,AbsInt,LitKey,N,Sg,Proj) :-
 :- export(store_raw_success/6).
 store_raw_success(ClKey,AbsInt,Id,Sg,Proj,Prime) :-
     ( retract_fact(raw_success(ClKey,AbsInt,Id,_,_,_)) -> true ; true ),
-      % Id is unique
-      assertz_fact(raw_success(ClKey,AbsInt,Id,Sg,Proj,Prime)).
+    % Id is unique
+    assertz_fact(raw_success(ClKey,AbsInt,Id,Sg,Proj,Prime)).
 
 :- export(get_raw_success/6).
 :- pred get_raw_success(+ClKey,+AbsInt,+Id,Sg,Proj,Prime).

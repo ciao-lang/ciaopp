@@ -145,15 +145,15 @@ atom_info(Subgoal,Id,Ps,AbsInt,g(Id,Svars,Info,SgKey,Goal)) :-
     atom_meta_builtin_info(SgKey,Subgoal,Ps,AbsInt,Info,Goal).
 
 atom_meta_builtin_info(_SgKey,Subgoal,Ps,AbsInt,Info,Goal):-
-  ( type_of_goal(metapred(Type,_Meta),Subgoal),
+    ( type_of_goal(metapred(Type,_Meta),Subgoal),
       type_of_goal(imported,Subgoal) -> true
-  ; fail
-  ),
+      ; fail
+      ),
     functor(Subgoal,F,A),
     functor(Goal,F,A),
     meta_info(Subgoal,A,Ps,AbsInt,Bodies,Data,Goal),
-  \+ Bodies = [],
-  !,
+    \+ Bodies = [],
+    !,
     Info = '$meta'(Type,Bodies,Data).
 atom_meta_builtin_info(SgKey,Subgoal,Ps,AbsInt,Info,Goal):-
     combined_special_builtin(AbsInt,Subgoal,SgKey,Domains), !,

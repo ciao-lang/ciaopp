@@ -137,16 +137,16 @@ init_fixpoint_(SgKey,Call,Proj,Sg,Sv,AbsInt,F,N,Id,Prime):-
     ; true),
     fixpoint_trace('non-recursive initiated',Id,N,SgKey,Sg,Proj,_),
     proj_to_prime_r(SgKey,Sg,Sv,Call,Proj,AbsInt,TempPrime,Id),
-  fixpoint_trace('non-recursive completed',Id,N,SgKey,Sg,TempPrime,_),
+    fixpoint_trace('non-recursive completed',Id,N,SgKey,Sg,TempPrime,_),
     asserta_fact(complete(SgKey,AbsInt,Sg,Proj,TempPrime,Id,[])),
     bagof(X, X^(trans_clause(SgKey,r,X)),Clauses),!,
     fixpoint_trace('fixpoint initiated',Id,N,SgKey,Sg,Proj,Clauses),
-  compute(Clauses,SgKey,Sg,Sv,Proj,AbsInt,TempPrime,Prime1,Id),
+    compute(Clauses,SgKey,Sg,Sv,Proj,AbsInt,TempPrime,Prime1,Id),
     fixpoint_ch(SgKey,Sg,Sv,Proj,AbsInt,Prime1,Prime2,Id), % !.
     each_apply_trusted(Proj,SgKey,Sg,Sv,AbsInt,Prime2,Prime3),
     get_complete(SgKey,AbsInt,Sg,_Proj,Prime4_u,Id,Fs2,Ref),
     each_abs_sort(Prime4_u,AbsInt,Prime4),
-  process_analyzed_clause(AbsInt,Sg,Sv,Proj,Prime3,Prime4,Prime),
+    process_analyzed_clause(AbsInt,Sg,Sv,Proj,Prime3,Prime4,Prime),
     % Code for debugging % TODO: use toggleable debug/1
     ( \+ check_same_success(AbsInt, Prime2, Prime) -> % TODO: debug
         write('something going wrong\n'),
@@ -219,8 +219,8 @@ do_nr_cl(Clause,Sg,Sv,Call,Proj,AbsInt,Primes,TailPrimes,Id):-
     sort(Vars_u,Vars),
     ord_subtract(Vars,Hv,Fv),
     process_body(Body,ClKey,AbsInt,Sg,Hv,Fv,Vars_u,Head,Sv,Call,Proj,TPrime,Id),
-  store_raw_success(ClKey,AbsInt,Id,Sg,Proj,TPrime),
-  apply_assrt_exit(AbsInt,Sg,Sv,Proj,TPrime,LPrime,_),
+    store_raw_success(ClKey,AbsInt,Id,Sg,Proj,TPrime),
+    apply_assrt_exit(AbsInt,Sg,Sv,Proj,TPrime,LPrime,_),
     append_(LPrime,TailPrimes,Primes).
 do_nr_cl(_Clause,_Sg,_Sv,_Call,_Proj,_AbsInt,Primes,Primes,_Id).
 
@@ -308,10 +308,10 @@ do_r_cl(Clause,SgKey,Sg,Sv,Proj,AbsInt,Id,TempPrime,Prime):-
     fixpoint_trace('visit clause',Id,_N,ClKey,Head,Entry,Body),
     get_singleton(Entry,LEntry),
     entry_to_exit(Body,ClKey,LEntry,Exit,Vars_u,AbsInt,Id),
-  fixpoint_trace('exit clause',Id,_N,ClKey,Head,Exit,_),
-  each_exit_to_prime(Exit,AbsInt,Sg,Hv,Head,Sv,ExtraInfo,Prime1),
-  store_raw_success(ClKey,AbsInt,Id,Sg,Proj,Prime1),
-  process_analyzed_clause(AbsInt,Sg,Sv,Proj,TempPrime,Prime1,Prime),
+    fixpoint_trace('exit clause',Id,_N,ClKey,Head,Exit,_),
+    each_exit_to_prime(Exit,AbsInt,Sg,Hv,Head,Sv,ExtraInfo,Prime1),
+    store_raw_success(ClKey,AbsInt,Id,Sg,Proj,Prime1),
+    process_analyzed_clause(AbsInt,Sg,Sv,Proj,TempPrime,Prime1,Prime),
     decide_mark_parents(AbsInt,TempPrime,Prime,SgKey,Sg,Id,Proj).
 do_r_cl(_,_,_,_,_,_,_,Prime,Prime).
 
@@ -480,7 +480,7 @@ compute_change([],_,_,_,_,_,Prime,Prime,_).
 % incremental addition. So the clause must be first checked to see if it 
 % applies for the corresponding Subgoal. If it does, it is analyzed entirely
 compute_change([(_,N/A/C/0)|Rest],SgKey,Sg,Sv,Proj,AbsInt,TempPrime,Prime,Id) :-!,
-  get_clkey(N,A,C,ClKey),
+    get_clkey(N,A,C,ClKey),
     trans_clause(SgKey,_,clause(Head,Vars_u,ClKey,Body)),
     ( clause_applies(Head,Sg)->
         varset(Head,Hv),
@@ -492,13 +492,13 @@ compute_change([(_,N/A/C/0)|Rest],SgKey,Sg,Sv,Proj,AbsInt,TempPrime,Prime,Id) :-
         get_singleton(Entry,LEntry),
         entry_to_exit(Body,ClKey,LEntry,Exit,Vars_u,AbsInt,Id),
         each_exit_to_prime(Exit,AbsInt,Sg,Hv,Head,Sv,ExtraInfo,Prime1),
-      store_raw_success(ClKey,AbsInt,Id,Sg,Proj,Prime1),
-      process_analyzed_clause(AbsInt,Sg,Sv,Proj,TempPrime,Prime1,TrustedPrime),
+        store_raw_success(ClKey,AbsInt,Id,Sg,Proj,Prime1),
+        process_analyzed_clause(AbsInt,Sg,Sv,Proj,TempPrime,Prime1,TrustedPrime),
         decide_mark_parents(AbsInt,TempPrime,TrustedPrime,SgKey,Sg,Id,Proj)
- ;
-    TrustedPrime = TempPrime % the CP head does not unify with the new clause
- ),
- compute_change(Rest,SgKey,Sg,Sv,Proj,AbsInt,TrustedPrime,Prime,Id).
+    ;
+        TrustedPrime = TempPrime % the CP head does not unify with the new clause
+    ),
+    compute_change(Rest,SgKey,Sg,Sv,Proj,AbsInt,TrustedPrime,Prime,Id).
 compute_change([(Ch_Key,N/A/C/_)|Rest],SgKey,Sg,Sv,Proj,AbsInt,TempPrime,Prime,Id) :-
     current_fact(memo_table(Ch_Key,AbsInt,Id,_,Vars_u,Entry)),
     each_abs_sort(Entry,AbsInt,S_Entry),
@@ -512,8 +512,8 @@ compute_change([(Ch_Key,N/A/C/_)|Rest],SgKey,Sg,Sv,Proj,AbsInt,TempPrime,Prime,I
     erase_previous_memo_tables_and_parents(NewBody,AbsInt,ClKey,Id),
     entry_to_exit(NewBody,ClKey,S_Entry,Exit,Vars_u,AbsInt,Id),
     each_exit_to_prime(Exit,AbsInt,Sg,Hv,Head,Sv,ExtraInfo,Prime1),
-  store_raw_success(ClKey,AbsInt,Id,Sg,Proj,Prime1),
-  process_analyzed_clause(AbsInt,Sg,Sv,Proj,TempPrime,Prime1,TrustedPrime),
+    store_raw_success(ClKey,AbsInt,Id,Sg,Proj,Prime1),
+    process_analyzed_clause(AbsInt,Sg,Sv,Proj,TempPrime,Prime1,TrustedPrime),
     decide_mark_parents(AbsInt,TempPrime,TrustedPrime,SgKey,Sg,Id,Proj),
     compute_change(Rest,SgKey,Sg,Sv,Proj,AbsInt,TrustedPrime,Prime,Id).
 % The change is within a meta_call that is not defined in the loaded
@@ -521,22 +521,22 @@ compute_change([(Ch_Key,N/A/C/_)|Rest],SgKey,Sg,Sv,Proj,AbsInt,TempPrime,Prime,I
 compute_change([_|Rest],SgKey,Sg,Sv,Proj,AbsInt,TempPrime,Prime,Id) :-
     % The memo_table was already erased
     apply_assrt_no_source(SgKey,AbsInt,Sg,Sv,Proj,NPrime),
-  get_singleton(NPrime,NLPrime),
-  decide_mark_parents(AbsInt,TempPrime,NLPrime,SgKey,Sg,Id,Proj),
-  compute_change(Rest,SgKey,Sg,Sv,Proj,AbsInt,TempPrime,Prime,Id).
+    get_singleton(NPrime,NLPrime),
+    decide_mark_parents(AbsInt,TempPrime,NLPrime,SgKey,Sg,Id,Proj),
+    compute_change(Rest,SgKey,Sg,Sv,Proj,AbsInt,TempPrime,Prime,Id).
 
 :- pred each_call_to_success/12 + not_fails.
 each_call_to_success([Call0],RFlag,SgKey,Sg,Sv,HvFv_u,AbsInt,ClId,Succ,F,N,Id):- !,
     project(AbsInt,Sg,Sv,HvFv_u,Call0,Proj0),
     apply_assrt_call_to_success(AbsInt,Sg,Sv,Proj0,HvFv_u,Call0,Proj,Call),
-  ( bottom(Proj) ->
-      Succ = Proj,
-      Id = '$bottom_call',
-      % annotate that the assertion is incompatible
-      add_invalid_call(SgKey,AbsInt,F,N,Sg,Call0)
-  ;
-      call_to_success(RFlag,SgKey,Call,Proj,Sg,Sv,AbsInt,ClId,Succ,F,N,Id)
-  ).
+    ( bottom(Proj) ->
+        Succ = Proj,
+        Id = '$bottom_call',
+        % annotate that the assertion is incompatible
+        add_invalid_call(SgKey,AbsInt,F,N,Sg,Call0)
+    ;
+        call_to_success(RFlag,SgKey,Call,Proj,Sg,Sv,AbsInt,ClId,Succ,F,N,Id)
+    ).
 each_call_to_success(LCall,RFlag,SgKey,Sg,Sv,HvFv_u,AbsInt,ClId,LSucc,F,N,Id):-
     each_call_to_success0(LCall,RFlag,SgKey,Sg,Sv,HvFv_u,AbsInt,ClId,LSucc,F,N,Id).
 
@@ -546,7 +546,7 @@ each_call_to_success0([],_Flag,_SgK,_Sg,_Sv,_HvFv,_AbsInt,_ClId,[],_F,_N,_NN).
 each_call_to_success0([Call0|LCall],RFlag,SgKey,Sg,Sv,HvFv_u,AbsInt,ClId,LSucc,F,N,NewN):-
     project(AbsInt,Sg,Sv,HvFv_u,Call0,Proj0),
     apply_assrt_call_to_success(AbsInt,Sg,Sv,Proj0,HvFv_u,Call0,Proj,Call),
-  call_to_success(RFlag,SgKey,Call,Proj,Sg,Sv,AbsInt,ClId,LSucc0,F,N,_Id),
+    call_to_success(RFlag,SgKey,Call,Proj,Sg,Sv,AbsInt,ClId,LSucc0,F,N,_Id),
     append(LSucc0,LSucc1,LSucc),
     each_call_to_success0(LCall,RFlag,SgKey,Sg,Sv,HvFv_u,AbsInt,ClId,LSucc1,F,N,NewN).
 
@@ -601,7 +601,7 @@ query(AbsInt,QKey,Query,Qv,RFlag,N,Call0,Succ) :-
     project(AbsInt,Query,Qv,Qv,Call0,Proj0),
     fixpoint_trace('init fixpoint',N,N,QKey,Query,Proj0,_),
     apply_assrt_call_to_success(AbsInt,Query,Qv,Proj0,Qv,Call0,Proj,Call),
-  call_to_success(RFlag,QKey,Call,Proj,Query,Qv,AbsInt,0,Succ,N,0,_Id),
+    call_to_success(RFlag,QKey,Call,Proj,Query,Qv,AbsInt,0,Succ,N,0,_Id),
     !,
     fixpoint_trace('exit goal',_Id,query(N),(QKey,QKey),Query,Succ,AbsInt).
 query(_AbsInt,_QKey,Query,Qv,_RFlag,_N,_Call,_Succ):-

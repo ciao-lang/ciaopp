@@ -39,11 +39,12 @@ get_success_info(Call,SgKey,Sg,Sv,AbsInt,Prime,PatternsApplied):-
     functor(Sg,F,A),
     functor(SgProj,F,A),
     ( open_mode(Base,_,read_only) ->
-      findall((SgProj,Proj,Succ), succ_pattern(over_all,AbsInt,SgProj,Proj,Succ), Patterns),
-      apply_success_policy(over_all,AbsInt,SgKey,Sg,Sv,Call,Patterns,Prime,PatternsApplied)
-    ; current_pp_flag(success_policy,SuccessPolicy),
-      findall((SgProj,Proj,Succ), succ_pattern(SuccessPolicy,AbsInt,SgProj,Proj,Succ), Patterns),
-      apply_success_policy(SuccessPolicy,AbsInt,SgKey,Sg,Sv,Call,Patterns,Prime,PatternsApplied)
+        findall((SgProj,Proj,Succ), succ_pattern(over_all,AbsInt,SgProj,Proj,Succ), Patterns),
+        apply_success_policy(over_all,AbsInt,SgKey,Sg,Sv,Call,Patterns,Prime,PatternsApplied)
+    ;
+        current_pp_flag(success_policy,SuccessPolicy),
+        findall((SgProj,Proj,Succ), succ_pattern(SuccessPolicy,AbsInt,SgProj,Proj,Succ), Patterns),
+        apply_success_policy(SuccessPolicy,AbsInt,SgKey,Sg,Sv,Call,Patterns,Prime,PatternsApplied)
     ).
 
 :- pred apply_success_policy(+SuccessPolicy,+AbsInt,+SgKey,+Sg,+Sv,+Proj,+Patterns,-Prime,-PatternsApplied)
@@ -77,9 +78,9 @@ apply_success_policy(over_best,AbsInt,SgKey,SgCall,Sv,Call,Patterns,_Prime,_Patt
     member((SgProj,Proj,Succ),Patterns),
     sub_is_applicable(over_best,SgKey,SgCall,Sv,Call,AbsInt,SgProj,Proj,Succ,Prime),
     ( current_fact(tmp_success(Sv,[Proj0],[_Prime0]),Ref) -> 
-      less_or_equal_(over_best,AbsInt,Proj,Proj0),
-      erase(Ref),
-      asserta_fact(tmp_success(Sv,[Proj],[Prime]))
+        less_or_equal_(over_best,AbsInt,Proj,Proj0),
+        erase(Ref),
+        asserta_fact(tmp_success(Sv,[Proj],[Prime]))
     ; asserta_fact(tmp_success(Sv,[Proj],[Prime]))
     ),
     fail.
@@ -95,9 +96,9 @@ apply_success_policy(over_all,AbsInt,SgKey,SgCall,Sv,Call,Patterns,_Prime,_Patte
     member((SgProj,Proj,Succ),Patterns),
     sub_is_applicable(over_all,SgKey,SgCall,Sv,Call,AbsInt,SgProj,Proj,Succ,Prime),
     ( current_fact(tmp_success(Sv,[_Proj0],[Prime0]),Ref) -> 
-      glb(AbsInt,Prime0,Prime,Prime1), 
-      erase(Ref),
-      asserta_fact(tmp_success(Sv,[Call],[Prime1]))
+        glb(AbsInt,Prime0,Prime,Prime1),
+        erase(Ref),
+        asserta_fact(tmp_success(Sv,[Call],[Prime1]))
     ; asserta_fact(tmp_success(Sv,[Call],[Prime]))
     ),
     fail.
@@ -124,9 +125,9 @@ apply_success_policy(under_best,AbsInt,SgKey,SgCall,Sv,Call,Patterns,_Prime,_Pat
     member((SgProj,Proj,Succ),Patterns),
     sub_is_applicable(under_best,SgKey,SgCall,Sv,Call,AbsInt,SgProj,Proj,Succ,Prime),
     ( current_fact(tmp_success(Sv,[Proj0],[_Prime0]),Ref) -> 
-      less_or_equal_(under_best,AbsInt,Proj,Proj0),
-      erase(Ref),
-      asserta_fact(tmp_success(Sv,[Proj],[Prime]))
+        less_or_equal_(under_best,AbsInt,Proj,Proj0),
+        erase(Ref),
+        asserta_fact(tmp_success(Sv,[Proj],[Prime]))
     ; asserta_fact(tmp_success(Sv,[Proj],[Prime]))
     ),
     fail.
@@ -138,9 +139,9 @@ apply_success_policy(under_all,AbsInt,SgKey,SgCall,Sv,Call,Patterns,_Prime,_Patt
     member((SgProj,Proj,Succ),Patterns),
     sub_is_applicable(under_all,SgKey,SgCall,Sv,Call,AbsInt,SgProj,Proj,Succ,Prime),
     ( current_fact(tmp_success(Sv,[_Call],[Prime0]),Ref) -> 
-      compute_lub(AbsInt,[Prime0,Prime],Prime1), 
-      erase(Ref),
-      asserta_fact(tmp_success(Sv,[Call],[Prime1]))
+        compute_lub(AbsInt,[Prime0,Prime],Prime1),
+        erase(Ref),
+        asserta_fact(tmp_success(Sv,[Call],[Prime1]))
     ; asserta_fact(tmp_success(Sv,[Call],[Prime]))
     ),
     fail.
@@ -177,14 +178,14 @@ sub_is_applicable(SuccessPolicy,_SgKey,SgCall,_Sv,Call0,AbsInt,SgProj,Proj0,Succ
 sub_is_applicable(SuccessPolicy,_SgKey,SgCall,Sv,Call0,AbsInt,SgProj,Proj0,Succ,Prime):-
     clause_applies(SgProj,SgCall),
     varset(SgProj,Pv),
-  \+ Proj0 = '$bottom', \+ Succ = '$bottom',
-  % call_to_entry cannot be called with bottom (and it is obviously not applicable)
+    \+ Proj0 = '$bottom', \+ Succ = '$bottom',
+    % call_to_entry cannot be called with bottom (and it is obviously not applicable)
     call_to_entry(AbsInt,Pv,SgProj,Sv,SgCall,not_provided,[],Proj0,Entry0,_), % TODO: add some ClauseKey? (JF)
     abs_sort(AbsInt,Entry0,Entry),
     abs_sort(AbsInt,Call0,Call),
     less_or_equal_(SuccessPolicy,AbsInt,Call,Entry), 
-  %     exit_to_prime(AbsInt,SgCall,Pv,SgProj,Sv,Succ,_,Prime),
-  call_to_entry(AbsInt,Pv,SgProj,Sv,SgCall,not_provided,[],Succ,Prime,_). % TODO: add some ClauseKey? (JF)
+    %     exit_to_prime(AbsInt,SgCall,Pv,SgProj,Sv,Succ,_,Prime),
+    call_to_entry(AbsInt,Pv,SgProj,Sv,SgCall,not_provided,[],Succ,Prime,_). % TODO: add some ClauseKey? (JF)
 
 %%      functor(Sg,F,A),
 %%      functor(SgCopy,F,A),

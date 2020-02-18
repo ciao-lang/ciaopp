@@ -23,7 +23,6 @@
 
 :- include(.(fixpo_dx_check_common)).
 
-
 :- use_module(library(messages), [error_message/1]).
 
 :- use_module(library(lists), [member/2]).
@@ -42,12 +41,9 @@
 :- doc(init_fixpoint/0,"Cleanups the database of analysis of
     temporary information.").
 
-
-
 init_fixpoint:-
     trace_fixp:cleanup,
     set_pp_flag(widen,off).
-
 
 %------------------------------------------------------------------------%
 % call_to_success(+,+,+,+,+,+,-,-,+,+)                                   %
@@ -103,11 +99,11 @@ init_fixpoint_(SgKey,Call,Proj,Sg,Sv,AbsInt,_ClId,F,N,Id,Prime):-
     (fixpoint_id_reuse_prev_success(SgKey,AbsInt,Sg,Proj,Id,TmpPrime) ->
         asserta_fact(complete(SgKey,AbsInt,Sg,Proj,TmpPrime,Id,[])),
         compute(Clauses,SgKey,Sg,Sv,Call,Proj,AbsInt,TmpPrime,_,Id)
-
     ;
         error_message("certificate check failed: missing entry in analysis answer table"),
         asserta_fact(complete(SgKey,AbsInt,Sg,Proj,['$bottom'],Id,[])),
-        compute(Clauses,SgKey,Sg,Sv,Call,Proj,AbsInt,['$bottom'],_,Id)),
+        compute(Clauses,SgKey,Sg,Sv,Call,Proj,AbsInt,['$bottom'],_,Id)
+    ),
     current_fact(complete(SgKey,AbsInt,Sg,_,Prime_u,Id,Fs2),Ref),
     reuse_complete(Ref,SgKey,Proj,Sg,AbsInt,F,N,Id,Fs2,Prime_u,Prime).
 init_fixpoint_(SgKey,_Call,Proj,Sg,Sv,AbsInt,ClId,F,N,Id,LPrime) :-
@@ -154,8 +150,6 @@ compute([Clause|Rest],SgKey,Sg,Sv,Call,Proj,AbsInt,TempPrime,Prime,Id) :-
     do_cl(Clause,SgKey,Sg,Sv,Call,Proj,AbsInt,Id,TempPrime,Prime1),
     compute(Rest,SgKey,Sg,Sv,Call,Proj,AbsInt,Prime1,Prime,Id).
 
-
-
 do_cl(Clause,SgKey,Sg,Sv,Call,Proj,AbsInt,Id,TempPrime,Prime):-
     Clause=clause(Head,Vars_u,K,Body),
     clause_applies(Head,Sg), !, 
@@ -163,7 +157,6 @@ do_cl(Clause,SgKey,Sg,Sv,Call,Proj,AbsInt,Id,TempPrime,Prime):-
     sort(Vars_u,Vars),
     ord_subtract(Vars,Hv,Fv),
     process_body(Body,K,AbsInt,Sg,SgKey,Hv,Fv,Vars_u,Head,Sv,Call,Proj,TempPrime,Prime,Id).
-
 do_cl(_,_,_,_,_,_,_,_,Primes,Primes).
 
 process_body(Body,K,AbsInt,Sg,SgKey,Hv,Fv,_Vars_u,Head,Sv,Call,Proj,TempPrime,Prime,Id):-
@@ -225,12 +218,7 @@ body_succ(Call,Atom,Succ,HvFv_u,AbsInt,ClId,ParentId,Id):-
 %             erase(Ref),
 %             decide_memo(AbsInt,Key,NewN,NewId,Vars_u,Call)).            
 
-
-
-
 %-------------------------------------------------------------------------
-
-
 
 % if Prime computed for this clause is not more general than the 
 % information we already had there is no need to compare with the info
@@ -295,7 +283,6 @@ each_call_to_success0([Call|LCall],SgKey,Sg,Sv,HvFv_u,AbsInt,ClId,LSucc,F,N,NewN
     append(LSucc0,LSucc1,LSucc),
     each_call_to_success0(LCall,SgKey,Sg,Sv,HvFv_u,AbsInt,ClId,LSucc1,F,N,NewN).
 
-
 widen_call(AbsInt,SgKey,Sg,F1,Id0,Proj1,Proj):-
     ( current_pp_flag(widencall,off) -> fail ; true ),
     widen_call0(AbsInt,SgKey,Sg,F1,Id0,[Id0],Proj1,Proj), !,
@@ -306,7 +293,6 @@ widen_call0(AbsInt,SgKey,Sg,F1,Id0,Ids,Proj1,Proj):-
 widen_call0(AbsInt,SgKey,Sg,F1,Id0,Ids,Proj1,Proj):-
     current_pp_flag(widencall,com_child),
     widen_call2(AbsInt,SgKey,Sg,F1,Id0,Ids,Proj1,Proj).
-
 
 widen_call1(AbsInt,SgKey,Sg,F1,Id0,Ids,Proj1,Proj):-
     current_fact(complete(SgKey0,AbsInt,Sg0,Proj0,_Prime0,Id0,Fs0)),
@@ -330,8 +316,6 @@ widen_call2(AbsInt,SgKey,Sg,F1,_Id,_Ids,Proj1,Proj):-
     abs_sort(AbsInt,Proj1,Proj1_s),
     widencall(AbsInt,Proj0_s,Proj1_s,Proj).
 
-
-
 %-------------------------------------------------------------------------
 
 :- doc(query(AbsInt,QKey,Query,Qv,RFlag,N,Call,Succ),
@@ -351,8 +335,6 @@ query(_AbsInt,_QKey,_Query,_Qv,_RFlag,_N,_Call,_Succ):-
 % should never happen, but...
     error_message("SOMETHING HAS FAILED!"),
     fail.
-
-
 
 %-------------------------------------------------------------------------
 % entry_to_exit(+,+,+,-,+,+,+)                                           %

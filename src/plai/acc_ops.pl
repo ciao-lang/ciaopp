@@ -27,7 +27,6 @@ database the @var{Id} of relevant entries").
 init_relevant_entries:-
     retractall_fact(relevant(_)).
 
-
 add_relevant(relevant(A)):-
     relevant(A),!.
 add_relevant(relevant(A)):-
@@ -50,12 +49,9 @@ remove_irrelevant([]):-!.
 remove_irrelevant([complete(_SgKey,_AbsInt,_Subg,_Proj1,_Prime1,Id,_Fs)|Ls]):-
     relevant(Id),!,
     remove_irrelevant(Ls).
-
 remove_irrelevant([complete(_SgKey,_AbsInt,_Subg,_Proj1,_Prime1,Id,_Fs)|Ls]):-
     retract_fact(complete(_SgKey,_AbsInt,_Subg,_Proj1,_Prime1,Id,_Fs)),
     remove_irrelevant(Ls).
-
-
 
 %------------------------------------------------------------------------%
 
@@ -75,8 +71,4 @@ remove_identical_entries(AbsInt):-
       erase(Ref2)
     ),
     fail.
-
 remove_identical_entries(_AbsInt).
-
-
-

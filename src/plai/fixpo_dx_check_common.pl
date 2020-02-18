@@ -104,7 +104,7 @@
 cleanup_fixpoint(AbsInt):-
     cleanup_plai_db(AbsInt),
     cleanup_trusts(AbsInt),
-  cleanup_applied_assertions(AbsInt),
+    cleanup_applied_assertions(AbsInt),
     retractall_fact(fixp_id(_)),
     asserta_fact(fixp_id(0)), % there is no way to recover this 
     init_fixpoint,            % if several analysis coexist!

@@ -5,7 +5,7 @@
         variable/2,
         bottom/1,
         singleton/2,
-      get_singleton/2,
+        get_singleton/2,
         fixpoint_id/1,
         fixpoint_id_reuse_prev/5,
         fixpoint_id_reuse_prev_success/6,
@@ -155,7 +155,7 @@ fixpoint_id_reuse_prev(SgKey,AbsInt,Sg,Proj,Id):-
     Id = NId.
 fixpoint_id_reuse_prev(_SgKey,AbsInt,_Sg,_Proj,Id):-
     fixpoint_id(NewId),
-    (current_fact(complete_prev(_,AbsInt,_,_,_,NewId,_)) ->
+    ( current_fact(complete_prev(_,AbsInt,_,_,_,NewId,_)) ->
         fixp_id_new(Id)
     ;
         Id = NewId).
@@ -296,8 +296,8 @@ each_less_or_equal_proj([Prime|LPrime],Sg,AbsInt,[Succ|LSucc],Subg):-
 each_apply_trusted(Proj,SgKey,Sg,Sv,AbsInt,ListPrime,LPrime):-
     current_pp_flag(multi_success,off), !,
     applicable(ListPrime,AbsInt,Prime0), % applicable computes the lub
-  apply_assrt_exit(AbsInt,Sg,Sv,Proj,[Prime0],LPrime1,_), LPrime1 = [Prime1],
-  ( apply_trusted(Proj,SgKey,Sg,Sv,AbsInt,Prime1,Prime) ->
+    apply_assrt_exit(AbsInt,Sg,Sv,Proj,[Prime0],LPrime1,_), LPrime1 = [Prime1],
+    ( apply_trusted(Proj,SgKey,Sg,Sv,AbsInt,Prime1,Prime) ->
         true % old, only for comp with new implementation of trusts
     ;
         Prime = Prime1
@@ -597,27 +597,27 @@ compare_all_completes(AbsInt,Direction):-
       abs_sort(AbsInt,Proj1,Proj1_),
       identical_proj(AbsInt,Sg,Proj,Subg,Proj1_)
      ) ->
-      erase(Ref),
-      erase(Ref2),
-      each_abs_sort(Prime_u,AbsInt,Prime),
-      each_abs_sort(Prime1_u,AbsInt,Prime1),
-      ( compare_proj(Direction,Prime,Sg,AbsInt,Prime1,Subg)
-%           each_identical_proj(Prime,Sg,AbsInt,Prime1,Subg)
-      -> true
-       ; warning_message("different primes in ~w ~w",[SgKey,Id]),
+        erase(Ref),
+        erase(Ref2),
+        each_abs_sort(Prime_u,AbsInt,Prime),
+        each_abs_sort(Prime1_u,AbsInt,Prime1),
+        ( compare_proj(Direction,Prime,Sg,AbsInt,Prime1,Subg) ->
+          % each_identical_proj(Prime,Sg,AbsInt,Prime1,Subg)
+            true
+        ; warning_message("different primes in ~w ~w",[SgKey,Id]),
 %jcf
 %            warning_message("~w",[complete_prev(SgKey,AbsInt,Sg,Proj_u,Prime_u,Id,_Fs)]),
-         writeq(complete_prev(SgKey,AbsInt,Sg,Proj_u,Prime_u,Id,_Fs)),nl,
+          writeq(complete_prev(SgKey,AbsInt,Sg,Proj_u,Prime_u,Id,_Fs)),nl,
 %            warning_message("~w",[complete(SgKey,AbsInt,Subg,Proj1,Prime1_u,Id,_Fs1)]),
-         writeq(complete(SgKey,AbsInt,Subg,Proj1,Prime1_u,Id,_Fs1)),nl,
+          writeq(complete(SgKey,AbsInt,Subg,Proj1,Prime1_u,Id,_Fs1)),nl,
 %jcf
-         add_error
-      )
+          add_error
+        )
     ;
-      Complete=complete_prev(SgKey,AbsInt,Sg,Proj_u,Prime_u,Id,_Fs),
-      warning_message("missing complete ~w ~w:~n",[SgKey,Id]),
-      writeq(Complete),nl,
-      add_error
+        Complete=complete_prev(SgKey,AbsInt,Sg,Proj_u,Prime_u,Id,_Fs),
+        warning_message("missing complete ~w ~w:~n",[SgKey,Id]),
+        writeq(Complete),nl,
+        add_error
     ),
     fail.
 compare_all_completes(AbsInt,_):-

@@ -265,7 +265,7 @@ call_to_success(_RFlag,SgKey,Call,Proj,Sg,Sv,AbsInt,_ClId,Succ,List,F,N,Id):-
     current_pp_flag(variants,on),
     current_fact(complete(SgKey,AbsInt,Subg,Proj1,Prime1,_Id1,_Fs),_R),
     identical_proj_1(AbsInt,Sg,Proj,Subg,Proj1,Prime1,Prime2), !,
-  fixpoint_get_new_id(SgKey,AbsInt,Sg,Proj,Id),
+    fixpoint_get_new_id(SgKey,AbsInt,Sg,Proj,Id),
     each_abs_sort(Prime2,AbsInt,Prime),
     List = [],
     fixpoint_trace('complete used',N,Id,SgKey,Sg,Prime2,_),
@@ -399,7 +399,7 @@ init_fixpoint1(SgKey,_Call,Proj,Sg,_Sv,AbsInt,F,N,_Fs0,Id,List,Prime):-
     current_fact(complete(SgKey,AbsInt,Subg,Proj1,Prime1,_Id1,_Fs),_R),
     identical_proj_1(AbsInt,Sg,Proj,Subg,Proj1,Prime1,Prime2), !,
     fixpoint_get_new_id(SgKey,AbsInt,Sg,Proj,Id),
-  each_abs_sort(Prime2,AbsInt,Prime),
+    each_abs_sort(Prime2,AbsInt,Prime),
     List = [],
     fixpoint_trace('complete used',N,Id,SgKey,Sg,Prime2,_),
     asserta_fact(complete(SgKey,AbsInt,Sg,Proj,Prime,Id,[(F,N)])).
@@ -492,7 +492,6 @@ widen_call1(AbsInt,SgKey,Sg,F1,Id0,Ids,Proj1,Proj):-
        widen_call1(AbsInt,SgKey,Sg,F1,NewId0,[NewId0|Ids],Proj1,Proj)
     ).
 
-
 % widen_call2(AbsInt,SgKey,Sg,F1,Id0,_Ids,Proj1,Proj):-
 %       current_fact(complete(SgKey,AbsInt,Sg0,Proj0,_Prime0,_Id0,Fs0)),
 %       member((F1,Id0),Fs0),
@@ -556,7 +555,6 @@ approx_variants_update(Id,AbsInt,Sg,Prime):-
     asserta_fact(approx_variant(Id,Idv,SgKey,Sgv,Projv,Prime2,Fs)), 
     approx_variants_update(Id,AbsInt,Sg,Prime). 
 approx_variants_update(_,_,_,_).
-    
 
 decide_approx([],Id,Fs,AbsInt,SgKey,Sg,Proj,Prime):- !,
     current_fact(ch_id(Id,_),Ref3),
@@ -565,8 +563,7 @@ decide_approx([],Id,Fs,AbsInt,SgKey,Sg,Proj,Prime):- !,
 %       update_depend_list_approx(Id,AbsInt),
     fixpoint_trace('fixpoint completed',Id,o,SgKey,Sg,Prime,_),
     asserta_fact(complete(SgKey,AbsInt,Sg,Proj,Prime,Id,Fs)),
-    (
-        current_pp_flag(variants,on) -> 
+    ( current_pp_flag(variants,on) ->
         each_abs_sort(Prime,AbsInt,Prime_s),
         fixpoint_variants_update(Id,AbsInt,Sg,Prime_s)
     ;
@@ -576,8 +573,7 @@ decide_approx(AddList,Id,Fs,_AbsInt,SgKey,Sg,Proj,Prime):-
     asserta_fact('$depend_list'(Id,SgKey,AddList)),
     fixpoint_trace('fixpoint approximated',Id,o,SgKey,Sg,Prime,_),
     asserta_fact(approx(SgKey,Sg,Proj,Prime,Id,Fs),_),
-    (
-        current_pp_flag(variants,on) -> 
+    ( current_pp_flag(variants,on) ->
         each_abs_sort(Prime,AbsInt,Prime_s),
         approx_variants_update(Id,AbsInt,Sg,Prime_s)
     ;
@@ -688,7 +684,7 @@ proj_to_prime_nr(_SgKey,Sg,Sv,Call,_Proj,AbsInt,_ClId,LSucc,_Id) :-
     current_pp_flag(prog_lang,java), !, % TODO: merge into apply_trusted0/7?
     unknown_call(AbsInt,Sg,Sv,Call,Succ),
     singleton(Succ,LSucc).
- %fixpoint_trace('external call completed',_Id,_N,SgKey,Sg,LSucc,_).
+    %fixpoint_trace('external call completed',_Id,_N,SgKey,Sg,LSucc,_).
 proj_to_prime_nr(SgKey,_Sg,_Sv,_Call,_Proj,_AbsInt,ClId,Bot,_Id) :-
     bottom(Bot), % TODO: leaves choicepoints
     inexistent(SgKey,ClId).
@@ -1088,7 +1084,6 @@ query(AbsInt,QKey,Query,Qv,RFlag,N,Call,Succ) :-
     !,
     fixpoint_trace('exit goal',Id,query(N),(QKey,QKey),Query,Succ,AbsInt),
     approx_to_completes(AbsInt).
-
 
 query(_AbsInt,_QKey,_Query,_Qv,_RFlag,_N,_Call,_Succ):-
 % should never happen, but...

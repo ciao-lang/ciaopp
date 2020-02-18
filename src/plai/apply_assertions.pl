@@ -175,18 +175,18 @@ apply_assrt_exit(AbsInt,Sg,Sv,Proj0,LPrime,NLPrime,yes) :-
     current_pp_flag(old_trusts,off),
     current_pp_flag(multi_success,off),
     current_pp_flag(fixp_stick_to_success, on), !,
-  fixpoint_trace('trust',exit,_,_,Sg,Proj0,_),
+    fixpoint_trace('trust',exit,_,_,Sg,Proj0,_),
     abs_normalize(AbsInt,Sg,Sv,Proj0,Head,Hv,NProj,ExtraInfo),
-  get_applicable_status(Head, success, Sts),
-  predkey_from_sg(Sg,SgKey),
+    get_applicable_status(Head, success, Sts),
+    predkey_from_sg(Sg,SgKey),
     ( get_succ_assertion_asubs(SgKey,Head,Hv,Sts,AbsInt,NProj,Exit) ->
       exit_to_prime(AbsInt,Sg,Hv,Head,Sv,Exit,ExtraInfo,NPrime),
       invalid_trust_message(success,NPrime,Sg:LPrime,Sg),
         get_singleton(NPrime,NLPrime),
       fixpoint_trace('applied trust',exit,_,_,Sg,NLPrime,_)
     ;
-    NLPrime = LPrime
-  ).
+        NLPrime = LPrime
+    ).
 % apply assertions gaining precision
 apply_assrt_exit(AbsInt,Sg,Sv,Proj0,LPrime,NLPrime,AppliedF) :-
     current_pp_flag(multi_success,off),
@@ -195,19 +195,19 @@ apply_assrt_exit(AbsInt,Sg,Sv,Proj0,LPrime,NLPrime,AppliedF) :-
     fixpoint_trace('trust',exit,_,_,Sg,Proj0,_),
     abs_normalize(AbsInt,Sg,Sv,Proj0,Head,Hv,NormProj,_),
     abs_normalize(AbsInt,Sg,Sv,Prime,Head,Hv,NormPrime,ExtraInfo),
-  get_applicable_status(Head, success, Sts),
-  predkey_from_sg(Sg,SgKey),
+    get_applicable_status(Head, success, Sts),
+    predkey_from_sg(Sg,SgKey),
     glb_successes(SgKey,Sts,NormProj,Head,Hv,AbsInt,NormPrime,TExit,AppliedF0),
     ( var(AppliedF0) ->
-      NLPrime = LPrime,
-      AppliedF = no
+        NLPrime = LPrime,
+        AppliedF = no
     ;
-    % TODO: doc why this is done
-    exit_to_prime(AbsInt,Sg,Hv,Head,Sv,TExit,ExtraInfo,NPrime),
-    invalid_trust_message(success,NPrime,Sg:LPrime,Sg),
-    get_singleton(NPrime,NLPrime),
-    AppliedF = yes,
-    fixpoint_trace('applied trust',exit,_,_,Sg,NLPrime,_)
+        % TODO: doc why this is done
+        exit_to_prime(AbsInt,Sg,Hv,Head,Sv,TExit,ExtraInfo,NPrime),
+        invalid_trust_message(success,NPrime,Sg:LPrime,Sg),
+        get_singleton(NPrime,NLPrime),
+        AppliedF = yes,
+        fixpoint_trace('applied trust',exit,_,_,Sg,NLPrime,_)
     ).
 apply_assrt_exit(_,_,_,_,Prime,Prime,no).
 
@@ -223,17 +223,17 @@ apply_assrt_no_source(SgKey,AbsInt,Sg,Sv,Proj,Prime) :-
   fixpoint_trace('trust',no_source,_,_,Sg,Proj,_),
     % get modular information
     predkey_from_sg(Sg,SgKey),
-  ( apply_trusted_modular(Proj,SgKey,Sg,Sv,AbsInt,Prime) ->
-      true
+    ( apply_trusted_modular(Proj,SgKey,Sg,Sv,AbsInt,Prime) ->
+        true
     ;
-    abs_normalize(AbsInt,Sg,Sv,Proj,Head,Hv,NProj,ExtraInfo),
-    get_applicable_status(Head, success, Sts),
-    ( get_succ_assertion_asubs(SgKey,Head,Hv,Sts,AbsInt,NProj,TExit) ->
-              true
-    ;   % do topmost abstraction if no assertions are available
-        unknown_call(AbsInt,Head,Hv,NProj,TExit)
-    ),
-    exit_to_prime(AbsInt,Sg,Hv,Head,Sv,TExit,ExtraInfo,Prime)
+        abs_normalize(AbsInt,Sg,Sv,Proj,Head,Hv,NProj,ExtraInfo),
+        get_applicable_status(Head, success, Sts),
+        ( get_succ_assertion_asubs(SgKey,Head,Hv,Sts,AbsInt,NProj,TExit) ->
+            true
+        ;   % do topmost abstraction if no assertions are available
+            unknown_call(AbsInt,Head,Hv,NProj,TExit)
+        ),
+        exit_to_prime(AbsInt,Sg,Hv,Head,Sv,TExit,ExtraInfo,Prime)
     ).
 apply_assrt_no_source(SgKey,AbsInt,Sg,Sv,Proj,Prime) :-
     apply_trusted0(Proj,SgKey,Sg,Sv,AbsInt,_,Prime), !.
@@ -338,10 +338,10 @@ abs_normalize(_AbsInt,Sg,_Sv,'$bottom',Head,Hv,'$bottom',_) :- !,
 abs_normalize(AbsInt,Sg,Sv,ASub0,Head,Hv,ASub,ExtraInfo) :-
     functor(Sg,F,A),
     functor(Head,F,A),
-  varset(Head, Hv),
-  % variant case already optimized in call_to_entry (using copy_term)
-  call_to_entry(AbsInt,Sv,Sg,Hv,Head,not_provided,[],ASub0,TmpCall,ExtraInfo), % TODO: add some ClauseKey? (JF)
-  project(AbsInt,Head,Hv,Hv,TmpCall,ASub), !. % TODO: Is this necessary?
+    varset(Head, Hv),
+    % variant case already optimized in call_to_entry (using copy_term)
+    call_to_entry(AbsInt,Sv,Sg,Hv,Head,not_provided,[],ASub0,TmpCall,ExtraInfo), % TODO: add some ClauseKey? (JF)
+    project(AbsInt,Head,Hv,Hv,TmpCall,ASub), !. % TODO: Is this necessary?
 
 :- export(get_applicable_status/3).
 get_applicable_status(Head,Type,Sts) :-

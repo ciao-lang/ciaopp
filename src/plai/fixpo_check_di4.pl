@@ -23,11 +23,9 @@
 
 :- include(.(fixpo_dx_check_common)).
 
-
 :- use_module(ciaopp(plai/fixpo_ops), [fixpoint_id_reuse_prev_success/6, memo_table_prev/6]).
 
 :- use_module(library(messages), [error_message/1]).
-
 :- use_module(library(lists), [member/2]).
 
 %------------------------------------------------------------------------%
@@ -44,12 +42,9 @@
 :- doc(init_fixpoint/0,"Cleanups the database of analysis of
     temporary information.").
 
-
-
 init_fixpoint:-
     trace_fixp:cleanup,
     set_pp_flag(widen,off).
-
 
 %------------------------------------------------------------------------%
 % call_to_success(+,+,+,+,+,+,-,-,+,+)                                   %
@@ -79,7 +74,6 @@ call_to_success_(SgKey,Call,Proj,Sg,Sv,AbsInt,_ClId,Succ,_F,_N,Id):-
 call_to_success_(SgKey,Call,Proj,Sg,Sv,AbsInt,ClId,Succ,F,N,Id) :-
     init_fixpoint0(SgKey,Call,Proj,Sg,Sv,AbsInt,ClId,F,N,Id,Prime),
     each_extend(Sg,Prime,AbsInt,Sv,Call,Succ).
-
 
 %check3reuse_complete(Ref,SgKey,Proj,Sg,AbsInt,F,N,Id,Fs,Prime1,Prime):-
 %check3 check_if_parent_needed(Fs,F,N,NewFs,Flag),
@@ -111,7 +105,6 @@ init_fixpoint_(SgKey,Call,Proj,Sg,Sv,AbsInt,_ClId,_F,_N,Id,Prime):-
     (fixpoint_id_reuse_prev_success(SgKey,AbsInt,Sg,Proj,Id,TmpPrime) ->
         asserta_fact(complete(SgKey,AbsInt,Sg,Proj,TmpPrime,Id,[])),
         compute(Clauses,SgKey,Sg,Sv,Call,Proj,AbsInt,TmpPrime,_,Id)
-
     ;
         error_message("certificate check failed: missing entry in analysis answer table"),
         asserta_fact(complete(SgKey,AbsInt,Sg,Proj,['$bottom'],Id,[])),
@@ -129,7 +122,8 @@ init_fixpoint_(SgKey,_Call,Proj,Sg,Sv,AbsInt,ClId,_F,_N,Id,LPrime) :-
     (each_identical_abstract(LPrime,AbsInt,TmpPrime) ->
         true
     ;
-        error_message("certificate check failed: wrong analysis results due to trusts")).
+        error_message("certificate check failed: wrong analysis results due to trusts")
+    ).
 
 init_fixpoint_(SgKey,_Call,_Proj,_Sg,_Sv,_AbsInt,ClId,_F,_N,_Id,Bot) :-
     bottom(Bot),
@@ -165,8 +159,6 @@ compute([Clause|Rest],SgKey,Sg,Sv,Call,Proj,AbsInt,TempPrime,Prime,Id) :-
     do_cl(Clause,SgKey,Sg,Sv,Call,Proj,AbsInt,Id,TempPrime,Prime1),
     compute(Rest,SgKey,Sg,Sv,Call,Proj,AbsInt,Prime1,Prime,Id).
 
-
-
 do_cl(Clause,SgKey,Sg,Sv,Call,Proj,AbsInt,Id,TempPrime,Prime):-
     Clause=clause(Head,Vars_u,K,Body),
     clause_applies(Head,Sg), !, 
@@ -174,7 +166,6 @@ do_cl(Clause,SgKey,Sg,Sv,Call,Proj,AbsInt,Id,TempPrime,Prime):-
     sort(Vars_u,Vars),
     ord_subtract(Vars,Hv,Fv),
     process_body(Body,K,AbsInt,Sg,SgKey,Hv,Fv,Vars_u,Head,Sv,Call,Proj,TempPrime,Prime,Id).
-
 do_cl(_,_,_,_,_,_,_,_,Primes,Primes).
 
 process_body(Body,K,AbsInt,Sg,SgKey,Hv,Fv,_Vars_u,Head,Sv,Call,Proj,TempPrime,Prime,Id):-
@@ -226,7 +217,6 @@ body_succ(Call,Atom,Succ,HvFv_u,AbsInt,ClId,ParentId,Id):-
 %check2 decide_memo(AbsInt,Key,ParentId,Id,HvFv_u,Call).
 %%      change_son_if_necessary(Id,Key,ParentId,HvFv_u,Call,AbsInt).
 
-
 % change_son_if_necessary(no,_,_,_,_,_):-!.
 % change_son_if_necessary(NewId,Key,NewN,Vars_u,Call,AbsInt):-
 %         current_fact(memo_table(Key,AbsInt,NewN,Id,_,_),Ref),
@@ -236,12 +226,7 @@ body_succ(Call,Atom,Succ,HvFv_u,AbsInt,ClId,ParentId,Id):-
 %             erase(Ref),
 %             decide_memo(AbsInt,Key,NewN,NewId,Vars_u,Call)).            
 
-
-
-
 %-------------------------------------------------------------------------
-
-
 
 % if Prime computed for this clause is not more general than the 
 % information we already had there is no need to compare with the info
@@ -306,7 +291,6 @@ each_call_to_success0([Call|LCall],SgKey,Sg,Sv,HvFv_u,AbsInt,ClId,LSucc,F,N,NewN
     append(LSucc0,LSucc1,LSucc),
     each_call_to_success0(LCall,SgKey,Sg,Sv,HvFv_u,AbsInt,ClId,LSucc1,F,N,NewN).
 
-
 widen_call(AbsInt,SgKey,Sg,F1,Id0,Proj1,Proj):-
     ( current_pp_flag(widencall,off) -> fail ; true ),
     widen_call0(AbsInt,SgKey,Sg,F1,Id0,[Id0],Proj1,Proj), !,
@@ -317,7 +301,6 @@ widen_call0(AbsInt,SgKey,Sg,F1,Id0,Ids,Proj1,Proj):-
 widen_call0(AbsInt,SgKey,Sg,F1,Id0,Ids,Proj1,Proj):-
     current_pp_flag(widencall,com_child),
     widen_call2(AbsInt,SgKey,Sg,F1,Id0,Ids,Proj1,Proj).
-
 
 widen_call1(AbsInt,SgKey,Sg,F1,Id0,Ids,Proj1,Proj):-
     current_fact(complete(SgKey0,AbsInt,Sg0,Proj0,_Prime0,Id0,Fs0)),
@@ -340,9 +323,6 @@ widen_call2(AbsInt,SgKey,Sg,F1,_Id,_Ids,Proj1,Proj):-
     abs_sort(AbsInt,Proj0,Proj0_s),
     abs_sort(AbsInt,Proj1,Proj1_s),
     widencall(AbsInt,Proj0_s,Proj1_s,Proj).
-
-
-
 %-------------------------------------------------------------------------
 
 :- doc(query(AbsInt,QKey,Query,Qv,RFlag,N,Call,Succ),
@@ -362,8 +342,6 @@ query(_AbsInt,_QKey,_Query,_Qv,_RFlag,_N,_Call,_Succ):-
 % should never happen, but...
     error_message("SOMETHING HAS FAILED!"),
     fail.
-
-
 
 %-------------------------------------------------------------------------
 % entry_to_exit(+,+,+,-,+,+,+)                                           %

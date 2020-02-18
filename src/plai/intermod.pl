@@ -211,8 +211,8 @@ manual_analyze(Analyses,FileName,OpenMode):-
     ; change_open_mode(Base,OpenMode)
     ), !,
     reset_total_info,
-  analyze1(Analyses,Info),
-  add_to_total_info(Info),
+    analyze1(Analyses,Info),
+    add_to_total_info(Info),
     gen_registry_info(quiet,_,_,_),
     save_registry_info(quiet,_SaveInfo),  %% all registry files must be saved.
 %       pop_pp_flag(entry_policy),
@@ -564,8 +564,8 @@ naive_analyze_modules(AbsInt, [CurrMod|Mods]) :-
     ;   true
     ),
     increment_iterations,
-  analyze1(AbsInt,Info),
-  add_to_total_info(Info), % It adds Info to total_info.
+    analyze1(AbsInt,Info),
+    add_to_total_info(Info), % It adds Info to total_info.
     gen_registry_info(quiet,Callers,Imported,GenSts),
     get_stat(GenSts, time(GenRegTime,_)),
     add_stat(genreg, GenRegTime),
@@ -587,7 +587,7 @@ naive_analyze_modules(AbsInt, [CurrMod|Mods]) :-
     ctcheck_module_naive(CurrMod),
     %       output,
     message(inform, ['}']),
-  naive_analyze_modules(AbsInt,Mods).
+    naive_analyze_modules(AbsInt,Mods).
 naive_analyze_modules(AbsInt, [_CurrMod|Mods]):-
     naive_analyze_modules(AbsInt,Mods).
 
@@ -655,8 +655,8 @@ do_intermod_one_module(Scheduling,AbsInt):-
     ;   true
     ),
     increment_iterations,
-  analyze1(AbsInt,Info),
-  add_to_total_info(Info), % It adds Info to total_info.
+    analyze1(AbsInt,Info),
+    add_to_total_info(Info), % It adds Info to total_info.
     gen_registry_info(quiet,Callers,Imported,[time(GenRegTime,_)]),
     add_to_total_info([time(LoadTime,[(load,LoadTime)]),time(GenRegTime,[(genreg,GenRegTime)])]),
 %% jcf: following line only useful for testing output.
@@ -755,10 +755,10 @@ monolithic_analyze(Analyses,TopLevel,Info):-
     module(ModList,LStats),
     get_stat(LStats, time(LoadTime,_)),
     reset_total_info,
-  analyze1(Analyses,Info0),
-  add_to_total_info(Info0), % It adds Info to total_info.
+    analyze1(Analyses,Info0),
+    add_to_total_info(Info0), % It adds Info to total_info.
     %%%%
-  gen_registry_info(quiet,_Callers,_Imported,[time(GenRegTime,_)]),
+    gen_registry_info(quiet,_Callers,_Imported,[time(GenRegTime,_)]),
     save_registry_info(quiet,[time(SaveTime,_)]),
     pp_statistics(runtime,[T2,_]),  %% total ellapsed time.
     add_to_total_info([time(LoadTime,[(load,LoadTime)]),time(GenRegTime,[(genreg,GenRegTime)]),time(SaveTime,[(savereg,SaveTime)])]),
@@ -881,7 +881,7 @@ auto_check(Analysis,TopLevel):-
     %% Checking that completes are equal to those computed with monolithic_analyze.
     module(ModList),
     fixpo_ops:restore_previous_analysis(Analysis),   %% restores needed types. module/1 removes them.
-  analyze1(Analysis,_Info),
+    analyze1(Analysis,_Info),
     remove_useless_info(Analysis),
 %       compare_completes_with_prev(Analysis,Flag,'='),
     compare_completes_with_prev(Analysis,Flag,'>='),
@@ -915,7 +915,7 @@ auto_check_one_module(Analysis,File):-
 %
     fixpo_ops:restore_previous_analysis(Analysis),   %% restores needed types (module/1 removes them)
 %
-  analyze1(Analysis,_),
+    analyze1(Analysis,_),
     remove_useless_info(Analysis),
     gen_registry_info(quiet,_,_),
     filter_completes(Analysis,Module),
@@ -1154,7 +1154,7 @@ auto_ctcheck_(Analysis, TopModule, [Module|Modules], assert_count(Info),SOut) :-
     message(inform, ['{Analyzing for auto_ctcheck: ',~~(File)]),
     set_top_level(TopModule),
     cleanup_p_abs,
-  analyze1(Analysis,_Info),
+    analyze1(Analysis,_Info),
     message(inform, ['}']),!,
     acheck_info(assert_count(Info1),Summ),
     output,
@@ -1188,7 +1188,6 @@ auto_ctcheck_opt(Analysis, TopLevel) :-
 
 auto_ctcheck_opt(Analysis, TopLevel, [(time,Time),Info]) :-
     valid_mod_analysis(Analysis),!,
-
     cleanup_intermod,
     message(inform, ['{Modular-based assertion checking with auto_ctcheck_opt: ',~~(TopLevel)]),
 %jcf%   copy_sources,
@@ -1219,7 +1218,7 @@ auto_ctcheck_opt_(Analysis, TopModule, [Module|Modules], assert_count(Info)) :-
     set_top_level(TopModule),
 %       push_pp_flag(entry_policy,all),
     cleanup_p_abs,
-  analyze1(Analysis,_Info),
+    analyze1(Analysis,_Info),
     message(inform, ['}']),!,
     acheck_info(assert_count(Info1),_),
     atom_concat(Module,'.pl',Module_pl),
@@ -1272,7 +1271,7 @@ monolithic_ctcheck(Analysis,TopLevel,[(time,Time),Info]):-
     get_all_modules(TopLevel,ModList),
     pp_statistics(runtime,[T1,_]),
     module(ModList),
-  analyze1(Analysis,_Info),
+    analyze1(Analysis,_Info),
     pop_pp_flag(dump_pp),
     pop_pp_flag(entry_policy),
     pop_pp_flag(intermod),
