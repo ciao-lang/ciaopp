@@ -97,7 +97,17 @@
       projected_gvars/3,
       var_value/3
     ]).
-:- use_module(domain(share_aux)).
+:- use_module(domain(share_aux),
+    [
+      append_dl/3,
+      eliminate_couples/4,
+      eliminate_if_not_possible/3,
+      eliminate_if_not_possible/4,
+      handle_each_indep/4,
+      has_give_intersection/8,
+      if_not_nil/4,
+      list_ground/2
+    ]).
 :- use_module(domain(sharing), [
     share_project/5, 
     share_less_or_equal/2,
@@ -818,7 +828,6 @@ shfr_special_builtin('write/1',_,_,unchanged,_).
 shfr_special_builtin('writeq/1',_,_,unchanged,_).
 % SICStus3 (ISO)
 %meta! (no need) shfr_special_builtin('\\+/1',_,_,unchanged,_).
-shfr_special_builtin('\\==/2',_,_,unchanged,_).
 % SICStus2.x
 % shfr_special_builtin('\+/1',_,_,unchanged,_).
 % shfr_special_builtin('\==/2',_,_,unchanged,_).
@@ -946,6 +955,10 @@ shfr_special_builtin('list/1',list(X),_,'list/1',p(X)).
 shfr_special_builtin('free/1',free(X),_,'free/1',p(X)).
 %%%%%%%%%% indep/1
 shfr_special_builtin('indep/1',indep(X),_,'indep/1',p(X)).
+%%%%%%%%%% indep/1
+shfr_special_builtin('\\=/2','\\='(X,Y),_,'\\=/2',p(X,Y)).
+%%%%%%%%%% indep/1
+shfr_special_builtin('\\==/2','\\=='(X,Y),_,'\\==/2',p(X,Y)).
 %%%%%%%%%% others
 shfr_special_builtin(Key,_Goal,_,special(Key),[]):-
     shfr_not_that_special_builtin(Key).
@@ -955,7 +968,6 @@ shfr_not_that_special_builtin('=/2').
 shfr_not_that_special_builtin('C/3').
 shfr_not_that_special_builtin('keysort/2').
 shfr_not_that_special_builtin('sort/2').
-shfr_not_that_special_builtin('\\=/2').
 
 %-------------------------------------------------------------------------
 % shfr_success_builtin(+,+,+,+,+,-)                                      |
@@ -1283,6 +1295,40 @@ shfr_success_builtin('free/1',[X],p(X),_,Call,Succ) :-
         % TODO: refine Sh
     ).
 shfr_success_builtin('free/1',_,_,_,_,'$bottom').
+%
+shfr_success_builtin('\\=/2',_,p(X,Y),_,Call,Succ) :-
+    Call=(_Sh,Fr),
+    (var(X), var_value(Fr,X,f)) ; (var(Y), var_value(Fr,Y,f)), !,
+    % if one of them is a free variable, unification always succeed (we
+    % are ignoring occurs check), and therefore \= fails.
+    Succ='$bottom'.
+    % TODO: Extend this so that it works with X1-X2 \= Y1-Y2 and similars?
+shfr_success_builtin('\\=/2',_,_,_,Call,Call).
+% Otherwise, we leave the abstract substitution unchanged.
+%
+shfr_success_builtin('\\==/2',_,p(X,Y),_,Call,Succ) :-
+    var(X), var(Y),
+    Call=(Call_sh,Call_fr),
+    var_value(Call_fr,X,f),
+    var_value(Call_fr,Y,f), !,
+    % TODO: unify with indep(X,Y)?
+    ord_split_lists(Call_sh,X,WithX,_),
+    ord_split_lists(WithX,Y,WithXandY,_),
+    ord_subtract(Call_sh,WithXandY,Succ_sh),
+    % is there not a predicate that does everything below? (e.g.,
+    % normalize((Succ_sh,Call_fr),Succ)).
+    varset(Call_fr,Vs),
+    projected_gvars(Succ_sh,Vs,Ground),
+    ( change_values_if_differ(Ground,Call_fr,Succ_fr,g,f) ->
+        Succ=(Succ_sh,Succ_fr)
+    ;
+        Succ='$bottom'
+    ).
+% TODO: Extend this so that it works with X1-X2 \== Y1-Y2 and similars?
+%
+shfr_success_builtin('\\==/2',_,_,_,Call,Call).
+% Otherwise the substitution is left unchanged
+
 
 % the case of arg/3
 any_arg_var(Y,Z,Head,TempASub,Succ):-
@@ -1302,7 +1348,7 @@ any_arg_all_args(N,Y,Z,ASub,[Succ|Succs]):-
 %-------------------------------------------------------------------------
 % shfr_call_to_success_builtin(+,+,+,+,+,-)                              %
 % shfr_call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,Succ)               %
-% Handles those builtins for which computing Proj is easier than Succ    %
+% Handles those builtins for which computing Proj is easier than Succ    % TODO: is this right?
 %-------------------------------------------------------------------------
 :- export(shfr_call_to_success_builtin/6). 
 shfr_call_to_success_builtin('==/2','=='(X,Y),_Sv,Call,Proj,Succ):-
@@ -1384,15 +1430,6 @@ shfr_call_to_success_builtin('sort/2',sort(X,Y),Sv,Call,Proj,Succ):-
     shfr_call_to_success_fact('='(X,Y),Vars,'='(Xterm,Xterm),not_provided,Sv,(Call_sh,Temp_fr),(Sh,TFr),_Prime,Succ). % TODO: add some ClauseKey?
 shfr_call_to_success_builtin('sort/2',_,_,_,_,'$bottom').
 
-shfr_call_to_success_builtin('\\=/2','\\='(X,Y),_Sv,Call,_Proj,Succ) :-
-    Call=(_Sh,Fr),
-    (var(X), var_value(Fr,X,f)) ; (var(Y), var_value(Fr,Y,f)), !,
-    % if one of them is a free variable, unification always succeed (we
-    % are ignoring occurs check), and therefore \= fails.
-    Succ='$bottom'.
-    % TODO: detect more failure scenarios
-shfr_call_to_success_builtin('\\=/2','\\='(_X,_Y),_Sv,Call,_Proj,Call).
-% Otherwise, we leave the abstract substitution unchanged.
 
 %------------------------------------------------------------------------%
 %            Intermediate Functions                                      |
