@@ -1367,7 +1367,7 @@ shfr_call_to_success_builtin('==/2','=='(X,Y),Sv,Call,_Proj,Succ):-
     ord_subtract(Temp_sh,Elim,Succ_sh),
     update_freeness(Tfr,Succ_sh,Succ_fr),
     non_free_to_ground(Call,(Succ_sh,Succ_fr),Succ).
-
+%
 shfr_call_to_success_builtin('=/2','='(X,_Y),Sv,Call,(_,Proj_fr),Succ):-
     varset(X,VarsX), values_equal(VarsX,Proj_fr,g), !,
     Call = (Call_sh,Call_fr),
@@ -1381,9 +1381,13 @@ shfr_call_to_success_builtin('=/2','='(_X,Y),Sv,Call,(_,Proj_fr),Succ):-
     update_lambda_sf(VarsX,Call_fr,Call_sh,Succ_fr,Succ_sh),
     Succ = (Succ_sh,Succ_fr).
 shfr_call_to_success_builtin('=/2','='(X,Y),_Sv,Call,Proj,Succ):-
-    var(X),var(Y), !,
-    Proj = (_,Proj_fr),     
-    obtain_prime_var_var(Proj_fr,Call,Succ).
+    var(X), var(Y), !,
+    (
+        X==Y -> Call=Succ
+    ;
+        Proj = (_,Proj_fr),
+        obtain_prime_var_var(Proj_fr,Call,Succ)
+    ).
 shfr_call_to_success_builtin('=/2','='(X,_Y),Sv,Call,Proj,Succ):-
     var(X), !,
     Proj = (Proj_sh,Proj_fr),       

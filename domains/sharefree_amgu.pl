@@ -318,8 +318,12 @@ sharefree_amgu_call_to_success_builtin('=/2','='(_X,Y),Sv,Call,(_,Proj_fr),Succ)
     Succ = (Succ_sh,Succ_fr).
 sharefree_amgu_call_to_success_builtin('=/2','='(X,Y),_Sv,Call,Proj,Succ):-
     var(X),var(Y), !,
-    Proj = (_,Proj_fr),     
-    obtain_prime_var_var(Proj_fr,Call,Succ).
+    (
+        X==Y -> Call=Succ
+    ;
+        Proj = (_,Proj_fr),
+        obtain_prime_var_var(Proj_fr,Call,Succ)
+    ).
 sharefree_amgu_call_to_success_builtin('=/2','='(X,_Y),Sv,Call,Proj,Succ):-
     var(X), !,
     Proj = (Proj_sh,Proj_fr),       

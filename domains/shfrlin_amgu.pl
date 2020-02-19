@@ -376,13 +376,17 @@ shfrlin_amgu_call_to_success_builtin('=/2','='(_X,Y),Sv,Call,(_,Proj_fr,_),Succ)
     Succ = (Succ_sh,Succ_fr,Succ_lin).
 shfrlin_amgu_call_to_success_builtin('=/2','='(X,Y),Sv,Call,Proj,Succ):-
     var(X),var(Y), !,
-    Proj = (_,Proj_fr,_),   
-    Call = (Sh_call,Fr_call,Call_lin),
-    ord_subtract(Call_lin,Sv,Call_lin_not_rel),
-    obtain_prime_var_var(Proj_fr,(Sh_call,Fr_call),(Succ_sh,Succ_fr)),
-    member_value_freeness(Succ_fr,Succ_lin0,f),
-    ord_union(Succ_lin0,Call_lin_not_rel,Succ_lin),
-    Succ = (Succ_sh,Succ_fr,Succ_lin).
+    (
+        X==Y -> Call=Succ
+    ;
+        Proj = (_,Proj_fr,_),
+        Call = (Sh_call,Fr_call,Call_lin),
+        ord_subtract(Call_lin,Sv,Call_lin_not_rel),
+        obtain_prime_var_var(Proj_fr,(Sh_call,Fr_call),(Succ_sh,Succ_fr)),
+        member_value_freeness(Succ_fr,Succ_lin0,f),
+        ord_union(Succ_lin0,Call_lin_not_rel,Succ_lin),
+        Succ = (Succ_sh,Succ_fr,Succ_lin)
+    ).
 shfrlin_amgu_call_to_success_builtin('=/2','='(X,_Y),Sv,Call,Proj,Succ):-
     var(X), !,
     Proj = (Proj_sh,Proj_fr,_),     
