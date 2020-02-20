@@ -251,7 +251,7 @@ decide_print_assertions(ClKey, S) :-
 decide_print_assertions(_, _).
 
 output_raw_inferred_assertions(PredKey, S) :-
-    findall(comp(Sg,Proj,Prime,(complete_id(Id), domain(AbsInt), callers(Parents))), complete(PredKey,AbsInt,Sg,Proj,Prime,Id,Parents), Completes),
+    findall(comp(Sg,Proj,Prime,[complete_id(Id), domain(AbsInt), callers(Parents)]), complete(PredKey,AbsInt,Sg,Proj,Prime,Id,Parents), Completes),
     write_assertions(Completes, S), nl(S).
 
 write_assertions([], _).
