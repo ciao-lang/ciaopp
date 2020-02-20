@@ -913,7 +913,8 @@ share_special_builtin('listing/0',_,_,unchanged,_).
 share_special_builtin('listing/1',_,_,unchanged,_).
 share_special_builtin('nl/0',_,_,unchanged,_).
 share_special_builtin('nogc/0',_,_,unchanged,_).
-share_special_builtin('nonvar/1',_,_,unchanged,_).
+share_special_builtin('nonvar/1',_,_,unchanged,_). % needed?
+share_special_builtin('not_free/1',_,_,unchanged,_).
 share_special_builtin('not/1',_,_,unchanged,_).
 share_special_builtin('print/1',_,_,unchanged,_).
 share_special_builtin('repeat/0',_,_,unchanged,_).
@@ -974,7 +975,8 @@ share_special_builtin('retract/1',retract(X),_,'recorded/3',p(X,b)).
 share_special_builtin('retractall/1',retractall(X),_,'recorded/3',p(X,b)).
 share_special_builtin('read/1',read(X),_,'recorded/3',p(X,b)).
 share_special_builtin('read/2',read(X,Y),_,'recorded/3',p(Y,X)).
-share_special_builtin('var/1',var(X),_,var,p(X)).
+share_special_builtin('var/1',var(X),_,var,p(X)). % needed?
+share_special_builtin('free/1',var(X),_,var,p(X)).
 %%%%%%%%%% others
 share_special_builtin(Key,_Goal,_,special(Key),[]):-
     share_not_that_special_builtin(Key).

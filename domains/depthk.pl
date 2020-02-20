@@ -412,10 +412,12 @@ depthk_special_builtin('instance/2',instance(X,Y),_,instance,(X,Y)).
 depthk_special_builtin('is/2',is(_,_),_,nochange,[]).
 depthk_special_builtin('length/2',length(_,_),_,nochange,[]).
 depthk_special_builtin('nl/1',nl(_),_,nochange,[]).
-depthk_special_builtin('nonvar/1',nonvar(_),_,nochange,[]).
+depthk_special_builtin('nonvar/1',nonvar(_),_,nochange,[]). % needed?
+depthk_special_builtin('not_free/1',nonvar(_),_,nochange,[]).
 depthk_special_builtin('number/1',number(_),_,nochange,[]).
 depthk_special_builtin('statistics/2',statistics(_,_),_,nochange,[]).
-depthk_special_builtin('var/1',var(_),_,nochange,[]).
+depthk_special_builtin('var/1',var(_),_,nochange,[]). % needed?
+depthk_special_builtin('free/1',var(_),_,nochange,[]).
 depthk_special_builtin('write/1',write(_),_,nochange,[]).      
 depthk_special_builtin('write/2',write(_,_),_,nochange,[]).
 depthk_special_builtin('write_canonical/1',write_canonical(_),_,nochange,[]).

@@ -533,7 +533,13 @@ etermsvar_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ):-
 etermsvar_special_builtin('var/1',Sg,_,type(T),Condvars):- !, % TODO: var/1 vs free/1?
     set_var_type(T),
     varset(Sg,Condvars).
+etermsvar_special_builtin('free/1',Sg,_,type(T),Condvars):- !,
+    set_var_type(T),
+    varset(Sg,Condvars).
 etermsvar_special_builtin('nonvar/1',Sg,_,type(T),Condvars):- !, % TODO: nonvar/1 vs not_free/1?
+    set_ground_type(T), % TODO: wrong?
+    varset(Sg,Condvars).
+etermsvar_special_builtin('not_free/1',Sg,_,type(T),Condvars):- !,
     set_ground_type(T), % TODO: wrong?
     varset(Sg,Condvars).
 etermsvar_special_builtin('ground/1',Sg,_,type(T),Condvars):- !,

@@ -552,7 +552,8 @@ son_special_builtin('listing/0',_,_,unchanged,_).
 son_special_builtin('listing/1',_,_,unchanged,_).
 son_special_builtin('nl/0',_,_,unchanged,_).
 son_special_builtin('nogc/0',_,_,unchanged,_).
-son_special_builtin('nonvar/1',_,_,unchanged,_). 
+son_special_builtin('nonvar/1',_,_,unchanged,_). % needed?
+son_special_builtin('not_free/1',_,_,unchanged,_).
 son_special_builtin('not/1',_,_,unchanged,_).
 son_special_builtin('print/1',_,_,unchanged,_).
 son_special_builtin('repeat/0',_,_,unchanged,_).
@@ -612,7 +613,8 @@ son_special_builtin('read/2',read(X,Y),_,'read/2',p(X,Y)).
 %%%%%%%%%% 'copy_term/2'
 son_special_builtin('copy_term/2',copy_term(X,Y),_,copy_term,p(X,Y)).
 %%%%%%%%%% 'var/1'
-son_special_builtin('var/1',var(X),_,var,p(X)).
+son_special_builtin('var/1',var(X),_,var,p(X)). % needed?
+son_special_builtin('free/1',var(X),_,var,p(X)).
 %%%%%%%%%% 'indep/2'
 son_special_builtin('indep/2',indep(X,Y),_,'indep/2',p(X,Y)).
 %%%%%%%%%% 'indep/1'

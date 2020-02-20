@@ -499,8 +499,10 @@ def_special_builtin('=../2',Sg,_,'$fd_=..',Sg).
 def_special_builtin('write/1',_,_,'$fd_unchanged',_).   
 def_special_builtin('write/2',write(X,_),_,'$fd_ground',X).   
 def_special_builtin('read/1',_Sg,_,'$fd_unchanged',_Condvars).   
-def_special_builtin('var/1',Sg,_,'$fd_free',Sg).   
-def_special_builtin('nonvar/1',_,_,'$fd_unchanged',_).   
+def_special_builtin('var/1',Sg,_,'$fd_free',Sg). % needed?
+def_special_builtin('free/1',Sg,_,'$fd_free',Sg).   
+def_special_builtin('nonvar/1',_,_,'$fd_unchanged',_). % needed?
+def_special_builtin('not_free/1',_,_,'$fd_unchanged',_).   
 def_special_builtin('numbervars/3',Sg,_,'$fd_ground',Sg).   
 def_special_builtin('format/2',format(X,_),_,'$fd_ground',f(X)).   
 def_special_builtin('ground/1',Sg,_,'$fd_ground',Sg).

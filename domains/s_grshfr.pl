@@ -38,7 +38,7 @@
     [ merge_list_of_lists/2, ord_intersect_all/2, ord_split_lists/4,
       ord_split_lists_from_list/4, setproduct_lists/4]).
 :- use_module(library(sets), 
-    [ merge/3, ord_intersect/2, ord_member/2, ord_subset/2, ord_subset_diff/3,
+    [ merge/3, ord_member/2, ord_subset/2, ord_subset_diff/3,
       ord_subtract/3]).
 :- use_module(library(sort)).
 :- use_module(library(terms_vars), [varset/2]).

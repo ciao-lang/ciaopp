@@ -809,6 +809,8 @@ sharefree_clique_success_builtin('nonvar/1',_,p(X),_,Call,Succ):-
     ; Succ = Call
     ).
 sharefree_clique_success_builtin('nonvar/1',_,_,_,Call,Call):- !.
+sharefree_clique_success_builtin('not_free/1',_,p(X),_,Call,Succ):-
+    sharefree_clique_success_builtin('nonvar/1',_,p(X),_,Call,Succ).
 sharefree_clique_success_builtin('numbervars/3',_,p(X,Y,Z),_,Call,Succ):-
     Call = (Call_SH,Call_fr),
     varset(Y,OldG),

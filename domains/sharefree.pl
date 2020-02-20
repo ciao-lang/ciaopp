@@ -1290,7 +1290,7 @@ shfr_success_builtin('free/1',[X],p(X),_,Call,Succ) :-
         member_value_freeness(Call_fr,DefinitelyFreeVars,f),
         insert(DefinitelyFreeVars,X,AssumedFree),
         share_project(not_provided_Sg,AssumedFree,not_provided_HvFv_u,Call_sh,NewSh),
-        sh_fv_compatible(NewSh,AssumedFree),
+        sh_free_vars_compatible(NewSh,AssumedFree),
         change_values([X],Call_fr,Succ_fr,f),
         Succ = (Call_sh,Succ_fr)
         % TODO: refine Sh
@@ -1972,14 +1972,14 @@ obtain_prime_var_var([X/_,Y/_],Call,Succ):-
 
 
 %-------------------------------------------------------------------------
-% sh_fv_compatible(+,+)                                                  |
-% sh_fv_compatible(Sh, Fv)                                                |
-% Satisfied if a list of free variables Fv and a potential sharing       |
+% sh_free_vars_compatible(+,+)                                           |
+% sh_free_vars_compatible(Sh, Fs)                                        |
+% Satisfied if a list of free variables Fs and a potential sharing       |
 % set Sh over those variables are compatible. This happens if and        |
-% only if there is a subset of Sh that is a disjunt partition of Fv      |
+% only if there is a subset of Sh that is a disjunt partition of Fs.     |
 %-------------------------------------------------------------------------
-:- export(sh_fv_compatible/2).
-sh_fv_compatible(Sh, Fv) :-
+:- export(sh_free_vars_compatible/2).
+sh_free_vars_compatible(Sh, Fv) :-
     there_is_partition(Sh,Fv).
 % TODO: refine Sh by excluding the sets that do not occur in any of
 % the possible paritions?

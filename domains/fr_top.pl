@@ -371,8 +371,10 @@ fr_special_builtin('functor/3',Sg,_Subgoal,'$fd_ground',Sg).
 fr_special_builtin('debug/0',_Sg,_Subgoal,'$fd_unchanged',_Condvars).
 fr_special_builtin('$metachoice/1',Sg,_Subgoal,'$fd_ground',Sg).
 fr_special_builtin('$metacut/1',Sg,_Subgoal,'$fd_ground',Sg).
-fr_special_builtin('var/1',_Sg,_Subgoal,'$fd_unchanged',_Condvars).
-fr_special_builtin('nonvar/1',Sg,_Subgoal,'$fd_nonvar',Sg).
+fr_special_builtin('var/1',_Sg,_Subgoal,'$fd_unchanged',_Condvars). % needed?
+fr_special_builtin('free/1',_Sg,_Subgoal,'$fd_unchanged',_Condvars).
+fr_special_builtin('nonvar/1',Sg,_Subgoal,'$fd_nonvar',Sg). % needed?
+fr_special_builtin('not_free/1',Sg,_Subgoal,'$fd_nonvar',Sg).
 fr_special_builtin('writeq/1',_Sg,_Subgoal,'$fd_unchanged',_Condvars).
 fr_special_builtin('name/2',Sg,_Subgoal,'$fd_ground',Sg).
 fr_special_builtin('numbervars/3',Sg,_Subgoal,'$fd_ground',Sg).

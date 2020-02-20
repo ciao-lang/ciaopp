@@ -764,10 +764,12 @@ terms_special_builtin('atom/1',Sg,_Subgoal,type(T),Condvars):-
 terms_special_builtin('atomic/1',Sg,_Subgoal,type(T),Condvars):-
     set_atom_type(T), % no, it is atom or num type
     varset(Sg,Condvars).
-terms_special_builtin('var/1',_Sg,_Subgoal,id,[]).
+terms_special_builtin('var/1',_Sg,_Subgoal,id,[]). % needed?
+terms_special_builtin('free/1',_Sg,_Subgoal,id,[]).
     % set_top_type(T),
     % varset(Sg,Condvars).
-terms_special_builtin('nonvar/1',_Sg,_Subgoal,id,[]).
+terms_special_builtin('nonvar/1',_Sg,_Subgoal,id,[]). % needed?
+terms_special_builtin('not_free/1',_Sg,_Subgoal,id,[]).
     % set_top_type(T),
     % varset(Sg,Condvars).
 terms_special_builtin('ground/1',_Sg,_Subgoal,id,[]).

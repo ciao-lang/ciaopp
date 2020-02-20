@@ -701,7 +701,8 @@ gr_special_builtin('functor/3',functor(X,Y,Z),_,'functor/3',p(X,Y,Z)).
 %%%%%%%%%% name/2
 gr_special_builtin('name/2',name(X,Y),_,'name/2',p(X,Y)).
 %%%%%%%%%% nonvar/1
-gr_special_builtin('nonvar/1',_,_,unchanged,_).  % ask to Paco
+gr_special_builtin('nonvar/1',_,_,unchanged,_).  % needed?
+gr_special_builtin('not_free/1',_,_,unchanged,_).  % ask to Paco
 %%%%%%%%%% numbervars/3
 gr_special_builtin('numbervars/3',numbervars(X,Y,Z),_,'numbervars/3',p(X,Y,Z)).
 %%%%%%%%%% compare/3
@@ -711,7 +712,8 @@ gr_special_builtin('indep/2',_,_,unchanged,_).  % ask to Paco
 %%%%%%%%%% length/2
 gr_special_builtin('length/2',_,_,unchanged,_).  % ask to Paco
 %%%%%%%%%% var/1
-gr_special_builtin('var/1',_,_,unchanged,_).  % ask to Paco
+gr_special_builtin('var/1',_,_,unchanged,_).  % needed?
+gr_special_builtin('free/1',_,_,unchanged,_).  % ask to Paco
 %%%%%%%%%% indep/1
 gr_special_builtin('indep/1',_,_,unchanged,_).  % ask to Paco
 %%%%%%%%%% others

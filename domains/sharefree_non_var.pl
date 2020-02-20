@@ -4,11 +4,14 @@
 % started: 23/7/96
 :- doc(author, "Maria Garcia de la Banda").
 
-:- use_module(domain(sharefree), [
-    shfr_special_builtin/5,
-    shfr_unknown_call/4,
-    shfr_unknown_entry/3,
-    shfr_empty_entry/3]).
+:- use_module(domain(sharefree),
+    [
+        shfr_special_builtin/5,
+        shfr_unknown_call/4,
+        shfr_unknown_entry/3,
+        shfr_empty_entry/3,
+        sh_free_vars_compatible/2
+    ]).
 :- include(ciaopp(plai/plai_domain)).
 :- dom_def(shfrnv).
 :- dom_impl(shfrnv, call_to_entry/9).
@@ -80,7 +83,6 @@
 :- use_module(library(sets), 
     [ insert/3, 
       merge/3,
-      ord_intersect/2,
       ord_intersection_diff/4,
       ord_subset/2, 
       ord_subtract/3,
@@ -1029,6 +1031,8 @@ shfrnv_success_builtin('nonvar/1',_,p(X),_,Call,Succ):-
       Succ = (Call_sh,Succ_fr)
     ).
 shfrnv_success_builtin('nonvar/1',_,_,_,Call,Call):- !.
+shfrnv_success_builtin('not_free/1',_,p(X),_,Call,Succ):-
+    shfrnv_success_builtin('nonvar/1',_,p(X),_,Call,Succ).
 shfrnv_success_builtin('numbervars/3',_,p(X,Y,Z),_,Call,Succ):-
     Call = (Call_sh,Call_fr),
     varset(Y,OldG),
@@ -1085,15 +1089,24 @@ shfrnv_success_builtin('length/2',_,p(X,Y),_,Call,Succ):-
     change_values_if_not_g([X],Temp_fr,Temp1_fr,nv),  %% CHANGED
     update_lambda_sf([Y],Temp1_fr,Call_sh,Succ_fr,Succ_sh),
     Succ = (Succ_sh,Succ_fr).
-shfrnv_success_builtin('var/1',[X],p(X),_,Call,Succ):- 
+shfrnv_success_builtin('var/1',[X],p(X),_,Call,Succ) :-
+    var(X),
     Call = (Call_sh,Call_fr),
     var_value(Call_fr,X,Valuex),
     Valuex \== g, Valuex \== nv, %% CHANGED
-    member_value_freeness(Call_fr,FreeVars,f),
-    \+ (shfrnv_mynonvar([X],Call_sh,FreeVars)),
-    change_values([X],Call_fr,Succ_fr,f),
-    Succ = (Call_sh,Succ_fr).
+    (Valuex == f ->
+        Succ = Call
+    ;
+        member_value_freeness(Call_fr,DefinitelyFreeVars,f),
+        insert(DefinitelyFreeVars,X,AssumedFree),
+        share_project(not_provided_Sg,AssumedFree,not_provided_HvFv_u,Call_sh,NewSh),
+        sh_free_vars_compatible(NewSh,AssumedFree),
+        change_values([X],Call_fr,Succ_fr,f),
+        Succ = (Call_sh,Succ_fr)
+    ).
 shfrnv_success_builtin('var/1',_,_,_,_,'$bottom').
+shfrnv_success_builtin('free/1',[X],p(X),_,Call,Succ):-
+    shfrnv_success_builtin('var/1',[X],p(X),_,Call,Succ).
 
 %-------------------------------------------------------------------------
 % shfrnv_call_to_success_builtin(+,+,+,+,+,-)                              %
@@ -1318,42 +1331,7 @@ shfrnv_obtain_prime_var_var([X/VX,Y/VY],Call,Succ):-
         Prime = ([[X,Y]],[X/nv,Y/nv])
     ;   Prime = ([[X,Y]],[X/nf,Y/nf])),
     shfrnv_extend(not_provided_Sg,Prime,[X,Y],Call,Succ).
-
-%-------------------------------------------------------------------------
-% shfrnv_mynonvar(+,+,+)                                                 |
-% shfrnv_mynonvar(Vars,Fr,Fv)                                            |
-%-------------------------------------------------------------------------
-
-shfrnv_mynonvar([],_Sh,_Free).
-shfrnv_mynonvar([F|Rest],Sh,Free):-
-    insert(Free,F,Vars),
-    share_project(not_provided_Sg,Vars,not_provided_HvFv_u,Sh,NewSh),
-    shfrnv_impossible(NewSh,NewSh,Vars),!,
-    shfrnv_mynonvar(Rest,Sh,Free).
-    
-shfrnv_impossible([Element|Sh],Sh1,Vars):-
-    shfrnv_possible(Element,Sh1,Vars,Temp), !,
-    sort([Element|Temp],Elements),
-    ord_subtract(Sh,Elements,NewSh),
-    shfrnv_impossible(NewSh,Sh1,Vars).
-shfrnv_impossible(X,_,_):-
-    X = [_|_].
-    
-shfrnv_possible(Vars,_Sh1,OldVars,Elements):- 
-    Vars == OldVars,!,
-    Elements = [].
-shfrnv_possible(Vars,Sh1,OldVars,[S|NewElements]):-
-    shfrnv_take_element_free(Sh1,Vars,NewSh1,S),
-    merge(S,Vars,NewVars),
-    shfrnv_possible(NewVars,NewSh1,OldVars,NewElements).
-            
-shfrnv_take_element_free([S|Sh],OldVars,NewSh,NewS):-
-    \+ (ord_intersect(S,OldVars)),!,
-    NewSh = Sh,
-    NewS = S.
-shfrnv_take_element_free([S|Sh],OldVars,[S|NewSh],NewS):-
-    shfrnv_take_element_free(Sh,OldVars,NewSh,NewS).
-
+ 
 %% shfrnv_non_free_to_ground((_,Lcall_fr),(Lsucc_sh,Lsucc_fr),(Lsucc_sh,Lsucc_fr)):-
 %%      shfrnv_compare_free_to_ground(Lcall_fr,Lsucc_fr), !.
 %% shfrnv_non_free_to_ground(_,_,'$bottom').

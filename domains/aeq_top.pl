@@ -337,8 +337,10 @@ aeq_special_builtin( 'print/1',   _Sg,_Subgoal, aeq_unchanged, _) .
 aeq_special_builtin( '=/2',           Sg,_Subgoal, '=/2', Sg).
 
 aeq_special_builtin( 'is/2',       Sg,_Subgoal, aeq_is, Sg) .
-aeq_special_builtin( 'var/1',      Sg,_Subgoal, aeq_var, Sg) .
-aeq_special_builtin( 'nonvar/1',   Sg,_Subgoal, aeq_nonvar, Sg) .
+aeq_special_builtin( 'var/1',      Sg,_Subgoal, aeq_var, Sg) . % needed?
+aeq_special_builtin( 'free/1',      Sg,_Subgoal, aeq_var, Sg) .
+aeq_special_builtin( 'nonvar/1',   Sg,_Subgoal, aeq_nonvar, Sg) . % needed?
+aeq_special_builtin( 'not_free/1',   Sg,_Subgoal, aeq_nonvar, Sg) .
 
 aeq_special_builtin( 'atomic/1',     atomic(X), _, aeq_cond_ground, atomic(X)-Vars ):- % REMARK :
     varset(X,Vars).

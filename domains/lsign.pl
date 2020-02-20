@@ -1421,8 +1421,10 @@ lsign_special_builtin('.>=./2','.>=.'(X,Y),_,inequation,eq(leq,Y,X)).
 %-------------------------------------------------------------------------
 lsign_special_builtin('is/2',Sg,_,is,Sg).
 %-------------------------------------------------------------------------
-%% lsign_special_builtin('nonvar/1',_,_,unchanged,_). 
-%% lsign_special_builtin('var/1',_,_,unchanged,_). 
+%% lsign_special_builtin('nonvar/1',_,_,unchanged,_). % needed?
+%% lsign_special_builtin('not_free/1',_,_,unchanged,_).
+%% lsign_special_builtin('var/1',_,_,unchanged,_). % needed?
+%% lsign_special_builtin('free/1',_,_,unchanged,_).
 %% lsign_special_builtin('functor/3',functor(_,Y,Z),_,ground_herbrand,p(Y,Z)).
 %% lsign_special_builtin('length/2',length(_,Y),_,ground_arithmetic,Y).
 %% lsign_special_builtin('dif/2',_,_,unchanged,_).
