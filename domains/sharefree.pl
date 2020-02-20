@@ -80,7 +80,7 @@
 %------------------------------------------------------------------------%
 
 %% :- doc(bug,"1. ?- glb(shfr,([[A,B],[A,C]],[A/nf,Z/g,B/nf,C/nf]),
-%%    ([[A]],[A/nf,Z/g,B/g,C/g]),X). X = ([],[A/nf,Z/g,B/g,C/g]) ? 
+%%    ([[A]],[A/nf,Z/g,B/g,C/g]),X). X = ([],[A/nf,Z/g,B/g,C/g]) ?
 %%    Should be A/g.").
 :- doc(bug,"2. With var(F),length([F|L],X) freenes of F is
     unnecessarily lost.").
@@ -88,7 +88,7 @@
 %% :- doc(bug,"3. shfr_success_builtin for arg(X,Y,Z) is not prepared
 %%      for a non-variable Y.").
 
-:- use_module(domain(s_grshfr), 
+:- use_module(domain(s_grshfr),
     [ change_values_if_differ/5,
       change_values_insert/4,
       collect_vars_freeness/2,
@@ -109,23 +109,23 @@
       list_ground/2
     ]).
 :- use_module(domain(sharing), [
-    share_project/5, 
+    share_project/5,
     share_less_or_equal/2,
     share_glb/3,
     share_input_user_interface/5,
     share_input_interface/4,
     % TODO: move to other shared module?
-    pos/4, 
-    project_share/3, 
+    pos/4,
+    project_share/3,
     script_p_star/3,
     script_p/3
     ]).
 
 :- use_module(library(lists), [append/3, list_to_list_of_lists/2, powerset/2]).
-:- use_module(library(lsets), 
+:- use_module(library(lsets),
     [ closure_under_union/2,
       merge_each/3,
-      merge_list_of_lists/2, 
+      merge_list_of_lists/2,
       merge_lists/3,
       ord_intersect_lists/2,
       ord_split_lists/4,
@@ -133,8 +133,8 @@
       powerset_of_set_of_sets/2,
       sort_list_of_lists/2
     ]).
-:- use_module(library(sets), 
-    [ insert/3, 
+:- use_module(library(sets),
+    [ insert/3,
       merge/3,
       ord_intersect/2,
       ord_intersection/3,
@@ -172,7 +172,7 @@ absu(_). % TODO: define properly for this domain
 :- export(shfr_project/5).
 shfr_project(_Sg,_Vars,_HvFv_u,'$bottom',Proj) :- !,
     Proj = '$bottom'.
-shfr_project(_Sg,Vars,_HvFv_u,(Sh,Fr),Proj) :- 
+shfr_project(_Sg,Vars,_HvFv_u,(Sh,Fr),Proj) :-
     project_share(Vars,Sh,Proj_sh),
     project_freeness(Vars,Fr,Proj_fr),
     Proj = (Proj_sh,Proj_fr).
@@ -245,7 +245,7 @@ shfr_call_to_entry(_Sv,Sg,_Hv,Head,_K,Fv,Proj,Entry,Flag):-
     copy_term((Sg,Proj),(NewTerm,NewProj)),
     Head = NewTerm,
     shfr_abs_sort(NewProj,(Temp_sh,Temp_fr)),
-    change_values_insert(Fv,Temp_fr,Entry_fr,f),    
+    change_values_insert(Fv,Temp_fr,Entry_fr,f),
     list_to_list_of_lists(Fv,Temp1),
     merge(Temp1,Temp_sh,Entry_sh),
     Entry = (Entry_sh,Entry_fr).
@@ -299,7 +299,7 @@ shfr_exit_to_prime(Sg,Hv,Head,_Sv,Exit,yes,Prime):- !,
     shfr_project(Sg,Hv,not_provided_HvFv_u,Exit,(BPrime_sh,BPrime_fr)),
     copy_term((Head,(BPrime_sh,BPrime_fr)),(NewTerm,NewPrime)),
     Sg = NewTerm,
-    shfr_abs_sort(NewPrime,Prime).  
+    shfr_abs_sort(NewPrime,Prime).
 shfr_exit_to_prime(_Sg,[],_Head,Sv,_Exit,_ExtraInfo,Prime):- !,
     list_ground(Sv,Prime_fr),
     Prime = ([],Prime_fr).
@@ -322,7 +322,7 @@ shfr_exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime):-
     ord_intersection_diff(Sup_Prime_sh,Lda_sh,Intersect,Disjoint),
     covering(Disjoint,Lda_sh,AlsoPossible),
     merge(Intersect,AlsoPossible,Lda_sh_temp),
-    prune(Lda_sh_temp,Sg_args,ShareArgs,Prime_sh), 
+    prune(Lda_sh_temp,Sg_args,ShareArgs,Prime_sh),
     Prime = (Prime_sh,Prime_fr),
     !.
 
@@ -336,11 +336,11 @@ shfr_exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime):-
 % First sorts the set of set of variables Sh to obtain the Sh_s.Then it  |
 % sorts the set of X/Value in Fr obtaining Fr_s.                         |
 %-------------------------------------------------------------------------
-:- export(shfr_abs_sort/2).        
+:- export(shfr_abs_sort/2).
 shfr_abs_sort('$bottom','$bottom').
-shfr_abs_sort(ac(Asub_u,Fg),ac(Asub,Fg)):- 
+shfr_abs_sort(ac(Asub_u,Fg),ac(Asub,Fg)):-
     shfr_abs_sort(Asub_u,Asub).
-shfr_abs_sort(d((Sh,Fr),Del),d((Sh_s,Fr_s),Del)):- 
+shfr_abs_sort(d((Sh,Fr),Del),d((Sh_s,Fr_s),Del)):-
     sort_list_of_lists(Sh,Sh_s),
     sort(Fr,Fr_s).
 shfr_abs_sort((Sh,Fr),(Sh_s,Fr_s)):-
@@ -361,7 +361,7 @@ shfr_abs_sort((Sh,Fr),(Sh_s,Fr_s)):-
 %    - if Value1 == Value2, X/Value1 in Lub_fr                           %
 %    - otherwise, X/nf in Lub_fr                                         %
 %------------------------------------------------------------------------%
-:- export(shfr_compute_lub/2). 
+:- export(shfr_compute_lub/2).
 shfr_compute_lub([X],X):- !.
 shfr_compute_lub([ASub1,ASub2|Xs],Lub):-
     shfr_compute_lub_el(ASub1,ASub2,ASubLub),
@@ -380,10 +380,10 @@ compute_lub_sh(Sh1,Sh2,Sh1) :-
 compute_lub_sh(Sh1,Sh2,Lub) :-
     merge(Sh1,Sh2,Lub).
 
-compute_lub_fr(Fr1,Fr2,Lub):- 
+compute_lub_fr(Fr1,Fr2,Lub):-
     Fr1 == Fr2, !,
     Lub = Fr1.
-compute_lub_fr([Xv|Fr1],[Yv|Fr2],Lub):- 
+compute_lub_fr([Xv|Fr1],[Yv|Fr2],Lub):-
     Xv == Yv, !,
     Lub = [Xv|Lub_fr],
     compute_lub_fr(Fr1,Fr2,Lub_fr).
@@ -394,7 +394,7 @@ compute_lub_fr([X/_|Fr1],[X/_|Fr2],[X/nf|Lub_fr]):-
 % shfr_glb(+,+,-)                                                        %
 % shfr_glb(ASub0,ASub1,Glb)                                              %
 %------------------------------------------------------------------------%
-:- export(shfr_glb/3).       
+:- export(shfr_glb/3).
 shfr_glb('$bottom',_ASub,ASub3) :- !, ASub3='$bottom'.
 shfr_glb(_ASub,'$bottom',ASub3) :- !, ASub3='$bottom'.
 shfr_glb((Sh1,Fr1),(Sh2,Fr2),Glb):-
@@ -445,7 +445,7 @@ shfr_glb((Sh1,Fr1),(Sh2,Fr2),Glb):-
 %     for the rest of variables in BVars                                 %
 %   * If BVarsf = [],                                                    %
 %------------------------------------------------------------------------%
-:- export(shfr_extend/5).      
+:- export(shfr_extend/5).
 shfr_extend(_Sg,'$bottom',_Sv,_Call,Succ):- !,
     Succ = '$bottom'.
 shfr_extend(_Sg,_Prime,[],Call,Succ):- !,
@@ -479,7 +479,7 @@ shfr_extend(_Sg,(Prime_sh,Prime_fr),Sv,(Call_sh,Call_fr),Succ):-
 % Specialized version of call_to_entry + exit_to_prime + extend for facts%
 %-------------------------------------------------------------------------
 :- export(shfr_call_to_success_fact/9).
-shfr_call_to_success_fact(_Sg,[],_Head,_K,Sv,Call,_Proj,Prime,Succ) :- 
+shfr_call_to_success_fact(_Sg,[],_Head,_K,Sv,Call,_Proj,Prime,Succ) :-
     Call = (Call_sh,Call_fr),!,
     update_lambda_sf(Sv,Call_fr,Call_sh,Succ_fr,Succ_sh),
     list_ground(Sv,Prime_fr),
@@ -616,13 +616,13 @@ may_be_var(X,X):- ( X=[] ; true ), !.
 %% % The readible format still close to the internal formal is identical    %
 %% % for the Sharing part. The output for Fr is the set of free variables   %
 %% %-------------------------------------------------------------------------
-%% 
+%%
 %:- export(shfr_output_interface/2).
 %% shfr_output_interface(ac('$bottom',Flag),('$bottom',Flag)) :- !.
-%% shfr_output_interface(ac(d((Sh,Fr),Del),Flag),Output) :- 
+%% shfr_output_interface(ac(d((Sh,Fr),Del),Flag),Output) :-
 %%      member_value_freeness(Fr,NewFr,f),
 %%      del_output(ac(Del,Flag),(Sh,NewFr),Output).
-%% shfr_output_interface(d((Sh,Fr),Del),Output) :- 
+%% shfr_output_interface(d((Sh,Fr),Del),Output) :-
 %%      member_value_freeness(Fr,NewFr,f),
 %%      del_output(Del,(Sh,NewFr),Output).
 %% shfr_output_interface((Sh,Fr),(Sh,NewFr)) :-
@@ -634,7 +634,7 @@ may_be_var(X,X):- ( X=[] ; true ), !.
 %% shfr_output_interface([Succ|LSucc],[OutSucc|LOutSucc]):-
 %%      shfr_output_interface(Succ,OutSucc),
 %%      shfr_output_interface0(LSucc,LOutSucc).
-%% 
+%%
 %% shfr_output_interface0([],[]).
 %% shfr_output_interface0([Succ|LSucc],[OutSucc|LOutSucc]):-
 %%      shfr_output_interface(Succ,OutSucc),
@@ -650,11 +650,11 @@ may_be_var(X,X):- ( X=[] ; true ), !.
 shfr_asub_to_native(ASub,_Qv,_OutFlag,Succ,[]) :-
     shfr_asub_to_native_(ASub,Succ).
 
-shfr_asub_to_native_(ac(ASub,Flag),[flag(Flag)|ASub_user]):- 
+shfr_asub_to_native_(ac(ASub,Flag),[flag(Flag)|ASub_user]):-
     shfr_asub_to_native_(ASub,ASub_user).
-%% shfr_asub_to_native(ac(ASub,_),ASub_user):- 
+%% shfr_asub_to_native(ac(ASub,_),ASub_user):-
 %%      shfr_asub_to_native(ASub,ASub_user).
-shfr_asub_to_native_(d((Sh,Fr),Del),ASub_user):- 
+shfr_asub_to_native_(d((Sh,Fr),Del),ASub_user):-
     shfr_asub_to_native_((Sh,Fr),Info),
     if_not_nil(Del,delayed(Del),Comp,[]),
     ( Comp==[] -> ASub_user=comp(Info,Comp) ; ASub_user=Info ).
@@ -720,8 +720,8 @@ shfr_less_or_equal((Sh0,Fr0),(Sh1,Fr1)):-
 %% % WARNING, incomplete since definite dependencies in ASub0 afecting      %
 %% % variables which are also free in ASub1, must appear in ASub1           %
 %% %------------------------------------------------------------------------%
-%% 
-%:- export(shfr_more_instantiate/2).  
+%%
+%:- export(shfr_more_instantiate/2).
 %% shfr_more_instantiate((Sh0,Fr0),(Sh1,Fr1)):-
 %%         member_value_freeness(Fr0,ListGr0,g),
 %%         member_value_freeness(Fr1,ListGr1,g),
@@ -955,15 +955,16 @@ shfr_special_builtin('list/1',list(X),_,'list/1',p(X)).
 shfr_special_builtin('free/1',free(X),_,'free/1',p(X)).
 %%%%%%%%%% indep/1
 shfr_special_builtin('indep/1',indep(X),_,'indep/1',p(X)).
-%%%%%%%%%% indep/1
+%%%%%%%%%% ==/2
+shfr_special_builtin('==/2','=='(X,Y),_,'==/2',p(X,Y)).
+%%%%%%%%%% \=/2
 shfr_special_builtin('\\=/2','\\='(X,Y),_,'\\=/2',p(X,Y)).
-%%%%%%%%%% indep/1
+%%%%%%%%%% \==/2
 shfr_special_builtin('\\==/2','\\=='(X,Y),_,'\\==/2',p(X,Y)).
 %%%%%%%%%% others
 shfr_special_builtin(Key,_Goal,_,special(Key),[]):-
     shfr_not_that_special_builtin(Key).
 
-shfr_not_that_special_builtin('==/2').
 shfr_not_that_special_builtin('=/2').
 shfr_not_that_special_builtin('C/3').
 shfr_not_that_special_builtin('keysort/2').
@@ -992,7 +993,7 @@ shfr_not_that_special_builtin('sort/2').
 shfr_success_builtin(new_ground,Sv_u,_,_,Call,Succ):-
     sort(Sv_u,Sv),
     Call = (Lda_sh,Lda_fr),
-    update_lambda_sf(Sv,Lda_fr,Lda_sh,Succ_fr,Succ_sh), 
+    update_lambda_sf(Sv,Lda_fr,Lda_sh,Succ_fr,Succ_sh),
     Succ = (Succ_sh,Succ_fr).
 shfr_success_builtin(bottom,_,_,_,_,'$bottom').
 shfr_success_builtin(unchanged,_,_,_,Lda,Lda).
@@ -1073,7 +1074,7 @@ shfr_success_builtin('=../2',Sv_uns,p(X,Y),_,Call,Succ):-
 shfr_success_builtin('=../2',Sv_uns,p(X,Y),_,Call,Succ):-
     var(X), !,
     sort(Sv_uns,Sv),
-    Call = (Call_sh,Call_fr),       
+    Call = (Call_sh,Call_fr),
     project_freeness(Sv,Call_fr,Proj_fr),
     Y = [Z|_],
     var_value(Proj_fr,X,ValueX),
@@ -1147,7 +1148,7 @@ shfr_success_builtin('current_key/2',_,p(X),_,Call,Succ):-
 shfr_success_builtin('current_predicate/2',_,p(X,Y),_,Call,Succ):-
     var(Y),!,
     Call = (Call_sh,Call_fr),
-    change_values_if_f([Y],Call_fr,Temp_fr,nf), 
+    change_values_if_f([Y],Call_fr,Temp_fr,nf),
     varset(X,NewG),
     update_lambda_sf(NewG,Temp_fr,Call_sh,Succ_fr,Succ_sh),
     Succ = (Succ_sh,Succ_fr).
@@ -1169,7 +1170,7 @@ shfr_success_builtin('functor/3',_,p(X,Y,Z),_,Call,Succ):-
     var(X),
     Call = (Call_sh,Call_fr),
     var_value(Call_fr,X,f),!,
-    change_values([X],Call_fr,Temp_fr,nf), 
+    change_values([X],Call_fr,Temp_fr,nf),
     varset([Y,Z],OldG),
     ( update_lambda_non_free(OldG,Temp_fr,Call_sh,Succ_fr,Succ_sh) ->
       Succ = (Succ_sh,Succ_fr)
@@ -1212,19 +1213,19 @@ shfr_success_builtin('numbervars/3',_,p(X,Y,Z),_,Call,Succ):-
     update_lambda_sf(NewG,Temp_fr,Temp_sh,Succ_fr,Succ_sh),
     Succ = (Succ_sh,Succ_fr).
 shfr_success_builtin('numbervars/3',_,_,_,_,'$bottom').
-shfr_success_builtin('compare/3',_,p(X),_,Call,Succ):- 
+shfr_success_builtin('compare/3',_,p(X),_,Call,Succ):-
     atom(X),!,
     Succ = Call.
-shfr_success_builtin('compare/3',_,p(X),_,Call,Succ):- 
+shfr_success_builtin('compare/3',_,p(X),_,Call,Succ):-
     var(X),!,
     Call = (Call_sh,Call_fr),
     update_lambda_sf([X],Call_fr,Call_sh,Succ_fr,Succ_sh),
     Succ = (Succ_sh,Succ_fr).
 shfr_success_builtin('compare/3',_,_,_,_,'$bottom').
-shfr_success_builtin('indep/2',_,p(X,Y),_,Call,Succ):- 
+shfr_success_builtin('indep/2',_,p(X,Y),_,Call,Succ):-
     ( ground(X) ; ground(Y) ), !,
     Succ = Call.
-shfr_success_builtin('indep/2',_,p(X,Y),_,Call,Succ):- 
+shfr_success_builtin('indep/2',_,p(X,Y),_,Call,Succ):-
     varset(X,Xv),
     varset(Y,Yv),
     Call = (Call_sh,Call_fr),
@@ -1234,7 +1235,7 @@ shfr_success_builtin('indep/2',_,p(X,Y),_,Call,Succ):-
     change_values_if_differ(Ground,Call_fr,Succ_fr,g,f),!,
     Succ = (Succ_sh,Succ_fr).
 shfr_success_builtin('indep/2',_,_,_,_,'$bottom').
-shfr_success_builtin('indep/1',_,p(X),_,Call,Succ):- 
+shfr_success_builtin('indep/1',_,p(X),_,Call,Succ):-
     nonvar(X),
     handle_each_indep(X,shfr,Call,Succ), !.
 shfr_success_builtin('indep/1',_,_,_,_,'$bottom').
@@ -1296,6 +1297,18 @@ shfr_success_builtin('free/1',[X],p(X),_,Call,Succ) :-
     ).
 shfr_success_builtin('free/1',_,_,_,_,'$bottom').
 %
+shfr_success_builtin('==/2',Sv,p(X,Y),_,Call,Succ):-
+    Call = (Call_sh,Call_fr),
+    free_peel(X,Y,Binds,[]),
+    extract_ground(Sv,Call_fr,Gv),
+    make_reduction(Binds,(Call_sh,Call_fr),Gv,Call_fr,Tfr,NewGv,Elim_u-[]),
+    sort(Elim_u,Elim),
+    ord_split_lists_from_list(NewGv,Call_sh,_Intersect,Temp_sh),
+    ord_subtract(Temp_sh,Elim,Succ_sh),
+    update_freeness(Tfr,Succ_sh,Succ_fr), !, % this call might fail
+    non_free_to_ground(Call,(Succ_sh,Succ_fr),Succ).
+shfr_success_builtin('==/2',_,_,_,_,'$bottom').
+%
 shfr_success_builtin('\\=/2',_,p(X,Y),_,Call,Succ) :-
     Call=(_Sh,Fr),
     (var(X), var_value(Fr,X,f)) ; (var(Y), var_value(Fr,Y,f)), !,
@@ -1350,24 +1363,7 @@ any_arg_all_args(N,Y,Z,ASub,[Succ|Succs]):-
 % shfr_call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,Succ)               %
 % Handles those builtins for which computing Proj is easier than Succ    % TODO: is this right?
 %-------------------------------------------------------------------------
-:- export(shfr_call_to_success_builtin/6). 
-shfr_call_to_success_builtin('==/2','=='(X,Y),_Sv,Call,Proj,Succ):-
-    var(X),!,
-    identical_one_var(X,Y,Call,Proj,Succ).
-shfr_call_to_success_builtin('==/2','=='(X,Y),_Sv,Call,Proj,Succ):-
-    var(Y),!,
-    identical_one_var(Y,X,Call,Proj,Succ).
-shfr_call_to_success_builtin('==/2','=='(X,Y),Sv,Call,_Proj,Succ):-
-    Call = (Call_sh,Call_fr),
-    free_peel(X,Y,Binds,[]),
-    extract_ground(Sv,Call_fr,Gv),
-    make_reduction(Binds,(Call_sh,Call_fr),Gv,Call_fr,Tfr,NewGv,Elim_u-[]),
-    sort(Elim_u,Elim),
-    ord_split_lists_from_list(NewGv,Call_sh,_Intersect,Temp_sh),
-    ord_subtract(Temp_sh,Elim,Succ_sh),
-    update_freeness(Tfr,Succ_sh,Succ_fr),
-    non_free_to_ground(Call,(Succ_sh,Succ_fr),Succ).
-%
+:- export(shfr_call_to_success_builtin/6).
 shfr_call_to_success_builtin('=/2','='(X,_Y),Sv,Call,(_,Proj_fr),Succ):-
     varset(X,VarsX), values_equal(VarsX,Proj_fr,g), !,
     Call = (Call_sh,Call_fr),
@@ -1390,7 +1386,7 @@ shfr_call_to_success_builtin('=/2','='(X,Y),_Sv,Call,Proj,Succ):-
     ).
 shfr_call_to_success_builtin('=/2','='(X,_Y),Sv,Call,Proj,Succ):-
     var(X), !,
-    Proj = (Proj_sh,Proj_fr),       
+    Proj = (Proj_sh,Proj_fr),
     ord_subtract(Sv,[X],VarsY),
     var_value(Proj_fr,X,ValueX),
     product(ValueX,X,VarsY,Sv,Proj_sh,Proj_fr,Prime_sh,Prime_fr),
@@ -1408,7 +1404,7 @@ shfr_call_to_success_builtin('C/3','C'(X,Y,Z),Sv,Call,Proj,Succ):- !,
     shfr_call_to_success_builtin('=/2','='(X,[Y|Z]),Sv,Call,Proj,Succ).
 shfr_call_to_success_builtin('keysort/2',keysort(X,Y),Sv,Call,Proj,Succ):-
     shfr_call_to_success_builtin('sort/2',sort(X,Y),Sv,Call,Proj,Succ).
-shfr_call_to_success_builtin('sort/2',sort(X,Y),Sv,Call,Proj,Succ):- 
+shfr_call_to_success_builtin('sort/2',sort(X,Y),Sv,Call,Proj,Succ):-
     var(X), !,
     Proj = (_Sh,Fr),
     var_value(Fr,X,Val),
@@ -1419,7 +1415,7 @@ shfr_call_to_success_builtin('sort/2',sort(X,Y),Sv,Call,Proj,Succ):-
       varset(Yterm,Vars),
       shfr_call_to_success_fact('='(X,Y),Vars,'='(Yterm,Yterm),not_provided,Sv,Call,Proj,_Prime,Succ) % TODO: add some ClauseKey?
     ).
-shfr_call_to_success_builtin('sort/2',sort(X,Y),Sv,Call,Proj,Succ):- 
+shfr_call_to_success_builtin('sort/2',sort(X,Y),Sv,Call,Proj,Succ):-
     functor(X,'.',_), !,
     varset0(X,[Z|_]),
     Call = (Call_sh,Call_fr),
@@ -1458,7 +1454,7 @@ fixpoint_aunify_entry(Fr,Binds,Fr1,Sh1,Binds1,_,NewFr,NewSh,NewBinds):-
     NewFr = Fr1,
     NewSh = Sh1,
     NewBinds = Binds.
-fixpoint_aunify_entry(_,_,Fr1,Sh1,Binds1,Hv,NewFr,NewSh,NewBinds):- 
+fixpoint_aunify_entry(_,_,Fr1,Sh1,Binds1,Hv,NewFr,NewSh,NewBinds):-
     abs_unify_entry(Fr1,Sh1,Binds1,Hv,NewFr,NewSh,NewBinds).
 
 %-------------------------------------------------------------------------
@@ -1481,17 +1477,17 @@ aunify_entry([(X,_,Tv)|Binds],Fr,Sh,Hv,NewFr,NewSh,NewBinds):-
     decide_update_lambda(Tv,Fr,Sh,Hv,Fr1,L1),
     aunify_entry(Binds,Fr1,L1,Hv,NewFr,NewSh,NewBinds).
 aunify_entry([(X,_,Tv)|Binds],Fr,Sh,Hv,NewFr,NewSh,NewBinds):-
-    values_equal(Tv,Fr,g), !, 
+    values_equal(Tv,Fr,g), !,
     decide_update_lambda([X],Fr,Sh,Hv,Fr1,L1),
     aunify_entry(Binds,Fr1,L1,Hv,NewFr,NewSh,NewBinds).
-aunify_entry([(X,Term,Vars)|Binds],Fr,Sh,Hv,NewFr,NewSh,NewBinds):- 
+aunify_entry([(X,Term,Vars)|Binds],Fr,Sh,Hv,NewFr,NewSh,NewBinds):-
     var(Term),!,
     var_value(Fr,X,ValueX),
     var_value(Fr,Term,ValueTerm),
     table_from_y_entry(ValueX,ValueTerm,X,Term,Sh,Fr,Fr1),
     NewBinds = [(X,Term,Vars)|RestE],
     aunify_entry(Binds,Fr1,Sh,Hv,NewFr,NewSh,RestE).
-aunify_entry([(X,Term,Tv)|Binds],Fr,Sh,Hv,NewFr,NewSh,NewBinds):- 
+aunify_entry([(X,Term,Tv)|Binds],Fr,Sh,Hv,NewFr,NewSh,NewBinds):-
     var_value(Fr,X,ValueX),
     table_from_term_entry(ValueX,X,Term,Sh,Tv,Fr,Fr1),
     NewBinds = [(X,Term,Tv)|RestE],
@@ -1521,7 +1517,7 @@ table_from_y_entry(ValueX,f,X,Y,Sh,Fr,NewFr):- !,
     table_from_y_entry_f(ValueX,Y,X,Sh,Fr,NewFr).
 table_from_y_entry(nf(_,Term1),nf(_,Term2),_,_,_,Fr,Fr):-
     Term1 == Term2, !.
-table_from_y_entry(_,_,X,Y,Lda_sh,Fr,NewFr):- 
+table_from_y_entry(_,_,X,Y,Lda_sh,Fr,NewFr):-
     take_coupled(Lda_sh,[X,Y],Coupled),
     change_values_if_not_g(Coupled,Fr,NewFr,nf).
 
@@ -1543,14 +1539,14 @@ table_from_y_entry_f(nf(_,Term),X,Y,Sh,Fr,NewFr):-
 % table_from_term_entry(ValueX,X,Term,Sh,Tv,Fr,NewFr)                    %
 % SImilar to the one above, for the case in which Y is a compounf Term   %
 %-------------------------------------------------------------------------
-table_from_term_entry(f,X,Term,Sh,_,Fr,NewFr):- 
+table_from_term_entry(f,X,Term,Sh,_,Fr,NewFr):-
     take_coupled(Sh,[X],Coupled),
     split_coupled(Coupled,Fr,FreeCoupled,Terms),
     ( all_terms_identical(Terms,Term) ->
             change_values_if_not_g(FreeCoupled,Fr,NewFr,nf(_,Term))
     ; change_values_if_not_g(Coupled,Fr,NewFr,nf)
     ).
-table_from_term_entry(nf,X,_,Sh,Tv,Fr,NewFr) :- 
+table_from_term_entry(nf,X,_,Sh,Tv,Fr,NewFr) :-
     take_coupled(Sh,[X|Tv],Coupled),
     change_values_if_not_g(Coupled,Fr,NewFr,nf).
 table_from_term_entry(nf(_,Term1),_,Term,_,_,Fr,Fr) :-
@@ -1641,7 +1637,7 @@ decide_update_lambda([X|Xs],Fr,Sh,Hv,NewFr,NewSh):-
 
 decide_update_lambda(yes,X,Xs,Fr,Sh,NewFr,Sh):-
     change_values([X|Xs],Fr,NewFr,g).
-decide_update_lambda(no,X,Xs,Fr,Sh,NewFr,NewSh):- 
+decide_update_lambda(no,X,Xs,Fr,Sh,NewFr,NewSh):-
     ord_split_lists_from_list([X|Xs],Sh,Intersect,NewSh),
     merge_list_of_lists(Intersect,Coupled),
     merge_list_of_lists(NewSh,NotCoupled),
@@ -1654,7 +1650,7 @@ decide_update_lambda(no,X,Xs,Fr,Sh,NewFr,NewSh):-
 :- export(all_terms_identical/2).
 all_terms_identical([],_).
 all_terms_identical([E|Es],Term) :-
-    Term == E, 
+    Term == E,
     all_terms_identical(Es,Term).
 
 %-------------------------------------------------------------------------
@@ -1733,10 +1729,10 @@ partition_sf(Binds,Fr,Sh,NewSh):-
 partition_end_sf([],Sh,Sh).
 partition_end_sf([_/g|Xs],Sh,NewSh):- !,
     partition_end_sf(Xs,Sh,NewSh).
-partition_end_sf([X/_|Xs],Sh,NewSh):- 
+partition_end_sf([X/_|Xs],Sh,NewSh):-
     ord_intersect_lists([X],Sh), !,
     partition_end_sf(Xs,Sh,NewSh).
-partition_end_sf([X/_|Xs],Sh,[[X]|NewSh]):- 
+partition_end_sf([X/_|Xs],Sh,[[X]|NewSh]):-
     partition_end_sf(Xs,Sh,NewSh).
 
 partition_sf1([],_Fr,Sh,Sh).
@@ -1746,24 +1742,24 @@ partition_sf1([(X,Term,Tv)|Binds],Fr,TempSh,NewSh):-
     partition_sf1(Binds,Fr,TempSh1,NewSh).
 
 %% first clause for shfrnv
-make_partition_from_x(nv,X,_,Tv,TempSh,NewSh):- 
+make_partition_from_x(nv,X,_,Tv,TempSh,NewSh):-
     insert(Tv,X,List),
     ord_split_lists_from_list(List,TempSh,L1,L2),
     merge_list_of_lists(L1,L3),
     merge(L2,[L3],NewSh).
-make_partition_from_x(nf,X,_,Tv,TempSh,NewSh):- 
+make_partition_from_x(nf,X,_,Tv,TempSh,NewSh):-
     insert(Tv,X,List),
     ord_split_lists_from_list(List,TempSh,L1,L2),
     merge_list_of_lists(L1,L3),
     merge(L2,[L3],NewSh).
-make_partition_from_x(nf(_,_Term1),X,_Term,Tv,TempSh,NewSh):- 
-%       Term1 == Term,            %%  Is this the default?? 
+make_partition_from_x(nf(_,_Term1),X,_Term,Tv,TempSh,NewSh):-
+%       Term1 == Term,            %%  Is this the default??
                               %% It is not when the occur check is needed!!
     ord_split_lists(TempSh,X,L1,L2),
     ord_split_lists_from_list(Tv,L2,L3,L4),
     merge_lists(L1,L3,L5),
     merge(L4,L5,NewSh).
-make_partition_from_x(f,X,Y,_,TempSh,NewSh):- 
+make_partition_from_x(f,X,Y,_,TempSh,NewSh):-
     ord_split_lists(TempSh,X,L1,L2),
     ord_split_lists(L2,Y,L3,L4),
     merge_lists(L1,L3,L5),
@@ -1779,13 +1775,13 @@ make_partition_from_x(f,X,Y,_,TempSh,NewSh):-
 :- push_prolog_flag(multi_arity_warnings,off).
 
 :- export(prune/5).
-prune(Beta_sh,Head_args,Lambda_share,Temp1,Entry) :- 
+prune(Beta_sh,Head_args,Lambda_share,Temp1,Entry) :-
     prune(Beta_sh,Head_args,Lambda_share,Temp2),
     merge(Temp1,Temp2,Entry).
 
 :- export(prune/4).
 prune([],_,_,[]).
-prune([Xs|Xss],Head_args,ShareArgs,Entry) :- 
+prune([Xs|Xss],Head_args,ShareArgs,Entry) :-
     pos(Head_args,1,Xs,ArgShare),
     ord_test_member(ShareArgs,ArgShare,Flag),
     add_if_member(Flag,Xs,Entry,Temp),
@@ -1809,11 +1805,11 @@ abs_unify_exit(Fr,Binds,NewFr,NewBinds):-
     aunify_exit(Fr,Binds,Fr1,Binds1),
     fixpoint_aunify_exit(Fr,Binds,Fr1,Binds1,NewFr,NewBinds).
 
-fixpoint_aunify_exit(Fr,Binds,Fr1,Binds1,NewFr,NewBinds):- 
+fixpoint_aunify_exit(Fr,Binds,Fr1,Binds1,NewFr,NewBinds):-
     Fr == Fr1, Binds == Binds1, !,
     NewFr = Fr1,
     NewBinds = Binds.
-fixpoint_aunify_exit(_Fr,_Binds,Fr1,Binds1,NewFr,NewBinds):- 
+fixpoint_aunify_exit(_Fr,_Binds,Fr1,Binds1,NewFr,NewBinds):-
     abs_unify_exit(Fr1,Binds1,NewFr,NewBinds).
 
 aunify_exit(Fr,[],Fr,[]):- !.
@@ -1823,10 +1819,10 @@ aunify_exit(Fr,[(X,_,Tv)|More],NewFr,NewBinds):-
     change_values(Tv,Fr,Fr1,g),
     aunify_exit(Fr1,More,NewFr,NewBinds).
 aunify_exit(Fr,[(X,_,Tv)|More],NewFr,NewBinds):-
-    values_equal(Tv,Fr,g), !, 
-    change_values([X],Fr,Fr1,g),    
+    values_equal(Tv,Fr,g), !,
+    change_values([X],Fr,Fr1,g),
     aunify_exit(Fr1,More,NewFr,NewBinds).
-aunify_exit(Fr,[(X,Y,Vars)|More],NewFr,NewBinds):- 
+aunify_exit(Fr,[(X,Y,Vars)|More],NewFr,NewBinds):-
     var(Y), !,
     var_value(Fr,X,ValueX),
     var_value(Fr,Y,ValueY),
@@ -1839,7 +1835,7 @@ aunify_exit(Fr,[(X,Term,Tv)|More],NewFr,NewBinds):- !,
     table_from_term_exit(ValueX,X,Term,Tv,Fr,Fr1),
     aunify_exit(Fr1,More,NewFr,RestBinds).
 
-table_from_y_exit(Valuex,Valuey,_,_,Fr,Fr):- 
+table_from_y_exit(Valuex,Valuey,_,_,Fr,Fr):-
     Valuex == Valuey, !.
 table_from_y_exit(f,ValueY,X,_,Fr,Fr1):-  !,
     change_values([X],Fr,Fr1,ValueY).
@@ -1944,7 +1940,7 @@ product(nf,X,VarsY,Sv,Sh,Lda_fr,Prime_sh,Prime_fr):-
     take_coupled(Sh,Sv,Coupled),
     change_values_if_f(Coupled,Lda_fr,Prime_fr,nf).
 
-:- export(insert_each/3).       
+:- export(insert_each/3).
 insert_each([],_,[]).
 insert_each([L|Ls],X,[[X|L]|Rest]):-
     insert_each(Ls,X,Rest).
@@ -1954,106 +1950,6 @@ insert_each([L|Ls],X,[[X|L]|Rest]):-
 :- export(obtain_freeness/2).
 obtain_freeness(f,f):- !, fail.
 obtain_freeness(_,_).
-
-%-------------------------------------------------------------------------
-% identical_one_var(+,+,+,+,-)                                           |
-% identical_one_var(X,Y,Call,Proj,Succ)                                  |
-% It handles the builtin X == Y, knowing that X is a variable            |
-%-------------------------------------------------------------------------
-
-identical_one_var(X,Y,Call,_Proj,Succ):-
-    ground(Y),!,
-    Call = (Call_sh,Call_fr),
-    ( update_lambda_non_free([X],Call_fr,Call_sh,Succ_fr,Succ_sh) ->
-      Succ = (Succ_sh,Succ_fr)
-    ; Succ = '$bottom'
-    ).
-identical_one_var(X,Y,Call,Proj,Succ):-
-    var(Y),!,
-    Proj = (_Sh,Fr),
-    var_value(Fr,X,ValueX),
-    var_value(Fr,Y,ValueY),
-    identical(ValueX,ValueY,X,Y,Call,Succ).
-%%%%% COMMENT the cases in which Y is a complex term missing
-identical_one_var(_X,_Y,_Call,_Proj,'$bottom').
-
-%-------------------------------------------------------------------------
-% identical(+,+,+,+,+,-)                                                 |
-% identical(ValueX,ValueY,X,Y,Call,Succ)                                 |
-% It handles the builtin X == Y, knowing that both X and Y are  variables|
-%-------------------------------------------------------------------------
-identical(g,g,_X,_Y,Proj,Proj):- !.
-identical(g,f,_X,_Y,_Call,'$bottom'):- !.
-identical(g,nf,_X,Y,Call,Succ):-
-    Call = (Call_sh,Call_fr),
-    ( update_lambda_non_free([Y],Call_fr,Call_sh,Succ_fr,Succ_sh) ->
-      Succ = (Succ_sh,Succ_fr)
-    ; Succ = '$bottom'
-    ).
-identical(f,g,_X,_Y,_Call,'$bottom'):- !.
-identical(nf,g,X,_Y,Call,Succ):- !,
-    Call = (Call_sh,Call_fr),
-    ( update_lambda_non_free([X],Call_fr,Call_sh,Succ_fr,Succ_sh) ->
-      Succ = (Succ_sh,Succ_fr)
-    ; Succ = '$bottom'
-    ).
-identical(nf,nf,X,Y,Call,Succ):- !,
-    Call = (Call_sh,Call_fr),
-    ord_split_lists(Call_sh,X,Intersect,Disjoint),
-    ord_split_lists(Disjoint,Y,NonPossibleY,PossibleNonXY),
-    ord_split_lists(Intersect,Y,PossibleXY,NonPossibleX),
-    varset(p(NonPossibleX,NonPossibleY),Coupled),
-    varset(p(PossibleXY,PossibleNonXY),NonCoupled),
-    ord_subtract(Coupled,NonCoupled,NewGround),
-    ( values_differ(NewGround,Call_fr,f) ->
-      merge(PossibleXY,PossibleNonXY,Succ_sh),
-      Succ = (Succ_sh,Call_fr)
-    ; Succ = '$bottom'
-    ). 
-identical(f,nf,X,Y,Call,Succ):- !,
-    Call = (Call_sh,Call_fr),
-    ord_split_lists(Call_sh,X,Intersect,Disjoint),
-    ord_split_lists(Disjoint,Y,NonPossibleY,PossibleNonXY),
-    ord_split_lists(Intersect,Y,PossibleXY,NonPossibleX),
-    varset(p(NonPossibleX,NonPossibleY),Coupled),
-    varset(p(PossibleXY,PossibleNonXY),NonCoupled),
-    ord_subtract(Coupled,NonCoupled,NewGround),
-    ( values_differ(NewGround,Call_fr,f) ->
-      merge(PossibleXY,PossibleNonXY,Succ_sh),
-      change_values([Y],Call_fr,Succ_fr,f), 
-%%%% COMMENT This can introduce inconsistent sharing abstractions
-      Succ = (Succ_sh,Succ_fr)
-    ; Succ = '$bottom'
-    ). 
-identical(nf,f,X,Y,Call,Succ):- !,
-    Call = (Call_sh,Call_fr),
-    ord_split_lists(Call_sh,X,Intersect,Disjoint),
-    ord_split_lists(Disjoint,Y,NonPossibleY,PossibleNonXY),
-    ord_split_lists(Intersect,Y,PossibleXY,NonPossibleX),
-    varset(p(NonPossibleX,NonPossibleY),Coupled),
-    varset(p(PossibleXY,PossibleNonXY),NonCoupled),
-    ord_subtract(Coupled,NonCoupled,NewGround),
-    ( values_differ(NewGround,Call_fr,f) ->
-      merge(PossibleXY,PossibleNonXY,Succ_sh),
-      change_values([X],Call_fr,Succ_fr,f), 
-%%%% COMMENT This can introduce impossible sharing abstractions
-      Succ = (Succ_sh,Succ_fr)
-    ; Succ = '$bottom'
-    ). 
-identical(f,f,X,Y,Call,Succ):- !,
-    Call = (Call_sh,Call_fr),
-    ord_split_lists(Call_sh,X,Intersect,Disjoint),
-    ord_split_lists(Disjoint,Y,NonPossibleY,PossibleNonXY),
-    ord_split_lists(Intersect,Y,PossibleXY,NonPossibleX),
-    varset(p(NonPossibleX,NonPossibleY),Coupled),
-    varset(p(PossibleXY,PossibleNonXY),NonCoupled),
-    ord_subtract(Coupled,NonCoupled,NewGround),
-    ( values_differ(NewGround,Call_fr,f) ->
-      merge(PossibleXY,PossibleNonXY,Succ_sh),
-%%%% COMMENT This can introduce inconsistent sharing abstractions
-      Succ = (Succ_sh,Call_fr)
-    ; Succ = '$bottom'
- ).
 
 %-------------------------------------------------------------------------
 % obtain_prime_var_var(+,+,-)                                            |
@@ -2095,7 +1991,6 @@ there_is_partition([Ws|Sh],Vs) :-
 there_is_partition([_|Sh],Vs) :-
     there_is_partition(Sh,Vs).
 
-
 non_free_to_ground((_,Lcall_fr),(Lsucc_sh,Lsucc_fr),(Lsucc_sh,Lsucc_fr)):-
     compare_free_to_ground(Lcall_fr,Lsucc_fr), !.
 non_free_to_ground(_,_,'$bottom').
@@ -2115,20 +2010,20 @@ compare_free_to_ground([_|Xs],[_|Ys]):- !,
 % and Y are variables. It is based on the freeness values of X and Y.   |
 %------------------------------------------------------------------------
 update_from_values(g,g,_,_,Proj,Proj):- !.
-update_from_values(g,_,_X,Y,(Call_sh,Call_fr),(Succ_sh,Succ_fr)):- 
+update_from_values(g,_,_X,Y,(Call_sh,Call_fr),(Succ_sh,Succ_fr)):-
     update_lambda_sf([Y],Call_fr,Call_sh,Succ_fr,Succ_sh).
 update_from_values(f,g,X,_Y,(Call_sh,Call_fr),(Succ_sh,Succ_fr)):- !,
     take_coupled(Call_sh,[X],Coupled),
     change_values_if_f(Coupled,Call_fr,Succ_fr,nf),
     Succ_sh = Call_sh.
 update_from_values(f,f,_X,_Y,_Proj,'$bottom'):- !.
-update_from_values(f,nf,X,Y,(Call_sh,Call_fr),(Succ_sh,Succ_fr)):- 
+update_from_values(f,nf,X,Y,(Call_sh,Call_fr),(Succ_sh,Succ_fr)):-
     update_lambda_non_free([Y],Call_fr,Call_sh,Tmp_fr,Succ_sh),!,
     take_coupled(Call_sh,[X],Coupled),
     change_values_if_f(Coupled,Tmp_fr,Succ_fr,nf).
 update_from_values(f,nf,_X,_Y,_Proj,'$bottom').
 update_from_values(nf,g,_X,_Y,Proj,Proj):- !.
-update_from_values(nf,_,_X,Y,(Call_sh,Call_fr),(Succ_sh,Succ_fr)):- 
+update_from_values(nf,_,_X,Y,(Call_sh,Call_fr),(Succ_sh,Succ_fr)):-
     update_lambda_sf([Y],Call_fr,Call_sh,Succ_fr,Succ_sh).
 
 %-------------------------------------------------------------------------
@@ -2139,15 +2034,15 @@ update_from_values(nf,_,_X,Y,(Call_sh,Call_fr),(Succ_sh,Succ_fr)):-
 %  been made ground                                                      |
 %-------------------------------------------------------------------------
 :- export(make_dependence/5).
-make_dependence([],Y,TempPrime_fr,Prime_fr,[]):- 
+make_dependence([],Y,TempPrime_fr,Prime_fr,[]):-
     change_values(Y,TempPrime_fr,Prime_fr,g).
-make_dependence([S|Ss],Y,TempPrime_fr,Prime_fr,Prime_sh):- 
+make_dependence([S|Ss],Y,TempPrime_fr,Prime_fr,Prime_sh):-
     closure_under_union([S|Ss],Prime_sh),
     change_values_if_f(Y,TempPrime_fr,Prime_fr,nf).
 
 %-------------------------------------------------------------------------
 % extract_ground(+,+,-)                                                  |
-% extract_ground(Vars,Fr,Gv)                                             |   
+% extract_ground(Vars,Fr,Gv)                                             |
 % It obtains in Gv the variables in Vars which are ground w.r.t. Fr      |
 %-------------------------------------------------------------------------
 
@@ -2161,7 +2056,7 @@ extract_ground([X|Xs],[Y/V|Ys],Gv):-
 extract_ground(=,g,X,Xs,_Y,Ys,Gv):- !,
     Gv= [X|Rest],
     extract_ground(Xs,Ys,Rest).
-extract_ground(=,_,_X,Xs,_Y,Ys,Gv):- 
+extract_ground(=,_,_X,Xs,_Y,Ys,Gv):-
     extract_ground(Xs,Ys,Gv).
 extract_ground(>,_,X,Xs,_,[Y/V|Ys],Gv):-
     compare(D,X,Y),
@@ -2170,12 +2065,14 @@ extract_ground(>,_,X,Xs,_,[Y/V|Ys],Gv):-
 :- pop_prolog_flag(multi_arity_warnings).
 
 %------------------------------------------------------------------------
-% It gives the adecuate freeness value for each binding (X,Term) 
+% make_reduction(+,+,+,+,-,-,-)
+% make_reduction(Binds,ShFr,Grs,Fr,Tfr,NewGv,Elim)
+% It gives the adecuate freeness value for each binding (X,Term)
 % resulting of the unification of A and B when ==(A,B) was called.
-% If neither X nor Term in one binding is ground, since they have to 
-% be identicals (==), each set S of the sharing component have to 
-% satisfied that X is an element of S if and only if at least one 
-% variable in Term appears also in S. Therefore, each set in which 
+% If neither X nor Term in one binding is ground, since they have to
+% be identicals (==), each set S of the sharing component have to
+% satisfied that X is an element of S if and only if at least one
+% variable in Term appears also in S. Therefore, each set in which
 % either only X or only variables of Term appear, has to be eliminated.
 %------------------------------------------------------------------------
 make_reduction([],_,_,Fr,Fr,[],Y-Y).
@@ -2206,8 +2103,8 @@ make_reduction([(X,_,Tv)|More],(L_sh,L_fr),Ground,Temp_fr,Fr,NewG,Elim):-
     append_dl(Elim1,Elim2,Elim).
 
 %------------------------------------------------------------------------
-% It gives the adecuate freeness value for each binding (X,Term) 
-% resulting of the unification of A and B when ==(A,B) was called, 
+% It gives the adecuate freeness value for each binding (X,Term)
+% resulting of the unification of A and B when ==(A,B) was called,
 % if Term was a variable
 %------------------------------------------------------------------------
 make_identicals(_,Value,_,Value,L_fr,L_fr):- !.
@@ -2216,16 +2113,15 @@ make_identicals(_,f,Y,nf,L_fr,Temp_fr):- !,
 make_identicals(X,nf,_,f,L_fr,Temp_fr):- !,
     change_values([X],L_fr,Temp_fr,f).
 
-% It updates the freeness component with the new ground variables
-% (Note that the freeness value of X in the first component cannot be f)
-
+% It updates the freeness component with the new ground variables (if
+% they were not previously f). % TODO: duplicated code
 update_freeness([],_,[]).
 update_freeness([X/g|Xs],Temp_sh,[X/g|Temp_fr]):- !,
     update_freeness(Xs,Temp_sh,Temp_fr).
-update_freeness([X/Val|Xs],Temp_sh,[X/Val|Temp_fr]):- 
-    ord_intersect_lists([X],[Temp_sh]), !,
+update_freeness([X/Val|Xs],Temp_sh,[X/Val|Temp_fr]):-
+    ord_intersect_lists([X],Temp_sh), !,
     update_freeness(Xs,Temp_sh,Temp_fr).
-update_freeness([X/Val|Xs],Temp_sh,[X/g|Temp_fr]):- 
+update_freeness([X/Val|Xs],Temp_sh,[X/g|Temp_fr]):-
     Val \== f,
     update_freeness(Xs,Temp_sh,Temp_fr).
 
@@ -2249,7 +2145,7 @@ shfr_unknown_call(_Sg,Vars,(Call_sh,Call_fr),(Succ_sh,Succ_fr)):-
 %% % update_lambda_non_free_iterative(Ground,Freeness,Sh,NewFreeness,NewSh)
 %% % Identical to update_lambda_non_free but:
 %% %-------------------------------------------------------------------------
-%% 
+%%
 %% update_lambda_non_free_iterative([],V,L,V,L,[]).
 %% update_lambda_non_free_iterative([X|Xs],V,L,V1,L1,NewGi):-
 %%      member_value_freeness(V,AlreadyGround,g),
@@ -2260,15 +2156,15 @@ shfr_unknown_call(_Sg,Vars,(Call_sh,Call_fr),(Succ_sh,Succ_fr)):-
 %%      loop_ground(RestGround,Disjoint,L1,Vars),
 %%      merge(TestVars,Vars,NewGi),
 %%      change_values(MakeGround,V,V1,g).
-%% 
+%%
 %% loop_ground([],L1,L1,[]).
 %% loop_ground([X|RestGround],L,L1,[X|Vars]):-
 %%      ord_split_lists(L,X,_Intersect,Disjoint),
 %%      merge_list_of_lists(Disjoint,NonGround),
 %%      ord_intersection(RestGround,NonGround,RestVars),
 %%      loop_ground(RestVars,Disjoint,L1,Vars).
-%% 
-%% 
+%%
+%%
 %% take_ground_dep([],_,_V,_L,[],G,G).
 %% take_ground_dep([X|Xs],Vars,V,L,TestVars,TempG,NewG):-
 %%      check_nonvar(X,L,V,Intersect,StronglyCoupled),!,
@@ -2281,15 +2177,15 @@ shfr_unknown_call(_Sg,Vars,(Call_sh,Call_fr),(Succ_sh,Succ_fr)):-
 %%        NewTempG = TempG
 %%      ),
 %%      take_ground_dep(Xs,Vars,V,L,RestVars,NewTempG,NewG).
-%% 
+%%
 %% check_nonvar(X,L,V,Intersect,StronglyCoupled):-
-%%      ord_split_lists(L,X,Intersect,Disjoint),        
-%%      merge_list_of_lists(Intersect,Coupled),       
+%%      ord_split_lists(L,X,Intersect,Disjoint),
+%%      merge_list_of_lists(Intersect,Coupled),
 %%      merge_list_of_lists(Disjoint,Not_Coupled),
 %%      ord_subtract(Coupled,Not_Coupled,StronglyCoupled),
 %%      values_differ(StronglyCoupled,V,f).   %% checking nonground
-%% 
-%% 
+%%
+%%
 %% check_nobody_makes_ground(Vars,X,Intersect,Proj):-
 %%      ord_subtract(Vars,[X],Rest),
 %%      project_share(Rest,Intersect,Proj).
@@ -2364,7 +2260,7 @@ values_differ([X|Xs],[Y/V|Ys],Value):-
     values_differ(D,X,Xs,V,Ys,Value).
 
 values_differ(=,_X,Xs,V,Ys,Value):-
-    V \== Value, 
+    V \== Value,
     values_differ(Xs,Ys,Value).
 values_differ(>,X,Xs,_,[Y/V|Ys],Value):-
     compare(D,X,Y),
@@ -2408,7 +2304,7 @@ change_values(>,X,Y/Val,Xs,[Y1/V|Ys],[Y/Val|Z],Value):-
 
 :- export(change_values_if_not_g/4).
 change_values_if_not_g([],Xs,Xs,_).
-change_values_if_not_g([Y|Ys],[X/V|Xs],Z,Value):- 
+change_values_if_not_g([Y|Ys],[X/V|Xs],Z,Value):-
     compare(D,Y,X),
     change_values_if_not_g(D,Y,Ys,X/V,Xs,Z,Value).
 
@@ -2416,7 +2312,7 @@ change_values_if_not_g(=,Y,Ys,_X/V,Xs,Z,Value):-
     change_if_not_g(V,Value,V1),
     Z = [Y/V1|Zs],
     change_values_if_not_g(Ys,Xs,Zs,Value).
-change_values_if_not_g(>,Y,Ys,Elem,[X/V|Xs],Z,Value):- 
+change_values_if_not_g(>,Y,Ys,Elem,[X/V|Xs],Z,Value):-
     Z = [Elem|Zs],
     compare(D,Y,X),
     change_values_if_not_g(D,Y,Ys,X/V,Xs,Zs,Value).
@@ -2442,7 +2338,7 @@ change_if_not_g(nf(_,_),V,V).
 
 :- export(change_values_if_f/4).
 change_values_if_f([],Xs,Xs,_).
-change_values_if_f([Y|Ys],[X/V|Xs],Z,Value):- 
+change_values_if_f([Y|Ys],[X/V|Xs],Z,Value):-
     compare(D,Y,X),
     change_values_if_f(D,Y,Ys,X/V,Xs,Z,Value).
 
@@ -2452,7 +2348,7 @@ change_values_if_f(=,Y,Ys,_X/V,Xs,[Y/V1|Zs],Value):-
     ;   V1 = V
     ),
     change_values_if_f(Ys,Xs,Zs,Value).
-change_values_if_f(>,Y,Ys,Elem,[X/V|Xs],[Elem|Zs],Value):- 
+change_values_if_f(>,Y,Ys,Elem,[X/V|Xs],[Elem|Zs],Value):-
     compare(D,Y,X),
     change_values_if_f(D,Y,Ys,X/V,Xs,Zs,Value).
 
@@ -2467,11 +2363,11 @@ change_values_if_f(>,Y,Ys,Elem,[X/V|Xs],[Elem|Zs],Value):-
 
 :- export(member_value_freeness_differ/3).
 member_value_freeness_differ([],[],_).
-member_value_freeness_differ([X/Valuex|Rest],ListValue,Value):- 
+member_value_freeness_differ([X/Valuex|Rest],ListValue,Value):-
     Valuex \== Value,!,
     ListValue = [X|More],
     member_value_freeness_differ(Rest,More,Value).
-member_value_freeness_differ([_|Rest],ListValue,Value):- 
+member_value_freeness_differ([_|Rest],ListValue,Value):-
     member_value_freeness_differ(Rest,ListValue,Value).
 
 %-------------------------------------------------------------------------
@@ -2479,7 +2375,7 @@ member_value_freeness_differ([_|Rest],ListValue,Value):-
 % collapse_non_freeness(Fr,NewFr)                                        |
 % Transform any X/nf(_,_) in Freeness into X/nf.                         |
 %-------------------------------------------------------------------------
- 
+
 collapse_non_freeness([],[]).
 collapse_non_freeness([X/nf(_,_)|Xs],Changed):- !,
     Changed = [X/nf|Ys],
@@ -2583,7 +2479,7 @@ propagate_non_freeness([X|Xs],NonFv,Sh,Fr,NewFr):-
     ord_intersect_lists(NonFv,Sh_Subs), !,
     NewFr = [X/nf|RestNewFr],
     propagate_non_freeness(Xs,NonFv,Sh,Fr,RestNewFr).
-propagate_non_freeness([X|Xs],NonFv,Sh,Fr,[X/f|NewFr]):- 
+propagate_non_freeness([X|Xs],NonFv,Sh,Fr,[X/f|NewFr]):-
     propagate_non_freeness(Xs,NonFv,Sh,Fr,NewFr).
 
 %-------------------------------------------------------------------------
@@ -2598,7 +2494,7 @@ propagate_non_freeness([X|Xs],NonFv,Sh,Fr,[X/f|NewFr]):-
 
 :- export(add_environment_vars/3).
 add_environment_vars([],Fr2,Fr2).
-add_environment_vars([Y/Vy|Fr1],[X/V|Fr2],NewFr):- 
+add_environment_vars([Y/Vy|Fr1],[X/V|Fr2],NewFr):-
     compare(D,X,Y),
     add_environment_vars(D,Y/Vy,Fr1,X/V,Fr2,NewFr).
 
@@ -2623,42 +2519,42 @@ add_environment_vars(<,Y/Vy,Fr1,El,[X/V|Fr2],[El|NewFr]):-
 % shfr_check_cond(+,+,-)
 % shfr_check_cond(Conds,ACns,Flag)
 %-------------------------------------------------------------------------
-% Conds is a list of elements of the form (Gr,Nv), where Gr and Nv are 
-% ordered sets of variables. Conds represents the conditions under which 
+% Conds is a list of elements of the form (Gr,Nv), where Gr and Nv are
+% ordered sets of variables. Conds represents the conditions under which
 % a subgoal will be woken or delayed.
-%   * If forall (Gr,Nv), at least one variable in Gr or Nv is non-ground 
-%     or variable, respectively, w.r.t. ACons, Flag = d (the goal is 
+%   * If forall (Gr,Nv), at least one variable in Gr or Nv is non-ground
+%     or variable, respectively, w.r.t. ACons, Flag = d (the goal is
 %     definitely delayed)
-%   * If for at least one (Gr,Nv), all variables in Gr and Nv are ground 
-%     and non-var, respectively, w.r.t ACons, Flag = w (the goal is 
+%   * If for at least one (Gr,Nv), all variables in Gr and Nv are ground
+%     and non-var, respectively, w.r.t ACons, Flag = w (the goal is
 %     definitely woken)
 %   * Otherwise, Flag is the set of abstractions under which the goal will
 %     be woken.
 % In doing this we will first compute Free, Ground, and NonGround (set of
-% variables in ACns which are definitely free, ground, and non-ground, 
+% variables in ACns which are definitely free, ground, and non-ground,
 % respectively). Then we will examine each element.
 %-------------------------------------------------------------------------
 
 %% :- push_prolog_flag(multi_arity_warnings,off).
-%% 
+%%
 %% shfr_check_cond(Conds,(Sh,Fr),Sv,Flag,WConds):-
 %%      shfr_check_cond(Conds,(Sh,Fr),Sv,[],Flag,[],WConds).
-%% 
+%%
 %% shfr_check_cond([],_,_,Acc,Flag,WAcc,WConds):-
 %%      ( Acc = [] ->
 %%          Flag = d
 %%      ; Flag = Acc,
 %%        WConds = WAcc).
 %% shfr_check_cond([(Gr,Nv,Eq)|Rest],ASub,Sv,Acc,Flag,WAcc,WConds):-
-%%      ( shfr_make_awoken(ASub,Gr,Nv,Eq,Sv,Flag2) -> 
+%%      ( shfr_make_awoken(ASub,Gr,Nv,Eq,Sv,Flag2) ->
 %%          ( Flag2 = w ->
 %%              Flag = w,
 %%              WConds = [(Gr,Nv,Eq)]
 %%          ;   shfr_check_cond(Rest,ASub,Sv,[Flag2|Acc],Flag,[(Gr,Nv,Eq)|WAcc],WConds))
 %%      ; shfr_check_cond(Rest,ASub,Sv,Acc,Flag,WAcc,WConds)).
-%% 
+%%
 %% :- pop_prolog_flag(multi_arity_warnings).
-%% 
+%%
 %% shfr_make_awoken((Sh,Fr),Gr,Nv,Eq,Sv,Flag):-
 %%      member_value_freeness(Fr,OldGr,g),
 %%      ord_subtract(Gr,OldGr,NewGr),
@@ -2678,7 +2574,7 @@ add_environment_vars(<,Y/Vy,Fr1,El,[X/V|Fr2],[El|NewFr]):-
 %%      ( var(Flag0) ->
 %%          shfr_check_eq(Eq,AllGr,Free,NewFr,NewSh,Sv,Flag)
 %%      ; shfr_project(not_provided_Sg,Sv,not_provided_HvFv_u,(NewSh,NewFr),Flag)).
-%%        
+%%
 %% shfr_check_eq(Eq,AllGr,_,_,NewSh,_,Flag):-
 %%      shfr_satisf_eq(Eq,AllGr,NewSh),!,
 %%      Flag = w.
@@ -2687,14 +2583,14 @@ add_environment_vars(<,Y/Vy,Fr1,El,[X/V|Fr2],[El|NewFr]):-
 %%      fail.
 %% shfr_check_eq(_,_,_,NewFr,NewSh,Sv,Flag):-
 %%      shfr_project(not_provided_Sg,Sv,not_provided_HvFv_u,(NewSh,NewFr),Flag).
-%% 
+%%
 %% :- push_prolog_flag(multi_arity_warnings,off).
-%% 
+%%
 %% shfr_satisf_eq([],_,_).
 %% shfr_satisf_eq([eq(X,Y)|Rest],Gr,Sh):-
 %%      shfr_satisf_eq(X,Y,Gr,Sh),!,
 %%      shfr_satisf_eq(Rest,Gr,Sh).
-%% 
+%%
 %% shfr_satisf_eq(X,Y,Gr,Sh):-
 %%      ord_intersection([X,Y],Gr,Int),
 %%      ( Int = [_,_] ->
@@ -2702,54 +2598,54 @@ add_environment_vars(<,Y/Vy,Fr1,El,[X/V|Fr2],[El|NewFr]):-
 %%      ; Int = [],
 %%        ord_split_lists_from_list([X,Y],Sh,Intersect,_),
 %%        ( ord_split_lists(Intersect,X,_,[]); ord_split_lists(Intersect,Y,_,[]))).
-%% 
+%%
 %% :- pop_prolog_flag(multi_arity_warnings).
-%% 
+%%
 %% shfr_fail_eq([eq(X,Y)|_],Free,Sh):-
 %%      ord_intersect([X,Y],Free),
 %%      ord_split_lists(Sh,X,Intersect,_),
 %%      ord_split_lists(Intersect,Y,[],_).
 %% shfr_fail_eq([_|Rest],Free,Sh):-
 %%      shfr_fail_eq(Rest,Free,Sh).
-%% 
+%%
 %% %-------------------------------------------------------------------------
 %% % shfr_downwards_closed(+,+,-)
 %% % shfr_downwards_closed(ACns1,ACns2,ACns)
 %% %-------------------------------------------------------------------------
 %% % ACns2 must be more instantiated than ACns1 but some downwards closed
 %% % properties might have been lost due to a later lub. Thus, those
-%% % properties must be returned to ACns2. Iff something free becomes 
-%% % ground ACns1 is more instantiated than ACns2 and we fail. Otherwise 
+%% % properties must be returned to ACns2. Iff something free becomes
+%% % ground ACns1 is more instantiated than ACns2 and we fail. Otherwise
 %% % we propagate these properties from ACns1 to ACns2.
 %% %-------------------------------------------------------------------------
-%% 
-%:- export(shfr_downwards_closed/3).  
-%% shfr_downwards_closed((_,Fr1),(Sh2,Fr2),(Sh,Fr)):- 
+%%
+%:- export(shfr_downwards_closed/3).
+%% shfr_downwards_closed((_,Fr1),(Sh2,Fr2),(Sh,Fr)):-
 %%      member_value_freeness(Fr1,Gv,g),
 %%      collect_vars_freeness(Fr2,Sv),
 %%      ord_intersection(Gv,Sv,NewGr),
 %%      update_lambda_non_free(NewGr,Fr2,Sh2,Fr,Sh).
-%%      
+%%
 %% %-------------------------------------------------------------------------
 %% % shfr_extend_free(+,+,-)
 %% % shfr_extend_free(ASub,Vars,NewASub)
 %% %-------------------------------------------------------------------------
-%% 
+%%
 %:- export(shfr_extend_free/3).
 %% shfr_extend_free((Sh,Fr),Vars,(NSh,NFr)):-
 %%      change_values_insert(Vars,Fr,NFr,f),
 %%      list_to_list_of_lists(Vars,Temp1),
 %%      merge(Temp1,Sh,NSh).
-%% 
-%% 
+%%
+%%
 %% %------------------------------------------------------------------------%
 %% % shfr_hash(+,-)
 %% % shfr_hash(ASub,N)
 %% %------------------------------------------------------------------------%
 %% % Returns an atom which identifies ASub
 %% %------------------------------------------------------------------------%
-%% 
-%:- export(shfr_hash/3).      
+%%
+%:- export(shfr_hash/3).
 %% shfr_hash('$bottom',_,-2).
 %% shfr_hash(true,_,0).
 %% shfr_hash((Sh,Fr),Fnv,N):-
@@ -2764,50 +2660,50 @@ add_environment_vars(<,Y/Vy,Fr1,El,[X/V|Fr2],[El|NewFr]):-
 %%         ),
 %%      recorded_internal('$hash',N,Ref),
 %%      erase(Ref).
-%% 
+%%
 %% shfr_hash_fr([],N,N).
 %% shfr_hash_fr([X/V|Rest],N0,N):-
 %%      ( V = f ->
 %%          N1 is N0+X
 %%      ; ( V = g ->
-%%          N1 is N0-X 
+%%          N1 is N0-X
 %%        ; N1 = N0
 %%           )
 %%         ),
 %%      shfr_hash_fr(Rest,N1,N).
-%% 
-%% 
+%%
+%%
 %% %------------------------------------------------------------------------%
 %% % shfr_convex_hull(+,+,-)
 %% % shfr_convex_hull(Old,New,Hull)
 %% %------------------------------------------------------------------------%
 %% % Computes the convex hull between the initial abstraction Old and the
-%% % more instantiated one New           
+%% % more instantiated one New
 %% %------------------------------------------------------------------------%
-%% 
+%%
 %:- export(shfr_convex_hull/3).
 %% shfr_convex_hull((OldSh,OldFr),(_,NewFr),(HullSh,HullFr)):- !,
 %%      closure_under_union(OldSh,HullSh),
 %%      compute_lub_fr(OldFr,NewFr,HullFr).
 %% shfr_convex_hull(_,_,'$bottom').
-%% 
+%%
 %% %-------------------------------------------------------------------------
 %% % shfr_impose_cond(+,+,+,-)
 %% % shfr_impose_cond(Conds,ACns,Sv,LASub)
 %% %-------------------------------------------------------------------------
-%% 
+%%
 %:- export(shfr_impos_cond/4).
 %% shfr_impose_cond([],_,_,[]).
 %% shfr_impose_cond([(Gr,_,_)|Rest],Sv,(Sh,Fr),[ASub1|LASub]):-
 %%      update_lambda_sf(Gr,Fr,Sh,Fr1,Sh1),
 %%      shfr_project(not_provided_Sg,Sv,not_provided_HvFv_u,(Sh1,Fr1),ASub1),
 %%      shfr_impose_cond(Rest,Sv,(Sh,Fr),LASub).
-%% 
+%%
 %% %-------------------------------------------------------------------------
 %% % shfr_real_conjoin(+,+,-)
 %% % shfr_real_conjoin(ACns1,ACns2,Conj)
 %% %-------------------------------------------------------------------------
-%% 
+%%
 %:- export(shfr_real_conjoin/3).
 %% shfr_real_conjoin(_,'$bottom','$bottom'):- !.
 %% shfr_real_conjoin('$bottom',_,'$bottom').
@@ -2818,4 +2714,3 @@ add_environment_vars(<,Y/Vy,Fr1,El,[X/V|Fr2],[El|NewFr]):-
 %%          Sh0 = Sh
 %%      ; %write(user,'WARNING: a complete conjunction needed'),
 %%        merge(ShNew,Sh0,Sh)).
-
