@@ -87,10 +87,10 @@ show_trans_clauses.
 
 display_body(Body) :-
     Body = g(Id, _, RFlag, _, Goal), !,
-    format('      ~w. %~w ~w~n~n', [Goal, RFlag, Id]).
+    format('    ~w. %~w ~w~n~n', [Goal, RFlag, Id]).
 display_body((Body, Goals)) :-
     Body = g(Id, _, RFlag, _, Goal),
-    format('      ~w, %~w ~w~n', [Goal, RFlag, Id]),
+    format('    ~w, %~w ~w~n', [Goal, RFlag, Id]),
     display_body(Goals).
 
 % TODO: pretty_dump?
@@ -130,10 +130,10 @@ show_data_(R) :-
     R = registry(Pred,_Mod,C), !,
     C = regdata(Id,_AbsInt, Sg, Call, Succ, _Spec, Deps, Children,Mark),
     format(user, '~w | ~w | ~w | ~w | ~w | ~w |', [Id, Pred,Sg,Call,Succ,Mark]),
-  show_data_(dep_list(Deps)),
-  format(user,' | ',[]),
-  show_data_(dep_list(Children)),
-  format(user,'~n',[]).
+    show_data_(dep_list(Deps)),
+    format(user,' | ',[]),
+    show_data_(dep_list(Children)),
+    format(user,'~n',[]).
 show_data_(C) :-
     C = complete(SgKey,_,Sg,Proj,Prime,Id,Parents), !,
     format(user, '~w | ~w | ~w | ~w | ~w | ~w\n', [SgKey, Id, Sg,Proj,Prime, Parents]).
