@@ -121,11 +121,16 @@ body_succ0('$var',SgKey,Sg,_Sv_u,HvFv_u,Calls,Succs,AbsInt,ClId,F,_,Id):-
       concrete(AbsInt,Sg,Call,Concretes),
       concretes_to_body(Concretes,SgKey,AbsInt,B)
     -> fixpoint_id(Id),
-       meta_call(B,HvFv_u,Calls,[],Succs,AbsInt,ClId,Id,Ids),
-       assertz_fact(memo_call(F,Id,AbsInt,Concretes,Ids))
-     ; Id=no,
-       variable(F,ClId),
-       each_unknown_call(Calls,AbsInt,Sg,[Sg],Succs) % Sg is a variable % TODO: use call(Sg) or similar? (JF)
+        meta_call(B,HvFv_u,Calls,[],Succs,AbsInt,ClId,Id,Ids),
+        assertz_fact(memo_call(F,Id,AbsInt,Concretes,Ids))
+    ;
+        Id=no,
+        variable(F,ClId),
+        % Sg is a variable % TODO: use call(Sg) or similar? (JF)
+        % IG: hack to have some goal, Sg cannot be a free variable
+        varset(Calls,Sv),
+        SgFake =.. ['$meta_var'|Sv],
+        each_unknown_call(Calls,AbsInt,SgFake,Sv,Succs)
     ).
 % TODO: Add apply trust calls assertions
 body_succ0('$meta'(T,B,_),SgKey,Sg,Sv_u,HvFv_u,Call,Succ,AbsInt,ClId,F,N,Id):-
@@ -133,8 +138,8 @@ body_succ0('$meta'(T,B,_),SgKey,Sg,Sv_u,HvFv_u,Call,Succ,AbsInt,ClId,F,N,Id):-
     ( current_pp_flag(reuse_fixp_id,on) ->
         ( Call=[C] ->
             sort(Sv_u,Sv),
-      project(AbsInt,Sg,Sv,HvFv_u,C,Proj),
-      fixpoint_id_reuse_prev(SgKey,AbsInt,Sg,Proj,Id)
+            project(AbsInt,Sg,Sv,HvFv_u,C,Proj),
+            fixpoint_id_reuse_prev(SgKey,AbsInt,Sg,Proj,Id)
         ; true
         )
     ;
@@ -152,16 +157,15 @@ body_succ0('$meta'(T,B,_),SgKey,Sg,Sv_u,HvFv_u,Call,Succ,AbsInt,ClId,F,N,Id):-
      ; % for the trusts, if any:  % not apply trust here??
         varset(Sg,Sv_r),
         body_succ0(nr,SgKey,Sg,Sv_r,HvFv_u,Call,Succ,AbsInt,ClId,F,N,Id0),
-      retract_fact(complete(SgKey,AbsInt,Sg,Proj,Prime,Id0,Ps)),
-      asserta_fact(complete(SgKey,AbsInt,Sg,Proj,Prime,Id,Ps)),
-      % TODO: !!!!! UPDATE ALSO memo_table
-      ( retract_fact(complete_parent(Id0,Fs)) ->
-      asserta_fact(complete_parent(Id,Fs))     % for fixpo_di/dd
-      ;
-      true
-      )
-  ).
-
+        retract_fact(complete(SgKey,AbsInt,Sg,Proj,Prime,Id0,Ps)),
+        asserta_fact(complete(SgKey,AbsInt,Sg,Proj,Prime,Id,Ps)),
+        % TODO: !!!!! UPDATE ALSO memo_table
+        ( retract_fact(complete_parent(Id0,Fs)) ->
+            asserta_fact(complete_parent(Id,Fs))     % for fixpo_di/dd
+        ;
+            true
+        )
+     ).
 body_succ0('$built'(T,Tg,Vs),SgKey,Sg,Sv_u,HvFv_u,Call,Succ,AbsInt,_ClId,F,N,Id):-
     !,
     Id=no,

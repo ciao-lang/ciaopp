@@ -186,21 +186,21 @@ update_modules(Files, Stats) :- % Reload files (keeps prev analysis)
     cleanup_types,
     simple_module(Files, Stats),
     get_current_clauses(NCls),
-  get_current_assertions(NAssrts),
+    get_current_assertions(NAssrts),
     top_level_of_files(Files, Top),
     set_loaded_module(Top),
     ( has_dump(Top, _) ->
         init_empty_inc_analysis,
         load_persistent_if_needed(Top,Files), % restore previous analysis
         get_current_clauses(OldCls),
-      get_current_assertions(OldAssrts),
+        get_current_assertions(OldAssrts),
         save_clause_db
     ;
     OldCls = [],
     OldAssrts = []
     ),
     stat(comp_diff, preds_diff(OldCls, NCls, Diff)),
-  stat(comp_diff_as, assrts_diff(OldAssrts, NAssrts, ADiff)),
+    stat(comp_diff_as, assrts_diff(OldAssrts, NAssrts, ADiff)),
     set_last_diff(Diff,ADiff).
 
 % This is done with assert/retract of several data facts because we do
@@ -282,12 +282,12 @@ preds_diff([Cl|Cls1], Cls2, TotalDiff) :-
     all_clauses_pred(Cls1, F/A, PredCls1, NCls1),
     all_clauses_pred(Cls2, F/A, PredCls2, NCls2),
     clauses_diff([Cl|PredCls1], PredCls2, PredDiff),
-  ( PredDiff = [] ->
-    TotalDiff = RestDiff
-  ;
-    TotalDiff = [diff(F/A,PredDiff)|RestDiff]
-  ),
-  preds_diff(NCls1, NCls2, RestDiff).
+    ( PredDiff = [] ->
+        TotalDiff = RestDiff
+    ;
+        TotalDiff = [diff(F/A,PredDiff)|RestDiff]
+    ),
+    preds_diff(NCls1, NCls2, RestDiff).
 
 clauses_diff(Cls1, Cls2, Diff) :-
     diff(Cls1, Cls2, same_clause, Diff).
@@ -316,11 +316,11 @@ assrts_diff([A|As1], As2, Diff) :-
     all_assertions_pred(As1, F/N, PredAs1, NAs1),
     all_assertions_pred(As2, F/N, PredAs2, NAs2),
     assertions_diff([A|PredAs1], PredAs2, PredADiff),
-  ( PredADiff = [] ->
-      Diff = RestDiff
-  ;
-      Diff = [diff(F/N,PredADiff)|RestDiff]
-  ),
+    ( PredADiff = [] ->
+        Diff = RestDiff
+    ;
+        Diff = [diff(F/N,PredADiff)|RestDiff]
+    ),
     assrts_diff(NAs1, NAs2, RestDiff).
 
 assertions_diff(As1, As2, Diff) :-
@@ -436,7 +436,7 @@ modular_actions(AbsInt) :-
     \+ current_pp_flag(intermod, off),
     loaded_mods([ModPath]), !, % only one module was loaded => it is modular
     % TODO: improve this checking
-  path_basename(ModPath,Mod),
+    path_basename(ModPath,Mod),
     stat(upd_lat, incrementally_update_analysis(Mod, AbsInt)).
 modular_actions(_).
 

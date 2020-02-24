@@ -3,7 +3,7 @@
       cleanup_plai/1,
       mod_plai/5,
       %% *** Needs revising MH
-    is_checker/1,
+      is_checker/1,
       analyze/7,       %% JNL
       init_fixpoint/1, %% JNL         
       entry_point/5    %% JNL

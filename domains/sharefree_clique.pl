@@ -41,7 +41,7 @@
 % The representation of this domain augments the Clique-sharing domain   |
 % with a third component that keep track of freeness.                    |
 %------------------------------------------------------------------------%
-% The meaning of the variables are defined in sharefree.pl                 
+% The meaning of the variables are defined in sharefree.pl               |
 %------------------------------------------------------------------------%
 
 :- use_module(library(sets), [

@@ -1,4 +1,4 @@
-:- module(domains, [], [assertions,regtypes,isomodes,nativeprops, ciaopp(ciaopp_options)]).
+:- module(domains, [], [assertions,regtypes,isomodes,nativeprops,ciaopp(ciaopp_options)]).
 
 :- doc(title,"Plug-in points for abstract domains").
 

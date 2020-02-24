@@ -220,7 +220,7 @@ module_(ModList, Info):-
     pp_statistics(runtime,_),
     clean_analysis_info0, % TODO: merge! see definition, cleanup_types/0?
     cleanup_all,
-  ensure_lib_sources_loaded,
+    ensure_lib_sources_loaded,
     % load 
     absolute_file_names(ModList,AbsFileList),
     % (only for message, avoid list if possible)

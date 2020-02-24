@@ -4,7 +4,7 @@
         top_level_module/2,
         set_top_level/1,
         valid_mod_analysis/1,
-      set_modules_analyzed/1,
+        set_modules_analyzed/1,
         modular_analyze/2,
         modular_analyze/3,
         get_modules_analyzed/1,
@@ -83,7 +83,7 @@
 :- use_module(engine(messages_basic), [message/2]).
 :- use_module(library(sets), [insert/3]).
 :- use_module(library(lists), [select/3, reverse/2, append/3]).
-:- use_module(library(pathnames), [path_basename/2]).
+:- use_module(library(pathnames), [path_basename/2, path_concat/3]).
 :- use_module(library(aggregates), [findall/3]).
 :- use_module(spec(spec), [simplify_specialize/6]).
 :- use_module(spec(codegen), [codegen/4, codegen_af/4]).
@@ -112,6 +112,7 @@
 :- use_module(engine(stream_basic), [absolute_file_name/7]).
 :- use_module(engine(runtime_control), [push_prolog_flag/2, pop_prolog_flag/1]).
 
+:- use_module(ciaopp(p_unit/p_dump), [dump_dir/1, dump/2]).
 
 % statistics
 :- use_module(ciaopp(analysis_stats)).
@@ -565,13 +566,14 @@ naive_analyze_modules(AbsInt, [CurrMod|Mods]) :-
     ),
     increment_iterations,
     analyze1(AbsInt,Info),
+    dump_curr_plai_db(CurrMod),
     add_to_total_info(Info), % It adds Info to total_info.
     gen_registry_info(quiet,Callers,Imported,GenSts),
     get_stat(GenSts, time(GenRegTime,_)),
     add_stat(genreg, GenRegTime),
     %ask_mem_usage(Delta,DetailsMem),
     %( \+ var(Delta) -> add_stat(itmem, memory(Delta,DetailsMem)) ; true),
-%JCF(18.04.05) Comment out following line!!!
+    %JCF(18.04.05) Comment out following line!!!
     save_registry_info(quiet,[time(SaveTime,_)]),
     add_stat(savereg, SaveTime),
     add_stat_step(CurrMod),
@@ -756,6 +758,7 @@ monolithic_analyze(Analyses,TopLevel,Info):-
     get_stat(LStats, time(LoadTime,_)),
     reset_total_info,
     analyze1(Analyses,Info0),
+    dump_curr_plai_db(TopLevel),
     add_to_total_info(Info0), % It adds Info to total_info.
     %%%%
     gen_registry_info(quiet,_Callers,_Imported,[time(GenRegTime,_)]),
@@ -781,6 +784,18 @@ monolithic_analyze(Analyses,TopLevel,Info):-
     pop_pp_flag(intermod),
     set_modules_analyzed(ModList),
     message(inform, ['}']).
+
+dump_curr_plai_db(CurrMod) :-
+    dump_dir(DumpDir), !,
+    ( iterations(N) -> true ; N = 1), % 1 for monolithic analysis
+    atom_number(AN,N),
+    path_basename(CurrMod, Mod),
+    atom_concat(Mod,'_', CM1),
+    atom_concat(CM1,AN, CM3),
+    atom_concat(CM3,'.dump_inc',Name1),
+    path_concat(DumpDir,Name1,DumpName),
+    dump(DumpName,[incremental]).
+dump_curr_plai_db(_). % if the dump directory is not set, do not dump
 
 %% ******************************************************************
 %% Priority Queue handling predicates.
@@ -1048,7 +1063,7 @@ transform_one_module(Analysis,Trans,File,Changed):-
             message(inform, ['{intermod: Module does not need transformation: ',~~(BaseAbs),'}'])
         ;
             module(BaseAbs),
-    analyze1(Analysis,_),
+            analyze1(Analysis,_),
             gen_registry_info(quiet,_Callers,_Imported),
 %    Program must be re-read.
             program(Cls2,Ds2),
@@ -1536,4 +1551,3 @@ get_lib_subdir0(FileName,SubDir):-
 get_new_base(Dir,Mod,TargetMod):-
     just_module_name(Mod,ModName),
     absolute_file_name(ModName,'','.pl',Dir,_,TargetMod,_).
-

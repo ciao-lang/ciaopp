@@ -36,11 +36,11 @@ according to the strategy defined.
 @end{itemize}").
 
 :- use_module(ciaopp(plai/fixpo_dd), [add_change/5, add_external_complete_change/6,
-    '$change_list'/2,
-    proj_to_prime/9, proj_to_prime_r/8, proj_to_prime_nr/9,
+    '$change_list'/2, proj_to_prime/9, proj_to_prime_r/8, proj_to_prime_nr/9,
     compute/9, fixpoint_compute_change/9]).
 :- use_module(ciaopp(plai/transform), [trans_clause/3, cleanup_trans_clauses/0, determine_r_flag/3]).
-:- use_module(ciaopp(plai/domains), [identical_proj/5, init_abstract_domain/2, abs_sort/3, identical_abstract/3]).
+:- use_module(ciaopp(plai/domains), [identical_proj/5, init_abstract_domain/2,
+                                     abs_sort/3, identical_abstract/3, less_or_equal/3]).
 :- use_module(ciaopp(plai/tarjan), [recursive_class/2, get_recursivity_class/3]).
 :- use_module(ciaopp(p_unit/program_keys),
     [decode_clkey/4, decode_litkey/5, decode_predkey/3, get_predkey/3,
@@ -49,7 +49,8 @@ according to the strategy defined.
 %%%%% IG NEW CIAOPP IMPORTS %%%%%
 :- use_module(ciaopp(frontend_driver), [module/1]).
 :- use_module(ciaopp(analyze_driver), [clean_analysis_info/0, assert_domain/1]).
-:- use_module(ciaopp(preprocess_flags), [current_pp_flag/2, set_pp_flag/2]).
+:- use_module(ciaopp(preprocess_flags),
+        [current_pp_flag/2, set_pp_flag/2,typeanalysis/1]).
 
 :- use_module(ciaopp(p_unit), [program/2]).
 :- use_module(ciaopp(p_unit/p_dump), [clean_all_ciaopp_db/0]).
@@ -57,7 +58,7 @@ according to the strategy defined.
 :- use_module(ciaopp(p_unit/assrt_db), [cleanup_assrt_db/0]).
 
 :- use_module(ciaopp(plai/plai_db)).
-:- use_module(ciaopp(plai), [topdown_analysis/3, mod_topdown_analysis/3]).
+:- use_module(ciaopp(plai), [topdown_analysis/3, mod_topdown_analysis/3, entry_point/5]).
 
 :- use_module(engine(runtime_control), [module_split/3]).
 :- use_module(engine(messages_basic), [message/2]).
@@ -83,17 +84,20 @@ according to the strategy defined.
 
 :- use_module(ciaopp(analysis_stats)).
 
+:- use_module(ciaopp(plai/trace_fixp), [fixpoint_trace/7]).
+:- use_package(.(notrace)). % inhibits the tracing
+
 % ----------------------------------------------------------------------
 :- doc(section, "Initialization predicates").
 
 :- doc(init_empty_inc_analysis/0, "Initializes ciaopp for incremental
 analysis. @bf{Removes all previous analysis info}.").
 init_empty_inc_analysis :-
-    cleanup_trans_clauses, % IG asserted clauses in traverse_clauses
+    cleanup_trans_clauses, % asserted clauses in traverse_clauses
     clean_analysis_info,
     clean_incremental_db,
     cleanup_clause_db,
-  cleanup_assrt_db, % removes only program assertion (not cached lib assertions)
+    cleanup_assrt_db, % removes only program assertions (not cached lib assertions)
     clean_all_ciaopp_db.
 
 :- pred init_file_inc_analysis(Files, Cls, Ds) : list(Files)
@@ -105,7 +109,7 @@ init_file_inc_analysis(Files, Cls, Ds) :-
 
 read_file(AbsoluteName,Cls, Ds) :-
     module(AbsoluteName),
-    program(Cls,Ds). % IG transformations are already done
+    program(Cls,Ds).
 
 :- pred cl_from_clid(+Clid, -Cl) : atm(Clid)
     #"Gets the processed clause @var{Cl} associated with clause id @var{Clid}.".
@@ -116,7 +120,6 @@ cl_from_clid(Clid, Cl) :-
 source_from_clid(Clid, Cl, D) :-
     source_clause(Clid, Cl, D).
 
-%:- export(sources_from_clids/3).
 sources_from_clids([], [], []).
 sources_from_clids([Clid|Clids], [Cl:Clid|Cls], [D|Ds]) :-
     source_from_clid(Clid, Cl, D),
@@ -131,7 +134,9 @@ sources_from_clids([Clid|Clids], [Cl:Clid|Cls], [D|Ds]) :-
     abstract domain @var{AbsInt} with them.".
 td_add_clauses([], _) :- !.
 td_add_clauses(Clids, AbsInt) :-
+    fixpoint_trace('[incanal] adding clauses',Clids,_,_,_,_,Clids),
     sources_from_clids(Clids, Cls, Ds),
+    fixpoint_trace('[incanal] added clauses',Clids,_,_,_,_,Clids),
     inc_plai_add(Cls, Ds, dd, AbsInt, _).
 
 % the clause (that may have been transformed into more than one) needs to be
@@ -160,10 +165,12 @@ td_mark_add_complete(_, _, _, _).
  strategy and performs a reanalysis.".
 td_delete_clauses([], _) :- !.
 td_delete_clauses(Clids, AbsInt) :-
+    fixpoint_trace('[incanal] td deleting clauses',Clids,_,_,_,_,Clids),
     stat(preproc, del_preprocess_clauses(Clids, AbsInt, Keys)),
     init_rev_idx(AbsInt), % TODO: !!!
     stat(td_delete, td_rec_delete_completes(Keys, AbsInt)),
     clean_rev_idx(AbsInt), % TODO: !!!
+    fixpoint_trace('[incanal] td deleted clauses',Clids,_,_,_,_,Clids),
     run_inc_fixpoint(AbsInt).
 
 td_rec_delete_completes([], _).
@@ -249,29 +256,42 @@ all_parents_same_rec_class([(LitKey, _)|Ps], Class) :-
     all_parents_same_rec_class(Ps, Class).
 
 :- data useful/1.
-
+:- pred useless(+Id). % only to check, do not generate.
 useless(no) :- !, fail.
 useless(0) :- !, fail. % query Id is never useless
-useless(Id) :- % IG: only to check, do not generate.
+useless(Id) :-
     \+ useful(Id), !.
 
 % TODO: review for non-modular driver
+:- pred remove_useless_completes(+AbsInt) + not_fails.
 remove_useless_completes(AbsInt) :-
     init_rev_idx(AbsInt), % TODO: !!!
     retractall_fact(useful(_)),
-  ( curr_mod_entry(SgKey, AbsInt, Sg, Proj), % backtrack here
-      mark_useful_complete(SgKey,AbsInt,Sg,Proj),
+    ( % failure-driven loop
+      analysis_entry(SgKey,AbsInt,Sg,Proj),
+        mark_useful_complete(SgKey,AbsInt,Sg,Proj),
         fail
     ; true),
-  remove_useless_tuples(AbsInt),
+    remove_useless_tuples(AbsInt),
     clean_rev_idx(AbsInt). % TODO: !!!
 
+analysis_entry(SgKey,AbsInt,Sg,Proj) :-
+    ( using_modular_driver -> % TODO: review monolithic driver
+        ( entry_point(AbsInt,Sg,_Sv,Proj,_Name)
+        ; curr_mod_entry(SgKey, AbsInt, Sg, Proj) )
+    ;
+        get_entry_info(AbsInt,Sg,Proj),
+        predkey_from_sg(Sg, SgKey)
+    ).
+
+:- pred mark_useful_complete(+SgKey,+AbsInt,+Sg,+Proj) + not_fails.
 mark_useful_complete(SgKey,AbsInt,Sg,Proj) :-
       complete(SgKey, AbsInt, Sg1, Proj1, _E, Id, _Fs), % creating choicepoints
       check_same_calls(AbsInt, Sg, Proj, Sg1, Proj1), !,
-    mark_useful_sons(Id, AbsInt).
+      mark_useful_sons(Id, AbsInt).
 mark_useful_complete(_SgKey,_AbsInt,_Sg,_Proj).
 
+:- pred mark_useful_sons(+Id, +AbsInt) + not_fails.
 mark_useful_sons(no, _AbsInt) :- !. % special case (auxiliary completes have Id = no)
 mark_useful_sons(Id, _AbsInt) :-
     useful(Id), !. % do nothing if already visited
@@ -289,24 +309,23 @@ remove_useless_tuples(AbsInt) :-
     current_fact(complete(SgKey, AbsInt, Sg, Proj, Prime, Id, Fs), Ref),
     ( useless(Id) ->
       delete_complete(SgKey,AbsInt,Id)
+    ; (Id = no, Fs = []) -> % Auxiliary complete, remove for now
+        erase(Ref)
     ;
-      ( (Id = no, Fs = []) -> % Auxiliary complete, remove for now
-      erase(Ref)
-        ;
-      update_parents(Fs, NFs),
-      assertz_fact(complete(SgKey, AbsInt, Sg, Proj, Prime, Id, NFs)),
-      erase(Ref)
-        )
+        update_parents(Fs, NFs, Updated),
+        \+ var(Updated),
+        erase(Ref),
+        assertz_fact(complete(SgKey, AbsInt, Sg, Proj, Prime, Id, NFs))
     ),
     fail.
 remove_useless_tuples(_).
 
-update_parents([], []).
-update_parents([(_,Id)|Fs], NFs) :-
+update_parents([], [], _).
+update_parents([(_,Id)|Fs], NFs, yes) :-
     useless(Id), !,
-    update_parents(Fs, NFs).
-update_parents([F|Fs], [F|NFs]) :-
-    update_parents(Fs, NFs).
+    update_parents(Fs, NFs, _).
+update_parents([F|Fs], [F|NFs], X) :-
+    update_parents(Fs, NFs, X).
 % IG END NEW CODE
 
 % ----------------------------------------------------------------------
@@ -324,16 +343,18 @@ del_preprocess_clauses(Clids, AbsInt, Keys) :-
       performs a reanalysis.".
 bu_delete_clauses([], _) :- !.
 bu_delete_clauses(Clids, AbsInt) :-
-    set_pp_flag(widen, on),
-    retractall_fact('$change_list'(_,_)), % TODO: IG store context??
-    stat(preproc, del_preprocess_clauses(Clids, AbsInt,Keys_u)),
-    %
-    sort(Keys_u,Keys),
+    fixpoint_trace('[incanal] bu deleting clauses',Clids,_,_,_,_,Clids),
+    set_pp_flag(widen, on), % TODO: replace by push?
+    retractall_fact('$change_list'(_,_)),
+    stat(preproc, del_preprocess_clauses(Clids, AbsInt,Keys)),
     tarjan_data(SCCs),
-    stat(bu_delete, bottom_up_delete_mark_preds(Keys,SCCs,AbsInt,Completes)),
-    stat(fixp, run_bu_del_fixp(Completes,AbsInt,SCCs)),
-    remove_useless_completes(AbsInt).
+    stat(bu_delete, bottom_up_delete_completes_preds(Keys,SCCs,AbsInt,ExtCompletes)),
+    %% display(bottom_up_delete_completes_preds(Keys,SCCs,AbsInt,ExtCompletes)), nl,
+    fixpoint_trace('[incanal] bu deleted clauses',Clids,_,_,_,_,Clids),
+    stat(fixp, run_bu_del_fixp(ExtCompletes,AbsInt,SCCs)),
+    remove_useless_completes(AbsInt). % Do not call this if nothing was removed
 
+:- pred run_bu_del_fixp/3 + not_fails.
 run_bu_del_fixp(Completes,AbsInt,SCCs) :-
     analyze_external_calls(Completes,New_answers,AbsInt),
     bottom_up_reanalyze_SCC(Completes,New_answers,AbsInt,SCCs).
@@ -342,11 +363,13 @@ run_bu_del_fixp(Completes,AbsInt,SCCs) :-
 % parents would not be necessary if during the reanalysis, completes
 % with empty parents would be (recursively) deleted.
 
+:- pred bottom_up_reanalyze_SCC/4 + not_fails.
 bottom_up_reanalyze_SCC(Completes,New_answers,AbsInt,SCCs) :-
     % IG: get the list of answers that changed
     only_different(Completes,New_answers,Differ,AbsInt),
     bottom_up_reanalyze_another_level(Differ,AbsInt,SCCs), !.
 
+:- pred only_different/4 + not_fails.
 only_different([],[],[],_) :- !.
 only_different(Comps1,[N_Prime|N_Primes],Differ,AbsInt):-
     Comps1 = [comp(_,_,O_Prime,_,Fs)|Comps],
@@ -356,12 +379,14 @@ only_different(Comps1,[N_Prime|N_Primes],Differ,AbsInt):-
         Differ = [Fs|N_differ]),
     only_different(Comps,N_Primes,N_differ,AbsInt).
 
+:- pred bottom_up_reanalyze_another_level/3 + not_fails.
 bottom_up_reanalyze_another_level([], _, _) :- !.
 bottom_up_reanalyze_another_level(Fss, AbsInt, SCCs) :-
     b_up_mark_prev_parents(Fss, NewCompletes, AbsInt, SCCs),
     analyze_external_calls(NewCompletes, New_answers, AbsInt), !,
     bottom_up_reanalyze_SCC(NewCompletes, New_answers, AbsInt, SCCs).
 
+:- pred b_up_mark_prev_parents/4 + not_fails.
 b_up_mark_prev_parents([], [], _, _).
 b_up_mark_prev_parents([Fs|Fss], Completes, AbsInt, SCCs) :-
     b_up_prev_literal(Fs, Complete, AbsInt, SCCs),
@@ -376,47 +401,49 @@ b_up_prev_literal([(Lit,Id)|Fs],Completes,AbsInt,SCCs):-
     decode_litkey(Lit,N,A,_,_),
     get_recursivity_class(N/A,SCCs,SCC),
     get_predkey(N,A,Key),
-    bottom_up_delete_mark_one(Key,Id,SCC,AbsInt,Complete),
+    bottom_up_delete_complete(Key,Id,SCC,AbsInt,Complete),
     append(Complete,MoreCompletes,Completes),
     b_up_prev_literal(Fs,MoreCompletes,AbsInt,SCCs).
 
-% analyze_external_calls(+,-,+)
+:- pred analyze_external_calls(+Comps,-Answers,+AbsInt) + not_fails.
 analyze_external_calls([],[],_).
 analyze_external_calls([comp(Sg,Proj,_,Id,Fs)|Comps],[Answer|Answers],AbsInt):-
     functor(Sg,P,A),
-    rec_preds(Ps),  % IG added, needed for determine_r_flag/3
+    rec_preds(Ps),
     determine_r_flag(Ps, P/A,RFlag),
     varset(Sg,Sv),
-    % this may not work for alls AbsInt as 3rd argument is not filled
     get_predkey(P,A,SgKey),
     bu_del_call_to_succ(RFlag,SgKey,Proj,Proj,Sg,Sv,AbsInt,Answer,Fs,Id), % Call=Proj
-    remove_useless_completes(AbsInt),
+    % remove_useless_completes(AbsInt), % should we postpone this until we are finished?
     analyze_external_calls(Comps,Answers,AbsInt).
 
-:- pred bu_del_call_to_succ(+R_flag,+SgKey,+Call,+Proj,+Sg,+Sv,+AbsInt,-Succ,+Fs,+Id)
+:- pred bu_del_call_to_succ(+RFlag,+SgKey,+Call,+Proj,+Sg,+Sv,+AbsInt,-Succ,+Fs,+Id) + not_fails
     #"This predicate is a modification of predicate @pred{call_to_success/11}
      defined in an analysis algorithms. The main differences are that rather
      than adding one element to the list of clauses for the complete, we add the
      list of external calls previously computed for the complete.".
 bu_del_call_to_succ(nr,SgKey,Call,Proj,Sg,Sv,AbsInt,Prime,Fs,Id) :-
-    proj_to_prime_nr(SgKey, Sg, Sv, Call, Proj, AbsInt, SgKey, Prime, Id),  !, % TODO: remove?
+    proj_to_prime_nr(SgKey, Sg, Sv, Call, Proj, AbsInt, SgKey, Prime, Id), !, % TODO: remove '!'?
     asserta_fact(complete(SgKey, AbsInt, Sg,Proj,Prime,Id,Fs)).
 bu_del_call_to_succ(r,SgKey,Call,Proj,Sg,Sv,AbsInt,Succ,Fs,Id) :-
+    fixpoint_trace('[incanal] bu fixpoint started',Id,N,SgKey,Sg,Proj,Clauses),
+    % proj_to_prime_r processes the non recursive clauses of a recursive predicate
     proj_to_prime_r(SgKey, Sg, Sv, Call, Proj, AbsInt, TempPrime, Id),
     asserta_fact(complete(SgKey, AbsInt, Sg,Proj,TempPrime,Id,[])),
     % IG: asserting a complete with no parents!
     bagof(X, X^(trans_clause(SgKey, r, X)),Clauses), % IG old, moved to the first line
     compute(Clauses,SgKey,Sg,Sv,Proj,AbsInt,TempPrime,Prime,Id),
-    (current_fact('$change_list'(Id,ChList), Ref2) ->
+    ( current_fact('$change_list'(Id,ChList), Ref2) ->
        erase(Ref2),
        fixpoint_compute_change(ChList,SgKey,Sg,Sv,Proj,AbsInt,Prime,NPrime,Id)
     ;
         NPrime = Prime
     ),
-    retract_fact(complete(SgKey, AbsInt, A,B,C,Id,Fs2)),
+    retract_fact(complete(SgKey,AbsInt,A,B,C,Id,Fs2)),
     union(Fs,Fs2,Fs3),
-    asserta_fact(complete(SgKey, AbsInt, A,B,C,Id,Fs3)),
-    Succ = NPrime.
+    asserta_fact(complete(SgKey,AbsInt,A,B,C,Id,Fs3)),
+    Succ = NPrime,
+    fixpoint_trace('[incanal] bu fixpoint completed',Id,N,SgKey,Sg,Proj,Clauses).
 
 %-------------------------------------------------------------------
 :- doc(section, "Predicates for running the fixpoint.").
@@ -444,12 +471,12 @@ do_inc_plai_add(Cls, Ds, dd, AbsInt, _, _) :-
     stat(preproc, inc_add_source_clauses(Cls, Ds, AbsInt)),
     % update the recursivity after new clauses
     stat(td_add, td_mark_add_clauses(Cls, AbsInt)),
-  run_inc_fixpoint(AbsInt).
+    run_inc_fixpoint(AbsInt).
 
 inc_query(dd, AbsInt, Ps) :-
     init_abstract_domain(AbsInt, _Flags), % IG flags is an output var? % fast
     call_inc_fixpoint(dd,AbsInt,Ps), !,
-  remove_useless_completes(AbsInt).
+    remove_useless_completes(AbsInt).
 inc_query(Fixp, _, _) :-
     ( Fixp = dd ->
         message(error, ['Analysis failed'])
@@ -459,7 +486,7 @@ inc_query(Fixp, _, _) :-
 
 call_inc_fixpoint(Fixp,AbsInt,Ps) :-
     assert_domain(AbsInt),
-  using_modular_driver, !,
+    using_modular_driver, !,
     stat(fixp, mod_topdown_analysis(AbsInt, Fixp, Ps)).
 call_inc_fixpoint(Fixp,AbsInt,Ps) :-
     stat(fixp, topdown_analysis(Fixp, AbsInt, Ps)).
@@ -474,12 +501,19 @@ using_modular_driver :-
 :- pred incrementally_update_analysis(Mod, AbsInt) #" @var{Mod} is the module
     that will be reanalyzed after updating its external
     completes. To be called in modular analysis, no following
- analysis needed. This is a top-down strategy update".
+    analysis needed. This is a top-down strategy update".
 incrementally_update_analysis(Mod, AbsInt) :-
     get_external_completes(Mod, AbsInt, Comps),
     init_rev_idx(AbsInt), % TODO: !!!
+    retractall_fact(deleted_comp),
     update_imported_completes(Comps, Mod, AbsInt),
-    remove_useless_completes(AbsInt). % Index cleaned here
+    clean_rev_idx(AbsInt),
+    ( deleted_comp -> % optimization to avoid traversing all the graph if no
+                      % completes were removed
+        remove_useless_completes(AbsInt)
+    ;
+        true
+    ).
 
 get_external_completes(Mod, AbsInt, Cs) :-
     findall((EMod, C), external_updated_complete(Mod, AbsInt, C, EMod), Cs).
@@ -519,14 +553,18 @@ apply_changes_imported_mod(Comps, CMod, Mod) :-
 decide_apply_changed_registries([], _, _, _).
 decide_apply_changed_registries([(SgKey,ChReg)|ChRegs], Mod, Comps, Dict) :-
     ChReg = regdata(_,AbsInt,Sg,RegProj,RegPrime,_,_,_,_),
-    ( AbsInt = eterms -> % TODO: generalize % Importing should be a domain action % TODO: use knows_of/2 (JFMC)
-        imp_auxiliary_info(AbsInt, Dict, [RegProj,RegPrime],[Proj,Prime])
+    ( typeanalysis(AbsInt) -> % TODO: generalize % Importing should be a domain action % TODO: use knows_of/2 (JFMC)
+	      imp_auxiliary_info(AbsInt, Dict, [RegProj,RegPrime],[Proj,Prime])
     ;
         Proj = RegProj, Prime = RegPrime
     ),
     abs_sort(AbsInt, Proj, Proj_s),
     apply_changes_imported_comps(Comps,SgKey,Sg,Proj_s,Prime,_RestComps),
     decide_apply_changed_registries(ChRegs, Mod, Comps, Dict).
+
+:- data deleted_comp/0. % This flags is set to avoid computing the reachable
+                        % completes if no completes were removed (all are
+                        % reachable)
 
 :- pred apply_changes_imported_comps/6 + not_fails.
 apply_changes_imported_comps([],_,_,_,_,[]).
@@ -540,10 +578,19 @@ apply_changes_imported_comps([Comp|Comps],SgKey,Sg,ImpProj,ImpPrime,Comps) :-
     ( check_same_success(AbsInt, OldPrime, CNPrime) -> % this predicate sorts the abs subs
         true
     ;
-        add_external_complete_change(AbsInt, CNPrime, SgKey,Sg,Id,Proj)
+        add_external_complete_change(AbsInt, CNPrime, SgKey,Sg,Id,Proj),
+        ( each_less_or_equal(AbsInt, CNPrime, OldPrime) -> set_fact(deleted_comp) ; true )
     ).
 apply_changes_imported_comps([Comp|Comps], SgKey, Sg, ImpProj, ImpPrime, [Comp|NComps]) :-
     apply_changes_imported_comps(Comps, SgKey, Sg, ImpProj, ImpPrime, NComps).
+
+% TODO: duplicated from fixpo_dd
+each_less_or_equal(_, [], []) :- !.
+each_less_or_equal(AbsInt, [S1|S1s], [S2|S2s]) :-
+    abs_sort(AbsInt,S1,S1_s),
+    abs_sort(AbsInt,S2,S2_s),
+    less_or_equal(AbsInt, S1_s, S2_s),
+    each_less_or_equal(AbsInt, S1s, S2s).
 
 restore_auxinfo_mod(Mod, Dict) :-
     set_fact(restore_module(Mod)),

@@ -5,7 +5,7 @@
     show_registry_info/0,
     show_global_answer_table/1,
     show_change_list/0
-], [assertions, datafacts]).
+], [assertions, isomodes, datafacts]).
 
 :- doc(title, "Advanced output of preprocessor").
 :- doc(author, "Isabel Garcia-Contreras").

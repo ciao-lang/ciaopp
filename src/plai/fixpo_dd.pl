@@ -305,10 +305,10 @@ do_r_cl(Clause,SgKey,Sg,Sv,Proj,AbsInt,Id,TempPrime,Prime):-
     ord_subtract(Vars,Hv,Fv),
     call_to_entry(AbsInt,Sv,Sg,Hv,Head,not_provided,Fv,Proj,Entry,ExtraInfo),
 %       erase_previous_memo_tables_and_parents(Body,AbsInt,K,Id),
-    fixpoint_trace('visit clause',Id,_N,ClKey,Head,Entry,Body),
+    fixpoint_trace('visit clause',ClKey:Id,_N,ClKey,Head,Entry,Body),
     get_singleton(Entry,LEntry),
     entry_to_exit(Body,ClKey,LEntry,Exit,Vars_u,AbsInt,Id),
-    fixpoint_trace('exit clause',Id,_N,ClKey,Head,Exit,_),
+    fixpoint_trace('exit clause',ClKey:Id,_N,ClKey,Head,Exit,_),
     each_exit_to_prime(Exit,AbsInt,Sg,Hv,Head,Sv,ExtraInfo,Prime1),
     store_raw_success(ClKey,AbsInt,Id,Sg,Proj,Prime1),
     process_analyzed_clause(AbsInt,Sg,Sv,Proj,TempPrime,Prime1,Prime),
@@ -599,11 +599,11 @@ widen_call2(AbsInt,SgKey,Sg,F1,_Id,_Ids,Proj1,Proj):-
       and the call pattern is uniquely identified by @var{N}.".
 query(AbsInt,QKey,Query,Qv,RFlag,N,Call0,Succ) :-
     project(AbsInt,Query,Qv,Qv,Call0,Proj0),
-    fixpoint_trace('init fixpoint',N,N,QKey,Query,Proj0,_),
+    fixpoint_trace('start query',N,N,QKey,Query,Proj0,_),
     apply_assrt_call_to_success(AbsInt,Query,Qv,Proj0,Qv,Call0,Proj,Call),
     call_to_success(RFlag,QKey,Call,Proj,Query,Qv,AbsInt,0,Succ,N,0,_Id),
     !,
-    fixpoint_trace('exit goal',_Id,query(N),(QKey,QKey),Query,Succ,AbsInt).
+    fixpoint_trace('end query',_Id,query(N),(QKey,QKey),Query,Succ,AbsInt).
 query(_AbsInt,_QKey,Query,Qv,_RFlag,_N,_Call,_Succ):-
 % should never happen, but...
     error_message("~q:~q SOMETHING HAS FAILED!~n",[Query,Qv]),

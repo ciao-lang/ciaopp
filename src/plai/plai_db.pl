@@ -212,7 +212,9 @@ update_raw_success(_, _, _,_).
 
 %%%%%%%%%%%%%%%%% Delete a complete %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 :- export(delete_complete/3).
-:- pred delete_complete(+SgKey,+AbsInt,+Id).
+:- pred delete_complete(+SgKey,+AbsInt,+Id)
+   #"Deletes the information of the complete with @var{Id}. This predicate does
+    not delete recursively following its parents.".
 delete_complete(SgKey,AbsInt,Id) :-
     retract_fact(complete(SgKey, AbsInt, _, _, _, Id, _)), !,
     remove_extra_info_complete(SgKey,Id,AbsInt).

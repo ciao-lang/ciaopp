@@ -109,6 +109,8 @@ add_to_db(X) :-
     fail.
 
 % ---------------------------------------------------------------------------
+:- export(dump_dir/1).
+:- data dump_dir/1.
 
 :- pred dump(Module, Opts) : (atm(Module), list(Opts))
 # "Writes on disk all information related to @var{Module}, so it can

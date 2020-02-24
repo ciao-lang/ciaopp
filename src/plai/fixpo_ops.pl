@@ -249,6 +249,8 @@ filter_out_bottoms([Succ|LSucc],LSucc_nb):-
     LSucc_nb = [Succ|MoreSucc],
     filter_out_bottoms(LSucc,MoreSucc).
 
+:- pred each_unknown_call(Calls,AbsInt,+Sg,+Sv,-Succs) :
+        (list(Calls), atm(AbsInt)) => list(Succs).
 each_unknown_call([],_AbsInt,_Sg,_Sv,[]).
 each_unknown_call([Call|Calls],AbsInt,Sg,Sv,[Succ|Succs]):-
     unknown_call(AbsInt,Sg,Sv,Call,Succ),
@@ -351,7 +353,10 @@ decide_memo(difflsign,Key,NewN,Id,Vars_u,Exit):- !,
 %%      asserta_fact(pragma(Key,NewN,Id,Vars_u,Exit)),!,
 %%      asserta_fact(memo_table(Key,AbsInt,NewN,Id,Vars_u,Exit)).
 decide_memo(AbsInt,Key,NewN,Id,Vars_u,Exit):-
-    asserta_fact(memo_table(Key,AbsInt,NewN,Id,Vars_u,Exit)).
+%    ( \+ Key = '!' -> % TODO: see if '!' memo_tables can be disabled
+        asserta_fact(memo_table(Key,AbsInt,NewN,Id,Vars_u,Exit)).
+%    ; true
+%    ).
 
 %------------------------------------------------------------------------%
 % clause_applies(+,+)                                                    %

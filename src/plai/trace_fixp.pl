@@ -133,11 +133,15 @@ trace_fixpoint(Mess,Id,_L,Sg,Proj):-
     ; true
     ),
     message(inform, ['{', ~~(Mess), ' for node ', ~~(Id), '}']),
+    ( \+ (var(Sg), var(Proj)) ->
     \+ \+ ( numbervars(p(Sg,Proj),0,_),
             message(inform, ['{', ~~(Sg), '   ', ~~(Proj), '}'])
-          ).
+          )
+        ; true ).
 trace_fixpoint(_Mess,_Id,_L,_Sg,_Proj).
 
+trace_fixpoint('start query').
+trace_fixpoint('end query').
 trace_fixpoint('init fixpoint').
 trace_fixpoint('visit goal').
 trace_fixpoint('visit clause').
@@ -158,7 +162,16 @@ trace_fixpoint('builtin completed').
 trace_fixpoint('external call completed').
 trace_fixpoint('trust').
 trace_fixpoint('applied trust').
+% For incremental analysis
 trace_fixpoint('[incanal] change').
+trace_fixpoint('[incanal] adding clauses').
+trace_fixpoint('[incanal] added clauses').
+trace_fixpoint('[incanal] td deleting clauses').
+trace_fixpoint('[incanal] td deleted clauses').
+trace_fixpoint('[incanal] bu deleting clauses').
+trace_fixpoint('[incanal] bu deleted clauses').
+trace_fixpoint('[incanal] bu fixpoint started').
+trace_fixpoint('[incanal] bu fixpoint completed').
 
 :- pop_prolog_flag(multi_arity_warnings).
 

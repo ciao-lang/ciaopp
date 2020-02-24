@@ -26,9 +26,7 @@ lib('lib').
 %
 lib('spec').
 
-cmd('cmds/ciaopp-dump-fmt').
-cmd('cmds/ciaopp-dump-cmp').
+cmd('cmds/ciaopp-dump').
 
 readme('INSTALLATION', [main='doc/readmes/INSTALLATION_CIAOPP.lpdoc']).
 readme('CHANGELOG', [main='doc/readmes/CHANGELOG_CIAOPP.pl']).
-
