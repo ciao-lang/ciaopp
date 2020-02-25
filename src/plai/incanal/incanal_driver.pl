@@ -85,7 +85,7 @@ according to the strategy defined.
 :- use_module(ciaopp(analysis_stats)).
 
 :- use_module(ciaopp(plai/trace_fixp), [fixpoint_trace/7]).
-:- use_package(.(notrace)). % inhibits the tracing
+:- use_package(ciaopp(plai/notrace)). % inhibits the tracing
 
 % ----------------------------------------------------------------------
 :- doc(section, "Initialization predicates").
