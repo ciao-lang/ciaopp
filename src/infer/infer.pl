@@ -386,9 +386,9 @@ type2measure(Goal0,Typings0,Measures):-
     type2measure_(0,A,Goal,Measures).
 
 type_names([T|Ts]):-
-    (type_of_goal(builtin(BT),T) -> true ; BT = T), 
-    functor(BT,F,_),
-    (arg(1,BT,F)->true;true), % TODO: is arity=1? wrong with param types (JF)
+    (type_of_goal(builtin(BT),T) -> true ; BT = T),
+    functor(BT,F,A),
+    (arg(A,BT,F)->true;true), % The variable is the last argument of parametric types (new hiord).
     type_names(Ts).
 type_names([]).
 
