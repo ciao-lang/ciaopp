@@ -241,16 +241,16 @@ not_intermod(AbsInt) :-
 :- if(defined(with_fullpp)).
 :- if(defined(has_ciaopp_extra)).
 analyze_(nfg,Cls,_Ds,nfinfo(TimeNf,Num_Pred,Num_NF_Pred,NCov),_):- !,
-  not_intermod(nfg),
+    not_intermod(nfg),
     cleanup_infer_db(nfg),
     cleanup_infer_db(vartypes),
     gather_vartypes(Cls,Trusts),
     non_failure_analysis(Cls,Trusts,TimeNf,Num_Pred,Num_NF_Pred,NCov).
 analyze_(seff,Cls,_Ds,_Info,_):- !,
-  not_intermod(nfg),
+    not_intermod(nfg),
     analyze_side_effects(Cls).
 analyze_(res_plai,Cls,Ds,Info,step1):-!,
-  not_intermod(res_plai),
+    not_intermod(res_plai),
     % Previous informations
     %analyze_(eterms,Cls,Ds,_InfoEterms,_),
     %analyze_(shfr,Cls,Ds,_InfoShFr,_),
@@ -272,7 +272,7 @@ analyze_(res_plai,Cls,Ds,Info,step1):-!,
     % ),
     handle_eqs(res_plai).
 analyze_(res_plai_stprf,Cls,Ds,Info,step1):-!,
-  not_intermod(res_plai_stprf),
+    not_intermod(res_plai_stprf),
     perform_reachability_analysis(Cls),
     % Previous informations
     %analyze_(eterms,Cls,Ds,_InfoEterms,_),
@@ -287,7 +287,7 @@ analyze_(res_plai_stprf,Cls,Ds,Info,step1):-!,
     analyze_(res_plai_stprf,Cls,Ds,Info,step2),
     handle_eqs(res_plai_stprf).
 analyze_(sized_types,Cls,Ds,Info,step1):-!,
-  not_intermod(sized_types),
+    not_intermod(sized_types),
     ( simplify_step2 -> true ; true ), % TODO:[new-resources] this should not fail!
     analyze_(sized_types,Cls,Ds,Info,step2),
     handle_eqs(sized_types).
@@ -305,12 +305,12 @@ analyze_(AbsInt,Cls,Ds,Info,_):-
     % some domains may change widen and lub:
     current_pp_flag(widen,W),
     current_pp_flag(multi_success,L),
-  ( current_pp_flag(intermod, off) ->
-      add_packages_if_needed(AbsInt), % TODO: why not for intermod?
-      plai(Cls,Ds,Fixp,AbsInt,Info)
-  ; mod_plai(Cls,Ds,Fixp,AbsInt,Info),
-    add_stat(ana, Info)
-  ),
+    ( current_pp_flag(intermod, off) ->
+        add_packages_if_needed(AbsInt), % TODO: why not for intermod?
+        plai(Cls,Ds,Fixp,AbsInt,Info)
+    ; mod_plai(Cls,Ds,Fixp,AbsInt,Info),
+      add_stat(ana, Info)
+    ),
     set_pp_flag(multi_success,L),
     set_pp_flag(widen,W).
 :- endif. % with_fullpp
@@ -550,7 +550,7 @@ acheck_summary(ok).
 
 clean_analysis_info :-
     % cleanup database 
-  cleanup_plai(_),
+    cleanup_plai(_),
     cleanup_infer_db(_),
     cleanup_seff,
     cleanup_domain,
