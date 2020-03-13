@@ -149,12 +149,12 @@ plai(Cls,Ds,Fixp,AbsInt,[TimeInfo,MemoryInfo|Info]):-
     message(inform, ['{', Header, ' ', Fixp, ' using ', AbsInt, 
                  ' with local-control ', LC,' in ', TAna, ' msec.}']),
     TimeInfo = time(Total,[(prep,TPre),(ana,TAna)|Local_C_Info]),
-  % TODO: Total time is wrong, Local_C_Info not added!!!
+    % TODO: Total time is wrong, Local_C_Info not added!!!
     java_statistics(AbsInt),
     ask_mem_usage(Delta,Details),
     MemoryInfo = memory(Delta,Details),
     ask_unfold_times(Local_C_Info),
-  dom_statistics(AbsInt, Info).
+    dom_statistics(AbsInt, Info).
 
 do_plai(Cls,Ds,Fixp, AbsInt, TPre, TAna):-
     init_fixpoint(Fixp), !, % TODO: fix, move cuts deeper
