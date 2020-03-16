@@ -566,7 +566,7 @@ naive_analyze_modules(AbsInt, [CurrMod|Mods]) :-
     ),
     increment_iterations,
     analyze1(AbsInt,Info),
-    dump_curr_plai_db(CurrMod),
+    debug_inc_dump_dir(CurrMod),
     add_to_total_info(Info), % It adds Info to total_info.
     gen_registry_info(quiet,Callers,Imported,GenSts),
     get_stat(GenSts, time(GenRegTime,_)),
@@ -758,7 +758,7 @@ monolithic_analyze(Analyses,TopLevel,Info):-
     get_stat(LStats, time(LoadTime,_)),
     reset_total_info,
     analyze1(Analyses,Info0),
-    dump_curr_plai_db(TopLevel),
+    debug_inc_dump_dir(TopLevel),
     add_to_total_info(Info0), % It adds Info to total_info.
     %%%%
     gen_registry_info(quiet,_Callers,_Imported,[time(GenRegTime,_)]),
@@ -785,7 +785,7 @@ monolithic_analyze(Analyses,TopLevel,Info):-
     set_modules_analyzed(ModList),
     message(inform, ['}']).
 
-dump_curr_plai_db(CurrMod) :-
+debug_inc_dump_dir(CurrMod) :-
     dump_dir(DumpDir), !,
     ( iterations(N) -> true ; N = 1), % 1 for monolithic analysis
     atom_number(AN,N),
@@ -795,7 +795,7 @@ dump_curr_plai_db(CurrMod) :-
     atom_concat(CM3,'.dump_inc',Name1),
     path_concat(DumpDir,Name1,DumpName),
     dump(DumpName,[incremental]).
-dump_curr_plai_db(_). % if the dump directory is not set, do not dump
+debug_inc_dump_dir(_). % if the dump directory is not set, do not dump
 
 %% ******************************************************************
 %% Priority Queue handling predicates.
