@@ -792,7 +792,7 @@ valid_flag_values( asr_dir            , asr_dir( _ ) ).
 
 pp_flag(punit_boundary).
 pp_flag(punit_boundary, 'Whether to process libraries or not during intermodular analysis / specialization.').
-current_pp_flags(  punit_boundary  , off).
+current_pp_flags(  punit_boundary  , bundle).
 valid_flag_values( punit_boundary  , member(_,[off,on,no_engine,bundle]) ).
 
 pp_flag(ass_not_stat_eval).
