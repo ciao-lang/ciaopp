@@ -15,9 +15,10 @@
      a breakdown into different categories.").
 
 :- use_module(library(lists), [member/2]).
-:- use_module(ciaopp(analysis_stats), [pp_statistics/2]).
-:- use_module(engine(messages_basic)).
 :- use_module(engine(runtime_control), [push_prolog_flag/2, pop_prolog_flag/1]).
+
+:- use_module(ciaopp(ciaopp_log), [pplog/2]).
+:- use_module(ciaopp(analysis_stats), [pp_statistics/2]). 
 
 :- trust success mem_usage(A,B,C) => (ground(A), ground(B), ground(C)).
 
@@ -70,22 +71,22 @@ update_mem_usage:-
 
 report_mem_usage:-
     mem_usage(_Total,Delta,Details),
-    message(inform, ['{Total memory ', ~~(Delta), '}']),
+    pplog(spec_module, ['{Total memory ', ~~(Delta), '}']),
     member((program,P,P0),Details),
     P_used is P - P0,
-    message(inform, ['{Program memory ', ~~(P_used), '}']),
+    pplog(spec_module, ['{Program memory ', ~~(P_used), '}']),
     member((global_stack,G,G0),Details),
     G_used is G - G0,
-    message(inform, ['{Term Heap ', ~~(G_used), '}']),
+    pplog(spec_module, ['{Term Heap ', ~~(G_used), '}']),
     member((local_stack,L,L0),Details),
     L_used is L - L0,
-    message(inform, ['{Stack ', ~~(L_used), '}']),
+    pplog(spec_module, ['{Stack ', ~~(L_used), '}']),
     member((trail,T,T0),Details),
     T_used is T - T0,
-    message(inform, ['{Trail ', ~~(T_used), '}']),
+    pplog(spec_module, ['{Trail ', ~~(T_used), '}']),
     member((choice,C,C0),Details),
     C_used is C - C0,
-    message(inform, ['{Choice-points ', ~~(C_used), '}']).
+    pplog(spec_module, ['{Choice-points ', ~~(C_used), '}']).
 
 :- pred ask_mem_usage(-Delta,-Details) # "Returns in @var{Delta} 
       the total memory used in bytes and in @var{Details} such 

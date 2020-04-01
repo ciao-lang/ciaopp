@@ -10,7 +10,7 @@
     ],
     [ assertions, datafacts, ciaopp(ciaopp_options)]).
 
-:- use_module(engine(messages_basic)).
+:- use_module(engine(messages_basic), [message/2]). 
 :- use_module(library(messages), [debug_message/2]).
 :- use_module(library(terms), [atom_concat/2]).
 :- use_module(library(terms_vars), [varset/2]).
@@ -23,6 +23,7 @@
 :- use_module(ciaopp(plai/domains)).
 :- use_module(ciaopp(preprocess_flags), [current_pp_flag/2]).
 :- use_module(ciaopp(analysis_stats), [pp_statistics/2]).
+:- use_module(ciaopp(ciaopp_log), [pplog/2]).
 :- if(defined(has_ciaopp_extra)).
 :- use_module(domain(bshare/bshare), [bshare_output/0, bshare_crack/2]).
 :- endif.
@@ -73,7 +74,7 @@ tp(AbsInt):-
     !,
     pp_statistics( walltime, [ _, T1 ] ),
     is_analysis_option(AbsInt,AbsIntOpt),
-    message(inform, ['{analyzed by bu using ', ~~(AbsIntOpt), ' in ', ~~(T1), ' msec}']).
+    pplog(analyze_module, ['{analyzed by bu using ', ~~(AbsIntOpt), ' in ', ~~(T1), ' msec}']).
 
 one_iteration(SgKey,ClKey,Head,Vars_u,Body,AbsInt):-
     varset(Head,Hv),
@@ -192,7 +193,7 @@ show_if_debug(Sh,Op,SgKey,share_amgu):-
 
 bu_output(AbsInt):-
     current_fact(iterate(AbsInt,N)),
-    message(inform, ['{Number of iterations: ', ~~(N), '}']),
+    pplog(analyze_module, ['{Number of iterations: ', ~~(N), '}']),
     bu_output_(AbsInt).
 :- if(defined(has_ciaopp_extra)).
 bu_output_(bshare):-
@@ -201,7 +202,7 @@ bu_output_(bshare):-
 bu_output_(share_amgu):-
     current_fact(complete(_SgKey,share_amgu,Sg,Proj,[Prime],_Id,_Parents)),
     message(inform, ['{', ~~(Sg) ,': ', ~~(Proj), ' -> ', ~~(Prime), '}']),
-    fail.
+    fail. %% [IG] Debug messages?? use debug_message/2?
 bu_output_(_).
 
 is_analysis_option(share_amgu,share_amgu).

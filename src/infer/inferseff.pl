@@ -7,8 +7,8 @@
 
 :- use_module(library(lists), [member/2]).
 :- use_module(library(idlists), [memberchk/2]).
-:- use_module(engine(messages_basic)).
 :- use_module(ciaopp(analysis_stats), [pp_statistics/2]).
+:- use_module(ciaopp(ciaopp_log), [pplog/2]).
 
 :- use_module(ciaopp(infer/infer_db), [inferred/3]).
 
@@ -46,10 +46,10 @@ analyze_side_effects(Clauses):-
     retractall_fact(parent(_,_,_)),
     analyze_side_effects_(Clauses),
     pp_statistics(runtime,[_,T1]),
-    message(inform, ['{analyzed by seff in ', ~~(T1), ' msec.}']),
+    pplog(infer, ['{analyzed by seff in ', ~~(T1), ' msec.}']),
     update_info,
     pp_statistics(runtime,[_,T2]),
-    message(inform, ['{updated seff info in ', ~~(T2), ' msec.}']).
+    pplog(infer, ['{updated seff info in ', ~~(T2), ' msec.}']).
 
 analyze_side_effects_([Clause:_|List_of_clauses]) :-
     side_effect_analyze(Clause), !,

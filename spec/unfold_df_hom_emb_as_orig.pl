@@ -25,9 +25,9 @@
 :- use_module(spec(unfold_local),       [select_atom/9]).
 :- use_module(spec(useless_clauses),    [check_not_useless_pre/5]).
 :- use_module(ciaopp(preprocess_flags), [current_pp_flag/2]).
+:- use_module(ciaopp(ciaopp_log), [pplog/2]).
 
 :- use_module(library(lists)).
-:- use_module(library(write)).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%    DEPTH-FIRST UNFOLDING WITH EMBEDDING BASED ON STACKS  %%% 
@@ -51,10 +51,7 @@ depth_first_emb_local_orig_0(SelRule,AbsInt,Sg,Sv,Proj,UnfClause,Ch_Path):-
                               UnfClause,Ch_Path_Res)).
 
 depth_first_emb_local_no_path(SelRule,Clause,Atoms,Info,UnfClause):-
-    (current_pp_flag(verbosity,very_high) ->
-        write('.')
-    ;
-        true),
+    pplog(spec_module, ['.']),
     (fact_or_residual(Clause) ->
         peel_fact_or_residual(Clause,UnfClause)
     ;

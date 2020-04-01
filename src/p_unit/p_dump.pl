@@ -25,6 +25,7 @@
 
 :- use_module(ciaopp(p_unit/auxinfo_dump)).
 :- use_module(ciaopp(preprocess_flags), [current_pp_flag/2]).
+:- use_module(ciaopp(ciaopp_log), [pplog/2]).
 
 % ---------------------------------------------------------------------------
 % Program and analysis database
@@ -34,7 +35,6 @@
     [complete/7, memo_table/6, memo_lub/5, lub_complete/6,
      complete_parent/2, invalid_call/6, raw_success/6]).
 :- use_module(ciaopp(plai/fixpo_ops), [iter/1]).
-:- use_module(engine(messages_basic), [message/2]).
 
 %% --------------------------------------------------------------------
 
@@ -202,7 +202,7 @@ restore(File, [time(T1,[])]):-
     pp_statistics(runtime,_),
     restore_with_flag( File , current ),
     pp_statistics(runtime,[_,T1]),
-    message(inform, ['{restored analysis in ',~~(T1), ' msec.}']).
+    pplog(dump, ['{restored analysis in ',~~(T1), ' msec.}']).
     
 
 :- pred restore(Module) :: module

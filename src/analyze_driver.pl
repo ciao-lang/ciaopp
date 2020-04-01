@@ -41,8 +41,8 @@
 
 % ---------------------------------------------------------------------------
 % (Common)
-
-:- use_module(engine(messages_basic), [message/2]).
+:- use_module(engine(messages_basic), [message/2]). %% [IG] For errors
+:- use_module(ciaopp(ciaopp_log), [pplog/2]).
 :- use_module(ciaopp(analysis_stats), [pp_statistics/2]).
 
 :- use_module(ciaopp(preprocess_flags),
@@ -208,12 +208,12 @@ analyze1(Analysis,Info):-
         Header = '{Checking certificate for '
     ; Header = '{Analyzing '
     ),
-    message(inform, [~~(Header),~~(File)]),
+    pplog(analyze_module, [~~(Header),~~(File)]),
     program(Cls,Ds),
     push_history(Analysis), % TODO: check that this does not break modular_analyze
     analyze_(Analysis,Cls,Ds,Info,step1), % TODO:[new-resources] are two steps really needed? (JF)
     assert_domain(Analysis),
-    message(inform, ['}']),
+    pplog(analyze_module, ['}']),
     trace_end, !. % TODO: remove cut
 :- endif. % with_fullpp
 analyze1(Analysis,_Info):-
@@ -355,7 +355,7 @@ handle_eqs(An):-
     write_results(An),
     curr_file(File,_),
     atom_concat(File,'.eqs',FileEqs),
-    message(inform, ['{Writing equations and results to ',~~(FileEqs),'}']),
+    pplog(analyze_module, ['{Writing equations and results to ',~~(FileEqs),'}']),
     output_eqs_to_file(FileEqs).
 :- endif.
 :- endif. % with_fullpp
@@ -434,52 +434,47 @@ acheck(AbsInt):-
 acheck(resources):- 
     check_assertions([]).
 acheck(AbsInt):-
-    message(inform, ['{Analysis ', ~~(AbsInt), ' not available for checking}']),
+    pplog(ctchecks, ['{Analysis ', ~~(AbsInt), ' not available for checking}']),
     fail.
 
 % check_assertions(Types,Modes):-
 %       pp_statistics(runtime,_),
 %       curr_file(File,_),
-%       message(inform, ['{Checking assertions of ',~~(File)]),
+%       pplog(ctchecks, ['{Checking assertions of ',~~(File)]),
 %       perform_pred_ctchecks(Types,Modes),
 %       perform_pp_ctchecks(Types,Modes),
 %       pp_statistics(runtime,[_,CTime]),
-%       message(inform, ['{assertions checked in ',~~(CTime), ' msec.}']),
-%       message(inform, ['}']).
+%       pplog(ctchecks, ['{assertions checked in ',~~(CTime), ' msec.}']),
+%       pplog(ctchecks, ['}']).
 
 check_assertions([]):-!.
 %%% -- Commented out by EMM: This code is causing duplicated warnings
 % check_assertions([]):-   % by JNL
 %       pp_statistics(runtime,_),
 %       curr_file(File,_),
-%       message(inform, ['{Checking resource assertions of ',~~(File)]),
+%       pplog(ctchecks, ['{Checking resource assertions of ',~~(File)]),
 %       perform_pred_ctchecks([]),
 %       pp_statistics(runtime,[_,CTime]),
-%       message(inform, ['{Resource assertions checked in ',~~(CTime), ' msec.}']),
-%       message(inform, ['}']).
+%       pplog(ctchecks, ['{Resource assertions checked in ',~~(CTime), ' msec.}']),
+%       pplog(ctchecks, ['}']).
 check_assertions(Domains):-
     pp_statistics(runtime,_),
     curr_file(File,_),
-    message(inform, ['{Checking assertions of ',~~(File)]),
+    pplog(ctchecks, ['{Checking assertions of ',~~(File)]),
     perform_pred_ctchecks(Domains),
     modes_analysis(Modes),
     types_analysis(Types),
     perform_pp_ctchecks(Types,Modes), % TODO: why not Domains?
     pp_statistics(runtime,[_,CTime]),
-    message(inform, ['{assertions checked in ',~~(CTime), ' msec.}']),
-    message(inform, ['}']).
+    pplog(ctchecks, ['{assertions checked in ',~~(CTime), ' msec.}']),
+    pplog(ctchecks, ['}']).
 
 modes_analysis(Modes):-
     domain(Modes),
     knows_of(ground,Modes),
     !.
 modes_analysis(none):-
-    current_pp_flag(verbose_ctchecks,VC),
-    (VC == on ->
-        message(inform, ['{No mode analysis available for checking}'])
-    ;
-        true
-    ).
+    pplog(ctchecks, ['{No mode analysis available for checking}']).
 
 types_analysis(Types):-
     domain(Types),
@@ -488,7 +483,7 @@ types_analysis(Types):-
 types_analysis(none):-
     current_pp_flag(verbose_ctchecks,VC),
     (VC == on ->
-        message(inform, ['{No type analysis available for checking}'])
+        pplog(analyze_module, ['{No type analysis available for checking}'])
     ;
         true
     ).

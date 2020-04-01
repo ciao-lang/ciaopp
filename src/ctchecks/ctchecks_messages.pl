@@ -50,8 +50,9 @@ display_message_check_pp(LC,Str,Args) :-
     error_message(LC,Str,Args).
 
 display_message_checked_pp(LC,Str,Args) :-
-    current_pp_flag(verbose_ctchecks, on),!,
-    note_message(LC,Str,Args).
+    current_pp_flag(pplog, L),
+    member(ctchecks, L), !,
+    note_message(LC,Str,Args). % TODO: replace by pplog?
 display_message_checked_pp(_,_,_).
 
 update_dict([],H,D):-!,

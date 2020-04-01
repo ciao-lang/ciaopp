@@ -40,7 +40,8 @@
 :- use_module(engine(messages_basic), [message/2]).
 
 :- use_module(ciaopp(preprocess_flags),
-    [current_pp_flag/2, set_pp_flag/2, push_pp_flag/2, pop_pp_flag/1]).
+              [current_pp_flag/2, set_pp_flag/2, push_pp_flag/2, pop_pp_flag/1]).
+:- use_module(ciaopp(ciaopp_log), [pplog/2]).
 
 % ===========================================================================
 :- doc(section, "Program transformation").
@@ -93,11 +94,11 @@ transform(Trans):- transform(Trans,_Info).
 transform(Trans,Info):-
     transformation(Trans), !,
     curr_file(File,_),
-    message(inform, ['{Transforming ',~~(File)]),
+    pplog(transform_module, ['{Transforming ',~~(File)]),
     program(Cls,Ds),
     push_history(Trans),
     transform_(Trans,Cls,Ds,Info),
-    message(inform, ['}']).
+    pplog(transform_module, ['}']).
 transform(Trans,_Info):-
     message(error0, ['{Not a valid program transformation: ',~~(Trans),'}']),
     fail.
@@ -152,7 +153,7 @@ simpspec(Spec,Cls,Ds,Info):-
     decide_update_ai_info_case(Spec,TmpCls,TmpDs,NewCls,NewDs),
     replace_program(NewCls,NewDs).
 simpspec(Spec,_Cls,_Ds,_Info):-
-    message(inform, ['{Required analysis info not available for ', ~~(Spec), '}']),
+    message(error, ['{Required analysis info not available for ', ~~(Spec), '}']),
     fail.
 
 simpspec_(vers,AbsInt,Cls,Ds,NewCls,NewDs,_Info):- !,

@@ -82,13 +82,13 @@
 :- use_module(ciaopp(p_unit), [ new_predicate/3, type_of_goal/2]).
 :- use_module(ciaopp(p_unit/program_keys), [rewrite_source_all_clauses/2]).
 %% 
-:- use_module(engine(messages_basic), [message/2]).
 :- use_module(library(vndict), [create_pretty_dict/2]).
 :- use_module(library(aggregates), [findall/3]).
-:- use_module(ciaopp(analysis_stats), [pp_statistics/2]).
 :- use_module(library(write), [write/1]).
 :- use_module(library(lists), [member/2, append/3, length/2]).
 :- use_module(library(terms_vars), [varset/2]).
+:- use_module(ciaopp(ciaopp_log), [pplog/2]).
+:- use_module(ciaopp(analysis_stats), [pp_statistics/2]). 
 
 :- use_module(engine(hiord_rt), ['$meta_call'/1]).
 
@@ -100,11 +100,7 @@ unfold(SelRule,Unfold,Sg,Sv,Proj,AbsInt,Id,NF,A,LC_Time):-
     readjust_max_mem_usage,
     unf_int(Unfold,SelRule,Sg,Sv,Proj,AbsInt,Id,F,A,UnfClauses0,_ChTree),
     pp_statistics(runtime,[_,T_u]),
-    (current_pp_flag(verbosity,very_high) -> 
-        message(inform, ['{unfolded in ', ~~(T_u), ' msec.}'])
-    ;
-        true
-    ),
+    pplog(spec_module_high, ['{unfolded in ', ~~(T_u), ' msec.}']),
     increment_unfold_time(T_u),
     decide_remove_useless_post(UnfClauses0,AbsInt,Sg,Sv,Proj,UnfClauses),
     add_all_clauses(UnfClauses,NF,A,NewClauses),
@@ -115,7 +111,7 @@ unfold(SelRule,Unfold,Sg,Sv,Proj,AbsInt,Id,NF,A,LC_Time):-
     pp_statistics(runtime,[GT1,_]),
     global_time_ellapsed(GT1,GT,LC_Time),
     increment_local_control_time(LC_Time),
-    message(inform, ['{local control ',~~(LC_Time), ' msec.}']).
+    pplog(spec_module, ['{local control ',~~(LC_Time), ' msec.}']).
 
 decide_write_goal(Sg):-
     debug_write('GOAL'),

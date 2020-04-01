@@ -91,6 +91,15 @@ persistent_dir(dbdir, '~/.ciao.d/ciaopp_flags').
 
 % ---------------------------------------------------------------------------
 
+% TODO: How do we pass a list as a parameter to configure this flag through ciaoppcl?
+% TODO: This check is slow (O(n) in the number of values) but it should be fast
+% enough for our use case.
+pp_flag(pplog).
+pp_flag(pplog, 'Controls the message groups of CiaoPP.').
+current_pp_flags(  pplog, [auto_interface, analyze_module, ctchecks, dump, incremental, infer, load_module, modular, output,spec_module,transform_module]).
+valid_flag_values( pplog, sublist( _, [auto_interface, analyze_module, ctchecks, dump, incremental, incremental_high, infer, load_assrts, load_module, modular, output, p_abs, spec_module, spec_module_high,transform_module])).
+% TODO: does this list need to be sorted?
+
 pp_flag(output_info).
 pp_flag(output_info, 'Verbosity of additional info included as comments in output.').
 current_pp_flags(output_info, none).
@@ -799,11 +808,6 @@ pp_flag(ass_not_stat_eval).
 pp_flag(ass_not_stat_eval, 'When running compile-time checks, some assertions cannot be marked as checked or false. This flag decides what to do in those situations: nothing, report a warning or report an error.').
 current_pp_flags(  ass_not_stat_eval  , warning ). % TODO:[new-resources] was 'off' in new-resources
 valid_flag_values( ass_not_stat_eval  , member(_,[off,warning,error])).
-
-pp_flag(verbose_ctchecks).
-pp_flag(verbose_ctchecks, 'When this flag is set to on, all check assertions which are verified are printed.').
-current_pp_flags(  verbose_ctchecks  , off ).
-valid_flag_values( verbose_ctchecks  , member(_,[off,on])).
 
 pp_flag(verbosity).
 pp_flag(verbosity, 'This flag controls, the verbosity of ciaopp execution.').

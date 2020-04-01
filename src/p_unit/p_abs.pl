@@ -15,7 +15,7 @@
     write_registry_file/3,
     registry/3,
     %%%%%%%%%%%%%%%%%%%%%%% 
-  get_imported_modules/0,
+    get_imported_modules/0,
     get_imported_module_base/2,
     imported_module/2,
     registry_headers/2,
@@ -65,7 +65,6 @@
 :- use_module(library(lists), [member/2, append/3]).
 :- use_module(library(ctrlcclean), [ctrlc_clean/1]).
 :- use_module(library(errhandle), [error_protect/2]).
-:- use_module(ciaopp(analysis_stats), [pp_statistics/2]).
 :- use_module(engine(messages_basic), [message/2]).
 
 % CiaoPP libraries %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -73,6 +72,8 @@
 :- use_module(ciaopp(p_unit/itf_db), [current_itf/3, curr_file/2, exports/2]).
 :- use_module(ciaopp(infer/infer_db), [domain/1]).
 :- use_module(ciaopp(preprocess_flags), [current_pp_flag/2]).
+:- use_module(ciaopp(analysis_stats), [pp_statistics/2]).
+:- use_module(ciaopp(ciaopp_log), [pplog/2]).
 :- use_module(ciaopp(plai/plai_db),   [complete/7, get_parent_key/4]).
 :- use_module(ciaopp(plai/domains),   [identical_proj/5, less_or_equal_proj/5, abs_sort/3]).
 :- use_module(ciaopp(p_unit/auxinfo_dump), [
@@ -390,7 +391,7 @@ unmark_typedefs_already_loaded:-
 # "As @pred{gen_registry_info/3}, but also returns @var{Info}.".
 gen_registry_info(Verb,Callers,Imported,[time(Time,[])]):-
     stat_no_store(gen_registry_info(Verb,Callers,Imported), Time),
-    verb_message(Verb,['{Generated registry in ',Time,' msec.}']).
+    pplog(p_abs, ['{Generated registry in ',Time,' msec.}']).
 
 get_imported_changed_modules(Imported):-
     findall(Base,imported_changed_module(Base),Imported).
@@ -722,7 +723,7 @@ save_registry_info(Verb,[time(T,[])]):-
     ; true
     ),
     pp_statistics(runtime,[_,T]),
-    verb_message(Verb,['{Saved registry in ',T,' msec.}']),
+    pplog(p_abs, ['{Saved registry in ',T,' msec.}']),
     update_mem_usage,
     !.
 
@@ -746,7 +747,7 @@ save_registry_info(Verb,CurrBase,[time(T,[])]):-
     ; true
     ),
     pp_statistics(runtime,[_,T]),
-    verb_message(Verb,['{Saved registry in ',T,' msec.}']),
+    pplog(p_abs, ['{Saved registry in ',T,' msec.}']),
     update_mem_usage,
     !.
 
@@ -853,19 +854,19 @@ read_registry_file_(Module,Base,Verb):-
       ( read_registry_header(Verb,Module,Stream) ->
           current_input(CI),
           set_input(Stream),
-          verb_message(Verb,['{Reading ',RegName]),
+          pplog(p_abs, ['{Reading ',RegName]),
           read_types_data_loop(Module,NextTuple),   % NextTuple is the tuple after the last type definition.
           read_reg_data_loop(Module,NextTuple),
           set_input(CI),
-          verb_message(Verb,'}'),
+          pplog(p_abs, ['}']),
           fixpoint_trace('mod reg read',Module,_,_,Base,_,_)
-      ; verb_message(Verb,['{Wrong version of file: ',RegName,'. It will be overwritten.}']),
+      ; pplog(p_abs, ['{Wrong version of file: ',RegName,'. It will be overwritten.}']),
         create_registry_header(Module,PlName),
         add_changed_module(Module,Base,Module,registry_created,no),
         fixpoint_trace('mod reg header created',Module,_,_,Base,_,_)
       ),
       close(Stream)
-    ; verb_message(Verb,['{Non-existing file: ',RegName,'}']),
+    ; pplog(p_abs, ['{Non-existing file: ',RegName,'}']),
       create_registry_header(Module,PlName),
       add_changed_module(Module,Base,Module,registry_created,no),
       fixpoint_trace('mod reg header created',Module,_,_,Base,_,_)
@@ -901,7 +902,7 @@ patch_registry_(Module,Base,NeedsTreat):-
             ForceMark = unmarked  %% no mark at all.
         ; 
 %jcf-26.11.2004         ForceMark = invalid,
-%jcf-26.11.2004         verb_message(Verb,['{Non-up-to-date file: ',RegName,'. All entries will be marked as invalid.}'])
+%jcf-26.11.2004         pplog(p_abs, ['{Non-up-to-date file: ',RegName,'. All entries will be marked as invalid.}'])
             current_pp_flag(success_policy,SP),
             may_be_improved_mark(SP,ForceMark)
 %jcf-26.11.2004
@@ -1046,9 +1047,9 @@ read_registry_header(_Verb,Module,Stream):-
     read(Stream,v(V)),
     registry_header_format(V,HeaderTerms),
     read_registry_header_terms(Stream,Module,HeaderTerms).
-read_registry_header(Verb,Module,_Stream):-
+read_registry_header(_Verb,Module,_Stream):-
     current_itf(defines_module,Module,Base),
-    verb_message(Verb,['{Wrong version or corrupted file header: ',Base,'}']),
+    pplog(p_abs, ['{Wrong version or corrupted file header: ',Base,'}']),
     fail.
 
 % TODO: unify with itf read
@@ -1851,18 +1852,18 @@ gen_intermodule_graph_depth.
 :- pred write_registry_file(Base,Module,Verb) : atm * atm * atm
 # "Writes to disk the registry information stored in memory for module
   @var{Module} which has as base file name @var{Base}.".
-write_registry_file(Base,Module,Verb):-
+write_registry_file(Base,Module,_Verb):-
     get_module_filename(reg,Base,RegName),
     open(RegName,write,Stream), % overwrites the previous file.
     write_registry_header(Module,Stream),
     current_output(CO),
     set_output(Stream),
-    verb_message(Verb,['{Writing ',RegName]),
+    pplog(p_abs, ['{Writing ',RegName]),
     write_registry_file_types(Module),
     write_registry_file_loop(Module),
     set_output(CO),
     close(Stream),
-    verb_message(Verb,'}').
+    pplog(p_abs, ['}']).
 
 write_registry_file_types(Module):-
     current_fact(typedb(Module,TypeDef)),
@@ -2153,12 +2154,6 @@ key_or_id_complete(SgKey,AbsInt,Sg,Proj,Succ,Id,Ref,SgKey):-
     current_fact(complete(SgKey,AbsInt,Sg,Proj,Succ,Id,Ref)), !.
 key_or_id_complete(_SgKey0,AbsInt,Sg,Proj,Succ,Id,Ref,SgKey):-
     current_fact(complete(SgKey,AbsInt,Sg,Proj,Succ,Id,Ref)), !.
-
-verb_message(verbose,Message) :-
-    messages_basic:message(inform, Message).
-verb_message(debug,Message) :-
-    messages_basic:message(inform, Message).
-verb_message(quiet,_Message).
 
 :- pred get_module_from_sg(+Sg, ?Module) :: term * atm
 # "@var{Module} is the name of the module for the predicate to which

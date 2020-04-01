@@ -44,12 +44,12 @@
 
 :- use_module(spec(generalize_emb_atoms), [there_is_gen_hint/2]).
 
-:- use_module(engine(messages_basic), [message/2]).
 :- use_module(library(terms_vars), [varset/2]).
 :- use_module(library(terms), [copy_args/3]).
 :- use_module(library(terms_check), 
     [ instance/2, variant/2, most_specific_generalization/3 ]).
 :- use_module(library(aggregates), [findall/3, '^'/2]).
+:- use_module(ciaopp(ciaopp_log), [pplog/2]).
 :- use_module(ciaopp(analysis_stats), [pp_statistics/2]).
 
 :- doc(spec_def_for(Key,Sg,Sv,Proj,AbsInt,Id,NF,A),
@@ -130,8 +130,7 @@ do_spec_definition(Sg,Sv,Proj,AbsInt,Id,NClauses,NSg):-
     global_time_ellapsed(GT1,GT,TT),
 %       TT is TT0 - LC_Time,
     increment_global_control_time(TT),
-    message(inform, ['{global control ',~~(TT), ' msec.}']).
-
+    pplog(spec_module, ['{global control ',~~(TT), ' msec.}']).
 
 decide_part_conc(mono,AbsInt,Sg0,_Sv0,Proj0,Sg,Sv,Proj):-!,
     copy_term((Sg0,Proj0),(Sg1,Proj1)),
@@ -349,7 +348,6 @@ decide_instance(AbsInt,Sg,Proj,OldSg,OldProj):-
     ;
         abstract_instance(AbsInt,Sg,Proj,OldSg,OldProj)
     ).
-
 
 make_dynamic(Sg0,Sv0,Proj0,FSg,Sv0,Proj0):-
     functor(Sg0,F,A),

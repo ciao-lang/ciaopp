@@ -7,7 +7,7 @@
     ],
     [assertions, nativeprops, datafacts, isomodes, regtypes]).
 
-:- use_package(.(notrace)). % inhibits the tracing
+% :- use_package(.(notrace)). % inhibits the tracing
 :- use_package(spec(no_debug)).
 
 :- include(fixpo_dx_common).
@@ -419,9 +419,9 @@ mark_parents_change_list([(LitKey,C)|Rest],SCC,AbsInt):-
             % different entry, so it was added previously to the change list.
             true
         ;
-      % This complete is not expected to be in the parents list, only
-      % the ones that appear during the fixpoint of predicate @var{Key}
-      throw(error(unexpected_parent(LitKey,C,SCC)))
+            % This complete is not expected to be in the parents list, only
+            % the ones that appear during the fixpoint of predicate @var{Key}
+            throw(error(unexpected_parent(LitKey,C,SCC)))
         )
     ),
     mark_parents_change_list(Rest,SCC,AbsInt).

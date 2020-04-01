@@ -134,7 +134,8 @@ memo_ctcheck_sum(check) :-
 %------------------------------------------------------------------------------
 
 inform_as_change_to_user(Old,OldRef,New,Domains,Info) :-
-    current_pp_flag(verbose_ctchecks,VCT),   
+    current_pp_flag(pplog,L),
+    ( member(ctchecks, L) -> VCT = on ; VCT = off ),
     current_pp_flag(ass_not_stat_eval,STAT),   
     polynom_collect_message(Old, PolynomMsg), % TODO: ugly implementation!
     decide_inform_user(VCT, STAT, Old, OldRef, New, PolynomMsg, Domains, Info).
@@ -148,7 +149,7 @@ polynom_collect_message(As, Msg):-
 polynom_collect_message(_As, []).
 :- endif.
 
-% checked assertion, verbose_ctchecks = on
+% checked assertion, ctchecks pplog
 decide_inform_user(VCT, _STAT, Old, OldRef, New, [], _Domains, _Info):-
     Old = as${comp => OldComp},
     New = as${status => Status, type => Type},

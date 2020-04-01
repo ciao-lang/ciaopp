@@ -36,7 +36,7 @@
 
 :- use_module(ciaopp(p_unit/p_printer)).
 
-:- use_module(engine(messages_basic), [message/2]).
+:- use_module(ciaopp(ciaopp_log), [pplog/2]).
 :- use_module(ciaopp(analysis_stats), [pp_statistics/2]).
 :- use_module(engine(internals), [module_concat/3]).
 
@@ -172,7 +172,6 @@ detect_language(AbsFile, Lang) :-
 
 :- use_module(engine(stream_basic), [sourcename/1]).
 :- use_module(engine(stream_basic), [absolute_file_name/7]).
-:- use_module(engine(messages_basic), [display_list/1]).
 :- use_module(engine(runtime_control), [push_prolog_flag/2, pop_prolog_flag/1]).
 
 :- use_module(ciaopp(p_unit), [preprocessing_unit/3]). 
@@ -227,16 +226,16 @@ module_(ModList, Info):-
     ( AbsFileList = [AbsFileDesc] -> true
     ; AbsFileDesc = AbsFileList
     ),
-    message(inform, ['{Loading current module from ' , ~~(AbsFileDesc)]),
+    pplog(load_module, ['{Loading current module from ' , ~~(AbsFileDesc)]),
     %
     assert_curr_file(AbsFileList), % TODO: move into preprocessing_unit/3?
     preprocessing_unit(AbsFileList,_Ms,E),
     ( E == yes -> Info=[error|Info0] ; Info=Info0 ),
     % assert_initial_types, 
     pp_statistics(runtime,[_,T1]),
-    message(inform, ['{loaded in ',~~(T1), ' msec.}']),
+    pplog(load_module, ['{loaded in ',~~(T1), ' msec.}']),
     Info0=[time(T1,[])],
-    message(inform, ['}']),
+    pplog(load_module, ['}']),
     %
     curr_file(_, Mod),
     clean_unexpanded_data,
@@ -300,13 +299,13 @@ detect_language_from_list(_, Lang) :- Lang = ciao.
 the libraries. This predicate is called implicitly by @pred{module/1} but that
 we can call it explicitly to ensure that the cache is preloaded.".
 ensure_lib_sources_loaded :-
-  current_pp_flag(preload_lib_sources, on),
-  % Check if they were already loaded
-  \+ loaded_lib_sources, !,
+    current_pp_flag(preload_lib_sources, on),
+    % Check if they were already loaded
+    \+ loaded_lib_sources, !,
     ensure_datadir('ciaopp_lib_cache', Dir),
     catch(load_lib_sources(Dir), _, true).
-  % TODO: warn if not defined??
-  % TODO: call command to generate them if not defined??
+    % TODO: warn if not defined??
+    % TODO: call command to generate them if not defined??
 ensure_lib_sources_loaded.
 
 % ---------------------------------------------------------------------------
@@ -368,13 +367,11 @@ perform_transformations([E|Ls]) :-
 :- endif. % with_fullpp
 
 :- use_module(library(pretty_print),  [pretty_print/4]).
-:- use_module(library(messages),      [error_message/2]).
-:- use_module(library(messages),      [warning_message/2]).
+:- use_module(library(messages),      [error_message/2, warning_message/2]).
 :- use_module(library(odd), [setarg/3]). % TODO: DO NOT USE IT!
 :- use_module(library(terms),         [atom_concat/2]).
 
-:- use_module(typeslib(typeslib),
-        [get_required_types/1, typedef_to_pred/3]).
+:- use_module(typeslib(typeslib), [get_required_types/1, typedef_to_pred/3]).
 :- use_module(library(format), [format/3]).
 
 % :- include(engine(builtin_exports)).
@@ -488,7 +485,7 @@ output(File) :-
         fail
     ; true
     ),
-    message(inform, ['{written file ',~~(File),'}']).
+    pplog(output, ['{written file ',~~(File),'}']).
 
 % ---------------------------------------------------------------------------
 

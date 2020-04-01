@@ -14,13 +14,13 @@
 
 :- use_module(ciaopp(p_unit/itf_db), [assert_itf/5]).
 
-:- use_module(engine(messages_basic), [message/2]).
 :- use_module(library(terms),      [copy_args/3]). 
 :- use_module(library(terms_vars), [varset/2]). 
 :- use_module(library(vndict),     [create_pretty_dict/2]). 
-:- use_module(library(lists),      [member/2, length/2]). 
-:- use_module(ciaopp(analysis_stats), [pp_statistics/2]). 
+:- use_module(library(lists),      [member/2, length/2]).
 :- use_module(library(aggregates), [findall/3]). 
+:- use_module(ciaopp(ciaopp_log), [pplog/2]).
+:- use_module(ciaopp(analysis_stats), [pp_statistics/2]). 
 
 :- data filter/3.
 
@@ -71,7 +71,7 @@ arg_filtering(Cls,_Ds,AbsInt,NCls,NDs):-
     create_filters(Init_sp,AbsInt),
     arg_filt(Cls,NCls,NDs),
     pp_statistics(runtime,[_,T]),
-    message(inform, ['{transformed by arg_filtering in ', ~~(T),' msec.}']).
+    pplog(spec_module, ['{transformed by arg_filtering in ', ~~(T),' msec.}']).
 
 :- pred list_exported(+Init,+AbsInt,-Init_sp) # "@var{Init_sp} is the
     list of implemented versions which are exported by the

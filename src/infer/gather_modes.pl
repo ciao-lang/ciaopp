@@ -32,10 +32,10 @@ get_modes_assrt(_,_) :- fail. % (default)
 :- use_module(ciaopp(p_unit/assrt_db)).
 :- use_module(library(hiordlib), [maplist/3, maplist/4]).
 :- use_module(ciaopp(preprocess_flags), [current_pp_flag/2]).
+:- use_module(ciaopp(ciaopp_log), [pplog/2]).
 
 :- use_module(engine(internals), [module_concat/3]).
 :- use_module(engine(runtime_control), [module_split/3]).
-:- use_module(engine(messages_basic), [message/2]).
 :- use_module(library(lists),           [member/2, append/3, length/2]).
 :- use_module(library(sets),            [ord_member/2]).
 :- use_module(library(sort),            [sort/2]).
@@ -103,7 +103,7 @@ remove_dead_code(Cls0, Ds0, Cls, Ds) :-
     (source_clause(_, directive(module(_, Exports0, _)), _) -> true ; true),
     (
         var(Exports0) ->
-        message(note, ['All predicates exported so there is no dead code']),
+        pplog(infer, ['All predicates exported so there is no dead code']),
         Cls = Cls0, Ds = Ds0
     ;
         findall(F/A, (entry_assertion(Goal, _, _), functor(Goal, F, A)),
@@ -119,7 +119,7 @@ remove_dead_code(Cls0, Ds0, Cls, Ds) :-
         remove_clauses(Preds, Cls0, Ds0, Cls, Ds),
         (
             Preds \== [] ->
-            message(note, ['Removing unreachable predicates: ', ''(Preds)])
+            pplog(infer, ['Removing unreachable predicates: ', ''(Preds)])
         ;
             true
         )

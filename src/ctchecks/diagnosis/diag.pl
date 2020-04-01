@@ -11,7 +11,7 @@
 
 
 % local stuff
-:- use_module('./diag_supp').
+:- use_module(ciaopp(ctchecks/diagnosis/diag_supp)).
 
 % ciaopp stuff
 :- use_module(ciaopp(plai/plai_db), [complete/7, memo_table/6]).
@@ -41,11 +41,11 @@
 
 % how0(Abs,SgKey,Lit,AssProps,AllWhere) :-
 %       statistics(runtime,_),
-%       message(inform, ['{Diagnosing']),
+%       pplog(ctchecks, ['{Diagnosing']),
 %       findall(Where,how(Abs,SgKey,calls,Lit,AssProps,Where),AllWhere),
 %       statistics(runtime,[_,CTime]),
-%       message(inform, ['{completed in ',CTime,' msec.}']),
-%       message(inform, ['}']),
+%       pplog(ctchecks, ['{completed in ',CTime,' msec.}']),
+%       pplog(ctchecks, ['}']),
 %       displayq(AllWhere).
 
 :- regtype bug_location/1.

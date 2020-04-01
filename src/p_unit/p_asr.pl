@@ -144,6 +144,7 @@ importing libraries @lib{ciaopp/p_unit}, @lib{ciaopp/p_unit/itf_db},
 :- use_module(ciaopp(p_unit), [add_output_operator/3, add_output_package/1]).
 :- use_module(ciaopp(p_unit), [add_assertions/1, add_commented_assertion/1, get_assertion/2]).
 :- use_module(ciaopp(preprocess_flags), [current_pp_flag/2, set_pp_flag/2]).
+:- use_module(ciaopp(ciaopp_log), [pplog/2]).
 
 :- use_module(library(aggregates), [findall/3]).
 
@@ -388,7 +389,7 @@ there_was_error(no).
 %% this file have to assert related_file fact to be processed later.
 
 % process_main_file(Base,M,Verb,Opts):- 
-%         verb_message(Verb, '{Processing main module ' ),
+%         pplog(load_assrts, ['{Processing main module ']),
 %       defines_module(Base,M),
 %       assertz_fact( processed_file( Base ) ),
 %       assert_itf(defines_module,M,_,_,Base),
@@ -412,7 +413,7 @@ there_was_error(no).
 %         deactivate_second_translation( Base, M ),
 %       %% initialize the (directly) related files of Base
 %       assert_related_files_( Base, Verb ),
-%         verb_message( Verb, '}' ).
+%         pplog(load_assrts, ['}']).
 
 :- pred load_related_files(Files, M) : (list(Files), var(M))
 # "Add some related files to the current module(s) loaded. The
@@ -430,8 +431,8 @@ load_related_files([], M) :-
     erase(Ref),
     !.
 
-process_main_info_file(M, Verb, Opts, Base) :-
-    verb_message(Verb, '{Processing main module '),
+process_main_info_file(M, _Verb, Opts, Base) :-
+    pplog(load_assrts,['{Processing main module ']),
     defines_module(Base, M),
     assertz_fact(processed_file(Base)),
     assert_itf(defines_module, M, _, _, Base),
@@ -466,8 +467,7 @@ process_main_info_file(M, Verb, Opts, Base) :-
     deactivate_second_translation(Base, M),
 %% initialize the (directly) related files of Base
     assert_related_files_(Base, quiet),
-    verb_message(Verb, '}').
-
+    pplog(load_assrts,['}']).
 save_itf_info_of(Base, M, _IsMain) :-
     defines(Base, F, A, DefType, Meta),
     assert_itf(defines, M, F, A, M),
@@ -584,7 +584,7 @@ asr_readable(Verb, Base) :-
 %     reading more than once, uncomment these lines
 %
     ( current_fact(processed_file(Base)) ->
-        verb_message(_, ['Internal Error: file ', Base,
+        message(inform, ['Internal Error: file ', Base,
                 ' is beeing processed twice!'])
     ;
         assertz_fact(processed_file(Base)),
@@ -991,7 +991,7 @@ process_related_file(Rel, Verb, Opts, Base) :-
 %       display( processed_file( Base ) ), nl,
 
     assert_itf(defines_module, M, _, _, Base),
-    verb_message(Verb, ['{Processing related module ', M]),
+    pplog(load_assrts,['{Processing related module ', M]),
 %% .asr file
     get_module_filename(asr, Base, AsrName),
     (
@@ -1026,7 +1026,7 @@ process_related_file(Rel, Verb, Opts, Base) :-
     ),
     % TODO: should multifile be saved?
     save_itf_info_of(Base, M, no),
-    verb_message(Verb, '}').
+    pplog(load_assrts,'}').
 
 write_and_save_assertions_of(P, M) :-
     get_assertions_of(P, M, Assrt),
@@ -1286,12 +1286,12 @@ read_asr_file(AsrName, Verb) :-
         asr_version(V),
         read(Stream, v(V)),
         !,
-        verb_message(Verb, ['{Reading ', AsrName]),
+        pplog(load_assrts,['{Reading ', AsrName]),
         read_asr_data_loop(Verb, AsrName, Stream),
         close(Stream),
-        verb_message(Verb, '}')
+        pplog(load_assrts,['}'])
     ;
-        verb_message(Verb, ['{Old version in ', AsrName, '}']),
+        pplog(load_assrts,['{Old version in ', AsrName, '}']),
         close(Stream),
         fail
     ).
@@ -1399,12 +1399,6 @@ close_asr(Stream, CI) :-
     close(Stream).
 
 %% ---------------------------------------------------------------------------
-
-verb_message(verbose, Message) :- messages_basic:message(inform, Message).
-verb_message(debug,   Message) :- messages_basic:message(inform, Message).
-verb_message(quiet,   _Message).
-
-%% ---------------------------------------------------------------------------
 % CACHE
 %% ---------------------------------------------------------------------------
 
@@ -1416,7 +1410,7 @@ ast_cache([
 %       library(hiord_rt),
             library(sort),
             library(terms_check),
-
+            %
             engine(term_basic),
             engine(arithmetic),
             engine(debugger_support),

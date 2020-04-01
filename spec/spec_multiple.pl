@@ -35,12 +35,12 @@
 :- use_module(spec(spec_iterate),       [init_clause_result/0]).
 :- use_module(spec(min_unf),            [group_versions/4]).
 :- use_module(spec(global_control),     [spec_def_for/8, spec_wrt/3]).
-:- use_module(ciaopp(plai/domains),            [identical_proj/5]).
+:- use_module(ciaopp(plai/domains),     [identical_proj/5]).
 :- use_module(spec(s_simpspec),         [make_atom/2, newformat/2]).
 :- use_module(spec(s_simpspec), [list_format/2]).
 
 :- use_module(ciaopp(p_unit),          [new_predicate/3, predicate_names/1]).
-:- use_module(ciaopp(p_unit/itf_db),          [assert_itf/5, retract_itf/5]).
+:- use_module(ciaopp(p_unit/itf_db),   [assert_itf/5, retract_itf/5]).
 :- use_module(ciaopp(p_unit/program_keys),
     [decode_litkey/5, decode_entrykey/4, decode_predkey/3, get_predkeys/2,
      get_predkey/3]).
@@ -50,13 +50,12 @@
 :- use_module(spec(spec_support), 
     [record_latest_replacement/3, get_simplif/2, prepare_ai_info/2]).
 
-:- use_module(engine(messages_basic), [message/2]).
 :- use_module(library(aggregates), [findall/3]). 
-:- use_module(library(lists), [member/2, append/3, length/2]). 
-:- use_module(ciaopp(analysis_stats), [pp_statistics/2]). 
+:- use_module(library(lists), [member/2, append/3, length/2]).
 :- use_module(library(idlists), [memberchk/2, subtract/3]).
+:- use_module(ciaopp(ciaopp_log), [pplog/2]).
+:- use_module(ciaopp(analysis_stats), [pp_statistics/2]). 
 :- use_module(ciaopp(preprocess_flags), [current_pp_flag/2]).
-
 
 :- pred mult_spec(+Program,+Dicts,+Preds,+Abs,-Simp_S_Prog,-Simp_S_Dicts,-Simp_S_Preds).
 mult_spec(Program,Dicts,Preds,Abs,Simp_S_Prog,Simp_S_Dicts,Simp_S_Preds):-
@@ -681,7 +680,7 @@ all_versions(Program,Dicts,Abs,Sp_program,Sp_Dicts):-
     newformat(Sp_Prog,Sp_program),
     erase_all_local_data,
     pp_statistics(runtime,[_,T]),
-    message(inform, ['{transformed by vers in ', ~~(T),' msec.}']).
+    pplog(spec_module, ['{transformed by vers in ', ~~(T),' msec.}']).
 
 :- pred get_version_name(+AbsInt,+Sg,+Call,-Name) 
 # "Given a predicate call @var{Sg} and a call pattern @var{Call} in

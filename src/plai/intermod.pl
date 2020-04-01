@@ -113,6 +113,7 @@
 :- use_module(engine(runtime_control), [push_prolog_flag/2, pop_prolog_flag/1]).
 
 :- use_module(ciaopp(p_unit/p_dump), [dump_dir/1, dump/2]).
+:- use_module(ciaopp(ciaopp_log), [pplog/2]).
 
 % statistics
 :- use_module(ciaopp(analysis_stats)).
@@ -203,7 +204,7 @@ manual_analyze(Analyses,FileName,OpenMode):-
     push_pp_flag(intermod,on),
     module(Base,_LoadInfo),
     curr_file(File,_),
-    message(inform, ['{Analyzing with manual_analyze: ',~~(File)]),
+    pplog(modular, ['{Analyzing with manual_analyze: ',~~(File)]),
     set_top_level(Base),
 %       push_pp_flag(entry_policy,all),
     cleanup_p_abs,
@@ -219,7 +220,7 @@ manual_analyze(Analyses,FileName,OpenMode):-
 %       pop_pp_flag(entry_policy),
     pop_pp_flag(intermod),
     set_modules_analyzed([Base]),
-    message(inform, ['}']).
+    pplog(modular, ['}']).
 
 :- set_prolog_flag(multi_arity_warnings,on).
 
@@ -265,11 +266,11 @@ modular_analyze_(all,registry,one,Analysis,TopLevel,Info):- !,
 modular_analyze_(all,registry,all,Analysis,TopLevel,Info):- !,
     monolithic_analyze(Analysis,TopLevel,Info).
 modular_analyze_(all,registry,threshold,_Analysis,_TopLevel,_Info):- !,
-    message(inform, ['threshold loading policy not implemented yet.']).
+    pplog(modular, ['threshold loading policy not implemented yet.']).
 modular_analyze_(all,registry,threshold_scc,_Analysis,_TopLevel,_Info):- !,
-    message(inform, ['threshold_scc loading policy not implemented yet.']).
+    pplog(modular, ['threshold_scc loading policy not implemented yet.']).
 modular_analyze_(all,assertions,_LoadPolicy,_Analysis,_TopLevel,_Info):-
-    message(inform, ['analyzing all modules without using registry seems to make no sense.']).
+    pplog(modular, ['analyzing all modules without using registry seems to make no sense.']).
 
 %% --------------------------------------------------------------------
 
@@ -309,7 +310,7 @@ auto_analyze(Analysis,TopLevel,Info):-
 auto_analyze(Analyses,TopLevel,Info):-
     pp_statistics(runtime,[T1,_]),  %% total ellapsed time.
     valid_mod_analysis(Analyses), !,
-    message(inform, ['{Analyzing with auto_analyze: ',~~(TopLevel)]),
+    pplog(modular, ['{Analyzing with auto_analyze: ',~~(TopLevel)]),
     reset_mem_usage,
     push_prolog_flag(gc,on), % TODO: why?
     set_top_level(TopLevel),
@@ -342,7 +343,7 @@ auto_analyze(Analyses,TopLevel,Info):-
 %%jcf-20.10.2005%       pop_pp_flag(entry_policy),
     set_modules_analyzed(ModList),
     pop_pp_flag(intermod),
-    message(inform, ['}']),
+    pplog(modular, ['}']),
     !.
 
 %%%:- data module_times/1.
@@ -548,7 +549,7 @@ naive_analyze_modules(_, _) :-
     there_are_previous_errors, !.
 naive_analyze_modules(AbsInt, [CurrMod|Mods]) :-
     retract_fact(naive_pending_modules(CurrMod)), !,
-    message(inform, ['{intermod: analyzing ',~~(CurrMod)]),
+    pplog(modular, ['{intermod: analyzing ',~~(CurrMod)]),
     cleanup_p_abs,  % IG: done in module also
     module(CurrMod, Stats),
     get_stat(Stats, time(LoadTime,_)),
@@ -588,7 +589,7 @@ naive_analyze_modules(AbsInt, [CurrMod|Mods]) :-
     add_naive_pending_modules(Imported),
     ctcheck_module_naive(CurrMod),
     %       output,
-    message(inform, ['}']),
+    pplog(modular, ['}']),
     naive_analyze_modules(AbsInt,Mods).
 naive_analyze_modules(AbsInt, [_CurrMod|Mods]):-
     naive_analyze_modules(AbsInt,Mods).
@@ -645,7 +646,7 @@ do_intermod_remaining(_Scheduling,_AbsInt).
 
 do_intermod_one_module(Scheduling,AbsInt):-
     pop(CurrMod,CurrPty),
-    message(inform, ['{intermod: analyzing ',~~(CurrMod),' with priority ',~~(CurrPty)]),
+    pplog(modular, ['{intermod: analyzing ',~~(CurrMod),' with priority ',~~(CurrPty)]),
     cleanup_p_abs,
 %%% pp_statistics(walltime,[T1,_]),
     module(CurrMod,[time(LoadTime,_)]),
@@ -669,12 +670,12 @@ do_intermod_one_module(Scheduling,AbsInt):-
     ),
     calc_priority_callers(Scheduling,CurrPty,Callers,CallersPty),
     calc_priority_imported(Scheduling,CurrPty,Imported,ImportedPty),
-    message(inform, ['{intermod: adding',~~(Callers),' to the priority queue.}']),
-    message(inform, ['{intermod: adding',~~(Imported),' to the priority queue.}']),
+    pplog(modular, ['{intermod: adding',~~(Callers),' to the priority queue.}']),
+    pplog(modular, ['{intermod: adding',~~(Imported),' to the priority queue.}']),
     push(Callers,CallersPty),
     push(Imported,ImportedPty),
     ctcheck_module_intermod(CurrMod),
-    message(inform, ['}']).
+    pplog(modular, ['}']).
 
 %% --------------------------------------------------------------------
 
@@ -744,7 +745,7 @@ monolithic_analyze(Analyses,TopLevel,Info):-
     pp_statistics(runtime,[T1,_]),  %% total ellapsed time.
     valid_mod_analysis(Analyses), !,
     cleanup_intermod,
-    message(inform, ['{Analyzing with monolithic_analyze: ',~~(TopLevel)]),
+    pplog(modular, ['{Analyzing with monolithic_analyze: ',~~(TopLevel)]),
     reset_mem_usage,
     push_prolog_flag(gc,on), % TODO: why?
     set_top_level(TopLevel),
@@ -783,7 +784,7 @@ monolithic_analyze(Analyses,TopLevel,Info):-
 %%jcf-20.10.2005%       pop_pp_flag(entry_policy),
     pop_pp_flag(intermod),
     set_modules_analyzed(ModList),
-    message(inform, ['}']).
+    pplog(modular, ['}']).
 
 debug_inc_dump_dir(CurrMod) :-
     dump_dir(DumpDir), !,
@@ -882,7 +883,7 @@ auto_check(Analysis,TopLevel):-
     atom(Analysis),  % Only one analysis domain is considered.
     valid_mod_analysis(Analysis), !,
     cleanup_intermod,
-    message(inform, ['{Generating check info for program unit: ',~~(TopLevel)]),
+    pplog(modular, ['{Generating check info for program unit: ',~~(TopLevel)]),
     set_top_level(TopLevel),
     push_pp_flag(intermod,auto),
     push_pp_flag(entry_policy,force),
@@ -901,7 +902,7 @@ auto_check(Analysis,TopLevel):-
 %       compare_completes_with_prev(Analysis,Flag,'='),
     compare_completes_with_prev(Analysis,Flag,'>='),
     ( var(Flag) ->
-        message(inform, ['Comparison with monolithic analysis completed successfully.'])
+        pplog(modular, ['Comparison with monolithic analysis completed successfully.'])
     ;
         message(inform, ['Comparison with monolithic analysis has not succeeded. See previous messages.'])
     ),
@@ -910,7 +911,7 @@ auto_check(Analysis,TopLevel):-
     pop_pp_flag(dump_pp),
     pop_pp_flag(entry_policy),
     pop_pp_flag(intermod),
-    message(inform, ['}']).
+    pplog(modular, ['}']).
 
 % checking_fixpoint(check_di).
 
@@ -922,7 +923,7 @@ auto_check_modules(Analysis,[M|Ms]):-
 auto_check_one_module(Analysis,File):-
     absolute_file_name(File, '_opt', '.pl', '.', _, BaseAbs, _),
     just_module_name(BaseAbs,Module),
-    message(inform, ['{generating check info for module: ',~~(BaseAbs)]),
+    pplog(modular, ['{generating check info for module: ',~~(BaseAbs)]),
 %jcf (to save memory; the process will be slower).
 %jcf    cleanup_p_abs_all,
 %jcf
@@ -995,7 +996,7 @@ auto_transform(Analysis,Trans,TopLevel):-
 auto_transform(Analysis,Trans,TopLevel,Info):-
     valid_transformation(Trans), !,
     cleanup_intermod,
-    message(inform, ['{Transforming with auto_transform: ',~~(TopLevel)]),
+    pplog(modular, ['{Transforming with auto_transform: ',~~(TopLevel)]),
     set_top_level(TopLevel),
     push_pp_flag(intermod,auto),
     push_pp_flag(entry_policy,force),
@@ -1010,7 +1011,7 @@ auto_transform(Analysis,Trans,TopLevel,Info):-
     %%
     pop_pp_flag(entry_policy),
     pop_pp_flag(intermod),
-    message(inform, ['}']).
+    pplog(modular, ['}']).
 
 :- set_prolog_flag(multi_arity_warnings,on).
 
@@ -1052,15 +1053,15 @@ transform_module_list(Analysis,Trans,[Base|Bases],Changed):-
 
 transform_one_module(Analysis,Trans,File,Changed):-
     absolute_file_name(File, '_opt', '.pl', '.', _, BaseAbs, _),
-    message(inform, ['{intermod: transforming ',~~(BaseAbs),'}']),
+    pplog(modular, ['{intermod: transforming ',~~(BaseAbs),'}']),
 %jcf%-very special cases: basiccontrol.pl, etc.
     just_module_name(BaseAbs,Mod),
     ( module_not_transformable(Mod) ->
-        message(inform, ['{intermod: Module not transformable: ',~~(BaseAbs),'}'])
+        pplog(modular, ['{intermod: Module not transformable: ',~~(BaseAbs),'}'])
     ;
 %jcf%
         ( registry_is_empty(Analysis,Mod,BaseAbs) ->
-            message(inform, ['{intermod: Module does not need transformation: ',~~(BaseAbs),'}'])
+            pplog(modular, ['{intermod: Module does not need transformation: ',~~(BaseAbs),'}'])
         ;
             module(BaseAbs),
             analyze1(Analysis,_),
@@ -1140,7 +1141,7 @@ auto_ctcheck_internal(Analysis, TopLevel, [(time,Time),Info],ModuleList,Summary)
 %       valid_mod_analysis_all(Analysis),!,
     pp_statistics(runtime,[T1,_]),
     cleanup_intermod,
-    message(inform, ['{Modular-based assertion checking with auto_ctchecks: ',~~(TopLevel)]),
+    pplog(modular, ['{Modular-based assertion checking with auto_ctchecks: ',~~(TopLevel)]),
     set_top_level(TopLevel),
     push_pp_flag(intermod,auto),
     ( current_pp_flag(ct_ext_policy, assertions) ->
@@ -1160,17 +1161,17 @@ auto_ctcheck_internal(Analysis, TopLevel, [(time,Time),Info],ModuleList,Summary)
     pop_pp_flag(intermod),
     pp_statistics(runtime,[T2,_]),
     Time is T2 - T1,
-    message(inform, ['}']).
+    pplog(modular, ['}']).
 
 auto_ctcheck_(_Analysis, _TopModule, [], assert_count([]),ok).
 auto_ctcheck_(Analysis, TopModule, [Module|Modules], assert_count(Info),SOut) :-
     module(Module,_LoadInfo),
     curr_file(File,_),
-    message(inform, ['{Analyzing for auto_ctcheck: ',~~(File)]),
+    pplog(modular, ['{Analyzing for auto_ctcheck: ',~~(File)]),
     set_top_level(TopModule),
     cleanup_p_abs,
     analyze1(Analysis,_Info),
-    message(inform, ['}']),!,
+    pplog(modular, ['}']),!,
     acheck_info(assert_count(Info1),Summ),
     output,
     auto_ctcheck_(Analysis, TopModule, Modules, assert_count(Info2),S1),
@@ -1204,7 +1205,7 @@ auto_ctcheck_opt(Analysis, TopLevel) :-
 auto_ctcheck_opt(Analysis, TopLevel, [(time,Time),Info]) :-
     valid_mod_analysis(Analysis),!,
     cleanup_intermod,
-    message(inform, ['{Modular-based assertion checking with auto_ctcheck_opt: ',~~(TopLevel)]),
+    pplog(modular, ['{Modular-based assertion checking with auto_ctcheck_opt: ',~~(TopLevel)]),
 %jcf%   copy_sources,
     push_pp_flag(intermod,auto),
     push_pp_flag(entry_policy,force),
@@ -1222,19 +1223,19 @@ auto_ctcheck_opt(Analysis, TopLevel, [(time,Time),Info]) :-
     pop_pp_flag(intermod),
     pp_statistics(runtime,[T2,_]),
     Time is T2 - T1,
-    message(inform, ['}']).
+    pplog(modular, ['}']).
 
 auto_ctcheck_opt_(_Analysis, _TopModule, [], assert_count([])).
 auto_ctcheck_opt_(Analysis, TopModule, [Module|Modules], assert_count(Info)) :-
 %       absolute_file_name(FileName, '_opt', '.pl', '.', _, Base, _),
     module(Module,_LoadInfo),
     curr_file(File,_),
-    message(inform, ['{Analyzing for auto_ctcheck: ',~~(File)]),
+    pplog(modular, ['{Analyzing for auto_ctcheck: ',~~(File)]),
     set_top_level(TopModule),
 %       push_pp_flag(entry_policy,all),
     cleanup_p_abs,
     analyze1(Analysis,_Info),
-    message(inform, ['}']),!,
+    pplog(modular, ['}']),!,
     acheck_info(assert_count(Info1),_),
     atom_concat(Module,'.pl',Module_pl),
     output(Module_pl),
@@ -1278,7 +1279,7 @@ monolithic_ctcheck(Analysis,TopLevel):-
 monolithic_ctcheck(Analysis,TopLevel,[(time,Time),Info]):-
     valid_mod_analysis(Analysis), !,
     cleanup_intermod,
-    message(inform, ['{Generating check info for program unit: ',~~(TopLevel)]),
+    pplog(modular, ['{Generating check info for program unit: ',~~(TopLevel)]),
     set_top_level(TopLevel),
     push_pp_flag(intermod,auto),
     push_pp_flag(entry_policy,force),
@@ -1290,7 +1291,7 @@ monolithic_ctcheck(Analysis,TopLevel,[(time,Time),Info]):-
     pop_pp_flag(dump_pp),
     pop_pp_flag(entry_policy),
     pop_pp_flag(intermod),
-    message(inform, ['}']),
+    pplog(modular, ['}']),
     acheck_info(Info,_Summary),
     pp_statistics(runtime,[T2,_]),
     Time is T2 - T1.
@@ -1307,13 +1308,13 @@ inductive_ctcheck(Analysis,TopLevel):-
 
 inductive_ctcheck(Analysis,TopLevel,[(time,Time),Info],ERR):-
 %       valid_mod_analysis_all(Analysis), !,
-    message(inform, ['{Inductive assertions checking in : ',~~(TopLevel)]),
+    pplog(modular, ['{Inductive assertions checking in : ',~~(TopLevel)]),
     get_all_modules(TopLevel,ModList),
     push_pp_flag(intermod, off),
     pp_statistics(runtime,[T1,_]),
     ind_ctcheck_(Analysis, ModList, Info,ERR),
     pop_pp_flag(intermod),
-    message(inform, ['}']),
+    pplog(modular, ['}']),
     pp_statistics(runtime,[T2,_]),
     Time is T2 - T1,
     set_modules_analyzed(ModList).
@@ -1430,7 +1431,7 @@ delete_files_(Dir,[File|Files]):- % TODO: IG change by path_concat
             delete_files(AbsFile),
             delete_directory(AbsFile)
         ;
-            message(inform, ['{Erasing ',~~(AbsFile),'}']),
+            pplog(modular, ['{Erasing ',~~(AbsFile),'}']),
             delete_file(AbsFile)
         )
     ;   true
@@ -1475,10 +1476,10 @@ auto_simp_libs(TopLevel,Dir0):-
 
 auto_simp_libs(TopLevel,Dir,Info):-
     cleanup_intermod,
-    message(inform, ['{Processing with auto_simp_libs: ',~~(TopLevel)]),
+    pplog(modular, ['{Processing with auto_simp_libs: ',~~(TopLevel)]),
     set_top_level(TopLevel),
     ( file_exists(Dir) ->
-        message(inform, ['{Removing all files in ',~~(Dir),'}']),
+        pplog(modular, ['{Removing all files in ',~~(Dir),'}']),
         push_pp_flag(intermod,auto),
         push_pp_flag(entry_policy,force),
 %           push_pp_flag(punit_boundary,no_engine),
@@ -1487,7 +1488,7 @@ auto_simp_libs(TopLevel,Dir,Info):-
         delete_files(Dir),
 %           cleanup_itf_cache,
         get_all_modules(TopLevel,ModList,InclList),
-        message(inform, ['Copying library files to ',~~(Dir)]),
+        pplog(modular, ['Copying library files to ',~~(Dir)]),
         copy_modules(ModList,Dir,TargetList),
         copy_modules(InclList,Dir,_InclTargetList),
         get_modules_regnames(TargetList,RegList),
@@ -1507,9 +1508,9 @@ auto_simp_libs(TopLevel,Dir,Info):-
         pop_pp_flag(entry_policy),
         pop_pp_flag(intermod)
     ;
-        message(inform, ['Directory does not exist: ',~~(Dir)])
+        pplog(modular, ['Directory does not exist: ',~~(Dir)])
     ),
-    message(inform, ['}']).
+    pplog(modular, ['}']).
 
 :- multifile library_directory/1.
 :- dynamic library_directory/1.
@@ -1517,7 +1518,7 @@ auto_simp_libs(TopLevel,Dir,Info):-
 copy_modules([],_,[]).
 copy_modules([Mod|ModList],Dir,[TargetMod|TargetModList]):-
     get_module_filename(pl,Mod,FileName),
-    message(inform, ['{Copying: ',~~(FileName)]),
+    pplog(modular, ['{Copying: ',~~(FileName), '}']),
     copy_lib_subdir(Dir,FileName,SubDir),
     get_new_base(SubDir,Mod,TargetMod),
     copy_modules(ModList,Dir,TargetModList).

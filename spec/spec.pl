@@ -50,6 +50,7 @@
     ]).
 
 :- use_module(ciaopp(preprocess_flags), [current_pp_flag/2]).
+:- use_module(ciaopp(ciaopp_log), [pplog/2]).
 
 :- use_module(ciaopp(plai/fixpo_ops), [bottom/1]).
 :- use_module(ciaopp(plai/domains), [call_to_entry/10, abs_sort/3, concrete/4]).
@@ -60,7 +61,6 @@
 
 :- use_module(spec(unfold_builtins), [translate_lattice_types/4]).
 
-:- use_module(engine(messages_basic), [message/2]).
 :- use_module(library(aggregates)).
 :- use_module(library(format)).
 :- use_module(library(lists),      [member/2, append/3, length/2]).
@@ -138,8 +138,7 @@ simplify_specialize(Abs,Spec,Prog,Dicts,NewProg,NewDicts):-
     newformat(NTmpProg,NewProg),
     erase_all_local_data,
     pp_statistics(runtime,[_,T]),
-    message(inform, ['{transformed by ', ~~(Spec), ' in ', ~~(T), ' msec.}']).
-
+    pplog(spec_module, ['{transformed by ', ~~(Spec), ' in ', ~~(T), ' msec.}']).
 
 filter_out_non_static([],[]).
 filter_out_non_static([F/A|Preds],Static_Preds):-

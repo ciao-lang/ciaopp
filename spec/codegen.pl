@@ -44,13 +44,14 @@
     add_assertion_read/9]).
 :- use_module(ciaopp(plai/fixpo_ops), [collect_exported_completes/2]).
 
-:- use_module(engine(messages_basic), [message/2]).
 :- use_module(library(terms), [copy_args/3]). 
 :- use_module(library(aggregates), [findall/3]). 
-:- use_module(ciaopp(analysis_stats), [pp_statistics/2]). 
 :- use_module(library(sort), [sort/2]). 
 :- use_module(library(lists), [member/2, append/3, length/2]). 
-:- use_module(library(vndict), [create_pretty_dict/2]). 
+:- use_module(library(vndict), [create_pretty_dict/2]).
+
+:- use_module(ciaopp(ciaopp_log), [pplog/2]).
+:- use_module(ciaopp(analysis_stats), [pp_statistics/2]). 
 
 :- doc(codegen(+Abs,-Sp_program,-Sp_Dicts), "@var{Sp_Program} is
       the specialized program generated when analysis performs
@@ -64,7 +65,7 @@ codegen(Abs,Sp_program,Sp_Dicts,[TimeInfo,MemoryInfo]):-
     TimeInfo = time(T,[]),
     ask_mem_usage(Delta,Details),
     MemoryInfo = memory(Delta,Details),
-    message(inform, ['{transformed by codegen in ', ~~(T),' msec.}']).
+    pplog(spec_module, ['{transformed by codegen in ', ~~(T),' msec.}']).
 
 :- doc(codegen_af(+Abs,-Sp_program,-Sp_Dicts), "@var{Sp_Program}
       is the specialized program generated when analysis performs
@@ -79,7 +80,7 @@ codegen_af(Abs,Sp_program,Sp_Dicts,[TimeInfo,MemoryInfo]):-
     TimeInfo = time(T,[]),
     ask_mem_usage(Delta,Details),
     MemoryInfo = memory(Delta,Details),
-    message(inform, ['{transformed by codegen_af in ', ~~(T),' msec.}']).
+    pplog(spec_module, ['{transformed by codegen_af in ', ~~(T),' msec.}']).
     
 common_pre_codegen(Abs,Orig_Prog,Init_sp):-
     pp_statistics(runtime,_),
@@ -269,7 +270,6 @@ collect_code_canonical(AbsInt,Clauses) :-
     sort(Completes,Completes_s),
     get_definitions_min(Completes_s,[],Clauses).
 
-
 :- pred get_definitions_min(+Ids,+Visited,-Clauses) # "Returns in
       @var{Clauses} the specialized definitions for all completes in
       list @var{Ids}. The argument @var{Visited} is needed because it
@@ -291,9 +291,6 @@ get_definitions_min([Id|Ids],Visited,[ClausesPred|MoreClauses]):-
 %           append(ClausesPred,MoreClauses,Clauses),
         NVisited = [Name/Arity|Visited]),
     get_definitions_min(Ids,NVisited,MoreClauses).
-
-
-
 
 :- pred get_definitions(+Ids,+Visited,-Clauses) # "Returns in
       @var{Clauses} the specialized definitions for all completes in
@@ -474,8 +471,6 @@ rename_unf_vers(Key,F,NF,A):-
     fail.
 rename_unf_vers(_Key,_F,_NF,_A).
 
-
-
 % search for all predicates in original program
 % if found, collect all versions generated
 % remove exported ones
@@ -531,12 +526,10 @@ rebuild_comp([CProp|CProps],[NCProp|NCProps],F,NF):-
 rebuild_comp([CProp|CProps],[CProp|NCProps],F,NF):-
     rebuild_comp(CProps,NCProps,F,NF).
 
-
 create_all_dicts([],[]).
 create_all_dicts([Clause|Clauses],[Dict|Dicts]):-
     create_pretty_dict(Clause,Dict),
     create_all_dicts(Clauses,Dicts).
-
     
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 codegen_min(Abs,Sp_Prog,Sp_Dicts,[TimeInfo,MemoryInfo,MinInfo]):-
@@ -573,14 +566,12 @@ codegen_min(Abs,Sp_Prog,Sp_Dicts,[TimeInfo,MemoryInfo,MinInfo]):-
     MemoryInfo = memory(Delta,Details),
     get_min_rate(Versions,Rate),
     MinInfo = min(Rate,Versions),
-    message(inform, ['{transformed by codegen_min in ', ~~(Total),' msec.}']).
-
+    pplog(spec_module, ['{transformed by codegen_min in ', ~~(Total),' msec.}']).
 
 get_min_rate([OV,_,_,MV],Rate):-
     add_all(OV,Orig),
     add_all(MV,Min),
     Rate is Orig/Min.
-
 
 add_all([],0).
 add_all([H|T],R):-

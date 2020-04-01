@@ -123,7 +123,6 @@ generated when transforming the code can be modified.
 :- doc(bug, "Call compiler to avoid reloading a source that did not change.").
 % This checking could be controlled by a flag
 
-:- use_module(engine(messages_basic), [message/2]).
 :- use_module(library(lists), [member/2, append/3]).
 :- use_module(library(aggregates), [findall/3]).
 :- use_module(library(diff), [diff/4, patch/3]).
@@ -143,6 +142,7 @@ generated when transforming the code can be modified.
 :- use_module(ciaopp(plai/incanal/tarjan_inc), [inc_add_source_clauses/3]).
 :- use_module(ciaopp(plai/apply_assertions_inc)).
 
+:- use_module(ciaopp(ciaopp_log), [pplog/2]).
 :- use_module(ciaopp(analysis_stats),
     [stat/2, gather_stats/2, pretty_print_stats/1]).
 
@@ -153,7 +153,7 @@ reset_incremental_analysis_info :-
     clean_incremental_db,
     reset_persistent_db,
     analyze_driver:clean_analysis_info,
-  cleanup_applied_assertions_inc(_).
+    cleanup_applied_assertions_inc(_).
 
 :- data last_diff_key/1.
 :- data last_diff_cl/2.
@@ -196,8 +196,8 @@ update_modules(Files, Stats) :- % Reload files (keeps prev analysis)
         get_current_assertions(OldAssrts),
         save_clause_db
     ;
-    OldCls = [],
-    OldAssrts = []
+        OldCls = [],
+        OldAssrts = []
     ),
     stat(comp_diff, preds_diff(OldCls, NCls, Diff)),
     stat(comp_diff_as, assrts_diff(OldAssrts, NAssrts, ADiff)),
@@ -209,32 +209,32 @@ update_modules(Files, Stats) :- % Reload files (keeps prev analysis)
 set_last_diff(Diff,ADiff) :-
     retractall_fact(last_diff_key(_)),
     retractall_fact(last_diff_cl(_,_)),
-  retractall_fact(last_diff_as(_,_)),
+    retractall_fact(last_diff_as(_,_)),
     ( member(diff(Key,Cls),Diff),
         assertz_fact(last_diff_key(Key)),
         ( member(Cl, Cls),
             assertz_fact(last_diff_cl(Key, Cl)),
-      fail
+            fail
         ; true
         ),
         fail
     ; true
     ),
-  ( member(diff(Key,As),ADiff),
+    ( member(diff(Key,As),ADiff),
       add_change_predkey(Key),
-        ( member(A, As),
-            assertz_fact(last_diff_as(Key,A)),
-      fail
-        ; true
-        ),
+      ( member(A, As),
+        assertz_fact(last_diff_as(Key,A)),
         fail
+      ; true
+      ),
+      fail
     ; true
     ).
 
 get_last_diff(ClDiff,ADiff) :-
     findall(K, last_diff_key(K), Keys),
     get_last_diff_keys_cl(Keys, ClDiff),
-  get_last_diff_keys_as(Keys, ADiff).
+    get_last_diff_keys_as(Keys, ADiff).
 
 get_last_diff_keys_cl([], []).
 get_last_diff_keys_cl([Key|Keys], [diff(Key, Cls)|Diffs]) :-
@@ -395,7 +395,7 @@ incremental_analyze(AbsInt, Stats) :-
     td_add_clauses(Additions, AbsInt),
     analysis_actions(AbsInt, Additions, Deletions), % run fixpo if not done before on delete or add
     store_current_fixpoint_id(Context),
-    message(inform, ['{Incrementally analyzed with dd for ', ~~(AbsInt), ' }']),
+    pplog(incremental,['{Incrementally analyzed with dd for ', ~~(AbsInt), ' }']),
     save_persistent_analysis,
     store_change_list(Context),
     gather_stats(analysis, Stats),

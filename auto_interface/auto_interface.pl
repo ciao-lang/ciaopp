@@ -28,7 +28,7 @@
 :- use_module(ciaopp(frontend_driver), [module/1, output/0, output/1]).
 :- use_module(ciaopp(analyze_driver), [analyze/1, acheck_summary/1, acheck/0]).
 :- use_module(ciaopp(transform_driver), [transform/1]).
-
+:- use_module(ciaopp(ciaopp_log), [pplog/2]).
 %% *** These two for ACC, need to be revised MH
 :- use_module(ciaopp(p_unit/p_dump), [dump/1, restore/1]).
 
@@ -879,13 +879,11 @@ remove_from_list_([Y|Xs], X, [Y|Ys]) :- !,
     remove_from_list(Xs, X, Ys).
 
 % ---------------------------------------------------------------------------
-
 show_mcfg :-
     get_menu_configs(C),
     % Note: make sure that this message goes to standard output
     %   (required by ciao-widgets.el)
-    note_message("Current Saved Menu Configurations: ~w", [ C ]).
-%       message(note, ['Current Saved Menu Configurations: ', C ]).
+    pplog(auto_interface, ['Current Saved Menu Configurations: ', C]).
 
 % :- set_prolog_flag(multi_arity_warnings, off).
 
@@ -1006,8 +1004,9 @@ customize(all) :-
 %           set_menu_level(ML),
 %           customize(NM),
         ask_save_menu
-    ; note_message("Restoring ~w Menu Configuration...", [USE_CONFIG]),
-      restore_menu_config(USE_CONFIG)
+    ;
+        pplog(auto_interface, ['Restoring ', USE_CONFIG, ' Menu Configuration...']),
+        restore_menu_config(USE_CONFIG)
     ).
 %
 % customize(optimize) :- !,
@@ -1275,12 +1274,12 @@ continue_auto_assert_ctchecks(Err,_,OFile,_):-
 continue_auto_assert_ctchecks(_ANYERROR,File,OFile,GENCERT):-
     ( GENCERT==on ->
        atom_concat(File,'.cert',Cert_Name),
-       message(inform, ['{Generating certificate ',~~(Cert_Name)]),
+       pplog(auto_interface, ['{Generating certificate ',~~(Cert_Name)]),
        pp_statistics(runtime,_),
        ( current_pp_flag(reduced_cert,on) -> remove_irrelevant_entries ; true ),
        dump(Cert_Name),
        pp_statistics(runtime,[_,T]),
-       message(inform, ['{certificate saved in ', ~~(T), ' msec.}\n}'])
+       pplog(auto_interface, ['{certificate saved in ', ~~(T), ' msec.}\n}'])
     ; true
     ),
     decide_output(OFile).
@@ -1416,8 +1415,8 @@ auto_sel_dom(File) :-
     get_menu_flag(ana,inter_ana,As),
     curr_file(_,M),
     determine_needed(As,M,Ds),
-    message(inform, ['{Analyses needed to check assertions: ',~~(Ds)]),
-    message(inform, ['}']).
+    pplog(auto_interface, ['{Analyses needed to check assertions: ',~~(Ds)]),
+    pplog(auto_interface, ['}']).
 
 needed_to_prove_prop(M, Dom, A) :-
     get_one_prop(M, P),

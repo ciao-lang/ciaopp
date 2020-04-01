@@ -9,6 +9,7 @@
 :- use_module(ciaopp(p_unit/p_dump), [dump/2, restore/2]).
 :- use_module(ciaopp(analysis_stats), [add_stat/2]).
 :- use_module(ciaopp(preprocess_flags), [current_pp_flag/2]).
+:- use_module(ciaopp(ciaopp_log), [pplog/2]).
 
 :- doc(module, "This module handles the maintenance of the persistent
 database needed for resuming a stopped incremental analysis.").
@@ -56,8 +57,9 @@ restore_dump_files([F|Fs]) :-
 
 restore_dump_file(File) :- 
     ( has_dump(File, DFile) ->
-      restore(DFile, [time(T1,[])]), % this restores counters
-      add_stat(restore, T1)
+        pplog(incremental_high, ['Restoring ', DFile, '\n']),
+        restore(DFile, [time(T1,[])]), % this restores counters
+        add_stat(restore, T1)
     ; true).
 
 :- export(has_dump/2).
@@ -97,6 +99,7 @@ save_persistent_analysis :-
     inc_persistent(on), !,
     loaded_module(File),
     dump_file(File, DFile),
+    pplog(incremental_high, ['Analysis stored in: ', File, '\n']),
     dump(DFile, [incremental]).
 
 % ----------------------------------------------------------------------

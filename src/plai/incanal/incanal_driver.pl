@@ -83,6 +83,7 @@ according to the strategy defined.
     [restore_auxiliary_info/2, imp_auxiliary_info/4]).
 
 :- use_module(ciaopp(analysis_stats)).
+:- use_module(ciaopp(ciaopp_log), [pplog/2]).
 
 :- use_module(ciaopp(plai/trace_fixp), [fixpoint_trace/7]).
 :- use_package(ciaopp(plai/notrace)). % inhibits the tracing
@@ -479,9 +480,9 @@ inc_query(dd, AbsInt, Ps) :-
     remove_useless_completes(AbsInt).
 inc_query(Fixp, _, _) :-
     ( Fixp = dd ->
-        message(error, ['Analysis failed'])
+        message(error, ['Incremental analysis failed'])
     ;
-        message(warning, ['incremental analysis works only for fixpoint dd'])
+        message(warning, ['Incremental analysis works only for fixpoint dd'])
     ).
 
 call_inc_fixpoint(Fixp,AbsInt,Ps) :-

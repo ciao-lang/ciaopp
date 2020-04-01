@@ -8,22 +8,20 @@
       init_fixpoint/1, %% JNL         
       entry_point/5    %% JNL
     ],
-    [ assertions
-%       ,.(debug)
-    ]).
+    [ assertions ]).
 
 % Ciao library
 :- use_module(library(aggregates), [findall/3]).
 :- use_module(library(counters), [setcounter/2, inccounter/2]).
 :- use_module(library(lists), [append/3]).
-:- use_module(ciaopp(analysis_stats), [stat_no_store/2]).
 :- use_module(library(terms_vars), [varset/2]).
 :- use_module(library(vndict), [vars_names_dict/3]).
 :- use_module(library(port_reify), [once_port_reify/2, port_call/1]).
-:- use_module(engine(messages_basic), [message/2]).
 %% *** MH
 
 % CiaoPP library
+:- use_module(ciaopp(analysis_stats), [stat_no_store/2]).
+:- use_module(ciaopp(ciaopp_log), [pplog/2]).
 :- use_module(spec(s_simpspec), [make_atom/2]).
 :- use_module(spec(sp_clauses), [init_unfold/0]).
 :- use_module(spec(unfold_times), 
@@ -146,7 +144,7 @@ plai(Cls,Ds,Fixp,AbsInt,[TimeInfo,MemoryInfo|Info]):-
     (  is_checker(Fixp)
     -> Header = 'certificate checked by'
     ;  Header = 'analyzed by'),
-    message(inform, ['{', Header, ' ', Fixp, ' using ', AbsInt, 
+    pplog(analyze_module, ['{', Header, ' ', Fixp, ' using ', AbsInt, 
                  ' with local-control ', LC,' in ', TAna, ' msec.}']),
     TimeInfo = time(Total,[(prep,TPre),(ana,TAna)|Local_C_Info]),
     % TODO: Total time is wrong, Local_C_Info not added!!!
@@ -163,7 +161,7 @@ do_plai(Cls,Ds,Fixp, AbsInt, TPre, TAna):-
     cleanup_trans_clauses, !, % TODO: fix, move cuts deeper
     undo_errors, !, % TODO: fix, move cuts deeper
     stat_no_store(preprocess(Fixp,AbsInt,Cls,Ds,Ps), TPre), !, % TODO: fix, move cuts deeper
-    message(inform, ['{preprocessed for the ', Fixp, ' fixpoint in ',TPre, ' msec.}']),
+    pplog(analyze_module, ['{preprocessed for the ', Fixp, ' fixpoint in ',TPre, ' msec.}']),
     reset_mem_usage,
     stat_no_store(topdown_analysis(Fixp,AbsInt,Ps),TAna).
 
@@ -394,9 +392,9 @@ do_mod_plai(Cls,Ds,Fixp,AbsInt,Time):-
     cleanup_trans_clauses, !, % TODO: fix, move cuts deeper
     undo_errors, !, % TODO: fix, move cuts deeper
     stat_no_store(preprocess(Fixp,AbsInt,Cls,Ds,Ps), TPre), !, % TODO: fix, move cuts deeper
-    message(inform, ['{preprocessed for ', Fixp, ' in ', TPre, ' msec.}']),
+    pplog(analyze_module, ['{preprocessed for ', Fixp, ' in ', TPre, ' msec.}']),
     stat_no_store(mod_topdown_analysis(AbsInt,Fixp,Ps), TAna),
-    message(inform, ['{analyzed by ', Fixp, ' using ', AbsInt, ' in ', TAna,
+    pplog(analyze_module, ['{analyzed by ', Fixp, ' using ', AbsInt, ' in ', TAna,
       ' msec.}']),
     Total is TPre + TAna,
     Time = time(Total,[(prep,TPre),(ana,TAna)]).
