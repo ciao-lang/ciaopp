@@ -6,6 +6,8 @@
 
 :- use_module(library(format)).
 
+:- use_module(ciaopp(p_unit/p_dump), [show_dump/1]).
+
 :- use_module('ciaopp-dump-cmp').
 :- use_module('ciaopp-dump-fmt').
 :- use_module('ciaopp-dump-stats').
@@ -48,6 +50,8 @@ where the possible options are:
 main(['-h']) :- !,
     usage_text(T),
     format(user_output,"Usage: ~s~n",[T]).
+main(['show',File]) :- !,
+    show_dump(File).
 main(['fmt'|Args]) :- !,
     'ciaopp-dump-fmt':main(Args).
 main(['cmp'|Args]) :- !,
