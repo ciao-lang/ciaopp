@@ -133,37 +133,53 @@ init_fixpoint(poly_spec):- heuristic_pcpe:init_fixpoint.
     properties and informations. One possible value is
     @tt{[time(Total,[(subtask1,T1),...,(subtaskN,TN)])]}.").
 
-plai(Cls,Ds,Fixp,AbsInt,[TimeInfo,MemoryInfo|Info]):-
-    % initialization
-    init_abstract_domain(AbsInt,Flags),
-    once_port_reify(do_plai(Cls,Ds,Fixp, AbsInt, TPre, TAna), Port),
+plai(Cls,Ds,Fixp,AbsInt,Stats):-
+    plai_(Cls,Ds,Fixp,AbsInt,mon,Stats).
+
+plai_(Cls,Ds,Fixp,AbsInt,ModFlag,Stats) :-
+    stat_no_store(init_plai(AbsInt,Flags,Fixp), InitT),
+    pplog(analyze_module, ['{init for the ', Fixp, ' fixpoint in ',InitT, ' msec.}']),
+    ( ModFlag = mon -> % TODO: why once_port_reify?
+        once_port_reify(do_plai(Cls,Ds,Fixp, AbsInt,TPre,TAna), Port)
+    ; ModFlag = mod ->
+        once_port_reify(do_mod_plai(Cls,Ds,Fixp,AbsInt,TPre,TAna), Port)
+    ),
     pop_pp_flags(Flags),
     port_call(Port),
     Total is TPre + TAna,
-    current_pp_flag(local_control,LC),
-    (  is_checker(Fixp)
-    -> Header = 'certificate checked by'
-    ;  Header = 'analyzed by'),
-    pplog(analyze_module, ['{', Header, ' ', Fixp, ' using ', AbsInt, 
-                 ' with local-control ', LC,' in ', TAna, ' msec.}']),
     TimeInfo = time(Total,[(prep,TPre),(ana,TAna)|Local_C_Info]),
-    % TODO: Total time is wrong, Local_C_Info not added!!!
-    java_statistics(AbsInt),
-    ask_mem_usage(Delta,Details),
-    MemoryInfo = memory(Delta,Details),
-    ask_unfold_times(Local_C_Info),
-    dom_statistics(AbsInt, Info).
+    ( ModFlag = mon ->
+        current_pp_flag(local_control,LC),
+        ( is_checker(Fixp) -> PH = 'certificate checked by' ;  PH = 'analyzed by'),
+        pplog(analyze_module, ['{', PH, ' ', Fixp, ' using ', AbsInt,
+                         ' with local-control ', LC,' in ', TAna, ' msec.}']),
+        % TODO: Total time is wrong, Local_C_Info not added!!!
+        ask_unfold_times(Local_C_Info),
+        java_statistics(AbsInt),
+        ask_mem_usage(Delta,Details),
+        MemoryInfo = memory(Delta,Details),
+        Stats = [TimeInfo,MemoryInfo|DomInfo]
+    ; ModFlag = mod ->
+        pplog(analyze_module, ['{analyzed by ', Fixp, ' using ', AbsInt, ' in ', TAna,
+      ' msec.}']),
+        Local_C_Info = [],
+        Stats = [TimeInfo|DomInfo]
+    ),
+    dom_statistics(AbsInt, DomInfo).
 
 do_plai(Cls,Ds,Fixp, AbsInt, TPre, TAna):-
-    init_fixpoint(Fixp), !, % TODO: fix, move cuts deeper
-    init_unfold, !, % TODO: fix, move cuts deeper
-    init_unfold_times, !, % TODO: fix, move cuts deeper
-    cleanup_trans_clauses, !, % TODO: fix, move cuts deeper
-    undo_errors, !, % TODO: fix, move cuts deeper
     stat_no_store(preprocess(Fixp,AbsInt,Cls,Ds,Ps), TPre), !, % TODO: fix, move cuts deeper
     pplog(analyze_module, ['{preprocessed for the ', Fixp, ' fixpoint in ',TPre, ' msec.}']),
     reset_mem_usage,
     stat_no_store(topdown_analysis(Fixp,AbsInt,Ps),TAna).
+
+init_plai(AbsInt,Flags,Fixp) :-
+    init_abstract_domain(AbsInt,Flags),
+    init_fixpoint(Fixp), !, % TODO: fix, move cuts deeper
+    init_unfold, !, % TODO: fix, move cuts deeper
+    init_unfold_times, !, % TODO: fix, move cuts deeper
+    cleanup_trans_clauses, !, % TODO: fix, move cuts deeper
+    undo_errors, !. % TODO: fix, move cuts deeper
 
 %% *** This has to be revised. MH
 is_checker(check_di3) :- !.
@@ -378,27 +394,13 @@ entry_point(AbsInt,Goal,Qv,Call,Name):-
     The analysis uses the entry information provided by the entry
     policy selected in entry_policy preprocessing flag.").
 
-mod_plai(Cls,Ds,Fixp,AbsInt,[Time|Info]):-
-    % initialization
-    init_abstract_domain(AbsInt,Flags),
-    once_port_reify(do_mod_plai(Cls,Ds,Fixp,AbsInt,Time), Port),
-    pop_pp_flags(Flags), % pop flags even if do_mod_play/2 does not succeed
-    port_call(Port), 
-    dom_statistics(AbsInt, Info).
+mod_plai(Cls,Ds,Fixp,AbsInt,Stats):-
+    plai_(Cls,Ds,Fixp,AbsInt,mod,Stats).
 
-do_mod_plai(Cls,Ds,Fixp,AbsInt,Time):-
-    init_fixpoint(Fixp), !, % TODO: fix, move cuts deeper
-    init_unfold, !, % TODO: fix, move cuts deeper
-    cleanup_trans_clauses, !, % TODO: fix, move cuts deeper
-    undo_errors, !, % TODO: fix, move cuts deeper
+do_mod_plai(Cls,Ds,Fixp,AbsInt,TPre,TAna):-
     stat_no_store(preprocess(Fixp,AbsInt,Cls,Ds,Ps), TPre), !, % TODO: fix, move cuts deeper
     pplog(analyze_module, ['{preprocessed for ', Fixp, ' in ', TPre, ' msec.}']),
-    stat_no_store(mod_topdown_analysis(AbsInt,Fixp,Ps), TAna),
-    pplog(analyze_module, ['{analyzed by ', Fixp, ' using ', AbsInt, ' in ', TAna,
-      ' msec.}']),
-    Total is TPre + TAna,
-    Time = time(Total,[(prep,TPre),(ana,TAna)]).
-
+    stat_no_store(mod_topdown_analysis(AbsInt,Fixp,Ps), TAna).
 %------------------------------------------------------------------------%
 
 :- export(mod_topdown_analysis/3).
