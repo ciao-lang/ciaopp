@@ -135,9 +135,10 @@ sources_from_clids([Clid|Clids], [Cl:Clid|Cls], [D|Ds]) :-
     abstract domain @var{AbsInt} with them.".
 td_add_clauses([], _) :- !.
 td_add_clauses(Clids, AbsInt) :-
-    fixpoint_trace('[incanal] adding clauses',Clids,_,_,_,_,Clids),
+    pplog(incremental_high, ['{[incanal] Adding clauses', Clids, '}']),
     sources_from_clids(Clids, Cls, Ds),
     fixpoint_trace('[incanal] added clauses',Clids,_,_,_,_,Clids),
+    pplog(incremental_high, ['{[incanal] Added clauses to db', Clids, '}']),
     inc_plai_add(Cls, Ds, dd, AbsInt, _).
 
 % the clause (that may have been transformed into more than one) needs to be
@@ -166,12 +167,12 @@ td_mark_add_complete(_, _, _, _).
  strategy and performs a reanalysis.".
 td_delete_clauses([], _) :- !.
 td_delete_clauses(Clids, AbsInt) :-
-    fixpoint_trace('[incanal] td deleting clauses',Clids,_,_,_,_,Clids),
+    pplog(incremental_high, ['{[incanal] Td deleting clauses', Clids, '}']),
     stat(preproc, del_preprocess_clauses(Clids, AbsInt, Keys)),
     init_rev_idx(AbsInt), % TODO: !!!
     stat(td_delete, td_rec_delete_completes(Keys, AbsInt)),
     clean_rev_idx(AbsInt), % TODO: !!!
-    fixpoint_trace('[incanal] td deleted clauses',Clids,_,_,_,_,Clids),
+    pplog(incremental_high, ['{[incanal] Td deleted clauses', Clids, '}']),
     run_inc_fixpoint(AbsInt).
 
 td_rec_delete_completes([], _).
@@ -277,13 +278,11 @@ remove_useless_completes(AbsInt) :-
     clean_rev_idx(AbsInt). % TODO: !!!
 
 analysis_entry(SgKey,AbsInt,Sg,Proj) :-
-    ( using_modular_driver -> % TODO: review monolithic driver
-        ( entry_point(AbsInt,Sg,_Sv,Proj,_Name)
-        ; curr_mod_entry(SgKey, AbsInt, Sg, Proj) )
-    ;
-        get_entry_info(AbsInt,Sg,Proj),
-        predkey_from_sg(Sg, SgKey)
-    ).
+    entry_point(AbsInt,Sg,_Sv,Proj,_Name),
+    predkey_from_sg(Sg, SgKey).
+analysis_entry(SgKey,AbsInt,Sg,Proj) :-
+    using_modular_driver,
+    curr_mod_entry(SgKey, AbsInt, Sg, Proj).
 
 :- pred mark_useful_complete(+SgKey,+AbsInt,+Sg,+Proj) + not_fails.
 mark_useful_complete(SgKey,AbsInt,Sg,Proj) :-
@@ -344,14 +343,14 @@ del_preprocess_clauses(Clids, AbsInt, Keys) :-
       performs a reanalysis.".
 bu_delete_clauses([], _) :- !.
 bu_delete_clauses(Clids, AbsInt) :-
-    fixpoint_trace('[incanal] bu deleting clauses',Clids,_,_,_,_,Clids),
+    pplog(incremental_high, ['{[incanal] BU deleting clauses', Clids, '}']),
     set_pp_flag(widen, on), % TODO: replace by push?
     retractall_fact('$change_list'(_,_)),
     stat(preproc, del_preprocess_clauses(Clids, AbsInt,Keys)),
     tarjan_data(SCCs),
     stat(bu_delete, bottom_up_delete_completes_preds(Keys,SCCs,AbsInt,ExtCompletes)),
     %% display(bottom_up_delete_completes_preds(Keys,SCCs,AbsInt,ExtCompletes)), nl,
-    fixpoint_trace('[incanal] bu deleted clauses',Clids,_,_,_,_,Clids),
+    pplog(incremental_high, ['{[incanal] BU deleted clauses', Clids, '}']),
     stat(fixp, run_bu_del_fixp(ExtCompletes,AbsInt,SCCs)),
     remove_useless_completes(AbsInt). % Do not call this if nothing was removed
 

@@ -154,6 +154,7 @@ reset_incremental_analysis_info :-
     reset_persistent_db,
     analyze_driver:clean_analysis_info,
     cleanup_applied_assertions_inc(_).
+% TODO: remove .dump_inc files????
 
 :- data last_diff_key/1.
 :- data last_diff_cl/2.
@@ -171,7 +172,8 @@ incremental_module(Files) :-
 incremental_module(Files, Stats) :-
     incremental_module_(Files, S1),
     gather_stats(module, S2),
-    append(S1, S2, Stats).
+    append(S1, S2, Stats),
+    pplog(incremental, ['{Incrementally loaded}']).
 
 incremental_module_(Files, Stats) :-
     update_modules(Files, Stats),

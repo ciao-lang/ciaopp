@@ -57,7 +57,7 @@ restore_dump_files([F|Fs]) :-
 
 restore_dump_file(File) :- 
     ( has_dump(File, DFile) ->
-        pplog(incremental_high, ['Restoring ', DFile, '\n']),
+        pplog(incremental_high, ['{Restoring ', DFile, '}\n']),
         restore(DFile, [time(T1,[])]), % this restores counters
         add_stat(restore, T1)
     ; true).
@@ -99,7 +99,7 @@ save_persistent_analysis :-
     inc_persistent(on), !,
     loaded_module(File),
     dump_file(File, DFile),
-    pplog(incremental_high, ['Analysis stored in: ', File, '\n']),
+    pplog(incremental_high, ['{Analysis stored in: ', DFile, '}\n']),
     dump(DFile, [incremental]).
 
 % ----------------------------------------------------------------------
