@@ -117,8 +117,7 @@ A = [goal,?,remove] ? ;
 
 no
 ?- 
-@end{verbatim}
-.".
+@end{verbatim}".
 meta_to_list(Meta, MetaL) :-
     Meta =.. [_|MetaArgs],
     meta_to_list__(MetaArgs, MetaL).
