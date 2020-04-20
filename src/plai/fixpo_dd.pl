@@ -5,10 +5,9 @@
       cleanup_fixpoint/1,
       entry_to_exit/7
     ],
-    [assertions, nativeprops, datafacts, isomodes, regtypes]).
+    [assertions, nativeprops, datafacts, isomodes, regtypes, ciaopp(ciaopp_options)]).
 
-% :- use_package(.(notrace)). % inhibits the tracing
-:- use_package(spec(no_debug)).
+:- include(fixpoint_options).
 
 :- include(fixpo_dx_common).
 
@@ -111,7 +110,7 @@ reuse_complete(Ref,SgKey,Proj,Sg,Sv,AbsInt,F,N,Id,Fs,Prime1,Prime):-
         patch_parents(Ref3,complete(SgKey,AbsInt,A,B,C,Id,Ps),F,N,Ps,Fs2)
     ;
         Prime = TempPrime,
-      patch_parents(Ref,complete(SgKey,AbsInt,Sg,Proj,Prime,Id,Ps),F,N,Ps,Fs)
+        patch_parents(Ref,complete(SgKey,AbsInt,Sg,Proj,Prime,Id,Ps),F,N,Ps,Fs)
     ).
 
 :- pred init_fixpoint0/10 + not_fails.
@@ -148,10 +147,10 @@ init_fixpoint_(SgKey,Call,Proj,Sg,Sv,AbsInt,F,N,Id,Prime):-
     each_abs_sort(Prime4_u,AbsInt,Prime4),
     process_analyzed_clause(AbsInt,Sg,Sv,Proj,Prime3,Prime4,Prime),
     % Code for debugging % TODO: use toggleable debug/1
-    ( \+ check_same_success(AbsInt, Prime2, Prime) -> % TODO: debug
+    ( \+ check_same_success(AbsInt, Prime2, Prime) ->
         write('something going wrong\n'),
         display_list([SgKey,': ',Sg,'\n', 'Proj: ', Proj, '\n', 'Prime2: ',Prime2,'\n','Prime3: ',Prime3,'\n']),
-      display_list(['Prime4: ',Prime4,'\n','Prime: ',Prime,'\n\n'])
+        display_list(['Prime4: ',Prime4,'\n','Prime: ',Prime,'\n\n'])
     ;
     true
   ),
@@ -218,7 +217,9 @@ do_nr_cl(Clause,Sg,Sv,Call,Proj,AbsInt,Primes,TailPrimes,Id):-
     varset(Head,Hv),
     sort(Vars_u,Vars),
     ord_subtract(Vars,Hv,Fv),
+    fixpoint_trace('visit clause',ClKey:Id,_N,ClKey,_,_,_),
     process_body(Body,ClKey,AbsInt,Sg,Hv,Fv,Vars_u,Head,Sv,Call,Proj,TPrime,Id),
+    fixpoint_trace('exit clause',ClKey:Id,_N,ClKey,_,_,_),
     store_raw_success(ClKey,AbsInt,Id,Sg,Proj,TPrime),
     apply_assrt_exit(AbsInt,Sg,Sv,Proj,TPrime,LPrime,_),
     append_(LPrime,TailPrimes,Primes).
@@ -237,16 +238,15 @@ process_body(Body,K,AbsInt,Sg,Hv,_Fv,_,Head,Sv,Call,Proj,LPrime,Id):-
     ( current_pp_flag(fact_info,on) ->
         call_to_entry(AbsInt,Sv,Sg,Hv,Head,not_provided,[],Prime,Exit,_),
         decide_memo(AbsInt,K,Id,no,Hv,[Exit])
+        % IG: why not project the Succ of call to success_fact?
     ;
         true
     ),
     fixpoint_trace('exit fact',Id,_N,K,Head,Prime,Help).
 process_body(Body,K,AbsInt,Sg,Hv,Fv,Vars_u,Head,Sv,_,Proj,Prime,Id):-
     call_to_entry(AbsInt,Sv,Sg,Hv,Head,not_provided,Fv,Proj,Entry,ExtraInfo),
-    fixpoint_trace('visit clause',Id,_N,K,Head,Entry,Body),
     get_singleton(Entry,LEntry),
     entry_to_exit(Body,K,LEntry,Exit,Vars_u,AbsInt,Id),
-    fixpoint_trace('exit clause',Id,_N,K,Head,Exit,_),
     each_exit_to_prime(Exit,AbsInt,Sg,Hv,Head,Sv,ExtraInfo,Prime).
 
 %------------------------------------------------------------------------
@@ -277,10 +277,11 @@ change_son_if_necessary(no,_,_,_,_,_):-!.
 change_son_if_necessary(NewId,Key,NewN,Vars_u,Call,AbsInt):-
     current_fact(memo_table(Key,AbsInt,NewN,Id,_,_),Ref),
     (Id = NewId ->
-       true
+        true
     ;
-       erase(Ref),
-       decide_memo(AbsInt,Key,NewN,NewId,Vars_u,Call)).
+        erase(Ref),
+        decide_memo(AbsInt,Key,NewN,NewId,Vars_u,Call)
+    ).
 
 %------------------------------------------------------------------------
 :- export(compute/9).
@@ -324,7 +325,7 @@ decide_mark_parents(AbsInt,_TempPrime,NewPrime,SgKey,Sg,Id,Proj):-
     asserta_fact(complete(SgKey,AbsInt,Sg,Proj,NewPrime,Id,Fs)),
     decode_predkey(SgKey,P,A),
     ( recursive_class(P/A,Class) ->
-        mark_parents_change_list(Fs,Class,AbsInt)
+        mark_parents_change_list_scc(Fs,Class,AbsInt)
     ;
         td_mark_parents_change_list(Fs,AbsInt)
     ).
@@ -397,22 +398,21 @@ insert_literal_(>,Head_Key,Head_Lit,Tail,Lit_Key,Literal,NewList,yes):-
     NewList = [(Lit_Key,Literal),(Head_Key,Head_Lit)|Tail].
 
 %------------------------------------------------------------------------
-:- pred mark_parents_change_list(+Parents,+SCC,+AbsInt)
+:- pred mark_parents_change_list_scc(+Parents,+SCC,+AbsInt)
     : list * list * atm + not_fails
  #"This complete has changed. So we add the change in the $change_list
    of all parents. If the parent is in the same SCC then we recursively
    mark its parents as well.".
-mark_parents_change_list([],_,_).
-mark_parents_change_list([(EntryKey,_)|Rest],SCC,AbsInt):-
-    % Is this working when we have more than one query?
+mark_parents_change_list_scc([],_,_).
+mark_parents_change_list_scc([(EntryKey,_)|Rest],SCC,AbsInt):-
     is_entrykey(EntryKey), !,
-    mark_parents_change_list(Rest,SCC,AbsInt).
-mark_parents_change_list([(LitKey,C)|Rest],SCC,AbsInt):-
+    mark_parents_change_list_scc(Rest,SCC,AbsInt).
+mark_parents_change_list_scc([(LitKey,C)|Rest],SCC,AbsInt):-
     get_parent_key(LitKey,C,AbsInt,Key),
     decode_litkey(LitKey,N,A,Cl,G),
     ( member(N/A,SCC) ->
-    get_complete(Key,AbsInt,_,_,_,C,Parents,_),
-    add_change_(C,LitKey,N/A/Cl/G,Parents,SCC,AbsInt)
+        get_complete(Key,AbsInt,_,_,_,C,Parents,_),
+        add_change_(C,LitKey,N/A/Cl/G,Parents,SCC,AbsInt)
     ;
         ( ('$change_list'(C,_) ; computing_change(C)) ->
             % The parent the parent that is not in the same SCC comes from a
@@ -424,7 +424,7 @@ mark_parents_change_list([(LitKey,C)|Rest],SCC,AbsInt):-
             throw(error(unexpected_parent(LitKey,C,SCC)))
         )
     ),
-    mark_parents_change_list(Rest,SCC,AbsInt).
+    mark_parents_change_list_scc(Rest,SCC,AbsInt).
 
 %------------------------------------------------------------------------
 :- pred add_change_(+C,+Lit_Key,+Literal,+Parents,+SCC,+AbsInt)
@@ -432,9 +432,9 @@ mark_parents_change_list([(LitKey,C)|Rest],SCC,AbsInt):-
 add_change_(C,Lit_Key,Literal,Parents,SCC,AbsInt):-
     insert_in_changelist(C,Lit_Key,Literal,MFlag),
     ( MFlag = marked ->
-      true % this avoids infinite loops (already marked)
+        true % this avoids infinite loops (already marked)
     ;
-        mark_parents_change_list(Parents,SCC,AbsInt)
+        mark_parents_change_list_scc(Parents,SCC,AbsInt)
     ).
 
 %------------------------------------------------------------------------
@@ -482,6 +482,7 @@ compute_change([],_,_,_,_,_,Prime,Prime,_).
 compute_change([(_,N/A/C/0)|Rest],SgKey,Sg,Sv,Proj,AbsInt,TempPrime,Prime,Id) :-!,
     get_clkey(N,A,C,ClKey),
     trans_clause(SgKey,_,clause(Head,Vars_u,ClKey,Body)),
+    fixpoint_trace('visit change clause',ClKey:Id,_N,ClKey,Head,Exit,_),
     ( clause_applies(Head,Sg)->
         varset(Head,Hv),
         sort(Vars_u,Vars),
@@ -498,12 +499,14 @@ compute_change([(_,N/A/C/0)|Rest],SgKey,Sg,Sv,Proj,AbsInt,TempPrime,Prime,Id) :-
     ;
         TrustedPrime = TempPrime % the CP head does not unify with the new clause
     ),
+    fixpoint_trace('exit change clause',ClKey:Id,_N,ClKey,Head,Exit,_),
     compute_change(Rest,SgKey,Sg,Sv,Proj,AbsInt,TrustedPrime,Prime,Id).
 compute_change([(Ch_Key,N/A/C/_)|Rest],SgKey,Sg,Sv,Proj,AbsInt,TempPrime,Prime,Id) :-
     current_fact(memo_table(Ch_Key,AbsInt,Id,_,Vars_u,Entry)),
     each_abs_sort(Entry,AbsInt,S_Entry),
     get_clkey(N,A,C,ClKey),
     trans_clause(SgKey,_,clause(Head,Vars_u,ClKey,Body)),
+    fixpoint_trace('visit change clause',ClKey:Id,_N,ClKey,Head,Exit,_),
     advance_in_body(Ch_Key,Body,NewBody), !, % IG this cut should be after trans_clause
     varset(Head,Hv),
     sort(Vars_u,Vars),
@@ -515,6 +518,7 @@ compute_change([(Ch_Key,N/A/C/_)|Rest],SgKey,Sg,Sv,Proj,AbsInt,TempPrime,Prime,I
     store_raw_success(ClKey,AbsInt,Id,Sg,Proj,Prime1),
     process_analyzed_clause(AbsInt,Sg,Sv,Proj,TempPrime,Prime1,TrustedPrime),
     decide_mark_parents(AbsInt,TempPrime,TrustedPrime,SgKey,Sg,Id,Proj),
+    fixpoint_trace('exit change clause',ClKey:Id,_N,ClKey,Head,Exit,_),
     compute_change(Rest,SgKey,Sg,Sv,Proj,AbsInt,TrustedPrime,Prime,Id).
 % The change is within a meta_call that is not defined in the loaded
 % modules e.g. findall/3, catch/3, etc... (no trans_clause/3 available)
@@ -568,15 +572,15 @@ widen_call1(AbsInt,SgKey,Sg,F1,Id0,Ids,Proj1,Proj):-
     ),
     %
     current_fact(complete_parent(Id0,Fs0)),
-    ( SgKey=SgKey0,
-      member((F1,_NewId0),Fs0)
-    -> Sg0=Sg,
-    abs_sort(AbsInt,Proj0,Proj0_s),
-    abs_sort(AbsInt,Proj1,Proj1_s),
-    widencall(AbsInt,Proj0_s,Proj1_s,Proj)
-    ; ( member((_F1,NewId0),Fs0) -> true ; fail),
-      \+ member(NewId0,Ids),
-      widen_call1(AbsInt,SgKey,Sg,F1,NewId0,[NewId0|Ids],Proj1,Proj)
+    ( SgKey=SgKey0, member((F1,_NewId0),Fs0) ->
+        Sg0=Sg,
+        abs_sort(AbsInt,Proj0,Proj0_s),
+        abs_sort(AbsInt,Proj1,Proj1_s),
+        widencall(AbsInt,Proj0_s,Proj1_s,Proj)
+    ;
+        ( member((_F1,NewId0),Fs0) -> true ; fail),
+        \+ member(NewId0,Ids),
+        widen_call1(AbsInt,SgKey,Sg,F1,NewId0,[NewId0|Ids],Proj1,Proj)
     ).
 
 widen_call2(AbsInt,SgKey,Sg,F1,_Id,_Ids,Proj1,Proj):-

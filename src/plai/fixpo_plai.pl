@@ -9,9 +9,9 @@
       fixpoint/6,
       '$depend_list'/3      
     ],
-    [assertions, datafacts]).
+    [assertions, datafacts, ciaopp(ciaopp_options)]).
 
-:- use_package(.(notrace)). % inhibits the tracing
+:- include(fixpoint_options).
 
 % Ciao library
 :- use_module(library(aggregates), [bagof/3, (^)/2]).
@@ -712,7 +712,9 @@ do_nr_cl(Clause,Sg,Sv,Call,Proj,AbsInt,Primes,TailPrimes,Id):-
     varset(Head,Hv),
     sort(Vars_u,Vars),
     ord_subtract(Vars,Hv,Fv),
+    fixpoint_trace('visit clause',K:Id,_,_,_,_,_),
     process_body(Body,K,AbsInt,Sg,Hv,Fv,Vars_u,Head,Sv,Call,Proj,LPrime,Id),
+    fixpoint_trace('exit clause',K:Id,_,_,_,_,_),
     append_(LPrime,TailPrimes,Primes).
 do_nr_cl(_Clause,_Sg,_Sv,_Call,_Proj,_AbsInt,Primes,Primes,_Id).
 
@@ -734,10 +736,8 @@ process_body(Body,K,AbsInt,Sg,Hv,Fv,_,Head,Sv,Call,Proj,LPrime,Id):-
     ).
 process_body(Body,K,AbsInt,Sg,Hv,Fv,Vars_u,Head,Sv,_,Proj,Prime,Id):-
     call_to_entry(AbsInt,Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo),
-    fixpoint_trace('visit clause',Id,_N,K,Head,Entry,Body),
     singleton(Entry,LEntry),
     entry_to_exit(Body,K,LEntry,Exit,[],_,Vars_u,AbsInt,Id),
-    fixpoint_trace('exit clause',Id,_N,K,Head,Exit,_),
     each_exit_to_prime(Exit,AbsInt,Sg,Hv,Head,Sv,ExtraInfo,Prime).
 
 %-------------------------------------------------------------------------
@@ -835,10 +835,10 @@ do_r_cl(Clause,SgKey,Sg,Sv,Proj,AbsInt,EntryInf,Id,OldL,List,TempPrime,
     erase_previous_memo_tables_and_parents(Body,AbsInt,K,Id),
     varset(Head,Hv),
     reuse_entry(EntryInf,Vars_u,AbsInt,Sv,Sg,Hv,Head,K,Proj,Entry,ExtraInfo),
-    fixpoint_trace('visit clause',Id,_N,K,Head,Entry,Body),
+    fixpoint_trace('visit clause',K:Id,_N,K,Head,Entry,Body),
     singleton(Entry,LEntry),
     entry_to_exit(Body,K,LEntry,Exit,OldL,List,Vars_u,AbsInt,Id),
-    fixpoint_trace('exit clause',Id,_N,K,Head,Exit,_),
+    fixpoint_trace('exit clause',K:Id,_N,K,Head,Exit,_),
     each_exit_to_prime(Exit,AbsInt,Sg,Hv,Head,Sv,ExtraInfo,Prime1),
     widen_succ(AbsInt,TempPrime,Prime1,NewPrime),
     decide_flag(AbsInt,TempPrime,NewPrime,SgKey,Sg,Id,Proj,Flag).

@@ -47,29 +47,28 @@ trace_init :-
 trace_end :-
     clean.
 
-clean:-
+clean :-
     end_view,
     retractall_fact(fixpoint_trace(_)),
     cleanup.
 
-cleanup:-
+cleanup :-
     retractall_fact(fixpoint_info(_,_,_)),
     clean_fixpoint_graph.
 
 %% --------------------------------------------------------------------
 %% tracing the fixpoint:
-
 fixpoint_trace(Mess,Id,F,SgKey,Sg,Proj,Childs):-
     ( fixpoint_trace(info) ->
-      update_fixpoint_info(Mess,Id)
+        update_fixpoint_info(Mess,Id)
     ; true
     ),
     ( fixpoint_trace(trace) ->
-      trace_fixpoint(Mess,Id,F,Sg,Proj)
+        trace_fixpoint(Mess,Id,F,Sg,Proj)
     ; true
     ),
     ( fixpoint_trace(view) ->
-      view_fixpoint(Mess,Id,F,SgKey,Sg,Proj,Childs)
+        view_fixpoint(Mess,Id,F,SgKey,Sg,Proj,Childs)
     ; true
     ).
 
@@ -122,22 +121,21 @@ trace_fixp0([F|Fs]):-
 %% trace:
 
 :- push_prolog_flag(multi_arity_warnings,off).
-
-trace_fixpoint(Mess,Id,_L,Sg,Proj):-
+trace_fixpoint(Mess,Id,_L,Sg,Proj) :-
     trace_fixpoint(Mess), !,
     ( current_pp_flag(timestamp_trace,on) ->
         pp_statistics(runtime, [Tn, _]),
         init_time(T0),
         T is Tn - T0,
         message(inform, ['{[', ~~(T), '] ', ~~(Mess), ' for node ', ~~(Id), '}'])
-    ; true
+    ;
+        message(inform, ['{', ~~(Mess), ' for node ', ~~(Id), '}'])
     ),
-    message(inform, ['{', ~~(Mess), ' for node ', ~~(Id), '}']),
     ( \+ (var(Sg), var(Proj)) ->
-    \+ \+ ( numbervars(p(Sg,Proj),0,_),
-            message(inform, ['{', ~~(Sg), '   ', ~~(Proj), '}'])
-          )
-        ; true ).
+        \+ \+ ( numbervars(p(Sg,Proj),0,_),
+                message(inform, ['{', ~~(Sg), '   ', ~~(Proj), '}'])
+              )
+    ; true ).
 trace_fixpoint(_Mess,_Id,_L,_Sg,_Proj).
 
 trace_fixpoint('start query').
@@ -145,6 +143,8 @@ trace_fixpoint('end query').
 trace_fixpoint('init fixpoint').
 trace_fixpoint('visit goal').
 trace_fixpoint('visit clause').
+trace_fixpoint('visit fact').
+trace_fixpoint('exit fact').
 trace_fixpoint('exit goal').
 trace_fixpoint('exit clause').
 trace_fixpoint('non-recursive initiated').
@@ -162,16 +162,15 @@ trace_fixpoint('builtin completed').
 trace_fixpoint('external call completed').
 trace_fixpoint('trust').
 trace_fixpoint('applied trust').
-% For incremental analysis
+% For incremental analysis inside fixpoint dd
+trace_fixpoint('visit change clause').
+trace_fixpoint('exit change clause').
+% For incremental analysis driver
 trace_fixpoint('[incanal] change').
-trace_fixpoint('[incanal] adding clauses').
-trace_fixpoint('[incanal] added clauses').
-trace_fixpoint('[incanal] td deleting clauses').
-trace_fixpoint('[incanal] td deleted clauses').
-trace_fixpoint('[incanal] bu deleting clauses').
-trace_fixpoint('[incanal] bu deleted clauses').
 trace_fixpoint('[incanal] bu fixpoint started').
 trace_fixpoint('[incanal] bu fixpoint completed').
+trace_fixpoint('[incanal] bu non-recursive initiated').
+trace_fixpoint('[incanal] bu non-recursive completed').
 
 :- pop_prolog_flag(multi_arity_warnings).
 
@@ -180,16 +179,16 @@ trace_fixpoint('[incanal] bu fixpoint completed').
 
 :- push_prolog_flag(multi_arity_warnings,off).
 
-update_fixpoint_info(Mess,Id):-
+update_fixpoint_info(Mess,Id) :-
     update_fixpoint_info(Mess), !,
     update_fixpoint_info0(Mess,Id).
 update_fixpoint_info(_Mess,_Id).
 
-update_fixpoint_info0(Mess,Id):-
+update_fixpoint_info0(Mess,Id) :-
     retract_fact(fixpoint_info(Id,Mess,N)), !,
     N1 is N+1,
     asserta_fact(fixpoint_info(Id,Mess,N1)).
-update_fixpoint_info0(Mess,Id):-
+update_fixpoint_info0(Mess,Id) :-
     asserta_fact(fixpoint_info(Id,Mess,1)).
 
 update_fixpoint_info('non-recursive completed').
@@ -202,13 +201,13 @@ update_fixpoint_info('fixpoint iteration').
 %------------------- MORE FIXPOINT TRACE PREDICATES -----------------------%
 % Shows certain spy points of the analysis. It only shows this information
 % if and only if trace_fixp/1 includes the option trace.
-show_spypoint_info:-
+show_spypoint_info :-
     fixpoint_trace(info),!,
     message(inform, ['{The following information contains certain spy points of the analysis}']),
     show_spypoint_info_.
 show_spypoint_info.
 
-show_spypoint_info_:-
+show_spypoint_info_ :-
     current_fact(fixpoint_info(Id,Mess,N)),
     message(inform, ['{', ~~(Id), ' ', ~~(Mess), ' ', ~~(N), '}']),
     fail.
@@ -222,7 +221,7 @@ show_spypoint_info_.
 :- use_module(ciaopp(plai/plai_db), [complete/7]).
 :- use_module(library(write), [write/2]).
 
-memotable_trace(IdMess,Id,SgKey):-
+memotable_trace(IdMess,Id,SgKey) :-
     (fixpoint_trace(trace), trace_memotable(IdMess,Mess)),!,        
     message(inform, ['{', ~~(Mess), ' for node ', ~~(Id), ' and ', ~~(SgKey), '}']),
     show_updated_memotable(IdMess,Id,SgKey).
@@ -237,7 +236,7 @@ trace_memotable(6,'MT: Added builtin as complete').
 trace_memotable(7,'MT: Updated from fixpoint to fixpoint').
 trace_memotable(8,'MT: Added external call as complete').
 
-show_updated_memotable(Mess,Id,SgKey):-
+show_updated_memotable(Mess,Id,SgKey) :-
     curr_file(Path,_),
     path_splitext(Path,Basefile,_),
     Ext = '.MEMOTABLE',
@@ -254,7 +253,7 @@ show_updated_memotable(Mess,Id,SgKey):-
     show_fixpoint(Stream),
     show_approx(Stream).
 
-show_complete(Stream):-
+show_complete(Stream) :-
     current_fact(complete(_SgKey,_,Subg,Proj,Prime,_Id,_Fs),_Ref),
     display_subgoal(Stream,Subg),write(Stream,':'),
     write(Stream,' COMPLETE '),
@@ -265,7 +264,7 @@ show_complete(Stream):-
     fail.
 show_complete(_).
 
-show_fixpoint(Stream):-
+show_fixpoint(Stream) :-
     current_fact(fixpoint(_SgKey,Subg,Proj,Prime,_Id,_Fs),_Ref),
     display_subgoal(Stream,Subg),write(Stream,':'),
     write(Stream,' FIXPOINT '),
@@ -276,7 +275,7 @@ show_fixpoint(Stream):-
     fail.
 show_fixpoint(_).
 
-show_approx(Stream):-
+show_approx(Stream) :-
     current_fact(approx(_SgKey,Subg,Proj,Prime,_Id,_Fs),_Ref),
     display_subgoal(Stream,Subg),write(Stream,':'),
     write(Stream,' APPROX '),
@@ -288,13 +287,13 @@ show_approx(Stream):-
 show_approx(_).
 
 :- use_module(library(terms_vars), [varset/2]).
-display_subgoal(Stream,Subgoal):-
+display_subgoal(Stream,Subgoal) :-
     varset(Subgoal,Vars),
     functor(Subgoal,F,_),
     Goal =.. [F|Vars],
     write(Stream,Goal).
 
-show_dependencies(Stream):-
+show_dependencies(Stream) :-
     current_fact('$depend_list'(Id,SgKey,List)),
     write(Stream,'depend('),write(Stream,Id),write(Stream,'-'),
     write(Stream,SgKey),write(Stream,','),write(Stream,List),

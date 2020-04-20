@@ -4,12 +4,11 @@
       cleanup_fixpoint/1,
       entry_to_exit/7
     ],
-    [assertions, datafacts,isomodes,nativeprops]).
+    [assertions, datafacts,isomodes,nativeprops, ciaopp(ciaopp_options)]).
 
-:- use_package(.(notrace)). % inhibits the tracing
+:- include(fixpoint_options).
 :- use_package(spec(nomem_usage)).
 % :- use_module(spec(mem_usage), [update_mem_usage/0]).
-:- use_package(spec(no_debug)).
 
 :- doc(title,"A Depth Independent Fixpoint Algorithm").
 
@@ -289,7 +288,9 @@ do_cl(Clause,SgKey,Sg,Sv,Call,Proj,AbsInt,Id,TempPrime,Prime):-
     varset(Head,Hv),
     sort(Vars_u,Vars),
     ord_subtract(Vars,Hv,Fv),
-    process_body(Body,K,AbsInt,Sg,SgKey,Hv,Fv,Vars_u,Head,Sv,Call,Proj,TempPrime,Prime,Id).
+    fixpoint_trace('visit clause',K:Id,_N,_,_,_,_),
+    process_body(Body,K,AbsInt,Sg,SgKey,Hv,Fv,Vars_u,Head,Sv,Call,Proj,TempPrime,Prime,Id),
+    fixpoint_trace('exit clause',K:Id,_N,_,_,_,_).
 do_cl(_,_,_,_,_,_,_,_,Primes,Primes).
 
 do_cl_no_lub(Clause,Sg,Sv,Call,Proj,AbsInt,Id):-
@@ -328,10 +329,8 @@ process_body(Body,K,AbsInt,Sg,SgKey,Hv,Fv,Vars_u,Head,Sv,_Call,Proj,TempPrime,Pr
     call_to_entry(AbsInt,Sv,Sg,Hv,Head,not_provided,Fv,Proj,Entry,ExtraInfo),
 %       erase_previous_memo_tables_and_parents(Body,K,Id),
 % not needed as it is the first time this clause is analysed (?)
-    fixpoint_trace('visit clause',Id,_N,K,Head,Entry,Body),
     singleton(Entry,LEntry),
     entry_to_exit(Body,K,LEntry,Exit,Vars_u,AbsInt,Id),
-    fixpoint_trace('exit clause',Id,_N,K,Head,Exit,_),
     each_exit_to_prime(Exit,AbsInt,Sg,Hv,Head,Sv,ExtraInfo,Prime1),
     each_apply_trusted(Proj,SgKey,Sg,Sv,AbsInt,Prime1,Prime2),
     widen_succ(AbsInt,TempPrime,Prime2,NewPrime),
