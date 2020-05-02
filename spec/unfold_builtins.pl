@@ -49,7 +49,7 @@
 
 
 :- doc(can_be_evaluated(Goal), "This predicate succeeds if
-     @var(Goal) can be executed at compile-time. This can be useful
+     @var{Goal} can be executed at compile-time. This can be useful
      both for specializing and analyzing programs. For this, three
      conditions are required about the execution of the goal: it must
      not contain any side-effect, it has to be sufficiently

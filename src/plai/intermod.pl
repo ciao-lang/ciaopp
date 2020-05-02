@@ -1115,7 +1115,7 @@ simpspec_(Spec,AbsInt,Cls,Ds,NewCls,NewDs):-
 %% ******************************************************************
 
 :- pred auto_ctcheck_list(+Analysis,+TopLevel, +Modules)
-# "Performs CT assertion checking of modules on the @car{Modules} list
+# "Performs CT assertion checking of modules on the @var{Modules} list
   of the program unit which has
   @var{TopLevel} as a top-level module, using @var{Analysis} to get
   information about the program.".

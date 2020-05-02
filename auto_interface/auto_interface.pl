@@ -979,8 +979,8 @@ exec_auto(U, _F) :-
 
 :- pred customize/0
    # "Enter an interactive menu to select the preprocessing action
-      (analysis / assertion checking / transformation / optimization /
-      ...)  to be performed by deafult and the different options
+      (analysis / assertion checking / transformation / optimization / ...)  
+      to be performed by deafult and the different options
       (i.e., setting the preprocessor flags).".
 
 customize :-
