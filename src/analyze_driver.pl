@@ -480,13 +480,14 @@ types_analysis(Types):-
     domain(Types),
     knows_of(regtypes,Types),
     !.
-types_analysis(none):-
-    current_pp_flag(verbose_ctchecks,VC),
-    (VC == on ->
-        pplog(analyze_module, ['{No type analysis available for checking}'])
-    ;
-        true
-    ).
+types_analysis(none).
+%% types_analysis(none):-
+%%     current_pp_flag(verbose_ctchecks,VC),
+%%     (VC == on ->
+%%         pplog(analyze_module, ['{No type analysis available for checking}'])
+%%     ;
+%%         true
+%%     ).
 
 %------------------------------------------------------------------------
 % perform_pred_ctchecks(Types,Modes):-
