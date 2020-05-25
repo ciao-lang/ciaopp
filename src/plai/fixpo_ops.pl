@@ -123,7 +123,7 @@ find_lines_in_orig_prog(ClId,Loc):-
     clause_locator(Orig_ClId,Loc).
 
 bottom([]).
-bottom(['$bottom']).
+bottom(['$bottom']). % TODO: choicepoints if used for generation?
 
 singleton(Prime,[Prime]). % TODO: choicepoints??
 singleton('$bottom',[]).
@@ -142,6 +142,8 @@ fixpoint_id(Id):-
 %-------------------------------------------------------------------------
 
 :- export(fixpoint_get_new_id/5).
+:- pred fixpoint_get_new_id(+SgKey,+AbsInt,+Sg,Proj,Id) : atm * atm * term * term * var
+   + not_fails.
 fixpoint_get_new_id(SgKey,AbsInt,Sg,Proj,Id) :-
     (current_pp_flag(reuse_fixp_id,on) ->
        fixpoint_id_reuse_prev(SgKey,AbsInt,Sg,Proj,Id)
@@ -186,6 +188,9 @@ reduce_equivalent(ListPrime0,AbsInt,ListPrime1):-
 
 %-------------------------------------------------------------------------
 
+:- pred each_exit_to_prime(+Exit, +AbsInt,+Sg,+Hv,+Head,+Sv,ExtraInfo,LPrime)
+   : (list(Exit), atm(AbsInt), list(Hv), list(Sv))
+   => (list(LPrime), nonvar(ExtraInfo)) + not_fails.
 each_exit_to_prime([Exit],AbsInt,Sg,Hv,Head,Sv,ExtraInfo,LPrime):- !,
     exit_to_prime(AbsInt,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime),
     LPrime=[Prime].
@@ -198,6 +203,8 @@ each_exit_to_prime0([Exit|LExit],AbsInt,Sg,Hv,Head,Sv,ExtraInfo,[Prime|LPrime]):
     exit_to_prime(AbsInt,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime),
     each_exit_to_prime0(LExit,AbsInt,Sg,Hv,Head,Sv,ExtraInfo,LPrime).
 
+:- pred each_abs_sort(+LASub, +AbsInt, LASub_s) : list * atm * term
+   => list(LASub_s) + not_fails.
 each_abs_sort([ASub_u],AbsInt,LASub):- !,
     abs_sort(AbsInt,ASub_u,ASub),
     LASub=[ASub].
@@ -234,10 +241,10 @@ each_extend0([Prime|LPrime],Sg,AbsInt,Sv,Call,[Succ|LSucc]):-
     each_extend0(LPrime,Sg,AbsInt,Sv,Call,LSucc).
 
 :- pred eliminate_bottoms_and_equivalents(AbsInt,TmpLSucc,LSucc) # 
-     "When multi_success is turned on, @var{TmpLSucc} may contain 
-      elements which are bottom. These can be safely removed from the 
-      list of successes. Also, repeated elements in the list can also 
-      be safely removed.".
+   "When multi_success is turned on, @var{TmpLSucc} may contain
+   elements which are bottom. These can be safely removed from the
+   list of successes. Also, repeated elements in the list can also
+   be safely removed.".
 eliminate_bottoms_and_equivalents(AbsInt,TmpLSucc,LSucc):-
     filter_out_bottoms(TmpLSucc,LSucc_nb),
     eliminate_equivalent(AbsInt,LSucc_nb,LSucc).
@@ -249,8 +256,8 @@ filter_out_bottoms([Succ|LSucc],LSucc_nb):-
     LSucc_nb = [Succ|MoreSucc],
     filter_out_bottoms(LSucc,MoreSucc).
 
-:- pred each_unknown_call(Calls,AbsInt,+Sg,+Sv,-Succs) :
-        (list(Calls), atm(AbsInt)) => list(Succs).
+:- pred each_unknown_call(Calls,AbsInt,+Sg,+Sv,-Succs)
+   : (list(Calls), atm(AbsInt)) => list(Succs) + not_fails.
 each_unknown_call([],_AbsInt,_Sg,_Sv,[]).
 each_unknown_call([Call|Calls],AbsInt,Sg,Sv,[Succ|Succs]):-
     unknown_call(AbsInt,Sg,Sv,Call,Succ),
@@ -258,7 +265,7 @@ each_unknown_call([Call|Calls],AbsInt,Sg,Sv,[Succ|Succs]):-
 
 each_body_succ_builtin([],_,_T,_Tg,_,_,_Sg,_Sv,_HvFv_u,_F,_N,[]).
 each_body_succ_builtin([Call|Calls],AbsInt,T,Tg,Vs,SgKey,Sg,Sv,HvFv_u,
-                   F,N,[Succ|Succs]):-
+                       F,N,[Succ|Succs]):-
     project(AbsInt,Sg,Sv,HvFv_u,Call,Proj),
     body_succ_builtin(AbsInt,T,Tg,Vs,Sv,HvFv_u,Call,Proj,Succ),!,
     project(AbsInt,Sg,Sv,HvFv_u,Succ,Prime),
@@ -283,15 +290,26 @@ add_complete_builtin(_SgKey,_AbsInt,_Sg,_Proj,_LPrime).
 %         asserta_fact(complete(SgKey,AbsInt,Sg,Proj,LPrime,no,[])).
 %         % Currently we are not storing any parents
 
+:- pred each_identical_proj(+LPrime,+Sg,+AbsInt,+LSucc,_)
+   : (list(LPrime), list(LSucc)) + not_fails.
 each_identical_proj([],_Sg,_AbsInt,[],_Subg).
 each_identical_proj([Prime|LPrime],Sg,AbsInt,[Succ|LSucc],Subg):-
     identical_proj(AbsInt,Sg,Prime,Subg,Succ),
     each_identical_proj(LPrime,Sg,AbsInt,LSucc,Subg).
 
+:- pred each_less_or_equal_proj(+LPrime,+Sg,+AbsInt,+LSucc,_)
+   : (list(LPrime), list(LSucc)).
 each_less_or_equal_proj([],_Sg,_AbsInt,[],_Subg).
 each_less_or_equal_proj([Prime|LPrime],Sg,AbsInt,[Succ|LSucc],Subg):-
     less_or_equal_proj(AbsInt,Sg,Prime,Subg,Succ),
     each_less_or_equal_proj(LPrime,Sg,AbsInt,LSucc,Subg).
+
+:- export(each_less_or_equal/3).
+:- pred each_less_or_equal/3 : list * atm * list.
+each_less_or_equal([], _, []).
+each_less_or_equal([S1|S1s], AbsInt, [S2|S2s]) :-
+    less_or_equal(AbsInt, S1, S2),
+    each_less_or_equal(S1s, AbsInt, S2s).
 
 %-----------------------------------------------------------------
 
@@ -327,9 +345,9 @@ widen_succ(AbsInt,Prime0,Prime1,Prime):-
 
 :- export(process_analyzed_clause/7).
 :- pred process_analyzed_clause(AbsInt,Sg,Sv,Proj,TempPrime,Prime1,Prime) + not_fails
-    #"Once a clause or a set of clauses, i.e., @var{ClKey} is a free
-     variable, have been analyzed, this predicate will apply the success
-     assertions or perform the widening.".
+   #"Once a clause or a set of clauses, i.e., @var{ClKey} is a free
+   variable, have been analyzed, this predicate will apply the success
+   assertions or perform the widening.".
 process_analyzed_clause(AbsInt,Sg,Sv,Proj,TempPrime,Prime0,Prime) :-
     apply_assrt_exit(AbsInt,Sg,Sv,Proj,Prime0,Prime1,yes), !,
     ( current_pp_flag(fixp_stick_to_success, on) ->
@@ -364,7 +382,9 @@ decide_memo(AbsInt,Key,NewN,Id,Vars_u,Exit):-
 % succeeds if Head of some clause matches goal Sg                        %
 % the check is omitted if we are analyzing constraints                   %
 %------------------------------------------------------------------------%
-
+:- pred clause_applies(+Head,+Sg)
+   #"Succeeds if @var{Head} of some clause matches goal @var{Sg}
+   the check is omitted if we are analyzing constraints.".
 clause_applies(_Head,_Sg):-
     language(clp), !.
 clause_applies(Head,Sg):-

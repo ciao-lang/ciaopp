@@ -21,7 +21,7 @@
     gr_unknown_entry/3,
     gr_empty_entry/3,
     extrainfo/1
-   ], [assertions,regtypes,basicmodes,datafacts]).
+   ], [assertions,regtypes,basicmodes,datafacts,nativeprops]).
 
 :- doc(title,"Simple groundness abstract domain").
 :- doc(author, "Claudio Vaucheret").
@@ -119,7 +119,7 @@ The abstract domain lattice is:
 :- doc(doinclude,binds/1).
 :- doc(doinclude,binding/1).
 
-% :- compilation_fact(check_wellformed_asub)
+% :- compilation_fact(check_wellformed_asub).
 :- if(defined(check_wellformed_asub)).
 :- prop gr_asub(A)
    # "@var{A} is a well-formed abstract substitution of the gr domain.".
@@ -187,35 +187,32 @@ binding((X,Term,Vars)):-
 % The top value is  X/any forall X in the set of variables             |
 %-----------------------------------------------------------------------
 :- pred gr_unknown_entry(+Sg,+Qv,-Call)
-   : callable * list * term => gr_asub(Call)
+   : callable * list * term => gr_asub(Call) + (not_fails, is_det)
    #"Gives the ``top'' value for the variables involved in a literal whose
    definition is not present, and adds this top value to Call. In this domain
    the top value is X/any forall X in the set of variables".
-
 gr_unknown_entry(_Sg,Qv,Call):-
     gr_create_values(Qv,Call,any).
 
 %-----------------------------------------------------------------------
-% gr_create_values(+,-,+)                                                 |
+% gr_create_values(+,-,+)                                              |
 % create_values(Vars,Asub,Value)                                       |
 % Forall X in Vars, X/Value is in Asub                                 |
 %-----------------------------------------------------------------------
 :- pred gr_create_values(+Vars,-Asub,+Value)
-   : list * term * gr_mode => gr_asub(Asub)
+   : list * term * gr_mode => gr_asub(Asub) + (not_fails, is_det)
    #"Forall @var{X} in @var{Vars}, @var{X}/@var{Value} is in @var{Asub}".
-
 gr_create_values([],[],_Value).
 gr_create_values([X|Xs],[X/Value|New],Value):-
     gr_create_values(Xs,New,Value).
 
 :- pred gr_empty_entry(+Sg,+Vars,-Entry)
-   : callable * list * term => gr_asub(Entry)
+   : callable * list * term => gr_asub(Entry) + (not_fails, is_det)
    # "Gives the ``empty'' value in this domain for a given set of variables
    @var{Vars}, resulting in the abstract substitution @var{Entry}. I.e., obtains
    the abstraction of a substitution in which all variables @var{Vars} are
    unbound: free and unaliased. In this domain the empty value is equivalent to
    the unknown value".
-
 gr_empty_entry(Sg,Vars,Entry):- 
     gr_unknown_entry(Sg,Vars,Entry).
 
@@ -229,9 +226,9 @@ gr_empty_entry(Sg,Vars,Entry):-
 % it sorts the set of X/Value in Asub obtaining Asub_s.                |
 %-------------------------------------------------------------------------
 :- pred gr_abs_sort(+Asub,-Asub_s) : gr_asub(Asub) => gr_asub(Asub_s)
-   #"It sorts the set of @var{X}/@var{Value} in @var{Asub} ontaining
+   + (not_fails, is_det)
+   #"It sorts the set of @var{X}/@var{Value} in @var{Asub} obtaining
      @var{Asub_s}".
-
 gr_abs_sort('$bottom','$bottom'):- !.
 gr_abs_sort(Asub,Asub_s):-
     sort(Asub,Asub_s).
@@ -247,12 +244,11 @@ gr_abs_sort(Asub,Asub_s):-
 % eliminating from ASub all X/Value such that X not in Vars              %
 %------------------------------------------------------------------------%
 :- pred gr_project(+Sg,+Vars,+HvFv_u,+Asub,-Proj)
-   : term * list * term * gr_asub * term => gr_asub(Proj)
+   : term * list * term * gr_asub * term => gr_asub(Proj) + (not_fails, is_det)
    #"@var{Proj} is the result of eliminating from @var{Asub} all
     @var{X}/@var{Value} such that @var{X} is not in @var{Vars}. @var{HvFv_u} may
     be a list or '@tt{not_provided_HvFv_u}'".
-
-gr_project(_Sg,_Vars,_HvFv_u,'$bottom',Proj):- !,
+gr_project(_Sg,_Vars,_HvFv_u,'$bottom',Proj) :- !,
     Proj = '$bottom'.
 gr_project(_Sg,Vars,_HvFv_u,ASub,Proj) :- 
     project_aux(Vars,ASub,Proj).
@@ -267,7 +263,6 @@ gr_project(_Sg,Vars,_HvFv_u,ASub,Proj) :-
    : list * list * term => gr_asub(Proj)
    #"Eliminates from each list in the second argument any variable/value such
     that the variable is not an element of @var{Vars}".
-
 project_aux([],_,Proj):- !,
     Proj = [].
 project_aux(_,[],Proj):- !,
@@ -304,8 +299,8 @@ project_aux_(>,Head1,Tail1,_,[Head2/Val|Tail2],Proj) :-
 %------------------------------------------------------------------------%
 
 :- pred gr_call_to_entry(+Sv,+Sg,+Hv,+Head,+K,+Fv,+Proj,-Entry,-ExtraInfo)
-   : list * callable * list * callable * term * list * gr_asub * term * term
-   => (gr_asub(Entry), gr_extrainfo(ExtraInfo))
+   : ( list(Sv), callable(Sg), list(Hv), callable(Head), term(K), list(Fv), gr_asub(Proj)) % cheaper properties
+   => (gr_asub(Entry), gr_extrainfo(ExtraInfo)) + (not_fails, is_det)
    #"
 It obtains the abstract substitution @var{Entry} which results from
 adding the abstraction of the @var{Sg} = @var{Head} to @var{Proj},
@@ -428,7 +423,7 @@ gr_exit_to_prime(Sg,Hv,_Head,Sv,Exit,ExtraInfo,Prime):-
 %------------------------------------------------------------------------%
 
 :- pred gr_compute_lub(+ListASub,-Lub)
-   : list(gr_asub, ListASub) => gr_asub(Lub)
+   : list(gr_asub, ListASub) => gr_asub(Lub) + (not_fails, is_det)
    #"
 It computes the least upper bound of a set of abstract substitutions. 
 For each two abstract substitutions @var{ASub1} and @var{ASub2} in @var{ListASub}, 
@@ -440,14 +435,13 @@ obtaining the lub is just:
    @item otherwise, X/any in Lub                                           
 @end{itemize}
 ".
-
 gr_compute_lub([X],X):- !.
 gr_compute_lub([ASub1,ASub2|Xs],Lub):-
     gr_compute_lub_el(ASub1,ASub2,ASubLub),
     gr_compute_lub([ASubLub|Xs],Lub).
 
 :- pred gr_compute_lub_el(+ASub1,+ASub2,-Lub)
-   : gr_asub * gr_asub * term => gr_asub(Lub)
+   : gr_asub * gr_asub * term => gr_asub(Lub) + (not_fails, is_det)
    #"
 For each two abstract substitutions @var{ASub1} and @var{ASub2} 
 obtaining the least upper bound is just:    
@@ -486,7 +480,7 @@ compute_lub_gr([X/_|ASub1],[X/_|ASub2],[X/any|Lub_Cont]):-
 %------------------------------------------------------------------------%
 
 :- pred gr_extend(+Sg,+Prime,+Sv,+Call,-Succ)
-   : term * gr_asub * list * gr_asub * term => gr_asub(Succ)
+   : term * gr_asub * list * gr_asub * term => gr_asub(Succ) + (not_fails, is_det)
    #"If @var{Prime} = '$bottom', @var{Succ} = '$bottom'. If @var{Sv} = [],
    @var{Call} = @var{Succ}. Otherwise, @var{Succ} is computed updating the
    values of @var{Call} with those in @var{Prime}".
@@ -518,7 +512,7 @@ update_Call_(<,ElemC,Call,ElemP,Prime,[ElemC|Succ]):-
 
 :- pred gr_call_to_success_fact(+Sg,+Hv,+Head,+K,+Sv,+Call,+Proj,-Prime,-Succ)
    : callable * list * callable * term * list * gr_asub * gr_asub * term * term
-   => ( gr_asub(Prime), gr_asub(Succ) )
+   => ( gr_asub(Prime), gr_asub(Succ) ) + (not_fails, is_det)
    #"Specialized version of call_to_entry + exit_to_prime + extend for facts".
 
 gr_call_to_success_fact(Sg,[],_Head,_K,Sv,Call,_Proj,Prime,Succ) :- !,
@@ -936,7 +930,7 @@ gr_success_builtin(Key,_,_,_,Succ,Succ):-
 %-------------------------------------------------------------------------
 :- pred gr_call_to_success_builtin(+SgKey,+Sg,+Sv,+Call,+Proj,-Succ)
    : atm * callable * list * gr_asub * gr_asub * term
-   => gr_asub(Succ)
+   => gr_asub(Succ) + (not_fails, is_det)
    #"Handles those builtins for which computing @var{Proj} is easier than
     @var{Succ}".
 
@@ -994,7 +988,7 @@ gr_call_to_success_builtin('keysort/2',keysort(X,Y),Sv,Call,Proj,Succ):-
 
 :- pred gr_input_user_interface(+InputUser,+Qv,-ASub,+Sg,+MaybeCallASub)
    : term * list * term * term * term
-   => gr_asub(ASub)
+   => gr_asub(ASub) + (not_fails, is_det)
    #"Obtains the abstract substitution for gr from the native properties found
    in the user supplied info.".
 gr_input_user_interface((Gv_u,Ng_u),Qv,ASub,_Sg,_MaybeCallASub):-
@@ -1040,8 +1034,8 @@ may_be_var(X,X):- ( X=[] ; true ), !.
 %------------------------------------------------------------------------%
 
 :- pred gr_asub_to_native(+ASub,+Qv,+OutFlag,-ASub_user,-Comps)
-   : gr_asub * list * term * term * term # 
-   "The user friendly format consists in extracting the ground variables   
+   : gr_asub * list * term * term * term
+   #"The user friendly format consists in extracting the ground variables
    and the nonground variables".
 
 gr_asub_to_native(Abs,_Qv,_OutFlag,ASub_user,[]):-
@@ -1081,7 +1075,7 @@ member_value_gr([_|Rest],RestV,Value):-
 %------------------------------------------------------------------------%
 
 :- pred gr_unknown_call(+Sg,+Vars,+Call,-Succ)
-   : callable * list * gr_asub * term => gr_asub(Succ)
+   : callable * list * gr_asub * term => gr_asub(Succ) + (not_fails, is_det)
    #"Gives the ``top'' value for the variables involved in a literal whose
    definition is not present, and adds this top value to @var{Call}".
 gr_unknown_call(_Sg,Vars,Call,Succ):-
@@ -1096,7 +1090,8 @@ gr_unknown_call(_Sg,Vars,Call,Succ):-
 % it's assumed the two abstract        
 % substitutions are defined on the same variables 
 
-:- pred gr_less_or_equal(+ASub0,+ASub1) : gr_asub * gr_asub
+:- pred gr_less_or_equal(+ASub0,+ASub1)
+   : gr_asub * gr_asub + (not_fails, is_det)
    #"Succeeds if @var{ASub1} is more general or equal to @var{ASub0}. it's
    assumed the two abstract substitutions are defined on the same variables".
 
@@ -1121,9 +1116,8 @@ gr_less_or_equal_el(any,any).
 %------------------------------------------------------------------------%
 
 :- pred gr_glb(+ASub0,+ASub1,-Glb): gr_asub * gr_asub * term
-   => gr_asub(Glb)
+   => gr_asub(Glb) + (not_fails, is_det)
    #"@var{Glb} is the great lower bound of @var{ASub0} and @var{ASub1}".
-
 gr_glb('$bottom',_ASub,ASub3) :- !, ASub3='$bottom'.
 gr_glb(_ASub,'$bottom',ASub3) :- !, ASub3='$bottom'.
 gr_glb(ASub0,ASub1,Glb):-

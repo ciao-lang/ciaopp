@@ -163,9 +163,9 @@ obtained after the analysis of the clause being considered
 
 :- export(amgu/5).
 :- pred amgu(+AbsInt,+Sg,+Head,+ASub,-AMGU) : atm(AbsInt) + not_fails
-    #"Perform the abstract unification @var{AMGU} between @var{Sg} and
-      @var{Head} given an initial abstract substitution @var{ASub} and
-      abstract domain @var{AbsInt}.".
+   #"Perform the abstract unification @var{AMGU} between @var{Sg} and
+   @var{Head} given an initial abstract substitution @var{ASub} and
+   abstract domain @var{AbsInt}.".
 
 :- export(augment_asub/4).
 % augment_asub(+,+,+,-)
@@ -182,21 +182,26 @@ obtained after the analysis of the clause being considered
 
 :- export(call_to_entry/10).
 :- pred call_to_entry(+AbsInt,+Sv,+Sg,+Hv,+Head,+ClauseKey,+Fv,+Proj,-Entry,-ExtraInfo)
-    : (atm(AbsInt), list(Sv), list(Hv), list(Fv)) + not_fails
-  #"Obtains the abstract substitution @var{Entry} which results from
+   : (atm(AbsInt), list(Sv), list(Hv), list(Fv)) + not_fails
+   #"Obtains the abstract substitution @var{Entry} which results from
    adding the abstraction of the unification @var{Sg} = @var{Head} to
    abstract substitution @var{Proj} (the call substitution for
    @var{Sg} projected on its variables @var{Sv}) and then projecting
    the resulting substitution onto @var{Hv} (the variables of
    @var{Head}) plus @var{Fv} (the free variables of the relevant
    clause). @var{ExtraInfo} is information which may be reused later
-   in other abstract operations.".
+   in other abstract operations.
+
+   @begin{alert}
+   @bf{Assumtions}: This predicate assumes that the variables in @var{Sv} and
+   @var{Proj} are sorted (see sortedness for each domain).
+   @end{alert}.".
 % TODO: Document ClauseKey (required by res_plai)
 % TODO: Document ClauseKey=not_provided
 
 :- export(exit_to_prime/8).
 :- pred exit_to_prime(+AbsInt,+Sg,+Hv,+Head,+Sv,+Exit,?ExtraInfo,-Prime)
-    : (atm(AbsInt), list(var,Hv), list(var, Sv)) + not_fails
+   : (atm(AbsInt), list(var,Hv), list(var, Sv)) + not_fails
    #"Computes the abstract substitution @var{Prime} which results from
    adding the abstraction of the unification @var{Sg} = @var{Head} to
    abstract substitution @var{Exit} (the exit substitution for a
@@ -206,10 +211,10 @@ obtained after the analysis of the clause being considered
 % TODO:[new-resources] compatibility with project/5 (unbound Sg!)
 :- export(project/5).
 :- pred project(+AbsInt,+Vars,+HvFv_u,+ASub,-Proj)
-    : atm * list * list * term * term + not_fails
-    #"Projects the abstract substitution @var{ASub} onto the variables of
-     list @var{Vars} resulting in the projected abstract substitution
-     @var{Proj}.".
+   : atm * list * list * term * term + not_fails
+   #"Projects the abstract substitution @var{ASub} onto the variables of
+   list @var{Vars} resulting in the projected abstract substitution
+   @var{Proj}.".
 project(AbsInt,Vars,HvFv,ASub,Proj) :-
     project(AbsInt,sg_not_provided,Vars,HvFv,ASub,Proj). % TODO: Unbound Sg is a problem! (IG) Using sg_not_provided instead (JF)
 
@@ -217,20 +222,20 @@ project(AbsInt,Vars,HvFv,ASub,Proj) :-
 % TODO: check that HvFv is sorted?
 :- export(project/6). % TODO:[new-resources] (extra)
 :- pred project(+AbsInt,+Sg,+Vars,+HvFv_u,+ASub,-Proj)
-    : atm * term * list * list * term * term + not_fails
-    #"Projects the abstract substitution @var{ASub} onto the variables of
-      list @var{Vars} resulting in the projected abstract substitution
-      @var{Proj}.".
+   : atm * term * list * list * term * term + not_fails
+   #"Projects the abstract substitution @var{ASub} onto the variables of
+   list @var{Vars} resulting in the projected abstract substitution
+   @var{Proj}.".
 
 :- export(widencall/4).
 :- pred widencall(+AbsInt,+ASub0,+ASub1,-ASub) : atm(AbsInt)
-    #"@var{ASub} is the result of widening abstract substitution @var{ASub0}
-      and @var{ASub1}, which are supposed to be consecutive call patterns in
-     a fixpoint computation.
+   #"@var{ASub} is the result of widening abstract substitution @var{ASub0}
+   and @var{ASub1}, which are supposed to be consecutive call patterns in
+   a fixpoint computation.
 
-     @begin{alert} This predicate is allowed to fail and it fails if the
-     domain does not define a widening on calls.
-     @end{alert} ".
+   @begin{alert} This predicate is allowed to fail and it fails if the
+   domain does not define a widening on calls.
+   @end{alert} ".
 
 :- export(dual_widencall/4).
 % dual_widencall(+,+,+,-)
@@ -242,9 +247,9 @@ dual_widencall(_AbsInt,_ASub0,_ASub1,_ASub) :- fail.
 
 :- export(widen/4).
 :- pred widen(+AbsInt,+ASub0,+ASub1,-ASub) : atm(AbsInt) + not_fails
-    #"@var{ASub} is the result of widening abstract substitution @var{ASub0}
-      and @var{ASub1}, which are supposed to be consecutive approximations
-      to the same abstract value.".
+   #"@var{ASub} is the result of widening abstract substitution @var{ASub0}
+   and @var{ASub1}, which are supposed to be consecutive approximations
+   to the same abstract value.".
 
 :- export(dual_widen/4).
 % dual_widen(+,+,+,-)
@@ -271,8 +276,8 @@ normalize_asub(_AbsInt,Prime,Prime).
 
 :- export(compute_lub/3).
 :- pred compute_lub(+AbsInt,+ListASub,-LubASub) : atm * list * term
-    #"@var{LubASub} is the least upper bound of the abstract substitutions
-     in list @var{ListASub}.".
+   #"@var{LubASub} is the least upper bound of the abstract substitutions
+   in list @var{ListASub}.".
 
 :- export(compute_glb/3).
 % compute_glb(+,+,-)
@@ -319,9 +324,9 @@ compute_glb(AbsInt,[A,B],Glb) :-
 
 :- export(identical_proj/5).
 :- pred identical_proj(+AbsInt,+Sg,+Proj,+Sg1,+Proj1) : atm(AbsInt)
-    #"Abstract patterns @var{Sg}:@var{Proj} and @var{Sg1}:@var{Proj1} are
-      equivalent in domain @var{AbsInt}. Note that @var{Proj} is assumed to
-      be already sorted.".
+   #"Abstract patterns @var{Sg}:@var{Proj} and @var{Sg1}:@var{Proj1} are
+   equivalent in domain @var{AbsInt}. Note that @var{Proj} is assumed to
+   be already sorted.".
 identical_proj(AbsInt,Sg,Proj,Sg1,Proj1) :-
     variant(Sg,Sg1),
     Sg = Sg1,
@@ -330,7 +335,7 @@ identical_proj(AbsInt,Sg,Proj,Sg1,Proj1) :-
 
 :- export(identical_proj_1/7).
 :- pred identical_proj_1(AbsInt,Sg,Proj,Sg1,Proj1,Prime1,Prime2)
- #"Abstract patterns @var{Sg}:@var{Proj} and @var{Sg1}:@var{Proj1} are
+   #"Abstract patterns @var{Sg}:@var{Proj} and @var{Sg1}:@var{Proj1} are
    equivalent in domain @var{AbsInt}. Note that @var{Proj} is assumed to be
    already sorted. It is different from @tt{identical_proj/5} because it can be
    true although @var{Sg} and @var{Sg1} are not variant".
@@ -364,9 +369,9 @@ identical_proj_1(AbsInt,Sg,Proj,Sg1,Proj1,Prime1,Prime2) :-
 
 :- export(identical_abstract/3).
 :- pred identical_abstract(+AbsInt,+ASub1,+ASub2) : atm(AbsInt)
-    #"Succeeds if, in the particular abstract domain, the two abstract
-      substitutions @var{ASub1} and @var{ASub2} are defined on the same
-      variables and are equivalent.".
+   #"Succeeds if, in the particular abstract domain, the two abstract
+   substitutions @var{ASub1} and @var{ASub2} are defined on the same
+   variables and are equivalent.".
 % TODO: [IG] This should be implemented in each domain
 
 :- doc(hide,fixpoint_covered/3).
@@ -377,8 +382,8 @@ identical_proj_1(AbsInt,Sg,Proj,Sg1,Proj1,Prime1,Prime2) :-
 
 :- export(abs_sort/3).
 :- pred abs_sort(+AbsInt,+ASub_u,ASub) : atm(AbsInt) + not_fails
-    #"@var{ASub} is the result of sorting abstract substitution
-     @var{ASub_u}.".
+   #"@var{ASub} is the result of sorting abstract substitution
+   @var{ASub_u}.".
 
 :- export(extend/6). % TODO:[new-resources] can Sg be avoided?
 :- pred extend(+AbsInt,+Sg,+Prime,+Sv,+Call,-Succ) : atm(AbsInt) + not_fails
@@ -403,11 +408,11 @@ less_or_equal_proj(AbsInt,Sg,Proj,Sg1,Proj1) :-
 
 :- export(less_or_equal/3).
 :- pred less_or_equal(+AbsInt,+ASub0,+ASub1) : atm(AbsInt)
-    #"Succeeds if @var{ASub1} is more general or equivalent to @var{ASub0}.".
+   #"Succeeds if @var{ASub1} is more general or equivalent to @var{ASub0}.".
 
 :- export(glb/4).
 :- pred glb(+AbsInt,+ASub0,+ASub1,-GlbASub) : atm(AbsInt) + not_fails
-    #"@var{GlbASub} is the greatest lower bound of abstract substitutions
+   #"@var{GlbASub} is the greatest lower bound of abstract substitutions
      @var{ASub0} and @var{ASub1}.".
 
 % ===========================================================================
@@ -427,17 +432,17 @@ less_or_equal_proj(AbsInt,Sg,Proj,Sg1,Proj1) :-
 
 :- export(call_to_success_fact/10). % TODO:[new-resources] (extra)
 :- pred call_to_success_fact(+AbsInt,+Sg,+Hv,+Head,+K,+Sv,+Call,+Proj,-Prime,-Succ)
-    : atm(AbsInt) + not_fails
-    #"Specialized version of call_to_entry + entry_to_exit + exit_to_prime
-      for a fact @var{Head}.".
+   : atm(AbsInt) + not_fails
+   #"Specialized version of call_to_entry + entry_to_exit + exit_to_prime
+     for a fact @var{Head}.".
 
 % TODO: fix modes, it was: special_builtin(+,+,+,-,-)
 :- export(special_builtin/6).
 :- pred special_builtin(+AbsInt,+SgKey,+Sg,?Subgoal,-Type,-Condvars) : atm(AbsInt)
-    #"Predicate @var{Sg} is considered a ""builtin"" of type @var{Type} in
-      domain @var{AbsInt}. Types are domain dependent. Domains may have two
-      different ways to treat these predicates: see
-      @tt{body_succ_builtin/9}.".
+   #"Predicate @var{Sg} is considered a ""builtin"" of type @var{Type} in
+     domain @var{AbsInt}. Types are domain dependent. Domains may have two
+     different ways to treat these predicates: see
+     @tt{body_succ_builtin/9}.".
 
 :- doc(hide,combined_special_builtin0/3).
 :- export(combined_special_builtin0/3).
@@ -447,8 +452,8 @@ less_or_equal_proj(AbsInt,Sg,Proj,Sg1,Proj1) :-
 
 % TODO: fix modes, it was: body_succ_builtin(+,+,+,+,+,+,+,+,-)
 :- export(body_succ_builtin/9).
-:- pred body_succ_builtin(+AbsInt,+Type,+Sg,?Vs,+Sv,+Hv,+Call,+Proj,-Succ) :
-    atm(AbsInt) + not_fails % this predicate should not fail
+:- pred body_succ_builtin(+AbsInt,+Type,+Sg,?Vs,+Sv,+Hv,+Call,+Proj,-Succ)
+   : atm(AbsInt) + not_fails % this predicate should not fail
    #"Specialized version of call_to_entry + entry_to_exit + exit_to_prime +
     extend for predicate @var{Sg} considered a ""builtin"" of type @var{Type}
     in domain @var{AbsInt}. Whether a predicate is ""builtin"" in a domain is
@@ -461,27 +466,27 @@ less_or_equal_proj(AbsInt,Sg,Proj,Sg1,Proj1) :-
 :- doc(doinclude,success_builtin/7).
 :- export(success_builtin/7).
 :- pred success_builtin(AbsInt,Type,Sv,Condvars,HvFv_u,Call,Succ)
-    : atm(AbsInt) + not_fails
- #"@var{Succ} is the success substitution on domain @var{AbsInt} for a call
-   @var{Call} to a goal of a ""builtin"" (domain dependent) type @var{Type}
-   with variables @var{Sv}. @var{Condvars} can be used to transfer some
-   information from @tt{special_builtin/5}.".
+   : atm(AbsInt) + not_fails
+   #"@var{Succ} is the success substitution on domain @var{AbsInt} for a call
+     @var{Call} to a goal of a ""builtin"" (domain dependent) type @var{Type}
+     with variables @var{Sv}. @var{Condvars} can be used to transfer some
+     information from @tt{special_builtin/5}.".
 
 :- doc(doinclude,call_to_success_builtin/7).
 :- pred call_to_success_builtin(AbsInt,Type,Sg,Sv,Call,Proj,Succ) + not_fails
-    #"@var{Succ} is the success substitution on domain @var{AbsInt} for a
-      call @var{Call} to a goal @var{Sg} with variables @var{Sv} considered
-      of a ""builtin"" (domain dependent) type @var{Type}. @var{Proj} is
-      @var{Call} projected on @var{Sv}.".
+   #"@var{Succ} is the success substitution on domain @var{AbsInt} for a
+     call @var{Call} to a goal @var{Sg} with variables @var{Sv} considered
+     of a ""builtin"" (domain dependent) type @var{Type}. @var{Proj} is
+     @var{Call} projected on @var{Sv}.".
 
 % ===========================================================================
 :- doc(section, "Properties directly from domain").
 
 :- export(obtain_info/5).
 :- pred obtain_info(+AbsInt,+Prop,+Vars,+ASub,-Info) : atm(AbsInt)
-    #"Obtains variables @var{Info} for which property @var{Prop} holds given
-      abstract substitution @var{ASub} on variables @var{Vars} for domain
-      @var{AbsInt}.".
+   #"Obtains variables @var{Info} for which property @var{Prop} holds given
+     abstract substitution @var{ASub} on variables @var{Vars} for domain
+     @var{AbsInt}.".
 
 % ===========================================================================
 :- doc(section, "Properties to domain and viceversa").
@@ -602,9 +607,9 @@ asub_to_out(AbsInt,ASub,Qv,OutputUser,CompProps) :-
 
 :- export(empty_entry/4).
 :- pred empty_entry(+AbsInt,+Sg,+Vars,-Entry) : atm * callable * list * term + not_fails
-    #"@var{Entry} is the ""empty"" abstraction in domain @var{AbsInt} of
-      variables @var{Vars}. I.e., it is the abstraction of a substitution on
-      @var{Vars} in which all variables are unbound: free and unaliased.".
+   #"@var{Entry} is the ""empty"" abstraction in domain @var{AbsInt} of
+     variables @var{Vars}. I.e., it is the abstraction of a substitution on
+     @var{Vars} in which all variables are unbound: free and unaliased.".
 
 % ===========================================================================
 :- doc(section, "Other particular operations").
@@ -702,9 +707,9 @@ rename_types_in_abs(ASub0,AbsInt,Dict,ASub1) :-
    @var{AbsInt}.").
 
 :- export(abstract_instance/5).
-:- pred abstract_instance(AbsInt,Sg1,Proj1,Sg2,Proj2) # "The pair
-    <Sg1,Proj1> is an abstract instance of the pair <Sg2,Proj2>, i.e., the
-    concretization of <Sg1,Proj1> is included in the concretization of
+:- pred abstract_instance(AbsInt,Sg1,Proj1,Sg2,Proj2)
+   #"The pair <Sg1,Proj1> is an abstract instance of the pair <Sg2,Proj2>, i.e.,
+    the concretization of <Sg1,Proj1> is included in the concretization of
     <Sg2,Proj2>.".
 
 abstract_instance(AbsInt,Sg1,Proj1,Sg2,Proj2) :- 

@@ -165,7 +165,8 @@ apply_assrt_call_to_success(_,_,_,Proj,_,Call,Proj,Call).
 
 :- export(apply_assrt_exit/7).
 :- pred apply_assrt_exit(+AbsInt,+Sg,+Sv,+Proj0,+LPrime,-NLPrime,?Applied)
-    : ( atm(AbsInt), list(Sv), list(LPrime) ) => list(NLPrime).
+   : ( atm(AbsInt), list(Sv), list(LPrime) )
+   => list(NLPrime) + (not_fails, is_det).
 apply_assrt_exit(_,_,_,_,['$bottom'],['$bottom'],no) :- !.
 % if no assertions, do nothing
 apply_assrt_exit(_,Sg,_,_,LPrime,LPrime,no) :-
@@ -180,10 +181,10 @@ apply_assrt_exit(AbsInt,Sg,Sv,Proj0,LPrime,NLPrime,yes) :-
     get_applicable_status(Head, success, Sts),
     predkey_from_sg(Sg,SgKey),
     ( get_succ_assertion_asubs(SgKey,Head,Hv,Sts,AbsInt,NProj,Exit) ->
-      exit_to_prime(AbsInt,Sg,Hv,Head,Sv,Exit,ExtraInfo,NPrime),
-      invalid_trust_message(success,NPrime,Sg:LPrime,Sg),
+        exit_to_prime(AbsInt,Sg,Hv,Head,Sv,Exit,ExtraInfo,NPrime),
+        invalid_trust_message(success,NPrime,Sg:LPrime,Sg),
         get_singleton(NPrime,NLPrime),
-      fixpoint_trace('applied trust',exit,_,_,Sg,NLPrime,_)
+        fixpoint_trace('applied trust',exit,_,_,Sg,NLPrime,_)
     ;
         NLPrime = LPrime
     ).
