@@ -64,9 +64,9 @@ init_fixpoint:-
    we compute it from scratch.".
    
 call_to_success(_RFlag,SgKey,Call,Proj,Sg,Sv,AbsInt,_ClId,Succ,F,N,Id) :-
-    current_fact(complete(SgKey,AbsInt,Subg,Proj1,Prime1,Id,Fs),Ref),
-    identical_proj(AbsInt,Sg,Proj,Subg,Proj1),!,
-    reuse_complete(Ref,SgKey,Proj,Sg,Sv,AbsInt,F,N,Id,Fs,Prime1,Prime),
+    current_fact(complete(SgKey,AbsInt,Sg1,Proj1,Prime1,Id,Fs)),
+    identical_proj(AbsInt,Sg,Proj,Sg1,Proj1), !, % unifies Sg = Sg1
+    reuse_complete(SgKey,Proj,Sg,Sv,AbsInt,F,N,Id,Prime1,Prime),
     each_extend(Sg,Prime,AbsInt,Sv,Call,Succ).
 call_to_success(nr,SgKey,Call,Proj,Sg,Sv,AbsInt,ClId,Succ,F,N,Id):-
     fixpoint_get_new_id(SgKey,AbsInt,Sg,Proj,Id),
@@ -84,10 +84,10 @@ call_to_success(r,SgKey,Call,Proj,Sg,Sv,AbsInt,_ClId,Succ,F,N,Id) :-
     each_extend(Sg,Prime,AbsInt,Sv,Call,Succ).
 
 %------------------------------------------------------------------------%
-:- pred reuse_complete(+Ref,+SgKey,+Proj,+Sg,+Sv,+AbsInt,+F,+N,+Id,+Fs,+Prime1,-Prime)
-    : (atm(SgKey), list(Sv), atm(AbsInt), atm(F), int(N), plai_db_id(Id), list(Fs))
- => nonvar(Prime) + not_fails
- #"This predicate tries to reuse a complete with id
+:- pred reuse_complete(+SgKey,+Proj,+Sg,+Sv,+AbsInt,+F,+N,+Id,+Prime1,-Prime)
+   : (atm(SgKey), list(var,Sv), atm(AbsInt), atm(F), int(N), plai_db_id(Id))
+   => nonvar(Prime) + (not_fails, is_det)
+   #"This predicate tries to reuse a complete with id
    @var{Id}. @var{Prime} is the success pattern obtained from
    performing the fixpoint.
 
@@ -100,18 +100,17 @@ call_to_success(r,SgKey,Call,Proj,Sg,Sv,AbsInt,_ClId,Succ,F,N,Id) :-
    
    2. If there are no changes:
       The complete is stored with the success pattern ordered and adding F,N
-      to the list of callers of that complete @var{Fs}.".
-reuse_complete(Ref,SgKey,Proj,Sg,Sv,AbsInt,F,N,Id,Fs,Prime1,Prime):-
+      to the list of callers of that complete @var{Fs}.
+   ".
+reuse_complete(SgKey,Proj,Sg,Sv,AbsInt,F,N,Id,Prime1,Prime):-
     each_abs_sort(Prime1,AbsInt,TempPrime),
-    ( current_fact('$change_list'(Id,ChList),Ref2) ->
-        erase(Ref2),
-        fixpoint_compute_change(ChList,SgKey,Sg,Sv,Proj,AbsInt,TempPrime,Prime,Id),
-        current_fact(complete(SgKey,AbsInt,A,B,C,Id,Fs2),Ref3),
-        patch_parents(Ref3,complete(SgKey,AbsInt,A,B,C,Id,Ps),F,N,Ps,Fs2)
+    ( retract_fact('$change_list'(Id,ChList)) ->
+        fixpoint_compute_change(ChList,SgKey,Sg,Sv,Proj,AbsInt,TempPrime,Prime,Id)
     ;
-        Prime = TempPrime,
-        patch_parents(Ref,complete(SgKey,AbsInt,Sg,Proj,Prime,Id,Ps),F,N,Ps,Fs)
-    ).
+        Prime = TempPrime
+    ),
+    get_complete(SgKey,AbsInt,A,B,C,Id,OldFs,Ref), % Id makes the complete unique
+    patch_parents(Ref,complete(SgKey,AbsInt,A,B,C,Id,NewFs),F,N,NewFs,OldFs).
 
 :- pred init_fixpoint0/10 + not_fails.
 init_fixpoint0(SgKey,Call,Proj0,Sg,Sv,AbsInt,F,N,Id,Prime):-
@@ -123,9 +122,10 @@ init_fixpoint0(SgKey,Call,Proj,Sg,Sv,AbsInt,F,N,Id,Prime):-
     init_fixpoint_(SgKey,Call,Proj,Sg,Sv,AbsInt,F,N,Id,Prime).
 
 init_fixpoint1(SgKey,_Call,Proj,Sg,Sv,AbsInt,F,N,Id,Prime):-
-    current_fact(complete(SgKey,AbsInt,Subg,Proj1,Prime1,Id,Fs),Ref), % backtracking here
-    identical_proj(AbsInt,Sg,Proj,Subg,Proj1),!,
-    reuse_complete(Ref,SgKey,Proj,Sg,Sv,AbsInt,F,N,Id,Fs,Prime1,Prime).
+    current_fact(complete(SgKey,AbsInt,Sg1,Proj1,Prime1,Id,Fs)), % backtracking here
+    identical_proj(AbsInt,Sg,Proj,Sg1,Proj1),!, % unifies Sg=Sg1
+    reuse_complete(SgKey,Proj,Sg,Sv,AbsInt,F,N,Id,Prime1,Prime).
+%%% IG: why not needed to extend here?
 init_fixpoint1(SgKey,Call,Proj,Sg,Sv,AbsInt,F,N,Id,Prime):-
     init_fixpoint_(SgKey,Call,Proj,Sg,Sv,AbsInt,F,N,Id,Prime).
 
@@ -138,7 +138,7 @@ init_fixpoint_(SgKey,Call,Proj,Sg,Sv,AbsInt,F,N,Id,Prime):-
     proj_to_prime_r(SgKey,Sg,Sv,Call,Proj,AbsInt,TempPrime,Id),
     fixpoint_trace('non-recursive completed',Id,N,SgKey,Sg,TempPrime,_),
     asserta_fact(complete(SgKey,AbsInt,Sg,Proj,TempPrime,Id,[])),
-    bagof(X, X^(trans_clause(SgKey,r,X)),Clauses),!,
+    bagof(X, X^(trans_clause(SgKey,r,X)),Clauses),!, % TODO: doc unifications
     fixpoint_trace('fixpoint initiated',Id,N,SgKey,Sg,Proj,Clauses),
     compute(Clauses,SgKey,Sg,Sv,Proj,AbsInt,TempPrime,Prime1,Id),
     fixpoint_ch(SgKey,Sg,Sv,Proj,AbsInt,Prime1,Prime2,Id), % !.
@@ -152,17 +152,17 @@ init_fixpoint_(SgKey,Call,Proj,Sg,Sv,AbsInt,F,N,Id,Prime):-
         display_list([SgKey,': ',Sg,'\n', 'Proj: ', Proj, '\n', 'Prime2: ',Prime2,'\n','Prime3: ',Prime3,'\n']),
         display_list(['Prime4: ',Prime4,'\n','Prime: ',Prime,'\n\n'])
     ;
-    true
-  ),
-  patch_parents(Ref,complete(SgKey,AbsInt,Sg,Proj,Prime,Id,Ps),F,N,Ps,Fs2).
+        true
+    ),
+    patch_parents(Ref,complete(SgKey,AbsInt,Sg,Proj,Prime,Id,Ps),F,N,Ps,Fs2).
 
 %-------------------------------------------------------------------------
 % [IG] add compute_clauses_lub (resources) and ready to merge with fixpo_plai
 :- export(proj_to_prime_nr/9).
 :- pred proj_to_prime_nr(+SgKey,+Sg,+Sv,+Call,+Proj,+AbsInt,+Clid,-ListPrime,+Id)
- : (atm(SgKey), list(var,Sv), atm(AbsInt), plai_db_id(Id))
- => (list(ListPrime)) + not_fails
- #"This predicate obtains the list of Prime corresponding to each non
+   : (atm(SgKey), list(var,Sv), atm(AbsInt), plai_db_id(Id))
+   => (list(ListPrime)) + (not_fails, is_det)
+   #"This predicate obtains the list of Prime corresponding to each non
    recursive clause of Sg for a given Call. It first reads those non
    recursive clauses by means of a bagof and then proccess each one with
    a loop. If there is no non recursive clause, the answer will be

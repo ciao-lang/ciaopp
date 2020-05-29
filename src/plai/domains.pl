@@ -326,7 +326,11 @@ compute_glb(AbsInt,[A,B],Glb) :-
 :- pred identical_proj(+AbsInt,+Sg,+Proj,+Sg1,+Proj1) : atm(AbsInt)
    #"Abstract patterns @var{Sg}:@var{Proj} and @var{Sg1}:@var{Proj1} are
    equivalent in domain @var{AbsInt}. Note that @var{Proj} is assumed to
-   be already sorted.".
+   be already sorted.
+   @begin{alert}
+   This predicate unifies @var{Sg} and @var{Sg1}.
+   @end{alert}
+   ".
 identical_proj(AbsInt,Sg,Proj,Sg1,Proj1) :-
     variant(Sg,Sg1),
     Sg = Sg1,
