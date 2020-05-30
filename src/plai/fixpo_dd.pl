@@ -53,9 +53,9 @@ init_fixpoint:-
 %------------------------------------------------------------------------%
 % TODO: fix modes, it was: call_to_success(+,+,-,+,+,+,+,-,+,+,+,?)
 :- pred call_to_success(+RFlag,+SgKey,+Call,+Proj,+Sg,+Sv,+AbsInt,?ClId,-Succ,+F,+N,-Id)
-    : (atm(AbsInt), list(Sv))
- => (int(N), nonvar(Succ), nonvar(Call), dd_id(Id)) + not_fails
- #"It obtains the Succ for a given Sg and Call.
+   : (atm(AbsInt), list(var,Sv))
+   => (int(N), nonvar(Succ), nonvar(Call), dd_id(Id)) + (not_fails, is_det)
+   #"It obtains the Succ for a given Sg and Call.
    Before computing the Succ we check if it has already been computed.
    If it has but there is a $change_list associated this means that this
    Succ was computed using information that was not yet final and has
@@ -64,7 +64,7 @@ init_fixpoint:-
    we compute it from scratch.".
    
 call_to_success(_RFlag,SgKey,Call,Proj,Sg,Sv,AbsInt,_ClId,Succ,F,N,Id) :-
-    current_fact(complete(SgKey,AbsInt,Sg1,Proj1,Prime1,Id,Fs)),
+    current_fact(complete(SgKey,AbsInt,Sg1,Proj1,Prime1,Id,_Fs)),
     identical_proj(AbsInt,Sg,Proj,Sg1,Proj1), !, % unifies Sg = Sg1
     reuse_complete(SgKey,Proj,Sg,Sv,AbsInt,F,N,Id,Prime1,Prime),
     each_extend(Sg,Prime,AbsInt,Sv,Call,Succ).
@@ -122,7 +122,7 @@ init_fixpoint0(SgKey,Call,Proj,Sg,Sv,AbsInt,F,N,Id,Prime):-
     init_fixpoint_(SgKey,Call,Proj,Sg,Sv,AbsInt,F,N,Id,Prime).
 
 init_fixpoint1(SgKey,_Call,Proj,Sg,Sv,AbsInt,F,N,Id,Prime):-
-    current_fact(complete(SgKey,AbsInt,Sg1,Proj1,Prime1,Id,Fs)), % backtracking here
+    current_fact(complete(SgKey,AbsInt,Sg1,Proj1,Prime1,Id,_Fs)), % backtracking here
     identical_proj(AbsInt,Sg,Proj,Sg1,Proj1),!, % unifies Sg=Sg1
     reuse_complete(SgKey,Proj,Sg,Sv,AbsInt,F,N,Id,Prime1,Prime).
 %%% IG: why not needed to extend here?
@@ -197,7 +197,7 @@ proj_to_prime_r(_SgKey,_Sg,_Sv,_Call,_Proj,_AbsInt,Bot,_Id):-
 
 :- export(proj_to_prime/9).
 :- pred proj_to_prime(+Clauses,+SgKey,+Sg,+Sv,+Call,+Proj,+AbsInt,Prime,+Id)
-    : (list(Clauses), atm(SgKey), list(Sv), atm(AbsInt)) + not_fails.
+   : (list(Clauses), atm(SgKey), list(var,Sv), atm(AbsInt)) + (not_fails, is_det).
 proj_to_prime(Clauses,SgKey,Sg,Sv,Call,Proj,AbsInt,Prime,Id) :-
     fixpoint_trace('non-recursive clauses',Id,_N,SgKey,Sg,Proj,Clauses),
     proj_to_prime_loop(Clauses,Sg,Sv,Call,Proj,AbsInt,ListPrime0,Id),
@@ -210,7 +210,8 @@ proj_to_prime_loop([Clause|Rest],Sg,Sv,Call,Proj,AbsInt,Primes,Id):-
     do_nr_cl(Clause,Sg,Sv,Call,Proj,AbsInt,Primes,TailPrimes,Id),!,
     proj_to_prime_loop(Rest,Sg,Sv,Call,Proj,AbsInt,TailPrimes,Id).
 
-:- pred do_nr_cl/9 + not_fails.
+:- pred do_nr_cl(Clause,Sg,Sv,Call,Proj,AbsInt,Primes,TailPrimes,Id)
+   + (not_fails, is_det).
 do_nr_cl(Clause,Sg,Sv,Call,Proj,AbsInt,Primes,TailPrimes,Id):-
     Clause = clause(Head,Vars_u,ClKey,Body),
     clause_applies(Head,Sg), !,
@@ -238,7 +239,7 @@ process_body(Body,K,AbsInt,Sg,Hv,_Fv,_,Head,Sv,Call,Proj,LPrime,Id):-
     ( current_pp_flag(fact_info,on) ->
         call_to_entry(AbsInt,Sv,Sg,Hv,Head,not_provided,[],Prime,Exit,_),
         decide_memo(AbsInt,K,Id,no,Hv,[Exit])
-        % IG: why not project the Succ of call to success_fact?
+        % IG: why not project the Succ of call_to_success_fact?
     ;
         true
     ),
@@ -251,15 +252,15 @@ process_body(Body,K,AbsInt,Sg,Hv,Fv,Vars_u,Head,Sv,_,Proj,Prime,Id):-
 
 %------------------------------------------------------------------------
 :- pred body_succ(+Call,+Literal,-Succ,+HvFv_u,+AbsInt,+ClId,+ParentId,-Id)
-    : (list(HvFv_u), atm(AbsInt), plai_db_id(ParentId))
-    => (nonvar(Succ), dd_id(Id))+ not_fails
-#"First, the lub between the abstract call substitution and the already
-  computed information for this program point (if any) is computed. Then
-  the lub is recordered.
-  If the abstract call substitution is bottom (case handled by the first
-  clause) the success abstract substitution is also bottom and nothing
-  more is needed. Otherwise (second clause) the computation of the       
-  success abstract substitution procceeds.".
+   : (list(var,HvFv_u), atm(AbsInt), plai_db_id(ParentId))
+   => (nonvar(Succ), dd_id(Id)) + (not_fails, is_det)
+   #"First, the lub between the abstract call substitution and the already
+   computed information for this program point (if any) is computed. Then
+   the lub is recordered.
+   If the abstract call substitution is bottom (case handled by the first
+   clause) the success abstract substitution is also bottom and nothing
+   more is needed. Otherwise (second clause) the computation of the
+   success abstract substitution procceeds.".
 body_succ(Call,Atom,Succ,HvFv_u,AbsInt,_ClId,ParentId,no):-
     bottom(Call), !,
     Succ = Call,
@@ -286,12 +287,9 @@ change_son_if_necessary(NewId,Key,NewN,Vars_u,Call,AbsInt):-
 %------------------------------------------------------------------------
 :- export(compute/9).
 :- pred compute(+Clauses,+SgKey,+Sg,+Sv,+Proj,+AbsInt,+TempPrime,-Prime,+Id)
-    : (atm(SgKey), list(Sv), atm(AbsInt), plai_db_id(Id))
-    => nonvar(Prime) + not_fails
-#" It analyses each clause. If after the computation the                  
-   approximate abstract prime substitution changes, the Flag is changed to
-   'notend' and erases the register ch_id(Id,Num), increases Num by one
-   and recorders ch_id(Id,Num1), otherwise everything remains unchanged.".
+   : (atm(SgKey), list(var,Sv), atm(AbsInt), plai_db_id(Id))
+   => nonvar(Prime) + (not_fails, is_det)
+   #"It analyzes each recursive clause clause.".
 compute([],_,_,_,_,_,Prime,Prime,_).
 compute([Clause|Rest],SgKey,Sg,Sv,Proj,AbsInt,TempPrime,Prime,Id) :-
     do_r_cl(Clause,SgKey,Sg,Sv,Proj,AbsInt,Id,TempPrime,NewPrime),
@@ -335,33 +333,33 @@ decide_mark_parents(AbsInt,_TempPrime,NewPrime,SgKey,Sg,Id,Proj):-
 
 %----------------------------------------------------------------------
 :- pred td_mark_parents_change_list(+Parents,+AbsInt)
-    : list * atm + not_fails
- #"This complete has changed. So we add the change in the $change_list
+   : list * atm + (not_fails, is_det)
+   #"This complete has changed. So we add the change in the $change_list
    of all parents.".
 td_mark_parents_change_list([],_).
 td_mark_parents_change_list([(EntryKey,_)|Rest],AbsInt) :-
     is_entrykey(EntryKey), !,
     td_mark_parents_change_list(Rest,AbsInt).
-td_mark_parents_change_list([(Literal,C)|Rest],AbsInt) :-
-    get_parent_key(Literal,C,AbsInt,CKey),
-    get_complete(CKey,AbsInt,_,_,_,C,Parents,_), !,
+td_mark_parents_change_list([(Literal,Id)|Rest],AbsInt) :-
+    get_parent_key(Literal,Id,AbsInt,CKey),
+    get_complete(CKey,AbsInt,_,_,_,Id,Parents,_), !,
     decode_litkey(Literal,N,A,Cl,L),
-    add_change(C,Literal,N/A/Cl/L,Parents,AbsInt),
+    add_change(Id,Literal,N/A/Cl/L,Parents,AbsInt),
     td_mark_parents_change_list(Rest,AbsInt).
 td_mark_parents_change_list([_|Rest],AbsInt):- % in case we have erased
     td_mark_parents_change_list(Rest,AbsInt).        % the complete
 
 %------------------------------------------------------------------------
 :- export(add_change/5).
-:- pred add_change(+C,Lit_Key,+Literal,+Parents,+AbsInt)
-    : ( plai_db_id(C), atm(Lit_Key)) + not_fails
-    #"@var{C}: Id of the complete of the predicate that changed
+:- pred add_change(+Id,Lit_Key,+Literal,+Parents,+AbsInt)
+    : ( plai_db_id(Id), atm(Lit_Key)) + not_fails
+    #"@var{Id}: Id of the complete of the predicate that changed
       @var{Lit_Key}: Key of the @var{Literal} of the complete that needs recomputing.
       @var{Literal}: @var{Literal} with the term @tt{F/A/C/L}.
       @var{Parents}: Program points in which the literal is called (0 means an entry)
                                       @var{AbsInt}: Abstract Domain.".
-add_change(C,Lit_Key,Literal,Parents,AbsInt) :-
-    insert_in_changelist(C,Lit_Key,Literal,MFlag),
+add_change(Id,Lit_Key,Literal,Parents,AbsInt) :-
+    insert_in_changelist(Id,Lit_Key,Literal,MFlag),
     ( MFlag = marked ->
         true % this avoids infinite loops (already marked)
     ;
@@ -369,18 +367,18 @@ add_change(C,Lit_Key,Literal,Parents,AbsInt) :-
     ).
 
 :- pred insert_in_changelist/4 + not_fails.
-insert_in_changelist(C,Lit_Key,Literal,MFlag) :-
-    current_fact('$change_list'(C,ChList),Ref),!,
+insert_in_changelist(Id,Lit_Key,Literal,MFlag) :-
+    current_fact('$change_list'(Id,ChList),Ref),!,
     insert_literal(ChList,Lit_Key,Literal,NewList,Flag),
     (Flag == yes ->
        erase(Ref),
-       asserta_fact('$change_list'(C,NewList)),
+       asserta_fact('$change_list'(Id,NewList)),
        MFlag = not_marked
     ;
         MFlag = marked
     ).
-insert_in_changelist(C,Lit_Key,Literal,not_marked) :-
-    asserta_fact('$change_list'(C,[(Lit_Key,Literal)])).
+insert_in_changelist(Id,Lit_Key,Literal,not_marked) :-
+    asserta_fact('$change_list'(Id,[(Lit_Key,Literal)])).
 
 insert_literal([], Lit_Key, Literal,[(Lit_Key,Literal)],yes).
 insert_literal([(Head_Key,Head_Lit)|Tail], Lit_Key,Literal,Set,Flag) :-
@@ -399,38 +397,41 @@ insert_literal_(>,Head_Key,Head_Lit,Tail,Lit_Key,Literal,NewList,yes):-
 
 %------------------------------------------------------------------------
 :- pred mark_parents_change_list_scc(+Parents,+SCC,+AbsInt)
-    : list * list * atm + not_fails
- #"This complete has changed. So we add the change in the $change_list
+   : list * list * atm + (not_fails, is_det)
+   #"This complete has changed. So we add the change in the $change_list
    of all parents. If the parent is in the same SCC then we recursively
    mark its parents as well.".
 mark_parents_change_list_scc([],_,_).
 mark_parents_change_list_scc([(EntryKey,_)|Rest],SCC,AbsInt):-
     is_entrykey(EntryKey), !,
     mark_parents_change_list_scc(Rest,SCC,AbsInt).
-mark_parents_change_list_scc([(LitKey,C)|Rest],SCC,AbsInt):-
-    get_parent_key(LitKey,C,AbsInt,Key),
+mark_parents_change_list_scc([(LitKey,Id)|Rest],SCC,AbsInt):-
+    get_parent_key(LitKey,Id,AbsInt,Key),
     decode_litkey(LitKey,N,A,Cl,G),
     ( member(N/A,SCC) ->
-        get_complete(Key,AbsInt,_,_,_,C,Parents,_),
-        add_change_(C,LitKey,N/A/Cl/G,Parents,SCC,AbsInt)
+        get_complete(Key,AbsInt,_,_,_,Id,Parents,_),
+        add_change_scc(Id,LitKey,N/A/Cl/G,Parents,SCC,AbsInt)
     ;
-        ( ('$change_list'(C,_) ; computing_change(C)) ->
+        ( ('$change_list'(Id,_) ; computing_change(Id)) ->
             % The parent the parent that is not in the same SCC comes from a
             % different entry, so it was added previously to the change list.
             true
         ;
             % This complete is not expected to be in the parents list, only
             % the ones that appear during the fixpoint of predicate @var{Key}
-            throw(error(unexpected_parent(LitKey,C,SCC)))
+            throw(error(unexpected_parent(LitKey,Id,SCC)))
         )
     ),
     mark_parents_change_list_scc(Rest,SCC,AbsInt).
 
 %------------------------------------------------------------------------
-:- pred add_change_(+C,+Lit_Key,+Literal,+Parents,+SCC,+AbsInt)
-    : int * atm * term * list * list * atm + not_fails.
-add_change_(C,Lit_Key,Literal,Parents,SCC,AbsInt):-
-    insert_in_changelist(C,Lit_Key,Literal,MFlag),
+% IG: Lit_Key can be free when a clause is marked to analyze from the begining (see
+% second clause of compute_change)
+:- export(add_change_scc/6).
+:- pred add_change_scc(+Id,+Lit_Key,+Literal,+Parents,+SCC,+AbsInt)
+   : int * atm * term * list * list * atm + (not_fails, is_det).
+add_change_scc(Id,Lit_Key,Literal,Parents,SCC,AbsInt):-
+    insert_in_changelist(Id,Lit_Key,Literal,MFlag),
     ( MFlag = marked ->
         true % this avoids infinite loops (already marked)
     ;
@@ -440,9 +441,9 @@ add_change_(C,Lit_Key,Literal,Parents,SCC,AbsInt):-
 %------------------------------------------------------------------------
 :- export(fixpoint_compute_change/9).
 :- pred fixpoint_compute_change(+Changes,+SgKey,+Sg,+Sv,+Proj,+AbsInt,+TempPrime,-Prime,+Id)
-    : (atm(SgKey), list(Sv), atm(AbsInt), plai_db_id(Id))
-    => nonvar(Prime) + not_fails
-#" It obtains the Prime for the recursive predicate Sg with Call (which
+   : (atm(SgKey), list(var,Sv), atm(AbsInt), plai_db_id(Id))
+   => nonvar(Prime) + not_fails
+   #" It obtains the Prime for the recursive predicate Sg with Call (which
    has been assigned to node Id), and the list of nodes it depends on
    In doing this it performs an iteration over the recursive clauses of Sg
    by calling to compute_change/13 and then checks if the fixpoint has
@@ -472,15 +473,15 @@ fixpoint_ch(_,_,_,_,_,Prime,Prime,_).
 
 %------------------------------------------------------------------------
 :- pred compute_change(+Changes,+SgKey,+Sg,+Sv,+Proj,+AbsInt,+TempPrime,-Prime,+Id)
-    : (list(Changes), atm(SgKey), list(Sv), atm(AbsInt), plai_db_id(Id))
-    => nonvar(Prime) + not_fails
- #"We compute a fixpoint iteration.".
+   : (list(Changes), atm(SgKey), list(var,Sv), atm(AbsInt), plai_db_id(Id))
+   => nonvar(Prime) + not_fails
+   #"Restarts the fixpoint from literals (in the list of @var{Changes}).".
 compute_change([],_,_,_,_,_,Prime,Prime,_).
 % the literal N/A/C/0 means that this literal has been introduced during 
 % incremental addition. So the clause must be first checked to see if it 
 % applies for the corresponding Subgoal. If it does, it is analyzed entirely
-compute_change([(_,N/A/C/0)|Rest],SgKey,Sg,Sv,Proj,AbsInt,TempPrime,Prime,Id) :-!,
-    get_clkey(N,A,C,ClKey),
+compute_change([(_,N/A/Cl/0)|Rest],SgKey,Sg,Sv,Proj,AbsInt,TempPrime,Prime,Id) :-!,
+    get_clkey(N,A,Cl,ClKey),
     trans_clause(SgKey,_,clause(Head,Vars_u,ClKey,Body)),
     fixpoint_trace('visit change clause',ClKey:Id,_N,ClKey,Head,Exit,_),
     ( clause_applies(Head,Sg)->
@@ -501,10 +502,10 @@ compute_change([(_,N/A/C/0)|Rest],SgKey,Sg,Sv,Proj,AbsInt,TempPrime,Prime,Id) :-
     ),
     fixpoint_trace('exit change clause',ClKey:Id,_N,ClKey,Head,Exit,_),
     compute_change(Rest,SgKey,Sg,Sv,Proj,AbsInt,TrustedPrime,Prime,Id).
-compute_change([(Ch_Key,N/A/C/_)|Rest],SgKey,Sg,Sv,Proj,AbsInt,TempPrime,Prime,Id) :-
+compute_change([(Ch_Key,N/A/Cl/_)|Rest],SgKey,Sg,Sv,Proj,AbsInt,TempPrime,Prime,Id) :-
     current_fact(memo_table(Ch_Key,AbsInt,Id,_,Vars_u,Entry)),
     each_abs_sort(Entry,AbsInt,S_Entry),
-    get_clkey(N,A,C,ClKey),
+    get_clkey(N,A,Cl,ClKey),
     trans_clause(SgKey,_,clause(Head,Vars_u,ClKey,Body)),
     fixpoint_trace('visit change clause',ClKey:Id,_N,ClKey,Head,Exit,_),
     advance_in_body(Ch_Key,Body,NewBody), !, % IG this cut should be after trans_clause
