@@ -53,6 +53,7 @@ pd_extend(_Sg,Prime,_Sv,_Call,Prime).
 pd_less_or_equal(_,_).
 
 :- export(pd_glb/3).
+% TODO: why is '$bottom' handled here? This domain should always return top
 pd_glb('$bottom',_ASub1,ASub) :- !, ASub = '$bottom'.
 pd_glb(_ASub0,'$bottom',ASub) :- !, ASub = '$bottom'.
 pd_glb(_,_,top).
