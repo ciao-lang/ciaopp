@@ -70,11 +70,13 @@ pdb_extend(_Sg,'$bottom',_Hv,_Call,Succ):- !,
 pdb_extend(_Sg,_Prime,_Hv,_Call,Succ):- 
     Succ = top.
 
+% TODO: optimize for other domains
 :- export(pdb_compute_lub/2).
-pdb_compute_lub([ASub1,ASub2|Rest],Lub) :- !,
-    pdb_lub(ASub1,ASub2,ASub3),
-    pdb_compute_lub([ASub3|Rest],Lub).
-pdb_compute_lub([ASub],ASub).
+pdb_compute_lub(['top'|_],Lub) :- !,
+    Lub = 'top'.
+pdb_compute_lub([_|Rest],Lub) :- !,
+    pdb_compute_lub(Rest,Lub).
+pdb_compute_lub(_,'$bottom').
 
 pdb_lub('$bottom','$bottom',ALub):-!,
     ALub = '$bottom'.
