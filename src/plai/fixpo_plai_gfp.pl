@@ -328,7 +328,7 @@ call_to_success(nr,SgKey,Call,Proj,Sg,Sv,AbsInt,ClId,Succ,[],F,N,Id):-
     asserta_fact(complete(SgKey,AbsInt,Sg,Proj,Prime,Id,[(F,N)])),
     each_extend(Sg,Prime,AbsInt,Sv,Call,Succ).
 
-:- meta_predicate(?,fact,?,?,?,?).
+:- meta_predicate patch_parents(?,fact,?,?,?,?).
 patch_parents(_Ref,_Memo,F,N,_Ps,Fs):-
     member((F,N),Fs), !.
 patch_parents(Ref,Memo,F,N,Ps,Fs):-
