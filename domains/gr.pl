@@ -238,28 +238,32 @@ gr_abs_sort(Asub,Asub_s):-
 %                      ABSTRACT PROJECTION
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% gr_project(+,+,+,+,-)                                                  %
+% gr_project(+,+,+,+,?)                                                  %
 % gr_project(Sg,Vars,HvFv_u,ASub,Proj)                                   %
 % Proj is the result of                                                  %
 % eliminating from ASub all X/Value such that X not in Vars              %
 %------------------------------------------------------------------------%
-:- pred gr_project(+Sg,+Vars,+HvFv_u,+Asub,-Proj)
-   : term * list * term * gr_asub * term => gr_asub(Proj) + (not_fails, is_det)
+:- pred gr_project(+Sg,+Vars,+HvFv_u,+Asub,?Proj)
+   : term * list * term * gr_asub * term => gr_asub(Proj)
+   + (not_fails, is_det)
    #"@var{Proj} is the result of eliminating from @var{Asub} all
     @var{X}/@var{Value} such that @var{X} is not in @var{Vars}. @var{HvFv_u} may
-    be a list or '@tt{not_provided_HvFv_u}'".
+    be a list or '@tt{not_provided_HvFv_u}'.
+
+    This predicate may be used with @var{Proj} instantiated, see
+    gr_call_to_success_builtin. ".
 gr_project(_Sg,_Vars,_HvFv_u,'$bottom',Proj) :- !,
     Proj = '$bottom'.
 gr_project(_Sg,Vars,_HvFv_u,ASub,Proj) :- 
     project_aux(Vars,ASub,Proj).
 
 %------------------------------------------------------------------------%
-% project_aux(+,+,-)                                                     %
+% project_aux(+,+,?)                                                     %
 % project_aux(Vars,ListValues,Proj)                                      %
 % Eliminates from each list in the second argument any variable/Value    %
 % such that the variable is not an element of the first argument         %
 %------------------------------------------------------------------------%
-:- pred project_aux(+Vars,+ListValues,-Proj)
+:- pred project_aux(+Vars,+ListValues,?Proj)
    : list * list * term => gr_asub(Proj)
    #"Eliminates from each list in the second argument any variable/value such
     that the variable is not an element of @var{Vars}".
@@ -986,7 +990,7 @@ gr_call_to_success_builtin('keysort/2',keysort(X,Y),Sv,Call,Proj,Succ):-
 % Obtaining the abstract substitution for gr from the user supplied      %
 %------------------------------------------------------------------------%
 
-:- pred gr_input_user_interface(+InputUser,+Qv,-ASub,+Sg,+MaybeCallASub)
+:- pred gr_input_user_interface(?InputUser,+Qv,-ASub,+Sg,+MaybeCallASub)
    : term * list * term * term * term
    => gr_asub(ASub) + (not_fails, is_det)
    #"Obtains the abstract substitution for gr from the native properties found

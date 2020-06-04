@@ -190,7 +190,9 @@ reduce_equivalent(ListPrime0,AbsInt,ListPrime1):-
 
 :- pred each_exit_to_prime(+Exit, +AbsInt,+Sg,+Hv,+Head,+Sv,ExtraInfo,LPrime)
    : (list(Exit), atm(AbsInt), list(Hv), list(Sv))
-   => (list(LPrime), nonvar(ExtraInfo)) + not_fails.
+   => (list(LPrime)) + not_fails
+   #"@var{ExtraInfo} may be a free variable if the domain does not use it (e.g.
+    @tt{pd} or @tt{pdb}.".
 each_exit_to_prime([Exit],AbsInt,Sg,Hv,Head,Sv,ExtraInfo,LPrime):- !,
     exit_to_prime(AbsInt,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime),
     LPrime=[Prime].
