@@ -150,8 +150,10 @@ del_parent_complete(SgKey,AbsInt,Id,PId,LitKey,NPs) :-
 :- export(patch_parents/6).
 :- meta_predicate patch_parents(?,fact,?,?,?,?).
 :- pred patch_parents(+Ref,+Memo,+Key,+Id,?NewFs,+Fs)
-   : list(Fs) => list(NewFs) + not_fails.
-patch_parents(_Ref,_Memo,K,C,_Ps,Fs):-
+   : list(Fs) 
+   % => (list(NewFs) ; var(NewFs))  % TODO: mixing regtype and inst
+   + not_fails.
+patch_parents(_Ref,_Memo,K,C,_NewFs,Fs):- % not unifying NewFs if alredy in the list
     member((K,C),Fs), !. % TODO: bad complexity
 patch_parents(Ref,Memo,K,C,Ps,Fs):-
     erase(Ref),
