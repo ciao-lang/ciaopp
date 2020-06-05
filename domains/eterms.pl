@@ -1,4 +1,4 @@
-:- module(eterms, [], [assertions,regtypes,basicmodes,datafacts,hiord]).
+:- module(eterms, [], [assertions,regtypes,basicmodes,hiord]).
 
 :- doc(title,"eterms: types with lnewiden_el/4 (abstract domain)").
 :- doc(author, "Claudio Vaucheret").
@@ -72,6 +72,7 @@
 :- use_module(engine(hiord_rt), ['$meta_call'/1]).
 
 :- use_module(ciaopp(plai/apply_assertions_old), [apply_trusted0/7]).
+% IG: trusts should not be applied in domain operations
 
 :- use_module(library(hiordlib), [maplist/2, maplist/3]).
 :- use_module(library(messages)).
@@ -94,17 +95,18 @@
 :- use_module(library(assoc), [get_assoc/3]).
 :- use_module(library(sort), [sort/2]).
 
-:- regtype absu(A) # "@var{A} is an abstract substitution".
+:- use_module(ciaopp(preprocess_flags), [push_pp_flag/2]).
+% init_abstract_domain sets widen to 'on'
 
-absu('$bottom').
-absu([]).
-absu([Elem|Absu]):- 
-    absu_elem(Elem),
-    absu(Absu).
+:- prop eterms_asub(A) # "@var{A} is an abstract substitution".
+eterms_asub('$bottom').
+eterms_asub([]).
+eterms_asub([Elem|Absu]):-
+    eterms_asub_elem(Elem),
+    eterms_asub(Absu).
 
-:- regtype absu_elem(E) # "@var{E} is a single substitution".
-
-absu_elem(Var:Type):-
+:- prop eterms_asub_elem(E) # "@var{E} is a single substitution".
+eterms_asub_elem(Var:Type):-
     var(Var),
     pure_type_term(Type). % TODO: incorrect? (we have pairs)
 
@@ -115,9 +117,6 @@ get_type(Var,[_|ASub],T):-
     get_type(Var,ASub,T).
 
 %------------------------------------------------------------------%
-
-:- use_module(ciaopp(preprocess_flags), [push_pp_flag/2]).
-
 :- dom_impl(eterms, init_abstract_domain/1).
 :- export(eterms_init_abstract_domain/1).
 eterms_init_abstract_domain([widen]) :-
@@ -126,7 +125,8 @@ eterms_init_abstract_domain([widen]) :-
 %------------------------------------------------------------------%
 :- dom_impl(eterms, compute_lub/2).
 :- export(eterms_compute_lub/2).
-:- pred eterms_compute_lub(+ListASub,-Lub) : list(absu) * absu
+:- pred eterms_compute_lub(+ListASub,-Lub)
+   : list(eterms_asub, ListASub) => eterms_asub(Lub)
    # "It computes the least upper bound of a set of abstract
    substitutions.  For each two abstract substitutions @var{ASub1} and
    @var{ASub2} in @var{ListASub}, obtaining the lub is foreach X:Type1
@@ -176,7 +176,8 @@ eterms_widencall(Prime0,Prime1,Result):-
 
 :- dom_impl(eterms, widen/3).
 :- export(eterms_widen/3).
-:- pred eterms_widen(+Prime0,+Prime1,-NewPrime) : absu * absu * absu
+:- pred eterms_widen(+Prime0,+Prime1,-NewPrime)
+   : eterms_asub * eterms_asub * term => eterms_asub(NewPrime)
    # "Induction step on the abstract substitution of a fixpoint.
    @var{Prime0} corresponds to non-recursive and @var{Prime1} to
    recursive clauses.  @var{NewPrime} is the result of apply one
@@ -197,13 +198,14 @@ ewiden([X:T1|Prime0],[X:T2|Prime],[X:T|NewPrime]):-
     
 %------------------------------------------------------------------%
 
-:- regtype extrainfo(_).
-extrainfo(_). % TODO: define
+:- regtype eterms_extrainfo(_).
+eterms_extrainfo(_). % TODO: define
 
 :- dom_impl(eterms, call_to_entry/9).
 :- export(eterms_call_to_entry/9).
 :- pred eterms_call_to_entry(+Sv,+Sg,+Hv,+Head,+K,+Fv,+Proj,-Entry,-ExtraInfo)
-   : term * callable * list * callable * term * list * absu * absu * extrainfo
+   : term * callable * list * callable * term * list * eterms_asub * term * term
+   => (eterms_asub(Entry), eterms_extrainfo(ExtraInfo))
    # "It obtains the abstract substitution @var{Entry} which results
    from adding the abstraction of the @var{Sg} = @var{Head} to
    @var{Proj}, later projecting the resulting substitution onto
@@ -252,7 +254,8 @@ eterms_call_to_entry(_Sv,Sg,Hv,Head,_K,Fv,Proj,Entry,(no,Proj)):-
     merge(Tmp,TmpEntry,Entry).
 eterms_call_to_entry(_Sv,_Sg,_Hv,_Head,_K,_Fv,_Proj,'$bottom',no).
 
-:- pred variables_are_variable_type(+Fv,-ASub) : list * absu
+:- pred variables_are_variable_type(+Fv,-ASub)
+   : list(Fv) => eterms_asub(ASub)
    # "At the moment it assigns the value top_type to the variables in
    @var{Fv} but in the future it must assign the value ``var''".
 
@@ -269,7 +272,8 @@ variables_are_variable_type(Fv,ASub):-
 :- dom_impl(eterms, exit_to_prime/7).
 :- export(eterms_exit_to_prime/7).
 :- pred eterms_exit_to_prime(+Sg,+Hv,+Head,+Sv,+Exit,-ExtraInfo,-Prime)
-   : list * list * callable * callable * absu * extrainfo * absu
+   : list * list * callable * callable * eterms_asub * term * term
+   => (eterms_extrainfo(ExtraInfo), eterms_asub(Prime))
    # "It computes the prime abstract substitution @var{Prime}, i.e.
    the result of going from the abstract substitution over the head
    variables @var{Exit}, to the abstract substitution over the
@@ -330,7 +334,7 @@ replace_names([X:(N_e,_T)|ExtraInfo],[X:(N1_e,T1)|Prime1],[X:(N,T1)|Prime]):-
 % %     replace_names(ExtraInfo,Prime1,Prime).
 
 :- pred unify_term_and_type_term(+Term1,+Tv,+Term2,+ASub,-NewASub)
-   : callable * list * callable * absu * absu
+   : callable * list * callable * eterms_asub * term => eterms_asub(NewASub)
    # "It unifies the term @var{Term1} to the type term @var{Term2}
    obtaining the the abstract substitution TypeAss which is sorted and
    projeted on @var{Tv}".
@@ -390,7 +394,7 @@ normal_asub([X:(Name,Type)|ASub],[X:(Name,NType)|NASub]):-
     normal_asub(ASub,NASub).
 
 :- export(update_names/2). % (shared with etermsvar.pl)
-update_names([],_):-!.
+update_names([],_):- !.
 update_names([Y:Lab|Labels],[Z:(Name_e,_)|ASub]):-
 %       member(Z:(Name,_),ASub),
     Y == Z,!,
@@ -413,7 +417,7 @@ update_names(_,_):-
     error_message("SOMETHING HAS FAILED! See eterms domain.", []).
 
 :- export(generate_subs_exit/4). % (shared with etermsvar.pl)
-generate_subs_exit([],_Proj,_TypeNameAss,[]):-!.
+generate_subs_exit([],_Proj,_TypeNameAss,[]):- !.
 generate_subs_exit([X:Type|Types],[Z:(NameP_e,_)|Proj],[Y:Lab|Labels],[X:(Name,Type)|Subs]):-
     X == Y,
     X == Z,!,
@@ -452,7 +456,7 @@ generate_subs([X:Type|Types],[Y:Lab|Labels],[X:(Name,Type)|Subs]):-
 generate_subs(_,_,_):-
     error_message("SOMETHING HAS FAILED! See eterms domain.", []).
 
-:- pred apply(+ASub) : absu
+:- pred apply(+ASub) : eterms_asub
    # "It unifies the variables in the abstract substitution @var{ASub}
    to his respective values".
 
@@ -464,10 +468,10 @@ apply([]).
 %------------------------------------------------------------------%
 :- dom_impl(eterms, project/5).
 :- export(eterms_project/5).
-:- pred eterms_project(+Sg,+Vars,+HvFv_u,+Asub,-Proj)
-   : term * list * list * absu * absu
-   # "@var{Proj} is the result of eliminating from @var{Asub} all
-   @var{X}:@var{Value} such that @var{X} is not in @var{Vars}".
+:- pred eterms_project(+Sg,+Vars,+HvFv_u,+ASub,-Proj)
+   : term * list * list * eterms_asub * term => eterms_asub(Proj)
+   # "@var{Proj} is the result of eliminating from @var{ASub} all
+   @var{X}:@var{Value} such that @var{X} is not in @var{Vars}.".
 
 eterms_project(_,_,_,'$bottom',Proj) :- !,
     Proj = '$bottom'.
@@ -491,9 +495,9 @@ eterms_project_aux_(>,Head1,Tail1,_,[Head2:Type|Tail2],Proj) :-
 %------------------------------------------------------------------%
 :- dom_impl(eterms, abs_sort/2).
 :- export(eterms_abs_sort/2).
-:- pred eterms_abs_sort(+Asub,-Asub_s) : absu * absu
-   # "It sorts the set of @var{X}:@var{Type} in @var{Asub} ontaining
-   @var{Asub_s}".
+:- pred eterms_abs_sort(+ASub,-ASub_s) : eterms_asub(ASub) => eterms_asub(ASub_s)
+   # "It sorts the set of @var{X}:@var{Type} in @var{ASub} ontaining
+   @var{ASub_s}".
 
 eterms_abs_sort('$bottom','$bottom'):- !.
 eterms_abs_sort(ASub,ASub_s):- sort(ASub,ASub_s).
@@ -502,7 +506,7 @@ eterms_abs_sort(ASub,ASub_s):- sort(ASub,ASub_s).
 :- dom_impl(eterms, extend/5).
 :- export(eterms_extend/5).
 :- pred eterms_extend(+Sg,+Prime,+Sv,+Call,-Succ)
-   : term * absu * list * absu * absu
+   : term * eterms_asub * list * eterms_asub * term => eterms_asub(Succ)
    # "If @var{Prime} = '$bottom', @var{Succ} = '$bottom' otherwise,
    @var{Succ} is computed updating the values of @var{Call} with those
    in @var{Prime}".
@@ -530,7 +534,7 @@ eterms_extend_([X:(N,T)|Prime],[Y:(N1,T1)|Call],[Y:(N1,T1)|Succ]):-
 %------------------------------------------------------------------%
 :- dom_impl(eterms, less_or_equal/2).
 :- export(eterms_less_or_equal/2).
-:- pred eterms_less_or_equal(+ASub0,+ASub1) : absu * absu
+:- pred eterms_less_or_equal(+ASub0,+ASub1) : eterms_asub * eterms_asub
    # "Succeeds if @var{ASub1} is more general or equal to @var{ASub0}.
    it's assumed the two abstract substitutions are defined on the same
    variables".
@@ -550,7 +554,8 @@ eterms_less_or_equal0([],[]).
 %------------------------------------------------------------------%
 :- dom_impl(eterms, glb/3).
 :- export(eterms_glb/3).
-:- pred eterms_glb(+ASub0,+ASub1,-Glb) : absu * absu * absu
+:- pred eterms_glb(+ASub0,+ASub1,-Glb)
+   : eterms_asub * eterms_asub * term => eterms_asub(Glb)
    # "@var{Glb} is the great lower bound of @var{ASub0} and @var{ASub1}".
 
 eterms_glb('$bottom',_ASub,ASub3) :- !, ASub3='$bottom'.
@@ -617,7 +622,8 @@ eterms_concrete(Var,ASub,List):-
 %------------------------------------------------------------------%
 :- dom_impl(eterms, unknown_entry/3).
 :- export(eterms_unknown_entry/3).
-:- pred eterms_unknown_entry(+Sg,+Qv,-Call) : callable * list * absu
+:- pred eterms_unknown_entry(+Sg,+Qv,-Call)
+   : callable * list * term => eterms_asub(Call)
    # "Gives the ``top'' value for the variables involved in a literal
    whose definition is not present, and adds this top value to
    Call. In this domain the top value is X:term forall X in the set of
@@ -628,7 +634,8 @@ eterms_unknown_entry(_Sg,Vars,ASub):-
 
 :- dom_impl(eterms, empty_entry/3).
 :- export(eterms_empty_entry/3).
-:- pred eterms_empty_entry(+Sg,+Vars,-Entry) : callable * list * absu
+:- pred eterms_empty_entry(+Sg,+Vars,-Entry)
+   : callable * list * term => eterms_asub(Entry)
    # "Gives the ""empty"" value in this domain for a given set of
    variables @var{Vars}, resulting in the abstract substitution
    @var{Entry}. I.e., obtains the abstraction of a substitution in
@@ -643,7 +650,7 @@ eterms_empty_entry(_Sg,Vars,ASub):-
 :- dom_impl(eterms, unknown_call/4).
 :- export(eterms_unknown_call/4).
 :- pred eterms_unknown_call(+Sg,+Vars,+Call,-Succ)
-   : callable * list * absu * absu
+   : callable * list * eterms_asub * term => eterms_asub(Succ)
    # "Gives the ``top'' value for the variables involved in a literal
    whose definition is not present, and adds this top value to
    @var{Call}".
@@ -659,7 +666,7 @@ substitution([X:T|TypeAss],[X|Vars],[T|ListTypes]):-
     substitution(TypeAss,Vars,ListTypes).
 
 :- export(variables_are_top_type/2). % (shared with etermsvar.pl)
-:- pred variables_are_top_type(+Fv,-ASub) :: list * absu
+:- pred variables_are_top_type(+Fv,-ASub) : list(Fv) => eterms_asub(ASub)
    # "It assigns the value top_type to the variables in @var{Fv} and
    return the abstract substitution @var{ASub} ".
 
@@ -674,7 +681,8 @@ variables_are_top_type([],[]).
 :- dom_impl(eterms, call_to_success_fact/9).
 :- export(eterms_call_to_success_fact/9).
 :- pred eterms_call_to_success_fact(+Sg,+Hv,+Head,+K,+Sv,+Call,+Proj,-Prime,-Succ)
-   : callable * list * callable * term * list * absu * absu * absu * absu
+   : callable * list * callable * term * list * eterms_asub * eterms_asub * term * term
+   => (eterms_asub(Prime), eterms_asub(Succ))
    # "Specialized version of call_to_entry + exit_to_prime + extend for facts".
 
 eterms_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ):-
@@ -688,6 +696,7 @@ eterms_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ):-
 :- dom_impl(eterms, special_builtin/5).
 :- export(eterms_special_builtin/5).
 :- pred eterms_special_builtin(+SgKey,+Sg,+Subgoal,-Type,-Condvars)
+   : (atm(SgKey), callable(Sg), callable(Subgoal))
    # "@var{Type} is a flag indicating what is the abstraction of
    builtin @var{SgKey} and to which variables @var{Condvars} of the
    goal @var{Sg} it affects.".
@@ -815,7 +824,8 @@ set_union([T1,T2|L],T):-
 :- dom_impl(eterms, call_to_success_builtin/6).
 :- export(eterms_call_to_success_builtin/6).
 :- pred eterms_call_to_success_builtin(+SgKey,+Sg,+Sv,+Call,+Proj,-Succ)
-   # "Same as above but for each particular builtin".
+   : atm * callable * list * eterms_asub * eterms_asub * term => eterms_asub(Succ)
+   # "Same as above but for each particular builtin.".
 
 eterms_call_to_success_builtin('arg/3',Sg,Sv,Call,Proj,Succ):- !,
     sort([X,Y,Z],Hv),
@@ -966,7 +976,7 @@ eterms_obtain_info(_Prop,Vars,ASub,Info) :- asub_to_info(eterms,ASub,Vars,Info,_
    information.".
 
 eterms_input_user_interface(InputUser,Qv,ASub,_Sg,_MaybeCallASub):-
-    obtain_Asub_user(InputUser,ASub0),
+    obtain_ASub_user(InputUser,ASub0),
     sort(ASub0,ASub_s),
     reduce_same_var(ASub_s,ASub1),
     substitution(ASub1,Vars,_),
@@ -975,13 +985,13 @@ eterms_input_user_interface(InputUser,Qv,ASub,_Sg,_MaybeCallASub):-
     sort(ASub2,ASub3),
     merge(ASub1,ASub3,ASub).
 
-obtain_Asub_user([],[]):- !.
-obtain_Asub_user([User|InputUser],[X:(Name,T)|ASub]):-
+obtain_ASub_user([],[]):- !.
+obtain_ASub_user([User|InputUser],[X:(Name,T)|ASub]):-
     functor(User,T,_),
     arg(1,User,X), % note: expected arity 1, parametric types already renamed
     new_type_name(Name),
     insert_type_name(Name,[],0),
-    obtain_Asub_user(InputUser,ASub).
+    obtain_ASub_user(InputUser,ASub).
 
 reduce_same_var([X:(Name,T)|ASub],NewASub):-
     reduce_same_var_(ASub,X,Name,T,NewASub).
@@ -1012,6 +1022,7 @@ eterms_input_interface(P,Kind,Acc0,Acc1) :-
 :- dom_impl(eterms, asub_to_native/5).
 :- export(eterms_asub_to_native/5).
 :- pred eterms_asub_to_native(+ASub,+Qv,+OutFlag,-OutputUser,-Comps)
+   : (eterms_asub(ASub), list(Qv))
    # "Transforms abstract substitution @var{ASub} to user friendly
    format.".
 
@@ -1027,6 +1038,7 @@ eterms_asub_to_internal([],[]).
 %------------------------------------------------------------------------%
 :- export(eterms_output_interface/2).
 :- pred eterms_output_interface(+ASub,-Output)
+   : eterms_asub(ASub)
    # "Transforms abstract substitution @var{ASub} to a more readable
    but still close to internal format.".
 
@@ -1051,8 +1063,8 @@ eterms_rename_abstypes_abs([C|Call],Dict,[RenC|RenCall]):-
     get_value_(Types,Type,RenType),
 %jcf-begin
 %       get_value_(Names,Name,RenName),
-    new_type_name(RenName),         % taken from obtain_Asub_user/2.
-    insert_type_name(RenName,[],0), % taken from obtain_Asub_user/2.
+    new_type_name(RenName),         % taken from obtain_ASub_user/2.
+    insert_type_name(RenName,[],0), % taken from obtain_ASub_user/2.
 %jcf-end
     eterms_rename_abstypes_abs(Call,Dict,RenCall).
 
@@ -1533,7 +1545,7 @@ get_names_of_one_pos(P,TypeArg,ASub0,Lab):-
     var(TypeArg),!,
     member(Y:(Name_e,_),ASub0),
     get_canonical_name(Name_e,Name),
-    Y == TypeArg, % TODO: cut if TypeArg is unique in Asub0
+    Y == TypeArg, % TODO: cut if TypeArg is unique in ASub0
     get_type_name(Name,L),                    % equival_names
     % findall(([A|B],N),( 
     %                     member((S,N),L),
@@ -1553,7 +1565,7 @@ get_names_of_subterm(TypeArg,Sel,ASub0,Lab,Tail):-
     var(TypeArg),!,
     member(Y:(Name_e,_),ASub0),         % equival_names
     get_canonical_name(Name_e,Name),
-    TypeArg == Y, % TODO: cut if TypeArg is unique in Asub0
+    TypeArg == Y, % TODO: cut if TypeArg is unique in ASub0
     ( Sel == [] ->
         %           get_type_name(Name,L),
         %           dlist(L,Lab1,Tail),     % changed
