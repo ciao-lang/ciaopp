@@ -1,4 +1,4 @@
-:- module(deftypes, [], [assertions,regtypes,basicmodes,datafacts]).
+:- module(deftypes, [], [assertions,regtypes,basicmodes]).
 
 :- doc(title,"deftypes: defined types (based on termsd) (abstract domain)").
 :- doc(author, "Pawel Pietrzak (original)").
@@ -52,17 +52,17 @@
 
 % ---------------------------------------------------------------------------
 
-:- regtype absu(A) # "@var{A} is an abstract substitution".
+:- prop deftypes_asub(A) # "@var{A} is an abstract substitution".
 
-absu('$bottom').
-absu([]).
-absu([Elem|Absu]):- 
-    absu_elem(Elem),
-    absu(Absu).
+deftypes_asub('$bottom').
+deftypes_asub([]).
+deftypes_asub([Elem|Absu]):-
+    deftypes_asub_elem(Elem),
+    deftypes_asub(Absu).
 
-:- regtype absu_elem(E) # "@var{E} is a single substitution".
+:- prop deftypes_asub_elem(E) # "@var{E} is a single substitution".
 
-absu_elem(Var:Type):-
+deftypes_asub_elem(Var:Type):-
     var(Var),
     pure_type_term(Type).
 
@@ -126,7 +126,8 @@ deftypes_unknown_call(Sg,Vars,Call,Succ) :-
 %------------------------------------------------------------------%
 :- dom_impl(deftypes, compute_lub/2).
 :- export(deftypes_compute_lub/2).
-:- pred deftypes_compute_lub(+ListASub,-Lub) : list(absu) * absu
+:- pred deftypes_compute_lub(+ListASub,-Lub) : list(deftypes_asub, ListASub)
+   => deftypes_asub(Lub)
    # "It computes the least upper bound of a set of abstract
    substitutions.  For each two abstract substitutions @var{ASub1} and
    @var{ASub2} in @var{ListASub}, obtaining the lub is foreach X:Type1
@@ -170,7 +171,8 @@ deftypes_widencall(_Prime0,Prime1,Prime1).
 :- dom_impl(deftypes, widen/3).
 :- export(deftypes_widen/3).
 :- pred deftypes_widen(+Prime0,+Prime1,-NewPrime)
-   : absu * absu * absu
+   : deftypes_asub * deftypes_asub * term
+   => deftypes_asub(NewPrime)
    # "Induction step on the abstract substitution of a fixpoint.
    @var{Prime0} corresponds to non-recursive and @var{Prime1} to
    recursive clauses.  @var{NewPrime} is the result of apply one
@@ -185,8 +187,8 @@ deftypes_widen(Prime0,Prime1,NewPrime):-
 :- dom_impl(deftypes, call_to_entry/9).
 :- export(deftypes_call_to_entry/9).
 :- pred deftypes_call_to_entry(+Sv,+Sg,+Hv,+Head,+K,+Fv,+Proj,-Entry,-ExtraInfo)
-   : term * callable * list * callable * term * list * absu * absu * extrainfo
-
+   : term * callable * list * callable * term * list * deftypes_asub * term * term
+   => (deftypes_asub(Entry), deftypes_extrainfo(ExtraInfo))
    # "It obtains the abstract substitution @var{Entry} which results
    from adding the abstraction of the @var{Sg} = @var{Head} to
    @var{Proj}, later projecting the resulting substitution onto
@@ -235,16 +237,17 @@ deftypes_call_to_entry(_Sv,Sg,Hv,Head,_K,Fv,Proj,Entry,dummy):-
     merge(Tmp,TmpEntry,Entry).
 deftypes_call_to_entry(_Sv,_Sg,_Hv,_Head,_K,_Fv,_Proj,'$bottom',no).
 
-:- regtype extrainfo/1.
-
-extrainfo(yes).
-extrainfo(no).
+:- regtype deftypes_extrainfo/1.
+deftypes_extrainfo(yes).
+deftypes_extrainfo(no).
+deftypes_extrainfo(dummy).
 
 %------------------------------------------------------------------%
 :- dom_impl(deftypes, exit_to_prime/7).
 :- export(deftypes_exit_to_prime/7).
-:- pred deftypes_exit_to_prime(+Sg,+Hv,+Head,+Sv,+Exit,-ExtraInfo,-Prime)
-   : list * list * callable * callable * absu * extrainfo * absu
+:- pred deftypes_exit_to_prime(+Sg,+Hv,+Head,+Sv,+Exit,?ExtraInfo,-Prime)
+   : callable * list * callable * list * deftypes_asub * term * term
+   => (deftypes_extrainfo(ExtraInfo), deftypes_asub(Prime))
    # "It computes the prime abstract substitution @var{Prime}, i.e.
    the result of going from the abstract substitution over the head
    variables @var{Exit}, to the abstract substitution over the
@@ -276,7 +279,8 @@ deftypes_exit_to_prime(Sg,Hv,Head,Sv,Exit,_ExtraInfo,Prime):-
 deftypes_exit_to_prime(_Sg,_Hv,_Head,_Sv,_Exit,_ExtraInfo,'$bottom').
 
 :- pred unify_term_and_type_term_approx(+Term1,+Tv,+Term2,+ASub,-NewASub)
-   : callable * list * callable * absu * absu
+   : callable * list * callable * deftypes_asub * term
+   => deftypes_asub(NewASub)
    # "it unifies the term @var{Term1} to the type term @var{Term2}
    obtaining the the abstract substitution TypeAss which is sorted and
    projeted on @var{Tv}".
@@ -295,7 +299,7 @@ approx_asub([X:Type|ASub],[X:NType|NASub]):-
 :- dom_impl(deftypes, project/5).
 :- export(deftypes_project/5).
 :- pred deftypes_project(+Sg,+Vars,+HvFv_u,+Asub,-Proj)
-   : term * list * list * absu * absu
+   : term * list * list * deftypes_asub * term => deftypes_asub(Proj)
    # "@var{Proj} is the result of eliminating from @var{Asub} all
    @var{X}:@var{Value} such that @var{X} is not in @var{Vars}".
 
@@ -305,7 +309,8 @@ deftypes_project(Sg,Vars,HvFv_u,ASub,Proj) :-
 %------------------------------------------------------------------%
 :- dom_impl(deftypes, abs_sort/2).
 :- export(deftypes_abs_sort/2).
-:- pred deftypes_abs_sort(+Asub,-Asub_s) : absu * absu
+:- pred deftypes_abs_sort(+Asub,-Asub_s) : deftypes_asub(Asub)
+   => deftypes_asub(Asub_s)
    # "It sorts the set of @var{X}:@var{Type} in @var{Asub} containing
    @var{Asub_s}".
 
@@ -314,7 +319,9 @@ deftypes_abs_sort(ASub,ASub_s):- terms_abs_sort(ASub,ASub_s).
 %------------------------------------------------------------------%
 :- dom_impl(deftypes, extend/5).
 :- export(deftypes_extend/5).
-:- pred deftypes_extend(+Sg,+Prime,+Sv,+Call,-Succ) : term * absu * list * absu * absu
+:- pred deftypes_extend(+Sg,+Prime,+Sv,+Call,-Succ)
+   : term * deftypes_asub * list * deftypes_asub * term
+   => deftypes_asub(Succ)
    # "If @var{Prime} = '$bottom', @var{Succ} = '$bottom' otherwise,
    @var{Succ} is computed updating the values of @var{Call} with those
    in @var{Prime}".
@@ -325,7 +332,7 @@ deftypes_extend(Sg,Prime,Sv,Call,Succ):-
 %------------------------------------------------------------------%
 :- dom_impl(deftypes, less_or_equal/2).
 :- export(deftypes_less_or_equal/2).
-:- pred deftypes_less_or_equal(+ASub0,+ASub1) : absu * absu
+:- pred deftypes_less_or_equal(+ASub0,+ASub1) : deftypes_asub * deftypes_asub
    # "Succeeds if @var{ASub1} is more general or equal to @var{ASub0}.
    it's assumed the two abstract substitutions are defined on the same
    variables".
@@ -346,7 +353,9 @@ deftypes_less_or_equal0([],[]).
 %------------------------------------------------------------------%
 :- dom_impl(deftypes, glb/3).
 :- export(deftypes_glb/3).
-:- pred deftypes_glb(+ASub0,+ASub1,-Glb) : absu * absu * absu
+:- pred deftypes_glb(+ASub0,+ASub1,-Glb)
+   : deftypes_asub * deftypes_asub * term
+   => deftypes_asub(Glb)
    # "@var{Glb} is the great lower bound of @var{ASub0} and
    @var{ASub1}".
 
@@ -369,7 +378,8 @@ deftypes_glb0([],[],[]).
 %------------------------------------------------------------------%
 :- dom_impl(deftypes, unknown_entry/3).
 :- export(deftypes_unknown_entry/3).
-:- pred deftypes_unknown_entry(+Sg,+Qv,-Call) : callable * list * absu
+:- pred deftypes_unknown_entry(+Sg,+Qv,-Call)
+   : callable * list * term => deftypes_asub(Call)
    # "Gives the ``top'' value for the variables involved in a literal
    whose definition is not present, and adds this top value to
    Call. In this domain the top value is X:term forall X in the set of
@@ -379,7 +389,8 @@ deftypes_unknown_entry(Sg,Qv,Call) :- terms_unknown_entry(Sg,Qv,Call).
 
 :- dom_impl(deftypes, empty_entry/3).
 :- export(deftypes_empty_entry/3).
-:- pred deftypes_empty_entry(+Sg,+Vars,-Entry) : callable * list * absu
+:- pred deftypes_empty_entry(+Sg,+Vars,-Entry)
+   : callable * list * term => deftypes_asub(Entry)
    # "Gives the \"empty\" value in this domain for a given set of
    variables @var{Vars}, resulting in the abstract substitution
    @var{Entry}. I.e., obtains the abstraction of a substitution in
@@ -393,7 +404,8 @@ deftypes_empty_entry(Sg,Qv,Call) :- terms_empty_entry(Sg,Qv,Call).
 :- dom_impl(deftypes, call_to_success_fact/9).
 :- export(deftypes_call_to_success_fact/9).
 :- pred deftypes_call_to_success_fact(+Sg,+Hv,+Head,+K,+Sv,+Call,+Proj,-Prime,-Succ)
-   : callable * list * callable * term * list * absu * absu * absu * absu
+   : callable * list * callable * term * list * deftypes_asub * deftypes_asub * term * term
+   => (deftypes_asub(Prime), deftypes_asub(Succ))
    # "Specialized version of call_to_entry + exit_to_prime + extend for facts".
 
 deftypes_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ):-
@@ -405,7 +417,7 @@ deftypes_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ):-
 
 :- dom_impl(deftypes, input_user_interface/5).
 :- export(deftypes_input_user_interface/5).
-:- pred deftypes_input_user_interface(+InputUser,+Qv,-ASub,+Sg,+MaybeCallASub)
+:- pred deftypes_input_user_interface(?InputUser,+Qv,-ASub,+Sg,+MaybeCallASub)
    # "Obtains the abstract substitution ASub from user supplied
    information.".
 
@@ -494,4 +506,3 @@ deftypes_contains_parameters([_:T|Subs]) :-
     ( contains_type_param(T),!
     ; deftypes_contains_parameters(Subs)
     ).
-
