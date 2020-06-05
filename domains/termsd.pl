@@ -54,18 +54,23 @@
     concrete/4]).
 
 :- use_module(ciaopp(preprocess_flags), [current_pp_flag/2]).
+:- use_module(ciaopp(preprocess_flags), [push_pp_flag/2]).
+% init_abstract_domain sets widen to 'on'
 
-:- regtype absu(A) # "@var{A} is an abstract substitution".
+%%% for terms_internal_to_native
+:- use_module(ciaopp(p_unit), [new_internal_predicate/3]).
+:- use_module(ciaopp(p_unit), [type_of_goal/2]).
+:- use_module(typeslib(typeslib), [revert_types/5, assert_required_type/1]).
 
-absu('$bottom').
-absu([]).
-absu([Elem|Absu]):- 
-    absu_elem(Elem),
-    absu(Absu).
+:- prop termsd_asub(A) # "@var{A} is an abstract substitution".
+termsd_asub('$bottom').
+termsd_asub([]).
+termsd_asub([Elem|Absu]):-
+    termsd_asub_elem(Elem),
+    termsd_asub(Absu).
 
-:- regtype absu_elem(E) # "@var{E} is a single substitution".
-
-absu_elem(Var:Type):-
+:- prop termsd_asub_elem(E) # "@var{E} is a single substitution".
+termsd_asub_elem(Var:Type):-
     var(Var),
     pure_type_term(Type).
 
@@ -102,7 +107,8 @@ get_type(Var,[_|ASub],T):-
 %------------------------------------------------------------------%
 :- dom_impl(terms, compute_lub/2).
 :- export(terms_compute_lub/2).
-:- pred terms_compute_lub(+ListASub,-Lub) : list(absu) * absu
+:- pred terms_compute_lub(+ListASub,-Lub)
+   : list(termsd_asub, ListASub) => termsd_asub(Lub)
    # "It computes the least upper bound of a set of abstract
    substitutions.  For each two abstract substitutions @var{ASub1}
    and @var{ASub2} in @var{ListASub}, obtaining the lub is foreach
@@ -150,7 +156,7 @@ terms_widencall(Prime0,Prime1,NewPrime):-
 :- dom_impl(terms, widen/3).
 :- export(terms_widen/3).
 :- pred terms_widen(+Prime0,+Prime1,-NewPrime)
-   : absu * absu * absu
+   : termsd_asub * termsd_asub * term => termsd_asub(NewPrime)
    # "Induction step on the abstract substitution of a fixpoint.
    @var{Prime0} corresponds to non-recursive and @var{Prime1} to
    recursive clauses.  @var{NewPrime} is the result of apply one
@@ -179,7 +185,7 @@ shortening([X:T1|Asub1],[X:T2|Asub2]):-
     shortening_el(T1,T2,Depthk),
     shortening(Asub1,Asub2).
 
-%% :- pred jungle(+Prime,-NewPrime) : absu * absu
+%% :- pred jungle(+Prime,-NewPrime) : termsd_asub * term => termsd_asub(NewPrime)
 %%    # "A @em{Type Jungle} is a type graph with at most one node for
 %%    each function symbol. It can be used as a finite subdomain of
 %%    type graphs. This predicate converts a type graph into the
@@ -194,8 +200,6 @@ shortening([X:T1|Asub1],[X:T2|Asub2]):-
 
 %---------------------------------------------------------------------%  
 
-:- use_module(ciaopp(preprocess_flags), [push_pp_flag/2]).
-
 :- dom_impl(terms, init_abstract_domain/1).
 :- export(terms_init_abstract_domain/1).
 terms_init_abstract_domain([widen]) :-
@@ -205,7 +209,8 @@ terms_init_abstract_domain([widen]) :-
 :- dom_impl(terms, call_to_entry/9).
 :- export(terms_call_to_entry/9).
 :- pred terms_call_to_entry(+Sv,+Sg,+Hv,+Head,+K,+Fv,+Proj,-Entry,-ExtraInfo)
-   : term * callable * list * callable * term * list * absu * absu * extrainfo
+   : term * callable * list * callable * term * list * termsd_asub * term * term
+   => (termsd_asub(Entry), termsd_extrainfo(ExtraInfo))
    # "It obtains the abstract substitution @var{Entry} which results
    from adding the abstraction of the @var{Sg} = @var{Head} to
    @var{Proj}, later projecting the resulting substitution onto
@@ -255,13 +260,14 @@ terms_call_to_entry(_Sv,Sg,Hv,Head,_K,Fv,Proj,Entry,dummy):-
     merge(Tmp,TmpEntry,Entry).
 terms_call_to_entry(_Sv,_Sg,_Hv,_Head,_K,_Fv,_Proj,'$bottom',no).
 
-:- regtype extrainfo/1.
-
-extrainfo(yes).
-extrainfo(no).
+:- regtype termsd_extrainfo/1.
+termsd_extrainfo(yes).
+termsd_extrainfo(no).
+termsd_extrainfo(dummy).
 
 :- export(variables_are_variable_type/2). % (shared with deftypes.pl)
-:- pred variables_are_variable_type(+Fv,-ASub) : list * absu
+:- pred variables_are_variable_type(+Fv,-ASub)
+   : list(Fv) => termsd_asub(ASub)
    # "(at the moment) assigns the value top_type to the variables in
    @var{Fv} but in the future it must assign the value @tt{var}".
 
@@ -271,8 +277,9 @@ variables_are_variable_type(Fv,ASub):-
 %------------------------------------------------------------------%
 :- dom_impl(terms, exit_to_prime/7).
 :- export(terms_exit_to_prime/7).
-:- pred terms_exit_to_prime(+Sg,+Hv,+Head,+Sv,+Exit,-ExtraInfo,-Prime)
-   : list * list * callable * callable * absu * extrainfo * absu
+:- pred terms_exit_to_prime(+Sg,+Hv,+Head,+Sv,+Exit,+ExtraInfo,-Prime)
+   : callable * list * callable * list * termsd_asub * termsd_extrainfo * term
+   => termsd_asub(Prime)
    # "It computes the prime abstract substitution @var{Prime}, i.e.
    the result of going from the abstract substitution over the head
    variables @var{Exit}, to the abstract substitution over the
@@ -306,7 +313,8 @@ terms_exit_to_prime(_Sg,_Hv,_Head,_Sv,_Exit,_ExtraInfo,'$bottom').
 
 :- export(unify_term_and_type_term/5). % (shared with deftypes.pl)
 :- pred unify_term_and_type_term(+Term1,+Tv,+Term2,+ASub,-NewASub)
-   : callable * list * callable * absu * absu
+   : callable * list * callable * termsd_asub * term
+   => termsd_asub(NewASub)
    # "It unifies the term @var{Term1} to the type term @var{Term2}
    obtaining the the abstract substitution TypeAss which is sorted
    and projeted on @var{Tv}".
@@ -320,9 +328,10 @@ unify_term_and_type_term(Term1,Tv,Term2,ASub,NewASub):-
     generate_a_type_assignment(EscTypes,Args,TypeAss),
     ( member(_:bot,TypeAss) ->
         fail
-    ; terms_abs_sort(TypeAss,ASub1),
-      terms_project(not_provided_Sg,Tv,not_provided_HvFv_u,ASub1,NASub),
-      normal_asub(NASub,NewASub)
+    ;
+        terms_abs_sort(TypeAss,ASub1),
+        terms_project(not_provided_Sg,Tv,not_provided_HvFv_u,ASub1,NASub),
+        normal_asub(NASub,NewASub)
     ).
 
 % TODO: why? only after terms_project/5
@@ -331,7 +340,7 @@ normal_asub([X:Type|ASub],[X:NType|NASub]):-
     normalize_type(Type,NType),
     normal_asub(ASub,NASub).
 
-:- pred apply(+ASub) : absu 
+:- pred apply(+ASub) : termsd_asub
    # "It unifies the variables in the abstract substitution @var{ASub}
    to his respective values".
 
@@ -359,7 +368,7 @@ get_var_types_by_unification([Type|Type_List], [Term|Term_List], Types):-
     get_var_types_by_unification(Type_List, Term_List, Types).
 
 :- export(compute_type/3).
-:- pred compute_type(+Term, +Type, -Types)
+:- pred compute_type(?Term, +Type, ?Types)
    # "Given the term @var{Term} and a type @var{Type}, computes the
       type corresponding to each variable in @var{Term}, and store it
       in the data structure @var{Types}.  @var{Types} have the
@@ -402,7 +411,7 @@ there_are_only_one_compa_type(CompTypes, CompTerm):-
     compound_pure_type_term(CType, CompTerm, _Name, _Arity).
   
 compute_args_type(A, _Term, _CompType, _Types):-
-    A =:= 0, !.
+    A = 0, !.
 compute_args_type(A, Term, CompType, Types):-
     A > 0, 
     arg(A, Term, Term_Arg),
@@ -430,17 +439,19 @@ insert_top_type(Term, Types):-
     ( var(Term) ->
         set_top_type(TopType),
         insert_type(Types, Term, TopType)
-    ; functor(Term, _F, A),
-      insert_top_type_3(A, Term, Types)
+    ;
+        functor(Term, _F, A),
+        insert_top_type_3(A, Term, Types)
     ).
 
 insert_top_type_3(A, Term, Types):-
     ( A = 0 ->
         true
-    ; arg(A, Term, Term_Arg),
-      insert_top_type(Term_Arg, Types),
-      A1 is A - 1,
-      insert_top_type_3(A1, Term, Types)
+    ;
+        arg(A, Term, Term_Arg),
+        insert_top_type(Term_Arg, Types),
+        A1 is A - 1,
+        insert_top_type_3(A1, Term, Types)
     ).
 
 insert_type(NVarList, Var, NVar):- 
@@ -569,10 +580,12 @@ find_list_entry(VT, Var, Entry) :-
 :- dom_impl(terms, project/5).
 :- export(terms_project/5).
 :- pred terms_project(+Sg,+Vars,+HvFv_u,+Asub,-Proj)
-   : term * list * list * absu * absu
+   : term * list * term * termsd_asub * term => termsd_asub(Proj)
    # "@var{Proj} is the result of eliminating from @var{Asub} all
-   @var{X}:@var{Value} such that @var{X} is not in @var{Vars}".
+   @var{X}:@var{Value} such that @var{X} is not in @var{Vars}.
 
+   @var{HvFv_u} may be a list or @tt{not_provided_HvFv_u} and is not used by
+   this predicate.".
 terms_project(_Sg,_Vars,_HvFv_u,'$bottom',Proj):- !,
     Proj = '$bottom'.
 terms_project(_Sg,Vars,_HvFv_u,ASub,Proj) :- 
@@ -595,7 +608,7 @@ terms_project_aux_(>,Head1,Tail1,_,[Head2:Type|Tail2],Proj) :-
 %------------------------------------------------------------------%
 :- dom_impl(terms, abs_sort/2).
 :- export(terms_abs_sort/2).
-:- pred terms_abs_sort(+Asub,-Asub_s) : absu * absu
+:- pred terms_abs_sort(+Asub,-Asub_s) : termsd_asub(Asub) => termsd_asub(Asub_s)
    # "It sorts the set of @var{X}:@var{Type} in @var{Asub} containing
    @var{Asub_s}".
 
@@ -606,7 +619,7 @@ terms_abs_sort(ASub,ASub_s):- sort(ASub,ASub_s).
 :- dom_impl(terms, extend/5).
 :- export(terms_extend/5).
 :- pred terms_extend(+Sg,+Prime,+Sv,+Call,-Succ)
-   : term * absu * list * absu * absu
+   : term * termsd_asub * list * termsd_asub * term => termsd_asub(Succ)
    # "If @var{Prime} = '$bottom', @var{Succ} = '$bottom' otherwise,
    @var{Succ} is computed updating the values of @var{Call} with
    those in @var{Prime}".
@@ -626,7 +639,7 @@ subtract_keys([],_Ks,[]).
 %------------------------------------------------------------------%
 :- dom_impl(terms, less_or_equal/2).
 :- export(terms_less_or_equal/2).
-:- pred terms_less_or_equal(+ASub0,+ASub1) : absu * absu
+:- pred terms_less_or_equal(+ASub0,+ASub1) : termsd_asub * termsd_asub
    # "Succeeds if @var{ASub1} is more general or equal to @var{ASub0}.
    it's assumed the two abstract substitutions are defined on the same
    variables".
@@ -646,7 +659,8 @@ terms_less_or_equal0([],[]).
 %------------------------------------------------------------------%
 :- dom_impl(terms, glb/3).
 :- export(terms_glb/3).
-:- pred terms_glb(+ASub0,+ASub1,-Glb) : absu * absu * absu 
+:- pred terms_glb(+ASub0,+ASub1,-Glb)
+   : termsd_asub * termsd_asub * term => termsd_asub(Glb)
    # "@var{Glb} is the great lower bound of @var{ASub0} and
    @var{ASub1}".
 
@@ -671,7 +685,8 @@ terms_glb0([],[],[]).
 %------------------------------------------------------------------%
 :- dom_impl(terms, unknown_entry/3).
 :- export(terms_unknown_entry/3).
-:- pred terms_unknown_entry(+Sg,+Qv,-Call) : callable * list * absu
+:- pred terms_unknown_entry(+Sg,+Qv,-Call)
+   : callable * list * term => termsd_asub(Call)
    # "Gives the ``top'' value for the variables involved in a literal
    whose definition is not present, and adds this top value to
    Call. In this domain the top value is X:term forall X in the set of
@@ -682,7 +697,8 @@ terms_unknown_entry(_Sg,Vars,ASub):-
 
 :- dom_impl(terms, empty_entry/3).
 :- export(terms_empty_entry/3).
-:- pred terms_empty_entry(+Sg,+Vars,-Entry) : callable * list * absu
+:- pred terms_empty_entry(+Sg,+Vars,-Entry)
+   : callable * list * term => termsd_asub(Entry)
    # "Gives the ""empty"" value in this domain for a given set of
    variables @var{Vars}, resulting in the abstract substitution
    @var{Entry}. I.e., obtains the abstraction of a substitution in
@@ -696,7 +712,8 @@ terms_empty_entry(_Sg,Vars,ASub):-
 %------------------------------------------------------------------%
 :- dom_impl(terms, unknown_call/4).
 :- export(terms_unknown_call/4).
-:- pred terms_unknown_call(+Sg,+Vars,+Call,-Succ) : callable * list * absu * absu
+:- pred terms_unknown_call(+Sg,+Vars,+Call,-Succ)
+   : callable * list * termsd_asub * term => termsd_asub(Succ)
    # "Gives the ``top'' value for the variables involved in a literal
    whose definition is not present, and adds this top value to
    @var{Call}".
@@ -713,7 +730,7 @@ substitution([X:T|TypeAss],[X|Vars],[T|ListTypes]):-
     substitution(TypeAss,Vars,ListTypes).
 
 :- export(variables_are_top_type/2).
-:- pred variables_are_top_type(+Fv,-ASub) : list * absu
+:- pred variables_are_top_type(+Fv,-ASub) : list(Fv) => termsd_asub(ASub)
    # "It assigns the value top_type to the variables in @var{Fv} and
    return the abstract substitution @var{ASub}".
 
@@ -726,7 +743,8 @@ variables_are_top_type([],[]).
 :- dom_impl(terms, call_to_success_fact/9).
 :- export(terms_call_to_success_fact/9).
 :- pred terms_call_to_success_fact(+Sg,+Hv,+Head,+K,+Sv,+Call,+Proj,-Prime,-Succ)
-   : callable * list * callable * term * list * absu * absu * absu * absu
+   : callable * list * callable * term * list * termsd_asub * termsd_asub * term * term
+   => (termsd_asub(Prime), termsd_asub(Succ))
    # "Specialized version of call_to_entry + exit_to_prime + extend for facts".
 
 terms_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ):-
@@ -744,53 +762,53 @@ terms_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ):-
    builtin @var{SgKey} and to which variables @var{Condvars} of the
    goal @var{Sg} it affects.".
 
-terms_special_builtin('!/0',_Sg,_Subgoal,id,[]).
-terms_special_builtin('@=</2',_Sg,_Subgoal,id,[]).
-terms_special_builtin('@>/2',_Sg,_Subgoal,id,[]).
+terms_special_builtin('!/0',_Sg,_Subgoal,id,[]) :- !.
+terms_special_builtin('@=</2',_Sg,_Subgoal,id,[]) :- !.
+terms_special_builtin('@>/2',_Sg,_Subgoal,id,[]) :- !.
 terms_special_builtin('@>=/2',_Sg,_Subgoal,id,[]).
-terms_special_builtin('@</2',_Sg,_Subgoal,id,[]).
-terms_special_builtin('\\==/2',_Sg,_Subgoal,id,[]).
-terms_special_builtin('==/2',_Sg,_Subgoal,id,[]).
-terms_special_builtin('display/1',_Sg,_Subgoal,id,[]).
+terms_special_builtin('@</2',_Sg,_Subgoal,id,[]) :- !.
+terms_special_builtin('\\==/2',_Sg,_Subgoal,id,[]) :- !.
+terms_special_builtin('==/2',_Sg,_Subgoal,id,[]) :- !.
+terms_special_builtin('display/1',_Sg,_Subgoal,id,[]) :- !.
 terms_special_builtin('get_code/1',Sg,_Subgoal,type(T),Condvars):-
     set_int_type(T),
     varset(Sg,Condvars).
-% terms_special_builtin('integer/1',Sg,_Subgoal,type(T),Condvars):-
+% terms_special_builtin('integer/1',Sg,_Subgoal,type(T),Condvars):- !,
 %         set_int_type(T),
 %       varset(Sg,Condvars).
-terms_special_builtin('atom/1',Sg,_Subgoal,type(T),Condvars):-
+terms_special_builtin('atom/1',Sg,_Subgoal,type(T),Condvars):- !,
     set_atom_type(T), % no, it is atom or num type
     varset(Sg,Condvars).
-terms_special_builtin('atomic/1',Sg,_Subgoal,type(T),Condvars):-
+terms_special_builtin('atomic/1',Sg,_Subgoal,type(T),Condvars):- !,
     set_atom_type(T), % no, it is atom or num type
     varset(Sg,Condvars).
-terms_special_builtin('var/1',_Sg,_Subgoal,id,[]). % needed?
-terms_special_builtin('free/1',_Sg,_Subgoal,id,[]).
+terms_special_builtin('var/1',_Sg,_Subgoal,id,[]) :- !. % needed?
+terms_special_builtin('free/1',_Sg,_Subgoal,id,[]) :- !.
     % set_top_type(T),
     % varset(Sg,Condvars).
-terms_special_builtin('nonvar/1',_Sg,_Subgoal,id,[]). % needed?
-terms_special_builtin('not_free/1',_Sg,_Subgoal,id,[]).
+terms_special_builtin('nonvar/1',_Sg,_Subgoal,id,[]) :- !. % needed?
+terms_special_builtin('not_free/1',_Sg,_Subgoal,id,[]) :- !.
     % set_top_type(T),
     % varset(Sg,Condvars).
-terms_special_builtin('ground/1',_Sg,_Subgoal,id,[]).
+terms_special_builtin('ground/1',_Sg,_Subgoal,id,[]) :- !.
     % set_top_type(T),
     % varset(Sg,Condvars).
-% terms_special_builtin('float/1',Sg,_Subgoal,type(T),Condvars):-
+% terms_special_builtin('float/1',Sg,_Subgoal,type(T),Condvars):- !,
 %       set_float_type(T),
 %       varset(Sg,Condvars).
-% terms_special_builtin('number/1',Sg,_Subgoal,type(T),Condvars):-
+% terms_special_builtin('number/1',Sg,_Subgoal,type(T),Condvars):- !,
 %       set_numeric_type(T),
 %       varset(Sg,Condvars).
-terms_special_builtin('fail/0',_Sg,_Subgoal,bot,[]).
-terms_special_builtin('true/0',_Sg,_Subgoal,id,[]).
-terms_special_builtin('nl/0',_Sg,_Subgoal,id,[]).
-terms_special_builtin('repeat/0',_Sg,_Subgoal,id,[]).
+terms_special_builtin('fail/0',_Sg,_Subgoal,bot,[]) :- !.
+terms_special_builtin('true/0',_Sg,_Subgoal,id,[]) :- !.
+terms_special_builtin('nl/0',_Sg,_Subgoal,id,[]) :- !.
+terms_special_builtin('repeat/0',_Sg,_Subgoal,id,[]) :- !.
 %
-terms_special_builtin('erase/1',Sg,_Subgoal,type(T),Condvars):-
+terms_special_builtin('erase/1',Sg,_Subgoal,type(T),Condvars):- !,
     set_top_type(T),
     varset(Sg,Condvars).
 %
-terms_special_builtin(Key,_Sg,_Subgoal,special(Key),[]):-
+terms_special_builtin(Key,_Sg,_Subgoal,special(Key),[]):- !,
     terms_very_special_builtin(Key).
 
 terms_very_special_builtin('=/2').
@@ -836,7 +854,7 @@ terms_call_to_success_builtin(Key,Sg,Sv,Call,Proj,Succ):-
 
 % (shared with deftypes.pl)
 :- export(precondition_builtin/2).
-precondition_builtin('is/2',(X is _Y)):-
+precondition_builtin('is/2',(X is _Y)):- !,
     (var(X);number(X)).
 precondition_builtin(_Key,_).
 
@@ -1004,7 +1022,7 @@ postcondition_builtin('name/2',name(X1,Y1),Vars,Exit):-
 
 :- dom_impl(terms, input_user_interface/5).
 :- export(terms_input_user_interface/5).
-:- pred terms_input_user_interface(+InputUser,+Qv,-ASub,+Sg,+MaybeCallASub)
+:- pred terms_input_user_interface(?InputUser,+Qv,-ASub,+Sg,+MaybeCallASub)
    # "Obtains the abstract substitution ASub from user supplied
    information.".
 
@@ -1063,10 +1081,6 @@ terms_asub_to_internal([X:T|ASub],[Type|OutputUser]):-
 terms_asub_to_internal([],[]).
 
 % ---------------------------------------------------------------------------
-
-:- use_module(ciaopp(p_unit), [new_internal_predicate/3]).
-:- use_module(ciaopp(p_unit), [type_of_goal/2]).
-:- use_module(typeslib(typeslib), [revert_types/5, assert_required_type/1]).
 
 % from internal types to user friendly + record required
 % (this is shared by other type domains)
