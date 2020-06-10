@@ -94,6 +94,7 @@ usage_message(
             omitted, the output is written to a file
             automatically named depending on the actions
             performed.
+    -op <Suffix>   Use Suffix as the optional input code suffix 
 
     Option must be one of the following:
     -Q          runs the interactive (text-based) menu for
@@ -179,6 +180,10 @@ parse_opts(['-O', File|Opts], Cmd, Flags) :- !,
 parse_opts(['-U', Menu, File|Opts], Cmd, Flags) :- !,
     Cmd = restore_menu(Menu,File),
     parse_opts(Opts, Cmd, Flags).
+% input opts
+parse_opts(['-op', Suff|Opts], Cmd, Flags) :- !,
+    opt_suffix(_, Suff),
+    parse_opts(Opts, Cmd, Flags).
 % output
 parse_opts(['-o', File|Opts], Cmd, Flags) :- !,
     retractall_fact(output_file(_)),
@@ -227,6 +232,7 @@ is_flag_value_p(FV, F, V) :- atom_concat(['-p', F, '=', V], FV).
     set_menu_flag/3,
     get_menu_flag/3]).
 :- use_module(library(toplevel), [toplevel/1]).
+:- use_module(library(compiler/c_itf), [opt_suffix/2]).
 
 ciaopp_cmd(help, _Flags) :- !,
     usage_message(Text),
