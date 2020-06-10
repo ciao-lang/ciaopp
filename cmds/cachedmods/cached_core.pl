@@ -7,7 +7,7 @@
 :- use_module(library(compiler/translation)).
 :- use_module(library(compiler/pl2wam)).
 :- use_module(library(compiler/compressed_bytecode)).
-%:- use_module(library(foreign_interface/build_foreign_interface)).            % it uses assrt_lib
+%:- use_module(library(compiler/build_foreign_interface)).            % it uses assrt_lib
 :- use_module(library(messages)).
 :- use_module(library(assertions/c_itf_props)).
 %:- use_module(library(assertions/assrt_lib)).                                 % it uses assrt_write+assertions_props
