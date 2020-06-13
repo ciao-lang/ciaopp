@@ -127,8 +127,8 @@ analysis_to_dot(InFile, AName, OutFile) :-
     close(OS).
 
 :- data edge/4, node/4.
-add_edge(Scope, A, B,_) :-
-    edge(Scope,A,B,_), !.
+add_edge(Scope, A, B,LitKey) :-
+    edge(Scope,A,B,LitKey), !.
 add_edge(Scope, A, B,LitKey) :-
     assertz_fact(edge(Scope,A,B,LitKey)).
 
