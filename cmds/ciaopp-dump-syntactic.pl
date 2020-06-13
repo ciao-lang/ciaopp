@@ -1,5 +1,9 @@
 :- module(_, [main/1], [assertions,datafacts]).
 
+:- doc(title, "A syntactic statistics report of the code of a program").
+
+:- doc(author, "Isabel Garcia-Contreras").
+
 :- use_module(library(lists), [length/2]).
 :- use_module(library(streams)).
 :- use_module(library(format), [format/3]).

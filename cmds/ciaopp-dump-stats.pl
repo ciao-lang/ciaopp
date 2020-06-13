@@ -1,5 +1,8 @@
 :- module(_, [main/1], [assertions, datafacts]).
 
+:- doc(title, "Reporting statistics of a dumped CiaoPP  analysis").
+:- doc(author, "Isabel Garcia-Contreras").
+
 :- use_module(library(format), [format/3]).
 :- use_module(library(terms_vars), [varset/2]).
 :- use_module(library(lists), [length/2]).

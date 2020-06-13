@@ -1,6 +1,6 @@
 :- module(_, [main/1], [assertions, datafacts]).
 
-:- doc(title, "@tt{ciaopp-dump-fmt}: Graph formatting for PLAI dumped results").
+:- doc(title, "A graph formatter for CiaoPP dumped results").
 
 :- doc(summary, "Command that takes any dump file of PLAI and produces a
     visualization of the analysis graph in dot (and pdf) format.").

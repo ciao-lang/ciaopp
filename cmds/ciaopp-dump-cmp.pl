@@ -1,6 +1,6 @@
 :- module(_, [main/1], [assertions, hiord, datafacts]).
 
-:- doc(title, "@tt{ciaopp-dump-cmp}: Semantic dump comparator command").
+:- doc(title, "A semantic dump comparator").
 
 :- doc(author, "Isabel Garcia-Contreras").
 
