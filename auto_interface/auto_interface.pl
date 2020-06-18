@@ -458,6 +458,7 @@ para     ,  'Select Type of IAP'          # para_iap          - nsiap.
 para     ,  'Select Local Analysis'       # para_local        - local.
 :- endif.
 
+ana      , 'Incremental'                   # incremental - off : inc_ana <- ana_b.
 ~mtype   , 'Modules to analyze'            # mnu_modules_to_analyze - current :: mod_ana <- ana_b.
 ~lt(1)   , 'Related Modules Info'          # ext_policy       - registry <- ana_b.
 ~lt(1)   , 'Module Loading Policy'         # module_loading   - one <- ana_b.
@@ -565,6 +566,9 @@ mod_ana(X,X):-
       )
     ; true
     ).
+
+inc_ana :-
+    set_menu_flag(ana,fixpoint,dd).
 
 post_iter(X,X) :-
     member(ct_mod_iterate=A,X),
