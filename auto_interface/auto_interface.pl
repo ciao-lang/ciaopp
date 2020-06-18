@@ -459,7 +459,7 @@ para     ,  'Select Local Analysis'       # para_local        - local.
 :- endif.
 
 ~mtype   , 'Modules to analyze'            # mnu_modules_to_analyze - current :: mod_ana <- ana_b.
-~lt(1)   , 'Related Modules Info'          # ext_policy - assertions <- ana_b.
+~lt(1)   , 'Related Modules Info'          # ext_policy       - registry <- ana_b.
 ~lt(1)   , 'Module Loading Policy'         # module_loading   - one <- ana_b.
 ~lt(1)   , 'Success Policy'                # success_policy   - over_all <- ana_b.
 ~mtypepar, 'Perform Non-Failure Analysis'  # ana_nf           - none :: p_nf     <- ana_pp2.
