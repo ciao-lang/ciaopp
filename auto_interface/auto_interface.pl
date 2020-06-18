@@ -460,9 +460,9 @@ para     ,  'Select Local Analysis'       # para_local        - local.
 
 ~mtype   , 'Modules to analyze'            # mnu_modules_to_analyze - current :: mod_ana <- ana_b.
 ~lt(1)   , 'Related Modules Info'          # ext_policy - assertions <- ana_b.
-~lt(1)   , 'Module Loading Policy'         # module_loading - one <- ana_b.
-~lt(1)   , 'Success Policy'                # success_policy - over_all <- ana_b.
-~mtypepar, 'Perform Non-Failure Analysis'  # ana_nf    - none :: p_nf     <- ana_pp2.
+~lt(1)   , 'Module Loading Policy'         # module_loading   - one <- ana_b.
+~lt(1)   , 'Success Policy'                # success_policy   - over_all <- ana_b.
+~mtypepar, 'Perform Non-Failure Analysis'  # ana_nf           - none :: p_nf     <- ana_pp2.
 :- if(defined(has_ciaopp_extra)).
 para     , 'Select Cost Analysis'          # para_cost        - both      <- para_c1.
 :- endif.
@@ -478,7 +478,7 @@ para     , 'Select Granularity Analysis'   # para_grain       - none.
 ~mtype   , 'Select lower bound threshold'  # clique_widen_lb  - 250       <- clipre.
 ~mtype   , 'Select Cost Analysis'          # ana_cost         - none      <- ana_b.
 ~lt(1)   , 'Select Recurrence Solver'      # req_solver       - builtin <- ana_b.
-~lt(1)   , 'Select Algebraic System'       # math_system       - builtin <- ana_b.
+~lt(1)   , 'Select Algebraic System'       # math_system      - builtin <- ana_b.
 ~lt(1)   , 'Perform Static Profiling'      # perform_static_profiling - no <- ana_b.
 ~mtypepar, 'Perform Determinism Analysis'  # ana_det          - none      <- ana_pp1.
 ~lt(1)   , 'Perform Type Eval'             # type_eval        - off       <- ana_g1.
