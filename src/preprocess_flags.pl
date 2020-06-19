@@ -229,44 +229,42 @@ valid_flag_values( para_cost          , member( _ , [none, lower,
                                     upper, both] )).
 :- endif.
 
-pp_flag(menu_level).
+pp_flag(menu_level). % only menu
 pp_flag(menu_level, 'Whether to use the naive or expert menu.').
 current_pp_flags(  menu_level         , naive ).
 valid_flag_values( menu_level         , member( _  , [naive, expert] ) ).
 
-pp_flag(menu_last_config).
+pp_flag(menu_last_config). % only menu
 pp_flag(menu_last_config, 'Last menu stored configuration used.').
 current_pp_flags(  menu_last_config   , none ).
 valid_flag_values( menu_last_config   , is_menu_config( _ ) ).
 
-
-pp_flag(menu_config_name).
+pp_flag(menu_config_name). % only menu
 pp_flag(menu_config_name, 'Name of the last menu stored configuration.').
 current_pp_flags(  menu_config_name   , none ).
 valid_flag_values( menu_config_name   , atom( _ ) ).
 
-
-pp_flag(check_config_ana).
+pp_flag(check_config_ana). % only menu
 pp_flag(check_config_ana, 'Decides whether to configure analysis flags or not.').
 current_pp_flags(  check_config_ana   , off    ).
 valid_flag_values( check_config_ana   , member( _ , [on,off] ) ).
 
-pp_flag(modes).
+pp_flag(modes). % menu only
 pp_flag(modes, 'Selects a domain for mode analysis.').
 current_pp_flags(  modes              , shfr    ).
 valid_flag_values( modes              , modeanalysis( _ ) ).
 
-pp_flag(types).
+pp_flag(types). % menu only
 pp_flag(types, 'Selects a domain for type analysis.').
 current_pp_flags(  types              , eterms  ).
 valid_flag_values( types              , typeanalysis( _ ) ).
 
-pp_flag(ana_num).
+pp_flag(ana_num). % menu only
 pp_flag(ana_num, 'Selects a domain for numeric analysis.').
 current_pp_flags(  ana_num            , none  ).
 valid_flag_values( ana_num            , numericanalysis( _ )).
 
-pp_flag(ana_nf).
+pp_flag(ana_nf).  % menu only
 :- if(defined(has_ciaopp_extra)).
 pp_flag(ana_nf, 'Type of non-failure analysis: monovariant (nfg), or multi-variant (nf).' ).
 :- else.
@@ -279,7 +277,7 @@ valid_flag_values( ana_nf             , member( _ , [none, nf, nfg ] )).
 valid_flag_values( ana_nf             , member( _ , [none] )).
 :- endif.
 
-pp_flag(ana_det).
+pp_flag(ana_det).  % menu only
 :- if(defined(has_ciaopp_extra)).
 pp_flag(ana_det, 'Type of determinacy analysis: multi-variant (det).' ).
 :- else.
@@ -292,7 +290,7 @@ valid_flag_values( ana_det            , member( _ , [none, det] )).
 valid_flag_values( ana_det            , member( _ , [none] )).
 :- endif.
 
-pp_flag(ana_cost).
+pp_flag(ana_cost).  % menu only
 :- if(defined(has_ciaopp_extra)).
 pp_flag(ana_cost, 'Type of cost (and size) analysis: lower bounds (steps_lb), upper bounds (steps_ub), both (steps_ualb), complexity order (steps_o), resources (resources), and new resources (res_plai).').
 :- else.
@@ -305,7 +303,7 @@ valid_flag_values( ana_cost           , member( _ , [none, steps_ub, steps_lb, s
 valid_flag_values( ana_cost           , member( _ , [none] )).
 :- endif.
 
-pp_flag(ana_size).
+pp_flag(ana_size). % menu only
 :- if(defined(has_ciaopp_extra)).
 pp_flag(ana_size, 'Type of size analysis: lower bounds (size_lb), upper bounds (size_ub), both (size_ualb), or complexity order (size_o)').
 :- else.
@@ -515,11 +513,10 @@ pp_flag(multi_call, 'Whether to allow multivariance on calls.').
 current_pp_flags(  multi_call      , on).
 valid_flag_values( multi_call      , member(_,[off,on])).
 
-pp_flag(vers).
+pp_flag(vers). % not used
 pp_flag(vers, 'Whether to show multiple versions in analysis results.').
 current_pp_flags(  vers               , off ).
 valid_flag_values( vers               , member(_,[off,on])).
-
 
 pp_flag(pp_info).
 pp_flag(pp_info, 'Whether to output analysis information for program points within clauses.').
@@ -987,7 +984,7 @@ pp_flag(math_system, 'The algebraic system to use to solve algebraic operations.
 current_pp_flags(  math_system         , builtin    ).
 valid_flag_values( math_system         , member( _ , [mathematica, builtin] )).
 
-pp_flag(perform_static_profiling).
+pp_flag(perform_static_profiling). % currently disabled
 pp_flag(perform_static_profiling, 'Whether to perform static profiling for resources (using res_plai analysis. EXPERIMENTAL)').
 current_pp_flags(  perform_static_profiling         , no    ).
 valid_flag_values( perform_static_profiling         , member( _ , [yes, no] )).
