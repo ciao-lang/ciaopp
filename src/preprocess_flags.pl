@@ -244,17 +244,6 @@ pp_flag(menu_config_name, 'Name of the last menu stored configuration.').
 current_pp_flags(  menu_config_name   , none ).
 valid_flag_values( menu_config_name   , atom( _ ) ).
 
-pp_flag(menu_output). % only menu
-pp_flag(menu_output, 'Menu option to output results in the source code.').
-current_pp_flags(  menu_output   , on ).
-valid_flag_values( menu_output   , member( _ , [on,off] ) ).
-
-pp_flag(menu_fixpo). % only menu
-pp_flag(menu_fixpo, 'Menu option to configure the fixpoint.').
-current_pp_flags(  menu_fixpo   , on ).
-valid_flag_values( menu_fixpo   , member( _ , [on,off] ) ).
-
-
 pp_flag(check_config_ana). % only menu
 pp_flag(check_config_ana, 'Decides whether to configure analysis flags or not.').
 current_pp_flags(  check_config_ana   , off    ).
@@ -524,10 +513,10 @@ pp_flag(multi_call, 'Whether to allow multivariance on calls.').
 current_pp_flags(  multi_call      , on).
 valid_flag_values( multi_call      , member(_,[off,on])).
 
-%% pp_flag(vers). % not used
-%% pp_flag(vers, 'Whether to show multiple versions in analysis results.').
-%% current_pp_flags(  vers               , off ).
-%% valid_flag_values( vers               , member(_,[off,on])).
+pp_flag(vers). % not used
+pp_flag(vers, 'Whether to show multiple versions in analysis results.').
+current_pp_flags(  vers               , off ).
+valid_flag_values( vers               , member(_,[off,on])).
 
 pp_flag(pp_info).
 pp_flag(pp_info, 'Whether to output analysis information for program points within clauses.').
@@ -565,7 +554,7 @@ valid_flag_values( intermod     , member(_, [off,on,auto])).
 pp_flag(mnu_modules_to_analyze).
 pp_flag(mnu_modules_to_analyze, 
  'Selects which modules are to be analyzed during intermodular analysis.').
-current_pp_flags(  mnu_modules_to_analyze, all).
+current_pp_flags(  mnu_modules_to_analyze, current).
 valid_flag_values( mnu_modules_to_analyze, member(_, [current,all])).
 
 %% print assertions in low-level format
@@ -909,6 +898,12 @@ pp_flag(multivariant_ctchecks).
 pp_flag(multivariant_ctchecks, 'Whether to use multivariant analysis info while CT checking at predicate level.').
 current_pp_flags( multivariant_ctchecks  , off ).
 valid_flag_values(multivariant_ctchecks  , member(_,[off,on])).
+
+pp_flag(ctchecks_output).
+pp_flag(ctchecks_output, 'Whether to generate output after CT checking.').
+current_pp_flags( ctchecks_output  , off ).
+valid_flag_values(ctchecks_output  , member(_,[off,on])).
+
 
 pp_flag(run_diagnosis).
 pp_flag(run_diagnosis, 'Whether to start diagnosis at program-point CT checking.').
