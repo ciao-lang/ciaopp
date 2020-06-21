@@ -1175,7 +1175,7 @@ pop_pp_flag(part_concrete):- !, pop_pp_flag(part_conc).
 %
 pop_pp_flag(Flag) :-
     nonvar(Flag),
-    datafacts_rt:retract_fact(old_flag(Flag, OldValue)),
+    ( datafacts_rt:retract_fact(old_flag(Flag, OldValue)) -> true ; fail ),
     set_pp_flag(Flag,OldValue).
 
 %-------------------------------------------------------------------------
