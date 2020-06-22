@@ -391,12 +391,12 @@ opt_menu_branch(A, B) :-
 use_cfg, 'Use Saved Menu Configuration' # menu_last_config - none.
 save_cfg, 'Menu Configuration Name' # menu_config_name  - none : show_mcfg.
 
-all, 'Select Menu Level'   # menu_level - naive.
-all, 'Select Action Group' # inter_all  - analyze :: all_menu_branch.
+all, 'Menu Level'   # menu_level - naive.
+all, 'Action'       # inter_all  - analyze :: all_menu_branch.
 
-check   , 'Analysis Domain Selection' # assert_ctcheck  - auto.
-%check(1), 'Perform Modular Analysis'    # ct_mod_ana - curr_mod     <- cct.
-%check   , 'Perform Modular Checking'    # ct_modular - curr_mod :: mod_check  <- cct.
+check   , 'Analysis Domain' # assert_ctcheck  - auto.
+%check(1), 'Modular Analysis'    # ct_mod_ana - curr_mod     <- cct.
+%check   , 'Modular Checking'    # ct_modular - curr_mod :: mod_check  <- cct.
 check   , 'Modules to Check' # ct_modular - curr_mod  :: mod_check  <- cct.
 check   , 'Iterate Over Modules' # ct_mod_iterate - on :: post_iter  <- cct_mod.
 check(1) ,'Interleave Analysis and Checking'# interleave_an_check - on <- cct_mod_reg.
@@ -411,49 +411,49 @@ check   , 'Customize Analysis Flags'    # check_config_ana   - off  <- cct_manua
 check   , 'Generate CT Checking Output' # ctchecks_output    - off.
 check   , 'Generate Certificate'        # gen_certificate    - off.
 check   , 'Reduced Certificate'         # reduced_cert       - off  <- gencert.
-%check   , 'Perform Optimizing Compilation'# optim_comp - none.
+%check   , 'Optimizing Compilation'# optim_comp - none.
 check   , 'Generate CT Checking Intervals'        # ctchecks_intervals    - on.
 
 opt      , 'Type of Optimization'         # inter_optimize - spec :: opt_menu_branch.
-~spsl    , 'Select Abs Specialization'    # spec_poly - off.
+~spsl    , 'Abs Specialization'    # spec_poly - off.
 ~spsl(1) , 'Preserve Finite Failure'      # pres_inf_fail-off  <- spec_pif.
 ~spsl(1) , 'Execute Unif at Spec Time'    # exec_unif - on     <- spec_pif.
-~spsl(1) , 'Perform Postprocessing Phase' # spec_postproc - on <- spec_pif.
-~spsl    , 'Select Analysis Domain'       # peval_ana         - pd.
-~spsl(1) , 'Select Local Control'         # local_control - df_hom_emb_as.
-~spsl(1) , 'Select Depth'                 # unf_depth         - 1    <- spec_lcd.
-~spsl(1) , 'Select Computation Rule'      # comp_rule - bind_ins_jb  <- spec_lc.
-~spsl(1) , 'Select Partial Concretization'# part_conc         - off  <- spec_lc.
-~spsl(1) , 'Perform Argument Filtering'   # inter_opt_arg_filt- on   <- spec_lc.
-~spsl(1) , 'Select Global Control'        # global_control - hom_emb <- spec_lc.
+~spsl(1) , 'Postprocessing Phase' # spec_postproc - on <- spec_pif.
+~spsl    , 'Analysis Domain'       # peval_ana         - pd.
+~spsl(1) , 'Local Control'         # local_control - df_hom_emb_as.
+~spsl(1) , 'Depth'                 # unf_depth         - 1    <- spec_lcd.
+~spsl(1) , 'Computation Rule'      # comp_rule - bind_ins_jb  <- spec_lc.
+~spsl(1) , 'Partial Concretization'# part_conc         - off  <- spec_lc.
+~spsl(1) , 'Argument Filtering'    # inter_opt_arg_filt- on   <- spec_lc.
+~spsl(1) , 'Global Control'        # global_control - hom_emb <- spec_lc.
 ~spsl(1) , 'Use Global Trees'             # global_trees      - off  <- spec_lc.
 spec(1)  , 'Post-minimization'            # min_crit          - none <- spec_lc.
 ~spsl(1) , 'Abstract Spec Definitions'    # abs_spec_defs     - off  <- spec_lc.
 ~spsl(1) , 'Remove Useless Clauses'       # rem_use_cls       - off  <- spec_lc.
 ~spsl(1) , 'Simplify Arithmetic Expressions'# sim_ari_exp     - pre  <- spec_lc.
 ~spsl(1) , 'Branching Factor Nonleftmost' # unf_bra_fac       - 1    <- spec_lc.
-~spsl(1) , 'Select Filter Numbers'        # filter_nums       - off  <- spec_fn.
+~spsl(1) , 'Filter Numbers'        # filter_nums       - off  <- spec_fn.
 ~spsl(1) , 'Nums Hom Emb in Local Control'# hom_emb_nums      - off  <- spec_hn.
 
 :- if(defined(has_ciaopp_extra)).
-sp_poly     , 'Select Fitness Function'          # poly_fitness       - balance.
+sp_poly     , 'Fitness Function'          # poly_fitness       - balance.
 sp_poly     , 'Maximum Size of Solution'         # pcpe_bounded_size  - '10K' <- polybounded.
-sp_poly     , 'Select Strategy'                  # poly_strategy      - all_sols.
-sp_poly     , 'Select Aggressivity'              # aggressivity       - normal.
-sp_poly(1)  , 'Select Pruning'                   # poly_pruning       - heuristic <- polystrat.
-sp_poly(1)  , 'Select Heuristic'                 # polyvar_pcpe       - pred <- polyheur.
-sp_poly(1)  , 'Select Modes Domain'              # poly_modes         - sd <- polyvar.
-sp_poly(1)  , 'Select Depth of Pruning'          # poly_depth_lim     - 3 <- polydepth.
+sp_poly     , 'Strategy'                  # poly_strategy      - all_sols.
+sp_poly     , 'Aggressivity'              # aggressivity       - normal.
+sp_poly(1)  , 'Pruning'                   # poly_pruning       - heuristic <- polystrat.
+sp_poly(1)  , 'Heuristic'                 # polyvar_pcpe       - pred <- polyheur.
+sp_poly(1)  , 'Modes Domain'              # poly_modes         - sd <- polyvar.
+sp_poly(1)  , 'Depth of Pruning'          # poly_depth_lim     - 3 <- polydepth.
 sp_poly(1)  , 'Evaluation Time per sol in msecs' # pcpe_evaltime  - 200.
-sp_poly(1)  , 'Perform Argument Filtering'       # inter_opt_arg_filt - on.
-sp_poly(1)  , 'Perform Post Minimization'        # min_crit           - none.
-sp_poly(1)  , 'Select Verbosity in Output Files' # output_info        - medium.
+sp_poly(1)  , 'Argument Filtering'       # inter_opt_arg_filt - on.
+sp_poly(1)  , 'Post Minimization'        # min_crit           - none.
+sp_poly(1)  , 'Verbosity in Output Files' # output_info        - medium.
 :- endif.
 
 :- if(defined(has_ciaopp_extra)).
-para     ,  'Select Annotation Algorithm' # para_ann          - mel.
-para     ,  'Select Type of IAP'          # para_iap          - nsiap.
-para     ,  'Select Local Analysis'       # para_local        - local.
+para     ,  'Annotation Algorithm' # para_ann          - mel.
+para     ,  'Type of IAP'          # para_iap          - nsiap.
+para     ,  'Local Analysis'       # para_local        - local.
 :- endif.
 
 ana      , 'Incremental'                   # incremental - off :: inc_ana <- ana_b.
@@ -461,43 +461,43 @@ ana      , 'Incremental'                   # incremental - off :: inc_ana <- ana
 ~lt(1)   , 'Related Modules Info'          # ext_policy       - registry <- ana_b.
 ~lt(1)   , 'Module Loading Policy'         # module_loading   - one <- ana_b.
 ~lt(1)   , 'Success Policy'                # success_policy   - over_all <- ana_b.
-~mtypepar, 'Perform Non-Failure Analysis'  # ana_nf           - none :: p_nf     <- ana_pp2.
+~mtypepar, 'Non-Failure Analysis'  # ana_nf           - none :: p_nf     <- ana_pp2.
 :- if(defined(has_ciaopp_extra)).
-para     , 'Select Cost Analysis'          # para_cost        - both      <- para_c1.
+para     , 'Cost Analysis'          # para_cost        - both      <- para_c1.
 :- endif.
-~mtypepar, 'Select Aliasing-Mode Analysis' # modes            - shfr      <- ana_pp.
-~mtype   , 'Select Shape-Type Analysis'    # types            - eterms    <- ana_b.
+~mtypepar, 'Aliasing/Mode Analysis' # modes            - shfr      <- ana_pp.
+~mtype   , 'Shape/Type Analysis'    # types            - eterms    <- ana_b.
 :- if(defined(has_ciaopp_extra)).
-para     , 'Select Granularity Analysis'   # para_grain       - none.
+para     , 'Granularity Analysis'   # para_grain       - none.
 :- endif.
-~mtypeepar,'Select Numeric Analysis'       # ana_num          - none      <- ana_pp.
-~mtype   , 'Perform Widening sharing'      # clique_widen     - off       <- clipre.
-~mtype   , 'Select Type of Widening'       # clique_widen_type- cautious  <- clipre.
-~mtype   , 'Select upper bound threshold'  # clique_widen_ub  - 200       <- clipre.
-~mtype   , 'Select lower bound threshold'  # clique_widen_lb  - 250       <- clipre.
-~mtype   , 'Select Cost Analysis'          # ana_cost         - none      <- ana_b.
-~lt(1)   , 'Select Recurrence Solver'      # req_solver       - builtin <- ana_b.
-~lt(1)   , 'Select Algebraic System'       # math_system      - builtin <- ana_b.
-~lt(1)   , 'Perform Static Profiling'      # perform_static_profiling - no <- ana_b.
-~mtypepar, 'Perform Determinism Analysis'  # ana_det          - none      <- ana_pp1.
-~lt(1)   , 'Perform Type Eval'             # type_eval        - off       <- ana_g1.
-~lt(1)   , 'Select Variants'               # variants         - off       <- ana_g1.
-~lt(1)   , 'Select WidenCall'              # widencall        - com_child <- ana_g1.
-~lt(1)   , 'Select Type Precision'         # type_precision   - all       <- ana_g2.
-~lt(1)   , 'Select Analysis Algorithm'     # fixpoint         - plai      <- ana_gto.
+~mtypeepar,'Numeric Analysis'       # ana_num          - none      <- ana_pp.
+~mtype   , '| Widening sharing'      # clique_widen     - off       <- clipre.
+~mtype   , '| Type of Widening'       # clique_widen_type- cautious  <- clipre.
+~mtype   , '| Upper Bound Threshold'  # clique_widen_ub  - 200       <- clipre.
+~mtype   , '| Lower Bound Threshold'  # clique_widen_lb  - 250       <- clipre.
+~mtype   , 'Cost Analysis'          # ana_cost         - none      <- ana_b.
+~lt(1)   , 'Recurrence Solver'      # req_solver       - builtin <- ana_b.
+~lt(1)   , 'Algebraic System'       # math_system      - builtin <- ana_b.
+~lt(1)   , 'Static Profiling'      # perform_static_profiling - no <- ana_b.
+~mtypepar, 'Determinism Analysis'  # ana_det          - none      <- ana_pp1.
+~lt(1)   , 'Type Eval'             # type_eval        - off       <- ana_g1.
+~lt(1)   , 'Variants'               # variants         - off       <- ana_g1.
+~lt(1)   , 'WidenCall'              # widencall        - com_child <- ana_g1.
+~lt(1)   , 'Type Precision'         # type_precision   - all       <- ana_g2.
+~lt(1)   , 'Analysis Algorithm'     # fixpoint         - plai      <- ana_gto.
 %~lt(1)  , 'Multivariant Success'          # multi_success    - off       <- ana_b.
 ~mtypeepar,'Multivariant Success'          # multi_success    - off       <- ana_pp.
-~lt(1)   , 'Select Local Control'          # local_control    - off       <- ana_lc.
-~mtype   , 'Select Global Control'         # global_control   - hom_emb   <- ana_gc.
+~lt(1)   , 'Local Control'          # local_control    - off       <- ana_lc.
+~mtype   , 'Global Control'         # global_control   - hom_emb   <- ana_gc.
 ~mtypeepar,'Entry Point for Analysis'      # entry_point      - entry     <- ana_pp.
 ~mtypeepar,'Print Program Point Info'      # pp_info          - off       <- ana_pp.
 %ana(1)  , 'Multi-variant Analysis Results'# vers             - off       <- ana_b.
 ~anaepar , 'Multi-variant Analysis Results'# vers             - off       <- ana_pp.
 ~mtypeepar,'Collapse AI Info'              # collapse_ai_vers - on        <- ana_pp.
-~mtype   , 'Select Type Output'            # type_output      - all       <- ana_g2.
-~lt(1)   , 'Select Resource Output'        # output_resources - functions <- ana_b.
-~lt(1)   , 'Select Cost Output'            # cost_analysis_output - all <- ana_b.
-~mtype   , 'Select Output Language'        # output_lang      - source <- ana_b.
+~mtype   , 'Type Output'            # type_output      - all       <- ana_g2.
+~lt(1)   , 'Resource Output'        # output_resources - functions <- ana_b.
+~lt(1)   , 'Cost Output'            # cost_analysis_output - all <- ana_b.
+~mtype   , 'Output Language'        # output_lang      - source <- ana_b.
 
 guard cct2(X) :-
     ( member(assert_ctcheck=Y, X) ->
@@ -1498,7 +1498,7 @@ preferred_ana(types,    eterms).
 preferred_ana(modes,    shfr).
 preferred_ana(ana_num,  polyhedra). %PP: just guessing
 preferred_ana(ana_nf,   nfg).
-preferred_ana(ana_cost, steps_ualb).
+preferred_ana(ana_cost, steps_ualb). % IG: why duplicated?, possible choicepoints
 preferred_ana(ana_cost, resources).
 preferred_ana(ana_size, size_ualb).
 preferred_ana(ana_det,  det).
