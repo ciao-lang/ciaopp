@@ -298,9 +298,7 @@
 :- use_module(ciaopp(preprocess_flags), [
     current_pp_flag/2,
     pp_flag/2,
-    set_pp_flag/2
-   ]).
-:- use_module(ciaopp(preprocess_flags), [
+    set_pp_flag/2,
     valid_flag_values/2,
     valid_flag_value/2
    ]).
@@ -458,7 +456,7 @@ para     ,  'Select Type of IAP'          # para_iap          - nsiap.
 para     ,  'Select Local Analysis'       # para_local        - local.
 :- endif.
 
-ana      , 'Incremental'                   # incremental - off : inc_ana <- ana_b.
+ana      , 'Incremental'                   # incremental - off :: inc_ana <- ana_b.
 ~mtype   , 'Modules to analyze'            # mnu_modules_to_analyze - current :: mod_ana <- ana_b.
 ~lt(1)   , 'Related Modules Info'          # ext_policy       - registry <- ana_b.
 ~lt(1)   , 'Module Loading Policy'         # module_loading   - one <- ana_b.
@@ -567,8 +565,11 @@ mod_ana(X,X):-
     ; true
     ).
 
-inc_ana :-
+inc_ana(X,X) :-
+    member(incremental=I,X),
+    I == on, !,
     set_menu_flag(ana,fixpoint,dd).
+inc_ana(X,X).
 
 post_iter(X,X) :-
     member(ct_mod_iterate=A,X),
