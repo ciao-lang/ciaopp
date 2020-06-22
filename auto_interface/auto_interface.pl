@@ -567,9 +567,16 @@ mod_ana(X,X):-
 
 inc_ana(X,X) :-
     member(incremental=I,X),
-    I == on, !,
-    set_menu_flag(ana,fixpoint,dd).
-inc_ana(X,X).
+    ( I == on ->
+        % TODO: this does not seem to be working in the playground
+        %   (JF) The playground uses generate_offline_menu(all, _) to
+        %   extract a json representation of the possible menu
+        %   values. In execution mode X is always unbound so this kind
+        %   of rule are never executed. Rewrite as guards that
+        %   restrict fixpoint values instead?
+        set_menu_flag(ana,fixpoint,dd)
+    ; true
+    ).
 
 post_iter(X,X) :-
     member(ct_mod_iterate=A,X),
