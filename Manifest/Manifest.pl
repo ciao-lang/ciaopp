@@ -15,7 +15,9 @@ alias_paths([
     %
     ciaopp_docsrc = 'doc',
     %
-    spec = 'spec'
+    spec = 'spec',
+    %
+    ciaopp_batch = 'batch'
 ]).
 
 lib('src').
@@ -25,8 +27,13 @@ lib('domains').
 lib('lib').
 %
 lib('spec').
+%
+lib('batch').
 
 cmd('cmds/ciaopp-dump').
+cmd('cmds/ciaopp-batch').
+cmd('batch/ciaopp_master'). % TODO: use libexec?
+cmd('batch/ciaopp_batch_report'). % TODO: merge with ciaopp-dump?
 
 readme('INSTALLATION', [main='doc/readmes/INSTALLATION_CIAOPP.lpdoc']).
 readme('CHANGELOG', [main='doc/readmes/CHANGELOG_CIAOPP.pl']).

@@ -1,5 +1,3 @@
-% TODO: publish ciaopp_batch?
-
 :- doc(version(1*3+0,2019/11/3,11:16*23+'CEST'), "
    @begin{itemize}
    @item New functionality:

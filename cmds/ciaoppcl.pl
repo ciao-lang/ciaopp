@@ -59,12 +59,16 @@ CiaoPP shell (this is the default behavior):
 
 :- use_module(engine(io_basic)).
 :- use_module(library(format), [format/3]).
+:- use_module(ciaopp_batch(ciaopp_worker)).
 
 main(Args) :-
     catch(main_(Args), E, (handle_ciaopp_error(E), halt(1))).
 
-% TODO: use get_opts/1 like in lpdoc
+main_(['--worker', ID]) :- % Worker mode (internal for ciaopp-batch)
+    !,
+    ciaopp_worker:start_worker(ID).
 main_(Args) :-
+    % TODO: use get_opts/1 like in lpdoc
     parse_opts(Args, Cmd, Flags),
     !,
     ciaopp_cmd(Cmd, Flags).
