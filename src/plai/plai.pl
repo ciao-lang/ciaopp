@@ -206,13 +206,13 @@ preprocess(Fixp,AbsInt,Cls,Ds,Ps):-
     reset_previous_analysis(AbsInt),
     store_previous_analysis_completes(AbsInt),
     ( Fixp == check_di ->
-      fixpo_check_di:cleanup_fixpoint(AbsInt)
+        fixpo_check_di:cleanup_fixpoint(AbsInt)
     ;
         ( Fixp == check_di2 ->
-          fixpo_check_di2:cleanup_fixpoint(AbsInt)
+            fixpo_check_di2:cleanup_fixpoint(AbsInt)
         ;
             (Fixp == check_reduc_di ->
-             fixpo_check_reduced_di:cleanup_fixpoint(AbsInt)
+                fixpo_check_reduced_di:cleanup_fixpoint(AbsInt)
              ;
                 fixpo_check_di3:cleanup_fixpoint(AbsInt)
             )

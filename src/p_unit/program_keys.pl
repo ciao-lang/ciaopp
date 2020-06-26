@@ -310,7 +310,7 @@ rewrite_source_all_clauses([clause(H,B)|Clauses],[NCl:ClId|NewClauses]):-
     rewrite_source_clause(clause(H,B),ClId,NCl),
     rewrite_source_all_clauses(Clauses,NewClauses).
 
-:- regtype headcl/1.
+:- prop headcl/1.
 headcl(0).
 headcl(H) :- callable(H).
 
@@ -566,8 +566,7 @@ decode_entrykey(Clid,N,A,C):-
     # "@var{ClId} identifies the @var{C}th clause of predicate
       @var{F}/@var{A}.".
 decode_clkey(Clid,N,A,C):-
-    decode_clkey_(Clid,N0,A0,C0),
-    !,
+    decode_clkey_(Clid,N0,A0,C0), !,
     N = N0, A = A0, C = C0.
 decode_clkey(Clid,N,A,C):-
     decode_clid(Clid,N0,A0,C0),
@@ -575,9 +574,9 @@ decode_clkey(Clid,N,A,C):-
     N = N0, A = A0, C = C0.
 
 decode_clid(Clid,N,A,C):-
-    unpack_id( Clid , List ),
-    append( Name , [LA, LC] , List ), !,
-    unpack_id( N , Name ),
+    unpack_id(Clid, List),
+    append(Name, [LA, LC], List), !,
+    unpack_id(N, Name),
     name(A,LA),
     name(C,LC).
 
@@ -585,9 +584,9 @@ decode_clid(Clid,N,A,C):-
     # "@var{AtId} identifies the @var{G}th literal of the body of the
       @var{C}th clause of predicate @var{F}/@var{A}.".
 decode_litkey(Atom,N,A,C,G):-
-    unpack_id( Atom , List ),
-    append( Name , [LA, LC,LG] , List ), !,
-    unpack_id( N , Name ),
+    unpack_id(Atom, List),
+    append(Name, [LA, LC,LG], List), !,
+    unpack_id(N, Name),
     name(A,LA),
     name(C,LC),
     name(G,LG).
@@ -639,7 +638,6 @@ namel_2_atoml([], []).
 namel_2_atoml([A|AA], [S|SS]) :-
     name(A, S),
     namel_2_atoml(AA, SS).
-
 
 % ------------------------------------------------------------
 % Generating keys
