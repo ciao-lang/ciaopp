@@ -155,7 +155,7 @@
 % the future it could be 0=naive, 1=medium, 2=expert). This explains
 % lines like:
 %
-% ~lt(1), 'Multivariant Success' # multi_success - off <- ana_b.
+% ~lt(1), 'Multivariant Success' # multi_success - off <- ana_or_check.
 %
 % The second point is a little bit more complex. A guard is the field
 % after '<-'. The guard itself receives an argument that xis a list
@@ -398,7 +398,7 @@ check   , 'Analysis Domain' # assert_ctcheck  - auto.
 %check(1), 'Modular Analysis'    # ct_mod_ana - curr_mod     <- cct.
 %check   , 'Modular Checking'    # ct_modular - curr_mod :: mod_check  <- cct.
 check   , 'Modules to Check' # ct_modular - curr_mod  :: mod_check  <- cct.
-check   , 'Iterate Over Modules' # ct_mod_iterate - on :: post_iter  <- cct_mod.
+check   , 'Iterate Over Modules' # ct_mod_iterate - on :: post_iter  <- cct_mod. % TODO: equivalent to intermod? (JF)
 check(1) ,'Interleave Analysis and Checking'# interleave_an_check - on <- cct_mod_reg.
 check(1), 'Related Modules Info'        # ct_ext_policy - assertions <- cct.
 check(1), 'Regenerate Analysis Registry'# ct_regen_reg - off::reg_reg <- cct_mod_reg.
@@ -408,7 +408,6 @@ check(1), 'Multivariant CT Checks'   # multivariant_ctchecks - off  <- cct.
 check(1), 'Program-Point CT Checks'     # pp_ctchecks        - on  <- cct.
 %check(1), 'Create Error Log File'      # error_log          - off  <- cct.
 check   , 'Customize Analysis Flags'    # check_config_ana   - off  <- cct_manual.
-check   , 'Generate CT Checking Output' # ctchecks_output    - off.
 check   , 'Generate Certificate'        # gen_certificate    - off.
 check   , 'Reduced Certificate'         # reduced_cert       - off  <- gencert.
 %check   , 'Optimizing Compilation'# optim_comp - none.
@@ -447,7 +446,7 @@ sp_poly(1)  , 'Depth of Pruning'          # poly_depth_lim     - 3 <- polydepth.
 sp_poly(1)  , 'Evaluation Time per sol in msecs' # pcpe_evaltime  - 200.
 sp_poly(1)  , 'Argument Filtering'       # inter_opt_arg_filt - on.
 sp_poly(1)  , 'Post Minimization'        # min_crit           - none.
-sp_poly(1)  , 'Verbosity in Output Files' # output_info        - medium.
+sp_poly(1)  , 'Verbosity in Output Files' # output_info        - medium. % TODO: move as an moutput(_) option?
 :- endif.
 
 :- if(defined(has_ciaopp_extra)).
@@ -456,48 +455,69 @@ para     ,  'Type of IAP'          # para_iap          - nsiap.
 para     ,  'Local Analysis'       # para_local        - local.
 :- endif.
 
-ana      , 'Incremental'                   # incremental - off :: inc_ana <- ana_b.
-~mtype   , 'Modules to analyze'            # mnu_modules_to_analyze - current :: mod_ana <- ana_b.
-~lt(1)   , 'Related Modules Info'          # ext_policy       - registry <- ana_b.
-~lt(1)   , 'Module Loading Policy'         # module_loading   - one <- ana_b.
-~lt(1)   , 'Success Policy'                # success_policy   - over_all <- ana_b.
-~mtypepar, 'Non-Failure Analysis'  # ana_nf           - none :: p_nf     <- ana_pp2.
+% ------------------------------------------------------------
+% analysis domain options
+~mtypepar, 'Analyze Non-Failure'  # ana_nf           - none :: p_nf     <- ana_or_check_or_paral_gr.
+
 :- if(defined(has_ciaopp_extra)).
 para     , 'Cost Analysis'          # para_cost        - both      <- para_c1.
 :- endif.
-~mtypepar, 'Aliasing/Mode Analysis' # modes            - shfr      <- ana_pp.
-~mtype   , 'Shape/Type Analysis'    # types            - eterms    <- ana_b.
+~mtypepar, 'Analyze Aliasing/Mode' # modes           - shfr   <- ana_or_check_or_paral.
+~mtype   , 'Analyze Shape/Types'   # types           - eterms <- ana_or_check.
+~lt(1)   , '| Type Precision'      # type_precision  - all    <- ana_or_check_not_nf_types.
+~lt(1)   , '| Eval Types'          # type_eval       - off    <- ana_or_check_not_nf_evaltypes.
+
 :- if(defined(has_ciaopp_extra)).
 para     , 'Granularity Analysis'   # para_grain       - none.
 :- endif.
-~mtypeepar,'Numeric Analysis'       # ana_num          - none      <- ana_pp.
-~mtype   , '| Widening sharing'      # clique_widen     - off       <- clipre.
+~mtype   , '| Widening sharing'       # clique_widen     - off       <- clipre.
 ~mtype   , '| Type of Widening'       # clique_widen_type- cautious  <- clipre.
 ~mtype   , '| Upper Bound Threshold'  # clique_widen_ub  - 200       <- clipre.
 ~mtype   , '| Lower Bound Threshold'  # clique_widen_lb  - 250       <- clipre.
-~mtype   , 'Cost Analysis'          # ana_cost         - none      <- ana_b.
-~lt(1)   , 'Recurrence Solver'      # req_solver       - builtin <- ana_b.
-~lt(1)   , 'Algebraic System'       # math_system      - builtin <- ana_b.
-~lt(1)   , 'Static Profiling'      # perform_static_profiling - no <- ana_b.
-~mtypepar, 'Determinism Analysis'  # ana_det          - none      <- ana_pp1.
-~lt(1)   , 'Type Eval'             # type_eval        - off       <- ana_g1.
-~lt(1)   , 'Variants'               # variants         - off       <- ana_g1.
-~lt(1)   , 'WidenCall'              # widencall        - com_child <- ana_g1.
-~lt(1)   , 'Type Precision'         # type_precision   - all       <- ana_g2.
-~lt(1)   , 'Analysis Algorithm'     # fixpoint         - plai      <- ana_gto.
-%~lt(1)  , 'Multivariant Success'          # multi_success    - off       <- ana_b.
-~mtypeepar,'Multivariant Success'          # multi_success    - off       <- ana_pp.
-~lt(1)   , 'Local Control'          # local_control    - off       <- ana_lc.
-~mtype   , 'Global Control'         # global_control   - hom_emb   <- ana_gc.
-~mtypeepar,'Entry Point for Analysis'      # entry_point      - entry     <- ana_pp.
-~mtypeepar,'Print Program Point Info'      # pp_info          - off       <- ana_pp.
-%ana(1)  , 'Multi-variant Analysis Results'# vers             - off       <- ana_b.
-~anaepar , 'Multi-variant Analysis Results'# vers             - off       <- ana_pp.
-~mtypeepar,'Collapse AI Info'              # collapse_ai_vers - on        <- ana_pp.
-~mtype   , 'Type Output'            # type_output      - all       <- ana_g2.
-~lt(1)   , 'Resource Output'        # output_resources - functions <- ana_b.
-~lt(1)   , 'Cost Output'            # cost_analysis_output - all <- ana_b.
-~mtype   , 'Output Language'        # output_lang      - source <- ana_b.
+~mtypeepar,'Analyze Numeric'       # ana_num          - none      <- ana_or_check_or_paral.
+~mtype   , 'Analyze Cost'          # ana_cost         - none      <- ana_or_check.
+~mtype   , '| Recurrence Solver'   # req_solver       - builtin <- cost_ana.
+~mtype   , '| Algebraic System'    # math_system      - builtin <- cost_ana.
+~mtype   , '| Static Profiling'    # perform_static_profiling - no <- cost_ana. % currently disabled
+~mtypepar, 'Analyze Determinism'  # ana_det          - none      <- ana_or_check_or_paral_uoudg.
+~mtypeepar,'Analysis entry'      # entry_point      - entry     <- ana_or_check_or_paral.
+
+% ------------------------------------------------------------
+% modularity options
+~mtype   , 'Incremental'                  # incremental - off :: inc_ana <- ana_or_check.
+% curated modular analysis flags
+~mtype   , 'Intermodular'                 # intermod       - off :: new_mod_ana <- ana_or_check.
+~mtype   , '| Entry module'               # entry_policy   - top_level <- new_mod.
+~mtype   , '| Module loading'             # module_loading - all  <- new_mod.
+~mtype   , '| Success policy'             # success_policy - under_all <- new_mod.
+~mtype   , '| Module loading boundary'    # punit_boundary - bundle <- new_mod_expert.
+~mtype   , '| Preload libraries'          # preload_lib_sources - on <- new_mod_expert.
+
+% ------------------------------------------------------------
+% fixpoint options
+~mfixpo,'Customize fixpoint'       # menu_fixpo - on     <- expert.
+~mfixpo,'| Fixpoint Algorithm'     # fixpoint       - plai       <- custo_fixpoint. % TODO: was ana_gto (ana_or_check_not_nf + local_control=off)
+~mfixpo,'| Widen Call'             # widencall      - com_child  <- custo_fixpoint.
+~mfixpo,'| Variants'               # variants       - off        <- custo_fixpoint.
+~mfixpo,'| Multivariant Success'   # multi_success  - off        <- custo_fixpoint. % TODO: this option was enabled in opt+para menu, recover if needed
+% TODO: only for fixpo_di?
+~mfixpo,'| Local Control'          # local_control  - off        <- custo_fixpoint_ana_lc. % (ana_or_check + types!=none&modes!=none)
+~mfixpo,'| Global Control'         # global_control - hom_emb    <- custo_fixpoint_ana_gc. % (ana_or_check_not_nf_evaltypes + local_control!=off)
+
+% ------------------------------------------------------------
+% output options
+% 0 = naive, 1 = expert
+~moutput(0),'Generate Output'           # menu_output          - on.
+~moutput(0),'| Output Language'         # output_lang          - source <- ana_or_check_output.
+~moutput(0),'| Include Program Point'   # pp_info              - off    <- ana_or_check_output. % TODO: this option was enabled in opt+para menu, recover if needed
+~moutput(0),'| Multi-variant Analysis Results' # vers          - off    <- ana_or_check_output. % TODO: this option was enabled in opt+para menu, recover if needed
+~moutput(0),'| Collapse Versions'       # collapse_ai_vers     - on     <- ana_or_check_output. % TODO: this option was enabled in opt+para menu, recover if needed
+~moutput(0),'| Output Types'            # type_output          - all    <- ana_or_check_output.
+~moutput(1),'| Output Resource'         # output_resources     - functions <- ana_or_check_output.
+~moutput(1),'| Output Cost'             # cost_analysis_output - all    <- ana_or_check_output.
+
+guard expert(X) :-
+    member(menu_level=Y, X), Y == expert.
 
 guard cct2(X) :-
     ( member(assert_ctcheck=Y, X) ->
@@ -539,7 +559,7 @@ mod_check(X,X) :-
       member(ct_modular=E,X),
       ( E == all ->
         % set_menu_flag(check,ct_ext_policy,registry),
-        set_menu_flag(check,mnu_modules_to_analyze,all),
+        set_menu_flag(check,mnu_modules_to_analyze,all), % TODO: useless if intermod=off! enable it? (JF)
         % set_menu_flag(check,ext_policy,registry),
         set_menu_flag(check,ct_regen_reg,on)
       ; % set_menu_flag(check,ct_ext_policy,assertions),
@@ -549,21 +569,17 @@ mod_check(X,X) :-
     ; true
     ).
 
-mod_ana(X,X):-
-    member(menu_level=A1,X),
-    ( A1 == naive ->
-      member(mnu_modules_to_analyze=E,X),
-      member(inter_all=MenuType,X),
-      ( E == all ->
-        Ext_policy = registry
-      ; Ext_policy = assertions
-      ),
-      ( MenuType == analyze ->
-        set_menu_flag(ana,ext_policy,Ext_policy)
-      ; set_menu_flag(check,ext_policy,Ext_policy)
-      )
-    ; true
-    ).
+new_mod_ana(X,X) :-
+    member(intermod=I,X),
+    ( I == on ->
+        set_menu_flag(ana,ext_policy,registry),
+        set_menu_flag(ana,entry_policy,top_level),
+        set_menu_flag(ana,punit_boundary, bundle),
+        set_menu_flag(ana,mnu_modules_to_analyze, all),
+        set_menu_flag(ana,module_loading, all), % monolithic by default
+        set_menu_flag(ana,success_policy, under_all),
+        set_menu_flag(ana,preload_lib_sources, on)
+    ; true ).
 
 inc_ana(X,X) :-
     member(incremental=I,X),
@@ -583,7 +599,7 @@ post_iter(X,X) :-
     ( A == on ->
       set_menu_flag(check,ct_ext_policy,registry),
       set_menu_flag(check,ext_policy,registry),
-      set_menu_flag(check,mnu_modules_to_analyze,all),
+      set_menu_flag(check,mnu_modules_to_analyze,all), % TODO: useless if intermod=off! enable it? (JF)
       member(menu_level=A1,X),
       ( A1 == naive ->  % PP: should be ok in most cases
         set_menu_flag(check,types,terms)
@@ -631,7 +647,7 @@ guard cct_mod(X) :-
 %       ; true
 %       ).
 
-guard ana_b(X)  :-
+guard ana_or_check(X)  :-
     member(inter_all=I, X),
     (
         I == check_assertions,
@@ -641,85 +657,98 @@ guard ana_b(X)  :-
         I == analyze
     ).
 
+guard ana_or_check_expert(X) :-
+    member(menu_level=I, X),
+    I == expert,
+    ana_or_check(X).
+
+guard ana_or_check_output(X)  :-
+    ana_or_check(X),
+    member(menu_output=I, X),
+    I == on.
+
 guard nf_not_selected(X) :-
-    (
-        member(ana_nf=NF, X)
-    ->
+    ( member(ana_nf=NF, X) ->
         NF == none
     ;
         true
     ).
 
+guard cost_ana(X) :-
+    %% expert(X),
+    %% ana_or_check(X),
+    member(ana_cost=I,X),
+    I \== none.
+
 % Almost everything have this preconditions
-ana_b2(X)  :-
-    ana_b(X),
+ana_or_check_not_nf(X)  :-
+    ana_or_check(X),
     nf_not_selected(X).
 
+guard new_mod(X)  :-
+    member(intermod=I, X),
+    I == on.
 
-guard ana_g1(X)  :-
-    ana_b2(X),
+guard new_mod_expert(X)  :-
+    expert(X),
+    member(intermod=I, X), I == on.
+
+guard ana_or_check_not_nf_evaltypes(X)  :-
+    ana_or_check_not_nf(X),
     member(types=Y, X),
-    (
-        Y == eterms
-    ;
-        Y == svterms
-    ).
+    ( Y == eterms ; Y == svterms ). % TODO: ask the domain instead
 
-% like ana_g1 but for all types
-guard ana_g2(X)  :-
-    ana_b2(X),
-    member(types=Y, X),
-    Y \== none.
+guard ana_or_check_not_nf_types(X)  :-
+    ana_or_check_not_nf(X),
+    member(types=Y, X), Y \== none.
 
-guard ana_gto(X) :-
-    ana_b2(X),
-    member(local_control=Y, X),
-    Y == off.
+guard custo_fixpoint(X) :-
+    expert(X),
+    member(menu_fixpo=Y, X), Y == on.
 
-guard ana_gc(X)  :-
-    ana_g1(X),
-    member(local_control=Y, X),
-    Y \== off.
+guard custo_fixpoint_ana_gc(X)  :-
+    custo_fixpoint(X),
+    ana_or_check_not_nf_evaltypes(X),
+    member(local_control=Y, X), Y \== off.
 
-guard ana_lc(X)  :-
-    ana_b(X),
-    member(types=T, X),
-    T  \== none,
+guard custo_fixpoint_ana_lc(X)  :-
+    custo_fixpoint(X), % TODO: added
+    ana_or_check(X),
+    member(types=T, X), T \== none,
     !.
-
-guard ana_lc(X)  :-
-    ana_b(X),
-    member(modes=M, X),
-    M \== none.
+guard custo_fixpoint_ana_lc(X)  :-
+    custo_fixpoint(X), % TODO: added
+    ana_or_check(X),
+    member(modes=M, X), M \== none.
 
 :- if(defined(has_ciaopp_extra)).
-guard para_menu(X) :-
+guard paral(X) :-
     member(inter_all=I, X),
     member(inter_optimize=I2, X),
     I  == optimize,
     I2 == parallelize.
 :- endif.
 
-guard ana_pp(X) :- ana_b(X).
+guard ana_or_check_or_paral(X) :- ana_or_check(X).
 :- if(defined(has_ciaopp_extra)).
-guard ana_pp(X) :- para_menu(X).
+guard ana_or_check_or_paral(X) :- paral(X).
 :- endif.
 
-guard ana_pp1(X) :-
-    ana_b(X).
+guard ana_or_check_or_paral_uoudg(X) :-
+    ana_or_check(X).
 :- if(defined(has_ciaopp_extra)).
-guard ana_pp1(X) :-
-    para_menu(X),
+guard ana_or_check_or_paral_uoudg(X) :-
+    paral(X),
     member(para_ann=Y, X),
     (Y == uoudg).  %  ; Y == uudg ; Y == disjwait).
 :- endif.
 
-guard ana_pp2(X) :-
-    ana_b(X).
+guard ana_or_check_or_paral_gr(X) :-
+    ana_or_check(X).
 :- if(defined(has_ciaopp_extra)).
-guard ana_pp2(X) :-
-    para_menu(X),
-    member(para_grain = Y, X),
+guard ana_or_check_or_paral_gr(X) :-
+    paral(X),
+    member(para_grain=Y, X),
     Y == gr.
 :- endif.
 
@@ -839,6 +868,14 @@ anaepar(ana).
 :- if(defined(has_ciaopp_extra)).
 anaepar(para(1)).
 :- endif.
+
+% in which menus to show all output options
+moutput(X,ana(X)).
+moutput(X,check(X)).
+moutput(X,opt(X)).
+
+mfixpo(ana).
+mfixpo(check).
 
 lt(X, ana(X)).
 lt(X, check(X)).
@@ -1162,7 +1199,12 @@ pop_flags([]).
 % ---------------------------------------------------------------------------
 % auto_*/? predicates
 
-do_output(OFile) :- ( var(OFile) -> output ; output(OFile) ).
+do_output(OFile, Menu) :-
+    get_menu_flag(Menu,menu_output,Output),
+    ( Output == on ->
+        ( var(OFile) -> output ; output(OFile) )
+    ; true
+    ).
 
 :- push_prolog_flag(multi_arity_warnings, off).
 
@@ -1178,36 +1220,17 @@ auto_analyze(File) :-
       @var{OFile}.".
 
 auto_analyze(File, OFile) :-
-    \+ (
-        get_menu_flag(ana, mnu_modules_to_analyze, current),
-        get_menu_flag(ana, ext_policy, assertions)
-    ),
-    !,
-    with_menu_flags(ana, auto_analyze_intermod(File, OFile)).
-auto_analyze(File, OFile) :-
     with_menu_flags(ana, auto_analyze_(File, OFile)).
 
 auto_analyze_(File, OFile) :-
     module(File),
-    get_menu_flag(ana, inter_ana, LIST) ,
-    exec_analysis_list(LIST, ana),
+    get_menu_flag(ana, inter_ana, Analyses),
+    exec_analysis_list(Analyses, ana),
     %
-    get_menu_flag(ana, vers, VERS) ,
-    ( VERS == on -> transform(vers) ; true ),
+    get_menu_flag(ana, vers, Vers) ,
+    ( Vers == on -> transform(vers) ; true ),
     %
-    do_output(OFile),
-    set_last_file(File).
-
-auto_analyze_intermod(File, OFile) :-
-    get_menu_flag(ana, inter_ana, LIST) ,
-    exec_mod_analysis_list(LIST, File, ana),
-    %% After the analysis, the current module must be analyzed again to do output/0-1.
-    module(File),
-    push_pp_flag(intermod,on),
-    exec_analysis_list(LIST, ana),
-    pop_pp_flag(intermod),
-    do_output(OFile),
-    %%
+    do_output(OFile, ana),
     set_last_file(File).
 
 :- pred auto_check_assert(F)
@@ -1264,6 +1287,7 @@ auto_check_assert_(File, OFile) :-
 %% checking the whole program (incremental modular ctchecking).
 %% In that case, checks it in order to show the resulting buffer.
 ctcheck_open_module_if_not_ctchecked(File,LIST,ANYERROR):-
+    current_pp_flag(intermod,on), % TODO: correct? (JF)
     ( current_pp_flag(mnu_modules_to_analyze,all)
     ; current_pp_flag(ct_modular,all)
     ),
@@ -1271,17 +1295,19 @@ ctcheck_open_module_if_not_ctchecked(File,LIST,ANYERROR):-
     get_modules_analyzed(ModList),
     \+ member(Base,ModList),
     !,
+    push_pp_flag(intermod,off), % TODO: correct? (JF)
     push_pp_flag(mnu_modules_to_analyze,current),
     push_pp_flag(ct_modular,curr_mod),
     exec_analysis_list_acheck(File,LIST,ANYERROR),
+    pop_pp_flag(ct_modular),
     pop_pp_flag(mnu_modules_to_analyze),
-    pop_pp_flag(ct_modular).
+    pop_pp_flag(intermod). % TODO: correct? (JF)
 ctcheck_open_module_if_not_ctchecked(_File,_LIST,_ANYERROR).
 
 continue_auto_assert_ctchecks(Err,_,OFile,_):-
     Err == error, !,
     error_message("Errors detected. Further preprocessing aborted."),
-    decide_output(OFile).
+    do_output(OFile, check).
 continue_auto_assert_ctchecks(_ANYERROR,File,OFile,GENCERT):-
     ( GENCERT==on ->
        atom_concat(File,'.cert',Cert_Name),
@@ -1293,22 +1319,19 @@ continue_auto_assert_ctchecks(_ANYERROR,File,OFile,GENCERT):-
        pplog(auto_interface, ['{certificate saved in ', ~~(T), ' msec.}\n}'])
     ; true
     ),
-    decide_output(OFile).
+    do_output(OFile, check).
 %       get_menu_flag(check, optim_comp, OPTIMCOMP),
 %       ( OPTIMCOMP == none ->
 %           decide_output(OFile)
 %       ; optim_comp(OPTIMCOMP)
 %       ).
 
-decide_output(OFile) :-
-    current_pp_flag(ctchecks_output, on), !,
-    do_output(OFile).
-decide_output(_).
-
 % ana = current module, ct check = current module
 exec_analysis_list_acheck(File,LIST,ANYERROR) :-
-    current_pp_flag(mnu_modules_to_analyze,current),
-    current_pp_flag(ct_modular,curr_mod),!,
+    current_pp_flag(intermod,off), % TODO: correct? (JF)
+    %current_pp_flag(mnu_modules_to_analyze,current),
+    %current_pp_flag(ct_modular,curr_mod),
+    !,
     ( current_pp_flag(assert_ctcheck,auto) ->
         true
     ; module(File)
@@ -1317,25 +1340,28 @@ exec_analysis_list_acheck(File,LIST,ANYERROR) :-
     exec_analysis_list_acheck_11(LIST, CT_ext_policy ,ANYERROR).
 % ana = current module, ct check = all
 exec_analysis_list_acheck(File,LIST,ANYERROR) :-
+    % assume: current_pp_flag(intermod,on), % TODO: correct? (JF)
     current_pp_flag(mnu_modules_to_analyze,current),
     current_pp_flag(ct_modular,all),!,
     current_pp_flag(ct_ext_policy, CT_ext_policy),
     exec_analysis_list_acheck_1n(File, LIST, CT_ext_policy,ANYERROR).
 % ana = all, ct checking = all
 exec_analysis_list_acheck(File,LIST,ANYERROR) :-
+    % assume: current_pp_flag(intermod,on), % TODO: correct? (JF)
     current_pp_flag(mnu_modules_to_analyze,all),
     current_pp_flag(ct_modular,all),!,
-    push_pp_flag(intermod,on),
+    % push_pp_flag(intermod,on), % TODO: already on (JF)
     current_pp_flag(ct_ext_policy, CT_ext_policy),
     exec_mod_ct_x(LIST,File,auto,CT_ext_policy,ANYERROR),
     get_concrete_analyses(LIST,Anals),
     ( current_pp_flag(interleave_an_check,off) ->
         auto_ctcheck_summary(Anals,~maybe_main(File),ANYERROR)
     ; true
-    ),
-    pop_pp_flag(intermod).
+    ).
+    % pop_pp_flag(intermod).
 % Intermodular analysis (all), but CT one module
 exec_analysis_list_acheck(File,LIST,ANYERROR) :-
+    % assume: current_pp_flag(intermod,on), % TODO: correct? (JF)
     current_pp_flag(mnu_modules_to_analyze,all),
     current_pp_flag(ct_modular,curr_mod),
     current_pp_flag(ct_ext_policy, CT_ext_policy),
@@ -1345,19 +1371,20 @@ exec_analysis_list_acheck(File,LIST,ANYERROR) :-
 
 % one module analysis and one module checking.
 exec_analysis_list_acheck_11(LIST, assertions,ANYERROR):- !,
-    push_pp_flag(intermod,off),
+    % push_pp_flag(intermod,off), % TODO: already off (JF)
     exec_analysis_list(LIST, check),
-    acheck_summary(ANYERROR),
-    pop_pp_flag(intermod).
+    acheck_summary(ANYERROR).
+    % pop_pp_flag(intermod). % TODO: already off (JF)
 exec_analysis_list_acheck_11(LIST, registry, ANYERROR):-
-    push_pp_flag(intermod,on),
-    push_pp_flag(entry_policy,force),
-    push_pp_flag(success_policy,over_all), % !!! all/botall ?
-    exec_analysis_list(LIST, check),
-    acheck_summary(ANYERROR),
-    pop_pp_flag(entry_policy),
-    pop_pp_flag(success_policy),
-    pop_pp_flag(intermod).
+    throw(bug_not_allowed(exec_analysis_list_acheck_11(LIST, registry, ANYERROR))). % TODO: remove this code? it should not be possible
+    % push_pp_flag(intermod,on),
+    % push_pp_flag(entry_policy,force),
+    % push_pp_flag(success_policy,over_all), % !!! all/botall ?
+    % exec_analysis_list(LIST, check),
+    % acheck_summary(ANYERROR),
+    % pop_pp_flag(entry_policy),
+    % pop_pp_flag(success_policy),
+    % pop_pp_flag(intermod).
 
 % one module analysis and all modules checking.
 exec_analysis_list_acheck_1n(File, LIST, assertions,ANYERROR) :- !,
@@ -1570,7 +1597,7 @@ exec_optimize_and_output(P, OFile) :-
     exec_optimize(P),
     ( nonvar(P), own_output(P) ->
         true
-    ; do_output(OFile)
+    ; do_output(OFile, opt)
     ).
 
 own_output(_) :- fail. % (default)
@@ -1578,49 +1605,25 @@ own_output(_) :- fail. % (default)
 own_output(poly_spec). % TODO: poly_spec performs its own output
 :- endif.
 
-exec_mod_analysis_list(L, File, AnaOrCheck) :-
-    get_domain_list(L,AnaOrCheck,DomList,NoValid),
-    mod_analyze(DomList, File),
-    (
-        NoValid = [_|_] ->
-        error_message("Modular analysis not available for the following domains: ~w",
-                           [NoValid])
-    ;
-        true
-    ).
-
-get_domain_list([],_,[],[]).
-get_domain_list([L|Ls],AnaOrCheck,Ds,Ns):-
-    get_menu_flag(AnaOrCheck, L, none),  %No analysis to perform.
-    !,
-    get_domain_list(Ls,AnaOrCheck,Ds,Ns).
-get_domain_list([L|Ls],AnaOrCheck,[D|Ds],Ns):-
-    get_menu_flag(AnaOrCheck, L, D),
-    valid_mod_analysis(D), % Valid modular analysis domain.
-    !,
-    get_domain_list(Ls,AnaOrCheck,Ds,Ns).
-get_domain_list([L|Ls],AnaOrCheck,Ds,[L|Ns]):-
-    get_domain_list(Ls,AnaOrCheck,Ds,[Ns]). % Non-valid modular analysis domain.
-
-mod_analyze(Domain, File) :-
-    current_pp_flag(ext_policy, ExtPolicy),
-    entry_policy_value(ExtPolicy,EP),
-    with_pp_flags([entry_policy = EP], mod_analyze_(File, Domain)).
+% TODO: not used anymore (JF)
+% get_domain_list([],_,[],[]).
+% get_domain_list([L|Ls],AnaOrCheck,Ds,Ns):-
+%     get_menu_flag(AnaOrCheck, L, none),  %No analysis to perform.
+%     !,
+%     get_domain_list(Ls,AnaOrCheck,Ds,Ns).
+% get_domain_list([L|Ls],AnaOrCheck,[D|Ds],Ns):-
+%     get_menu_flag(AnaOrCheck, L, D),
+%     valid_mod_analysis(D), % Valid modular analysis domain.
+%     !,
+%     get_domain_list(Ls,AnaOrCheck,Ds,Ns).
+% get_domain_list([L|Ls],AnaOrCheck,Ds,[L|Ns]):-
+%     get_domain_list(Ls,AnaOrCheck,Ds,[Ns]). % Non-valid modular analysis domain.
 
 entry_policy_value(assertions,force_assrt).
 entry_policy_value(registry,top_level).
 
 % success_policy_value(assertions,top).
 % success_policy_value(registry,under_all).
-
-mod_analyze_(_File, Domain):-
-    current_pp_flag(mnu_modules_to_analyze,all),
-    current_prolog_flag(main_module,Main),
-    Main \== '',
-    !,
-    modular_analyze(Domain, Main).
-mod_analyze_(File, Domain):-
-    modular_analyze(Domain, File).
 
 exec_analysis_list([A|B], AnaOrCheck) :-
     get_menu_flag(AnaOrCheck, A, none),

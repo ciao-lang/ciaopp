@@ -154,8 +154,8 @@ pp_flag(dump_ext, 'No Help Available').
 current_pp_flags(  dump_ext   , all ).
 valid_flag_values( dump_ext   , member( _  , [all, int  , iter ] ) ).
 
-pp_flag(inter_all).
-pp_flag(inter_all, 'Select which high-level action the preprocessor will perform.').
+pp_flag(inter_all). % only for menu
+pp_flag(inter_all, 'Select which high-level action of the preprocessor.').
 current_pp_flags(  inter_all          , analyze ).
 valid_flag_values( inter_all          , member( _ , 
                                             [
@@ -164,8 +164,8 @@ valid_flag_values( inter_all          , member( _ ,
                                              check_certificate,
                                              optimize] ) ).
 
-pp_flag(inter_ana).
-pp_flag(inter_ana, 'No Help Available').
+pp_flag(inter_ana). % only for menu
+pp_flag(inter_ana, 'Select high-level analyses.').
 current_pp_flags(  inter_ana          , [types,modes,ana_num,ana_nf,ana_det,ana_cost]   ).
 valid_flag_values( inter_ana          , sublist2( _ , [
                                                    types,
@@ -243,6 +243,17 @@ pp_flag(menu_config_name). % only menu
 pp_flag(menu_config_name, 'Name of the last menu stored configuration.').
 current_pp_flags(  menu_config_name   , none ).
 valid_flag_values( menu_config_name   , atom( _ ) ).
+
+pp_flag(menu_output). % only menu
+pp_flag(menu_output, 'Whether to generate output.').
+current_pp_flags(  menu_output   , on ).
+valid_flag_values( menu_output   , member( _ , [on,off] ) ).
+
+pp_flag(menu_fixpo). % only menu
+pp_flag(menu_fixpo, 'Customize fixpoint.').
+current_pp_flags(  menu_fixpo   , on ).
+valid_flag_values( menu_fixpo   , member( _ , [on,off] ) ).
+
 
 pp_flag(check_config_ana). % only menu
 pp_flag(check_config_ana, 'Decides whether to configure analysis flags or not.').
@@ -548,13 +559,13 @@ valid_flag_values( reuse_fixp_id      , member(_,[off,on])).
 pp_flag(intermod).
 pp_flag(intermod, 'Whether to apply inter-modular analysis techniques, such as recovering previous analysis info from related modules.').
 current_pp_flags(  intermod     , off).
-valid_flag_values( intermod     , member(_, [off,on,auto])).
+valid_flag_values( intermod     , member(_, [off,on,auto])). % TODO: document 'auto' as pp_flag value (not used in menu flag)
 
 %% Menu options to select the modules to analyze in intermodular analysis
 pp_flag(mnu_modules_to_analyze).
 pp_flag(mnu_modules_to_analyze, 
  'Selects which modules are to be analyzed during intermodular analysis.').
-current_pp_flags(  mnu_modules_to_analyze, current).
+current_pp_flags(  mnu_modules_to_analyze, all).
 valid_flag_values( mnu_modules_to_analyze, member(_, [current,all])).
 
 %% print assertions in low-level format
@@ -898,12 +909,6 @@ pp_flag(multivariant_ctchecks).
 pp_flag(multivariant_ctchecks, 'Whether to use multivariant analysis info while CT checking at predicate level.').
 current_pp_flags( multivariant_ctchecks  , off ).
 valid_flag_values(multivariant_ctchecks  , member(_,[off,on])).
-
-pp_flag(ctchecks_output).
-pp_flag(ctchecks_output, 'Whether to generate output after CT checking.').
-current_pp_flags( ctchecks_output  , off ).
-valid_flag_values(ctchecks_output  , member(_,[off,on])).
-
 
 pp_flag(run_diagnosis).
 pp_flag(run_diagnosis, 'Whether to start diagnosis at program-point CT checking.').
