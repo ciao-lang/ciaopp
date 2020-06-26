@@ -79,7 +79,6 @@ add_all_clauses_([clause(Head,LBody)|Clauses],NF,A,[Cl|NewClauses]):-
     Cl = clause(NHead,Body),
     add_all_clauses_(Clauses,NF,A,NewClauses).
 
-
 :- doc(orig_predicate_names(Names), "@var{Names} is the list of
      predicates in the original program.").
 
@@ -103,5 +102,3 @@ collect_one_orig_clause(L,clause(Head,Body),Counter):-
     orig_clause(Head,Body,Counter),
     \+ \+ (L = Head),
     inc_derivation_steps(1).
-
-

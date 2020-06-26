@@ -50,7 +50,6 @@ useless_clause(clause(Head,_),AbsInt,Sg,Sv,Proj):-
     call_to_entry(AbsInt,Sv,Sg,Hv,Head,not_provided,[],Proj,Entry,_), % TODO: add some ClauseKey? (JF)
     bottom([Entry]).
 
-
 :- pred check_not_useless_pre(Clause,AbsInt,Sg,Sv,Proj) # "If this
     predicate fails, this particular clause is useless and can be
     removed. If removal of useless clauses has not been selected,

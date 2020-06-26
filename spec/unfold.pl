@@ -1,13 +1,8 @@
-:- module(unfold,
-    [unfold/10,
-     unf_int/11
-    ],[]).
+:- module(unfold, [unfold/10, unf_int/11],[assertions]).
 
 %:- use_package(.(nomem_usage)).
 :- use_package(.(nounfold_stats)).
 :- use_package(.(no_debug)).
-
-:- use_package(assertions).
 
 :- doc(title,"A Partial Evaluator Integrated with Abstract Interpretation").
 
@@ -32,13 +27,8 @@
    rule was fixed to leftmost since the beginning.  (Elvira Albert)").
 
 :- use_module(spec(unfold_local), [select_atom/9]).
-:- use_module(spec(sp_clauses), 
-    [ add_all_clauses/4,
-      collect_orig_clauses/2
-    ]).
-:- use_module(spec(unfold_builtins), 
-    [can_be_evaluated/1,
-     has_cuts/2]).
+:- use_module(spec(sp_clauses), [add_all_clauses/4, collect_orig_clauses/2]).
+:- use_module(spec(unfold_builtins), [can_be_evaluated/1, has_cuts/2]).
 :- use_module(spec(homeo_emb), [homeomorphic_embedded/2]).
 :- use_module(spec(abs_exec), [abs_exec/4]).
 :- use_module(spec(unfold_operations), 
@@ -53,8 +43,7 @@
       decide_remove_useless_post/6,
       check_not_useless_post/5
     ]).
-:- use_module(spec(mem_usage), 
-    [readjust_max_mem_usage/0, update_mem_usage/0]).
+:- use_module(spec(mem_usage), [readjust_max_mem_usage/0, update_mem_usage/0]).
 :- use_module(spec(unfold_times), 
     [global_time_ellapsed/3,
      increment_unfold_time/1,
@@ -70,10 +59,7 @@
     [first_components/2,
      second_components/2
     ]).
-:- use_module(spec(spec_support), 
-    [
-        non_static/1
-    ]).
+:- use_module(spec(spec_support), [non_static/1]).
 :- use_module(spec(ch_trees), [add_ch_tree/2]).
 :- use_module(spec(debug_write_atoms)).
 :- use_module(ciaopp(preprocess_flags), [current_pp_flag/2]).
@@ -135,24 +121,21 @@ write_body((A,B)):-!,
 write_body(A):-
     debug_write_atom(A), debug_write_nl('.').
 
-
-    
-
 unf_int(df_tree_hom_emb,SelRule,Sg,Sv,Proj,AbsInt,Id,_F,_A,UnfClauses0,ChTree):-!,
     perform_unfolding_depth_tree(SelRule,AbsInt,Sg,Sv,Proj,Id,UnfClauses0,ChTree).
-
+%
 unf_int(df_hom_emb,SelRule,Sg,Sv,Proj,AbsInt,Id,_F,_A,UnfClauses0,ChTree):-!,
     perform_unfolding_depth_hom_emb(SelRule,AbsInt,Sg,Sv,Proj,Id,UnfClauses0,ChTree).
-
+%
 unf_int(df_hom_emb_as,SelRule,Sg,Sv,Proj,AbsInt,Id,_F,_A,UnfClauses0,ChTree):-!,
     perform_unfolding_depth(SelRule,AbsInt,Sg,Sv,Proj,Id,UnfClauses0,ChTree).
-
+%
 unf_int(df_hom_emb_as_orig,SelRule,Sg,Sv,Proj,AbsInt,Id,_F,_A,UnfClauses0,ChTree):-!,
     perform_unfolding_depth_orig(SelRule,AbsInt,Sg,Sv,Proj,Id,UnfClauses0,ChTree).
-
+%
 unf_int(decompile,SelRule,Sg,Sv,Proj,AbsInt,Id,_F,_A,UnfClauses0,ChTree):-!,
     perform_unfolding_decompile(SelRule,AbsInt,Sg,Sv,Proj,Id,UnfClauses0,ChTree).
-
+%
 unf_int(Unfold,SelRule,Sg,Sv,Proj,AbsInt,Id,F,A,UnfClauses0,ChTree):-
     collect_definition(Unfold,F,A,Sg,Clauses_Paths),
     first_components(Clauses_Paths,Clauses),
@@ -268,8 +251,6 @@ perform_unfolding_depth_hom_emb(SelRule,AbsInt,Sg,Sv,Proj,Id,UnfClauses,ChTree):
     second_components(UnfClauses_Chtree,Chtree),
     return_or_assert_chtree(Chtree,Id,ChTree).
 
-
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%               DETERMISTIC UNFOLDING               %%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -318,7 +299,6 @@ unfold_deterministically_in_k_steps(SelRule,K,Clauses,AbsInt,UnfClauses,Chtree_i
         unfold_deterministically_in_k_steps(SelRule,K1,TmpClauses,AbsInt,UnfClauses,Chtree_tmp,Chtree_f)
     ).
 
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%              FIRST SOLUTION UNFOLDING             %%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -331,7 +311,6 @@ unfold_first_sol(SelRule,Clauses,AbsInt,UnfClauses,Chtree_i,Chtree_f):-
     ;
         unfold_all_clauses_one_step(SelRule,Clauses,AbsInt,UnfClauses1Step,Chtree_i,Chtree_tmp),
         unfold_first_sol(SelRule,UnfClauses1Step,AbsInt,UnfClauses,Chtree_tmp,Chtree_f)).
-
 
 unfold_first_sol_or_depth(_SelRule,[],_AbsInt,[],_,[],[]):-!.
 unfold_first_sol_or_depth(_SelRule,Clauses,_AbsInt,UnfClauses,0,Chtree,Chtree):-!,
@@ -380,7 +359,6 @@ unfold_depthk(SelRule,Clauses,AbsInt,UnfClauses,K,Chtree_i,Chtree_f):-
 %%%%          COMMON CODE TO THE ABOVE STRATEGIES      %%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-
 unfold_all_clauses_one_step(_SelRule,[],_AbsInt,[],[],[]).
 unfold_all_clauses_one_step(SelRule,[Cl|Clauses],AbsInt,Result,[P|Ps],Chtree):-
     unfold_one_step(SelRule,Cl,AbsInt,Result,MoreClauses,P,Chtree,MoreChtree),
@@ -428,8 +406,6 @@ unfold_one_step(SelRule,clause(Sg,Body),AbsInt,NCls,Cont,P-X,Cht,Cht_cont):-
         )
     ).
 
-
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%     NAIVE UNFOLDING WITH EMBEDDING        %%% 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -448,7 +424,6 @@ unfold_hom_emb(SelRule,Clauses,Atoms,AbsInt,UnfClauses,Chtree_i,Chtree_f):-
     ;
         unfold_all_clauses_with_atoms(SelRule,Clauses,Atoms,AbsInt,UnfClauses1Step,NewAtoms,Chtree_i,Chtree_tmp),
         unfold_hom_emb(SelRule,UnfClauses1Step,NewAtoms,AbsInt,UnfClauses,Chtree_tmp,Chtree_f)).
-
 
 unfold_all_clauses_with_atoms(_SelRule,[],[],_AbsInt,[],[],[],[]).
 unfold_all_clauses_with_atoms(SelRule,[Cl|Clauses],[A|As],AbsInt,NClauses,NAtoms,[P|Ps],Chtree):-
@@ -480,7 +455,7 @@ unfold_one_step_with_atoms(SelRule,clause(Sg,Body),A,_AbsInt,NCls,Cl_Cont,NAs,As
     NCls = [residual(clause(Sg,SBody))|Cl_Cont],
     NAs = [A|As_Cont],
     Cht = [P-[]|Cht_cont].
-
+%
 unfold_one_step_with_atoms(SelRule,clause(Sg,Body),A,AbsInt,NCls,Cl_Cont,NAs,As_Cont,P-X,Cht,Cht_cont):-
     select_atom(SelRule,Sg,none,Susp,Body,NewBody,A,_Emb,Lit),
     (NewBody = [] ->
@@ -520,7 +495,6 @@ unfold_one_step_with_atoms(SelRule,clause(Sg,Body),A,AbsInt,NCls,Cl_Cont,NAs,As_
             Cht = [P-X|Cht_cont]
         )
     ).
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%     NAIVE UNFOLDING WITH EMBEDDING AND ANCESTORS       %%% 
@@ -647,14 +621,12 @@ unfold_one_step_with_atoms_A_no_path(SelRule,clause(Sg,Body),AbsInt,NCls,Cl_Cont
           )
     ).
 
-
 form_rules_A([],_,_,[]).
 form_rules_A([C2|Clauses],C,Atom,[C3|RClauses]):-
     copy_term(C,C1),
     form_one_rule_A(C1,C2,Atom,C3),
     form_rules_A(Clauses,C,Atom,RClauses).
-
-
+%
 form_one_rule_A(clause(Sg,[(L,L1)|R]),clause(L,Body), Atom, clause(Sg,NBody)):-
     update_ancestors(Body,(Atom,L1),ABody),
     append(ABody,R,NBody).
@@ -698,11 +670,9 @@ peel_residual_A([Cl|Clauses],[NCl|NClauses]):-
     NCl = clause(Head,Body),
     peel_residual_A(Clauses,NClauses).
 
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%       EFFICIENT   UNFOLDING WITH EMBEDDING BASED ON STACKS       %% 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 
 unfold_hom_emb_local_as(_SelRule,[],_,_AbsInt,[],[],[]):-!.
 unfold_hom_emb_local_as(SelRule,Clauses,Atoms,AbsInt,UnfClauses,Chtree_i,Chtree_f):-
@@ -787,8 +757,6 @@ unfold_one_step_with_atoms_local(SelRule,clause(Sg,Body),A,AbsInt,NCls,Cl_Cont,N
         )
     ).
 
-
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%     COMMON CODE TO ALL ABOVE STRATEGIES   %%% 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -817,7 +785,6 @@ form_rules_with_susp([C2|Clauses],Susp,C,[C3|RClauses],Cont):-
   predicate. Requests to unfold a call to a predicate not defined in
   the current module and for which @pred{can_be_evaluated(L)} fails,
   finish with failure.").
-
 
 unfold_literal_if_possible(L,AbsInt,_UnfClauses,_Clids):-
     update_mem_usage,
@@ -874,11 +841,6 @@ unfold_literal_if_possible(L,_AbsInt,UnfClauses,Clids):-
     first_components(UnfClauses_paths,UnfClauses),
     second_components(UnfClauses_paths,Clids).
 
-
-
-
-
-
 create_dicts_and_recs([],[],[]).
 create_dicts_and_recs([Cl|Clauses],[D|Ds],[r|Rs]):-
     create_pretty_dict(Cl,D),
@@ -931,11 +893,9 @@ peel_residual_l([Cl|Clauses],[NCl|NClauses]):-
     filter_pops(Body,NBody),
     peel_residual_l(Clauses,NClauses).
 
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%             CODE SPECIFIC FOR CHTREES             %%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 
 :- pred initial_chtree(+,-) #"Given a list of clause ids, it generates
 an initial chtree having incomplete characteristics paths (expressed
@@ -946,15 +906,12 @@ initial_chtree([],[]).
 initial_chtree([Id|Ids],[[(1:Id)|X]-X|T1]):-
     initial_chtree(Ids,T1).
 
-
 :- pred close_chtree(Tree) #"Closes a chtree having incomplete
 characteristic paths".
 
 close_chtree([]).
 close_chtree([_-[]|T]):-
     close_chtree(T).
-
-
 
 :- pred diff_to_reg(+,-) #"Transforms difference lists into regular lists".
 
@@ -975,7 +932,6 @@ copy_paths([Id|Ids],Lit,Path-Y,[NPath-X|T]):-
     append(Path1,[(Lit:Id)|X],NPath),!,
     copy_paths(Ids,Lit,Path-Y,T).
 
-
 :- pred external_clids(+,?,-) # "Given a list of external calls, it returns a
 list of their corresponding IDs".
 
@@ -984,7 +940,6 @@ external_clids([clause(L,[])|T],L_call,[Id|R]):-
     minimal_unif(L_call,L,Bindings),
     Id = (L_call,Bindings),
     external_clids(T,L_call,R).
-
 
 :- pred return_or_assert_chtree(+Paths,+,-) 
     # "Characteristic tree @var{Paths} is asserted or returned
@@ -1000,4 +955,3 @@ return_or_assert_chtree(Paths,Id,ChTree) :-
         ;
             add_ch_tree(Id,Paths))
     ).
-
