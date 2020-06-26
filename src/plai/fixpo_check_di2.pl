@@ -24,7 +24,6 @@
 :- include(.(fixpo_dx_check_common)).
 
 :- use_module(library(messages), [error_message/1]).
-
 :- use_module(library(lists), [member/2]).
 
 %------------------------------------------------------------------------%
@@ -40,10 +39,9 @@
 
 :- doc(init_fixpoint/0,"Cleanups the database of analysis of
     temporary information.").
-
 init_fixpoint:-
     trace_fixp:cleanup,
-    set_pp_flag(widen,off).
+    set_pp_flag(widen,off). % TODO: fix!
 
 %------------------------------------------------------------------------%
 % call_to_success(+,+,+,+,+,+,-,-,+,+)                                   %
@@ -68,7 +66,6 @@ call_to_success(SgKey,Call,Proj,Sg,Sv,AbsInt,_ClId,Succ,F,N,Id) :-
 call_to_success(SgKey,Call,Proj,Sg,Sv,AbsInt,ClId,Succ,F,N,Id) :-
     init_fixpoint0(SgKey,Call,Proj,Sg,Sv,AbsInt,ClId,F,N,Id,Prime),
     each_extend(Sg,Prime,AbsInt,Sv,Call,Succ).
-
 
 reuse_complete(Ref,SgKey,Proj,Sg,AbsInt,F,N,Id,Fs,Prime1,Prime):-
     each_abs_sort(Prime1,AbsInt,Prime),
@@ -114,8 +111,8 @@ init_fixpoint_(SgKey,_Call,Proj,Sg,Sv,AbsInt,ClId,F,N,Id,LPrime) :-
     (each_identical_abstract(LPrime,AbsInt,TmpPrime) ->
         true
     ;
-        error_message("certificate check failed: wrong analysis results due to trusts")).
-
+        error_message("certificate check failed: wrong analysis results due to trusts")
+    ).
 init_fixpoint_(SgKey,_Call,_Proj,_Sg,_Sv,_AbsInt,ClId,_F,_N,_Id,Bot) :-
     bottom(Bot),
     inexistent(SgKey,ClId).
@@ -207,7 +204,6 @@ body_succ(Call,Atom,Succ,HvFv_u,AbsInt,ClId,ParentId,Id):-
     fixpoint_trace('exit goal',Id,ParentId,(SgKey,Key),Sg,Succ,AbsInt).
 %check2 decide_memo(AbsInt,Key,ParentId,Id,HvFv_u,Call).
 %%      change_son_if_necessary(Id,Key,ParentId,HvFv_u,Call,AbsInt).
-
 
 % change_son_if_necessary(no,_,_,_,_,_):-!.
 % change_son_if_necessary(NewId,Key,NewN,Vars_u,Call,AbsInt):-

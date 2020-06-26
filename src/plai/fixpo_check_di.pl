@@ -27,7 +27,6 @@
                             each_identical_abstract/3]).
 
 :- use_module(library(messages), [error_message/1]).
-
 :- use_module(library(lists), [member/2]).
 
 %------------------------------------------------------------------------%
@@ -208,7 +207,6 @@ body_succ(Call,Atom,Succ,HvFv_u,AbsInt,ClId,ParentId,Id):-
     fixpoint_trace('exit goal',Id,ParentId,(SgKey,Key),Sg,Succ,AbsInt),
     decide_memo(AbsInt,Key,ParentId,Id,HvFv_u,Call).
 %%      change_son_if_necessary(Id,Key,ParentId,HvFv_u,Call,AbsInt).
-
 
 % change_son_if_necessary(no,_,_,_,_,_):-!.
 % change_son_if_necessary(NewId,Key,NewN,Vars_u,Call,AbsInt):-

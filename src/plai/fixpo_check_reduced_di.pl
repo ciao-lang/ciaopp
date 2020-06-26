@@ -46,7 +46,6 @@
 
 :- doc(init_fixpoint/0,"Cleanups the database of analysis of
     temporary information.").
-
 init_fixpoint:-
     trace_fixp:cleanup,
     set_pp_flag(widen,off). %this should be done everytime, right? GP
@@ -343,6 +342,7 @@ widen_call2(AbsInt,SgKey,Sg,F1,_Id,_Ids,Proj1,Proj):-
 
 query(AbsInt,QKey,Query,Qv,_RFlag,N,Call,Succ) :-
     push_pp_flag(widencall,off),
+    % TODO: IG why not remove the widencall code from this fixpoint?
     project(AbsInt,Query,Qv,Qv,Call,Proj),
     fixpoint_trace('init fixpoint',N,N,QKey,Query,Proj,_),
     call_to_success(QKey,Call,Proj,Query,Qv,AbsInt,0,Succ,N,0,_Id),
