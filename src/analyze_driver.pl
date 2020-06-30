@@ -139,7 +139,7 @@ analysis(Analysis) :- lazy_analysis(Analysis), !.
 % (support for incremental analysis)
 :- use_module(ciaopp(plai/incanal), [incremental_analyze/2]).
 % (support for intermodular analysis)
-:- use_module(ciaopp(plai/intermod), [modular_analyze/3, cleanup_intermod/0]).
+:- use_module(ciaopp(plai/intermod), [intermod_analyze/3, cleanup_intermod/0]).
 :- endif. % with_fullpp
 
 :- if(defined(with_fullpp)).
@@ -181,7 +181,7 @@ analyze(Analysis,Info):-
     \+ current_pp_flag(intermod, off), !,
     % push_pp_flag(entry_policy,force),  %% needed for generating proper output!
     curr_file(File,_),
-    modular_analyze(Analysis,File,Info).
+    intermod_analyze(Analysis,File,Info).
     %       pop_pp_flag(entry_policy)
 :- endif. % with_fullpp
 analyze(Analysis,Info):-
@@ -210,7 +210,7 @@ analyze1(Analysis,Info):-
     ),
     pplog(analyze_module, [~~(Header),~~(File)]),
     program(Cls,Ds),
-    push_history(Analysis), % TODO: check that this does not break modular_analyze
+    push_history(Analysis), % TODO: check that this does not break intermod_analyze
     analyze_(Analysis,Cls,Ds,Info,step1), % TODO:[new-resources] are two steps really needed? (JF)
     assert_domain(Analysis),
     pplog(analyze_module, ['}']),

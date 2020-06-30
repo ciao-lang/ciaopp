@@ -5,12 +5,12 @@
         set_top_level/1,
         valid_mod_analysis/1,
         set_modules_analyzed/1,
-        modular_analyze/2,
-        modular_analyze/3,
+        intermod_analyze/2,
+        intermod_analyze/3,
         get_modules_analyzed/1,
 %           manual_analyze/2,
 %           manual_analyze/3,
-%           auto_analyze/3,
+%           modular_analyze/3,
         auto_check/2,
 %           monolithic_analyze/3,
         auto_transform/3,
@@ -51,34 +51,13 @@
 :- use_module(ciaopp(p_unit/itf_db), [curr_file/2, cleanup_itf_db/0]).
 :- use_module(ciaopp(preprocess_flags), [push_pp_flag/2, pop_pp_flag/1, current_pp_flag/2, set_pp_flag/2]).
 
-:- use_module(ciaopp(infer/infer_db), [domain/1]).
-
-:- use_module(ciaopp(frontend_driver), [module/1,module/2,output/1]).
+:- use_module(ciaopp(frontend_driver), [module/1,module/2,output/1,output/0]).
 :- use_module(ciaopp(analyze_driver), [analyze/1,analyze1/2,acheck_summary/1]).
 :- use_module(ciaopp(p_unit), [program/2, replace_program/2]).
 %:- use_module(ciaopp(p_unit/p_asr),[cleanup_p_asr/0]).
 :- use_module(ciaopp(plai/re_analysis), [update_ai_info_case/4]).
 :- use_module(ciaopp(plai), [cleanup_plai/1]).
-:- use_module(ciaopp(p_unit/p_abs),
-    [
-        cleanup_p_abs/0,
-        cleanup_p_abs_all/0,
-        gen_registry_info/3,
-        gen_registry_info/4,
-        save_registry_info/2,
-        save_registry_info/3,
-        change_open_mode/2,
-        update_spec_info/2,
-        get_spec_info_imported/0,
-        get_modules_to_analyze/3,
-        get_all_modules/2,
-        get_all_modules/3,
-        get_all_module_cycles/2,
-        module_is_processable/1,
-        registry_is_empty/3,
-        get_module_from_sg/2,
-        cleanup_persistent_registry/1
-    ]).
+:- use_module(ciaopp(p_unit/p_abs)).
 
 :- use_module(engine(messages_basic), [message/2]).
 :- use_module(library(sets), [insert/3]).
@@ -87,7 +66,6 @@
 :- use_module(library(aggregates), [findall/3]).
 :- use_module(spec(spec), [simplify_specialize/6]).
 :- use_module(spec(codegen), [codegen/4, codegen_af/4]).
-:- use_module(ciaopp(frontend_driver), [output/1, output/0]).
 :- use_module(ciaopp(plai/plai_db), [complete/7, cleanup_plai_db/1]).
 :- use_module(ciaopp(plai/fixpo_ops), [
     complete_prev/7,
@@ -137,8 +115,8 @@ set_top_level(TopLevel):-
     set_fact(top_level(AbsBase)).
 
 :- pred top_level_module(-TopLevelModule,-TopLevelBase)
-# "@var{TopLevelModule} is the top-level module of the current program
-  unit, and @var{TopLevelBase} is its basename.".
+   #"@var{TopLevelModule} is the top-level module of the current program
+    unit, and @var{TopLevelBase} is its basename.".
 top_level_module(TopLevelModule,TopLevelBase):-
     current_fact(top_level(TopLevelBase)),
     just_module_name(TopLevelBase,TopLevelModule).
@@ -146,8 +124,9 @@ top_level_module(TopLevelModule,TopLevelBase):-
 %%------------------------------------------------------------------
 
 :- pred cleanup_intermod
-# "Cleans up the internal database of the intermodular analysis global
-    level.".
+   #"Cleans up the internal database of the intermodular
+   analysis global level.".
+
 % TODO: this sets some pp_flags. Restrict cleaning to used fixpoints?
 cleanup_intermod:-
     % get widen value
@@ -174,17 +153,6 @@ cleanup_intermod:-
 %% ********************************************************************
 %% Intermodular analysis with manual scheduling.
 %% ********************************************************************
-
-% :- pred manual_analyze(+Analysis,+Module)
-%
-% # "Performs the analysis of @var{Module} in the @var{AbsInt} abstract
-%    domain using the @em{manual} global scheduling.".
-%
-% :- set_prolog_flag(multi_arity_warnings,off).
-%
-% manual_analyze(Analysis,Base):-
-%       manual_analyze(Analysis,Base,_).
-
 :- pred manual_analyze(+Analysis,+FileName,+OpenMode)
 # "Performs the analysis of module @var{FileName} in the @var{AbsInt}
    abstract domain using the @em{manual} global scheduling, and sets
@@ -247,30 +215,28 @@ valid_mod_analysis(Analysis):-
 %% ********************************************************************
 %% Intermodular analysis.
 %% ********************************************************************
-modular_analyze(Analysis,TopLevel):-
-    modular_analyze(Analysis,TopLevel,_Info).
-modular_analyze(Analysis,TopLevel,Info):-
+intermod_analyze(Analysis,TopLevel):-
+    intermod_analyze(Analysis,TopLevel,_Info).
+intermod_analyze(Analysis,TopLevel,Info):-
     set_modules_analyzed([]),
     current_pp_flag(mnu_modules_to_analyze, Mods),
     current_pp_flag(ext_policy, ExtPolicy),
     current_pp_flag(module_loading, LoadPolicy),
-    modular_analyze_(Mods,ExtPolicy,LoadPolicy,Analysis,TopLevel,Info).
+    intermod_analyze_(Mods,ExtPolicy,LoadPolicy,Analysis,TopLevel,Info).
 
-modular_analyze_(current,assertions,_,_Analysis,_TopLevel,_Info):- !,
-    % non-modular analysis!! % IG % TODO: make some warning or throw exception??
-    true.
-modular_analyze_(current,registry,_,Analysis,TopLevel,Info):-
+intermod_analyze_(current,registry,_,Analysis,TopLevel,Info):- !,
     manual_analyze(Analysis,TopLevel,Info).
-modular_analyze_(all,registry,one,Analysis,TopLevel,Info):- !,
-    auto_analyze(Analysis,TopLevel,Info).
-modular_analyze_(all,registry,all,Analysis,TopLevel,Info):- !,
+intermod_analyze_(all,registry,one,Analysis,TopLevel,Info):- !,
+    modular_analyze(Analysis,TopLevel,Info).
+intermod_analyze_(all,registry,all,Analysis,TopLevel,Info):- !,
     monolithic_analyze(Analysis,TopLevel,Info).
-modular_analyze_(all,registry,threshold,_Analysis,_TopLevel,_Info):- !,
+intermod_analyze_(all,registry,threshold,_Analysis,_TopLevel,_Info):- !,
     pplog(modular, ['threshold loading policy not implemented yet.']).
-modular_analyze_(all,registry,threshold_scc,_Analysis,_TopLevel,_Info):- !,
+intermod_analyze_(all,registry,threshold_scc,_Analysis,_TopLevel,_Info):- !,
     pplog(modular, ['threshold_scc loading policy not implemented yet.']).
-modular_analyze_(all,assertions,_LoadPolicy,_Analysis,_TopLevel,_Info):-
-    pplog(modular, ['analyzing all modules without using registry seems to make no sense.']).
+intermod_analyze_(Mods,Ext,Load,_Analysis,_TopLevel,_Info):-
+    pplog(modular, ['Incompatible configuration:~nmnu_modules_to_analyze=',Mods,
+                    '~next_policy=',Ext, '~nmodule_loading=', Load, '~n']).
 
 %% --------------------------------------------------------------------
 
@@ -299,23 +265,23 @@ modules_analyzed([]).
 %% Intermodular analysis with automatic scheduling.
 %% ********************************************************************
 
-:- pred auto_analyze(+AbsInt, +TopLevel, -Info)
-# "Performs the analysis of the program unit for which @var{Module} is
+:- pred modular_analyze(+AbsInt, +TopLevel, -Info)
+   # "Performs the analysis of the program unit for which @var{Module} is
    the top-level module in the @var{AbsInt} abstract domain using an
    @em{automatic} global scheduling. The global scheduling to be
    used is determined by the 'global_scheduling' preprocessing flag.".
-auto_analyze(Analysis,TopLevel,Info):-
+modular_analyze(Analysis,TopLevel,Info):-
     atom(Analysis),!,
-    auto_analyze([Analysis],TopLevel,Info).
-auto_analyze(Analyses,TopLevel,Info):-
+    modular_analyze([Analysis],TopLevel,Info).
+modular_analyze(Analyses,TopLevel,Info):-
     pp_statistics(runtime,[T1,_]),  %% total ellapsed time.
     valid_mod_analysis(Analyses), !,
-    pplog(modular, ['{Analyzing with auto_analyze: ',~~(TopLevel)]),
+    pplog(modular, ['{Analyzing with modular_analyze: ',~~(TopLevel)]),
     reset_mem_usage,
     push_prolog_flag(gc,on), % TODO: why?
     set_top_level(TopLevel),
     push_pp_flag(intermod,auto),
-%%jcf-20.10.2005%       push_pp_flag(entry_policy,top_level),  %%Must be done before calling to auto_analyze
+%%jcf-20.10.2005%       push_pp_flag(entry_policy,top_level),  %%Must be done before calling to modular_analyze
     %%
 %%% retractall_fact(module_times(_)),
     pp_statistics(runtime,[T3,_]),   %% setup time.
@@ -324,7 +290,7 @@ auto_analyze(Analyses,TopLevel,Info):-
     setup_scheduling(Scheduling,Analyses,TopLevel,ModList),
     pp_statistics(runtime,[T4,_]),  %% setup time.
     SetupTime is T4 - T3,
-    auto_analyze_(Scheduling,Analyses,AnInfo),
+    modular_analyze_(Scheduling,Analyses,AnInfo),
 %%% total_module_times,
     save_registry_info(quiet,[time(SaveTime,_)]),
     pp_statistics(runtime,[T2,_]),  %% total ellapsed time.
@@ -470,13 +436,13 @@ add_iterations_info(Info0,[iterations(0,[])|Info0]).
 
 %%------------------------------------------------------------------
 
-auto_analyze_(NaiveSched,Analyses,Info):-
+modular_analyze_(NaiveSched,Analyses,Info):-
     is_naive_scheduling(NaiveSched),
     reset_total_info,
     retractall_fact(there_are_previous_errors),
     do_naive_intermod(Analyses),
     get_total_info(Info).
-auto_analyze_(Scheduling,Analyses,Info):-
+modular_analyze_(Scheduling,Analyses,Info):-
     reset_total_info,
     retractall_fact(there_are_previous_errors),
     do_intermod(Scheduling,Analyses),
@@ -750,7 +716,7 @@ monolithic_analyze(Analyses,TopLevel,Info):-
     push_prolog_flag(gc,on), % TODO: why?
     set_top_level(TopLevel),
     push_pp_flag(intermod,auto),
-%%jcf-20.10.2005%       push_pp_flag(entry_policy,top_level), %% This must be done before calling to auto_analyze
+%%jcf-20.10.2005%       push_pp_flag(entry_policy,top_level), %% This must be done before calling to modular_analyze
     %% nn
     get_all_modules(TopLevel,ModList), % TODO: get this time
     cleanup_persistent_registry(ModList),
@@ -874,7 +840,7 @@ push(_,_Priority).
 %% ******************************************************************
 
 :- pred auto_check(+Analysis,+TopLevel)
-# "After using @pred{auto_analyze/2}, this predicate allows checking
+# "After using @pred{modular_analyze/2}, this predicate allows checking
   the results of the analysis. Generates internal (@code{complete/7})
   information for all the modules in the program unit @var{TopLevel},
   and stores it in memory in order to compare it with the results of
@@ -1212,7 +1178,7 @@ auto_ctcheck_opt(Analysis, TopLevel, [(time,Time),Info]) :-
 %jcf%   atom_concat('test_opt/',TopLevel,CopyTopLevel),
     TopLevel = CopyTopLevel,
 %jcf%
-%jcf%   auto_analyze(Analysis, CopyTopLevel),
+%jcf%   modular_analyze(Analysis, CopyTopLevel),
     pp_statistics(runtime,[T1,_]),
     set_top_level(CopyTopLevel),
     get_all_module_cycles(CopyTopLevel, ModuleLList),
@@ -1498,7 +1464,7 @@ auto_simp_libs(TopLevel,Dir,Info):-
         asserta(file_search_path(engine,DirEngine)),
         get_new_base(Dir,TopLevel,NewTopLevel),
         cleanup_itf_cache,
-        auto_analyze(pdb,NewTopLevel,Info0),
+        modular_analyze(pdb,NewTopLevel,Info0),
 %           monolithic_analyze(pdb,NewTopLevel),
         auto_transform(pdb,simp,NewTopLevel,Info1),
         append(Info0,Info1,Info),

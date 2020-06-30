@@ -37,7 +37,7 @@
 
 %% For modular checking
 :- use_module(ciaopp(plai/intermod),
-    [inductive_ctcheck_summary/3, auto_ctcheck_summary/3, modular_analyze/2,
+    [inductive_ctcheck_summary/3, auto_ctcheck_summary/3, intermod_analyze/2,
      valid_mod_analysis/1, cleanreg/1, get_modules_analyzed/1]).
 
 :- use_module(ciaopp(infer/infer_db),        [domain/1]).
@@ -1415,14 +1415,14 @@ get_conc_a(D,A):-
 x_check(ind,D,File,_,ANYERROR) :-
     inductive_ctcheck_summary(D,~maybe_main(File),ANYERROR).
 x_check(auto,D,File,_EP,_ANYERROR) :-
-    ct_modular_analyze(D,~maybe_main(File)).
+    ct_intermod_analyze(D,~maybe_main(File)).
 x_check(curr_auto,D,File,_EP,ANYERROR) :-
     auto_ctcheck_summary(D,~maybe_main(File),ANYERROR).
 
-ct_modular_analyze(D,File) :-
+ct_intermod_analyze(D,File) :-
     current_pp_flag(ct_regen_reg,on),!,
-    modular_analyze(D,File).
-ct_modular_analyze(_,_).
+    intermod_analyze(D,File).
+ct_intermod_analyze(_,_).
 
 get_concrete_analyses([],[]).
 get_concrete_analyses([D|Ds],As):-
