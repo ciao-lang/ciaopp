@@ -17,6 +17,7 @@
 :- use_module(library(terms_vars), [varset/2]).
 :- use_module(library(vndict), [vars_names_dict/3]).
 :- use_module(library(port_reify), [once_port_reify/2, port_call/1]).
+:- use_module(library(messages),[warning_message/2]).
 %% *** MH
 
 % CiaoPP library
@@ -181,13 +182,15 @@ init_plai(AbsInt,Flags,Fixp) :-
     cleanup_trans_clauses, !, % TODO: fix, move cuts deeper
     undo_errors, !. % TODO: fix, move cuts deeper
 
-%% *** This has to be revised. MH
-is_checker(check_di3) :- !.
-is_checker(X) :- 
-    atom_codes(X,Xs), 
-    append("check",_,Xs).
+% TODO: (IG) define with multifile?
+is_checker(check_di).
+is_checker(check_di2).
+is_checker(check_di3).
+is_checker(check_di4).
+is_checker(check_di5).
+is_checker(check_reduc_di).
 
-preprocess(di,AbsInt,Cls,Ds,Ps):-!,
+preprocess(di,AbsInt,Cls,Ds,Ps):- !,
     current_pp_flag(local_control,LC),
     ( LC == df_hom_emb_as ->
         tarjan(Cls,Sccs),
@@ -207,20 +210,16 @@ preprocess(Fixp,AbsInt,Cls,Ds,Ps):-
     store_previous_analysis_completes(AbsInt),
     ( Fixp == check_di ->
         fixpo_check_di:cleanup_fixpoint(AbsInt)
+    ; Fixp == check_di2 ->
+        fixpo_check_di2:cleanup_fixpoint(AbsInt)
+    ; Fixp == check_reduc_di ->
+        fixpo_check_reduced_di:cleanup_fixpoint(AbsInt)
     ;
-        ( Fixp == check_di2 ->
-            fixpo_check_di2:cleanup_fixpoint(AbsInt)
-        ;
-            (Fixp == check_reduc_di ->
-                fixpo_check_reduced_di:cleanup_fixpoint(AbsInt)
-             ;
-                fixpo_check_di3:cleanup_fixpoint(AbsInt)
-            )
-        )
+        fixpo_check_di3:cleanup_fixpoint(AbsInt)
     ).
 preprocess(check_di4,AbsInt,Cls,Ds,Ps):-!, % TODO: merge with check_di5
     % check_di doesn't need tarjan 
-    fake_recursive_classify(Cls,Rs), 
+    fake_recursive_classify(Cls,Rs),
     Ps = notarjan,
     transform_clauses_(Cls,Ds,Rs,Ps,AbsInt),
     store_previous_analysis(AbsInt),
@@ -273,11 +272,14 @@ topdown_analysis(poly_spec,_AbsInt,_Ps):-!,
 :- endif.
 topdown_analysis(bu,AbsInt,_):- !,
     tp(AbsInt).
+topdown_analysis(_Fixp,AbsInt,_Ps) :-
+    \+ entry_point(AbsInt,_,_,_,_), !,
+    warning_message("No entries found for ~w", [AbsInt]).
 topdown_analysis(Fixp,AbsInt,Ps):-
-  entry_point(AbsInt,Goal,Gv,Call,Name),
-  functor(Goal,F,A),
-  determine_r_flag(Ps,F/A,RFlag),
-  ( analyze(Fixp,AbsInt,RFlag,Goal,Gv,Call,Name) -> true ),
+    entry_point(AbsInt,Goal,Gv,Call,Name),
+    functor(Goal,F,A),
+    determine_r_flag(Ps,F/A,RFlag),
+    ( analyze(Fixp,AbsInt,RFlag,Goal,Gv,Call,Name) -> true ),
     fail.
 topdown_analysis(_Fixp,_AbsInt,_Ps).
 
@@ -404,6 +406,10 @@ do_mod_plai(Cls,Ds,Fixp,AbsInt,TPre,TAna):-
 %------------------------------------------------------------------------%
 
 :- export(mod_topdown_analysis/3).
+mod_topdown_analysis(AbsInt,_Fixp,_Ps) :-
+    \+ get_entry_info(AbsInt,_,_), !,
+    warning_message("No entries found for ~w", [AbsInt]).
+% TODO: merge with topdown_analysis/3
 mod_topdown_analysis(AbsInt,Fixp,Ps):-
     setcounter(1,0),
     get_entry_info(AbsInt,Goal,Call),
