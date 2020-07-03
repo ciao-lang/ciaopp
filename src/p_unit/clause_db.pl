@@ -15,7 +15,6 @@
     ], [assertions, basicmodes, regtypes, datafacts]).
 
 :- use_module(ciaopp(p_unit/program_keys), [clkey/1, clid_of_atomid/2]).
-%:- use_module(ciaopp(p_unit/itf_base_db), [curr_file/2]).
 :- use_module(engine(io_basic)).
 :- use_module(library(messages)).
 
@@ -79,12 +78,6 @@ add_prop_clause_read(M, Head, Body, VarNames, Source, LB, LE):-
     # "The (current module) clause identified by @var{K} is located in the
       source file around @var{L}.".
 clause_locator(K,L) :- locator(K,L).
-%       if(locator(K,L), true, dummy_clause_locator(L)).
-
-% :- doc(bug, "dummy_clause_locator/1 is a kludge.  A better way is
-%       to have locators for all clause keys. --EMM").
-%
-% dummy_clause_locator(loc(File,1,1)):- curr_file(File,_).
 
 :- pred maybe_clause_locator(K,L) : atm(K) => location_t(L)
 # "The (current module) clause with identifier @var{K} either appears

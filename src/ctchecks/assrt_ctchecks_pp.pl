@@ -28,10 +28,7 @@
 :- use_module(ciaopp(p_unit/assrt_db), [assertion_read/9]).
 :- use_module(ciaopp(p_unit/itf_db), [curr_file/2]).
 :- use_module(spec(s_simpspec), 
-    [   next_pred/2,
-        body2list/2,
-        next_or_last_key/3
-    ]).
+              [next_pred/2, body2list/2, next_or_last_key/3]).
 %% :- use_module(spec(abs_exec), [cond/4]).
 
 % Own library

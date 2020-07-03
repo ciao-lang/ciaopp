@@ -26,7 +26,6 @@
 :- use_module(ciaopp(p_unit/unexpand), [transform_metapred/3]).
 :- use_module(ciaopp(preprocess_flags), [current_pp_flag/2]).
 
-
 check_type_calls(Goal,Calls):-
     type_of_goal(imported,Goal),
     get_calls_assertion(Goal,pp,Calls,_),
@@ -42,9 +41,6 @@ pp_check(CGoal,Props):-
     type_of_goal(builtin(check(Props)),Goal).
 %       unexpand_meta_calls(Goal,CheckGoal),
 %       CheckGoal =.. [_,Props].
-
-
-
 
 %recorda_assertion(_,_):- !.
 recorda_assertion(Goal,assert(loc(S,LB,LE),Status,Kind,Body,D)):-
@@ -63,7 +59,6 @@ recorda_assertion(Goal,assert(loc(S,LB,LE),Status,Kind,Body,D)):-
     add_assertion_read(Goal,M,Status,Kind,NBody,D,S,LB,LE).
 
 :- pred get_assertions(+,+,-) # "Returns the recorded assertions.".
-
 get_assertions([],[],[]).
 get_assertions([K|Keys],[P|Preds],AllAss):-
     get_basic_assertions(P,G,Ass),
@@ -157,7 +152,6 @@ get_calls_assertion(Goal,pp,Calls,Dict):-
     group_calls(Calls0,Goal,Calls).
 get_calls_assertion(_Goal,_,BA,BA).
 
-
 get_entry_assertion(Goal,pp,Calls,Dict):-
     assertion_read(Goal,_,Status,entry,_Body,Dict,_S,_LB,_LE),
 %       member(Status,[check]),
@@ -173,8 +167,6 @@ get_entry_assertion(Goal,pp,Calls,Dict):-
              Calls0 ),
     group_calls(Calls0,Goal,Calls).
 get_entry_assertion(_Goal,_,BA,BA).
-
-
 
 group_calls([(Goal,Call)],Goal,[Call]):- !.
 group_calls([(Goal,Call)|More],Goal,(Call;Calls)):-
@@ -207,4 +199,3 @@ synt_compose_disj(NewExp1,NewExp2,(NewExp1;NewExp2)).
 %%      A1 is A -1,
 %%      A1 > 0,
 %%      num_var_in_goal(A1,Goal,Var,Num).
-

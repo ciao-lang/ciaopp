@@ -192,7 +192,6 @@ importing libraries @lib{ciaopp/p_unit}, @lib{ciaopp/p_unit/itf_db},
 :- use_module(ciaopp(p_unit/itf_db), [
     current_itf/3,
     assert_itf/5,
-    curr_file/2,
     preloaded_module/2,
     dump_lib_itf/1,
     load_lib_itf/1]).

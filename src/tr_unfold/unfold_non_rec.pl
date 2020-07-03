@@ -17,7 +17,6 @@
 :- use_module(ciaopp(p_unit), [entry_assertion/3]).
 :- use_module(ciaopp(p_unit/program_keys)).
 :- use_module(ciaopp(p_unit/clause_db)).
-:- use_module(ciaopp(p_unit/itf_db), [curr_file/2]).
 :- use_module(ciaopp(preprocess_flags)).
 :- use_module(unfold_core).
 :- use_module(chclibs_readprog).

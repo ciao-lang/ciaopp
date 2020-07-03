@@ -228,7 +228,7 @@ module_(ModList, Info):-
     ),
     pplog(load_module, ['{Loading current module from ' , ~~(AbsFileDesc)]),
     %
-    assert_curr_file(AbsFileList), % TODO: move into preprocessing_unit/3?
+    assert_curr_files(AbsFileList), % TODO: move into preprocessing_unit/3?
     preprocessing_unit(AbsFileList,_Ms,E),
     ( E == yes -> Info=[error|Info0] ; Info=Info0 ),
     % assert_initial_types, 
@@ -254,16 +254,16 @@ absolute_file_names([M|Ms],[A|As]):-
     absolute_file_name(M,'_opt','.pl','.',A,_,_),
     absolute_file_names(Ms,As).
 
-:- pred assert_curr_file(Fs) : list(Fs)
-    # "Fill @pred{curr_module/1} and @pred{curr_file/2}.".
-assert_curr_file([]) :- !.
-assert_curr_file([F|Fs]) :-
+:- pred assert_curr_files(Fs) : list(Fs)
+   # "Fill @pred{curr_module/1} and @pred{curr_file/2}.".
+assert_curr_files([]) :- !.
+assert_curr_files([F|Fs]) :-
     mod_from_base(F, M),
     % TODO: why not assertz? JF
-    asserta_fact(curr_module(M)),
-    asserta_fact(curr_file(F, M)),
+    assertz_fact(curr_module(M)),
+    assertz_fact(curr_file(F, M)),
     %
-    assert_curr_file(Fs).
+    assert_curr_files(Fs).
 
 mod_from_base(N, M) :-
     path_splitext(N, NoExt, _),

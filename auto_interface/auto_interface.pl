@@ -182,8 +182,6 @@
 % 3.- Copy and paste under the question you would like yours to appear.
 % 4.- Add the necessary guards if needed.
 
-
-
 :- doc(doinclude, get_menu_configs/1).
 :- doc(doinclude, save_menu_config/1).
 :- doc(doinclude, restore_menu_config/1).
@@ -1005,7 +1003,7 @@ again :-
 exec_auto(optimize, F) :- !,
     auto_optimize(F).
 exec_auto(analyze, F) :- !,
-    auto_interface:auto_analyze(F).
+    auto_analyze(F).
 exec_auto(check_assertions, F) :- !,
     auto_check_assert(F).
 exec_auto(check_certificate, F) :- !,
@@ -1155,11 +1153,7 @@ restore_auto_flags_list([]).
 
 % ---------------------------------------------------------------------------
 
-:- use_module(ciaopp(preprocess_flags), [
-    push_pp_flag/2,
-    pop_pp_flag/1
-   ]).
-
+:- use_module(ciaopp(preprocess_flags), [push_pp_flag/2, pop_pp_flag/1]).
 :- use_module(library(lists), [reverse/2]).
 
 :- meta_predicate with_pp_flags(?, goal).
@@ -1193,7 +1187,7 @@ do_output(OFile, Menu) :-
     % restorable output
     get_menu_flag(Menu,menu_dump,DOut),
     ( \+ DOut == off ->
-        ( var(OFile) -> curr_file(OFile,_) ; true ), % assuming one file
+        ( var(OFile) -> curr_file(OFile,_), ! ; true ), % assuming one file
         atom_concat(OFile,'.dump', DumpF),
         ( DOut == default -> DOpts = [] ; DOpts = [DOut]), % default or incremental
         dump(DumpF, DOpts),
