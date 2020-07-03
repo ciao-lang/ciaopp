@@ -20,10 +20,12 @@ The program needs to be analyzed with the pp flag fact_info=on, and dumped with 
 :- use_module(library(format)).
 :- use_module(library(aggregates), [findall/3]).
 :- use_module(library(terms_vars), [varset/2]).
+:- use_module(library(messages), [show_message/4, show_message/3]).
 
 :- use_module(ciaopp(ciaopp)).
 :- use_module(ciaopp(plai/plai_db), [get_memo_table/7,complete/7]).
 :- use_module(ciaopp(p_unit/p_dump), [restore/1]).
+:- use_module(ciaopp(p_unit/clause_db), [clause_locator/2]).
 :- use_module(ciaopp(plai/transform), [trans_clause/3]).
 :- use_module(ciaopp(plai/fixpo_ops), [bottom/1]).
 
@@ -44,16 +46,16 @@ print_reach_report :-
     sort(SgKeys_u, SgKeys), % remove duplicates
     ( % failure-driven loop
       member(SgKey, SgKeys),
-        format('~nProcessing ~w:~n', [SgKey]),
+        % format('~nProcessing ~w:~n', [SgKey]),
         detect_dead_predicate(SgKey),
         ( % failure-driven loop
           trans_clause(SgKey,_,clause(_Head,_Vars_u,ClKey,_Body)),
-            ( get_memo_table(ClKey, pdb, _, no, _Vars, ASub, _) ->
-                ( bottom(ASub) -> 
-                    format('clause ~w always fails or loops~n', [ClKey])
+            ( get_memo_table(ClKey, _AbsInt, _, no, _Vars, ASub, _) ->
+                ( bottom(ASub) ->
+                    report_message(ClKey,"clause ~w always fails or loops~n",[ClKey])
                 ;   true )
             ;
-                format('clause body of ~w is never executed~n', [ClKey])
+                report_message(ClKey,"clause body of ~w is never executed~n", [ClKey])
             ),
             fail
         ;   true ),
@@ -61,14 +63,21 @@ print_reach_report :-
     ; true
     ).
 
+report_message(ClKey,Mess,Params) :-
+    % this is not working because the dump does not contain the clause locators
+    clause_locator(ClKey,Loc), !,
+    show_message(simple,Loc,Mess,Params).
+report_message(_PredKey,Mess,Params) :- % we don't have locators for predicates
+    show_message(simple,Mess,Params).
+
 detect_dead_predicate(SgKey) :-
-    findall(comp(Sg, Prime), complete(SgKey, pdb, Sg, _, Prime, _,_), LPrimes),
+    findall(comp(Sg, Prime), complete(SgKey, _AbsInt, Sg, _, Prime, _,_), LPrimes),
     process_comps(LPrimes, Fails, Dead),
     ( Fails == yes ->
-        format('Pred ~w always fails or loops~n',[SgKey])
+        report_message(SgKey,"Pred ~w always fails or loops~n",[SgKey])
     ; true ),
     ( var(Dead) ->
-        format('Pred ~w is never executed~n',[SgKey]), !, fail ; true
+        report_message(SgKey,"Pred ~w is never executed~n",[SgKey]), !, fail ; true
     ).
 
 % proces_comps if _Fails is var, it means it fails, if _Dead is var, it means it is never called.
