@@ -30,7 +30,7 @@
 :- use_module(ciaopp(transform_driver), [transform/1]).
 :- use_module(ciaopp(ciaopp_log), [pplog/2]).
 %% *** These two for ACC, need to be revised MH
-:- use_module(ciaopp(p_unit/p_dump), [dump/1, restore/1]).
+:- use_module(ciaopp(p_unit/p_dump), [dump/1, dump/2, restore/1]).
 
 :- use_module(ciaopp(plai/fixpo_ops), [store_previous_analysis/1]).
 :- use_module(ciaopp(plai/acc_ops), [remove_irrelevant_entries/0]).
@@ -49,7 +49,6 @@
 :- use_module(ciaopp(infer/infer_dom),       [knows_of/2]).
 
 :- use_module(engine(io_basic)).
-:- use_module(engine(messages_basic), [message/2]).
 :- use_module(library(lists),         [member/2, append/3]).
 :- use_module(library(aggregates),    [findall/3]).
 :- use_module(ciaopp(analysis_stats), [pp_statistics/2]).
@@ -515,6 +514,7 @@ para     , 'Granularity Analysis'   # para_grain       - none.
 ~moutput(0),'| Output Types'            # type_output          - all    <- ana_or_check_output.
 ~moutput(1),'| Output Resource'         # output_resources     - functions <- ana_or_check_output.
 ~moutput(1),'| Output Cost'             # cost_analysis_output - all    <- ana_or_check_output.
+~moutput(1),'Dump analysis'             # menu_dump            - off.
 
 guard expert(X) :-
     member(menu_level=Y, X), Y == expert.
@@ -948,27 +948,22 @@ show_mcfg :-
 :- pred set_last_file(File) : atom(File)
    # "Set last file to @var{File}. This option is used by
       customize_and_preprocess, to allow @pred{again/0} to work.".
-
 set_last_file(File) :-
     retractall_fact(customize__last_file(_)),
     asserta_fact(customize__last_file(File)).
 
 :- pred get_last_file(File) : var(File) => atom(File)
    # "@var{File} is the current value of @pred{last_file/1} used by
-      @pred{customize_and_preprocess/1} or
-      @pred{customize_and_preprocess/0}.".
-
+      @pred{customize_and_preprocess/1} or @pred{customize_and_preprocess/0}.".
 get_last_file(File) :-
     current_fact(customize__last_file(File)).
 
 :- pred customize_and_preprocess/0
    # "Select options using @tt{customize/0}, and then call
       @pred{auto_analyze/1}, @pred{auto_optimize/1}, or
-      @pred{auto_check_assert/1} (as determined by the selected
-      options) on the default file. If no default file is defined,
-      prompt for the name of to be processed, which becomes from now
-      on the default file.".
-
+      @pred{auto_check_assert/1} (as determined by the selected options) on the
+      default file. If no default file is defined, prompt for the name of to be
+      processed, which becomes from now on the default file.".
 customize_and_preprocess :-
     display('(Main) file to be processed:     ('),
     ( get_last_file(File) -> display(File)
@@ -976,18 +971,16 @@ customize_and_preprocess :-
     ),
     display(') ? '),
     prompt_for_default(NewFile,File),
-    (  file_exists(NewFile,4)
-    -> customize_and_preprocess(NewFile)
+    (  file_exists(NewFile,4) ->
+        customize_and_preprocess(NewFile)
     ;  error_message("~w does not exist or cannot be read", [NewFile] )
     ).
 
 :- pred customize_and_preprocess(File)
    # "Select options using @tt{customize/0}, and then call
       @pred{auto_analyze/1}, @pred{auto_optimize/1}, or
-      @pred{auto_check_assert/1} (as determined by the selected
-      options) with @var{File} as argument. @var{File} is from now on
-      the default file.".
-
+      @pred{auto_check_assert/1} (as determined by the selected options) with
+      @var{File} as argument. @var{File} is from now on the default file.".
 customize_and_preprocess(File) :-
     atom(File),
     customize,
@@ -995,19 +988,15 @@ customize_and_preprocess(File) :-
     again.
 
 :- pred customize_but_dont_save(Option)
-   # "Same as customize(@var{Option}), but menu flags will not be
-      modified.".
-
+   # "Same as customize(@var{Option}), but menu flags will not be modified.".
 customize_but_dont_save(Option) :-
     get_menu_flags(L),
     customize(Option),
     restore_menu_flags_list(L).
 
 :- pred again/0
-   # "Performs the last actions done by
-      @pred{customize_and_preprocess/1}, on the last file previously
-      analyzed, checked, or optimized".
-
+   # "Performs the last actions done by @pred{customize_and_preprocess/1}, on
+      the last file previously analyzed, checked, or optimized".
 again :-
     get_last_file(File),
     get_menu_flag(all, inter_all, NM),
@@ -1026,24 +1015,21 @@ exec_auto(U, _F) :-
     error_message("Unknown option ~w while executing customize_and_preprocess", [U]).
 
 :- pred customize/0
-   # "Enter an interactive menu to select the preprocessing action
-      (analysis / assertion checking / transformation / optimization / ...)  
-      to be performed by deafult and the different options
-      (i.e., setting the preprocessor flags).".
-
+   # "Enter an interactive menu to select the preprocessing action (analysis /
+      assertion checking / transformation / optimization / ...) to be performed
+      by default and the different options (i.e., setting the preprocessor
+      flags).".
 customize :-
     customize(all).
 
 :- pred customize(X)
-   # "Customize is used for changing the values of the flags used
-      during preprocesing. These flags are grouped into three main
-      classes of actions: @em{analyzing}, @em{checking assertions}, or
-      @em{optimizing} programs. @var{X} should be instantiated to one
-      of: @tt{analyze}, @tt{check_assertions}, @tt{optimize}, or
-      @tt{all} (which allows choosing among the previous three).".
-
-customize(all) :-
-    !,
+   # "Customize is used for changing the values of the flags used during
+      preprocessing. These flags are grouped into three main classes of actions:
+      @em{analyzing}, @em{checking assertions}, or @em{optimizing} programs.
+      @var{X} should be instantiated to one of: @tt{analyze},
+      @tt{check_assertions}, @tt{optimize}, or @tt{all} (which allows choosing
+      among the previous three).".
+customize(all) :- !,
     ask_use_config(USE_CONFIG, Bool),
     ( USE_CONFIG == none ->
         menu(all, Bool),
@@ -1101,11 +1087,9 @@ customize(A) :-
 % Auxiliary
 
 :- pred ask_use_config(Config, B) :: (atm(Config), atm(B))
-
 # "In @var{Config} the selected configuration to use is
   returned. @var{B} tells if printing help message if you are going to
   use more menus.".
-
 ask_use_config(USE_CONFIG, false) :-
     findall(F, valid_flag_value(menu_last_config, F), OptsList),
     OptsList = [_,_|_],
@@ -1200,25 +1184,32 @@ pop_flags([]).
 % auto_*/? predicates
 
 do_output(OFile, Menu) :-
+    % human-readable output
     get_menu_flag(Menu,menu_output,Output),
     ( Output == on ->
         ( var(OFile) -> output ; output(OFile) )
     ; true
+    ),
+    % restorable output
+    get_menu_flag(Menu,menu_dump,DOut),
+    ( \+ DOut == off ->
+        ( var(OFile) -> curr_file(OFile,_) ; true ), % assuming one file
+        atom_concat(OFile,'.dump', DumpF),
+        ( DOut == default -> DOpts = [] ; DOpts = [DOut]), % default or incremental
+        dump(DumpF, DOpts),
+        note_message("Dumped analysis in ~w", [DumpF])
+    ;   true
     ).
-
 :- push_prolog_flag(multi_arity_warnings, off).
 
 :- pred auto_analyze(F)
-   # "Analyze the module @var{F} with the current analysis options
-      (use @tt{customize(analyze)} to change these options).".
-
+   # "Analyze the module @var{F} with the current analysis options (use
+      @tt{customize(analyze)} to change these options).".
 auto_analyze(File) :-
-    auto_interface:auto_analyze(File, _).
+    auto_analyze(File, _).
 
 :- pred auto_analyze(F, OFile)
-   # "Same as @pred{auto_analyze/1} but the output file will be
-      @var{OFile}.".
-
+   # "Same as @pred{auto_analyze/1} but the output file will be @var{OFile}.".
 auto_analyze(File, OFile) :-
     with_menu_flags(ana, auto_analyze_(File, OFile)).
 
@@ -1234,17 +1225,15 @@ auto_analyze_(File, OFile) :-
     set_last_file(File).
 
 :- pred auto_check_assert(F)
-   # "Check the assertions in file @var{F}, with the current options,
-      giving errors if assertions are violated (use
-      @tt{customize(check_assertions)} to change these options).".
-
+   # "Check the assertions in file @var{F}, with the current options, giving
+      errors if assertions are violated (use @tt{customize(check_assertions)} to
+      change these options).".
 auto_check_assert(File) :-
     auto_check_assert(File, _).
 
 :- pred auto_check_assert(F, OFile)
    # "Same as @pred{auto_check_assrt/1} but the output file will be
       @var{OFile}.".
-
 auto_check_assert(File, OFile) :-
     with_menu_flags(check, auto_check_assert_(File, OFile)).
 
@@ -1257,10 +1246,10 @@ auto_check_assert_(File, OFile) :-
     %
     get_menu_flag(check, gen_certificate, GENCERT),
     ( GENCERT==manual ->
-       % TODO: *** This needs to be revised... MH
-       set_pp_flag(dump_pred,nodep),
-       set_pp_flag(dump_pp,off),
-       set_pp_flag(fixpoint,di)
+        % TODO: *** This needs to be revised... MH
+        set_pp_flag(dump_pred,nodep),
+        set_pp_flag(dump_pp,off),
+        set_pp_flag(fixpoint,di)
     ; true
     ),
     %
@@ -1428,7 +1417,7 @@ get_concrete_analyses([],[]).
 get_concrete_analyses([D|Ds],As):-
     get_menu_flag(check,D,A),
     ( A == none ->
-      As = As0
+        As = As0
     ; As = [A|As0]
     ),
     get_concrete_analyses(Ds,As0).
@@ -1570,18 +1559,14 @@ checker(Fixpoint):-
 :- push_prolog_flag(multi_arity_warnings, off).
 
 % ---------------------------------------------------------------------------
-
 :- pred auto_optimize(F)
    # "Optimize file @var{F} with the current options (use
-      @tt{customize(optimize)} to change these options).".
-
+   @tt{customize(optimize)} to change these options).".
 auto_optimize(File) :-
     auto_optimize(File, _).
 
 :- pred auto_optimize(F, OFile)
-   # "Same as @pred{auto_optimize/1} but the output file will be
-      @var{OFile}.".
-
+   # "Same as @pred{auto_optimize/1} but the output file will be @var{OFile}.".
 auto_optimize(File, OFile) :-
     module(File),
     get_menu_flag(opt, inter_optimize, P),
@@ -1793,9 +1778,8 @@ decide_transform(poly) :-
 % Auxiliary for modular analysis
 
 :- pred clean_aux_files(File) : atom
-   # "Deletes any auxiliary file regarding @var{File} or its related
-      files (e.g., imported modules in a modular program).".
-
+   # "Deletes any auxiliary file regarding @var{File} or its related files
+      (e.g., imported modules in a modular program).".
 clean_aux_files(File):-
     intermod:cleanreg(~maybe_main(File)).
 

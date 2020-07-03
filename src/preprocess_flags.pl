@@ -249,6 +249,11 @@ pp_flag(menu_output, 'Whether to generate output.').
 current_pp_flags(  menu_output   , on ).
 valid_flag_values( menu_output   , member( _ , [on,off] ) ).
 
+pp_flag(menu_dump). % only menu
+pp_flag(menu_dump, 'Whether to dump the analysis (can be restored later).').
+current_pp_flags(  menu_dump   , off ).
+valid_flag_values( menu_dump   , member( _ , [off,default,incremental] ) ).
+
 pp_flag(menu_fixpo). % only menu
 pp_flag(menu_fixpo, 'Customize fixpoint.').
 current_pp_flags(  menu_fixpo   , on ).
