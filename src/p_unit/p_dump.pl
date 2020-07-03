@@ -132,8 +132,8 @@ dump(File, Opts):-
     fast_write(end_of_auxiliary_info),
     ToDump = [plai_db|Xs],
     ( member(incremental, Opts) ->
-      Xs = [trans_clause_db, source_clause_db, inc_db, plai_db_extra, assertions]
-      ; Xs = []
+        Xs = [trans_clause_db, source_clause_db, inc_db, plai_db_extra, assertions]
+    ; Xs = []
     ),
     dump_ciaopp_db_data(ToDump, PredF, PPF),
     close(Stream),
@@ -144,8 +144,8 @@ acc_aux_info_before_write(ExtF, PredF, PPF) :-
       ( complete(A,B,C,D,E,F,G), Cl = complete(A,B,C,D,E,F,G)
       ; memo_table(A,B,C,D,E,F), Cl = memo_table(A,B,C,D,E,F)
       ),
-         data_acc_aux_info(Cl, ExtF, PredF, PPF),
-         fail
+        data_acc_aux_info(Cl, ExtF, PredF, PPF),
+        fail
     ; true ).
 
 data_acc_aux_info(complete(_,_,_,_,_,_,_), _, off, _) :- !.
@@ -154,11 +154,11 @@ data_acc_aux_info(Cl, ExtF, _, _) :-
     Cl = complete(_,A2,_,A4,A5,ID,_), !,
     ( ExtF = int ->
         (ID \== no),
-         acc_auxiliary_info(A2,[A4|A5])
+        acc_auxiliary_info(A2,[A4|A5])
     ;
         acc_auxiliary_info(A2,[A4|A5]),
         ( ExtF = iter ->
-          iter(A5)
+            iter(A5)
         ; true
         )
     ).
@@ -166,10 +166,10 @@ data_acc_aux_info(Cl, ExtF, _, _) :-
     Cl = memo_table(_,M2,M3,ID,_,M6), !,
     acc_auxiliary_info(M2,M6),
     ( ExtF = int ->
-      \+ (ID == no)
+        \+ (ID == no)
     ;
         ( ExtF = iter  ->
-          iter(M3)
+            iter(M3)
         ; true )
     ).
 data_acc_aux_info(_, _, _, _).
@@ -192,9 +192,8 @@ eliminate_deps_memo(memo_table(M1,M2,M3,M4,_,_), memo_table(M1,M2,M3,M4,v,v)).
 dump_flags_list(dump, [dump_pred ,dump_pp ,dump_ext]).
 
 %% --------------------------------------------------------------------
-
 :- pred restore(Module,Info) :: module * list
-    # "Restores from disk analysis information related to
+   # "Restores from disk analysis information related to
       @var{Module}. It is like call to restore_with_flag( File ,
       current ). @var{Info} returns the time required for this
       process.".
@@ -203,7 +202,6 @@ restore(File, [time(T1,[])]):-
     restore_with_flag( File , current ),
     pp_statistics(runtime,[_,T1]),
     pplog(dump, ['{restored analysis in ',~~(T1), ' msec.}']).
-    
 
 :- pred restore(Module) :: module
 # "Restores from disk analysis information related to @var{Module}. It
@@ -223,7 +221,7 @@ restore_with_flag(File, F) :-
     restore_auxiliary_info(restore_aux, Dict),
     ( fast_read(T)  ->
         read_all_terms(T, Dict, F)
-     ; true
+    ; true
     ),
     close(Stream),
     set_input(O).
@@ -243,7 +241,6 @@ read_all_terms(end_of_auxiliary_info, Dict, Flag) :-
     fast_read(X),!,
     read_all_terms(X, Dict, Flag).
 read_all_terms(T0, Dict, Flag) :-
-%       display(T0),nl,
     process_after_read(T0, T_to_check, Dict),
     ( Flag == current ->
         T = T_to_check
@@ -315,8 +312,8 @@ clean_ciaopp_db(plai_db_extra) :-
     retractall_fact(memo_lub(_,_,_,_,_)),
     retractall_fact(lub_complete(_,_,_,_,_,_)),
     retractall_fact(complete_parent(_,_)),
-  retractall_fact(invalid_call(_,_,_,_,_,_)),
-  retractall_fact(raw_success(_,_,_,_,_,_)).
+    retractall_fact(invalid_call(_,_,_,_,_,_)),
+    retractall_fact(raw_success(_,_,_,_,_,_)).
 clean_ciaopp_db(source_clause_db) :-
     retractall_fact(source_clause(_,_,_)).
 clean_ciaopp_db(trans_clause_db) :-
@@ -327,7 +324,7 @@ clean_ciaopp_db(inc_db) :-
     retractall_fact(tarjan_data(_)),
     retractall_fact(predicates(_)),
     retractall_fact(rec(_)),
-  retractall_fact(fixpoint_id_(_,_)).
+    retractall_fact(fixpoint_id_(_,_)).
 clean_ciaopp_db(assertions) :-
     retractall_fact(pgm_assertion_read(_,_,_,_,_,_,_,_,_)),
     retractall_fact(call_asr(_,_,_,_,_)),
@@ -337,9 +334,9 @@ dump_ciaopp_db_data(DBs, PredF, PPF) :-
     ( % failure-driven loop
       member(DB, DBs),
       ( get_data(DB, Cl),
-        process_before_write(Cl, PredF, PPF, NCl),
-        \+ NCl = 'ignored',
-        fast_write(Cl), fail
+          process_before_write(Cl, PredF, PPF, NCl),
+          \+ NCl = 'ignored',
+          fast_write(Cl), fail
       ; true
       ),
       fail
