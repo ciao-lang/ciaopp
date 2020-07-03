@@ -44,12 +44,12 @@ assert_itf(defines,M,F,A,_Type):-
     functor(Goal,FG,A),
     assertz_fact(defines(FG,A,M)).
 assert_itf(imports,_M,F,A,r(IM,EM)) :- !, % reexported predicates reexported
-            functor(Goal0,F,A),
-      goal_module_expansion(Goal0, EM, Goal),
-      % unexpand_meta_calls(Goal1,Goal), % TODO: remove? related with addmodule?
-      % TODO: this depends on type_of_goal which, at some point calls current_itf(meta, Goal, Meta)
-      assertz_if_needed(imports(Goal,EM)), % TODO: IG missing which imports which
-      assertz_if_needed(imports(Goal0,r(IM,EM))). % (unexpanded goal for unexpand.pl)
+    functor(Goal0,F,A),
+    goal_module_expansion(Goal0, EM, Goal),
+    % unexpand_meta_calls(Goal1,Goal), % TODO: remove? related with addmodule?
+    % TODO: this depends on type_of_goal which, at some point calls current_itf(meta, Goal, Meta)
+    assertz_if_needed(imports(Goal,EM)), % TODO: IG missing which imports which
+    assertz_if_needed(imports(Goal0,r(IM,EM))). % (unexpanded goal for unexpand.pl)
 assert_itf(imports,_IM,F,A,EM):-
     functor(Goal0,F,A),
     goal_module_expansion(Goal0, EM, Goal),
@@ -119,9 +119,8 @@ goal_module_expansion(Goal, M, GoalExpanded) :-
     c_itf:module_expansion(Goal, true, M, _, asr, _, _, GoalExpanded, _Body).
 
 :- pred retract_itf(+Class,_M0,+F,+A,_M)
-    # "This predicate allows removing itf information when it 
-       is no longer true. This can happen for example during 
-       program transformation.". 
+   # "This predicate allows removing itf information when it is no longer true.
+      This can happen for example during program transformation.".
 retract_itf(exports,M0,F,A,_M):-
     functor(Goal,F,A),
     retract_fact(exports(Goal,M0)).
@@ -262,10 +261,8 @@ dump_lib_itf(Stream):-
 dump_lib_itf(_).
 
 %--------------------------------------------------------------------------
-
 :- pred cleanup_lib_itf
-# "Cleans up all facts of lib_* predicates.".
-
+   # "Cleans up all facts of lib_* predicates.".
 cleanup_lib_itf:-
     retractall_fact(lib_defines(_,_,_)),
     retractall_fact(lib_imports(_,_)),
@@ -279,17 +276,14 @@ cleanup_lib_itf:-
 
 %--------------------------------------------------------------------------
 
-:- pred load_lib_itf(Stream)
-
-# "Loads the facts for lib_*/* from the stream @var{Stream}.".
-
 :- use_module(library(read), [read/2]).
 
+:- pred load_lib_itf(Stream)
+   # "Loads the facts for lib_*/* from the stream @var{Stream}.".
 load_lib_itf(Stream):-
     repeat,
     read(Stream,Fact),
-    (
-        Fact = end_of_file ->
+    ( Fact = end_of_file ->
         true
     ;
         add_fact(Fact),
@@ -308,4 +302,3 @@ add_fact(Fact) :-
 
 preloaded_module(M,Base):-
     lib_defines_module(Base,M).
-
