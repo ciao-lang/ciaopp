@@ -60,11 +60,11 @@ to avoid recomputation), but it not implemented yet.").
 
 :- use_module(ciaopp(preprocess_flags), [current_pp_flag/2, typeanalysis/1]).
 :- use_module(ciaopp(plai/transform), [trans_clause/3, cleanup_trans_clauses/0]).
-:- use_module(ciaopp(plai/plai_db), [complete/7, memo_table/6]).
+:- use_module(ciaopp(plai/plai_db), [complete/7, memo_table/6, raw_success/6]).
 :- use_module(typeslib(typeslib), [show_types/0, show_types_raw_printer/0]).
 :- use_module(ciaopp(p_unit/p_abs), [registry_headers/2, registry/3]).
 :- use_module(ciaopp(plai), [generate_trans_clauses/4]).
-:- use_module(ciaopp(plai/fixpo_dd), ['$change_list'/2]).
+:- use_module(ciaopp(plai/fixpo_dd), ['$change_list'/3]).
 :- use_module(ciaopp(p_unit/program_keys),
     [decode_litkey/5, decode_clkey/4, get_predkey/3]).
 :- use_module(spec(s_simpspec), [make_atom/2]).
@@ -105,6 +105,11 @@ show_analysis :-
     nl,
     memo_table(A, B, C, D, E, F ),
     show_data(memo_table(A, B, C, D, E, F )),
+    fail.
+show_analysis :- %% by default, facts do not have memo_table entry but they have raw_success
+    nl,
+    raw_success(ClKey,AbsInt,Id,Sg,Proj,Prime),
+    show_data(raw_success(ClKey,AbsInt,Id,Sg,Proj,Prime)),
     fail.
 show_analysis :-
     nl,
@@ -179,8 +184,8 @@ show_gat_header(AbsInt) :-
 :- doc(show_change_list/0, "Shows the list of changes that need
 computation in the fixpoint dd.").
 show_change_list :-
-    '$change_list'(A,B),
-    display(ch(A, B)), nl,
+    '$change_list'(A,B,C),
+    display(ch(A,B,C)), nl,
     fail.
 show_change_list.
 

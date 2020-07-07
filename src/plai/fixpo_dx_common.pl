@@ -2,8 +2,8 @@
 
 %------------------------------------------------------------------------
 :- pred entry_to_exit(+Body,+Key,+Call,-Exit,+Vars_u,+AbsInt,+NewN)
-    : (atm(Key), list(Vars_u), atm(AbsInt)) + not_fails
- #"Traverses the body of a clause (first argument) obtaining the Exit for
+   : (atm(Key), list(Vars_u), atm(AbsInt)) + not_fails
+   #"Traverses the body of a clause (first argument) obtaining the Exit for
    a given Entry (represented by Call, since it is both the Entry of the
    clause and the Call for the first subgoal).".
 entry_to_exit((Sg,Rest),K,Call,Exit,Vars_u,AbsInt,NewN):- !,

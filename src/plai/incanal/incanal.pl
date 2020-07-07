@@ -6,12 +6,23 @@
     reset_incremental_analysis_info/0
     ], [assertions, regtypes, datafacts, nativeprops]).
 
+:- include(incanal_options). % tracing and rtchecks compilation options
+
 :- doc(title, "Incremental analysis (high level)").
+:- doc(author, "Isabel Garcia-Contreras").
 
 :- doc(stability, devel).
 
 :- doc(module, "This module implements a high level interface of
 incremental analysis (see @lib{incanal_driver} for the low level interface).
+
+@begin{alert}
+
+Incremental analysis only works with fixpoint dd, one abstract domain and
+multivariance on success off. The assertions of the predicates of this module
+reflect this.
+
+@end{alert}
 
 @section{Usage}
 
@@ -19,7 +30,8 @@ incremental analysis (see @lib{incanal_driver} for the low level interface).
 
 @begin{verbatim}
 ?- set_pp_flag(fixpoint, dd),
-   set_pp_flag(incremental, on).
+   set_pp_flag(incremental, on),
+   set_pp_flag(del_strategy, top_down). %% select strategy for incremental deletion
 @end{verbatim}
 
 @begin{enumerate}
@@ -118,8 +130,6 @@ generated when transforming the code can be modified.
 @end{alert}
     ").
 
-:- doc(author, "Isabel Garcia-Contreras").
-
 :- doc(bug, "Call compiler to avoid reloading a source that did not change.").
 % This checking could be controlled by a flag
 
@@ -132,7 +142,7 @@ generated when transforming the code can be modified.
 :- use_module(ciaopp(analyze_driver), [clean_analysis_info/0]).
 :- use_module(ciaopp(preprocess_flags), [current_pp_flag/2, set_pp_flag/2]).
 :- use_module(ciaopp(p_unit/clause_db), [cleanup_clause_db/0]).
-:- use_module(ciaopp(plai/fixpo_dd), ['$change_list'/2]).
+:- use_module(ciaopp(plai/fixpo_dd), ['$change_list'/3]).
 :- use_module(typeslib(typeslib), [cleanup_types/0]).
 
 % incanal
@@ -381,6 +391,12 @@ incremental_analyze(AbsInt) :-
            according to the selected deletion strategy.
      @end{itemize}".
 incremental_analyze(AbsInt, Stats) :-
+    % the module no longer has useful entries
+    \+ module_has_entries(AbsInt), !,
+    gather_stats(analysis, Stats), %% 0 will be generated for all the stats
+    clean_persistent_analysis, %%%% clean only for this abstract domain
+    pplog(incremental,['{Incrementally analyzed with dd for ', ~~(AbsInt), ' (no entries found). }']).
+incremental_analyze(AbsInt, Stats) :-
     stat(proc_diff, process_diff(ProcDiff,ADiff)),
     extract_cl_diff_info(ProcDiff, Additions, Deletions),
     loaded_mods(Context),
@@ -396,6 +412,7 @@ incremental_analyze(AbsInt, Stats) :-
     ),
     td_add_clauses(Additions, AbsInt),
     analysis_actions(AbsInt, Additions, Deletions), % run fixpo if not done before on delete or add
+    remove_useless_completes(AbsInt), %% TODO: count time
     store_current_fixpoint_id(Context),
     pplog(incremental,['{Incrementally analyzed with dd for ', ~~(AbsInt), ' }']),
     save_persistent_analysis,
@@ -403,19 +420,19 @@ incremental_analyze(AbsInt, Stats) :-
     gather_stats(analysis, Stats),
     pretty_print_stats(Stats). % TODO: show in a nicer way
 
-:- data local_change_list/3.
+:- data local_change_list/4.
 store_change_list(Context) :-
-    retractall_fact(local_change_list(Context, _, _)),
+    retractall_fact(local_change_list(Context,_,_,_)),
     ( % failure-driven loop
-        '$change_list'(A, B),
-        assertz_fact(local_change_list(Context, A, B)),
+        '$change_list'(A,B,C),
+        assertz_fact(local_change_list(Context,A,B,C)),
         fail
     ; true).
 restore_change_list(Context) :-
-    retractall_fact('$change_list'(_, _)),
+    retractall_fact('$change_list'(_,_,_)),
     ( % failure-driven loop
-        local_change_list(Context, A, B),
-        assertz_fact('$change_list'(A, B)),
+        local_change_list(Context,A,B,C),
+        assertz_fact('$change_list'(A,B,C)),
         fail
     ; true).
 
@@ -426,7 +443,7 @@ between incremental reanalysis.".
 analysis_actions(AbsInt, [], _) :-
     \+ current_pp_flag(intermod, off),
     % find a better way for detecting monolithic
-    current_pp_flag(del_strategy, bottom_up), !,
+    \+ current_pp_flag(del_strategy, top_down), !, %% bottom_up or bottom_up_cls
     % This is needed for bottom_up because new entries that were not considered can be added
     run_inc_fixpoint(AbsInt).  % This also adds the entries to the GAT
 analysis_actions(AbsInt, [], []) :- % run fixpoint if there were no changes

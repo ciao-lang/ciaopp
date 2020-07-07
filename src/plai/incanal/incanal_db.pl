@@ -1,8 +1,8 @@
 :- module(incanal_db, [
-    init_clids/0,
+    init_clkeys/0,
     clean_incremental_db/0,
     change_id_clause/2,
-    insert_after_clid/2,
+    insert_after_clkey/2,
     save_clause_db/0,       
     restore_clause_db/0,
     remove_clauses_pred/2,
@@ -45,39 +45,39 @@ incremental analysis").
 % ----------------------------------------------------------------------
 :- doc(section, "Predicates for handling clause IDs").
 
-:- data pred_inc_clid/3.
+:- data pred_inc_clkey/3.
 
-:- doc(init_clids/0, "This predicate annotates which is the last
+:- doc(init_clkeys/0, "This predicate annotates which is the last
     clause identifier that was assinged by module program_key. This
     is needed to give new ids to the clauses that are added to the
     analysis.").
-init_clids :- % read from the program_keys file
-    retractall_fact(pred_inc_clid(_, _, _)),
+init_clkeys :- % read from the program_keys file
+    retractall_fact(pred_inc_clkey(_, _, _)),
     counter(Key, N, _),
     decode_predkey(Key, F, A),
-    asserta_fact(pred_inc_clid(F, A, N)),
+    asserta_fact(pred_inc_clkey(F, A, N)),
     fail.
-init_clids.
+init_clkeys.
 
-get_inc_clid(F/A, Clid) :-
-    retract_fact(pred_inc_clid(F, A, NId)),
+get_inc_clkey(F/A, ClKey) :-
+    retract_fact(pred_inc_clkey(F, A, NId)),
     NId1 is NId + 1,
-    get_clkey(F, A, NId1, Clid),
-    assertz_fact(pred_inc_clid(F, A, NId1)).
+    get_clkey(F, A, NId1, ClKey),
+    assertz_fact(pred_inc_clkey(F, A, NId1)).
 
 % TODO: it is assumed that the Ids are always increased
-:- export(update_inc_clid/1).
-:- pred update_inc_clid(NClid) : atm  #"Updates the value of the last
+:- export(update_inc_clkey/1).
+:- pred update_inc_clkey(NClKey) : atm  #"Updates the value of the last
 id assigned by the program_keys module.".
-update_inc_clid(NClid) :-
-    decode_clkey(NClid, F, A, L), !, % TODO: leaves choicepoint!!
-    ( current_fact(pred_inc_clid(F, A, Clid), Ref) ->
-        ( Clid < L ->
+update_inc_clkey(NClKey) :-
+    decode_clkey(NClKey, F, A, L), !, % TODO: leaves choicepoint!!
+    ( current_fact(pred_inc_clkey(F, A, ClKey), Ref) ->
+        ( ClKey < L ->
           erase(Ref),
-          assertz_fact(pred_inc_clid(F, A, L))
+          assertz_fact(pred_inc_clkey(F, A, L))
         ; true )
     ;
-        assertz_fact(pred_inc_clid(F, A, L))
+        assertz_fact(pred_inc_clkey(F, A, L))
     ).
 
 % ----------------------------------------------------------------------
@@ -86,7 +86,7 @@ update_inc_clid(NClid) :-
 :- doc(clean_incremental_db/0, "Remove databases for incremental analysis.").
 clean_incremental_db :-
     retractall_fact(save_source_clause(_, _, _)),
-    retractall_fact(pred_inc_clid(_, _, _)),
+    retractall_fact(pred_inc_clkey(_, _, _)),
     retractall_fact(loaded_mods_(_)),
   retractall_fact(save_assertion_read(_,_,_,_,_,_,_,_,_)).
 %  retractall_fact(changed_registry_(_,_,_,_)).
@@ -135,9 +135,9 @@ restore_clause_db :-
   ).
 
 clean_unused_counters :-
-    pred_inc_clid(F, A, Clid),
+    pred_inc_clkey(F, A, ClKey),
     \+ used_counter(F, A),
-    retract_fact(pred_inc_clid(F, A, Clid)),
+    retract_fact(pred_inc_clkey(F, A, ClKey)),
     fail.
 clean_unused_counters.
 
@@ -157,10 +157,10 @@ remove_clauses_pred(F/A, Cls) :-
     findall(Cl, clauses_pred(F/A, Cl), Cls).
 
 clauses_pred(F/A, Cl) :-
-    current_fact(save_source_clause(Clid, clause(H, B), Dic), Ref),
-    decode_clkey(Clid, F, A, _), % TODO: leaves choicepoint!!!!!!!!!
+    current_fact(save_source_clause(ClKey, clause(H, B), Dic), Ref),
+    decode_clkey(ClKey, F, A, _), % TODO: leaves choicepoint!!!!!!!!!
     erase(Ref),
-    Cl = (Clid, clause(H, B), Dic).
+    Cl = (ClKey, clause(H, B), Dic).
 
 :- pred add_new_preds(+Preds) #"This predicates adds predicates which
     were not defined before.
@@ -175,10 +175,10 @@ add_new_preds([Cl|Cls]) :-
 % There should not be conflicts with predicates that were
 % removed completely from the analysis
 add_new_pred(Cl) :-
-    Cl = (Clid, clause(H, B), Dic),
+    Cl = (ClKey, clause(H, B), Dic),
     %functor(H, F, A),
-    update_inc_clid(Clid),
-    assertz_fact(save_source_clause(Clid, clause(H, B), Dic)).
+    update_inc_clkey(ClKey),
+    assertz_fact(save_source_clause(ClKey, clause(H, B), Dic)).
     
 :- pred add_all_clauses(Cls) : list #"Asserts the list of clauses
 @var{Cls} to the temporal database.".
@@ -200,17 +200,17 @@ get_current_assertions(Assrts) :-
 
 :- data update_flag/0.
 
-:- pred insert_after_clid(Id, Cl) : atm(Id).
-insert_after_clid(first, Cl) :-
-    change_id_clause(Cl, (NClid, clause(NH, B1), NDic)),
-    asserta_fact(source_clause(NClid, clause(NH, B1), NDic)).       
-insert_after_clid(Id, Cl) :-
+:- pred insert_after_clkey(Id, Cl) : atm(Id).
+insert_after_clkey(first, Cl) :-
+    change_id_clause(Cl, (NClKey, clause(NH, B1), NDic)),
+    asserta_fact(source_clause(NClKey, clause(NH, B1), NDic)).
+insert_after_clkey(Id, Cl) :-
     retractall_fact(update_flag),
     current_fact(source_clause(X, clause(H, B), Dic), Ref),
     ( X = Id ->
          asserta_fact(update_flag),
-         change_id_clause(Cl, (NClid, clause(NH, B1), NDic)),
-         assertz_fact(source_clause(NClid, clause(NH, B1), NDic)),
+         change_id_clause(Cl, (NClKey, clause(NH, B1), NDic)),
+         assertz_fact(source_clause(NClKey, clause(NH, B1), NDic)),
          fail
     ; true
     ),
@@ -231,22 +231,22 @@ insert_after(_, (_, clause(_, _), _)).
 change_id_clause(Cl, NCl) :-
     Cl = (_, clause(H, B), Dic),
     functor(H, F, A),
-    get_inc_clid(F/A, NClid),
-    change_clause_id_body(NClid, B, NB),
-    NCl = (NClid, clause(H, NB), Dic).
+    get_inc_clkey(F/A, NClKey),
+    change_clause_id_body(NClKey, B, NB),
+    NCl = (NClKey, clause(H, NB), Dic).
 
-change_clause_id_body(NClid, Lit1:OldId, Lit1:NId) :- !,
-    new_id_body(NClid, OldId, NId).
-change_clause_id_body(NClid, (Lit1:OldId, B1), (Lit1:NId, B2)) :- !,
-    new_id_body(NClid, OldId, NId),
-    change_clause_id_body(NClid, B1, B2).
-change_clause_id_body(NClid, (Lit, B1), (Lit, B2)) :-
-    change_clause_id_body(NClid, B1, B2).
+change_clause_id_body(NClKey, Lit1:OldId, Lit1:NId) :- !,
+    new_id_body(NClKey, OldId, NId).
+change_clause_id_body(NClKey, (Lit1:OldId, B1), (Lit1:NId, B2)) :- !,
+    new_id_body(NClKey, OldId, NId),
+    change_clause_id_body(NClKey, B1, B2).
+change_clause_id_body(NClKey, (Lit, B1), (Lit, B2)) :-
+    change_clause_id_body(NClKey, B1, B2).
 change_clause_id_body(_, Lit, Lit) :- !.
 
-new_id_body(NClid, OldId, NewId) :-
+new_id_body(NClKey, OldId, NewId) :-
     decode_litkey(OldId, _, _, _, LitId),
-    make_atom([NClid, LitId], NewId).
+    make_atom([NClKey, LitId], NewId).
 
 % ----------------------------------------------------------------------
 :- doc(section, "Predicates for adding and deleting assertions to the source db").

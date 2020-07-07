@@ -102,6 +102,16 @@ save_persistent_analysis :-
     pplog(incremental_high, ['{Analysis stored in: ', DFile, '}\n']),
     dump(DFile, [incremental]).
 
+:- export(clean_persistent_analysis/0).
+:- pred clean_persistent_analysis #"Removes the persistent incremental analysis
+   from disk.".
+clean_persistent_analysis :-
+    inc_persistent(on), !,
+    loaded_module(File),
+    dump_file(File, DFile),
+    pplog(incremental_high, ['{Analysis stored in: ', DFile, '}\n']),
+    del_file_nofail(DFile).
+
 % ----------------------------------------------------------------------
 % TODO: copied from ciaopp_batch and adapted
 dump_file(FilePath, DumpFile) :-

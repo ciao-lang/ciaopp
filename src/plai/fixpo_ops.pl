@@ -205,6 +205,7 @@ each_exit_to_prime0([Exit|LExit],AbsInt,Sg,Hv,Head,Sv,ExtraInfo,[Prime|LPrime]):
     exit_to_prime(AbsInt,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime),
     each_exit_to_prime0(LExit,AbsInt,Sg,Hv,Head,Sv,ExtraInfo,LPrime).
 
+:- export(each_abs_sort/3).
 :- pred each_abs_sort(+LASub, +AbsInt, LASub_s) : list * atm * term
    => list(LASub_s) + not_fails.
 each_abs_sort([ASub_u],AbsInt,LASub):- !,
@@ -230,6 +231,7 @@ each_project([Exit|Exits],AbsInt,Sg,Sv,HvFv_u,[Prime|Primes]):-
        project(AbsInt,Sg,Sv,HvFv_u,Exit,Prime),
        each_project(Exits,AbsInt,Sg,Sv,HvFv_u,Primes).
 
+:- export(each_extend/6).
 each_extend(Sg,[Prime],AbsInt,Sv,Call,LSucc):- !,
     extend(AbsInt,Sg,Prime,Sv,Call,Succ),
     LSucc=[Succ].
@@ -399,8 +401,20 @@ abs_subset_([NewPrime],AbsInt,[TempPrime]):- !,
 abs_subset_(NewPrime,AbsInt,TempPrime):- % TODO: only depthk.pl!
     abs_subset(AbsInt,NewPrime,TempPrime).
 
-%------------------------------------------------------------------------%
+%------------------------------------------------------------------------
+:- export(advance_in_body/3).
+:- pred advance_in_body(+Ch_Key,+OldBody,-NewBody) : atm(Ch_Key) + not_fails
+    #"@var{NewBody} is @var{OldBody} where the literals that do not need to
+      be re-analyzed are removed. Then we can use @pred{entry_to_exit/7}
+      with @var{NewBody}.".
+advance_in_body(Ch_Key,g(Ch_Key,Vars,Info,SgKey,Sg),NewBody):-!,
+    NewBody = g(Ch_Key,Vars,Info,SgKey,Sg).
+advance_in_body(Ch_Key,(g(Ch_Key,Vars,Info,SgKey,Sg),Goals),NewBody):-!,
+    NewBody = (g(Ch_Key,Vars,Info,SgKey,Sg),Goals).
+advance_in_body(Ch_Key,(_,Goals),NewBody):-
+    advance_in_body(Ch_Key,Goals,NewBody).
 
+%------------------------------------------------------------------------%
 body_succ_meta(apply(F,_),AbsInt,Sv_u,HvFv_u,Call,Exits,Succ):- !,
     call_builtin(AbsInt,'ground/1',ground(F),Sv_u,HvFv_u,Call,Exits,Succ).
 body_succ_meta(call(_),AbsInt,_Sv_u,_HvFv,_Call,Exits,[Succ]):- !,

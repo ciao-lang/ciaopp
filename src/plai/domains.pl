@@ -182,7 +182,7 @@ obtained after the analysis of the clause being considered
 
 :- export(call_to_entry/10).
 :- pred call_to_entry(+AbsInt,+Sv,+Sg,+Hv,+Head,+ClauseKey,+Fv,+Proj,-Entry,-ExtraInfo)
-   : (atm(AbsInt), list(Sv), list(Hv), list(Fv)) + not_fails
+   : (atm(AbsInt), list(Sv), list(Hv), list(Fv)) + (not_fails, is_det)
    #"Obtains the abstract substitution @var{Entry} which results from
    adding the abstraction of the unification @var{Sg} = @var{Head} to
    abstract substitution @var{Proj} (the call substitution for
@@ -211,7 +211,7 @@ obtained after the analysis of the clause being considered
 % TODO:[new-resources] compatibility with project/5 (unbound Sg!)
 :- export(project/5).
 :- pred project(+AbsInt,+Vars,+HvFv_u,+ASub,-Proj)
-   : atm * list * list * term * term + not_fails
+   : atm * list * list * term * term + (not_fails, is_det)
    #"Projects the abstract substitution @var{ASub} onto the variables of
    list @var{Vars} resulting in the projected abstract substitution
    @var{Proj}.".
@@ -222,7 +222,7 @@ project(AbsInt,Vars,HvFv,ASub,Proj) :-
 % TODO: check that HvFv is sorted?
 :- export(project/6). % TODO:[new-resources] (extra)
 :- pred project(+AbsInt,+Sg,+Vars,+HvFv_u,+ASub,-Proj)
-   : atm * term * list * list * term * term + not_fails
+   : atm * term * list * list * term * term + (not_fails, is_det)
    #"Projects the abstract substitution @var{ASub} onto the variables of
    list @var{Vars} resulting in the projected abstract substitution
    @var{Proj}.".
@@ -275,7 +275,7 @@ normalize_asub(_AbsInt,Prime,Prime).
 % needed
 
 :- export(compute_lub/3).
-:- pred compute_lub(+AbsInt,+ListASub,-LubASub) : atm * list * term
+:- pred compute_lub(+AbsInt,+ListASub,-LubASub) : atm * list * term + (not_fails, is_det)
    #"@var{LubASub} is the least upper bound of the abstract substitutions
    in list @var{ListASub}.".
 
@@ -337,8 +337,10 @@ identical_proj(AbsInt,Sg,Proj,Sg1,Proj1) :-
     abs_sort(AbsInt,Proj1,Proj1_s),
     identical_abstract(AbsInt,Proj,Proj1_s).
 
+% TODO: This predicate should be renamed to identical_complete because it also
+% checks Primes
 :- export(identical_proj_1/7).
-:- pred identical_proj_1(AbsInt,Sg,Proj,Sg1,Proj1,Prime1,Prime2)
+:- pred identical_proj_1(+AbsInt,+Sg,+Proj,+Sg1,+Proj1,+Prime1,+Prime2)
    #"Abstract patterns @var{Sg}:@var{Proj} and @var{Sg1}:@var{Proj1} are
    equivalent in domain @var{AbsInt}. Note that @var{Proj} is assumed to be
    already sorted. It is different from @tt{identical_proj/5} because it can be
@@ -385,12 +387,12 @@ identical_proj_1(AbsInt,Sg,Proj,Sg1,Proj1,Prime1,Prime2) :-
 :- export(fixpoint_covered_gfp/3).
 
 :- export(abs_sort/3).
-:- pred abs_sort(+AbsInt,+ASub_u,ASub) : atm(AbsInt) + not_fails
+:- pred abs_sort(+AbsInt,+ASub_u,ASub) : atm(AbsInt) + (not_fails, is_det)
    #"@var{ASub} is the result of sorting abstract substitution
    @var{ASub_u}.".
 
 :- export(extend/6). % TODO:[new-resources] can Sg be avoided?
-:- pred extend(+AbsInt,+Sg,+Prime,+Sv,+Call,-Succ) : atm(AbsInt) + not_fails
+:- pred extend(+AbsInt,+Sg,+Prime,+Sv,+Call,-Succ) : atm(AbsInt) + (not_fails, is_det)
    #"@var{Succ} is the extension the information given by @var{Prime} (success
     abstract substitution over the goal variables @var{Sv}) to the rest of the
     variables of the clause in which the goal occurs (those over which
@@ -415,7 +417,7 @@ less_or_equal_proj(AbsInt,Sg,Proj,Sg1,Proj1) :-
    #"Succeeds if @var{ASub1} is more general or equivalent to @var{ASub0}.".
 
 :- export(glb/4).
-:- pred glb(+AbsInt,+ASub0,+ASub1,-GlbASub) : atm(AbsInt) + not_fails
+:- pred glb(+AbsInt,+ASub0,+ASub1,-GlbASub) : atm(AbsInt) + (not_fails, is_det)
    #"@var{GlbASub} is the greatest lower bound of abstract substitutions
      @var{ASub0} and @var{ASub1}.".
 

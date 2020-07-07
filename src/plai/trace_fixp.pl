@@ -163,6 +163,7 @@ trace_fixpoint('external call completed').
 trace_fixpoint('trust').
 trace_fixpoint('applied trust').
 % For incremental analysis inside fixpoint dd
+trace_fixpoint('visit change').
 trace_fixpoint('visit change clause').
 trace_fixpoint('exit change clause').
 % For incremental analysis driver

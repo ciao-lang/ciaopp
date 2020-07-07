@@ -17,12 +17,11 @@
 
 :- use_module(ciaopp(plai/apply_assertions)).
 :- use_module(ciaopp(plai/plai_db)).
-:- use_module(ciaopp(plai/fixpo_dd), [add_change/5, add_external_complete_change/6]).
+:- use_module(ciaopp(plai/fixpo_dd), [add_change/5]).
 :- use_module(ciaopp(plai/domains), [project/6, exit_to_prime/8, identical_abstract/3,
     glb/4, less_or_equal/3, compute_lub/3, unknown_entry/4]).
-:- use_module(ciaopp(plai/fixpo_ops), [get_singleton/2, fixpoint_get_new_id/5]).
+:- use_module(ciaopp(plai/fixpo_ops), [get_singleton/2, fixpoint_get_new_id/5, advance_in_body/3]).
 :- use_module(ciaopp(plai/transform), [trans_clause/3]).
-:- use_module(ciaopp(plai/fixpo_dx_check_basic), [advance_in_body/3]).
 
 :- use_module(ciaopp(plai/trace_fixp), [fixpoint_trace/7]).
 

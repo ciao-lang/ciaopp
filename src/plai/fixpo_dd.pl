@@ -39,14 +39,14 @@
 :- doc(bug, "singleton/1 is leaving choicepoints.").
 %------------------------------------------------------------------------%
 
-:- export('$change_list'/2).
-:- data '$change_list'/2.
+:- export('$change_list'/3).
+:- data '$change_list'/3.
 :- data computing_change/1.
 
 :- doc(init_fixpoint/0,"Cleanups the database of analysis of
     temporary information.").
 init_fixpoint:-
-    retractall_fact('$change_list'(_,_)),
+    retractall_fact('$change_list'(_,_,_)),
     retractall_fact(computing_change(_)),
     trace_fixp:cleanup.
 
@@ -104,7 +104,7 @@ call_to_success(r,SgKey,Call,Proj,Sg,Sv,AbsInt,_ClId,Succ,F,N,Id) :-
    ".
 reuse_complete(SgKey,Proj,Sg,Sv,AbsInt,F,N,Id,Prime1,Prime):-
     each_abs_sort(Prime1,AbsInt,TempPrime),
-    ( retract_fact('$change_list'(Id,ChList)) ->
+    ( retract_fact('$change_list'(Id,SgKey,ChList)) ->
         fixpoint_compute_change(ChList,SgKey,Sg,Sv,Proj,AbsInt,TempPrime,Prime,Id)
     ;
         Prime = TempPrime
@@ -315,6 +315,7 @@ do_r_cl(Clause,SgKey,Sg,Sv,Proj,AbsInt,Id,TempPrime,Prime):-
 do_r_cl(_,_,_,_,_,_,_,Prime,Prime).
 
 :- pred decide_mark_parents/7 + not_fails.
+% TODO: this changes the order of the proj in the original complete
 decide_mark_parents(AbsInt,TempPrime,NewPrime,_SgKey,_Sg,_Id,_Proj):-
     abs_subset_(NewPrime,AbsInt,TempPrime),!.
 decide_mark_parents(AbsInt,_TempPrime,NewPrime,SgKey,Sg,Id,Proj):-
@@ -332,6 +333,7 @@ decide_mark_parents(AbsInt,_TempPrime,NewPrime,SgKey,Sg,Id,Proj):-
 % the recursivity classes are not updated for newly introduced predicates
 
 %----------------------------------------------------------------------
+:- export(td_mark_parents_change_list/2).
 :- pred td_mark_parents_change_list(+Parents,+AbsInt)
    : list * atm + (not_fails, is_det)
    #"This complete has changed. So we add the change in the $change_list
@@ -357,7 +359,7 @@ td_mark_parents_change_list([_|Rest],AbsInt):- % in case we have erased
       @var{Lit_Key}: Key of the @var{Literal} of the complete that needs recomputing.
       @var{Literal}: @var{Literal} with the term @tt{F/A/C/L}.
       @var{Parents}: Program points in which the literal is called (0 means an entry)
-                                      @var{AbsInt}: Abstract Domain.".
+      @var{AbsInt}: Abstract Domain.".
 add_change(Id,Lit_Key,Literal,Parents,AbsInt) :-
     insert_in_changelist(Id,Lit_Key,Literal,MFlag),
     ( MFlag = marked ->
@@ -367,18 +369,19 @@ add_change(Id,Lit_Key,Literal,Parents,AbsInt) :-
     ).
 
 :- pred insert_in_changelist/4 + not_fails.
-insert_in_changelist(Id,Lit_Key,Literal,MFlag) :-
-    current_fact('$change_list'(Id,ChList),Ref),!,
-    insert_literal(ChList,Lit_Key,Literal,NewList,Flag),
+insert_in_changelist(Id,Lit_Key,Lit,MFlag) :-
+    current_fact('$change_list'(Id,SgKey,ChList),Ref),!,
+    insert_literal(ChList,Lit_Key,Lit,NewList,Flag),
     (Flag == yes ->
        erase(Ref),
-       asserta_fact('$change_list'(Id,NewList)),
+       asserta_fact('$change_list'(Id,SgKey,NewList)),
        MFlag = not_marked
     ;
         MFlag = marked
     ).
-insert_in_changelist(Id,Lit_Key,Literal,not_marked) :-
-    asserta_fact('$change_list'(Id,[(Lit_Key,Literal)])).
+insert_in_changelist(Id,Lit_Key,F/A/Cl/L,not_marked) :-
+    get_predkey(F,A,SgKey),
+    asserta_fact('$change_list'(Id,SgKey,[(Lit_Key,F/A/Cl/L)])).
 
 insert_literal([], Lit_Key, Literal,[(Lit_Key,Literal)],yes).
 insert_literal([(Head_Key,Head_Lit)|Tail], Lit_Key,Literal,Set,Flag) :-
@@ -396,11 +399,13 @@ insert_literal_(>,Head_Key,Head_Lit,Tail,Lit_Key,Literal,NewList,yes):-
     NewList = [(Lit_Key,Literal),(Head_Key,Head_Lit)|Tail].
 
 %------------------------------------------------------------------------
+:- export(mark_parents_change_list_scc/3).
 :- pred mark_parents_change_list_scc(+Parents,+SCC,+AbsInt)
    : list * list * atm + (not_fails, is_det)
    #"This complete has changed. So we add the change in the $change_list
    of all parents. If the parent is in the same SCC then we recursively
    mark its parents as well.".
+% IG: this is the syntactic (static) scc, not the semantic (dynamic) one
 mark_parents_change_list_scc([],_,_).
 mark_parents_change_list_scc([(EntryKey,_)|Rest],SCC,AbsInt):-
     is_entrykey(EntryKey), !,
@@ -412,24 +417,28 @@ mark_parents_change_list_scc([(LitKey,Id)|Rest],SCC,AbsInt):-
         get_complete(Key,AbsInt,_,_,_,Id,Parents,_),
         add_change_scc(Id,LitKey,N/A/Cl/G,Parents,SCC,AbsInt)
     ;
-        ( ('$change_list'(Id,_) ; computing_change(Id)) ->
+        ( ('$change_list'(C,_,_) ; computing_change(C)) ->
             % The parent the parent that is not in the same SCC comes from a
             % different entry, so it was added previously to the change list.
             true
         ;
             % This complete is not expected to be in the parents list, only
             % the ones that appear during the fixpoint of predicate @var{Key}
-            throw(error(unexpected_parent(LitKey,Id,SCC)))
+            debug(unexpected_parent(LitKey,C,SCC)) % (*)
         )
     ),
     mark_parents_change_list_scc(Rest,SCC,AbsInt).
+% (*) This is not an error, if this strongly connected component is reachable
+% from more than one entry. It is also expected to appear if the bottom_up_cls
+% incremental deletion strategy is active. In other cases, this message may
+% imply that there is a bug in the fixpoint.
 
 %------------------------------------------------------------------------
-% IG: Lit_Key can be free when a clause is marked to analyze from the begining (see
-% second clause of compute_change)
 :- export(add_change_scc/6).
-:- pred add_change_scc(+Id,+Lit_Key,+Literal,+Parents,+SCC,+AbsInt)
-   : int * atm * term * list * list * atm + (not_fails, is_det).
+:- pred add_change_scc(+Id,?Lit_Key,+Literal,+Parents,+SCC,+AbsInt)
+   : int * atm * term * list * list * atm + (not_fails, is_det)
+   #"@var{Lit_Key} may be free when a clause is marked to analyze from the
+    begining (see second clause of @pred{compute_change}).".
 add_change_scc(Id,Lit_Key,Literal,Parents,SCC,AbsInt):-
     insert_in_changelist(Id,Lit_Key,Literal,MFlag),
     ( MFlag = marked ->
@@ -442,7 +451,7 @@ add_change_scc(Id,Lit_Key,Literal,Parents,SCC,AbsInt):-
 :- export(fixpoint_compute_change/9).
 :- pred fixpoint_compute_change(+Changes,+SgKey,+Sg,+Sv,+Proj,+AbsInt,+TempPrime,-Prime,+Id)
    : (atm(SgKey), list(var,Sv), atm(AbsInt), plai_db_id(Id))
-   => nonvar(Prime) + not_fails
+   => nonvar(Prime) + ( not_fails, is_det)
    #" It obtains the Prime for the recursive predicate Sg with Call (which
    has been assigned to node Id), and the list of nodes it depends on
    In doing this it performs an iteration over the recursive clauses of Sg
@@ -466,7 +475,7 @@ fixpoint_compute_change(Changes,SgKey,Sg,Sv,Proj,AbsInt,TempPrime,Prime,Id) :-
 #"Decides whether we should keep on iterating (the information the 
  complete depends on has changed or not).".
 fixpoint_ch(SgKey,Sg,Sv,Proj,AbsInt,Prime1,Prime,Id):-
-    current_fact('$change_list'(Id,Changes),Ref),
+    current_fact('$change_list'(Id,SgKey,Changes),Ref),
     erase(Ref),
     fixpoint_compute_change(Changes,SgKey,Sg,Sv,Proj,AbsInt,Prime1,Prime,Id), !.
 fixpoint_ch(_,_,_,_,_,Prime,Prime,_).

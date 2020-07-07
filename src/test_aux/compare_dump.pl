@@ -21,7 +21,7 @@ instances of the ciaopp analysis database.
 
 :- use_module(ciaopp(plai/plai_db), [complete/7, memo_table/6]).
 :- use_module(ciaopp(plai/domains), [less_or_equal/3, abs_sort/3]).
-:- use_module(ciaopp(plai/fixpo_ops), [each_abs_sort/3]).
+:- use_module(ciaopp(plai/fixpo_ops), [each_abs_sort/3, each_less_or_equal/3]).
 :- use_module(ciaopp(p_unit/p_abs), [registry/3, ensure_registry_file/3, cleanup_p_abs_all/0]).
 :- use_module(ciaopp(p_unit/p_dump), [restore/1]).
 
@@ -45,7 +45,7 @@ process_diff_item(abs_diff(_,_,_,_,_,X)) :-
     checking_domain(AbsInt),
     each_abs_sort(Succ, AbsInt, Succ_s),
     each_abs_sort(Succ2, AbsInt, Succ2_s),
-    ( each_less_or_equal(AbsInt, Succ_s, Succ2_s) ->
+    ( each_less_or_equal(Succ_s, AbsInt, Succ2_s) ->
         % this means that the second analysis is equal or less precise
         human_display_list(['LOSS ', Sg:Call, Succ_s, Succ2_s])
     ;
@@ -71,11 +71,6 @@ print_diff([D_item|Ds], [D_item|ND]) :-
     print_diff(Ds, ND).
 print_diff([_|Ds], ND) :-
     print_diff(Ds, ND).
-
-each_less_or_equal(_, [], []) :- !.
-each_less_or_equal(AbsInt, [S1|S1s], [S2|S2s]) :-
-    less_or_equal(AbsInt, S1, S2),
-    each_less_or_equal(AbsInt, S1s, S2s).
 
 :- pred compare_dumps_auto_detect_db(+DF1, +DF2, +To1, +To2, +AbsInt, -Diff)
     #"This predicate performs the same comparison as

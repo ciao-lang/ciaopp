@@ -778,7 +778,7 @@ valid_flag_values( incremental        , member(_,[off,on])).
 pp_flag(del_strategy).
 pp_flag(del_strategy, 'Whether to use a top_down or a bottom_up deletion strategy. This flag is used only with incremental analysis. It can be changed between incremental analyses.'). 
 current_pp_flags(  del_strategy       , top_down).
-valid_flag_values( del_strategy       , member(_,[top_down,bottom_up])).
+valid_flag_values( del_strategy       , member(_,[top_down,bottom_up,bottom_up_cls])).
 
 pp_flag(prog_lang).
 pp_flag(prog_lang, 'Programming language.').

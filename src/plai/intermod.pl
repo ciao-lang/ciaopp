@@ -34,7 +34,7 @@
         auto_ctcheck_summary/3,
         cleanreg/0,
         cleanreg/1
-    ],[assertions, basicmodes]).
+    ],[assertions, basicmodes, nativeprops]).
 
 :- use_package(dynamic). % TODO: use datafacts? dynamic is here only for asserta/1, retract/1 and the 'dead-code' part
 
@@ -114,7 +114,7 @@ set_top_level(TopLevel):-
     absolute_file_name(TopLevel, '_opt', '.pl', '.', _, AbsBase, _),
     set_fact(top_level(AbsBase)).
 
-:- pred top_level_module(-TopLevelModule,-TopLevelBase)
+:- pred top_level_module(?TopLevelModule,?TopLevelBase)
    #"@var{TopLevelModule} is the top-level module of the current program
     unit, and @var{TopLevelBase} is its basename.".
 top_level_module(TopLevelModule,TopLevelBase):-
@@ -200,8 +200,7 @@ valid analysis domain for modular analysis".
 @var{DomainList} are valid analysis domains for modular analysis".
 
 valid_mod_analysis([]).
-valid_mod_analysis([A|As]):-
-    !,
+valid_mod_analysis([A|As]):- !,
     valid_mod_analysis(A),
     valid_mod_analysis(As).
 valid_mod_analysis(Analysis):-
@@ -490,6 +489,7 @@ add_pending_modules_preanalysis(M):-
 
 :- data naive_pending_modules/1.
 
+:- pred do_naive_intermod/1 + not_fails.
 do_naive_intermod(Analyses):-
     current_fact(naive_pending_modules(_)),
     !,
@@ -510,6 +510,7 @@ do_naive_intermod(_Analyses).
 %%
 %% AbsInt can be either a domain name or a list of domains.
 
+:- pred naive_analyze_modules/2 + not_fails.
 naive_analyze_modules(_AbsInt, []) :- !.
 naive_analyze_modules(_, _) :-
     there_are_previous_errors, !.
@@ -520,11 +521,6 @@ naive_analyze_modules(AbsInt, [CurrMod|Mods]) :-
     module(CurrMod, Stats),
     get_stat(Stats, time(LoadTime,_)),
     add_stat(load, Stats),
-%jcf-04.05.2005
-%jcf-04.05.2005%        top_level_module(_,TopLevel),
-%jcf-04.05.2005%        module_list(ModList),
-%jcf-04.05.2005%        propagate_invalid_info(AbsInt,TopLevel,ModList),
-%jcf-04.05.2005
     ( ( current_fact(force_analysis(CurrMod))
       ; current_pp_flag(interleave_an_check,on)
       ) ->

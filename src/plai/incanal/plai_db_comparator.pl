@@ -125,6 +125,12 @@ check_same_success(AbsInt, Succ, Succ2) :-
     each_abs_sort(Succ2,AbsInt,Succ2_s),
     each_identical_abstract(Succ_s, AbsInt, Succ2_s).
 
+:- export(check_same_success_sorted/3).
+check_same_success_sorted('$bottom', _, '$bottom') :- !.
+check_same_success_sorted(['$bottom'], _, ['$bottom']) :- !.
+check_same_success_sorted(Succ1,AbsInt,Succ2) :-
+    each_identical_abstract(Succ1, AbsInt, Succ2).
+
 :- export(check_same_calls/5).
 :- pred check_same_calls(AbsInt, Sg1, Call1, Sg2, Call2) : atm(AbsInt)
     #"Succeeds if @var{Call1} and @var{Call2} are quivalent call

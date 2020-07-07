@@ -96,7 +96,7 @@ dumpfile_checker_loop([], _, _, _, _).
 dumpfile_checker_loop([F1|Fs1], [F1|Fs2], Dir1, Dir2, AbsInt) :- !,
     path_concat(Dir1, F1, DF1),
     path_concat(Dir2, F1, DF2),
-  compare_one_dump(DF1,DF2,AbsInt),
+    compare_one_dump(DF1,DF2,AbsInt),
     dumpfile_checker_loop(Fs1, Fs2, Dir1, Dir2, AbsInt).
 dumpfile_checker_loop([F1|Fs1], [F2|Fs2], Dir1, Dir2, AbsInt) :-
     F1 < F2, !,

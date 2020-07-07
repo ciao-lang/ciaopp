@@ -51,8 +51,7 @@
 :- use_module(ciaopp(plai/tarjan), [recursive_classes/1]).
 :- use_module(ciaopp(plai/incanal/tarjan_inc),
     [rec/1, vertexes/1, predicates/1, rec_preds/1, tarjan_data/1]).
-:- use_module(ciaopp(plai/fixpo_dd), ['$change_list'/2]).
-:- use_module(ciaopp(plai/incanal/incanal_db), [update_inc_clid/1, fixpoint_id_/2]).
+:- use_module(ciaopp(plai/incanal/incanal_db), [update_inc_clkey/1, fixpoint_id_/2]).
 
 % TODO: make add_to_db multifile and split in the modules in which
 % they are stored
@@ -267,8 +266,8 @@ process_after_read(memo_table(M1,M2,M3,M4,M5,M6), T, Dict) :- !,
     T = memo_table(M1,M2,M3,M4,M5,Call),
     imp_auxiliary_info(M2,Dict,M6,Call).
 process_after_read(T, T, _) :-
-    T = source_clause(Clid, _, _), !,
-    update_inc_clid(Clid).
+    T = source_clause(ClKey, _, _), !,
+    update_inc_clkey(ClKey).
 process_after_read(T, T, _Dict).
 
 %% --------------------------------------------------------------------

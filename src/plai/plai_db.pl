@@ -73,10 +73,10 @@ parents_complete([(K,Id)|Ps]) :-
 
 % To annotate when a call (litkey) is invalid because it violates a (trust) call
 % assertion
-:- export(invalid_call/6). % for dump incanal
+:- export(invalid_call/6). % for incanal assrts
 :- data invalid_call/6.
 
-:- export(raw_success/6). % for dump incanal
+:- export(raw_success/6). % for incanal
 :- data raw_success/6.
 % raw_success(ClKey,AbsInt,Id,Sg,Proj,Prime)
 
@@ -121,17 +121,25 @@ get_parent_key(LitKey,Id,AbsInt,CKey) :-
 
 :- export(get_complete/8).
 % complete + (!) to avoid unnecessary choicepoints
-:- pred get_complete(SgKey,AbsInt,Sg,Proj,Prime,Id,Ps,Ref)
-    : (predkey(SgKey), atm(Id)).
+:- pred get_complete(SgKey,AbsInt,?Sg,?Proj,?Prime,+Id,?Ps,Ref)
+    : (predkey(SgKey), atm(AbsInt), plai_db_id(Id)) + is_det.
 get_complete(SgKey,AbsInt,Sg,Proj,Prime,Id,Parents,Ref) :-
     current_fact(complete(SgKey,AbsInt,Sg,Proj,Prime,Id,Parents),Ref), !.
 
 :- export(get_memo_table/7).
 % memo_table + (!) to avoid unnecessary choicepoints
-:- pred get_memo_table(LitKey,AbsInt,Id,Child,Vars,Call,Ref)
-    : (predkey(SgKey), atm(Id)).
+:- pred get_memo_table(+LitKey,+AbsInt,+Id,Child,Vars,Call,Ref)
+    : (litkey(LitKey), atm(AbsInt), plai_db_id(Id)).
 get_memo_table(LitKey,AbsInt,Id,Child,Vars,Call,Ref) :-
     current_fact(memo_table(LitKey,AbsInt,Id,Child,Vars,Call), Ref), !.
+
+:- export(get_raw_success/7).
+% raw_success + (!) to avoid unnecessary choicepoints
+:- pred get_raw_success(+ClKey,+AbsInt,+Id,Sg,Proj,Prime,Ref)
+   : (litkey(ClKey), atm(AbsInt), plai_db_id(Id))
+   => (nonvar(Sg), nonvar(Proj), nonvar(Prime), nonvar(Ref)).
+get_raw_success(ClKey,AbsInt,Id,Sg,Proj,Prime,Ref) :-
+    current_fact(raw_success(ClKey,AbsInt,Id,Sg,Proj,Prime), Ref), !.
 
 :- export(add_parent_complete/5).
 :- pred add_parent_complete(+SgKey,+AbsInt,+Id,+PId,+LitKey).
@@ -216,7 +224,7 @@ update_raw_success(_, _, _,_).
 
 %%%%%%%%%%%%%%%%% Delete a complete %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 :- export(delete_complete/3).
-:- pred delete_complete(+SgKey,+AbsInt,+Id)
+:- pred delete_complete(+SgKey,+AbsInt,+Id) : atm * atm * plai_db_id
    #"Deletes the information of the complete with @var{Id}. This predicate does
     not delete recursively following its parents.".
 delete_complete(SgKey,AbsInt,Id) :-
@@ -237,12 +245,17 @@ remove_extra_info_complete(PredKey,Id,AbsInt) :-
     ).
 
 :- export(delete_plai_db_one_clause/4).
+:- pred delete_plai_db_one_clause(+PredKey,+ClKey,+Id,+AbsInt)
+   : atm * atm * plai_db_id * atm
+   #"Removes from plai_db the information relative to the clause @var{ClKey} of
+    complete @var{Id} for the domain @var{AbsInt}".
 delete_plai_db_one_clause(PredKey,ClKey,Id,AbsInt) :-
     trans_clause(PredKey, _, clause(_, _, ClKey, Body)), !,
     remove_raw_success(ClKey, AbsInt, Id),
-    erase_previous_memo_tables_and_parents(Body,AbsInt,ClKey,Id),
-    erase_previous_memo_lubs(Body,ClKey).
-
+    ( get_memo_table(ClKey,AbsInt,Id,no,_,_,_) -> % (**) see below
+        erase_previous_memo_tables_and_parents(Body,AbsInt,ClKey,Id),
+        erase_previous_memo_lubs(Body,ClKey)
+    ;  true ).
 % IG: retract also auxiliary completes (Id = no) created from this one
 % IG: not necessary, they are not created (see add_complete_builtin in fixpo_ops.pl)
 % ( % failure-driven loop
@@ -252,35 +265,22 @@ delete_plai_db_one_clause(PredKey,ClKey,Id,AbsInt) :-
 %       fail
 % ; true ),
 
-:- pred erase_memo_tables_and_parents_one_Id(+Body, +ClKey, +Key1, +Id, +AbsInt)
-    # "The memo_tables and parents information for the clause
-    @var{Body} with key @var{ClKey} which correspond to the
-    complete @var{Id} are erased. @var{Key1} is the key of the
-    first literal in @var{Body}. The difference with
-    erase_memo_tables_and_parents is that it only deletes the
-    memo_tables and parents that correspond to one complete (Id)
-      instead of to all the completes for the predicate.".
-erase_memo_tables_and_parents_one_Id((Body,RestBody),ClKey,Key1,Id, AbsInt) :-
-    Body = g(MKey, _Vars, _Info, SgKey, _Goal),
-    current_fact(memo_table(Key1, AbsInt, Id, Child, _, _)), !,
-    ( erase_previous_parents_info(Child, SgKey, AbsInt, MKey, Id) -> true
-    ; true  % allow failure because the builtins do not have completes (IG)
-    ),
-    erase_previous_memo_tables_and_parents(RestBody, AbsInt, ClKey, Id),
-    fail.
-erase_memo_tables_and_parents_one_Id(g(MKey,_,_,SgKey,_),ClKey, Key1, Id,AbsInt) :-
-    erase_last_memo_table(AbsInt, ClKey, Id),
-    % before memo table because facts may not have a memo_table entry. (IG)
-    current_fact(memo_table(Key1, AbsInt, Id, Child, _, _)), !,
-    erase_previous_parents_info(Child, SgKey, AbsInt, MKey, Id),
-    % allow failure because the builtins do not have completes (IG)
-    fail.
-erase_memo_tables_and_parents_one_Id(_, _, _, _, _).
+% (**) this check was added because of '!' being used as key for the
+% memo_tables. The problem is that when several clauses have a '!' but one of
+% them does not have an analysis, e.g., because it didn't unify with the query,
+% if we don't make this check, and the cut is the first literal of a clause, one
+% entry of the memo_table will be removed for a clause that has no analysis.
+% Later, when the info of the clause where the actual '!' was analyzed is
+% attempted to be removed, it fails because it was already removed, and the
+% remaining of the clause info is not removed. To this end, we are checking if
+% the analysis of a clause was finished by checking if there is a memo_table for
+% the last program point of the clause, i.e., the one that has as key, the ClKey
 
 remove_complete_parent(Id) :-
     retract_fact(complete_parent(Id,_)), !.
 remove_complete_parent(_).
 
+:- pred remove_raw_success(+ClKey, +AbsInt, +Id) + (not_fails, is_det).
 remove_raw_success(ClKey, AbsInt, Id) :-
     retract_fact(raw_success(ClKey,AbsInt,Id,_,_,_)), !.
 remove_raw_success(_, _, _).
@@ -320,7 +320,7 @@ erase_previous_memo_table_and_parents_one_goal(g(Key,_,Info,SgKey,Sg),AbsInt,ClK
 :- export(erase_last_memo_table/3).
 :- pred erase_last_memo_table(+AbsInt,+ClKey,+Id) + not_fails.
 erase_last_memo_table(AbsInt,ClKey,Id):-
-    get_memo_table(ClKey,AbsInt,Id,no,_,_,Ref2),!,
+    get_memo_table(ClKey,AbsInt,Id,no,_,_,Ref2), !,
     erase(Ref2).
 erase_last_memo_table(_,_,_). %maybe we have not written it yet
 
@@ -439,22 +439,24 @@ memo_table_id_key(A, B, C) :-
 :- doc(section, "Operations for invalid calls").
 
 :- export(add_invalid_call/6).
-add_invalid_call(SgKey,AbsInt,LitKey,N,Sg,Proj) :-
-    invalid_call(SgKey,AbsInt,LitKey,N,Sg,Proj), !.
-add_invalid_call(SgKey,AbsInt,LitKey,N,Sg,Proj) :-
-    assertz_fact(invalid_call(SgKey,AbsInt,LitKey,N,Sg,Proj)).
+:- pred add_invalid_call(+SgKey,+AbsInt,+LitKey,+Id,+Sg,+Proj).
+add_invalid_call(SgKey,AbsInt,LitKey,Id,Sg,Proj) :-
+    invalid_call(SgKey,AbsInt,LitKey,Id,Sg,Proj), !.
+add_invalid_call(SgKey,AbsInt,LitKey,Id,Sg,Proj) :-
+    assertz_fact(invalid_call(SgKey,AbsInt,LitKey,Id,Sg,Proj)).
 
-% TODO: retract this when a complete is removed!!
 :- export(store_raw_success/6).
-store_raw_success(ClKey,AbsInt,Id,Sg,Proj,Prime) :-
+:- pred store_raw_success(+ClKey,+AbsInt,+Id,+Sg,+Proj,+LPrime).
+store_raw_success(ClKey,AbsInt,Id,Sg,Proj,LPrime) :-
     ( retract_fact(raw_success(ClKey,AbsInt,Id,_,_,_)) -> true ; true ),
     % Id is unique
-    assertz_fact(raw_success(ClKey,AbsInt,Id,Sg,Proj,Prime)).
+    assertz_fact(raw_success(ClKey,AbsInt,Id,Sg,Proj,LPrime)).
 
 :- export(get_raw_success/6).
-:- pred get_raw_success(+ClKey,+AbsInt,+Id,Sg,Proj,Prime).
-get_raw_success(ClKey,AbsInt,Id,Sg,Proj,Prime) :-
-    raw_success(ClKey,AbsInt,Id,Sg,Proj,Prime), !.
+:- pred get_raw_success(+ClKey,+AbsInt,+Id,Sg,Proj,LPrime)
+   => list(LPrime).
+get_raw_success(ClKey,AbsInt,Id,Sg,Proj,LPrime) :-
+    raw_success(ClKey,AbsInt,Id,Sg,Proj,LPrime), !.
 
 :- doc(section, "Types").
 

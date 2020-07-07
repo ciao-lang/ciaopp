@@ -423,8 +423,8 @@ fake_recursive_classify([clause(_,_):_|Cs],[r|SCs]):-
 % the empty list
 %-----------------------------------------------------------------------------
 
-get_recursivity_class(N/A,[List|_],List):-
-    member(N/A,List),!.
+get_recursivity_class(N/A,[Class|_],Class):-
+    member(N/A,Class),!.
 get_recursivity_class(N/A,[_|Rs],Class):- !,
     get_recursivity_class(N/A,Rs,Class).
 get_recursivity_class(N/A,[],[N/A]).

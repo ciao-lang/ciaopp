@@ -32,7 +32,8 @@
     decide_memo/6,
     each_unknown_call/5,
     clause_applies/2,
-    abs_subset_/3
+    abs_subset_/3,
+    advance_in_body/3
  ]).
 :- use_module(ciaopp(plai/domains)).
 :- use_module(ciaopp(plai/trace_fixp), [fixpoint_trace/7, cleanup/0]).
@@ -42,7 +43,6 @@
 :- use_module(ciaopp(plai/transform), [body_info0/4, trans_clause/3]).
 :- use_module(ciaopp(plai/apply_assertions_old), [apply_trusted0/7, cleanup_trusts/1]).
 :- use_module(ciaopp(plai/apply_assertions), [cleanup_applied_assertions/1]).
-:- use_module(ciaopp(plai/fixpo_dx_check_basic)).
 :- use_module(spec(global_control), [cleanup_unfolds/0]).
 
 %------------------------------------------------------------------------%
