@@ -49,13 +49,15 @@ print_reach_report :-
         % format('~nProcessing ~w:~n', [SgKey]),
         detect_dead_predicate(SgKey),
         ( % failure-driven loop
-          trans_clause(SgKey,_,clause(_Head,_Vars_u,ClKey,_Body)),
+          trans_clause(SgKey,_,clause(_Head,_Vars_u,ClKey,Body)),
             ( get_memo_table(ClKey, _AbsInt, _, no, _Vars, ASub, _) ->
                 ( bottom(ASub) ->
                     report_message(ClKey,"clause ~w always fails or loops~n",[ClKey])
                 ;   true )
             ;
-                report_message(ClKey,"clause body of ~w is never executed~n", [ClKey])
+                ( Body \= g(_,[],'$built'(_,true,_),'true/0',true) -> % fact
+                    report_message(ClKey,"clause body of ~w is never executed~n", [ClKey])
+                ; report_message(ClKey,"~w fact is never unified~n", [ClKey]) )
             ),
             fail
         ;   true ),
