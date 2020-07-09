@@ -1129,7 +1129,9 @@ get_flag_list(Menu, L) :-
 
 save_flags_list([A|As], Menu) :- !,
     get_menu_flag(Menu, A, V),
-    push_pp_flag(A, V),
+    ( push_pp_flag(A, V) -> true
+    ; error_message("Invalid flag value: ~w=~w", [A,V]) % TODO: exception?
+    ),
     save_flags_list(As, Menu).
 save_flags_list([], _Menu).
 
