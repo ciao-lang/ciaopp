@@ -14,6 +14,7 @@
 :- use_module('ciaopp-dump-stats').
 :- use_module('ciaopp-dump-syntactic').
 :- use_module('ciaopp-dump-report').
+:- use_module('ciaopp-dump-ctcheck').
 
 :- doc(module, "This program outputs information about CiaoPP files.
 
@@ -37,6 +38,13 @@ where the possible options are:
   fmt <filename>[.dump]
      Outputs the analysis result in dot format
 
+  ctcheck <modulename>.pl <filename>[.dump] <domain>
+     Checks assertions agains the analysis in <filename>.dump with <domain>
+
+  report reach <file>[.dump]
+     Deadcode and failure report of a CiaoPP analysis dumped with the incremental option, and analyzed with
+     the pp_flag fact_info=on.
+
   stats [--print-header] <filenames>[.dump]
      Counts simple characteristics of analysis in the files.
 
@@ -46,11 +54,6 @@ where the possible options are:
      Counts simple syntactic characteristics of the source in the files.
 
      --print-header: prints the names of the characteristics displayed
-
-  report reach <file>[.dump]
-     Deadcode and failure report of a CiaoPP analysis dumped with the incremental option, and analyzed with
-     the pp_flag fact_info=on.
-
 ").
 
 
@@ -69,5 +72,7 @@ main(['syntactic'|Args]) :- !,
     'ciaopp-dump-syntactic':main(Args).
 main(['report', 'reach'|Args]) :- !,
     'ciaopp-dump-report':main(Args).
+main(['ctcheck'|Args]) :- !,
+    'ciaopp-dump-ctcheck':main(Args).
 main(_) :-
     format(user_error, "Wrong aruments. Run '-h' to show help",[]).

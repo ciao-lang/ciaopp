@@ -22,7 +22,6 @@ The program needs to be analyzed with the pp flag fact_info=on, and dumped with 
 :- use_module(library(terms_vars), [varset/2]).
 :- use_module(library(messages), [show_message/4, show_message/3]).
 
-:- use_module(ciaopp(ciaopp)).
 :- use_module(ciaopp(plai/plai_db), [get_memo_table/7,complete/7]).
 :- use_module(ciaopp(p_unit/p_dump), [restore/1]).
 :- use_module(ciaopp(p_unit/clause_db), [clause_locator/2]).
@@ -30,7 +29,6 @@ The program needs to be analyzed with the pp flag fact_info=on, and dumped with 
 :- use_module(ciaopp(plai/fixpo_ops), [bottom/1]).
 
 main([DumpFile]) :-
-    clean_analysis_info,
     restore(DumpFile),
     ( \+ trans_clause(_,_,_) ->
         format('No clauses found in dump, try dumping it with the incremental option.', [])
