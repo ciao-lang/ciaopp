@@ -62,6 +62,7 @@
 :- use_module(engine(messages_basic), [message/2]).
 :- use_module(library(sets), [insert/3]).
 :- use_module(library(lists), [select/3, reverse/2, append/3]).
+:- use_module(library(llists), [append/2]).
 :- use_module(library(pathnames), [path_basename/2, path_concat/3]).
 :- use_module(library(aggregates), [findall/3]).
 :- use_module(spec(spec), [simplify_specialize/6]).
@@ -716,7 +717,7 @@ monolithic_analyze(Analyses,TopLevel,Info):-
     %% nn
     get_all_modules(TopLevel,ModList), % TODO: get this time
     cleanup_persistent_registry(ModList),
-%%%%
+    %%%%
     module(ModList,LStats),
     get_stat(LStats, time(LoadTime,_)),
     reset_total_info,
@@ -1178,7 +1179,7 @@ auto_ctcheck_opt(Analysis, TopLevel, [(time,Time),Info]) :-
     pp_statistics(runtime,[T1,_]),
     set_top_level(CopyTopLevel),
     get_all_module_cycles(CopyTopLevel, ModuleLList),
-    list_of_lists_to_list(ModuleLList, ModuleList),
+    append(ModuleLList, ModuleList),
 %       display(modules(ModuleList)),
     auto_ctcheck_opt_(Analysis, TopLevel, ModuleList, Info),
     pop_pp_flag(entry_policy),
@@ -1225,13 +1226,6 @@ auto_ctcheck_opt_(Analysis, TopModule, [Module|Modules], assert_count(Info)) :-
 % %     atom_concat(Dir,'test_opt/', CopyDir),
 %       copy_files(Files, 'test_opt/',[overwrite]).
 % %     atom_concat(CopyDir,M, Copy).
-
-% TODO: IG move this?
-% I know, it should not be here....
-list_of_lists_to_list([],[]).
-list_of_lists_to_list([X|Xs],L) :-
-    list_of_lists_to_list(Xs,L1),
-    append(X,L1,L).
 
 % -----------------------------------------------------------------------------
 
