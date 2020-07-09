@@ -595,24 +595,25 @@ inc_ana(X,X) :-
 post_iter(X,X) :-
     member(ct_mod_iterate=A,X),
     ( A == on ->
-      set_menu_flag(check,ct_ext_policy,registry),
-      set_menu_flag(check,ext_policy,registry),
-      set_menu_flag(check,mnu_modules_to_analyze,all), % TODO: useless if intermod=off! enable it? (JF)
-      member(menu_level=A1,X),
-      ( A1 == naive ->  % PP: should be ok in most cases
-        set_menu_flag(check,types,terms)
-      ; true
-      )
-    ; set_menu_flag(check,ct_ext_policy,assertions),
-      set_menu_flag(check,ext_policy,assertions),
-      set_menu_flag(check,mnu_modules_to_analyze,current)
+        set_menu_flag(check,ct_ext_policy,registry),
+        set_menu_flag(check,ext_policy,registry),
+        set_menu_flag(check,mnu_modules_to_analyze,all), % TODO: useless if intermod=off! enable it? (JF)
+        member(menu_level=A1,X),
+        ( A1 == naive ->  % PP: should be ok in most cases
+            set_menu_flag(check,types,terms)
+        ; true
+        )
+    ;
+        set_menu_flag(check,ct_ext_policy,assertions),
+        set_menu_flag(check,ext_policy,assertions),
+        set_menu_flag(check,mnu_modules_to_analyze,current)
     ).
 
 reg_reg(X,X):-
     member(ct_regen_reg=A,X),
     ( A==on ->
-      set_menu_flag(check,mnu_modules_to_analyze,all),
-      set_menu_flag(check,ext_policy,registry)
+        set_menu_flag(check,mnu_modules_to_analyze,all),
+        set_menu_flag(check,ext_policy,registry)
     ; true
     ).
 
@@ -820,7 +821,6 @@ guard polybounded(X)  :-
     member(poly_fitness=F, X),
     F == bounded_size.
 
-
 guard polyheur(X)  :-
     member(poly_pruning=Y, X),
     ( Y == heuristic
@@ -856,7 +856,6 @@ mtypepar(X) :- mtype(X).
 mtypepar(para).
 :- endif.
 
-
 mtypeepar(X) :- mtype(X).
 :- if(defined(has_ciaopp_extra)).
 mtypeepar(para(1)).
@@ -888,7 +887,7 @@ p_nf(L, LS) :-
     ;
         remove_from_list(L, modes=_, L1),
         remove_from_list(L1, types=_, L2),
-
+        %
         append(L2, [ modes          = shfr   ,
                      types          = eterms ,
                      type_precision = all    ,
@@ -931,13 +930,6 @@ show_mcfg :-
     %   (required by ciao-widgets.el)
     pplog(auto_interface, ['Current Saved Menu Configurations: ', C]).
 
-% :- set_prolog_flag(multi_arity_warnings, off).
-
-% true(_).
-% true(A, A).
-
-% :- set_prolog_flag(multi_arity_warnings, on).
-
 % ---------------------------------------------------------------------------
 % Customize
 
@@ -969,7 +961,7 @@ customize_and_preprocess :-
     ),
     display(') ? '),
     prompt_for_default(NewFile,File),
-    (  file_exists(NewFile,4) ->
+    ( file_exists(NewFile,4) ->
         customize_and_preprocess(NewFile)
     ;  error_message("~w does not exist or cannot be read", [NewFile] )
     ).
@@ -1176,7 +1168,6 @@ pop_flags([]).
 
 % ---------------------------------------------------------------------------
 % auto_*/? predicates
-
 do_output(OFile, Menu) :-
     % human-readable output
     get_menu_flag(Menu,menu_output,Output),
