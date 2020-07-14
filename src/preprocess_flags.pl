@@ -40,18 +40,18 @@
 
 %%------------------------------------------------------------------------
 
-:- trust pred persistent_dir( Key , Dir ) => atm * atm.
-:- trust pred persistent_dir( Key , Dir ) :  atm * var.
-:- trust pred persistent_dir( Key , Dir ) :  atm * atm.
+:- trust pred persistent_dir(Key, Dir) => atm * atm.
+:- trust pred persistent_dir(Key, Dir) :  atm * var.
+:- trust pred persistent_dir(Key, Dir) :  atm * atm.
 
 persistent_dir(dbdir, '~/.ciao.d/ciaopp_flags').
 
 :- persistent( config/2 , dbdir ).
 
-:- trust pred config( A , B ) => atm * list.
-:- trust pred config( A , B ) :  atm * list.
-:- trust pred config( A , B ) :  atm * var.
-:- trust pred config( A , B ) :  var * var.
+:- trust pred config(A, B) => atm * list.
+:- trust pred config(A, B) :  atm * list.
+:- trust pred config(A, B) :  atm * var.
+:- trust pred config(A, B) :  var * var.
 
 % ---------------------------------------------------------------------------
 % Preprocess flag definition
