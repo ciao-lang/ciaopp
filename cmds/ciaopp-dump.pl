@@ -75,4 +75,4 @@ main(['report', 'reach'|Args]) :- !,
 main(['ctcheck'|Args]) :- !,
     'ciaopp-dump-ctcheck':main(Args).
 main(_) :-
-    format(user_error, "Wrong aruments. Run '-h' to show help",[]).
+    format(user_error, "Wrong arguments. Run '-h' to show help",[]).
