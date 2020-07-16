@@ -131,4 +131,3 @@ analysis_opt(no_incremental).
 analysis_opt(timeout(N)) :- int(N), N > 0.
 analysis_opt(workers(N)) :- int(N), N > 0.
 analysis_opt(analysis(L)) :- list(atm, L).
-

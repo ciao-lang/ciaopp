@@ -37,10 +37,35 @@ $ allure serve
 ").
 
 :- use_module(ciaopp_batch(ciaopp_batch)).
+:- use_module(ciaopp_batch(db_analysis)).
 :- use_module(library(format)).
 
-main([AbsInt|Paths]) :-
-    Paths = [_|_], !,
-    analysis_start(Paths, [analysis([AbsInt])]).
+main(Args) :-
+    process_opts(Args,Paths,Opts), !,
+    analysis_start(Paths, Opts).
 main(_) :-
-    format('Usage: ciaopp-batch <Domain> <Path> [Paths]~n',[]).
+    format('Usage: ciaopp-batch [-t T --inc=none|module|clause] <Domain> <Path> [Paths]~n',[]).
+
+process_opts(Args0,Paths,Opts) :-
+    ( member('--inc=module', Args0) ->
+        Args = Args0
+    ;
+        Args = ['--inc=no'|Args0] % "non incremental" by default
+    ),
+    process_opts_(Args,Paths,Opts).
+
+process_opts_([],[],[]).
+process_opts_(['-t',NA|Args], Paths, [timeout(N)|Opts]) :- !,
+    atom_number(NA,N),
+    process_opts(Args,Paths,Opts).
+process_opts_([I|Args], Paths, Opts) :-
+    ( I = '--inc=no' ->
+        Opts = [no_incremental|Opts0]
+    ; I = '--inc=clause' ->
+        format('WARNING: Clause-level inc not implemented in ciaopp-batch~n', []),
+        Opts = Opts0
+    ; I = '--inc=module',
+        Opts = Opts0
+    ), !,
+    process_opts_(Args,Paths,Opts0).
+process_opts_([AbsInt|Paths],Paths,[analysis([AbsInt])]).
