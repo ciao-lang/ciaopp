@@ -37,6 +37,10 @@ $ allure serve
 ").
 
 :- use_module(ciaopp_batch(ciaopp_batch)).
+:- use_module(library(format)).
 
 main([AbsInt|Paths]) :-
+    Paths = [_|_], !,
     analysis_start(Paths, [analysis([AbsInt])]).
+main(_) :-
+    format('Usage: ciaopp-batch <Domain> <Path> [Paths]~n',[]).
