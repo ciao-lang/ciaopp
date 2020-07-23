@@ -140,24 +140,24 @@ cleanup_applied_assertions(AbsInt) :-
 apply_assrt_call_to_success(_,_,_,'$bottom',_,_,'$bottom','$bottom') :- !.
 apply_assrt_call_to_success(AbsInt,Sg,Sv,Proj0,HvFv_u,Call,NewProj,NewCall) :-
     current_pp_flag(old_trusts, off),
-  assertions_for_sg(calls,Sg), !, % avoid unnecessary normalization
-  fixpoint_trace('trust',call_to_success,_,_,Sg,Proj0,_),
-  abs_normalize(AbsInt,Sg,Sv,Proj0,Head,Hv,NormProj,ExtraInfo),
-  get_applicable_status(Head, call, Sts),
-  predkey_from_sg(Head, SgKey),
+    assertions_for_sg(calls,Sg), !, % avoid unnecessary normalization
+    fixpoint_trace('trust',call_to_success,_,_,Sg,Proj0,_),
+    abs_normalize(AbsInt,Sg,Sv,Proj0,Head,Hv,NormProj,ExtraInfo),
+    get_applicable_status(Head, call, Sts),
+    predkey_from_sg(Head, SgKey),
     glb_calls(Sts,SgKey,AbsInt,Head,NormProj,NProj,AppliedF),
-  ( var(AppliedF) -> % no assertions applied
-      NewProj=Proj0, NewCall=Call
-  ;
+    ( var(AppliedF) -> % no assertions applied
+        NewProj=Proj0, NewCall=Call
+    ;
       invalid_trust_message(calls,NProj,Head:NormProj,Sg),
       ( NProj = '$bottom' ->
-      NewProj = ['$bottom'],
-      NewCall = ['$bottom']
+          NewProj = ['$bottom'],
+          NewCall = ['$bottom']
       ;
-      exit_to_prime(AbsInt,Sg,Hv,Head,Sv,NProj,ExtraInfo,Prime),
-      % Extend the results to all the variables in the clause (Call)
-      extend(AbsInt,Sg,Prime,Sv,Call,NewCall),
-      project(AbsInt,Sg,Sv,HvFv_u,NewCall,NewProj)
+          exit_to_prime(AbsInt,Sg,Hv,Head,Sv,NProj,ExtraInfo,Prime),
+          % Extend the results to all the variables in the clause (Call)
+          extend(AbsInt,Sg,Prime,Sv,Call,NewCall),
+          project(AbsInt,Sg,Sv,HvFv_u,NewCall,NewProj)
       ),
       fixpoint_trace('applied trust',call_to_success,_,_,Sg,Proj0,_)
   ).
@@ -221,7 +221,7 @@ pattern.".
 apply_assrt_no_source(_,_,_,_,'$bottom','$bottom') :- !.
 apply_assrt_no_source(SgKey,AbsInt,Sg,Sv,Proj,Prime) :-
     current_pp_flag(old_trusts, off), !,
-  fixpoint_trace('trust',no_source,_,_,Sg,Proj,_),
+    fixpoint_trace('trust',no_source,_,_,Sg,Proj,_),
     % get modular information
     predkey_from_sg(Sg,SgKey),
     ( apply_trusted_modular(Proj,SgKey,Sg,Sv,AbsInt,Prime) ->

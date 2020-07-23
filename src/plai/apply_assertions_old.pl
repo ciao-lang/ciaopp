@@ -1,6 +1,6 @@
 :- module(apply_assertions_old, [
-    apply_trusted/7, apply_trusted0/7, apply_trusted_each/7, cleanup_trusts/1
-], [assertions, isomodes, datafacts]).
+    apply_trusted/7, apply_trusted0/7, apply_trusted_each/7, cleanup_trusts/1],
+    [assertions, isomodes, datafacts]).
 
 :- use_module(library(lists), [append/3]).
 :- use_module(library(terms_check), [variant/2]).
@@ -55,6 +55,7 @@
 cleanup_trusts(AbsInt):-
     retractall_fact(cached_trust(AbsInt,_)),
     retractall_fact(trust(_SgKey,_,_,AbsInt,_,_)),
+    % IG: why not retract the_trusts/4?
     retractall_fact(approx(_SgKey,_,AbsInt,_)).
 
 %-----------------------------------------------------------------------------
@@ -109,7 +110,7 @@ apply_trusted0(Proj,SgKey,Sg,Sv,AbsInt,_ClId,Prime):-
     unknown_call(AbsInt,Sg,Sv,Proj,Prime0),
     apply_glb_inferred(AbsInt,Sg,Sv,Loc,Prime0,unk,Prime1,Prime).
 apply_trusted0(Proj,_SgKey,Sg,Sv,AbsInt,ClId,Prime):-
-  dynamic_or_unknown_predicate(Sg),
+    dynamic_or_unknown_predicate(Sg),
     ( functor(Sg,_,0) ->
         Prime = Proj
      ; 
