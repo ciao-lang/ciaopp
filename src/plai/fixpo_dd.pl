@@ -30,7 +30,6 @@
 :- use_module(library(lists), [member/2]).
 
 %------------------------------------------------------------------------%
-
 :- doc(stability, devel).
 % TODO: The following bugs may be fixed
 :- doc(bug,"Check analysis of meta_calls works after introducing
@@ -43,8 +42,10 @@
 :- data '$change_list'/3.
 :- data computing_change/1.
 
-:- doc(init_fixpoint/0,"Cleanups the database of analysis of
-    temporary information.").
+%------------------------------------------------------------------------
+:- pred init_fixpoint/0 #"Cleans up the database of analysis of
+    temporary information.".
+%------------------------------------------------------------------------
 init_fixpoint:-
     retractall_fact('$change_list'(_,_,_)),
     retractall_fact(computing_change(_)),
@@ -62,7 +63,7 @@ init_fixpoint:-
    changed. Thus we recompute as needed to have the final Succ
    If no Succ has already been computed (there is no complete for it)
    we compute it from scratch.".
-   
+%------------------------------------------------------------------------
 call_to_success(_RFlag,SgKey,Call,Proj,Sg,Sv,AbsInt,_ClId,Succ,F,N,Id) :-
     current_fact(complete(SgKey,AbsInt,Sg1,Proj1,Prime1,Id,_Fs)),
     identical_proj(AbsInt,Sg,Proj,Sg1,Proj1), !, % unifies Sg = Sg1
@@ -102,6 +103,7 @@ call_to_success(r,SgKey,Call,Proj,Sg,Sv,AbsInt,_ClId,Succ,F,N,Id) :-
       The complete is stored with the success pattern ordered and adding F,N
       to the list of callers of that complete @var{Fs}.
    ".
+%------------------------------------------------------------------------
 reuse_complete(SgKey,Proj,Sg,Sv,AbsInt,F,N,Id,Prime1,Prime):-
     each_abs_sort(Prime1,AbsInt,TempPrime),
     ( retract_fact('$change_list'(Id,SgKey,ChList)) ->
@@ -169,6 +171,7 @@ init_fixpoint_(SgKey,Call,Proj,Sg,Sv,AbsInt,F,N,Id,Prime):-
    @tt{['$bottom']}.
    @begin{alert} @var{Clid} may be 0 also (see @pred{fixpo_ops:inexistent/1}.
    @end{alert}".
+%------------------------------------------------------------------------
 proj_to_prime_nr(SgKey,Sg,Sv,Call,Proj,AbsInt,_ClId,LPrime,Id) :-
     bagof(X, X^(trans_clause(SgKey,nr,X)),Clauses), !,
     proj_to_prime(Clauses,SgKey,Sg,Sv,Call,Proj,AbsInt,LPrime,Id).
@@ -261,6 +264,7 @@ process_body(Body,K,AbsInt,Sg,Hv,Fv,Vars_u,Head,Sv,_,Proj,Prime,Id):-
    clause) the success abstract substitution is also bottom and nothing
    more is needed. Otherwise (second clause) the computation of the
    success abstract substitution procceeds.".
+%------------------------------------------------------------------------
 body_succ(Call,Atom,Succ,HvFv_u,AbsInt,_ClId,ParentId,no):-
     bottom(Call), !,
     Succ = Call,
@@ -290,6 +294,7 @@ change_son_if_necessary(NewId,Key,NewN,Vars_u,Call,AbsInt):-
    : (atm(SgKey), list(var,Sv), atm(AbsInt), plai_db_id(Id))
    => nonvar(Prime) + (not_fails, is_det)
    #"It analyzes each recursive clause clause.".
+%------------------------------------------------------------------------
 compute([],_,_,_,_,_,Prime,Prime,_).
 compute([Clause|Rest],SgKey,Sg,Sv,Proj,AbsInt,TempPrime,Prime,Id) :-
     do_r_cl(Clause,SgKey,Sg,Sv,Proj,AbsInt,Id,TempPrime,NewPrime),
@@ -315,7 +320,7 @@ do_r_cl(Clause,SgKey,Sg,Sv,Proj,AbsInt,Id,TempPrime,Prime):-
 do_r_cl(_,_,_,_,_,_,_,Prime,Prime).
 
 :- pred decide_mark_parents/7 + not_fails.
-% TODO: this changes the order of the proj in the original complete
+% IG: this changes the order of the proj in the original complete
 decide_mark_parents(AbsInt,TempPrime,NewPrime,_SgKey,_Sg,_Id,_Proj):-
     abs_subset_(NewPrime,AbsInt,TempPrime),!.
 decide_mark_parents(AbsInt,_TempPrime,NewPrime,SgKey,Sg,Id,Proj):-
@@ -338,6 +343,7 @@ decide_mark_parents(AbsInt,_TempPrime,NewPrime,SgKey,Sg,Id,Proj):-
    : list * atm + (not_fails, is_det)
    #"This complete has changed. So we add the change in the $change_list
    of all parents.".
+%------------------------------------------------------------------------
 td_mark_parents_change_list([],_).
 td_mark_parents_change_list([(EntryKey,_)|Rest],AbsInt) :-
     is_entrykey(EntryKey), !,
@@ -360,6 +366,7 @@ td_mark_parents_change_list([_|Rest],AbsInt):- % in case we have erased
       @var{Literal}: @var{Literal} with the term @tt{F/A/C/L}.
       @var{Parents}: Program points in which the literal is called (0 means an entry)
       @var{AbsInt}: Abstract Domain.".
+%------------------------------------------------------------------------
 add_change(Id,Lit_Key,Literal,Parents,AbsInt) :-
     insert_in_changelist(Id,Lit_Key,Literal,MFlag),
     ( MFlag = marked ->
@@ -405,6 +412,7 @@ insert_literal_(>,Head_Key,Head_Lit,Tail,Lit_Key,Literal,NewList,yes):-
    #"This complete has changed. So we add the change in the $change_list
    of all parents. If the parent is in the same SCC then we recursively
    mark its parents as well.".
+%------------------------------------------------------------------------
 % IG: this is the syntactic (static) scc, not the semantic (dynamic) one
 mark_parents_change_list_scc([],_,_).
 mark_parents_change_list_scc([(EntryKey,_)|Rest],SCC,AbsInt):-
@@ -439,6 +447,7 @@ mark_parents_change_list_scc([(LitKey,Id)|Rest],SCC,AbsInt):-
    : int * atm * term * list * list * atm + (not_fails, is_det)
    #"@var{Lit_Key} may be free when a clause is marked to analyze from the
     begining (see second clause of @pred{compute_change}).".
+%------------------------------------------------------------------------
 add_change_scc(Id,Lit_Key,Literal,Parents,SCC,AbsInt):-
     insert_in_changelist(Id,Lit_Key,Literal,MFlag),
     ( MFlag = marked ->
@@ -462,6 +471,7 @@ add_change_scc(Id,Lit_Key,Literal,Parents,SCC,AbsInt):-
    modified within the iteration)
    LEntryInf is the list of (Entry,ExtraInfo) couples for each Clause. It 
    will be computed in the first iteration and used in subsequent ones".
+%------------------------------------------------------------------------
 fixpoint_compute_change(Changes,SgKey,Sg,Sv,Proj,AbsInt,TempPrime,Prime,Id) :-
     assertz_fact(computing_change(Id)),
     compute_change(Changes,SgKey,Sg,Sv,Proj,AbsInt,TempPrime,Prime1,Id),
@@ -472,8 +482,9 @@ fixpoint_compute_change(Changes,SgKey,Sg,Sv,Proj,AbsInt,TempPrime,Prime,Id) :-
 :- pred fixpoint_ch(+SgKey,+Sg,+Sv,+Proj,+AbsInt,+Prime1,-Prime,+Id)
     : (atm(SgKey), list(Sv), atm(AbsInt), int(Id))
     => nonvar(Prime) + not_fails
-#"Decides whether we should keep on iterating (the information the 
- complete depends on has changed or not).".
+   #"Decides whether we should keep on iterating (the information the complete
+   depends on has changed or not).".
+%------------------------------------------------------------------------
 fixpoint_ch(SgKey,Sg,Sv,Proj,AbsInt,Prime1,Prime,Id):-
     current_fact('$change_list'(Id,SgKey,Changes),Ref),
     erase(Ref),
@@ -485,6 +496,7 @@ fixpoint_ch(_,_,_,_,_,Prime,Prime,_).
    : (list(Changes), atm(SgKey), list(var,Sv), atm(AbsInt), plai_db_id(Id))
    => nonvar(Prime) + not_fails
    #"Restarts the fixpoint from literals (in the list of @var{Changes}).".
+%------------------------------------------------------------------------
 compute_change([],_,_,_,_,_,Prime,Prime,_).
 % the literal N/A/C/0 means that this literal has been introduced during 
 % incremental addition. So the clause must be first checked to see if it 
@@ -602,15 +614,15 @@ widen_call2(AbsInt,SgKey,Sg,F1,_Id,_Ids,Proj1,Proj):-
     abs_sort(AbsInt,Proj1,Proj1_s),
     widencall(AbsInt,Proj0_s,Proj1_s,Proj).
 
-%-------------------------------------------------------------------------
-% TODO: fix modes, it was: query(+,+,+,+,+,+,+,-)
+%------------------------------------------------------------------------
 :- pred query(+AbsInt,+QKey,+Query,+Qv,+RFlag,?N,+Call,-Succ)
-    : atm * atm * term * list * atm * term * term * term + not_fails
- #"The success pattern of @var{Query} with @var{Call} is
-      @var{Succ} in the analysis domain @var{AbsInt}. The predicate
-      called is identified by @var{QKey}, and @var{RFlag} says if it
-      is recursive or not. The goal @var{Query} has variables @var{Qv},
-      and the call pattern is uniquely identified by @var{N}.".
+   : atm * atm * term * list * atm * term * term * term + not_fails
+   #"The success pattern of @var{Query} with @var{Call} is @var{Succ} in the
+   analysis domain @var{AbsInt}. The predicate called is identified by
+   @var{QKey}, and @var{RFlag} says if it is recursive or not. The goal
+   @var{Query} has variables @var{Qv}, and the call pattern is uniquely
+   identified by @var{N}.".
+%------------------------------------------------------------------------
 query(AbsInt,QKey,Query,Qv,RFlag,N,Call0,Succ) :-
     project(AbsInt,Query,Qv,Qv,Call0,Proj0),
     fixpoint_trace('start query',N,N,QKey,Query,Proj0,_),
@@ -622,58 +634,6 @@ query(_AbsInt,_QKey,Query,Qv,_RFlag,_N,_Call,_Succ):-
 % should never happen, but...
     error_message("~q:~q SOMETHING HAS FAILED!~n",[Query,Qv]),
     throw(bug).
-
-% --------------------------------------------------
-%%% Code added by IG
-:- use_module(ciaopp(plai/domains), [less_or_equal/3]).
-:- use_module(ciaopp(plai/incanal/incanal_driver), [td_rec_delete_complete/3]).
-
-% Added for changes in completes during modular analysis
-:- export(add_external_complete_change/6).
-:- pred add_external_complete_change(+AbsInt,+NewPrime,+SgKey,+Sg,+Id,+Proj)
-    : (atm(AbsInt), list(NewPrime), atm(SgKey), plai_db_id(Id)) + not_fails
-#"This predicate updates analysis information given a complete that
-has changed externally. Typically this is used for updating completes
-that are outdated as a consequence of modular analysis (the analysis
-of a module was improved). The complete that has change has key
-@var{SgKey} and id @var{Id}. The new answer for the complete is
-@var{NewPrime} and refers to domain @var{AbsInt}.
-
-Changes in answers are updated as follows:
-
-@begin{itemize}
-
-@item If the new answer is more general than the previous one, the update is
-as simple as replacing the answer in the complete and adding an
-event.
-
-@item If the new answer is more specific or incompatible, the
-information that depends on it has to be deleted and recomputed. We
-are removing the information with a top-down deletion strategy,
-although a bottom-up deletion strategy could more efficient. The
-fixpoint has to be runned after this deletion.
-
-@end{itemize}
-    ".
-add_external_complete_change(AbsInt,NewPrime,SgKey,Sg,Id,Proj):-
-    get_complete(SgKey,AbsInt,Sg,_,OldPrime,Id,Fs,Ref), !,
-    each_abs_sort(OldPrime, AbsInt, OldPrime_s),
-    each_abs_sort(NewPrime, AbsInt, NewPrime_s),
-    ( each_less_or_equal(AbsInt, OldPrime_s, NewPrime_s) ->
-        erase(Ref),
-        asserta_fact(complete(SgKey,AbsInt,Sg,Proj,NewPrime,Id,Fs)),
-        td_mark_parents_change_list(Fs,AbsInt)
-    ;
-        td_rec_delete_complete(Id, SgKey, AbsInt)
-    ).
-add_external_complete_change(_,_,_,_,_,_).
-% This case means that the complete was removed earlier
-
-% TODO: duplicated (similar code in fixpo_ops)
-each_less_or_equal(_, [], []) :- !.
-each_less_or_equal(AbsInt, [S1|S1s], [S2|S2s]) :-
-    less_or_equal(AbsInt, S1, S2),
-    each_less_or_equal(AbsInt, S1s, S2s).
 
 :- regtype dd_id/1.
 dd_id('$bottom_call').

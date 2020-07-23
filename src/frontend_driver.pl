@@ -170,8 +170,7 @@ detect_language(AbsFile, Lang) :-
 % ===========================================================================
 :- doc(section, "Module loading for preprocessing").
 
-:- use_module(engine(stream_basic), [sourcename/1]).
-:- use_module(engine(stream_basic), [absolute_file_name/7]).
+:- use_module(engine(stream_basic), [sourcename/1, absolute_file_name/7]).
 :- use_module(engine(runtime_control), [push_prolog_flag/2, pop_prolog_flag/1]).
 
 :- use_module(ciaopp(p_unit), [preprocessing_unit/3]). 
