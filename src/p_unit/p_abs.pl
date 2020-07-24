@@ -1618,7 +1618,7 @@ get_intermodule_graph(AbsFile,GoalBeforeLoading):-
                                  process_files_from(AbsFile, zzz, any, 
                                  process_one_module, 
 %                                    check_stop_one_module(GoalBeforeLoading), false, true)
-                                 check_stop_one_module(GoalBeforeLoading), false, redo_one_module)
+                                 check_stop_one_module(GoalBeforeLoading), c_itf:false, redo_one_module)
                              ),fail). % TODO: fail or abort?
 
 % TODO: remove old code once we are happy with this version

@@ -349,7 +349,7 @@ process_main_file1(F, Opts, M, Verb) :-
     error_protect(ctrlc_clean(
             process_file(NF, asr, Type,
                 process_main_info_file(M, Verb, Opts),
-                false, false, do_nothing)
+                c_itf:false, c_itf:false, do_nothing)
         ),fail). % TODO: fail or abort?
 
 filetype_from_opts(Opts, Type) :-
@@ -559,7 +559,7 @@ related_files(Rel, Verb, Opts) :-
     error_protect(ctrlc_clean(
             process_file(I, asr, any,
                 process_related_file(Rel, Verb, Opts),
-                false,
+                c_itf:false,
                 asr_readable(Verb),
                 do_nothing)
         ),fail), % TODO: fail or abort?
