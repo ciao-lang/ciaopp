@@ -18,23 +18,7 @@
     each_identical_abstract/3, each_project/6, fixpoint_get_new_id/5]).
 
 % Plai library
-:- use_module(ciaopp(plai/fixpo_ops), [inexistent/2, variable/2, bottom/1, 
-    singleton/2, fixpoint_id_reuse_prev/5, fixpoint_id/1, fixp_id/1,
-    each_abs_sort/3,
-    each_extend/6,
-    each_exit_to_prime/8,
-    each_apply_trusted/7,
-    each_body_succ_builtin/12,
-    body_succ_meta/7,
-%       applicable/3,
-    reduce_equivalent/3,
-    widen_succ/4,
-    decide_memo/6,
-    each_unknown_call/5,
-    clause_applies/2,
-    abs_subset_/3,
-    advance_in_body/3
- ]).
+:- use_module(ciaopp(plai/fixpo_ops)).
 :- use_module(ciaopp(plai/domains)).
 :- use_module(ciaopp(plai/trace_fixp), [fixpoint_trace/7, cleanup/0]).
 :- use_module(ciaopp(plai/plai_db), 
@@ -133,28 +117,25 @@ body_succ0('$var',SgKey,Sg,_Sv_u,HvFv_u,Calls,Succs,AbsInt,ClId,F,_,Id):-
         each_unknown_call(Calls,AbsInt,SgFake,Sv,Succs)
     ).
 % TODO: Add apply trust calls assertions
-body_succ0('$meta'(T,B,_),SgKey,Sg,Sv_u,HvFv_u,Call,Succ,AbsInt,ClId,F,N,Id):-
-    !,
+body_succ0('$meta'(T,B,_),SgKey,Sg,Sv_u,HvFv_u,Call,Succ,AbsInt,ClId,F,N,Id):- !,
+    get_singleton(C,Call), % body_succ0 doesn't work for multisucc
     ( current_pp_flag(reuse_fixp_id,on) ->
-        ( Call=[C] ->
-            sort(Sv_u,Sv),
-            project(AbsInt,Sg,Sv,HvFv_u,C,Proj),
-            fixpoint_id_reuse_prev(SgKey,AbsInt,Sg,Proj,Id)
-        ; true
-        )
+        sort(Sv_u,Sv),
+        project(AbsInt,Sg,Sv,HvFv_u,C,Proj),
+        fixpoint_id_reuse_prev(SgKey,AbsInt,Sg,Proj,Id)
     ;
         fixpoint_id(Id)
     ),
-    meta_call(B,HvFv_u,Call,[],Exits,AbsInt,ClId,Id,_Ids),
+    varset(C,Cv),
+    SgFake =.. ['$meta'|Cv],
+    unknown_call(AbsInt,SgFake,Cv,C,TopCall),
+    meta_call(B,HvFv_u,[TopCall],[],Exits,AbsInt,ClId,Id,_Ids),
     ( body_succ_meta(T,AbsInt,Sv_u,HvFv_u,Call,Exits,Succ) ->
-        ( Call=[C] ->
-            sort(Sv_u,Sv),
-            project(AbsInt,Sg,Sv,HvFv_u,C,Proj),
-            each_project(Exits,AbsInt,Sg,Sv,HvFv_u,Prime),
-            asserta_fact(complete(SgKey,AbsInt,Sg,Proj,Prime,Id,[(F,N)])) % TODO: IG check duplicates
-        ; true
-        )
-     ; % for the trusts, if any:  % not apply trust here??
+        sort(Sv_u,Sv),
+        project(AbsInt,Sg,Sv,HvFv_u,C,Proj),
+        each_project(Exits,AbsInt,Sg,Sv,HvFv_u,Prime),
+        asserta_fact(complete(SgKey,AbsInt,Sg,Proj,Prime,Id,[(F,N)])) % TODO: IG check duplicates
+    ; % for the trusts, if any:  % not apply trust here??
         varset(Sg,Sv_r),
         body_succ0(nr,SgKey,Sg,Sv_r,HvFv_u,Call,Succ,AbsInt,ClId,F,N,Id0),
         retract_fact(complete(SgKey,AbsInt,Sg,Proj,Prime,Id0,Ps)),

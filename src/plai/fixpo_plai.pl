@@ -989,25 +989,23 @@ body_succ0('$var',SgKey,Sg,_Sv_u,HvFv_u,Calls,Succs,List0,List,AbsInt,
 body_succ0('$meta'(T,B,_),SgKey,Sg,Sv_u,HvFv_u,Call,Succ,List0,List,AbsInt,
         ClId,F,N,Id):-
     !,
+    get_singleton(C,Call), % body_succ0 doesn't work for multisucc
     (current_pp_flag(reuse_fixp_id,on) ->
-        ( Call=[C] ->
-            sort(Sv_u,Sv),
-            project(AbsInt,Sg,Sv,HvFv_u,C,Proj),
-            fixpoint_id_reuse_prev(SgKey,AbsInt,Sg,Proj,Id)
-        ; true
-        )
+        sort(Sv_u,Sv),
+        project(AbsInt,Sg,Sv,HvFv_u,C,Proj),
+        fixpoint_id_reuse_prev(SgKey,AbsInt,Sg,Proj,Id)
     ;
         fixpoint_id(Id)
     ),
-    meta_call(B,HvFv_u,Call,[],Exits,List0,List,AbsInt,ClId,Id,_Ids),
+    varset(C,Cv),
+    SgFake =.. ['$meta'|Cv],
+    unknown_call(AbsInt,SgFake,Cv,C,TopCall),
+    meta_call(B,HvFv_u,[TopCall],[],Exits,List0,List,AbsInt,ClId,Id,_Ids),
     ( body_succ_meta(T,AbsInt,Sv_u,HvFv_u,Call,Exits,Succ) ->
-      ( Call=[C] ->
-          sort(Sv_u,Sv),
-          project(AbsInt,Sg,Sv,HvFv_u,C,Proj),
-          each_project(Exits,AbsInt,Sg,Sv,HvFv_u,Prime),
-          asserta_fact(complete(SgKey,AbsInt,Sg,Proj,Prime,Id,[(F,N)]))
-      ; true
-      )
+        sort(Sv_u,Sv),
+        project(AbsInt,Sg,Sv,HvFv_u,C,Proj),
+        each_project(Exits,AbsInt,Sg,Sv,HvFv_u,Prime),
+        asserta_fact(complete(SgKey,AbsInt,Sg,Proj,Prime,Id,[(F,N)]))
     ; % for the trusts, if any:
         varset(Sg,Sv_r), % Sv_u contains extra vars (from meta-term)
                        % which will confuse apply_trusted
