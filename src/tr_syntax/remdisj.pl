@@ -96,6 +96,11 @@ remove_disjunctions_loc(Cl,D,[NCl|TNCls],[ND|TNDs],TNCls,TNDs,Cls,TCls,Ds,TDs,Lo
 
 remove_disj_from_body(P,_,_,call(P),_,In,In,Cls,Cls,Ds,Ds,_):-
     var(P), !.
+remove_disj_from_body('hiord_rt:call'(P),Rest,D,NSg,Id,In,Out,Cls,TCls,Ds,TDs,Loc):-
+    nonvar(P), !, % TODO: keep sync with mexpand semantics
+    remove_disj_from_body(P,Rest,D,NSg,Id,In,Out,Cls,TCls,Ds,TDs,Loc).
+remove_disj_from_body(\+(P),Rest,D,NSg,Id,In,Out,Cls,TCls,Ds,TDs,Loc):- !,
+    remove_disj_from_body(((P -> fail);true),Rest,D,NSg,Id,In,Out,Cls,TCls,Ds,TDs,Loc).
 remove_disj_from_body(((P -> Q);R),Rest,D,NSg,Id,In,Out,Cls,TCls,Ds,TDs,Loc):- !,
     Out is In+1,
     newsubg(((P -> Q);R),Rest,NSg,_,Id,Out,'$disj'),
@@ -195,7 +200,6 @@ remove_disj_from_meta(X,Rest,D,NX,Id,In,Out,Cls,TCls,Ds,TDs,Loc):-
 remove_disj_from_meta(X,Rest,D,NX,Id,In,Out,Cls,TCls,Ds,TDs,Loc):-
     remove_disj_from_body(X,Rest,D,NX,Id,In,Out,Cls,TCls,Ds,TDs,Loc).
 
-
 add_conj((X,Xs),Y,(X,Z)):- !,
     add_conj(Xs,Y,Z).
 add_conj(X,Y,(X,Y)).
@@ -242,4 +246,3 @@ newsubg(Sg,Rest,NSg,Vars,Id,Num,Atom):-
 prune_dict_(Cl,D,ND):-
     prune_dict(Cl,D,ND0),
     sort_dict(ND0,ND).
-
