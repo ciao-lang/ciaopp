@@ -660,6 +660,9 @@ shfr_asub_to_native_(d((Sh,Fr),Del),ASub_user):-
     ( Comp==[] -> ASub_user=comp(Info,Comp) ; ASub_user=Info ).
 shfr_asub_to_native_((Sh,Fr),Info):-
     if_not_nil(Sh,sharing(Sh),Info,Info0),
+    % TODO: have a flag to decide between sharing/1 and sharing/2 (mshare/1 and mshare/2)
+    %% varset(Fr,Vs),
+    %% if_not_nil(Sh,sharing(Vs,Sh),Info,Info0),
     member_value_freeness(Fr,Fv,f),
     if_not_nil(Fv,free(Fv),Info0,Info1),
     member_value_freeness(Fr,Gv,g),

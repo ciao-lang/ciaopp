@@ -73,7 +73,8 @@ native(instance(V,T)):- var(V), nonvar(T).
 native(linear(L)):- vlist(L).
 native(not_free(L)):- vlist(L).
 native(not_ground(L)):- vlist(L).
-native(sharing(L)):- list(list(var),L).
+native(sharing(L)):- list(list(var),L). % Deprecated, assertion normalizer expands to mshare/2 internally
+native(sharing(Xs,Xss)):- list(var,Xs), list(list(var),Xss).
 % computation
 native(covered).
 native(fails).
@@ -139,7 +140,8 @@ native_property('native_props:instance'(V,T),instance(V,T)).
 native_property('native_props:linear'(L),linear(L)).
 native_property('term_typing:nonvar'(L),not_free(L)).
 native_property('native_props:nonground'(L),not_ground(L)).
-native_property('native_props:mshare'(L),sharing(L)).
+native_property('native_props:mshare'(L),sharing(L)). % Deprecated, assertion normalizer expands to mshare/2 internally
+native_property('native_props:mshare'(Xs,Xss),sharing(Xs,Xss)).
 % computation
 native_property('native_props:covered'(G),covered(G)).
 native_property('native_props:fails'(G),fails(G)).

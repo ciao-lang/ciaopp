@@ -756,7 +756,12 @@ share_input_interface(sharing(X),perfect,(Gv,Sh0,I),(Gv,Sh,I)):-
 % should check that X is consistent!
     nonvar(X),
     sort_list_of_lists(X,ASub),
-    myappend(ASub,Sh0,Sh).
+    myappend(ASub,Sh0,Sh). % IC: should it not be intersection instead of union?
+share_input_interface(sharing(Xs,Xss),perfect,(Gv,Sh0,I),(Gv,Sh,I)):-
+% should check that X is consistent!
+    nonvar(Xs), nonvar(Xss),
+    sort_list_of_lists(Xss,ASub),
+    myappend(ASub,Sh0,Sh). % TODO: merge properly: project + intersect + extend
 share_input_interface(indep(X),perfect,(Gv,Sh,I0),(Gv,Sh,I)):-
     nonvar(X),
     sort_list_of_lists(X,I1),
