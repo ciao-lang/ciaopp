@@ -127,13 +127,13 @@ trace_fixpoint(Mess,Id,_L,Sg,Proj) :-
         pp_statistics(runtime, [Tn, _]),
         init_time(T0),
         T is Tn - T0,
-        message(inform, ['{[', ~~(T), '] ', ~~(Mess), ' for node ', ~~(Id), '}'])
+        message(inform, ['{[', ~~(T), '] ', ~~(Mess), ' for node ', ''(Id), '}'])
     ;
-        message(inform, ['{', ~~(Mess), ' for node ', ~~(Id), '}'])
+        message(inform, ['{', ~~(Mess), ' for node ', ''(Id), '}'])
     ),
     ( \+ (var(Sg), var(Proj)) ->
         \+ \+ ( numbervars(p(Sg,Proj),0,_),
-                message(inform, ['{', ~~(Sg), '   ', ~~(Proj), '}'])
+                message(inform, ['{', ''(Sg), '   ', ''(Proj), '}'])
               )
     ; true ).
 trace_fixpoint(_Mess,_Id,_L,_Sg,_Proj).
