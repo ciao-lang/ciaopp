@@ -504,8 +504,8 @@ compute_change([],_,_,_,_,_,Prime,Prime,_).
 compute_change([(_,N/A/Cl/0)|Rest],SgKey,Sg,Sv,Proj,AbsInt,TempPrime,Prime,Id) :-!,
     get_clkey(N,A,Cl,ClKey),
     trans_clause(SgKey,_,clause(Head,Vars_u,ClKey,Body)),
-    fixpoint_trace('visit change clause',ClKey:Id,_N,ClKey,Head,Exit,_),
     ( clause_applies(Head,Sg)->
+        fixpoint_trace('visit change clause',ClKey:Id,_N,ClKey,Sg,Proj,_),
         varset(Head,Hv),
         sort(Vars_u,Vars),
         ord_subtract(Vars,Hv,Fv),
@@ -517,19 +517,20 @@ compute_change([(_,N/A/Cl/0)|Rest],SgKey,Sg,Sv,Proj,AbsInt,TempPrime,Prime,Id) :
         each_exit_to_prime(Exit,AbsInt,Sg,Hv,Head,Sv,ExtraInfo,Prime1),
         store_raw_success(ClKey,AbsInt,Id,Sg,Proj,Prime1),
         process_analyzed_clause(AbsInt,Sg,Sv,Proj,TempPrime,Prime1,TrustedPrime),
-        decide_mark_parents(AbsInt,TempPrime,TrustedPrime,SgKey,Sg,Id,Proj)
+        decide_mark_parents(AbsInt,TempPrime,TrustedPrime,SgKey,Sg,Id,Proj),
+        fixpoint_trace('exit change clause',ClKey:Id,_N,ClKey,Head,Exit,_)
     ;
         TrustedPrime = TempPrime % the CP head does not unify with the new clause
     ),
-    fixpoint_trace('exit change clause',ClKey:Id,_N,ClKey,Head,Exit,_),
     compute_change(Rest,SgKey,Sg,Sv,Proj,AbsInt,TrustedPrime,Prime,Id).
-compute_change([(Ch_Key,N/A/Cl/_)|Rest],SgKey,Sg,Sv,Proj,AbsInt,TempPrime,Prime,Id) :-
-    current_fact(memo_table(Ch_Key,AbsInt,Id,_,Vars_u,Entry)),
+compute_change([(LitKey,N/A/Cl/_)|Rest],SgKey,Sg,Sv,Proj,AbsInt,TempPrime,Prime,Id) :-
+    fixpoint_trace('visit change',LitKey:Id,_N,ClKey,Sg,Proj,_),
+    get_memo_table(LitKey,AbsInt,Id,_,Vars_u,Entry,_), !,
     each_abs_sort(Entry,AbsInt,S_Entry),
     get_clkey(N,A,Cl,ClKey),
     trans_clause(SgKey,_,clause(Head,Vars_u,ClKey,Body)),
-    fixpoint_trace('visit change clause',ClKey:Id,_N,ClKey,Head,Exit,_),
-    advance_in_body(Ch_Key,Body,NewBody), !, % IG this cut should be after trans_clause
+    fixpoint_trace('visit change clause',ClKey:Id,_N,ClKey,Sg,Proj,_),
+    advance_in_body(LitKey,Body,NewBody),
     varset(Head,Hv),
     sort(Vars_u,Vars),
     ord_subtract(Vars,Hv,Fv),
@@ -540,15 +541,18 @@ compute_change([(Ch_Key,N/A/Cl/_)|Rest],SgKey,Sg,Sv,Proj,AbsInt,TempPrime,Prime,
     store_raw_success(ClKey,AbsInt,Id,Sg,Proj,Prime1),
     process_analyzed_clause(AbsInt,Sg,Sv,Proj,TempPrime,Prime1,TrustedPrime),
     decide_mark_parents(AbsInt,TempPrime,TrustedPrime,SgKey,Sg,Id,Proj),
-    fixpoint_trace('exit change clause',ClKey:Id,_N,ClKey,Head,Exit,_),
+    fixpoint_trace('exit change clause',ClKey:Id,_N,ClKey,Sg,Exit,_),
     compute_change(Rest,SgKey,Sg,Sv,Proj,AbsInt,TrustedPrime,Prime,Id).
 % The change is within a meta_call that is not defined in the loaded
 % modules e.g. findall/3, catch/3, etc... (no trans_clause/3 available)
 compute_change([_|Rest],SgKey,Sg,Sv,Proj,AbsInt,TempPrime,Prime,Id) :-
     % The memo_table was already erased
-    apply_assrt_no_source(SgKey,AbsInt,Sg,Sv,Proj,NPrime),
+    apply_assrt_no_source(SgKey,AbsInt,Sg,Sv,Proj,NPrime), !,
     get_singleton(NPrime,NLPrime),
     decide_mark_parents(AbsInt,TempPrime,NLPrime,SgKey,Sg,Id,Proj),
+    compute_change(Rest,SgKey,Sg,Sv,Proj,AbsInt,NLPrime,Prime,Id).
+compute_change([_|Rest],SgKey,Sg,Sv,Proj,AbsInt,TempPrime,Prime,Id) :-
+    % this program point is no longer reachable from this complete
     compute_change(Rest,SgKey,Sg,Sv,Proj,AbsInt,TempPrime,Prime,Id).
 
 :- pred each_call_to_success/12 + not_fails.
