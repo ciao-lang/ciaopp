@@ -63,7 +63,7 @@
 :- use_module(library(sets), [insert/3]).
 :- use_module(library(lists), [select/3, reverse/2, append/3]).
 :- use_module(library(llists), [append/2]).
-:- use_module(library(pathnames), [path_basename/2, path_concat/3]).
+:- use_module(library(pathnames)).
 :- use_module(library(aggregates), [findall/3]).
 :- use_module(spec(spec), [simplify_specialize/6]).
 :- use_module(spec(codegen), [codegen/4, codegen_af/4]).
@@ -83,8 +83,9 @@
 :- use_module(library(counters)).
 :- use_module(spec(unfold_times), [global_time_ellapsed/3]).
 :- use_module(library(system),
-    [ system/1, delete_file/1, delete_directory/1, file_property/2,
-        directory_files/2, file_exists/1]).
+    [ delete_file/1, delete_directory/1, file_property/2,
+      directory_files/2, file_exists/1]).
+:- use_module(library(process)).
 :- use_module(library(system_extra), [mkpath/1]).
 :- use_module(library(terms), [atom_concat/2]).
 :- use_module(library(compiler/c_itf), [cleanup_itf_cache/0]).
@@ -92,18 +93,14 @@
 :- use_module(engine(runtime_control), [push_prolog_flag/2, pop_prolog_flag/1]).
 
 :- use_module(ciaopp(p_unit/p_dump), [dump_dir/1, dump/2]).
-:- use_module(ciaopp(ciaopp_log), [pplog/2]).
+:- use_module(ciaopp(ciaopp_log)).
+:- use_module(ciaopp(raw_printer)).
 
 % statistics
 :- use_module(ciaopp(analysis_stats)).
 
 %%------------------------------------------------------------------
-
-:- multifile dump_flags_list/2.
-
-dump_flags_list(intermod, [entry_policy,global_scheduling,punit_boundary]).
-
-%%------------------------------------------------------------------
+:- doc(section, "Intermod database").
 
 :- pred top_level(Base) # "@var{Base} is the top-level module of the
   program unit to be analyzed.".
@@ -111,6 +108,43 @@ dump_flags_list(intermod, [entry_policy,global_scheduling,punit_boundary]).
 :- data top_level/1.
 :- export(top_level/1).
 
+:- data naive_pending_modules/1.
+:- data there_are_previous_errors/0.
+% Modules for which the analysis must be forced, even if they
+% have their registry entries up-to-date.
+:- data force_analysis/1.
+
+:- data modules_analyzed/1.
+modules_analyzed([]).
+
+:- data module_depth/2.
+:- data naive_module_order/1.
+
+% number of (groups of) modules analyzed during the intermodular analysis.
+% Number of calls to the analyzer.
+:- data iterations/1.
+
+:- pred queue(QueueList) => list
+# "Data predicate to store (in a single fact) the priority
+  queue. @list{QueueList} must be the list of @tt{priority-module}
+  pairs in reverse order.".
+:- data queue/1.
+queue([]).
+
+:- pred module_processed(Module,AlreadyProcessed)
+# "Lists the modules in the program unit and whether they are already
+   processed or not.".
+
+:- data module_processed/2.
+
+%%------------------------------------------------------------------
+
+%% 
+:- multifile dump_flags_list/2.
+
+dump_flags_list(intermod, [entry_policy,global_scheduling,punit_boundary]).
+
+%%------------------------------------------------------------------
 set_top_level(TopLevel):-
     absolute_file_name(TopLevel, '_opt', '.pl', '.', _, AbsBase, _),
     set_fact(top_level(AbsBase)).
@@ -258,9 +292,6 @@ get_module_names_only([],[]).
 get_module_names_only([(M,_,_)|ModList0],[M|ModList]):-
     get_module_names_only(ModList0,ModList).
 
-:- data modules_analyzed/1.
-modules_analyzed([]).
-
 %% ********************************************************************
 %% Intermodular analysis with automatic scheduling.
 %% ********************************************************************
@@ -312,16 +343,7 @@ modular_analyze(Analyses,TopLevel,Info):-
     pplog(modular, ['}']),
     !.
 
-%%%:- data module_times/1.
-%%%:- use_module(library(numlists)).
-:- use_module(ciaopp(analysis_stats), [pp_statistics/2]).
-%%%total_module_times:-
-%%% findall(X,module_times(X),L),
-%%% sum_list(L,N),
-%%% display(module_times(N)),nl.
-
 %%------------------------------------------------------------------
-
 :- pred setup_scheduling(SchedPolicy,Domains,TopLevel,ModList)
 # "This predicate sets up some stuff in specific global scheduling
  policies. Implemented policies are as follows:
@@ -405,9 +427,6 @@ gen_module_depths_([M|Ms],N):-
     asserta_fact(module_depth(M,N)),
     gen_module_depths_(Ms,N).
 
-:- data module_depth/2.
-:- data naive_module_order/1.
-
 assert_in_order([]):- !.
 assert_in_order([Elem|List]):-
     assert_in_order(Elem),
@@ -417,11 +436,6 @@ assert_in_order(Module):-
     assertz_fact(naive_module_order(Module)).
 
 %%------------------------------------------------------------------
-
-% number of (groups of) modules analyzed during the intermodular analysis.
-% Number of calls to the analyzer.
-:- data iterations/1.
-
 increment_iterations:-
     ( retract_fact(iterations(It0)) ->
         It is It0 + 1,
@@ -462,10 +476,6 @@ push_modules_priorities([(M,D,F)|ModList]):-
     ),
     push_modules_priorities(ModList).
 
-% Modules for which the analysis must be forced, even if they
-% have their registry entries up-to-date.
-:- data force_analysis/1.
-
 %% Adds the modules in the list to naive_pending_modules/1, and
 %% sets force analysis of the ones which need it.
 add_naive_pending_modules_([]).
@@ -488,12 +498,9 @@ add_pending_modules_preanalysis(M):-
 
 %%------------------------------------------------------------------
 
-:- data naive_pending_modules/1.
-
 :- pred do_naive_intermod/1 + not_fails.
 do_naive_intermod(Analyses):-
-    current_fact(naive_pending_modules(_)),
-    !,
+    current_fact(naive_pending_modules(_)), !,
     findall(CurrMod, current_fact(naive_module_order(CurrMod)), Modules),
     naive_analyze_modules(Analyses,Modules),
     ( there_are_previous_errors ->
@@ -502,8 +509,6 @@ do_naive_intermod(Analyses):-
         do_naive_intermod(Analyses)
     ).
 do_naive_intermod(_Analyses).
-
-%%------------------------------------------------------------------
 
 %% Analizes all modules in naive_module_order/1. Stores in
 %% naive_pending_modules/1 those related modules which need
@@ -535,6 +540,7 @@ naive_analyze_modules(AbsInt, [CurrMod|Mods]) :-
     gen_registry_info(quiet,Callers,Imported,GenSts),
     get_stat(GenSts, time(GenRegTime,_)),
     add_stat(genreg, GenRegTime),
+    pplog_registry(AbsInt,CurrMod),
     %ask_mem_usage(Delta,DetailsMem),
     %( \+ var(Delta) -> add_stat(itmem, memory(Delta,DetailsMem)) ; true),
     %JCF(18.04.05) Comment out following line!!!
@@ -551,32 +557,10 @@ naive_analyze_modules(AbsInt, [CurrMod|Mods]) :-
     add_naive_pending_modules(Callers),
     add_naive_pending_modules(Imported),
     ctcheck_module_naive(CurrMod),
-    %       output,
     pplog(modular, ['}']),
     naive_analyze_modules(AbsInt,Mods).
 naive_analyze_modules(AbsInt, [_CurrMod|Mods]):-
     naive_analyze_modules(AbsInt,Mods).
-
-%%------------------------------------------------------------------
-
-:- data there_are_previous_errors/0.
-
-ctcheck_module_naive(Module):-
-    current_pp_flag(interleave_an_check,on),
-    !,
-%       acheck_summary(Result),
-    acheck_info(assert_count(CTInfo),Summary),
-    add_to_total_info([assert_count(Module,CTInfo)]),
-    ( Summary == error ->
-        message(inform, ['{Compile-time check errors found in: ', ~~(Module),'}']),
-        retractall_fact(naive_pending_modules(_)),           %% Remove all pending modules.
-        set_fact(there_are_previous_errors),
-        output
-    ;   true
-    ).
-ctcheck_module_naive(_).
-
-%%------------------------------------------------------------------
 
 add_naive_pending_modules([]).
 add_naive_pending_modules([M|Ms]):-
@@ -587,8 +571,21 @@ add_naive_pending_modules([M|Ms]):-
     ),
     add_naive_pending_modules(Ms).
 
-%%------------------------------------------------------------------
+ctcheck_module_naive(Module):-
+    current_pp_flag(interleave_an_check,on), !,
+%       acheck_summary(Result),
+    acheck_info(assert_count(CTInfo),Summary),
+    add_to_total_info([assert_count(Module,CTInfo)]),
+    ( Summary == error ->
+        message(inform, ['{Compile-time check errors found in: ', ~~(Module),'}']),
+        retractall_fact(naive_pending_modules(_)),   %% Remove all pending modules.
+        set_fact(there_are_previous_errors),
+        output
+    ;   true
+    ).
+ctcheck_module_naive(_).
 
+%%------------------------------------------------------------------
 :- pred do_intermod(Scheduling, AbsInt) : atm * atm
 # "Computes the intermodular fixpoint of the analysis of the current
   program unit (given by top-level) in the @var{AbsInt} abstract
@@ -597,8 +594,7 @@ add_naive_pending_modules([M|Ms]):-
   @var{AbsInt} can be either a domain name or a list of domains.".
 
 do_intermod(Scheduling,AbsInt):-
-    do_intermod_one_module(Scheduling,AbsInt),
-    !,
+    do_intermod_one_module(Scheduling,AbsInt), !,
     do_intermod_remaining(Scheduling,AbsInt).
 do_intermod(_Scheduling,_AbsInt).
 
@@ -625,6 +621,7 @@ do_intermod_one_module(Scheduling,AbsInt):-
     add_to_total_info(Info), % It adds Info to total_info.
     gen_registry_info(quiet,Callers,Imported,[time(GenRegTime,_)]),
     add_to_total_info([time(LoadTime,[(load,LoadTime)]),time(GenRegTime,[(genreg,GenRegTime)])]),
+    pplog_registry(AbsInt,CurrMod),
 %% jcf: following line only useful for testing output.
 %% atom_concat(CurrMod,'_out.pl',CurrModOut), output(CurrModOut),
     ( retract_fact(force_analysis(CurrMod)) ->
@@ -643,8 +640,7 @@ do_intermod_one_module(Scheduling,AbsInt):-
 %% --------------------------------------------------------------------
 
 ctcheck_module_intermod(Module):-
-    current_pp_flag(interleave_an_check,on),
-    !,
+    current_pp_flag(interleave_an_check,on), !,
     acheck_summary(Result),
     ( Result == error ->
         message(inform, ['{Compile-time check errors found in: ',~~(Module),'}']),
@@ -765,20 +761,11 @@ debug_inc_dump_dir(_). % if the dump directory is not set, do not dump
 %% Priority Queue handling predicates.
 %% ******************************************************************
 
-:- pred queue(QueueList) : list
-# "Data predicate to store (in a single fact) the priority
-  queue. @list{QueueList} must be the list of @tt{priority-module}
-  pairs in reverse order.".
-:- data queue/1.
-queue([]).
-
 %% --------------------------------------------------------------------
 
 :- pred reset_queue # "Empties the queue.".
 reset_queue:-
     set_fact(queue([])).
-
-%% --------------------------------------------------------------------
 
 :- pred pop(-Element,-Priority) => (atm(Element), int(Priority))
 # "Pops the element @var{Element} with highest priority from the
@@ -787,8 +774,6 @@ pop(Element,Priority):-
     retract_fact(queue([Pty-Element|Rest])),
     Priority is Pty * (-1),
     set_fact(queue(Rest)).
-
-%% --------------------------------------------------------------------
 
 :- pred push(+Element,+Priority) : (atm(Element), int(Priority))
 # "Pushes a new element @var{Element} with priority @var{Priority}
@@ -925,14 +910,6 @@ filter_completes(_AbsInt,_Module).
 %% Modular program transformations (for specialization)
 %% ******************************************************************
 
-:- pred module_processed(Module,AlreadyProcessed)
-# "Lists the modules in the program unit and whether they are already
-   processed or not.".
-
-:- data module_processed/2.
-
-%%------------------------------------------------------------------
-
 valid_transformation(Trans):-
     transformation(Trans), !.
 valid_transformation(Trans):-
@@ -985,14 +962,10 @@ auto_transform_(Analysis,Trans,[Cycle|CycleList]):-
     transform_one_cycle(Analysis,Trans,Cycle),
     auto_transform_(Analysis,Trans,CycleList).
 
-%% ---------------------------------------------------------------------------
-
 transform_one_cycle(Analysis,Trans,[Base]):- !,
     transform_one_module(Analysis,Trans,Base,_Changed).
 transform_one_cycle(Analysis,Trans,Cycle):-
     transform_fixpoint(Analysis,Trans,Cycle).
-
-%% ---------------------------------------------------------------------------
 
 transform_fixpoint(Analysis,Trans,Cycle):-
     transform_module_list(Analysis,Trans,Cycle,Changed),
@@ -1000,8 +973,6 @@ transform_fixpoint(Analysis,Trans,Cycle):-
         transform_fixpoint(Analysis,Trans,Cycle)
     ;   true
     ).
-
-%% ---------------------------------------------------------------------------
 
 transform_module_list(_Analysis,_Trans,[],no).
 transform_module_list(Analysis,Trans,[Base|Bases],Changed):-
@@ -1011,8 +982,6 @@ transform_module_list(Analysis,Trans,[Base|Bases],Changed):-
     ;   Changed = Changed1
     ),
     transform_module_list(Analysis,Trans,Bases,Changed1).
-
-%% ---------------------------------------------------------------------------
 
 transform_one_module(Analysis,Trans,File,Changed):-
     absolute_file_name(File, '_opt', '.pl', '.', _, BaseAbs, _),
@@ -1108,16 +1077,16 @@ auto_ctcheck_internal(Analysis, TopLevel, [(time,Time),Info],ModuleList,Summary)
     set_top_level(TopLevel),
     push_pp_flag(intermod,auto),
     ( current_pp_flag(ct_ext_policy, assertions) ->
-      push_pp_flag(entry_policy, force_assrt),
-      push_pp_flag(success_policy,top)
-    ; push_pp_flag(entry_policy, force),
-      push_pp_flag(success_policy,under_all)
+        push_pp_flag(entry_policy, force_assrt),
+        push_pp_flag(success_policy,top)
+    ;
+        push_pp_flag(entry_policy, force),
+        push_pp_flag(success_policy,under_all)
     ),
     ( var(ModuleList) ->
-      get_all_modules(TopLevel, ModuleList)
+        get_all_modules(TopLevel, ModuleList)
     ; true
     ),
-%       display(modules(ModuleList)),
     auto_ctcheck_(Analysis, TopLevel, ModuleList, Info,Summary),
     pop_pp_flag(entry_policy),
     pop_pp_flag(success_policy),
@@ -1141,13 +1110,13 @@ auto_ctcheck_(Analysis, TopModule, [Module|Modules], assert_count(Info),SOut) :-
     combine_info(Info1, Info2, Info),
     combine_summ(Summ,S1,SOut).
 
-combine_summ(ok,ok,OK) :-!, OK = ok.
+combine_summ(ok,ok,OK) :- !, OK = ok.
 combine_summ(error,_,E) :- !, E=error.
 combine_summ(_,error,E) :- !, E=error.
 combine_summ(_,_,warning).
 
-combine_info(I, [], I) :-!.
-combine_info([], I, I) :-!.
+combine_info(I, [], I) :- !.
+combine_info([], I, I) :- !.
 combine_info([(C,V)|Is],[(C,V1)|Is1],[(C,V2)|Is2]) :-
     V2 is V + V1,
     combine_info(Is, Is1, Is2).
@@ -1202,7 +1171,6 @@ auto_ctcheck_opt_(Analysis, TopModule, [Module|Modules], assert_count(Info)) :-
     acheck_info(assert_count(Info1),_),
     atom_concat(Module,'.pl',Module_pl),
     output(Module_pl),
-    %
 %       atom_concat(Module,'.ast',Module_ast),
     absolute_file_name(Module, '_opt', '.pl', '.', _, BaseAbs, _),
     ast_filename(BaseAbs, Module_ast),
@@ -1339,7 +1307,7 @@ acheck_info(Info,Summary) :-
 
 :- push_prolog_flag(multi_arity_warnings,off).
 
-cleanreg:-
+cleanreg :-
     current_pp_flag(tmp_dir,Dir),
     ( Dir = source ->
         message(inform, ['reg files not erased because tmp_dir is set to source. Use cleanreg/1 instead.'])
@@ -1370,17 +1338,15 @@ delete_files(Dir):-
     delete_files_(Dir,Files).
 
 delete_files_(_Dir,[]).
-delete_files_(Dir,['.'|Files]):-
-    !,
+delete_files_(Dir,['.'|Files]):- !,
     delete_files_(Dir,Files).
-delete_files_(Dir,['..'|Files]):-
-    !,
+delete_files_(Dir,['..'|Files]):- !,
     delete_files_(Dir,Files).
-delete_files_(Dir,[File|Files]):- % TODO: IG change by path_concat
-    ( atom_concat('/',_,File) ->
+delete_files_(Dir,[File|Files]):-
+    ( path_is_absolute(File) ->
         File = AbsFile
     ;
-        atom_concat([Dir,'/',File],AbsFile)
+        path_concat(Dir,File,AbsFile)
     ),
     ( file_exists(AbsFile) ->
         ( file_property(AbsFile,type(directory)) ->
@@ -1397,8 +1363,7 @@ delete_files_(Dir,[File|Files]):- % TODO: IG change by path_concat
 %---------------------------------------------------------------------
 
 copy_file(FileSpec,TargetDir):-
-    atom_concat(['/bin/cp ',FileSpec,' ',TargetDir],Cmd),
-    system(Cmd).
+    process_call(path(cp),[FileSpec,TargetDir],[]).
 
 %---------------------------------------------------------------------
 
@@ -1432,44 +1397,39 @@ auto_simp_libs(TopLevel,Dir0):-
 
 auto_simp_libs(TopLevel,Dir,Info):-
     cleanup_intermod,
+    file_exists(Dir), !,
     pplog(modular, ['{Processing with auto_simp_libs: ',~~(TopLevel)]),
     set_top_level(TopLevel),
-    ( file_exists(Dir) ->
-        pplog(modular, ['{Removing all files in ',~~(Dir),'}']),
-        push_pp_flag(intermod,auto),
-        push_pp_flag(entry_policy,force),
-%           push_pp_flag(punit_boundary,no_engine),
-        push_pp_flag(punit_boundary,on),
+    pplog(modular, ['{Removing all files in ',~~(Dir),'}']),
+    push_pp_flag(intermod,auto),
+    push_pp_flag(entry_policy,force),
+    push_pp_flag(punit_boundary,on),
 %
-        delete_files(Dir),
+    delete_files(Dir),
 %           cleanup_itf_cache,
-        get_all_modules(TopLevel,ModList,InclList),
-        pplog(modular, ['Copying library files to ',~~(Dir)]),
-        copy_modules(ModList,Dir,TargetList),
-        copy_modules(InclList,Dir,_InclTargetList),
-        get_modules_regnames(TargetList,RegList),
-        delete_files(RegList),
-        asserta(library_directory(Dir)),
-        atom_concat(Dir,'/engine',DirEngine),
-        asserta(file_search_path(engine,DirEngine)),
-        get_new_base(Dir,TopLevel,NewTopLevel),
-        cleanup_itf_cache,
-        modular_analyze(pdb,NewTopLevel,Info0),
-%           monolithic_analyze(pdb,NewTopLevel),
-        auto_transform(pdb,simp,NewTopLevel,Info1),
-        append(Info0,Info1,Info),
-        retract(library_directory(Dir)),
-        retract(file_search_path(engine,DirEngine)),
-        pop_pp_flag(punit_boundary),
-        pop_pp_flag(entry_policy),
-        pop_pp_flag(intermod)
-    ;
-        pplog(modular, ['Directory does not exist: ',~~(Dir)])
-    ),
+    get_all_modules(TopLevel,ModList,InclList),
+    pplog(modular, ['Copying library files to ',~~(Dir)]),
+    copy_modules(ModList,Dir,TargetList),
+    copy_modules(InclList,Dir,_InclTargetList),
+    get_modules_regnames(TargetList,RegList),
+    delete_files(RegList),
+    asserta(library_directory(Dir)),
+    atom_concat(Dir,'/engine',DirEngine),
+    asserta(file_search_path(engine,DirEngine)),
+    get_new_base(Dir,TopLevel,NewTopLevel),
+    cleanup_itf_cache,
+    modular_analyze(pdb,NewTopLevel,Info0),
+    %           monolithic_analyze(pdb,NewTopLevel),
+    auto_transform(pdb,simp,NewTopLevel,Info1),
+    append(Info0,Info1,Info),
+    retract(library_directory(Dir)),
+    retract(file_search_path(engine,DirEngine)),
+    pop_pp_flag(punit_boundary),
+    pop_pp_flag(entry_policy),
+    pop_pp_flag(intermod),
     pplog(modular, ['}']).
-
-:- multifile library_directory/1.
-:- dynamic library_directory/1.
+auto_simp_libs(_TopLevel,Dir,_Info):-
+    pplog(modular, ['Directory does not exist: ',~~(Dir)]).
 
 copy_modules([],_,[]).
 copy_modules([Mod|ModList],Dir,[TargetMod|TargetModList]):-
@@ -1487,7 +1447,7 @@ copy_modules([Mod|ModList],Dir,[TargetMod|TargetModList]):-
 copy_lib_subdir(Dir,FileName,SubDir):-
     get_lib_subdir0(FileName,SubDir0),
     !,
-    atom_concat([Dir,'/',SubDir0],SubDir),
+    path_concat(Dir,SubDir0,SubDir),
     mkpath(SubDir),
     copy_file(FileName,SubDir).
 copy_lib_subdir(Dir,FileName,Dir):-
@@ -1499,8 +1459,7 @@ copy_lib_subdir(Dir,FileName,Dir):-
 :- dynamic file_search_path/2.
 get_lib_subdir0(FileName,SubDir):-
     library_directory(LibDir0),
-    atom_concat(LibDir0,'/',LibDir),
-    atom_concat(LibDir,SubDirFile,FileName),
+    path_concat(LibDir0,SubDirFile,FileName),
     path_basename(FileName,NoPathFile),
     atom_concat(SubDir,NoPathFile,SubDirFile),
     !.
@@ -1508,3 +1467,27 @@ get_lib_subdir0(FileName,SubDir):-
 get_new_base(Dir,Mod,TargetMod):-
     just_module_name(Mod,ModName),
     absolute_file_name(ModName,'','.pl',Dir,_,TargetMod,_).
+
+%%------------------------------------------------------------------
+:- doc(section, "Debugging predicates").
+
+pplog_registry(_AbsInt,ModPath) :-
+    path_basename(ModPath,Mod),
+    current_pp_flag(pplog, L),
+    member(intermod_reg, L),
+    pplog(intermod_reg, ['{']),
+    iterations(N),
+    pplog(intermod_reg,['It ', ~~(N), ' ----------', 'Registry updated with ',~~(Mod)]),
+    show_registry_info,
+    pplog(intermod_reg, ['}']),
+    fail.
+pplog_registry(_,_) :-
+    current_pp_flag(pplog, L),
+    member(intermod_dump, L),
+    pplog(intermod_dump, ['{']),
+    iterations(N),
+    pplog(intermod_reg,['It ', ~~(N), ' ----------']),
+    show_analysis,
+    pplog(intermod_dump, ['}']),
+    fail.
+pplog_registry(_,_).

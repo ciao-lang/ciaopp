@@ -97,7 +97,7 @@ persistent_dir(dbdir, '~/.ciao.d/ciaopp_flags').
 pp_flag(pplog).
 pp_flag(pplog, 'Controls the message groups of CiaoPP.').
 current_pp_flags(  pplog, [auto_interface, analyze_module, ctchecks, dump, incremental, infer, load_module, modular, output,spec_module,transform_module]).
-valid_flag_values( pplog, sublist( _, [auto_interface, analyze_module, ctchecks, dump, incremental, incremental_high, infer, load_assrts, load_module, modular, output, p_abs, spec_module, spec_module_high,transform_module])).
+valid_flag_values( pplog, sublist( _, [auto_interface, analyze_module, ctchecks, dump, incremental, incremental_high, infer, load_assrts, load_module, modular, intermod_dump, intermod_reg, output, p_abs, spec_module, spec_module_high,transform_module])).
 % TODO: does this list need to be sorted?
 
 pp_flag(output_info).

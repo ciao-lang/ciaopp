@@ -113,7 +113,7 @@ show_analysis :- %% by default, facts do not have memo_table entry but they have
     fail.
 show_analysis :-
     nl,
-    \+ \+ complete(_,eterms,_,_,_,_,_), % TODO: other type domains?
+    \+ \+ ( complete(_,AbsInt,_,_,_,_,_), typeanalysis(AbsInt)),
     show_types_raw_printer,
     fail.
 show_analysis :-
@@ -123,7 +123,11 @@ show_analysis :-
 analysis registries.").
 show_registry_info :-
     registry(A,B,C),
-    show_data(registry(A,B,C)), nl,
+    show_data(registry(A,B,C)),
+    fail.
+show_registry_info :-
+    typedb(A,B),
+    show_data(typedb(A,B)),
     fail.
 show_registry_info.
 
