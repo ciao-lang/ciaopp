@@ -32,8 +32,6 @@
     get_all_module_cycles/2,
     get_all_modules_depth/2,
     get_module_from_sg/2,
-    recover_from_invalid_state/2,
-    propagate_invalid_info/3,
 %%%intermodule-graph
     module_is_processable/1,
     registry_is_empty/3,
@@ -83,12 +81,9 @@
     imp_auxiliary_info/4,
     restore_auxiliary_info/2]).
 :- use_module(ciaopp(p_unit/aux_filenames), [
-    get_module_filename/3,
-    just_module_name/2,
-    is_library/1,
-    get_loaded_module_name/3]).
-:- use_module(ciaopp(p_unit/program_keys), [
-    decode_litkey/5, predkey_from_sg/2, get_predkey/3]).
+    get_module_filename/3, just_module_name/2, is_library/1, get_loaded_module_name/3]).
+:- use_module(ciaopp(p_unit/program_keys),
+              [decode_litkey/5, predkey_from_sg/2, get_predkey/3]).
 :- use_module(ciaopp(plai/tarjan), [step2/2]).
 
 :- use_module(spec(spec_multiple), [publish_pred_name/2, get_version_name/4]).
@@ -198,39 +193,36 @@ regdata_set_mark(OldReg, Mark, NewReg) :-
 
 %% --------------------------------------------------------------------
 
-:- pred imported_module(Module,Base) :: atm * atm
-# "Enumerates the modules imported by the current module".
+:- pred imported_module(Module,Base) => atm * atm
+   # "Enumerates the modules imported by the current module".
 :- data imported_module/2.
 
-:- pred caller_module(Module,BaseName) :: atm * atm
-# "List of caller modules to be processed.".
+:- pred caller_module(Module,BaseName) => atm * atm
+   # "List of caller modules to be processed.".
 :- data caller_module/2.
 
 :- pred changed_module(Module,Base,SourceModule,Mode,WhenModuleChanged,RequireReanalysis) 
-# "List of modules changed when updating the analysis results in the
-  registry. Registry information of @var{Module} with basename
-  @var{Base} has been changed as a result of analyzing
-  @var{SourceModule}. @var{Mode} represents the relationship between
-  @var{Module} and @var{SourceModule}, and it can be @code{imported},
-  @code{caller} or @code{current}.
+   # "List of modules changed when updating the analysis results in the
+   registry. Registry information of @var{Module} with basename @var{Base} has
+   been changed as a result of analyzing @var{SourceModule}. @var{Mode}
+   represents the relationship between @var{Module} and @var{SourceModule}, and
+   it can be @code{imported}, @code{caller} or @code{current}.
 
-  @var{WhenModuleChanged} indicates in which run of the analysis of
-  @var{SourceModule} the registry information of @var{Module}
-  changed. This argument can be instantiated to values @code{current}
-  (modules whose information changed as result of the last analysis
-  run) or @code{previous} (modules whose information changed as result
-  of a previous analysis run).
+   @var{WhenModuleChanged} indicates in which run of the analysis of
+   @var{SourceModule} the registry information of @var{Module} changed. This
+   argument can be instantiated to values @code{current} (modules whose
+   information changed as result of the last analysis run) or @code{previous}
+   (modules whose information changed as result of a previous analysis run).
 
-  @var{RequireReanalysis} indicates that the module should be
-  reanalyzed. This is only useful in the context of
-  @pred{gen_registry_info/3-4}.".
+   @var{RequireReanalysis} indicates that the module should be reanalyzed. This
+   is only useful in the context of @pred{gen_registry_info/3-4}.".
 
 :- data changed_module/6.
 
 %% --------------------------------------------------------------------
 
 :- pred reg_version(Version) : atm
-# "Contains a version number which identifies
+   # "Contains a version number which identifies
    the registry files associated with this version of the assertion
    library. Should be changed every time changes are made which render
    registry files incompatible, since this forces recomputation
@@ -240,7 +232,7 @@ reg_version('2.3').
 %reg_extension('.reg').  %% moved to in p_asr
 
 :- pred registry_header_format(Version,TermList) : atm * list(term) 
-# "@var{TermList} is the list of terms which must appear in the header
+   # "@var{TermList} is the list of terms which must appear in the header
    of version @var{Version} registry files, excluding the version
    number term itself.".
 registry_header_format('1.0',[]).
@@ -489,21 +481,22 @@ ensure_registry_caller_files(_Verb).
 %% --------------------------------------------------------------------
 
 %% NOTE: This predicate decides when to set invalid marks, depending on the success policy.
+:- pred compare_and_get_mark(SuccessPolicy,AbsInt,+SgC,+SuccC,+SgR,+SuccR,Mark)
+   : (atm(SuccessPolity), atm(AbsInt)) => ground(Mark).
 compare_and_get_mark(SP,_AbsInt,_SgComplete,_Succ_s,_Sg,OldSucc_s,Mark) :-
 %% This case should not occur.
     var(OldSucc_s), !,
     may_be_improved_mark(SP,Mark).
 compare_and_get_mark(_SP,AbsInt,SgComplete,Succ_s,Sg,OldSucc_s,'+') :-
-    less_or_equal_proj(AbsInt,SgComplete,Succ_s,Sg,OldSucc_s),
-    !.
+    less_or_equal_proj(AbsInt,SgComplete,Succ_s,Sg,OldSucc_s), !.
 compare_and_get_mark(_SP,_AbsInt,_SgComplete,_Succ_s,_Sg,_OldSucc_s,'-').
 
 %% ********************************************************************
 %% ********************************************************************
 
 :- pred not_valid_mark(?SP,?Mark) 
-# "Succeeds if a registry entry marked with @var{Mark} cannot be used
-  when the success policy @var{SP} is applied.".
+   # "Succeeds if a registry entry marked with @var{Mark} cannot be used
+   when the success policy @var{SP} is applied.".
 not_valid_mark(SP,Mark) :-
     may_be_improved_mark(SP,OppositeMark),
     opposite_mark(OppositeMark, Mark).
@@ -512,9 +505,9 @@ opposite_mark('-','+').
 opposite_mark('+','-').
 
 :- pred may_be_improved_mark(?SP,?Mark) 
-# "Succeeds if a registry entry marked with @var{Mark} can be used
-when the success policy @var{SP} is applied, and the analysis results
-can be improved by reanalysing the module.".
+   # "Succeeds if a registry entry marked with @var{Mark} can be used
+   when the success policy @var{SP} is applied, and the analysis results
+   can be improved by reanalysing the module.".
 may_be_improved_mark(over_first,'+').
 may_be_improved_mark(over_best,'+').
 may_be_improved_mark(over_all,'+').
@@ -624,9 +617,9 @@ update_current_registry_spec_info(Base,CurrModule,Changed) :-
     current_fact(changed(Changed)).
 
 :- pred get_spec_info_imported
-# "Gets the information about version names of specialized predicates
-  belonging to the list of imported modules from the current module,
-  and puts them into the specializer's abstract executability table.".
+   # "Gets the information about version names of specialized predicates
+   belonging to the list of imported modules from the current module,
+   and puts them into the specializer's abstract executability table.".
 
 get_spec_info_imported:-
     get_imported_modules,         %% just in case.
@@ -747,10 +740,10 @@ retract_saved_files([Base|Bases]) :-
 %% ====================================================================
 % IG: used now only for spec and somewhere in resources
 :- pred get_imported_calls(-ICalls) 
-# "Returns a list of tuples (@var{IM},@var{IMBase},@var{Sg}), where
-  @var{Sg} is an imported call of module @var{IM} (basename
-  @var{IMBase}).  Only the imported calls from processable modules are
-  considered.".
+   # "Returns a list of tuples (@var{IM},@var{IMBase},@var{Sg}), where
+   @var{Sg} is an imported call of module @var{IM} (basename
+   @var{IMBase}).  Only the imported calls from processable modules are
+   considered.".
 get_imported_calls(ICalls) :-
     ( setof((ModName,Sg), (current_itf(imports,Sg,ModName), atom(ModName)), ICalls0) ->
         remove_duplicates(ICalls0,ICalls1),
@@ -772,8 +765,7 @@ remove_duplicates([X|Xs],Ys,L) :-
 :- set_prolog_flag(multi_arity_warnings,on).
 
 get_module_names_bases([],[]).
-get_module_names_bases([(user,_Sg)|Xs],Ys) :-
-    !,
+get_module_names_bases([(user,_Sg)|Xs],Ys) :- !,
     get_module_names_bases(Xs,Ys).
 get_module_names_bases([(File,Sg)|Xs],[(IM,IMBase,Sg)|Ys]) :-
     get_imported_module_base_name(File, IM, IMBase),
@@ -788,14 +780,13 @@ get_imported_module_base_name(File, Mod, Base) :-
     module_is_processable(Base).
 
 :- pred add_to_imdg_list(+Caller,+OldList,-NewList,-Added) 
-# "Adds an element @var{Caller} (formed by either a tuple
-  (@var{SgCaller},@var{Caller_s},@var{Base}) or an atom
-  @code{'$query'}) to @var{OldList}, a list of intermodular
-  dependencies. @var{Added} will be instantiated to 'y' if
-  @var{Caller} is actually added to @var{NewList}, and 'n' if it was
-  already in @var{OldList}.".
+   # "Adds an element @var{Caller} (formed by either a tuple
+   (@var{SgCaller},@var{Caller_s},@var{Base}) or an atom
+   @code{'$query'}) to @var{OldList}, a list of intermodular
+   dependencies. @var{Added} will be instantiated to 'y' if
+   @var{Caller} is actually added to @var{NewList}, and 'n' if it was
+   already in @var{OldList}.".
 
-% TODO: IG: AbsInt not needed in this predicate
 add_to_imdg_list([],'$query',['$query'],y).
 add_to_imdg_list(['$query'|Is], '$query',['$query'|Is],n) :- !.
 add_to_imdg_list([(Id,Sg,Caller,Base)|Is],'$query',[(Id,Sg,Caller,Base)|NIs],Added) :-
@@ -815,10 +806,10 @@ ensure_registry_file(Module,Base,Verb) :-
     patch_registry_(Module,Base,_).
 
 :- pred read_registry_file(+Module,+Base,+Verb) : atm * atm * atm
-# " Reads the registry file of @var{Module} and loads it into
-  @tt{registry/2}, erasing any previous registry information for that
-  module. @var{Base} must be the absolute file name, but excluding
-  file extension.".
+   # " Reads the registry file of @var{Module} and loads it into
+   @tt{registry/2}, erasing any previous registry information for that
+   module. @var{Base} must be the absolute file name, but excluding
+   file extension.".
 read_registry_file(Module,Base,Verb) :-
     % TODO:{JF2} split in a simple pred that read the registry and other that computes NeedsTreat, patches Mark at registry (if needed), and does upload_typedefs_all_domains
     read_registry_file_(Module,Base,Verb).
@@ -956,10 +947,10 @@ check_registry_already_read(Module) :-
 
 % TODO: this is not working for incremental modular analysis
 :- pred upload_typedefs(+AbsInt,+Module) : atm * atm
-# "Uploads into CiaoPP the types used by the registry entries of
-  @var{Module} in domain @var{AbsInt}. @var{Module} registry info must
-  be already loaded into memory. If the type information has been
-  already uploaded, it is not loaded again.".
+   # "Uploads into CiaoPP the types used by the registry entries of
+   @var{Module} in domain @var{AbsInt}. @var{Module} registry info must
+   be already loaded into memory. If the type information has been
+   already uploaded, it is not loaded again.".
 upload_typedefs(AbsInt,Module) :-
     %%% uploading typedefs, and updating registry information with typedef renamings.
     set_fact(tmp_current_module(Module)),
@@ -1018,12 +1009,11 @@ replace_chdg_subs([(Id,Sg,_)|Chdgs0],[Proj|Asubs],[(Id,Sg,Proj)|Chdgs], ImdgL) :
     replace_chdg_subs(Chdgs0,Asubs,Chdgs, ImdgL).
 
 %% --------------------------------------------------------------------
-
 :- pred read_registry_header(Verb,Module,Stream) : atm * atm * stream 
-# "Reads the header of @var{Module}'s registry file from @var{Stream},
-  and stores it in the data predicate @tt{registry_header/2}. If the
-  registry header is wrong, or it corresponds to a non-valid
-  version, this predicate fails.".
+   # "Reads the header of @var{Module}'s registry file from @var{Stream},
+   and stores it in the data predicate @tt{registry_header/2}. If the
+   registry header is wrong, or it corresponds to a non-valid
+   version, this predicate fails.".
 read_registry_header(_Verb,Module,Stream) :-
     read(Stream,v(V)),
     registry_header_format(V,HeaderTerms),
@@ -1041,10 +1031,10 @@ read_registry_header_terms(Stream,Module,[H|Hs]) :-
     read_registry_header_terms(Stream,Module,Hs).
 
 :- pred create_registry_header(+Module,+PlFileName) : atm * atm
-# "Creates in memory a new registry header for @var{Module}. This
-  predicate must be aware of the contents of the header and the order
-  of the header terms (stored as terms in
-  @pred{registry_header_format/2})".
+   # "Creates in memory a new registry header for @var{Module}. This
+   predicate must be aware of the contents of the header and the order
+   of the header terms (stored as terms in
+   @pred{registry_header_format/2})".
 create_registry_header(Module,PlFile) :-
     retractall_fact(registry_headers(Module,_)),
     modif_time0(PlFile,Date),
@@ -1057,22 +1047,11 @@ create_registry_header(Module,PlFile) :-
     ; assertz_fact(registry_headers(Module,open_mode(read_write)))
     ).
 
-% IG: This is updated after the registry info is created/updated
-% TODO: [IG] I think the logic of pl_date is redundant now
-% (IG) Not used, done by the compiler, remove if everything works
-% update_registry_header_pl_date(Module,Base) :-
-%       get_module_filename(pl,Base,FileName),
-%       modif_time(FileName, FileTime),
-%       retract_fact(registry_headers(Module,pl_date(_))),
-%       assertz_fact(registry_headers(Module,pl_date(FileTime))),
-%       retract_fact(registry_headers(Module, patched_registry(_))), % IG: always failing
-%       assertz_fact(registry_headers(Module, patched_registry(no))).
-
 %% --------------------------------------------------------------------
 
 :- pred write_registry_header(Module,Stream) : atm * stream 
-    # "Writes the header of @var{Module}'s registry file to @var{Stream}
-    from the data predicate @tt{registry_headers/2}.".
+   # "Writes the header of @var{Module}'s registry file to @var{Stream}
+   from the data predicate @tt{registry_headers/2}.".
 write_registry_header(Module,Stream) :-
     reg_version(V),
     writeq(Stream,v(V)),display(Stream,'.'),nl(Stream),
@@ -1087,13 +1066,12 @@ write_header_terms(Stream,Module,[H|Hs]) :-
     write_header_terms(Stream,Module,Hs).
 
 :- pred reread_registry_file(+Module,+Base,+Verb)
-# "Overwrites the registry file of @var{Module} in memory reading it
-  from disk.".
+   # "Overwrites the registry file of @var{Module} in memory reading it
+   from disk.".
 reread_registry_file(Module,Base,Verb) :-
     cleanup_registry(Module),
     read_registry_file(Module,Base,Verb).
 
-%% ********************************************************************
 %% ********************************************************************
 % TODO: IG merge predicates get_all_modules/2 and get_all_modules/3 ?
 :- pred get_all_modules(+TopLevelFile,-ModList) 
@@ -1116,12 +1094,12 @@ get_all_modules(TopLevelFile,ModList) :-
     !.
 
 :- pred get_all_modules(+TopLevelFile, -ModList, -IncludeList) 
-    : filename(TopLevelFile) 
- => (list(filename,ModList), list(filename,IncludeList))
-# "The same as @pred{get_all_modules/2}, but a list of included files
-  is also returned.  This list includes not only files explicitly
-  included with @code{:- include} declarations, but also packages
-  used.".
+   : filename(TopLevelFile)
+   => (list(filename,ModList), list(filename,IncludeList))
+   # "The same as @pred{get_all_modules/2}, but a list of included files
+   is also returned.  This list includes not only files explicitly
+   included with @code{:- include} declarations, but also packages
+   used.".
 get_all_modules(TopLevelFile,ModList,IncludeList) :-
     absolute_file_name(TopLevelFile,'_opt','.pl','.',AbsFile,_,_),
     get_intermodule_graph(AbsFile,true),
@@ -1138,10 +1116,10 @@ get_all_modules(TopLevelFile,ModList,IncludeList) :-
     !.
 
 :- pred get_all_modules_depth(+TopLevelFile,-ModList) 
-# "Given the top-level module of a program, @var{TopLevelFile},
-  obtains in @var{ModList} the list of pairs (module,depth) with all
-  modules in the modular graph with their maximal depth (without
-  cycles).  All the modules in a cycle have the same depth.".
+   # "Given the top-level module of a program, @var{TopLevelFile},
+   obtains in @var{ModList} the list of pairs (module,depth) with all
+   modules in the modular graph with their maximal depth (without
+   cycles).  All the modules in a cycle have the same depth.".
 :- doc(bug,"not tested yet.").
 get_all_modules_depth(TopLevelFile,ModList) :-
     absolute_file_name(TopLevelFile,'_opt','.pl','.',AbsFile,AbsBase,_),
@@ -1159,18 +1137,18 @@ get_all_modules_depth(TopLevelFile,ModList) :-
     retractall_fact(initial_vertex(_,_)).
 
 :- pred get_all_module_cycles(+TopLevelFile,-CycleList) 
-# "Obtains @var{CycleList}, the list of cycles in the program unit
-  whose top-level module is @var{TopLevelFile}.  A cycle is a ciclic
-  dependency in the module dependency graph.  Every element of
-  @var{CycleList} is a list of the modules which belong to each cycle.
-  Modules not belonging to any cycle are represented as one-element
-  lists. @var{CycleList} is sorted as a post-order traversal of the
-  inter-cycle dependency graph.
+   # "Obtains @var{CycleList}, the list of cycles in the program unit
+   whose top-level module is @var{TopLevelFile}.  A cycle is a ciclic
+   dependency in the module dependency graph.  Every element of
+   @var{CycleList} is a list of the modules which belong to each cycle.
+   Modules not belonging to any cycle are represented as one-element
+   lists. @var{CycleList} is sorted as a post-order traversal of the
+   inter-cycle dependency graph.
 
-  The modules included in @var{CycleList} are those which appear in
-  the top-down modular graph traversal with registries set to
-  read_write mode (and including library modules if punit_boundary
-  flag is set to 'on'.)".
+   The modules included in @var{CycleList} are those which appear in
+   the top-down modular graph traversal with registries set to
+   read_write mode (and including library modules if punit_boundary
+   flag is set to 'on'.)".
 get_all_module_cycles(TopLevelFile,SortedCycleList) :-
     absolute_file_name(TopLevelFile,'_opt','.pl','.',AbsFile,AbsBase,_),
     get_intermodule_graph(AbsFile,true),
@@ -1229,159 +1207,6 @@ get_cycles([],[]).
 get_cycles([CssId|CssIds],[Cycle|SortedCycles]) :-
     findall(M, module_scc(M,CssId), Cycle),
     get_cycles(CssIds,SortedCycles).
-
-
-%% ********************************************************************
-%% ********************************************************************
-
-:- pred propagate_invalid_info(+AbsInt,+TopLevel,+BaseList) 
-# "Marks as 'invalid' all registry entries in @var{BaseList} which
-  transitively depend on invalid entries. ".
-:- doc(bug,"Not tested yet. Perhaps it is useless").
-propagate_invalid_info(AbsInt,TopLevel,BaseList) :-
-    get_invalid_modules_from_list(AbsInt,BaseList,InvalidBaseListNoForce),
-    propagate_invalid_info_(TopLevel,InvalidBaseListNoForce), !.
-
-get_invalid_modules_from_list(_,[],[]) :- !.
-get_invalid_modules_from_list(AbsInt,[Base|BaseList],[(Base,no_force)|InvalidBaseList]) :-
-    just_module_name(Base,Module),
-    ensure_registry_file(Module,Base,quiet),
-    \+ all_entries_valid(Base,AbsInt),
-    !,
-    get_invalid_modules_from_list(AbsInt,BaseList,InvalidBaseList).
-get_invalid_modules_from_list(AbsInt,[_Base|BaseList],InvalidBaseList) :-
-    get_invalid_modules_from_list(AbsInt,BaseList,InvalidBaseList).
-
-:- pred recover_from_invalid_state(+AbsInt,+TopLevel)
-# "Checks if there is any invalid state in the program unit starting
-  from @var{TopLevel}, and marks transitively as invalid all affected
-  entries in any module of the program unit. This predicate is useful
-  only in manual analysis of modular programs.".
-recover_from_invalid_state(AbsInt,TopLevel) :-
-    get_invalid_modules(AbsInt,TopLevel,ModList),
-    just_module_name(TopLevel,TopLevelModule),
-    propagate_invalid_info_(TopLevelModule,ModList),!.
-
-:- pred get_invalid_modules(+AbsInt,+TopLevelFile,-ModList)
-# "Obtains in @var{ModList} the list of modules' basenames in the
-  program unit which are in an invalid state, either if they have
-  'invalid' entries in their .reg files, or their source code has
-  changed since the last time they were analyzed.  If there is no .reg
-  file for a module, its parents are added to @var{ModList}. Every
-  element in @var{ModList} is a pair of the form
-  (@var{Module},@var{Force}). If a source file has changed wrt since
-  it was analyzed, or is the parent of a module with no .reg file,
-  then @var{Force} is 'force', which means that all entries in the
-  .reg file are invalid. The rest of the elements of @var{ModList}
-  have 'no_force'.".
-get_invalid_modules(AbsInt,TopLevelFile,ModList) :-
-    retractall_fact(module_to_analyze(_,_)),
-    retractall_fact(module_to_analyze_parents(_)),
-    absolute_file_name(TopLevelFile,'_opt','.pl','.',AbsFile,AbsBase,_),
-    %
-    get_intermodule_graph(AbsFile,check_registry_valid(AbsInt)),
-    include_parents(AbsBase),
-    ( setof((B,F), current_fact(module_to_analyze(B,F)), ModList)
-    ; ModList = []),
-    retractall_fact(module_to_analyze(_,_)),
-    retractall_fact(module_to_analyze_parents(_)),
-    retractall_fact(intermodule_graph(_,_)),
-    retractall_fact(intermodule_list(_)),
-    retractall_fact(include_list(_)),
-    retractall_fact(initial_vertex(_,_)).
-
-% Succeeds if the registry of Base is valid with respect to
-% AbsInt: no registry entry is invalid, and the registry file exists.
-check_registry_valid(Base,AbsInt) :-
-    just_module_name(Base,Module),
-    cleanup_registry(Module), % TODO: force_read_registry_file_?
-    read_registry_file_(Module,Base,quiet), % TODO:{JF} assume never fails!
-    get_module_filename(reg,Base,RegName),
-    ( file_exists(RegName) ->
-        peek_needs_treat(Base,NeedsTreat),
-        ( NeedsTreat = no ->
-            ( all_entries_valid(Base,AbsInt) ->
-                % TODO: Previously this code depended on
-                % patch_registry_file_, however we can see that if
-                % NeedsTreat=no then the Invalid field in regdata
-                % is not patched, so read_registry_file_ is enough
-                true
-            ; add_module_to_analyze(Base,no_force)
-            )
-        ;
-            add_module_to_analyze(Base,force)
-        )
-    ; %% If there is no registry file, parent module is added
-      %% for analysis (as call patterns are needed for the imported module).
-      asserta_fact(module_to_analyze_parents(Base))
-    ).
-
-%% Succeeds if all entries of domain AbsInt are valid (marked or unmarked).
-all_entries_valid(Base,AbsInt) :-
-    just_module_name(Base,Module),
-    current_pp_flag(success_policy,SP),
-    not_valid_mark(SP,Invalid),
-    \+ current_fact(registry(_,Module,regdata(_,AbsInt,_,_,_,_,_,_,Invalid))).
-
-%% --------------------------------------------------------------------
-
-:- pred propagate_invalid_info_(+TopLevelModule,+ModList)
-# "Traverses the intermodule dependency graph, and transitively
-  propagates invalid states to caller modules. @var{ModList} is a pair
-  of the form (@var{Module},@var{Force}). If @var{Force} is
-  @code{force}, all registry entries must be marked as invalid, and
-  their caller modules invalidated accordingly. If @var{Force} is
-  @code{no_force}, then only the invalid registry entries are
-  propagated to the caller modules.  This is an internal predicate
-  (the corresponding exported predicate is
-  propagate_invalid_info/2).".
-propagate_invalid_info_(_TopLevel,[]) :- !.
-propagate_invalid_info_(TopLevel,[(Base,Force)|ModList]) :-
-    just_module_name(Base,Module),
-    ensure_registry_file(Module,Base,quiet),
-    ( Force = force ->  % All entries in the registry must be invalid.
-        current_pp_flag(success_policy,SP),
-        not_valid_mark(SP,Invalid),
-        mark_all_entries(Module,Invalid),
-        add_changed_module(Module,Base,TopLevel,transitive,no),
-        invalidate_callers(Module,ModList1)
-    ;
-        invalidate_callers(Module,ModList1)
-    ),
-    append(ModList,ModList1,NewModList),
-    propagate_invalid_info_(TopLevel,NewModList).
-
-%%Marks all entries, even if they are of different domains.
-mark_all_entries(Module,Mark) :-
-    ( % (failure-driven loop)
-      retract_fact(registry(SgKey,Module,OldReg)),
-        regdata_set_mark(OldReg, Mark, NewReg),
-        assertz_fact(registry(SgKey,Module,NewReg)),
-        fail
-    ; true
-    ).
-
-%%Marks as invalid all the entries corresponding to the callers of invalid 
-%%entries in Module.
-invalidate_callers(Module,ModList) :-
-    current_pp_flag(success_policy,SP),
-    not_valid_mark(SP,Invalid),
-    Reg = regdata(_,AbsInt,_Sg,_Call,_Succ,_Spec,Imdg,_,Invalid),
-    findall((AbsInt,Imdg),registry(_,Module,Reg),ListOfImdgs),
-    invalidate_callers_1(Module,ListOfImdgs,ModList).
-
-invalidate_callers_1(_,[],[]) :- !.
-invalidate_callers_1(Module,[(AbsInt,ImdgList)|ListOfImdgs],ModList) :-
-    current_pp_flag(success_policy,SP),
-    not_valid_mark(SP,Invalid),
-    mark_callers_registry(ImdgList,_,_ParentReg,AbsInt,Module,Invalid,BasenamesMarked),
-    include_no_force(BasenamesMarked,ModsMarked),
-    invalidate_callers_1(Module,ListOfImdgs,ModList1),
-    append(ModsMarked,ModList1,ModList).
-
-include_no_force([],[]).
-include_no_force([B|Bs],[(B,no_force)|Ms]) :-
-    include_no_force(Bs,Ms).
 
 %% ********************************************************************
 %% ********************************************************************
@@ -1670,8 +1495,7 @@ assert_intermodule_graph([IBase|IBaseList],Base) :-
 
 assert_include_list([]).
 assert_include_list([I|Is]) :-
-    (
-        current_fact(include_list(I)) ->
+    ( current_fact(include_list(I)) ->
         true
     ;
         asserta_fact(include_list(I))
@@ -1717,22 +1541,22 @@ check_stop_one_module(GoalBeforeLoading,Base) :-
 %% ********************************************************************
 
 :- pred intermodule_graph_depth(Module,Depth)
-# "Module @var{Module} has depth @var{Depth} in the intermodular graph
-  contained in @pred{intermodule_graph/2}. All modules included in a
-  strongly connected component are labelled with the same depth.".
+   # "Module @var{Module} has depth @var{Depth} in the intermodular graph
+   contained in @pred{intermodule_graph/2}. All modules included in a
+   strongly connected component are labelled with the same depth.".
 
 :- data intermodule_graph_depth/2. 
 
 :- pred compute_intermodule_graph_depth(TopLevel) 
-# "Computes the intermodule graph (contained in
-  @pred{intermodule_graph/2}) with depths and stores it in
-  @pred{intermodule_graph_depth/2}. The depth of every node in the
-  graph is computed considering that all nodes in a strongly connected
-  component are labelled with the same depth. The depth of a given
-  node is the largest depth from the top-level module.
+   # "Computes the intermodule graph (contained in
+   @pred{intermodule_graph/2}) with depths and stores it in
+   @pred{intermodule_graph_depth/2}. The depth of every node in the
+   graph is computed considering that all nodes in a strongly connected
+   component are labelled with the same depth. The depth of a given
+   node is the largest depth from the top-level module.
 
-  This predicate must be called after calling get_intermodule_graph/2
-  as it needs initial_vertex/2 already populated.".
+   This predicate must be called after calling get_intermodule_graph/2
+   as it needs initial_vertex/2 already populated.".
 compute_intermodule_graph_depth(TopLevel) :-
     retractall_fact(intermodule_graph_depth(_,_)),
     findall(vertex(M1,Ms,0,0,undef), initial_vertex(M1,Ms), Vertex),
@@ -1754,14 +1578,14 @@ intermod_sccs(Vertex,Cs) :-
         step2(S0,Cs)
     ).
 
-:- data module_scc/2.       % Module M belongs to scc S.
+:- data module_scc/2.      % Module M belongs to scc S.
 :- data interscc_edge/2.   % Scc S1 is connected to Scc S2.
-:- data scc_depth/2.        % Scc S has depth D.
+:- data scc_depth/2.       % Scc S has depth D.
 
 :- pred compute_noncyclic_depth(in(TopLevel),in(Cs)) 
-# "computes the depth of every module, labelling the modules in a
-  strongly connected component (in @var{Cs}) with the same depth. The
-  result is stored in intermodule_graph_depth/2.".
+   # "computes the depth of every module, labelling the modules in a
+   strongly connected component (in @var{Cs}) with the same depth. The
+   result is stored in intermodule_graph_depth/2.".
 compute_noncyclic_depth(TopLevel,Cs) :-
     retractall_fact(module_scc(_,_)),
     retractall_fact(interscc_edge(_,_)),
@@ -1831,8 +1655,8 @@ gen_intermodule_graph_depth.
 %% ********************************************************************
 
 :- pred write_registry_file(Base,Module,Verb) : atm * atm * atm
-# "Writes to disk the registry information stored in memory for module
-  @var{Module} which has as base file name @var{Base}.".
+   # "Writes to disk the registry information stored in memory for module
+   @var{Module} which has as base file name @var{Base}.".
 write_registry_file(Base,Module,_Verb) :-
     get_module_filename(reg,Base,RegName),
     open(RegName,write,Stream), % overwrites the previous file.
@@ -1858,10 +1682,10 @@ write_registry_file_loop(Module) :-
     fail.
 write_registry_file_loop(_Module).
 
-:- pred change_open_mode(+Base,+OpenMode) 
-# "@var{OpenMode} is the new open mode of the module with basename
-  @var{Base}. @var{OpenMode} can take the values @code{read_write}
-  and @code{read_only}.".
+:- pred change_open_mode(+Base,+OpenMode)
+   # "@var{OpenMode} is the new open mode of the module with basename
+   @var{Base}. @var{OpenMode} can take the values @code{read_write} and
+   @code{read_only}.".
 change_open_mode(Base,OpenMode) :-
     just_module_name(Base,Module),
     read_registry_file(Module,Base,verbose),  %% if it is not loaded yet, loads it.
@@ -1870,11 +1694,10 @@ change_open_mode(Base,OpenMode) :-
     add_changed_module(Module,Base,Module,current,no).
 
 :- pred open_mode(Base,Type,OpenMode) 
-# "Module with basename @var{Base} is of type @var{Type} and it is
-   opened with mode @var{OpenMode}. @var{Type} can be @code{user} or
-   @code{library}. @var{OpenMode} is used to indicate if an imported
-   module's registry can be updated. It can take the values
-   @code{read_write} or @code{read_only}.".
+   # "Module with basename @var{Base} is of type @var{Type} and it is opened
+   with mode @var{OpenMode}. @var{Type} can be @code{user} or @code{library}.
+   @var{OpenMode} is used to indicate if an imported module's registry can be
+   updated. It can take the values @code{read_write} or @code{read_only}.".
 open_mode(Base,Type,OpenMode) :-
 %% It only works if module's registry has been already loaded. If it has not, it fails.
     just_module_name(Base,Module),
@@ -1885,17 +1708,16 @@ open_mode(Base,Type,OpenMode) :-
     ).
 
 :- pred registry_is_empty(+AbsInt,+Mod,+Base): atm * atm * atm
-# "Succeeds if the registry of module @var{Mod} with base name
-  @var{Base} is empty for the abstract domain @var{AbsInt}.".
+   # "Succeeds if the registry of module @var{Mod} with base name
+   @var{Base} is empty for the abstract domain @var{AbsInt}.".
 registry_is_empty(AbsInt,Mod,Base) :-
     read_registry_file(Mod,Base,quiet),
     \+ current_fact(registry(_,Mod,regdata(_,AbsInt,_,_,_,_,_,_,_))).
 
 :- pred module_is_processable(+Base) 
-# "Succeeds if module in @var{Base} can be processed by intermodular
-  preprocessing tools. This predicate may have to load the registry
-  file of that module, in order to check that the module has
-  read-write mode.".
+   # "Succeeds if module in @var{Base} can be processed by intermodular
+   preprocessing tools. This predicate may have to load the registry file of
+   that module, in order to check that the module has read-write mode.".
 module_is_processable(B) :-
     current_pp_flag(punit_boundary,ProcessLibs),
     module_is_processable_(B,ProcessLibs).
@@ -1935,9 +1757,8 @@ assert_if_not_asserted_yet(module_is_processable_cache(A,B,C)) :-
     assertz_fact(module_is_processable_cache(A,B,C)).
 assert_if_not_asserted_yet(_).
 
-
 :- pred module_is_processable_cache(Base,Processable,ProcessLibsFlag)
-# "Cache predicate for speeding up when checking whether a module is
+   # "Cache predicate for speeding up when checking whether a module is
    processable or not. It unifies @var{Processable} with 'yes' if
    module in @var{Base}.pl is processable, or 'no' if it is not.
    @var{ProcessLibs} contains the value of 'punit_boundary' flag
@@ -1957,20 +1778,10 @@ curr_file_base(Base,Module) :-
 get_file_base(File,Base) :-
     path_splitext(File,Base,_).
 
-% TODO: not used (done with compiler)
-% :- pred registry_up_to_date(Module,PLFile) : atom * atom
-% # "Succeeds if registry header of @var{Module} refers to current
-%   version of @var{PLFile} (comparing modification dates).".
-% registry_up_to_date(Module,PlName) :-
-%       ( current_fact(registry_headers(Module,pl_date(RegTime))) ->
-%         modif_time(PlName, PlTime),
-%         RegTime = PlTime
-%       ; true).
-
 :- pred less_or_equal_mark(+SP,?Mark0,?Mark1) : atm * atm * atm
-# "Given a success policy @var{SP}, succeeds if @var{Mark0} is less or
-  equal than @var{Mark1}. Invalid marks are the biggest marks.".
-less_or_equal_mark(_SP,Mark,Mark) :- !.      % if one of the marks is a free var, it is instantiated here.
+   # "Given a success policy @var{SP}, succeeds if @var{Mark0} is less or
+   equal than @var{Mark1}. Invalid marks are the biggest marks.".
+less_or_equal_mark(_SP,Mark,Mark) :- !.  % if one of the marks is a free var, it is instantiated here.
 less_or_equal_mark(_SP,unmarked,_Mark) :- !.
 less_or_equal_mark(SP,Mark0,Mark1) :-
     may_be_improved_mark(SP,Mark0),
@@ -1979,10 +1790,10 @@ less_or_equal_mark(SP,Mark0,Mark1) :-
 %% --------------------------------------------------------------------
 
 :- pred add_changed_module(+Module,+Base,+SourceModule,+Mode,+ReqReanalysis)
-# "Adds a new entry to @pred{changed_module/6}. @var{Module} registry
-  info has been changed as a result of analyzing @var{SourceModule},
-  and the relatioship between @var{SourceModule} and @var{Module} is
-  @var{Mode} (@code{imported}, @code{caller} or @code{current}).".
+   # "Adds a new entry to @pred{changed_module/6}. @var{Module} registry
+   info has been changed as a result of analyzing @var{SourceModule},
+   and the relatioship between @var{SourceModule} and @var{Module} is
+   @var{Mode} (@code{imported}, @code{caller} or @code{current}).".
 add_changed_module(Module,Base,SourceModule,Mode,ReqReanalysis) :-
     changed_module(Module,Base,SourceModule,Mode,current,ReqReanalysis), !.
 add_changed_module(Module,Base,SourceModule,Mode,ReqReanalysis) :-
@@ -2007,10 +1818,9 @@ user_module(user).
 %% ====================================================================
 
 :- pred compute_external_reachability
-# "For every exported predicate defined in the current module,
-  calculates all the imported predicates which are reachable in a
-  given abstract domain. Results are generated in
-  graph_reachable/9".
+   # "For every exported predicate defined in the current module, calculates all
+   the imported predicates which are reachable in a given abstract domain.
+   Results are generated in graph_reachable/9".
 compute_external_reachability :-
     ( % failure-driven loop
       domain(AbsInt),
@@ -2018,14 +1828,13 @@ compute_external_reachability :-
         fail
     ; true ).
 
-:- pred graph_reachable(KeyFrom,AbsInt,SgFrom,ProjFrom,IdFrom,ModuleFrom,ImportedId,ImportedSg,ImportedASub) 
-# "There is a path from node @var{IdFrom}, key @var{KeyFrom} in module
-  @var{ModuleFrom} to the imported call pattern
-  @var{ImportedSg}/@var{ImportedASub} in the abstract and-or
-  graph. @var{ImportedId} is the Id of the complete containing the
-  imported call pattern (used to speedup the process, avoiding the
-  comparison of abstract substitutions with
-  @var{ImportedSg}/@var{ImportedASub}.)".
+:- pred graph_reachable(KeyFrom,AbsInt,SgFrom,ProjFrom,IdFrom,ModuleFrom,ImportedId,ImportedSg,ImportedASub)
+   # "There is a path from node @var{IdFrom}, key @var{KeyFrom} in module
+   @var{ModuleFrom} to the imported call pattern
+   @var{ImportedSg}/@var{ImportedASub} in the abstract and-or graph.
+   @var{ImportedId} is the Id of the complete containing the imported call
+   pattern (used to speedup the process, avoiding the comparison of abstract
+   substitutions with @var{ImportedSg}/@var{ImportedASub}.)".
 
 :- data pending_graph/9.
 :- data graph_reachable/9.
@@ -2085,12 +1894,12 @@ add_pending_graph(NKeyPrev,AbsInt,_,_,IdPrev,ModIdPrev,Id,_,_) :-
 add_pending_graph(NKeyPrev,AbsInt,SgPrev,ProjPrev,IdPrev,ModIdPrev,Id,Sg,Proj) :-
     assertz_fact(pending_graph(NKeyPrev,AbsInt,SgPrev,ProjPrev,IdPrev,ModIdPrev,Id,Sg,Proj)).
 
-:- pred graph_closure(AbsInt) # "Calculates the reachability graph
-    closure, given the initial @pred{pending_graph/9} nodes. This
-    predicate goes backwards from imported predicates patterns
-    towards exported predicates patterns, though it does not
-    traverse the boundaries between modules (in case there were
-    several current modules.)".
+:- pred graph_closure(AbsInt)
+   # "Calculates the reachability graph closure, given the initial
+   @pred{pending_graph/9} nodes. This predicate goes backwards from imported
+   predicates patterns towards exported predicates patterns, though it does not
+   traverse the boundaries between modules (in case there were several current
+   modules.)".
 graph_closure(AbsInt) :-
     repeat,
     ( retract_fact(pending_graph(Key0,AbsInt,Sg0,Proj0,Id0,Module0,Id,Sg,Proj)) ->
@@ -2136,21 +1945,19 @@ key_or_id_complete(SgKey,AbsInt,Sg,Proj,Succ,Id,Ref,SgKey) :-
 key_or_id_complete(_SgKey0,AbsInt,Sg,Proj,Succ,Id,Ref,SgKey) :-
     current_fact(complete(SgKey,AbsInt,Sg,Proj,Succ,Id,Ref)), !.
 
-:- pred get_module_from_sg(+Sg, ?Module) :: term * atm
-# "@var{Module} is the name of the module for the predicate to which
-  call pattern @var{Sg} corresponds.".
+:- pred get_module_from_sg(+Sg, ?Module) => term * atm
+   # "@var{Module} is the name of the module for the predicate to which call
+   pattern @var{Sg} corresponds.".
 % IG: another sort of module_split?
 get_module_from_sg(Sg,Module) :-
-    current_itf(imports,Sg,Module0), atom(Module0),
-    !,
+    current_itf(imports,Sg,Module0), atom(Module0), !,
     ( just_module_name(Module0,Module) ->
         true
     ;
         Module = Module0
     ).
 get_module_from_sg(Sg,Module) :-
-    current_itf(defines_pred,Sg,Module0),
-    !,
+    current_itf(defines_pred,Sg,Module0), !,
     ( just_module_name(Module0,Module) ->
         true
     ;
@@ -2159,16 +1966,15 @@ get_module_from_sg(Sg,Module) :-
 get_module_from_sg(Sg,Module) :-
     % TODO: why? (inefficient!)
     functor(Sg,MF,_),
-    module_split(MF, M, _),
-    !,
+    module_split(MF, M, _), !,
     M = Module.
-get_module_from_sg(_,''). %% Oops, '\+/1' has no module in Sg. % TODO: ??
+get_module_from_sg(_,''). %% '\+/1' has no module in Sg. % TODO: ??
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % IG improvements and new functionality
 
 :- pred cleanup_persistent_registry(Bases) : list
-    #"Removes the *.reg files associated to @var{Bases}.".
+   #"Removes the *.reg files associated to @var{Bases}.".
 cleanup_persistent_registry(Bases) :-
     cleanup_p_abs_all,
     ( % failure-driven loop
@@ -2178,12 +1984,11 @@ cleanup_persistent_registry(Bases) :-
         fail
     ; true).
 
-:- pred update_registry_dependencies(AbsInt, File, Mod)
-    #"Updates the registry: abstract (for domain @var{AbsInt}) and
-     dependencies information of module @var{Mod}. This update
-     consists on removing CPs that do not exist,
-     updating the current entries of the registry and adding new
-     entries.".
+:- pred update_registry_dependencies(+AbsInt, +File, +Mod)
+   #"Updates the registry: abstract (for domain @var{AbsInt}) and dependencies
+   information of module @var{Mod}. This update consists on removing CPs that do
+   not exist, updating the current entries of the registry and adding new
+   entries.".
 update_registry_dependencies(AbsInt, File, Mod) :-
     delete_unused_dep_entries(AbsInt, Mod),
     update_GAT_entries(AbsInt, File, Mod).
@@ -2294,10 +2099,9 @@ add_to_dglist(DgL,Id,Sg,Proj,[(Id,Sg,Proj,ModBase)|DgL]) :-
     program_module_base(Mod, ModBase).
 
 :- pred create_registry(+Key,+AbsInt,+CompId,?Spec,+Parents,-RId,-Reg)
-    #"Stores a new registry geting the abstract info from
-      @var{CompId} and asigning a new unique identifier
-      @var{RId}. The information that was stored is unified in
-      @var{Reg}".
+   #"Stores a new registry geting the abstract info from @var{CompId} and
+   asigning a new unique identifier @var{RId}. The information that was stored
+   is unified in @var{Reg}".
 create_registry(Key,AbsInt,CompId,Spec,Parents,RId,Reg) :-
     complete(Key,AbsInt,SgComp,Proj,[Prime],CompId,_), !,
     get_module_from_sg(SgComp,Mod),
@@ -2315,7 +2119,7 @@ create_registry(Key,AbsInt,CompId,Spec,Parents,RId,Reg) :-
 
 :- export(get_new_reg_id/1).
 :- pred get_new_reg_id(-Id) => atm
-    #"Generates a new unique identifier for registries.".
+   #"Generates a new unique identifier for registries.".
 get_new_reg_id(Id) :-
     retract_fact(reg_id(Id0)), !,
     Id is Id0 + 1,
@@ -2325,7 +2129,7 @@ get_new_reg_id(0) :-
 
 :- export(curr_mod_entry/4).
 :- pred curr_mod_entry(SgKey,AbsInt,Sg,Proj) 
-    #"Enumerates the CPs of the exported predicate of the current module(s).".
+   #"Enumerates the CPs of the exported predicate of the current module(s).".
 curr_mod_entry(SgKey,AbsInt,Sg, Proj) :-
     curr_file(_, Mod),
     registry(SgKey, Mod, Reg),
