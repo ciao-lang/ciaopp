@@ -99,12 +99,10 @@
 
 :- use_module(ciaopp(plai/intermod), [top_level/1]). % IG added for loading bundles
 
-% :- doc(bug,"Fast read/write must replace term-read/write.").
 :- doc(bug,"auxiliary files version must be handled correctly.").
 :- doc(bug,"Success information cannot be multivariant.").
-:- doc(bug, "Unify ASubs and Subs (they mean Abstract Substitutions)").
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% JUST FOR TESTING %%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%% Debugging %%%%%%%%%%%%%%%%%
 :- use_module(library(fastrw), [fast_read/1, fast_write/1, fast_read/2, fast_write/2]).
 :- use_module(ciaopp(plai/intermod_entry), [check_curr_entry_id/1, curr_entry_id/1]).
 :- use_module(ciaopp(plai/trace_fixp), [fixpoint_trace/7]).
@@ -308,7 +306,6 @@ get_imported_modules :-
     current_fact(imported_module(_,_)), !.
 get_imported_modules :-
     current_itf(imports,_Sg,Module), atom(Module),
-    %just_module_name(Module0,Module), % IG already done in get_loaded_mod...
     \+ imported_module(Module, _),
     get_loaded_module_name(Module,_AbsFile,AbsBase),
     assertz_fact(imported_module(Module,AbsBase)),
@@ -538,9 +535,9 @@ update_current_typedefs(CurrModule) :-
     ( % (failure-driven loop)
       current_fact(registry(_,CurrModule,Reg)),
       Reg = regdata(_,AbsInt,_Sg,Call,Succ,_SpecName,ImdgList,Chdg,_Mark),
-        get_imdg_asubs(ImdgList,ImdgSubsList),
-        get_chdg_asubs(Chdg,ChdgSubs),
-        append(ChdgSubs, ImdgSubsList, DepsASubs),
+        get_imdg_asubs(ImdgList,ImdgASubsList),
+        get_chdg_asubs(Chdg,ChdgASubs),
+        append(ChdgASubs, ImdgASubsList, DepsASubs),
         auxinfo_dump:acc_auxiliary_info(AbsInt,[Call,Succ|DepsASubs]),
         fail
     ; true
@@ -561,12 +558,6 @@ store_typedef(TypeDef) :-
     ;
         asserta_fact(typedb(CurrModule,TypeDef))
     ).
-
-%% If substitution is a free var, there is nothing to sort.
-abs_sort_nonfree(_AbsInt,Sub1,Sub1) :-
-    var(Sub1), !.
-abs_sort_nonfree(AbsInt,Sub1,Sub2) :-
-    abs_sort(AbsInt,Sub1,Sub2).
 
 :- pred mark_callers_registry(+ImdgList,+PKey,ParentReg,+AbsInt,+CurrModule,+NewMark,-BasenamesMarked)
     # "Entries of callers entries in @var{ImdgList} are marked with
@@ -976,12 +967,12 @@ upload_typedefs(AbsInt,Module) :-
     ( % (failure-driven loop)
       current_fact(registry(SgKey,Module,OldReg),Ref),
         OldReg = regdata(Id,AbsInt,Sg,Call0,Succ0,SpecName,ImdgList0,Chdg0,Mark),
-        get_imdg_asubs(ImdgList0,ImdgSubsList0),
-        get_chdg_asubs(Chdg0,ChdgSubs0),
-        append(ChdgSubs0, ImdgSubsList0, DepsSubs0),
-        auxinfo_dump:imp_auxiliary_info(AbsInt,Dict,[Call0,Succ0|DepsSubs0],[Call,Succ|DepsSubs]),
-        replace_chdg_subs(Chdg0,DepsSubs,Chdg,ImdgSubsList),
-        replace_imdg_subs(ImdgList0,ImdgSubsList,ImdgList),
+        get_imdg_asubs(ImdgList0,ImdgASubsList0),
+        get_chdg_asubs(Chdg0,ChdgASubs0),
+        append(ChdgASubs0, ImdgASubsList0, DepsASubs0),
+        auxinfo_dump:imp_auxiliary_info(AbsInt,Dict,[Call0,Succ0|DepsASubs0],[Call,Succ|DepsASubs]),
+        replace_chdg_subs(Chdg0,DepsASubs,Chdg,ImdgASubsList),
+        replace_imdg_subs(ImdgList0,ImdgASubsList,ImdgList),
         erase(Ref),
         NewReg = regdata(Id,AbsInt,Sg,Call,Succ,SpecName,ImdgList,Chdg,Mark),
         assertz_fact(registry(SgKey,Module,NewReg)),
