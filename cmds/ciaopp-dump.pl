@@ -32,18 +32,21 @@ where the possible options are:
   -h
      Print this information
 
+  show <filename>[.dump]
+      prints the info in the dump file.
+
   cmp <path1> <path2> <domain>
-      compares the analysis results of path1 and path2, which may be directories or @tt{.dump} files
+      compares the analysis results of path1 and path2, which may be directories or @tt{.dump} files.
 
   fmt <filename>[.dump]
-     Outputs the analysis result in dot format
+     Outputs the analysis result in dot format.
 
   ctcheck <modulename>.pl <filename>[.dump] <domain>
-     Checks assertions agains the analysis in <filename>.dump with <domain>
+     Checks assertions agains the analysis in <filename>.dump with <domain>.
 
   report reach <file>[.dump]
-     Deadcode and failure report of a CiaoPP analysis dumped with the incremental option, and analyzed with
-     the pp_flag fact_info=on.
+     Deadcode and failure report of a CiaoPP analysis dumped with the
+     incremental option, and analyzed with the pp_flag fact_info=on.
 
   stats [--print-header] <filenames>[.dump]
      Counts simple characteristics of analysis in the files.
@@ -55,7 +58,6 @@ where the possible options are:
 
      --print-header: prints the names of the characteristics displayed
 ").
-
 
 main(['-h']) :- !,
     usage_text(T),
