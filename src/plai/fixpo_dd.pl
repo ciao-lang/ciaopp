@@ -559,7 +559,7 @@ compute_change([_|Rest],SgKey,Sg,Sv,Proj,AbsInt,TempPrime,Prime,Id) :-
 each_call_to_success([Call0],RFlag,SgKey,Sg,Sv,HvFv_u,AbsInt,ClId,Succ,F,N,Id):- !,
     project(AbsInt,Sg,Sv,HvFv_u,Call0,Proj0),
     apply_assrt_call_to_success(AbsInt,Sg,Sv,Proj0,HvFv_u,Call0,Proj,Call),
-    ( bottom(Proj) ->
+    ( Proj = '$bottom' ->
         Succ = Proj,
         Id = '$bottom_call',
         % annotate that the assertion is incompatible
