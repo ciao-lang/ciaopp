@@ -8,11 +8,7 @@
         intermod_analyze/2,
         intermod_analyze/3,
         get_modules_analyzed/1,
-%           manual_analyze/2,
-%           manual_analyze/3,
-%           modular_analyze/3,
         auto_check/2,
-%           monolithic_analyze/3,
         auto_transform/3,
         auto_simp_libs/2,
         auto_simp_libs/3,
@@ -48,13 +44,9 @@
 
 %%------------------------------------------------------------------
 
-:- use_module(ciaopp(p_unit/itf_db), [curr_file/2, cleanup_itf_db/0]).
-:- use_module(ciaopp(preprocess_flags), [push_pp_flag/2, pop_pp_flag/1, current_pp_flag/2, set_pp_flag/2]).
-
 :- use_module(ciaopp(frontend_driver), [module/1,module/2,output/1,output/0]).
 :- use_module(ciaopp(analyze_driver), [analyze/1,analyze1/2,acheck_summary/1]).
 :- use_module(ciaopp(p_unit), [program/2, replace_program/2]).
-%:- use_module(ciaopp(p_unit/p_asr),[cleanup_p_asr/0]).
 :- use_module(ciaopp(plai/re_analysis), [update_ai_info_case/4]).
 :- use_module(ciaopp(plai), [cleanup_plai/1]).
 :- use_module(ciaopp(p_unit/p_abs)).
@@ -79,6 +71,13 @@
     remove_useless_info/1
      ]).
 :- use_module(ciaopp(p_unit/aux_filenames), [get_module_filename/3, just_module_name/2]).
+:- use_module(ciaopp(p_unit/itf_db), [curr_file/2, cleanup_itf_db/0]).
+:- use_module(ciaopp(preprocess_flags)).
+:- use_module(ciaopp(p_unit/p_dump), [dump_dir/1, dump/2]).
+:- use_module(ciaopp(ciaopp_log)).
+:- use_module(ciaopp(raw_printer)).
+
+% ciao libraries
 :- use_module(engine(internals), [ast_filename/2]).
 :- use_module(library(counters)).
 :- use_module(spec(unfold_times), [global_time_ellapsed/3]).
@@ -92,9 +91,6 @@
 :- use_module(engine(stream_basic), [absolute_file_name/7]).
 :- use_module(engine(runtime_control), [push_prolog_flag/2, pop_prolog_flag/1]).
 
-:- use_module(ciaopp(p_unit/p_dump), [dump_dir/1, dump/2]).
-:- use_module(ciaopp(ciaopp_log)).
-:- use_module(ciaopp(raw_printer)).
 
 % statistics
 :- use_module(ciaopp(analysis_stats)).
@@ -103,7 +99,7 @@
 :- doc(section, "Intermod database").
 
 :- pred top_level(Base) # "@var{Base} is the top-level module of the
-  program unit to be analyzed.".
+   program unit to be analyzed.".
 
 :- data top_level/1.
 :- export(top_level/1).
@@ -125,23 +121,19 @@ modules_analyzed([]).
 :- data iterations/1.
 
 :- pred queue(QueueList) => list
-# "Data predicate to store (in a single fact) the priority
-  queue. @list{QueueList} must be the list of @tt{priority-module}
-  pairs in reverse order.".
+   # "Data predicate to store (in a single fact) the priority queue.
+   @list{QueueList} must be the list of @tt{priority-module} pairs in reverse
+   order.".
 :- data queue/1.
 queue([]).
 
 :- pred module_processed(Module,AlreadyProcessed)
-# "Lists the modules in the program unit and whether they are already
+   # "Lists the modules in the program unit and whether they are already
    processed or not.".
-
 :- data module_processed/2.
 
 %%------------------------------------------------------------------
-
-%% 
 :- multifile dump_flags_list/2.
-
 dump_flags_list(intermod, [entry_policy,global_scheduling,punit_boundary]).
 
 %%------------------------------------------------------------------
@@ -158,8 +150,7 @@ top_level_module(TopLevelModule,TopLevelBase):-
 
 %%------------------------------------------------------------------
 
-:- pred cleanup_intermod
-   #"Cleans up the internal database of the intermodular
+:- pred cleanup_intermod #"Cleans up the internal database of the intermodular
    analysis global level.".
 
 % TODO: this sets some pp_flags. Restrict cleaning to used fixpoints?
@@ -180,9 +171,8 @@ cleanup_intermod:-
     retractall_fact(module_processed(_,_)),
     retractall_fact(top_level(_)),
     cleanup_p_abs_all,
-%%jcf-25.04.2005
     cleanup_itf_db,
-%       cleanup_p_asr.
+    % cleanup_p_asr.
     set_pp_flag(widen, W).
 
 %% ********************************************************************
@@ -209,18 +199,13 @@ manual_analyze(Analyses,FileName,OpenMode):-
     curr_file(File,_),
     pplog(modular, ['{Analyzing with manual_analyze: ',~~(File)]),
     set_top_level(Base),
-%       push_pp_flag(entry_policy,all),
     cleanup_p_abs,
-    ( var(OpenMode) ->
-      true
-    ; change_open_mode(Base,OpenMode)
-    ), !,
+    ( var(OpenMode) -> true ; change_open_mode(Base,OpenMode) ), !,
     reset_total_info,
     analyze1(Analyses,Info),
     add_to_total_info(Info),
     gen_registry_info(quiet,_,_,_),
     save_registry_info(quiet,_SaveInfo),  %% all registry files must be saved.
-%       pop_pp_flag(entry_policy),
     pop_pp_flag(intermod),
     set_modules_analyzed([Base]),
     pplog(modular, ['}']).
@@ -228,11 +213,10 @@ manual_analyze(Analyses,FileName,OpenMode):-
 :- set_prolog_flag(multi_arity_warnings,on).
 
 %%------------------------------------------------------------------
-
 :- prop valid_mod_analysis(Domain) # "Succeeds if @var{Domain} is a
-valid analysis domain for modular analysis".
+   valid analysis domain for modular analysis".
 :- prop valid_mod_analysis(DomainList) # "Succeeds if the domains in
-@var{DomainList} are valid analysis domains for modular analysis".
+   @var{DomainList} are valid analysis domains for modular analysis".
 
 valid_mod_analysis([]).
 valid_mod_analysis([A|As]):- !,
@@ -273,15 +257,14 @@ intermod_analyze_(Mods,Ext,Load,_Analysis,_TopLevel,_Info):-
                     '~next_policy=',Ext, '~nmodule_loading=', Load, '~n']).
 
 %% --------------------------------------------------------------------
-
 :- pred get_modules_analyzed(ModList) => list(ModList)
-# "Returns the list of modules analyzed the last time a modular
-  analysis was executed.".
+   # "Returns the list of modules analyzed the last time a modular
+   analysis was executed.".
 get_modules_analyzed(ModList):-
     current_fact(modules_analyzed(ModList)).
 
 :- pred set_modules_analyzed(ModList) : list(ModList)
-# "Sets the list of modules which have been analyzed.".
+   # "Sets the list of modules which have been analyzed.".
 set_modules_analyzed(ModList0):-
     get_module_names_only(ModList0,ModList),!,
     set_fact(modules_analyzed(ModList)).
@@ -312,9 +295,6 @@ modular_analyze(Analyses,TopLevel,Info):-
     push_prolog_flag(gc,on), % TODO: why?
     set_top_level(TopLevel),
     push_pp_flag(intermod,auto),
-%%jcf-20.10.2005%       push_pp_flag(entry_policy,top_level),  %%Must be done before calling to modular_analyze
-    %%
-%%% retractall_fact(module_times(_)),
     pp_statistics(runtime,[T3,_]),   %% setup time.
     get_modules_to_analyze(Analyses,TopLevel,ModList),
     current_pp_flag(global_scheduling,Scheduling),
@@ -322,7 +302,6 @@ modular_analyze(Analyses,TopLevel,Info):-
     pp_statistics(runtime,[T4,_]),  %% setup time.
     SetupTime is T4 - T3,
     modular_analyze_(Scheduling,Analyses,AnInfo),
-%%% total_module_times,
     save_registry_info(quiet,[time(SaveTime,_)]),
     pp_statistics(runtime,[T2,_]),  %% total ellapsed time.
     set_total_info(AnInfo),
@@ -337,7 +316,6 @@ modular_analyze(Analyses,TopLevel,Info):-
     ),
     get_total_info(Info0),
     add_iterations_info(Info0,Info),
-%%jcf-20.10.2005%       pop_pp_flag(entry_policy),
     set_modules_analyzed(ModList),
     pop_pp_flag(intermod),
     pplog(modular, ['}']),
@@ -440,8 +418,7 @@ increment_iterations:-
     ( retract_fact(iterations(It0)) ->
         It is It0 + 1,
         set_fact(iterations(It))
-    ;
-        set_fact(iterations(1))
+    ;   set_fact(iterations(1))
     ).
 
 add_iterations_info(Info0,[iterations(N,[])|Info0]):-
@@ -450,16 +427,13 @@ add_iterations_info(Info0,[iterations(0,[])|Info0]).
 
 %%------------------------------------------------------------------
 
-modular_analyze_(NaiveSched,Analyses,Info):-
-    is_naive_scheduling(NaiveSched),
+modular_analyze_(Sched,Analyses,Info):-
     reset_total_info,
     retractall_fact(there_are_previous_errors),
-    do_naive_intermod(Analyses),
-    get_total_info(Info).
-modular_analyze_(Scheduling,Analyses,Info):-
-    reset_total_info,
-    retractall_fact(there_are_previous_errors),
-    do_intermod(Scheduling,Analyses),
+    ( is_naive_scheduling(Sched) ->
+        do_naive_intermod(Analyses)
+    ;   do_intermod(Sched,Analyses)
+    ),
     get_total_info(Info).
 
 is_naive_scheduling(naive_top_down).
@@ -470,10 +444,7 @@ is_naive_scheduling(bottom_up_preanalysis).
 push_modules_priorities([]).
 push_modules_priorities([(M,D,F)|ModList]):-
     push(M,D),
-    ( F = force ->
-        asserta_fact(force_analysis(M))
-    ;   true
-    ),
+    ( F = force -> asserta_fact(force_analysis(M)) ; true ),
     push_modules_priorities(ModList).
 
 %% Adds the modules in the list to naive_pending_modules/1, and
@@ -481,11 +452,7 @@ push_modules_priorities([(M,D,F)|ModList]):-
 add_naive_pending_modules_([]).
 add_naive_pending_modules_([(M,_,F)|ModList]):-
     add_naive_pending_modules([M]),
-    ( F = force ->
-        asserta_fact(force_analysis(M))
-    ;
-        true
-    ),
+    ( F = force -> asserta_fact(force_analysis(M)) ; true ),
     add_naive_pending_modules_(ModList).
 
 add_pending_modules_preanalysis([]):- !.
@@ -505,8 +472,7 @@ do_naive_intermod(Analyses):-
     naive_analyze_modules(Analyses,Modules),
     ( there_are_previous_errors ->
         true
-    ;
-        do_naive_intermod(Analyses)
+    ;   do_naive_intermod(Analyses)
     ).
 do_naive_intermod(_Analyses).
 
@@ -564,10 +530,8 @@ naive_analyze_modules(AbsInt, [_CurrMod|Mods]):-
 
 add_naive_pending_modules([]).
 add_naive_pending_modules([M|Ms]):-
-    ( current_fact(naive_pending_modules(M)) ->
-        true
-    ;
-        asserta_fact(naive_pending_modules(M))
+    ( current_fact(naive_pending_modules(M)) -> true
+    ;   asserta_fact(naive_pending_modules(M))
     ),
     add_naive_pending_modules(Ms).
 
@@ -587,9 +551,9 @@ ctcheck_module_naive(_).
 
 %%------------------------------------------------------------------
 :- pred do_intermod(Scheduling, AbsInt) : atm * atm
-# "Computes the intermodular fixpoint of the analysis of the current
-  program unit (given by top-level) in the @var{AbsInt} abstract
-  domain and using @var{Scheduling} scheduling policy.
+   # "Computes the intermodular fixpoint of the analysis of the current program
+   unit (given by top-level) in the @var{AbsInt} abstract domain and using
+   @var{Scheduling} scheduling policy.
 
   @var{AbsInt} can be either a domain name or a list of domains.".
 
@@ -653,12 +617,10 @@ ctcheck_module_intermod(_).
 %% --------------------------------------------------------------------
 
 :- pred calc_priority_callers(Policy,CurrPty,Callers,CallersPty)
-    : (atm(Policy), int(CurrPty), list(Callers)) => list(CallersPty)
-# "Calculates the priority of the callers modules in the priority
-  queue, @var{CallersPty}, given the priority @var{CurrPty} of the
-  current module that has been just analyzed, and the scheduling
-  policy @var{Policy}.".
-
+   : (atm(Policy), int(CurrPty), list(Callers)) => list(CallersPty)
+   # "Calculates the priority of the callers modules in the priority queue,
+   @var{CallersPty}, given the priority @var{CurrPty} of the current module that
+   has been just analyzed, and the scheduling policy @var{Policy}.".
 calc_priority_callers(depth_first,CurrPty,_Callers,CallersPty):-
     CallersPty is CurrPty-1.
 calc_priority_callers(upper_first,CurrPty,_Callers,CallersPty):-
@@ -887,8 +849,6 @@ auto_check_one_module(Analysis,File):-
     fixpo_ops:store_previous_analysis_completes(Analysis), %%Stores info of latest analysis.
     !.
 
-% true(_).
-
 filter_completes(AbsInt,Module):-
     current_fact(complete(_A,AbsInt,Sg,_C,_D,_E,_F),Ref),
     get_module_from_sg(Sg,Module0),
@@ -898,13 +858,6 @@ filter_completes(AbsInt,Module):-
     erase(Ref),
     fail.
 filter_completes(_AbsInt,_Module).
-
-% move_prev_to_completes(AbsInt):-
-%       retractall_fact(complete(_,_,_,_,_,_,_)),
-%       retract_fact(complete_prev(A,AbsInt,Sg,C,D,E,F)),
-%       asserta_fact(complete(A,AbsInt,Sg,C,D,E,F)),
-%       fail.
-% move_prev_to_completes(_AbsInt).
 
 %% ******************************************************************
 %% Modular program transformations (for specialization)
