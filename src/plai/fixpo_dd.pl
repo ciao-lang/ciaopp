@@ -280,7 +280,7 @@ body_succ(Call,Atom,Succ,HvFv_u,AbsInt,ClId,ParentId,Id):-
 
 change_son_if_necessary(no,_,_,_,_,_):-!.
 change_son_if_necessary(NewId,Key,NewN,Vars_u,Call,AbsInt):-
-    current_fact(memo_table(Key,AbsInt,NewN,Id,_,_),Ref),
+    get_memo_table(Key,AbsInt,NewN,Id,_,_,Ref),
     (Id = NewId ->
         true
     ;
