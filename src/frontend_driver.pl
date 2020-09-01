@@ -324,7 +324,7 @@ ensure_lib_sources_loaded.
 cleanup_all :-
     cleanup_itf_db,
     clean_analysis_info,
-    cleanup_p_abs,
+    cleanup_p_abs, % IG: to be removed, cleans internal data about dependencies
     cleanup_punit,
     cleanup_pasr,
     cleanup_code_and_related_assertions,

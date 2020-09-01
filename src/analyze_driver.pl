@@ -577,7 +577,7 @@ cleanup_for_codegen :-
     cleanup_plai(_),
     cleanup_infer_db(_),
     cleanup_seff,
-    cleanup_p_abs,
+    cleanup_p_abs, % IG: to be removed, cleans internal data about dependencies
     cleanup_types,
     cleanup_domain.
     % cleanup_errors. % TODO: why not?
