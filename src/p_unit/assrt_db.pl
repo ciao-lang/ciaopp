@@ -71,13 +71,18 @@ assertion_type(pgm_assertion_read(_,_,_,Type,_,_,_,_,_),Type).
 # "Adds an entry for an assertion located in a preprocessing unit
    module (but not in library modules).".
 add_assertion_read(Goal,M,Status,Type,Body,Dict,Source,LB,LE):-
-    functor(Goal,F,A),
-    functor(Goal0,F,A),
-    ( variant(Goal,Goal0) -> % TODO: in practice, no dup variables in head
+    ( allowed_head(Type,Goal) ->
         assertz_fact(pgm_assertion_read(Goal,M,Status,Type,Body,Dict,Source,LB,LE))
     ;
         warning_message(loc(Source, LB, LE), "Assertion head syntax ~q, assertion ignored.", [Goal])
     ).
+
+allowed_head(Type,Goal) :-
+    Type \= entry, !,
+    functor(Goal,F,A),
+    functor(Goal0,F,A),
+    variant(Goal,Goal0).
+allowed_head(_,_).
 
 :- pred remove_assertion_read(Goal,M,Status,Type,Body,Dict,Source,LB,LE)
 # "Removes an entry for an assertion located in a preprocessing unit
