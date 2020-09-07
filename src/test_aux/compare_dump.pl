@@ -1,4 +1,5 @@
-:- module(compare_dump, [compare_dumps_auto_detect_db/6], [assertions, hiord, datafacts]).
+:- module(compare_dump, [compare_dumps_auto_detect_db/6],
+          [assertions, hiord, datafacts, isomodes, fsyntax]).
 
 :- doc(title, "Semantic dump comparator").
 
@@ -24,6 +25,8 @@ instances of the ciaopp analysis database.
 :- use_module(ciaopp(plai/fixpo_ops), [each_abs_sort/3, each_less_or_equal/3]).
 :- use_module(ciaopp(p_unit/p_abs), [registry/3, ensure_registry_file/3, cleanup_p_abs_all/0]).
 :- use_module(ciaopp(p_unit/p_dump), [restore/1]).
+:- use_module(ciaopp(p_unit/auxinfo_dump), [acc_auxiliary_info/2, dump_auxiliary_info/1]).
+:- use_module(ciaopp(preprocess_flags), [typeanalysis/1]).
 
 :- use_module(ciaopp(plai/incanal/plai_db_comparator), [compare/4]).
 :- use_module(ciaopp(plai/incanal/plai_db_instances), [copy_db/2, plai_db_tuple/8]).
@@ -31,16 +34,13 @@ instances of the ciaopp analysis database.
 :- export(checking_domain/1).
 :- data checking_domain/1.
 
-% TODO: automatically detect abstract domain (add data to registry)
-
-:- use_module(ciaopp(p_unit/auxinfo_dump), [acc_auxiliary_info/2, dump_auxiliary_info/1]).
-:- use_module(typeslib(typeslib), [show_types/0]).
-
-process_diff_item(abs_diff(_,_,_, Sg:Call, Succ, new)) :- !,
+:- meta_predicate process_diff_item(?, pred(1)).
+process_diff_item(D, Skip) :-
+    Skip(D), !, fail.
+process_diff_item(abs_diff(_,_,_, Sg:Call, Succ, new), _) :- !,
     human_display_list(['NEW CALL ', Sg:Call, Succ]),
-    show_auxiliary_info_list([Call]),
-    show_auxiliary_info_list([Succ]).
-process_diff_item(abs_diff(_,_,_,_,_,X)) :-
+    show_auxiliary_info_list([Call, Succ],~checking_domain).
+process_diff_item(abs_diff(_,_,_,_,_,X), _) :-
     X = modif(Sg:Call, Succ, Succ2), !,
     checking_domain(AbsInt),
     each_abs_sort(Succ, AbsInt, Succ_s),
@@ -52,39 +52,41 @@ process_diff_item(abs_diff(_,_,_,_,_,X)) :-
         % this means that the second analysis is more precise
         human_display_list(['ERROR ', Sg:Call, Succ_s, Succ2_s])
     ),
-    show_auxiliary_info_list([Call|Succ_s]),
-    show_auxiliary_info_list(Succ2_s).
-process_diff_item(abs_diff(_,_,_,_,_,X)) :-
+    show_auxiliary_info_list([Call|Succ_s],AbsInt),
+    show_auxiliary_info_list(Succ2_s,AbsInt).
+process_diff_item(abs_diff(_,_,_,_,_,X),_) :-
     X = not_in(Sg:Call), !,
     human_display_list(['MISSING ', Sg:Call]),
-    show_auxiliary_info_list([Call]).
-process_diff_item(abs_diff(_,_,_,_,_,X)) :-
+    show_auxiliary_info_list([Call],~checking_domain).
+process_diff_item(abs_diff(_,_,_,_,_,X),_) :-
     X = contained(_Sg:_Call), !,
     fail.
-process_diff_item(X) :-
+process_diff_item(X,_) :-
     display(X), nl.
 
-:- export(print_diff/2).
-print_diff([], []).
-print_diff([D_item|Ds], [D_item|ND]) :-
-    process_diff_item(D_item), !,
-    print_diff(Ds, ND).
-print_diff([_|Ds], ND) :-
-    print_diff(Ds, ND).
+:- export(print_diff/3).
+:- meta_predicate print_diff(+, pred(1), ?).
+print_diff([], _, []).
+print_diff([D_item|Ds], Skip, [D_item|ND]) :-
+    process_diff_item(D_item, Skip), !,
+    print_diff(Ds, Skip, ND).
+print_diff([_|Ds], Skip, ND) :-
+    print_diff(Ds, Skip, ND).
 
-:- pred compare_dumps_auto_detect_db(+DF1, +DF2, +To1, +To2, +AbsInt, -Diff)
+:- pred compare_dumps_auto_detect_db(+DF1, +DF2, ?To1, ?To2, +AbsInt, -Diff)
     #"This predicate performs the same comparison as
       @pred{compare_dumps/8} but detects the type of plai db by
 looking at the dump file extension.".
 compare_dumps_auto_detect_db(DF1, DF2, To1, To2, AbsInt, Diff) :-
-    file_property(DF1, type(regular)), !,
-    restore_and_copy_db(complete, DF1, To1),
-    restore_and_copy_db(complete, DF2, To2),
+    detect_restore(DF1,To1),
+    detect_restore(DF2,To2),
     compare(To1, To2, AbsInt, Diff).
-compare_dumps_auto_detect_db(DF1, DF2, To1, To2, AbsInt, Diff) :-
-    restore_and_copy_db(registry, DF1, To1),
-    restore_and_copy_db(registry, DF2, To2),
-    compare(To1, To2, AbsInt, Diff).
+
+detect_restore(File, To) :-
+    ( file_property(File, type(regular)) ->
+        restore_and_copy_db(complete, File, To)
+    ;   restore_and_copy_db(registry, File, To)
+    ).
 
 db_from_ext('.reg', registry).
 db_from_ext('.inc_reg', registry).
@@ -161,16 +163,11 @@ human_display_list([X|Xs]) :-
     human_display(X), nl,
     human_display_list(Xs).
 
-%show_auxiliary_info_list(X) :-
-%       show_types, nl, fail.
-show_auxiliary_info_list(Sub) :-
-    acc_auxiliary_info(eterms, Sub), !, % TODO: eterms is hardwired here
+show_auxiliary_info_list(Sub, AbsInt) :-
+    typeanalysis(AbsInt), !,
+    acc_auxiliary_info(AbsInt, Sub),
     dump_auxiliary_info(display_nl).
-%show_auxiliary_info_list([Sub|Subs]) :-
-%       acc_auxiliary_info(eterms, Sub),
-%       show_auxiliary_info_list(Subs).
-show_auxiliary_info_list(_Sub).
+show_auxiliary_info_list(_Sub,_).
 
 display_nl(X) :-
-    display(X),
-    nl.
+    display(X), nl.

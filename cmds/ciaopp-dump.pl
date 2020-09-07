@@ -7,8 +7,7 @@
 
 :- use_module(library(format)).
 
-:- use_module(ciaopp(p_unit/p_dump), [show_dump/1]).
-
+:- use_module('ciaopp-dump-show').
 :- use_module('ciaopp-dump-cmp').
 :- use_module('ciaopp-dump-fmt').
 :- use_module('ciaopp-dump-stats').
@@ -32,11 +31,12 @@ where the possible options are:
   -h
      Print this information
 
-  show <filename>[.dump]
-      prints the info in the dump file.
+  show <path>
+     Print info of the dump file or registry directory located in <path>.
 
   cmp <path1> <path2> <domain>
-      compares the analysis results of path1 and path2, which may be directories or @tt{.dump} files.
+     Compares the analysis results of path1 and path2.
+     May be directories or .dump files.
 
   fmt <filename>[.dump]
      Outputs the analysis result in dot format.
@@ -62,8 +62,8 @@ where the possible options are:
 main(['-h']) :- !,
     usage_text(T),
     format(user_output,"Usage: ~s~n",[T]).
-main(['show',File]) :- !,
-    show_dump(File).
+main(['show',Path]) :- !,
+    'ciaopp-dump-show':main([Path]).
 main(['fmt'|Args]) :- !,
     'ciaopp-dump-fmt':main(Args).
 main(['cmp'|Args]) :- !,

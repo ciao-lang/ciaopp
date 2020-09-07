@@ -25,19 +25,18 @@ $ ciaopp-dump-cmp <base_path> <test_path> <domain>
 ").
 
 :- use_module(library(format), [format/3]).
-:- use_module(library(aggregates), [findall/3]).
 :- use_module(library(messages), [error_message/2,show_message/2]).
 :- use_module(library(system), [file_exists/1, file_property/2]).
 :- use_module(library(pathnames), [path_concat/3, path_split/3]).
 :- use_module(library(sort), [sort/2]).
 
-%:- use_module(ciaopp_tests(benchs/incanal/ciaopp_bench_manager), [directory_dir/3]).
 :- use_module(ciaopp(test_aux/compare_dump)).
 
-main([Path1, Path2, AbsInt]) :- !,
+main(Args) :-
+    parse_options(Args,Seq,Mis,[Path1, Path2, AbsInt]), !,
     ( file_exists(Path1) ->
       ( file_exists(Path2) ->
-          main_([Path1, Path2, AbsInt]),
+          main_(Seq,Mis,Path1, Path2, AbsInt),
           ( halt_(Halt) -> true ; Halt = 0 )
       ;
           error_message("File not found: ~w~n", [Path2]),
@@ -51,19 +50,29 @@ main([Path1, Path2, AbsInt]) :- !,
 main(_) :-
     show_message(simple,"Usage: ciaopp-dump-cmp <base_path> <test_path> <domain>~n"),
     halt(1).
+:- export(parse_options/4).
+parse_options([P1,P2,AI],_,_,[P1,P2,AI]) :- !.
+parse_options(['--sequence'|Paths],seq,Mis,Rest) :- !,
+    parse_options(Paths,_,Mis,Rest).
+parse_options(['--no-missing'|Paths],Seq,nomis,Rest) :- !,
+    parse_options(Paths,Seq,_,Rest).
+parse_options([O|_],_,_,_) :- !,
+    error_message("Unrecognized option ~w~n", [O]), fail.
 
-main_([Dir1, Dir2, AbsInt]) :-
-    file_property(Dir1,type(directory)), !,
-    evaluate_results(Dir1, Dir2, AbsInt).
-main_([F1, F2, AbsInt]) :- !,
-    file_property(F1, type(regular)),
-    compare_one_dump(F1,F2,AbsInt).
+main_(Seq,Mis,P1, P2, AbsInt) :-
+    set_fact(checking_domain(AbsInt)),
+    ( nonvar(Mis) -> set_fact(missing) ; true),
+    ( (nonvar(Seq), Seq = seq) ->
+        evaluate_results(P1, P2, AbsInt)
+    ;
+        compare_one_analysis(P1,P2,AbsInt)
+    ).
 
 :- data halt_/1.
+:- data missing/0.
 
 :- pred evaluate_results(Path1, Path2, AbsInt) : atm * atm * atm.
 evaluate_results(Path1, Path2, AbsInt) :-
-    set_fact(checking_domain(AbsInt)), % TODO: should be written in the dump
     ( file_property(Path1, type(regular)) ->
         compare_files(Path1, Path2, AbsInt)
     ;
@@ -80,23 +89,31 @@ compare_dirs(Dir1, Dir2, AbsInt) :-
     not_hidden_directory_files(Dir2, Fs2),
     dumpfile_checker_loop(Fs1, Fs2, Dir1, Dir2, AbsInt).
 
-compare_one_dump(F1,F2,AbsInt) :-
+compare_one_analysis(F1,F2,AbsInt) :-
     compare_dumps_auto_detect_db(F1, F2, db1, db2, AbsInt,Diff),
-    ( Diff = [] ->
-        % format(user_error, 'EQUIVALENT', [])
+    ( Diff = [] -> % equivalent
         true
     ;
         format(user_error, 'Checking ~w \n vs. ~w~n', [F1,F2]),
-        print_diff(Diff, DSumm),
+        checking_domain(AbsInt), format(user_error, '~w~n', [AbsInt]),
+        ( missing ->
+            print_diff(Diff,skip_miss,DSumm)
+        ;
+            print_diff(Diff,skip_none,DSumm)
+        ),
         format(user_error, '\n', []),
         ( DSumm = [] -> true ; set_fact(halt_(1))) % store number of errors?
     ).
+
+skip_miss(abs_diff(_,_,_,_,_,not_in(_))).
+
+skip_none(_) :- fail.
 
 dumpfile_checker_loop([], _, _, _, _).
 dumpfile_checker_loop([F1|Fs1], [F1|Fs2], Dir1, Dir2, AbsInt) :- !,
     path_concat(Dir1, F1, DF1),
     path_concat(Dir2, F1, DF2),
-    compare_one_dump(DF1,DF2,AbsInt),
+    compare_one_analysis(DF1,DF2,AbsInt),
     dumpfile_checker_loop(Fs1, Fs2, Dir1, Dir2, AbsInt).
 dumpfile_checker_loop([F1|Fs1], [F2|Fs2], Dir1, Dir2, AbsInt) :-
     F1 < F2, !,
