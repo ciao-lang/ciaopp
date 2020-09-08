@@ -46,7 +46,7 @@ according to the strategy defined.
 
 % plai
 :- use_module(ciaopp(plai/fixpo_dd)).
-:- use_module(ciaopp(plai/fixpo_ops), [each_abs_sort/3, each_extend/6, each_less_or_equal/3]).
+:- use_module(ciaopp(plai/fixpo_ops)).
 :- use_module(ciaopp(plai/transform), [trans_clause/3, cleanup_trans_clauses/0, determine_r_flag/3]).
 :- use_module(ciaopp(plai/domains), [identical_proj/5, init_abstract_domain/2,
                                      abs_sort/3, identical_abstract/3, compute_lub/3]).
@@ -241,34 +241,16 @@ all_parents_same_rec_class([(LitKey, _)|Ps], Class) :-
     member(P/A, Class), !,
     all_parents_same_rec_class(Ps, Class).
 
-:- data useful/1.
-:- pred useless(+Id) : plai_db_id. % only to check, do not generate.
-useless(no) :- !, fail.
-useless(0) :- !, fail. % query Id is never useless
-useless(Id) :-
-    \+ useful(Id), !.
-
-:- export(remove_useless_completes/1).
-:- pred remove_useless_completes(+AbsInt) + not_fails
-   #"Remove completes which have no parents and would not be necessary during
-    the reanalysis. Completes with empty parents would be (recursively) deleted.".
-remove_useless_completes(AbsInt) :-
-    deleted_comp, !,
-    retractall_fact(useful(_)),
-    init_rev_idx(AbsInt), % TODO: !!!
-    retractall_fact(useful(_)),
-    ( % failure-driven loop
-      analysis_entry(SgKey,AbsInt,Sg,Proj),
-        mark_useful_complete(SgKey,AbsInt,Sg,Proj),
-        fail
-    ; true),
-    remove_useless_from_plai_db(AbsInt),
-    clean_rev_idx(AbsInt). % TODO: !!!
-remove_useless_completes(_AbsInt).
-
 :- export(module_has_entries/1).
 module_has_entries(AbsInt) :-
     analysis_entry(_,AbsInt,_,_), !.
+
+:- export(remove_useless_completes/1).
+% exported for incanal.pl
+remove_useless_completes(AbsInt) :-
+    deleted_comp, !,
+    fixpo_ops:remove_useless_completes(AbsInt,analysis_entry).
+remove_useless_completes(_).
 
 analysis_entry(SgKey,AbsInt,Sg,Proj) :-
     \+ using_modular_driver, !,
@@ -280,50 +262,6 @@ analysis_entry(SgKey,AbsInt,Sg,Proj) :-
         get_entry_info(AbsInt, Sg, Proj), %% entries not yet added to registry
         predkey_from_sg(Sg, SgKey)
     ).
-
-:- pred mark_useful_complete(+SgKey,+AbsInt,+Sg,+Proj) + (is_det, not_fails).
-mark_useful_complete(SgKey,AbsInt,Sg,Proj) :-
-    complete(SgKey, AbsInt, Sg1, Proj1, _E, Id, Fs), % creating choicepoints
-    \+ Fs = [], %% completes with empty parents are never useful
-    check_same_calls(AbsInt, Sg, Proj, Sg1, Proj1), !,
-    mark_useful_sons(Id, AbsInt).
-mark_useful_complete(_SgKey,_AbsInt,_Sg,_Proj).
-
-:- pred mark_useful_sons(+Id, +AbsInt) + not_fails.
-mark_useful_sons(no, _AbsInt) :- !. % special case (auxiliary completes have Id = no)
-mark_useful_sons(Id, _AbsInt) :-
-    useful(Id), !. % do nothing if already visited
-mark_useful_sons(Id, AbsInt) :-
-    assertz_fact(useful(Id)),
-    ( % failure-driven loop
-      memo_table_id_key(Id, AbsInt, MKey),
-        memo_table(MKey, AbsInt, Id, Child, _, _),
-        mark_useful_sons(Child, AbsInt),
-        fail
-    ; true
-    ).
-
-remove_useless_from_plai_db(AbsInt) :-
-    current_fact(complete(SgKey, AbsInt, Sg, Proj, LPrime, Id, Fs), Ref),
-    ( useless(Id) ->
-        delete_complete(SgKey,AbsInt,Id)
-    ; (Id = no, Fs = []) -> % Auxiliary complete, remove for now
-        erase(Ref)
-    ;
-        update_parents(Fs, NFs, Updated),
-        \+ var(Updated),
-        erase(Ref),
-        assertz_fact(complete(SgKey, AbsInt, Sg, Proj, LPrime, Id, NFs))
-    ),
-    fail.
-remove_useless_from_plai_db(_).
-
-update_parents([], [], _).
-update_parents([(_,Id)|Fs], NFs, yes) :-
-    useless(Id), !,
-    update_parents(Fs, NFs, _).
-update_parents([F|Fs], [F|NFs], X) :-
-    update_parents(Fs, NFs, X).
 
 % ----------------------------------------------------------------------
 % for preprocessing when deleting

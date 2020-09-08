@@ -35,7 +35,6 @@
         compare_completes_with_prev/3,
         compare_memo_tables_with_prev/3,
         remove_useless_info/1,
-%           remove_useless_info_get_init_calls/2,
         complete_prev/7,
         memo_table_prev/6,
         collect_exported_completes/2,
@@ -44,7 +43,7 @@
         iter/1,
         eliminate_bottoms_and_equivalents/3  % JNL
     ],
-    [assertions,datafacts,nativeprops,isomodes]).
+    [assertions,datafacts,nativeprops,isomodes,hiord]).
 
 :- doc(module,"This module contains operations which are common to 
     several of the different top-down fixpoint algorithms in PLAI.").
@@ -59,38 +58,18 @@
 :- use_module(library(write), [writeq/1]).
 :- use_module(ciaopp(p_unit/clause_db), [clause_locator/2]).
 :- use_module(ciaopp(p_unit/program_keys), [decode_litkey/5, is_entrykey/1, orig_clause_id/2]).
-:- use_module(ciaopp(plai/domains), [
-    exit_to_prime/8,
-    abs_sort/3,
-    extend/6,
-    eliminate_equivalent/3,
-    compute_lub/3,
-    glb/4,
-    widen/4,
-    unknown_call/5,
-    project/6,
-    body_succ_builtin/9,
-    special_builtin/6,
-    fixpoint_covered/3,
-    abs_subset/3,
-    less_or_equal_proj/5,
-    identical_proj/5,
-    less_or_equal/3,
-    identical_abstract/3]).
+:- use_module(ciaopp(plai/domains)).
 :- use_module(ciaopp(plai/apply_assertions_old),
     [apply_trusted/7, apply_trusted_each/7]).
 
 :- use_module(ciaopp(plai/apply_assertions), [apply_assrt_exit/7]).
-:- use_module(ciaopp(plai/plai_db), [complete/7, memo_table/6]).
+:- use_module(ciaopp(plai/plai_db)).
 :- use_module(ciaopp(preprocess_flags), [current_pp_flag/2]).
 :- use_module(ciaopp(p_unit), [language/1]).
 :- use_module(ciaopp(p_unit/program_keys), [predkey_from_sg/2]).
+:- use_module(ciaopp(p_unit/auxinfo_dump)).
 
-:- use_module(ciaopp(p_unit/auxinfo_dump), [
-    dump_auxiliary_info/1, acc_auxiliary_info/2,
-    restore_auxiliary_info/2, imp_auxiliary_info/4]).
-
-:- use_module(library(messages), [warning_message/3, warning_message/2]).
+:- use_module(library(messages), [warning_message/3, warning_message/2, note_message/2]).
 :- use_module(library(sort), [sort/2]).
 :- use_module(library(aggregates), [findall/3]).
 :- use_module(library(terms_vars), [varset/2]).
@@ -707,14 +686,9 @@ compare_all_memo_tables(AbsInt,_):-
 compare_all_memo_tables(_AbsInt,_).
 
 remove_useless_info(AbsInt):-
-    remove_useless_info_get_init_calls(AbsInt,_Initial_Comp).
+    remove_useless_completes(AbsInt, enum_exported).
 
-remove_useless_info_get_init_calls(AbsInt,Initial_Comp):-
-    collect_exported_completes(AbsInt,Initial_Comp),
-    mark_useful_completes(Initial_Comp,AbsInt,[],Used_Completes),
-    remove_useless_completes(AbsInt,Used_Completes),
-    remove_useless_memo_tables(AbsInt,Used_Completes).
-
+% used in spec/codegen.pl and spec/arg_filtering.pl
 collect_exported_completes(AbsInt,Initial_Comp):-
     findall((Fs,Id),(complete(_,AbsInt,_C,_D,_E,Id,Fs),Id\==no),Completes),
     filter_exported(Completes,Initial_Comp).
@@ -722,7 +696,7 @@ collect_exported_completes(AbsInt,Initial_Comp):-
 filter_exported([],[]).
 filter_exported([(Fs,Id)|Completes],Initial_Comp):-
     ( contains_exported(Fs) ->
-       Initial_Comp = [Id|More_Comp]
+        Initial_Comp = [Id|More_Comp]
     ; Initial_Comp = More_Comp
     ),
     filter_exported(Completes,More_Comp).
@@ -732,65 +706,81 @@ contains_exported([(Key,_)|_]):-
 contains_exported([_|Fs]):-
     contains_exported(Fs).
 
-mark_useful_completes([],_AbsInt,Visited,Visited).
-mark_useful_completes([Id|Ids],AbsInt,Visited,Used_Completes):-
-    member(Id,Visited),!,
-    mark_useful_completes(Ids,AbsInt,Visited,Used_Completes).
-mark_useful_completes([Id|Ids],AbsInt,Visited,Used_Completes):-
-    findall(Son,(memo_table(_,AbsInt,Id,Son,_,_),Son\==no,Son\==Id),Other_Comp),
-    mark_useful_completes(Other_Comp,AbsInt,[Id|Visited],Tmp_Visited),
-    mark_useful_completes(Ids,AbsInt,Tmp_Visited,Used_Completes).
+enum_exported(SgKey,AbsInt,Sg,Proj) :-
+    complete(SgKey, AbsInt, Sg, Proj, _E, Id, Fs),
+    Id \== no,
+    contains_exported(Fs).
 
-remove_useless_completes(AbsInt,Used_Completes):-
-    current_fact(complete(A,AbsInt,C,D,E,Id,Fs),Ref),
-    (Id = no ->
-        true
-    ;
-        (member(Id,Used_Completes) ->
-            filter_used(Fs,Used_Completes,NFs,Flag),
-            (Flag == changed ->
-                erase(Ref),
-                asserta_fact(complete(A,AbsInt,C,D,E,Id,NFs))
-            ;
-                true)
-        ;
-            erase(Ref)
-%           ,           note_message("removing complete ~w ~w",[A,Id])
-        )
-    ),
-    fail.
-remove_useless_completes(_AbsInt,_Used_Completes).
+:- data useful/1.
+:- pred useless(+Id) : plai_db_id. % only to check, do not generate.
+useless(no) :- !, fail.
+useless(0) :- !, fail. % query Id is never useless
+useless(Id) :-
+    \+ useful(Id), !.
 
-:- doc(remove_useless_memo_tables(AbsInt,Used_Completes), "A
-    memo_table is useless when it correspond to a complete which is no
-    longer used. The Id = 0 indicates that this is a special
-    memo_table generated by an entry point to analysis and it is thus
-    not eliminated either.").
+:- export(remove_useless_completes/2).
+:- meta_predicate remove_useless_completes(+,pred(4)).
+:- pred remove_useless_completes(+AbsInt,EnumEntryPred) + not_fails
+   #"Remove completes which have no parents and would not be necessary during
+    the reanalysis. Completes with empty parents would be (recursively) deleted.".
+remove_useless_completes(AbsInt,EnumEntry):-
+    retractall_fact(useful(_)),
+    init_rev_idx(AbsInt), % TODO: !!!
+    retractall_fact(useful(_)),
+    ( % failure-driven loop
+      EnumEntry(SgKey,AbsInt,Sg,Proj),
+        mark_useful_complete(SgKey,AbsInt,Sg,Proj),
+        fail
+    ; true),
+    remove_useless_from_plai_db(AbsInt),
+    clean_rev_idx(AbsInt). % TODO: !!!
 
-remove_useless_memo_tables(AbsInt,Used_Completes):-
-    current_fact(memo_table(_Key,AbsInt,Id,_,_,_),Ref),
-    Id > 0,
-    (member(Id,Used_Completes) ->
-        true
-    ;
+:- pred mark_useful_complete(+SgKey,+AbsInt,+Sg,+Proj) + (is_det, not_fails).
+mark_useful_complete(SgKey,AbsInt,Sg,Proj) :-
+    complete(SgKey, AbsInt, Sg1, Proj1, _E, Id, Fs), % creating choicepoints
+    \+ Fs = [], %% completes with empty parents are never useful
+    abs_sort(AbsInt,Proj,Proj_s),
+    abs_sort(AbsInt,Proj1,Proj1_s),
+    identical_proj(AbsInt,Sg,Proj_s,Sg1,Proj1_s), !,
+    mark_useful_sons(Id, AbsInt).
+mark_useful_complete(_SgKey,_AbsInt,_Sg,_Proj).
+
+:- pred mark_useful_sons(+Id, +AbsInt) + not_fails.
+mark_useful_sons(no, _AbsInt) :- !. % special case (auxiliary completes have Id = no)
+mark_useful_sons(Id, _AbsInt) :-
+    useful(Id), !. % do nothing if already visited
+mark_useful_sons(Id, AbsInt) :-
+    assertz_fact(useful(Id)),
+    ( % failure-driven loop
+      memo_table_id_key(Id, AbsInt, MKey),
+        memo_table(MKey, AbsInt, Id, Child, _, _),
+        mark_useful_sons(Child, AbsInt),
+        fail
+    ; true
+    ).
+
+remove_useless_from_plai_db(AbsInt) :-
+    current_fact(complete(SgKey, AbsInt, Sg, Proj, LPrime, Id, Fs), Ref),
+    ( useless(Id) ->
+        note_message("removing complete ~w ~w",[SgKey,Id]),
+        delete_complete(SgKey,AbsInt,Id)
+    ; (Id = no, Fs = []) -> % Auxiliary complete, remove for now
         erase(Ref)
-%       ,    note_message("removing memo table ~w ~w",[Key,Id])
+    ;
+        update_parents(Fs, NFs, Updated),
+        \+ var(Updated),
+        erase(Ref),
+        assertz_fact(complete(SgKey, AbsInt, Sg, Proj, LPrime, Id, NFs))
     ),
     fail.
-remove_useless_memo_tables(_AbsInt,_Used_Completes).
+remove_useless_from_plai_db(_).
 
-filter_used([],_Used_Completes,[],_Flag).
-filter_used([(Father,Id)|Fs],Used_Completes,NFs,Flag):-
-    member(Id,Used_Completes),!,
-    NFs = [(Father,Id)|MoreFs],
-    filter_used(Fs,Used_Completes,MoreFs,Flag).
-filter_used([(Father,Id)|Fs],Used_Completes,NFs,Flag):-
-    \+ decode_litkey(Father,_,_,_,_),!,
-    NFs = [(Father,Id)|MoreFs],
-    filter_used(Fs,Used_Completes,MoreFs,Flag).
-filter_used([_|Fs],Used_Completes,NFs,Flag):-
-    Flag = changed,
-    filter_used(Fs,Used_Completes,NFs,changed).
+update_parents([], [], _).
+update_parents([(_,Id)|Fs], NFs, yes) :-
+    useless(Id), !,
+    update_parents(Fs, NFs, _).
+update_parents([F|Fs], [F|NFs], X) :-
+    update_parents(Fs, NFs, X).
 
 each_identical_abstract([],_,[]).
 each_identical_abstract([ASub1|A1s],AbsInt,[ASub2|A2s]):-

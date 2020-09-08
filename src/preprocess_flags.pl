@@ -1027,6 +1027,12 @@ pp_flag(preload_lib_sources).
 pp_flag(preload_lib_sources, 'Whether to preload library sources, this requires generating the preprocessed assertions with the command gen_lib_cache, if this is used, changes in libraries will not be detected unless gen_lib_cache is run again. This option reduces the module loading time.').
 current_pp_flags( preload_lib_sources, off).
 valid_flag_values(preload_lib_sources, member( _ , [on, off] )).
+
+pp_flag(remove_useless_abs_info).
+pp_flag(remove_useless_abs_info, 'Whether to remove intermediate analysis results that are not reachable from the entries. This is disabled by default, because it may be costly (traverses the whole analysis graph).').
+current_pp_flags( remove_useless_abs_info, off).
+valid_flag_values(remove_useless_abs_info, member( _ , [on, off] )).
+
 % ---------------------------------------------------------------------------
 
 tmp_dir(source).

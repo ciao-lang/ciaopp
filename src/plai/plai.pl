@@ -64,7 +64,8 @@
 :- use_module(ciaopp(plai/fixpo_ops), [
     store_previous_analysis/1,
     store_previous_analysis_completes/1,
-    reset_previous_analysis/1]).
+    reset_previous_analysis/1,
+    remove_useless_info/1]).
 
 :- if(defined(has_ciaopp_extra)).
 :- use_module(ciaopp(plai/output_java_info), [java_statistics/1]).
@@ -165,6 +166,10 @@ plai_(Cls,Ds,Fixp,AbsInt,ModFlag,Stats) :-
       ' msec.}']),
         Local_C_Info = [],
         Stats = [TimeInfo|DomInfo]
+    ),
+    ( current_pp_flag(remove_useless_abs_info,yes) ->
+        remove_useless_info(AbsInt) % TODO: time
+    ; true
     ),
     dom_statistics(AbsInt, DomInfo).
 
