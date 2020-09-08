@@ -15,6 +15,8 @@
 :- use_module('ciaopp-dump-report').
 :- use_module('ciaopp-dump-ctcheck').
 
+:- use_module(library(errhandle), [error_protect/2]).
+
 :- doc(module, "This program outputs information about CiaoPP files.
 
    @section{Usage}
@@ -59,22 +61,25 @@ where the possible options are:
      --print-header: prints the names of the characteristics displayed
 ").
 
-main(['-h']) :- !,
+main(X) :-
+    error_protect(main_(X), fail).
+
+main_(['-h']) :- !,
     usage_text(T),
     format(user_output,"Usage: ~s~n",[T]).
-main(['show',Path]) :- !,
+main_(['show',Path]) :- !,
     'ciaopp-dump-show':main([Path]).
-main(['fmt'|Args]) :- !,
+main_(['fmt'|Args]) :- !,
     'ciaopp-dump-fmt':main(Args).
-main(['cmp'|Args]) :- !,
+main_(['cmp'|Args]) :- !,
     'ciaopp-dump-cmp':main(Args).
-main(['stats'|Args]) :- !,
+main_(['stats'|Args]) :- !,
     'ciaopp-dump-stats':main(Args).
-main(['syntactic'|Args]) :- !,
+main_(['syntactic'|Args]) :- !,
     'ciaopp-dump-syntactic':main(Args).
-main(['report', 'reach'|Args]) :- !,
+main_(['report', 'reach'|Args]) :- !,
     'ciaopp-dump-report':main(Args).
-main(['ctcheck'|Args]) :- !,
+main_(['ctcheck'|Args]) :- !,
     'ciaopp-dump-ctcheck':main(Args).
-main(_) :-
+main_(_) :-
     format(user_error, "Wrong arguments. Run '-h' to show help",[]).
