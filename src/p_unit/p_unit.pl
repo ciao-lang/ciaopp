@@ -481,7 +481,7 @@ dynamic_or_unknown_predicate(Goal):- type_of_goal(impl_defined,Goal), !.
     add_assertion_read/9,
     ref_assertion_read/10]).
 
-get_assertion(ClKey, Ass) :-
+get_assertion(Goal, Ass) :-
     Ass = as${module => M,
         status => Status,
         type => Type,
@@ -494,7 +494,7 @@ get_assertion(ClKey, Ass) :-
         comment => Comment,
         locator => Loc},
     Loc = loc(S, LB, LE),
-    ref_assertion_read(ClKey, M, Status, Type, Body, Dic, S, LB, LE, _ARef),
+    ref_assertion_read(Goal, M, Status, Type, Body, Dic, S, LB, LE, _ARef),
     assertion_body(Key, Compat, Call, Succ, Comp, Comment, Body).
 
 :- export(assertion_set_status/3).
