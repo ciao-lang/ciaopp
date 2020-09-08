@@ -984,7 +984,10 @@ body_succ0('$var',SgKey,Sg,_Sv_u,HvFv_u,Calls,Succs,List0,List,AbsInt,
           Id=no,
           List=List0,
           variable(F,ClId),
-          each_unknown_call(Calls,AbsInt,Sg,[Sg],Succs) % Sg is a variable % TODO: use call(Sg) or similar? (JF)
+          % IG: hack to have some goal, Sg cannot be a free variable
+          varset(Calls,Sv),
+          SgFake =.. ['$meta_var'|Sv],
+          each_unknown_call(Calls,AbsInt,SgFake,Sv,Succs)
     ).
 body_succ0('$meta'(T,B,_),SgKey,Sg,Sv_u,HvFv_u,Call,Succ,List0,List,AbsInt,
         ClId,F,N,Id):-

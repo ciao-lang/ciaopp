@@ -110,7 +110,6 @@ body_succ0('$var',SgKey,Sg,_Sv_u,HvFv_u,Calls,Succs,AbsInt,ClId,F,_,Id):-
     ;
         Id=no,
         variable(F,ClId),
-        % Sg is a variable % TODO: use call(Sg) or similar? (JF)
         % IG: hack to have some goal, Sg cannot be a free variable
         varset(Calls,Sv),
         SgFake =.. ['$meta_var'|Sv],
