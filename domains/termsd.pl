@@ -88,7 +88,9 @@ terms_input_interface(member(X,L),perfect,Acc,[P|Acc]):-
     new_type_symbol(T),
     insert_rule(T,Def),
     P =.. [T,X].
-
+terms_input_interface('='(X,Y),P,Acc,Acc0):-
+    var(X),!,
+    terms_input_interface(member(X,[Y]),P,Acc,Acc0).
 may_be_var([]):- !.
 may_be_var(_Acc).
 
