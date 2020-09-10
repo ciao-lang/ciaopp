@@ -142,6 +142,8 @@ native_property('term_typing:nonvar'(L),not_free(L)).
 native_property('native_props:nonground'(L),not_ground(L)).
 native_property('native_props:mshare'(L),sharing(L)). % Deprecated, assertion normalizer expands to mshare/2 internally
 native_property('native_props:mshare'(Xs,Xss),sharing(Xs,Xss)).
+% TODO: very limited, working only for terms domain. 
+%       Useful as a workaround to non-normalized heads in assertions.
 native_property('basic_props:member'(M,L),member(M,L)).
 native_property('term_basic:='(M,L),'='(M,L)).
 % computation
