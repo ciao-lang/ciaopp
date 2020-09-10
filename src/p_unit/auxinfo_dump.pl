@@ -82,12 +82,23 @@ restore_auxiliary_info(ConsultPred,Dict):-
    you restore and before actually restoring it.".
 
 imp_auxiliary_info(AbsInt,Dict,ASubs,NewASubs):-
-    rename_all_types_in_abs(ASubs,AbsInt,Dict,NewASubs).
+    imp_auxiliary_info(AbsInt,Dict,ASubs,NewASubs,_).
 
-rename_all_types_in_abs([ASub0|ASubs0],AbsInt,Dict,[ASub|ASubs]):-
+:- export(imp_auxiliary_info/5).
+:- pred imp_auxiliary_info(AbsInt,Dict,ASubs,NewASubs,-Changed)
+   # "Same as @pred{imp_auxiliary_info} but @var{Changed} is @tt{yes} if the
+   substitutions changed.".
+imp_auxiliary_info(AbsInt,Dict,ASubs,NewASubs,Changed):-
+    rename_all_types_in_abs(ASubs,AbsInt,Dict,NewASubs,Changed).
+
+rename_all_types_in_abs([ASub0|ASubs0],AbsInt,Dict,[ASub|ASubs],Changed):-
     rename_types_in_abs(ASub0,AbsInt,Dict,ASub),
-    rename_all_types_in_abs(ASubs0,AbsInt,Dict,ASubs).
-rename_all_types_in_abs([],_AbsInt,_Dict,[]).
+    ( nonvar(Changed) -> true
+    ; ASub0 \== ASub -> Changed = yes
+    ; true
+    ),
+    rename_all_types_in_abs(ASubs0,AbsInt,Dict,ASubs, Changed).
+rename_all_types_in_abs([],_AbsInt,_Dict,[],_).
 
 %% % Sample Use Code:
 %% 

@@ -79,7 +79,7 @@
     acc_auxiliary_info/2,
     dump_auxiliary_info/1,
     is_dump_auxiliary_fact/1,
-    imp_auxiliary_info/4,
+    imp_auxiliary_info/5,
     restore_auxiliary_info/2]).
 :- use_module(ciaopp(p_unit/aux_filenames), [
     get_module_filename/3, just_module_name/2, is_library/1, get_loaded_module_name/3]).
@@ -283,9 +283,8 @@ cleanup_p_abs_all :-
 cleanup_registry(Module) :-
     retractall_fact(registry(_,Module,_)),
     retractall_fact(registry_headers(Module,_)),
-    retractall_fact(typedb(Module,_)),
+    retractall_fact(typedb(Module,_)).
 %       retractall_fact(typedef_already_loaded(Module)).
-    true.
 
 % TODO: get this from semantic info: completes?
 :- pred get_imported_modules
@@ -824,7 +823,6 @@ patch_registry_(Module,Base,NeedsTreat) :-
 % returned in NextTuple.
 read_types_data_loop(Module,NextTuple) :-
     retractall_fact(typedb(Module,_)),
-%       retractall_fact(typedef_already_loaded(Module)),
     repeat,
     ( fast_read(NextTuple) ->
         ( % NextTuple = typedef(TypeName,TypeDef) ->
@@ -893,13 +891,13 @@ upload_typedefs(AbsInt,Module) :-
         get_imdg_asubs(ImdgList0,ImdgASubsList0),
         get_chdg_asubs(Chdg0,ChdgASubs0),
         append(ChdgASubs0, ImdgASubsList0, DepsASubs0),
-        auxinfo_dump:imp_auxiliary_info(AbsInt,Dict,[Call0,Succ0|DepsASubs0],[Call,Succ|DepsASubs]),
+        auxinfo_dump:imp_auxiliary_info(AbsInt,Dict,[Call0,Succ0|DepsASubs0],[Call,Succ|DepsASubs],Changed),
+        Changed == yes,
         replace_chdg_subs(Chdg0,DepsASubs,Chdg,ImdgASubsList),
         replace_imdg_subs(ImdgList0,ImdgASubsList,ImdgList),
         erase(Ref),
         NewReg = regdata(Id,AbsInt,Sg,Call,Succ,SpecName,ImdgList,Chdg,Mark),
         assertz_fact(registry(SgKey,Module,NewReg)),
-        %add_changed_registry(SgKey,Module,NewReg),
         fail
     ; true
     ),
