@@ -41,7 +41,7 @@ process_diff_item(D, Skip) :-
     Skip(D), !, fail.
 process_diff_item(abs_diff(_,_,_, Sg:Call, Succ, new), _) :- !,
     human_display_list(['NEW CALL ', Sg:Call, Succ]),
-    show_auxiliary_info_list([Call, Succ],~checking_domain).
+    show_auxiliary_info_list([Call|Succ],~checking_domain).
 process_diff_item(abs_diff(_,_,_,_,_,X), _) :-
     X = modif(Sg:Call, Succ, Succ2), !,
     checking_domain(AbsInt),
