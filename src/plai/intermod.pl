@@ -12,20 +12,20 @@
         auto_transform/3,
         auto_simp_libs/2,
         auto_simp_libs/3,
-       % scenario 2
+        % scenario 2
         auto_ctcheck/2,
         auto_ctcheck/4,
-       % scenario 1
+        % scenario 1
         monolithic_ctcheck/2,
         monolithic_ctcheck/3,
-       % scenario 5
+        % scenario 5
         inductive_ctcheck/2,
         inductive_ctcheck/4,
         inductive_ctcheck_summary/3,
-       % scenario 3
+        % scenario 3
         auto_ctcheck_opt/2,
         auto_ctcheck_opt/3,
-%
+        %
         auto_ctcheck_list/3,
         auto_ctcheck_summary/3,
         cleanreg/0,
@@ -434,6 +434,12 @@ modular_analyze_(Sched,Analyses,Info):-
         do_naive_intermod(Analyses)
     ;   do_intermod(Sched,Analyses)
     ),
+    ( % remove unreachable nodes after the fixpoint has been reached
+      member(AbsInt,Analyses),
+        clean_unreach_registry_info(AbsInt),
+        fail
+    ; true
+    ),
     get_total_info(Info).
 
 is_naive_scheduling(naive_top_down).
@@ -684,7 +690,9 @@ monolithic_analyze(Analyses,TopLevel,Info):-
     add_to_total_info(Info0), % It adds Info to total_info.
     %%%%
     gen_registry_info(quiet,_Callers,_Imported,[time(GenRegTime,_)]),
-    save_registry_info(quiet,[time(SaveTime,_)]),
+    % save_registry_info(quiet,[time(SaveTime,_)]),
+    % ^-- IG: currently the registry of the imported module is not created, do not save it
+    SaveTime = 0,
     pp_statistics(runtime,[T2,_]),  %% total ellapsed time.
     add_to_total_info([time(LoadTime,[(load,LoadTime)]),time(GenRegTime,[(genreg,GenRegTime)]),time(SaveTime,[(savereg,SaveTime)])]),
     global_time_ellapsed(T2,T1,Ellapsed),

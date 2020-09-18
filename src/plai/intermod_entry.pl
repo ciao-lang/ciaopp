@@ -4,18 +4,7 @@
     for modular analysis. The entry policy is determined by the
     @code{entry_policy} preprocessing flag.").
 
-:- use_module(ciaopp(p_unit/p_abs),
-    [ ensure_registry_file/3,
-      ensure_registry_current_files/1,
-      registry/3,
-      registry_headers/2,
-      add_to_imdg_list/4,
-      add_changed_module/5,
-      get_module_from_sg/2,
-      may_be_improved_mark/2,
-      not_valid_mark/2,
-      get_new_reg_id/1
-    ]).
+:- use_module(ciaopp(p_unit/p_abs)).
 :- use_module(ciaopp(p_unit/itf_db), [curr_file/2, current_itf/3]).
 :- use_module(ciaopp(plai/domains), [identical_proj/5, abs_sort/3]).
 :- use_module(library(lists), [member/2]).
@@ -135,11 +124,11 @@ update_registry_headers(Policy,CurrModule,AbsInt):-
 update_registry_headers(_Policy,_CurrModule,_AbsInt).
 
 :- pred entry_assertions_to_registry(+Policy,?Module,+AbsInt)
-# "Adds the entries written in the source code of the modules loaded
-  for the domains being used, if they have not been added before.".
+   # "Adds the entries written in the source code of the modules loaded
+   for the domains being used, if they have not been added before.".
 entry_assertions_to_registry(Policy,Module,AbsInt):-
     current_pp_flag(success_policy,SP),
-    entry_point(Policy,AbsInt,Goal,_Qv,Call,Prime,Module),
+    pending_intermod_entry_point(Policy,AbsInt,Goal,_Qv,Call,Prime,Module),
     functor(Goal,F,A),
     functor(CGoal,F,A),  % direct access to predicate.
     get_predkey(F,A,SgKey),
@@ -166,34 +155,51 @@ entry_assertions_to_registry(_Policy,_Module,_AbsInt).
 
 %% --------------------------------------------------------------------
 
-:- pred entry_point(+Policy,+AbsInt,-Goal,Qv,-Call,-Prime,Module)
-# "Modified version of the same predicate in plai.pl. @var{Policy}
-  determines which entry points are added for analysis.".
-entry_point(Policy,AbsInt,Goal,Qv,Call,Prime,Module):-
+:- pred pending_intermod_entry_point(+Policy,+AbsInt,-Goal,Qv,-Call,-Prime,Module)
+   # "Enumerates the entries that have not been analyzed yet by looking at the
+     registry headers.".
+pending_intermod_entry_point(Policy,AbsInt,Goal,Qv,Call,Prime,Module) :-
+    intermod_entry_point_policy(Policy,AbsInt,Goal,Qv,Call,Prime,Module),
+    current_fact(registry_headers(Module,entries_already_analyzed(Domains))),
+    \+ member(AbsInt,Domains).
+pending_intermod_entry_point(_Policy,AbsInt,Goal,Qv,Call,Prime,Module) :-
+    entry_point(AbsInt,Goal,Qv,Call,Prime,Module).
+
+:- export(intermod_entry_point/7).
+:- pred intermod_entry_point/7 #"User-specified entry points for intermodular
+   analysis. I.e., according to the policy defined".
+% intermodular-dependent entry points
+intermod_entry_point(Policy,AbsInt,Goal,Qv,Call,Prime,Module) :-
+    intermod_entry_point_policy(Policy,AbsInt,Goal,Qv,Call,Prime,Module).
+intermod_entry_point(_Policy,AbsInt,Goal,Qv,Call,Prime,Module) :-
+    entry_point(AbsInt,Goal,Qv,Call,Prime,Module).
+
+intermod_entry_point_policy(Policy,AbsInt,Goal,Qv,Call,Prime,Module) :-
     type_of_goal(exported,Goal),
-    top_level_module(TopLevelModule,_),
     get_module_from_sg(Goal,Module),
-    ( TopLevelModule = Module, Policy = top_level % IG: missing cuts?
-    ; Policy = all
+    ( Policy = top_level ->
+        top_level_module(TopLevelModule,_),
+        TopLevelModule = Module
+    ; Policy = all % IG: is this a sanity check?
     ; Policy = force
-    ),  %% If all of this succeed, all exported predicates must be analyzed.
+    ),
     functor(Goal,F,A),
     functor(G,F,A),
-    \+ entry_assertion(G,_Call,_Name),
-    current_fact(registry_headers(Module,entries_already_analyzed(Domains))),
-    \+ member(AbsInt,Domains),
-    %%
+    \+ entry_assertion(G,_Call,_Name), % entry assertions treated elsewhere (policy-independent)
     varset(Goal,Qv),
     unknown_entry(AbsInt,Goal,Qv,Call),
     unknown_call(AbsInt,Goal,Qv,Call,Prime).
-entry_point(_Policy,AbsInt,Goal,Qv,Call,Prime,Module) :-
+
+% regular entry points (they have to be analyzed always, i.e., they are
+% policy-independent)
+entry_point(AbsInt,Goal,Qv,Call,Prime,Module) :-
     current_itf(multifile,Goal,Module),
     type_of_goal(multifile,Goal),        %% multifiles must be analyzed in any case.
     entry_assertion(Goal,CInfo,_Name), % IG analyze multifiles only if they have an entry assertion
     varset(Goal,Qv),
     info_to_asub(AbsInt,_,CInfo,Qv,Call,Goal,no),
     unknown_call(AbsInt,Goal,Qv,Call,Prime).
-entry_point(_Policy,AbsInt,Name,[],Call,Prime,_Module):- %% init and on_abort must be analyzed always.
+entry_point(AbsInt,Name,[],Call,Prime,_Module):- %% init and on_abort must be analyzed always.
     setcounter(0,0),
     ( type_of_directive(initialization,Body)
     ; type_of_directive(on_abort,Body) ),
@@ -203,7 +209,8 @@ entry_point(_Policy,AbsInt,Name,[],Call,Prime,_Module):- %% init and on_abort mu
     transform_clauses([(clause(Name,Body),Name)],Ds,[nr],[],AbsInt),
     empty_entry(AbsInt,Name,[],Call), % TODO: make sure that Name is right here
     unknown_call(AbsInt,Name,[],Call,Prime). % TODO: make sure that Name is right here
-entry_point(_Policy,AbsInt,Goal,Qv,Call,Prime,Module):- %% entries must be analyzed always (if dynamic preds!)
+entry_point(AbsInt,Goal,Qv,Call,Prime,Module):-
+    %% entries must be analyzed always (if dynamic preds!)
     entry_assertion(Goal,CInfo,_Name),
     get_module_from_sg(Goal,Module),
     varset(Goal,Qv),

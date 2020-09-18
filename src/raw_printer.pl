@@ -51,7 +51,7 @@ to avoid recomputation), but it not implemented yet.").
 
 :- use_module(engine(stream_basic)).
 :- use_module(engine(io_basic)).
-:- use_module(library(write), [portray_clause/1, portray_clause/2, write/1, numbervars/3]).
+:- use_module(library(write)).
 :- use_module(library(format), [format/2, format/3]).
 :- use_module(library(lists), [append/3]).
 :- use_module(library(aggregates), [findall/3]).
@@ -126,8 +126,8 @@ show_registry_info :-
     show_data(registry(A,B,C)),
     fail.
 show_registry_info :-
-    typedb(A,B),
-    show_data(typedb(A,B)),
+    mod_typedb(A,B),
+    show_data(mod_typedb(A,B)),
     fail.
 show_registry_info.
 
@@ -149,20 +149,20 @@ show_data_(C) :-
 show_data_(dep_list(L)) :-
     show_dep_list_(L), !.
 show_data_(X) :-
-    write(X), nl.
+    writeq(X), nl.
 
 show_dep_list_([]).
-show_dep_list_([(Id,_,_,_)|Es]) :- !,
-    format(user,' ~w', [Id]),
+show_dep_list_([(Id,Sg,Proj,_Base)|Es]) :- !,
+    format(user,' ~w ~w ~w', [Id,Sg,Proj]),
     show_dep_list_(Es).
-show_dep_list_([(Id,_,_)|Es]) :- !,
-    format(user,' ~w', [Id]),
+show_dep_list_([(Id,Sg,Proj)|Es]) :- !,
+    format(user,' ~w ~w ~w', [Id,Sg,Proj]),
     show_dep_list_(Es).
 show_dep_list_([E|Es]) :-
     format(user,' ~w, ', [E]),
     show_dep_list_(Es).
 
-:- use_module(ciaopp(p_unit/p_abs), [typedb/2]).
+:- use_module(ciaopp(p_unit/p_abs), [mod_typedb/2]).
 
 :- pred show_global_answer_table(AbsInt) #"Shows de global answer
     table for modular analysis with domain @var{AbsInt}".
@@ -174,8 +174,8 @@ show_global_answer_table(AbsInt) :-
 show_global_answer_table(_) :-
     display(user, '------+---------+------+---------'), nl,
     ( % failure-driven loop
-      p_abs:typedb(A, B),
-        show_data(typedb(A, B)),
+      p_abs:mod_typedb(A, B),
+        show_data(mod_typedb(A, B)),
         fail
     ; true
     ).

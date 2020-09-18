@@ -172,6 +172,14 @@ trace_fixpoint('[incanal] bu fixpoint started').
 trace_fixpoint('[incanal] bu fixpoint completed').
 trace_fixpoint('[incanal] bu non-recursive initiated').
 trace_fixpoint('[incanal] bu non-recursive completed').
+% For intermodular analysis driver
+trace_fixpoint('[mod] reg read').
+trace_fixpoint('[mod] reg header created').
+trace_fixpoint('[mod] new child').
+trace_fixpoint('[mod] new parent').
+trace_fixpoint('[mod] new registry').
+trace_fixpoint('[mod] succ changed').
+trace_fixpoint('[mod] check reg').
 
 :- pop_prolog_flag(multi_arity_warnings).
 

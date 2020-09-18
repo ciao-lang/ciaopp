@@ -3,6 +3,7 @@
     cleanup_p_abs_all/0,
     gen_registry_info/3,
     gen_registry_info/4,
+    clean_unreach_registry_info/1,
     save_registry_info/2,
     save_registry_info/3,
     update_spec_info/2,
@@ -38,7 +39,7 @@
     registry_is_empty/3,
 %%%Resource intermodule-analysis (JNL)
     get_imported_calls/1 % used only in resources/intermod
- ],[assertions,regtypes,basicmodes,isomodes,datafacts,hiord]).
+ ],[assertions,regtypes,basicmodes,isomodes,datafacts,hiord,fsyntax,nativeprops]).
 
 :- use_module(engine(hiord_rt), [call/1]). % TODO: review uses here
 
@@ -64,7 +65,8 @@
 :- use_module(library(lists), [member/2, append/3]).
 :- use_module(library(ctrlcclean), [ctrlc_clean/1]).
 :- use_module(library(errhandle), [error_protect/2]).
-:- use_module(engine(messages_basic), [message/2]).
+:- use_module(library(terms_check), [variant/2]).
+:- use_module(library(messages)).
 
 % CiaoPP libraries %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -74,13 +76,8 @@
 :- use_module(ciaopp(analysis_stats), [pp_statistics/2]).
 :- use_module(ciaopp(ciaopp_log), [pplog/2]).
 :- use_module(ciaopp(plai/plai_db),   [complete/7, get_parent_key/4]).
-:- use_module(ciaopp(plai/domains),   [identical_proj/5, less_or_equal_proj/5, abs_sort/3]).
-:- use_module(ciaopp(p_unit/auxinfo_dump), [
-    acc_auxiliary_info/2,
-    dump_auxiliary_info/1,
-    is_dump_auxiliary_fact/1,
-    imp_auxiliary_info/5,
-    restore_auxiliary_info/2]).
+:- use_module(ciaopp(plai/domains),   [identical_proj/5, less_or_equal_proj/5, abs_sort/3, identical_abstract/3]).
+:- use_module(ciaopp(p_unit/auxinfo_dump)).
 :- use_module(ciaopp(p_unit/aux_filenames), [
     get_module_filename/3, just_module_name/2, is_library/1, get_loaded_module_name/3]).
 :- use_module(ciaopp(p_unit/program_keys),
@@ -100,7 +97,7 @@
 
 %%%%%%%%%%%%%% Debugging %%%%%%%%%%%%%%%%%
 :- use_module(library(fastrw), [fast_read/1, fast_write/1, fast_read/2, fast_write/2]).
-:- use_module(ciaopp(plai/intermod_entry), [check_curr_entry_id/1, curr_entry_id/1]).
+:- use_module(ciaopp(plai/intermod_entry)).
 :- use_module(ciaopp(plai/trace_fixp), [fixpoint_trace/7]).
 % IG: Added for keeping track of the changes in the registry
 
@@ -150,6 +147,8 @@ regdata_type(regdata(_Id, _AbsInt,_Sg,_Call,_Succ,_Spec,_Imdg,_Chdg,_Mark)).
    other auxiliary information (e.g., types).".
 
 :- data registry/3.
+get_registry(SgKey,Mod,RegData,Ref) :-
+    current_fact(registry(SgKey,Mod,RegData), Ref), !.
 
 add_registry(Module, Reg) :-
     ( Reg = regdata(_Id, _AbsInt,Sg,_Call,_Succ,_Spec,_ImdgList,_,_Mark) ->
@@ -161,24 +160,6 @@ add_registry(Module, Reg) :-
 regdata_set_mark(OldReg, Mark, NewReg) :-
     OldReg = regdata(Id, AbsInt,Sg,Call,Succ,Spec,Imdg,Chdg,_),
     NewReg = regdata(Id, AbsInt,Sg,Call,Succ,Spec,Imdg,Chdg,Mark).
-
-%% --------------------------------------------------------------------
-
-:- export(typedb/2).
-:- pred typedb(Module,TypeDef) :: atm * term
-   # "Data predicate to locally store information about the types used in the
-   registry of one or several modules. @var{Module} is the name of the module
-   for which the type definition @var{TypeDef} is referenced in the registry
-   file. The original definition of @var{TypeDef} may not reside in
-   @var{Module}, but in a related module.".
-:- data typedb/2.
-
-%% :- pred type_loaded(Module) : atm
-%%
-%% # "Succeeds if the type definitions for module @var{Module} have been
-%%   already uploaded to ciaopp (by means of @code{dumper} predicates).".
-%%
-%% :- data type_loaded/1.
 
 %% --------------------------------------------------------------------
 
@@ -262,6 +243,8 @@ cleanup_p_abs :-
     retractall_fact(imported_module(_,_)),
     retractall_fact(caller_module(_,_)),
     retractall_fact(module_is_processable_cache(_,_,_)),
+    % if we are able to do module without cleaning typeslib, the following could be removed
+    retractall_fact(registry_in_typeslib(_)),
     move_last_changes_to_previous.
 
 move_last_changes_to_previous :-
@@ -278,13 +261,13 @@ cleanup_p_abs_all :-
     cleanup_registry(_),
     clean_incanal_mod_data,
     retractall_fact(changed_module(_,_,_,_,_,_)),
+    retractall_fact(mod_typedb(_,_)),
     cleanup_p_abs.
 
 cleanup_registry(Module) :-
     retractall_fact(registry(_,Module,_)),
     retractall_fact(registry_headers(Module,_)),
-    retractall_fact(typedb(Module,_)).
-%       retractall_fact(typedef_already_loaded(Module)).
+    retractall_fact(registry_in_typeslib(Module)).
 
 % TODO: get this from semantic info: completes?
 :- pred get_imported_modules
@@ -316,9 +299,9 @@ get_imported_used_modules :-
     ; true).
 
 :- pred get_caller_modules # "Gets the list of caller modules to the
-    current modules. This list is obtained from the registry
-    information for the current modules, and is stored in
-    @tt{caller_modules/2}.".
+   current modules. This list is obtained from the registry
+   information for the current modules, and is stored in
+   @tt{caller_modules/2}.".
 get_caller_modules :-
     current_fact(caller_module(_,_)), !.
 get_caller_modules :-
@@ -351,25 +334,20 @@ gen_registry_info(Verb,Callers,Imported) :-
     get_caller_modules,
     ensure_registry_caller_files(Verb),
     ( curr_file(File, Mod),
-      update_registry_dependencies(_, File, Mod),
-      fail
+        update_registry_dependencies(_, File, Mod),
+        fail
     ; true),
+    upload_typeslib_to_registry,
     get_imported_changed_modules(Imported),
-    get_caller_changed_modules(Callers),
-    unmark_typedefs_already_loaded.
-
-% TODO: review when we fix modular incremental analysis
-unmark_typedefs_already_loaded:-
-%       retractall_fact(typedef_already_loaded(_)).
-    true.
+    get_caller_changed_modules(Callers).
 
 :- pred gen_registry_info(+Verb,-Callers,-Imported,-Info)
-# "As @pred{gen_registry_info/3}, but also returns @var{Info}.".
-gen_registry_info(Verb,Callers,Imported,[time(Time,[])]):-
+   # "As @pred{gen_registry_info/3}, but also returns @var{Info}.".
+gen_registry_info(Verb,Callers,Imported,[time(Time,[])]) :-
     stat_no_store(gen_registry_info(Verb,Callers,Imported), Time),
     pplog(p_abs, ['{Generated registry in ',Time,' msec.}']).
 
-get_imported_changed_modules(Imported):-
+get_imported_changed_modules(Imported) :-
     findall(Base,imported_changed_module(Base),Imported).
 
 imported_changed_module(Base) :-
@@ -409,7 +387,6 @@ ensure_registry_imported_files(_Verb).
 
 ensure_registry_caller_files(Verb) :-
     caller_module(CM,Base),
-%%      current_itf(defines_module,CM,Base),
     ensure_registry_file(CM,Base,Verb),
     fail.
 ensure_registry_caller_files(_Verb).
@@ -453,39 +430,8 @@ may_be_improved_mark(under_all,'-').
 may_be_improved_mark(bottom,'-').
 may_be_improved_mark(bottom_up,'+').  % Is this right?
 
-:- data tmp_current_module/1.
-
-update_current_typedefs(CurrModule) :-
-    retractall_fact(typedb(CurrModule,_TypeDef)),
-%       retractall_fact(typedef_already_loaded(CurrModule)),
-    set_fact(tmp_current_module(CurrModule)),
-    %
-    ( % (failure-driven loop)
-      current_fact(registry(_,CurrModule,Reg)),
-      Reg = regdata(_,AbsInt,_Sg,Call,Succ,_SpecName,ImdgList,Chdg,_Mark),
-        get_imdg_asubs(ImdgList,ImdgASubsList),
-        get_chdg_asubs(Chdg,ChdgASubs),
-        append(ChdgASubs, ImdgASubsList, DepsASubs),
-        auxinfo_dump:acc_auxiliary_info(AbsInt,[Call,Succ|DepsASubs]),
-        fail
-    ; true
-    ),
-    auxinfo_dump:dump_auxiliary_info(store_typedef).
-
-add_imported_typedefs(AbsInt,Module,ASubs) :-
-%       retractall_fact(typedef_already_loaded(Module)),
-    set_fact(tmp_current_module(Module)),
-    auxinfo_dump:acc_auxiliary_info(AbsInt,ASubs),
-    auxinfo_dump:dump_auxiliary_info(store_typedef), !.
-
-store_typedef(TypeDef) :-
-    current_fact(tmp_current_module(CurrModule)),
-    ( current_fact(typedb(CurrModule,TypeDef)) ->
-        %%%NOTE: TypeDef comparison should be smarter!!!!!!!
-        true
-    ;
-        asserta_fact(typedb(CurrModule,TypeDef))
-    ).
+store_typedef(typedef(T,TD)) :-
+    add_mod_typedb(T,TD).
 
 :- pred mark_callers_registry(+ImdgList,+PKey,ParentReg,+AbsInt,+CurrModule,+NewMark,-BasenamesMarked)
     # "Entries of callers entries in @var{ImdgList} are marked with
@@ -739,7 +685,7 @@ ensure_registry_file(Module,Base,Verb) :-
     read_registry_file_(Module,Base,Verb),
     patch_registry_(Module,Base,_).
 
-:- pred read_registry_file(+Module,+Base,+Verb) : atm * atm * atm
+:- pred read_registry_file(+Module,+Base,+Verb) : atm * atm * atm + (not_fails, is_det)
    # " Reads the registry file of @var{Module} and loads it into
    @tt{registry/2}, erasing any previous registry information for that
    module. @var{Base} must be the absolute file name, but excluding
@@ -759,24 +705,24 @@ read_registry_file_(Module,Base,Verb) :-
     ( file_exists(RegName) ->
       open(RegName, read, Stream),
       ( read_registry_header(Verb,Module,Stream) ->
+          pplog(p_abs, ['{Reading ',RegName]),
           current_input(CI),
           set_input(Stream),
-          pplog(p_abs, ['{Reading ',RegName]),
           read_types_data_loop(Module,NextTuple),   % NextTuple is the tuple after the last type definition.
           read_reg_data_loop(Module,NextTuple),
           set_input(CI),
           pplog(p_abs, ['}']),
-          fixpoint_trace('mod reg read',Module,_,_,Base,_,_)
+          fixpoint_trace('[mod] reg read',Module,_,_,Base,_,_)
       ; pplog(p_abs, ['{Wrong version of file: ',RegName,'. It will be overwritten.}']),
         create_registry_header(Module,PlName),
         add_changed_module(Module,Base,Module,registry_created,no),
-        fixpoint_trace('mod reg header created',Module,_,_,Base,_,_)
+        fixpoint_trace('[mod] reg header created',Module,_,_,Base,_,_)
       ),
       close(Stream)
     ; pplog(p_abs, ['{Non-existing file: ',RegName,'}']),
       create_registry_header(Module,PlName),
       add_changed_module(Module,Base,Module,registry_created,no),
-      fixpoint_trace('mod reg header created',Module,_,_,Base,_,_)
+      fixpoint_trace('[mod] reg header created',Module,_,_,Base,_,_)
     ),
     !.
 
@@ -821,13 +767,12 @@ patch_registry_(Module,Base,NeedsTreat) :-
 
 % Reads types from std. input. The last tuple read (immediately after the last type read) is 
 % returned in NextTuple.
-read_types_data_loop(Module,NextTuple) :-
-    retractall_fact(typedb(Module,_)),
+% TODO: IG: this needs to be fixed
+read_types_data_loop(_Module,NextTuple) :-
     repeat,
     ( fast_read(NextTuple) ->
-        ( % NextTuple = typedef(TypeName,TypeDef) ->
-          is_dump_auxiliary_fact(NextTuple) ->
-            assertz_fact(typedb(Module,NextTuple)),
+        ( NextTuple = mod_typedb(T,TD) ->
+            assertz_fact(mod_typedb_(T,TD)),
             fail
         ; 
             true
@@ -875,51 +820,18 @@ patch_read_reg_data_loop(Module,ForceMark) :-
 check_registry_already_read(Module) :-
     current_fact(registry_headers(Module,_)).
 
-% TODO: this is not working for incremental modular analysis
-:- pred upload_typedefs(+AbsInt,+Module) : atm * atm
-   # "Uploads into CiaoPP the types used by the registry entries of
-   @var{Module} in domain @var{AbsInt}. @var{Module} registry info must
-   be already loaded into memory. If the type information has been
-   already uploaded, it is not loaded again.".
-upload_typedefs(AbsInt,Module) :-
-    %%% uploading typedefs, and updating registry information with typedef renamings.
-    set_fact(tmp_current_module(Module)),
-    auxinfo_dump:restore_auxiliary_info(current_typedb,Dict),
-    ( % (failure-driven loop)
-      current_fact(registry(SgKey,Module,OldReg),Ref),
-        OldReg = regdata(Id,AbsInt,Sg,Call0,Succ0,SpecName,ImdgList0,Chdg0,Mark),
-        get_imdg_asubs(ImdgList0,ImdgASubsList0),
-        get_chdg_asubs(Chdg0,ChdgASubs0),
-        append(ChdgASubs0, ImdgASubsList0, DepsASubs0),
-        auxinfo_dump:imp_auxiliary_info(AbsInt,Dict,[Call0,Succ0|DepsASubs0],[Call,Succ|DepsASubs],Changed),
-        Changed == yes,
-        replace_chdg_subs(Chdg0,DepsASubs,Chdg,ImdgASubsList),
-        replace_imdg_subs(ImdgList0,ImdgASubsList,ImdgList),
-        erase(Ref),
-        NewReg = regdata(Id,AbsInt,Sg,Call,Succ,SpecName,ImdgList,Chdg,Mark),
-        assertz_fact(registry(SgKey,Module,NewReg)),
-        fail
-    ; true
-    ),
-    %%% downloading typedef renamings again, and replacing typedef/2 definitions.
-    update_current_typedefs(Module),
-    !.
-
 upload_typedefs_all_domains(Module) :-
-    upload_typedefs(_AbsInt,Module).
-
-% Returns the type definitions on backtracking from the temporary pred typedb/2 for tmp_current_module/1.
-current_typedb(TypeDef) :-
-    current_fact(tmp_current_module(Module)),
-    retract_fact(typedb(Module,TypeDef)).
+    upload_registry_to_typeslib(Module).
 
 % Given a list of imdg tuples, obtains the list of asubs for those imdg tuples.
+:- pred get_chdg_asubs(+,?).
 get_imdg_asubs([],[]).
 get_imdg_asubs(['$query'|Imdgs],Asubs) :- !,
     get_imdg_asubs(Imdgs,Asubs).
 get_imdg_asubs([(_Id,_Sg,Proj,_Base)|Imdgs],[Proj|Asubs]) :-
     get_imdg_asubs(Imdgs,Asubs).
 
+:- pred get_chdg_asubs(+,?).
 get_chdg_asubs([],[]).
 get_chdg_asubs([(_Id,_Sg,Proj)|Chdgs],[Proj|Asubs]) :-
     get_chdg_asubs(Chdgs,Asubs).
@@ -1227,12 +1139,12 @@ delayed_patch_registry_(Base,AbsInt,TopLevelBase) :-
 %% Converts module_to_analyze_parents(X) into
 %% module_to_analyze(Y,force), where Y is parent of X.
 include_parents(TopBase) :-
-    current_fact(module_to_analyze_parents(Base)),
+    module_to_analyze_parents(Base),
     ( Base == TopBase -> %% TopLevel module must be added even if it has parents.
         add_module_to_analyze(Base,force)
     ;   true
     ),
-    ( current_fact(intermodule_graph(_,Base)) ->
+    ( intermodule_graph(_,Base) ->
         current_fact(intermodule_graph(Parent,Base)),
         ( module_to_analyze_parents(Parent) ->  true
         ;
@@ -1285,9 +1197,9 @@ list_member([_|As],Bs) :-
 list_member(A,Bs) :-
     member(A,Bs).
 
-%% ********************************************************************
-%% INTERMODULAR GRAPH TRAVERSAL
-%% ********************************************************************
+%% --------------------------------------------------------------------
+:- doc(section, "Intermodular Graph Traversal").
+%% --------------------------------------------------------------------
 
 :- pred intermodule_graph(Caller,Called) 
    # "Module graph. It succeeds iff module with basename @var{Caller} imports
@@ -1556,23 +1468,23 @@ write_registry_file(Base,Module,_Verb) :-
     get_module_filename(reg,Base,RegName),
     open(RegName,write,Stream), % overwrites the previous file.
     write_registry_header(Module,Stream),
+    pplog(p_abs, ['{Writing ',RegName]),
     current_output(CO),
     set_output(Stream),
-    pplog(p_abs, ['{Writing ',RegName]),
     write_registry_file_types(Module),
     write_registry_file_loop(Module),
     set_output(CO),
     close(Stream),
     pplog(p_abs, ['}']).
 
-write_registry_file_types(Module) :-
-    current_fact(typedb(Module,TypeDef)),
-    fast_write(TypeDef),
+write_registry_file_types(_Module) :- % refine with acc aux info
+    mod_typedb(T,TypeDef),
+    fast_write(mod_typedb(T,TypeDef)),
     fail.
 write_registry_file_types(_Module).
 
 write_registry_file_loop(Module) :-
-    current_fact(registry(_,Module,Reg)),
+    registry(_,Module,Reg),
     fast_write(Reg),
     fail.
 write_registry_file_loop(_Module).
@@ -1912,26 +1824,16 @@ cp_still_reachable(SgKey, Sg, Call, ChSgKey, ChSg, ChProj, AbsInt) :-
     identical_proj(AbsInt, Sg, Call, PSg, PCall_s),
     abs_sort(AbsInt, ImpProj, ImpProj_s),
     abs_sort(AbsInt, ChProj, ChProj_s),
-    identical_proj(AbsInt, ChSg, ChProj_s, ChSg, ImpProj_s), !,
+    identical_proj(AbsInt, ChSg, ChProj_s, ChSg, ImpProj_s), !, % TODO: remove this cut?
     predkey_from_sg(ChSg,ChSgKey).
 
 remove_parent_from_reg(SgKey, RId, ParentRId) :-
     retract_fact(registry(SgKey, Mod, regdata(RId,AbsInt,Sg,Proj,Succ,Spec,Imdg,Chdg,Mark))),
     remove_RId_from_dg(Imdg, ParentRId, NImdg),
-    ( NImdg = [] ->
-        % If the CP does not exist, remove the registry and its children
-         ( member((ChRId, ChSgKey, _, _), Chdg),
-             predkey_from_sg(ChSgKey, ChKey),
-             remove_parent_from_reg(ChKey, ChRId, RId),
-             fail
-         ;
-             true
-         )
-    ;
-        NReg = regdata(RId,AbsInt,Sg,Proj,Succ,Spec,NImdg,Chdg,Mark),
-        assertz_fact(registry(SgKey, Mod, NReg))
-    ),
-    % add change so it is written in the disk registry later
+    %% do not remove entries with no parents (may be reused)
+    NReg = regdata(RId,AbsInt,Sg,Proj,Succ,Spec,NImdg,Chdg,Mark),
+    assertz_fact(registry(SgKey, Mod, NReg)),
+    % add change so it is written in the registry later
     program_module_base(Mod, ModBase),
     curr_file(_, CurrModule),
     add_changed_module(Mod,ModBase,CurrModule,imported,no).
@@ -1956,7 +1858,6 @@ add_parent_to_reg(SgKey, RId,ParentKey,ParentRId) :-
 update_children([], L,_,_,L).
 update_children([(Id,Sg,Proj)|AddCh],Ch,AbsInt,Mod,NCh) :-
     add_child(Ch,Id,Sg,Proj,ACh),
-    add_imported_typedefs(AbsInt,Mod,[Proj]),
     update_children(AddCh,ACh,AbsInt,Mod,NCh).
 
 add_child(Ch, Id, _, _, Ch) :-
@@ -1997,7 +1898,6 @@ create_registry(Key,AbsInt,CompId,Spec,Parents,RId,Reg) :-
     current_pp_flag(success_policy,SP),
     may_be_improved_mark(SP,Mark),
     Reg = regdata(RId,AbsInt,SgComp,Proj_s,Prime_s,Spec,Parents,[],Mark),
-    add_imported_typedefs(AbsInt,Mod,[Proj_s,Prime_s]),
     assertz_fact(registry(Key,Mod,Reg)).
 
 :- data reg_id/1.
@@ -2021,6 +1921,9 @@ curr_mod_entry(SgKey,AbsInt,Sg, Proj) :-
     registry(SgKey, Mod, Reg),
     Reg = regdata(_RId,AbsInt,Sg,Proj,_,_,_,_,_).
 %       check_curr_entry_id(RId).
+%% --------------------------------------------------------------------
+:- doc(section, "Intermodular Graph Update").
+%% --------------------------------------------------------------------
 
 update_GAT_entries(AbsInt, File, Mod) :-  % also creates new entries
     get_file_base(File, PBase), % be consistent with Mod
@@ -2028,7 +1931,7 @@ update_GAT_entries(AbsInt, File, Mod) :-  % also creates new entries
       current_fact(registry(ExpKey, Mod, ExpReg), Ref),
       ExpReg = regdata(RId,AbsInt,Sg,Call,_Succ,Spec,Imdg,Chdg,_Mark),
       check_curr_entry_id(RId), % checking if it was analyzed this iteration
-      fixpoint_trace('mod check reg',RId,Mod,ExpKey,Sg,Call,_),
+      fixpoint_trace('[mod] check reg',RId,Mod,ExpKey,Sg,Call,_),
         ( % several imported for the same exported
           graph_reachable(ExpKey,AbsInt,SgE,ProjE,_,Mod,ImpCId,ImpSg,ImpProj),
           abs_sort(AbsInt, ProjE, ProjE_s),
@@ -2038,7 +1941,7 @@ update_GAT_entries(AbsInt, File, Mod) :-  % also creates new entries
             program_module_base(ImMod, IBase),
             abs_sort(AbsInt, ImpProj, ImpProj_s),
             Parent = (RId,Sg,Call,PBase),
-            update_create_child_deps(ImpSg,ImpProj_s,ImpCId,IBase,AbsInt,Parent,IRId),
+            update_create_child_deps(ImpSg,ImpProj_s,ImpCId,IBase,AbsInt,Parent,IRId,Mod),
             add_to_children(IRId,ImpSg,ImpProj),
             fail
         ; true 
@@ -2046,18 +1949,17 @@ update_GAT_entries(AbsInt, File, Mod) :-  % also creates new entries
         update_registry_success(ExpKey,ExpReg,Mod,PBase,NSucc),
         % update children
         findall((IRId, ImpSg, ImpProj), retract_fact(child_to_add(IRId, ImpSg, ImpProj)), ToAddChdg),
-        fixpoint_trace('mod new child',RId,ImMod,ExpKey,Sg,Call,_),
+        fixpoint_trace('[mod] new child',RId,ImMod,ExpKey,Sg,Call,_),
         update_children(Chdg, ToAddChdg, AbsInt, Mod,NChdg),
         NewReg = regdata(RId,AbsInt,Sg,Call,NSucc,Spec,Imdg,NChdg,unmarked),
         erase(Ref),
         assertz_fact(registry(ExpKey,Mod,NewReg)),
         add_changed_module(Mod,PBase,Mod,current,no),
         fail
-    ; 
-        update_current_typedefs(Mod)
+    ; true
     ).
 
-update_create_child_deps(ImpSg,ImpProj_s,_ImpCId,_IBase,AbsInt,Parent,IRId) :-
+update_create_child_deps(ImpSg,ImpProj_s,_ImpCId,_IBase,AbsInt,Parent,IRId,_Mod) :-
     predkey_from_sg(ImpSg, ImpKey),
     current_fact(registry(ImpKey, ImMod, IReg), IRef), % imp reg
     IReg = regdata(IRId,AbsInt,ISg,ICall,ISucc,ISpec,IImdg,IChdg,IMark),
@@ -2067,18 +1969,18 @@ update_create_child_deps(ImpSg,ImpProj_s,_ImpCId,_IBase,AbsInt,Parent,IRId) :-
     erase(IRef),
     NewIReg = regdata(IRId,AbsInt,ISg,ICall,ISucc,ISpec,NIImdg,IChdg,IMark),
     assertz_fact(registry(ImpKey,ImMod,NewIReg)),
-    fixpoint_trace('mod new parent',_,ImMod,_,ImpSg,ImpProj_s,_).
-update_create_child_deps(ImpSg,ImpProj,ImpCId,IBase,AbsInt,Parent,IRId) :-
+    fixpoint_trace('[mod] new parent',_,ImMod,_,ImpSg,ImpProj_s,_).
+update_create_child_deps(ImpSg,ImpProj,ImpCId,IBase,AbsInt,Parent,IRId,Mod) :-
     predkey_from_sg(ImpSg, ImpKey),
     % this registry entry is new
     Parents = [Parent],
     create_registry(ImpKey,AbsInt,ImpCId,_,Parents,IRId,_Reg),
     get_module_from_sg(ImpSg,ImMod),
-    fixpoint_trace('mod new registry',IRId,ImMod,_,ImpSg,ImpProj,_),
-    add_imported_typedefs(AbsInt,Mod,[ImpProj]),
+    fixpoint_trace('[mod] new registry',IRId,ImMod,_,ImpSg,ImpProj,_),
+    mark_to_upload_to_registry_lasub(AbsInt,[ImpProj]),
     add_changed_module(ImMod,IBase,Mod,imported,yes).
 
-update_registry_success(SgKey,ExpReg,Mod,Base,NSucc_s) :-
+update_registry_success(SgKey,ExpReg,Mod,Base,NSucc0) :-
     unset_src_changed(Base),
     ExpReg = regdata(ERId,AbsInt,Sg,Call,OldSucc,_,Imdg,_,OldMark),
     complete(SgKey,AbsInt,SgComplete,CallComplete,[NSucc],_Id,_),
@@ -2086,15 +1988,212 @@ update_registry_success(SgKey,ExpReg,Mod,Base,NSucc_s) :-
     identical_proj(AbsInt,SgComplete,CallComplete_s,Sg,Call),
     abs_sort(AbsInt, NSucc, NSucc_s),
     current_pp_flag(success_policy,SP),
-    NReg = regdata(ERId,AbsInt,SgComplete,CallComplete,NSucc,_,_,_,_),
+    NReg = regdata(ERId,AbsInt,Sg,Call,NSucc0,_,_,_,_),
+    % using registry to avoid loading and unloading types
     ( nonvar(OldSucc), identical_proj(AbsInt,SgComplete,NSucc_s,Sg,OldSucc) ->
+        NSucc0 = OldSucc,
         ( not_valid_mark(SP,OldMark) ->
             may_be_improved_mark(SP,CallersMark),
             mark_callers_registry(Imdg,SgKey,NReg,AbsInt,Mod,CallersMark,_)
         ; true
         )
     ;
-        fixpoint_trace('mod succ changed',ERId,Mod,SgKey,Sg,NSucc_s,_),
+        NSucc0 = NSucc_s,
+        fixpoint_trace('[mod] succ changed',ERId,Mod,SgKey,Sg,NSucc_s,_),
+        mark_to_upload_to_registry_lasub(AbsInt,[NSucc_s]),
         compare_and_get_mark(SP,AbsInt,SgComplete,NSucc_s,Sg,OldSucc,CallersMark),
         mark_callers_registry(Imdg,SgKey,NReg,AbsInt,Mod,CallersMark,_)
+    ).
+
+%% --------------------------------------------------------------------
+:- doc(subsection, "Delete Unreachable Nodes in Intermodular Graph").
+%% --------------------------------------------------------------------
+%%%% TODO: Review to remove also the unreachable type definitions, use reference
+%%%% counting?
+
+:- data useful/1.
+
+clean_unreach_registry_info(AbsInt) :-
+    retractall_fact(useful(_)),
+    % find all queries and follow them
+    ( % failure-driven loop
+      registry(_,_,regdata(Id,AbsInt,_,_,_,_,Imdg,Chdg,_)), % backtracking here
+        member('$query', Imdg),
+        mark_useful_registry(Id,AbsInt,Chdg)
+    ; fail
+    ),
+    ( \+ useful(_) -> warning_message("No intermod entries found for ~w",[AbsInt]) ; true);
+    remove_useless_registries(AbsInt),
+    retractall_fact(useful(_)).
+
+mark_useful_registry(Id,_AbsInt,_Chdg) :-
+    useful(Id), !.
+mark_useful_registry(Id,AbsInt,Chdg) :-
+    assertz_fact(useful(Id)),
+    % follow children
+    ( % failure-driven loop
+      member((ChId,ChSg,_), Chdg),
+        predkey_from_sg(ChSg,ChSgKey),
+        get_registry(ChSgKey,_,regdata(ChId,AbsInt,_,_,_,_,_,ChChdg,_), _),
+        mark_useful_registry(ChId,AbsInt,ChChdg),
+        fail
+    ; true ).
+
+remove_useless_registries(AbsInt) :-
+    ( current_fact(registry(_,_,regdata(Id,AbsInt,_,_,_,_,_,_,_)),Ref),
+        \+ useful(Id),
+        erase(Ref),
+        fail
+    ; true ).
+
+%% --------------------------------------------------------------------
+:- doc(section, "Type loading/restore operations").
+%% --------------------------------------------------------------------
+
+:- use_module(library(assoc)).
+:- use_module(typeslib(typeslib), []). %% TODO: TESTING
+:- import(typeslib, [rename_typedef/3]).
+
+% To avoid name clashes in typeslib, we are going to store the types in the
+% registry with names that cannot clash with those generated automatically by
+% the library. This could be generalized for other external solvers.
+
+% We have a global counter to name the types.
+
+%% --------------------------------------------------------------------
+:- export(typedb/2).
+:- pred typedb(Module,TypeDef) :: atm * term
+   # "Data predicate to locally store information about the types used in the
+   registry of one or several modules. @var{Module} is the name of the module
+   for which the type definition @var{TypeDef} is referenced in the registry
+   file. The original definition of @var{TypeDef} may not reside in
+   @var{Module}, but in a related module.".
+:- data typedb/2.
+
+% global definitions in the modular driver
+:- data mod_typedb_/2.
+add_mod_typedb(T,D) :-
+    ( get_mod_typedb(T,_,_) -> true ;
+    assertz_fact(mod_typedb_(T,D))).
+get_mod_typedb(T,D, Ref) :-
+    current_fact(mod_typedb_(T,D), Ref).
+
+:- export(mod_typedb/2).
+mod_typedb(T,D) :-
+    mod_typedb_(T,D).
+
+enum_mod_typedb(typedef(T,D)) :-
+    mod_typedb_(T,D).
+
+:- pred registry_in_typeslib(Module) : atm
+# "Succeeds if the type definitions for module @var{Module} have been
+  already uploaded to the registry.".
+:- data registry_in_typeslib/1.
+
+:- data tmp_typedef/2.
+:- data mod_tmp_ren/2.
+:- data type_counter/1.
+type_counter(-1).
+
+next_mod_type_name(Name) :-
+    N = ~(~type_counter+1),
+    set_fact(type_counter(N)),
+    atom_number(NA,N),
+    atom_concat('mrt', NA, Name).
+
+:- pred is_modtype(+TypeName).
+is_modtype(A) :-
+    atom_concat('rt',N,A), atom_number(N,_), !, fail.
+is_modtype(A) :-
+    atom_concat('pt',N,A), atom_number(N,_), !, fail.
+is_modtype(_). % predefined types do not need renaming
+
+mark_to_upload_to_registry_lasub(AbsInt,LASub) :-
+    auxinfo_dump:acc_auxiliary_info(AbsInt,LASub).
+
+mark_to_upload_to_registry_regdata(Regdata) :-
+    Regdata = regdata(_,AbsInt,_Sg,Call,Succ,_SpecName,ImdgList,Chdg,_Mark),
+    get_imdg_asubs(ImdgList,ImdgASubsList),
+    get_chdg_asubs(Chdg,ChdgASubs),
+    append(ChdgASubs, ImdgASubsList, DepsASubs),
+    mark_to_upload_to_registry_lasub(AbsInt,[Call,Succ|DepsASubs]).
+
+store_tmp_typedef(typedef(T,D)) :-
+    assertz_fact(tmp_typedef(T,D)).
+
+:- pred upload_typeslib_to_registry/0 + not_fails#"Stores in the registry (after renaming).".
+upload_typeslib_to_registry :-
+    pplog(p_abs,'{ Uploading typeslib to registry }'),
+    %% accumulate types already accumulated by mark_to_upload_to_registry
+    auxinfo_dump:dump_auxiliary_info(store_tmp_typedef), % stores in the local type db
+    % find typedefs to rename
+    ( % failure-driven loop
+      tmp_typedef(T,_),
+        \+ is_modtype(T),
+        next_mod_type_name(RName),
+        assertz_fact(mod_tmp_ren(T,RName)),
+        fail
+    ; true
+    ),
+    findall(T-RenT,mod_tmp_ren(T,RenT), Rens0),
+    Rens0 \= [], !,
+    sort(Rens0,Rens1),
+    ord_list_to_assoc(Rens1,Rens),
+    Dict = (Rens,[]), %% Names = [] (copied from auxinfo_dump.pl), it should only affecte eterms
+    % rename new type definitions (cache the ones that don't need it)
+    ( % failure-driven loop
+      mod_tmp_ren(T,RenT),
+      retract_fact(tmp_typedef(T,TDef)), % should include !
+      rename_typedef(TDef,Rens,RenDef),
+        add_mod_typedb(RenT,RenDef),
+        fail
+    ; true),
+    % abstract subtitutions
+    ( % failure-driven loop
+      current_fact(registry(SgKey,Module,Reg), Ref),
+      Reg = regdata(Id,AbsInt,Sg,Call0,Succ0,SpecName,ImdgList0,Chdg0,Mark),
+        get_imdg_asubs(ImdgList0,ImdgASubsList0),
+        get_chdg_asubs(Chdg0,ChdgASubs0),
+        append(ChdgASubs0, ImdgASubsList0, DepsASubs0),
+        auxinfo_dump:imp_auxiliary_info(AbsInt,Dict,[Call0,Succ0|DepsASubs0],[Call,Succ|DepsASubs],Changed),
+        Changed == yes,
+        replace_chdg_subs(Chdg0,DepsASubs,Chdg,ImdgASubsList),
+        replace_imdg_subs(ImdgList0,ImdgASubsList,ImdgList),
+        erase(Ref),
+        NewReg = regdata(Id,AbsInt,Sg,Call,Succ,SpecName,ImdgList,Chdg,Mark),
+        assertz_fact(registry(SgKey,Module,NewReg)),
+        fail
+    ; true
+    ),
+    retractall_fact(tmp_typedef(_,_)),
+    retractall_fact(mod_tmp_ren(_,_)).
+upload_typeslib_to_registry.
+
+:- pred upload_registry_to_typeslib(Module) + not_fails #"Uploads in typeslib the necessary
+types for analyzing @var{Module}.".
+upload_registry_to_typeslib(Module) :-
+    \+ registry_in_typeslib(Module),
+    pplog(p_abs,['{ Uploading registry to typeslib for ', Module, '}']),
+    auxinfo_dump:restore_auxiliary_info(enum_mod_typedb,DumpDict),
+    DumpDict = (TypesDict, _Names), % actually, Names = [] always
+    \+ empty_assoc(TypesDict),
+    % renaming shouldn't be necessary!!!, make sure of this
+    ( % (failure-driven loop)
+      current_fact(registry(SgKey,Module,OldReg),Ref),
+        OldReg = regdata(Id,AbsInt,Sg,Call0,Succ0,SpecName,ImdgList0,Chdg0,Mark),
+        get_imdg_asubs(ImdgList0,ImdgASubsList0),
+        get_chdg_asubs(Chdg0,ChdgASubs0),
+        append(ChdgASubs0, ImdgASubsList0, DepsASubs0),
+        auxinfo_dump:imp_auxiliary_info(AbsInt,DumpDict,[Call0,Succ0|DepsASubs0],[Call,Succ|DepsASubs],Changed),
+        Changed == yes,
+        replace_chdg_subs(Chdg0,DepsASubs,Chdg,ImdgASubsList),
+        replace_imdg_subs(ImdgList0,ImdgASubsList,ImdgList),
+        erase(Ref),
+        NewReg = regdata(Id,AbsInt,Sg,Call,Succ,SpecName,ImdgList,Chdg,Mark),
+        assertz_fact(registry(SgKey,Module,NewReg)),
+        fail
+    ).
+upload_registry_to_typeslib(Module) :-
+    ( registry_in_typeslib(Module) -> true
+    ; assertz_fact(registry_in_typeslib(Module))
     ).
