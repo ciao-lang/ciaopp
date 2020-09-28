@@ -6,7 +6,6 @@
 %:- use_module(library(compiler/c_itf)).                                       % it uses build_foreign_interface
 :- use_module(library(compiler/translation)).
 :- use_module(library(compiler/pl2wam)).
-:- use_module(library(compiler/compressed_bytecode)).
 %:- use_module(library(compiler/build_foreign_interface)).            % it uses assrt_lib
 :- use_module(library(messages)).
 :- use_module(library(assertions/c_itf_props)).
