@@ -63,6 +63,7 @@
 
 :- use_module(domain(s_grshfr), [new1_gvars/4, projected_gvars/3]).
 
+:- use_module(library(hiordlib), [filter/3, foldl/4]).
 :- use_module(library(sets), 
     [ insert/3, 
       merge/3,
@@ -766,6 +767,10 @@ share_input_interface(indep(X),perfect,(Gv,Sh,I0),(Gv,Sh,I)):-
     nonvar(X),
     sort_list_of_lists(X,I1),
     myappend(I1,I0,I).
+share_input_interface(member(A,B),perfect,S0,S1) :- var(A), ground(B), !,
+    share_input_interface(ground(A),perfect,S0,S1).
+share_input_interface(=(A,B),perfect,S0,S) :- var(A), ground(B), !,
+    share_input_interface(ground(A),perfect,S0,S).
 share_input_interface(regtype(E),approx,S0,S):-
     eterms_input_interface(regtype(E),perfect,[],[NonPT]),
     functor(NonPT,T,1),
