@@ -2,6 +2,7 @@
     [ get_info/5,
       get_absint/4,
       type2measure/3,
+      type2size/4,
       type_holds/3,
       type_fails/3,
       get_memo_lub/5,
@@ -17,7 +18,11 @@
 :- use_module(ciaopp(infer/vartypes),  [get_vartype/4]).
 
 :- use_module(typeslib(typeslib), [
-    dz_type_included/2, insert_rule/2, new_type_symbol/1]).
+    dz_type_included/2,
+    get_type_definition/2,
+    insert_rule/2,
+    new_type_symbol/1
+]).
 :- use_module(ciaopp(plai/domains), 
     [abs_sort/3,asub_to_info/5,call_to_entry/10,
      compute_lub/3, %do_compute_lub/3,
@@ -369,21 +374,20 @@ type_fails(K,Goal,TypeList):-
     ( K == call -> TypeList0=Call ; K == succ, TypeList0=Succ ),
     type_assignments_incompatible(TypeList0, Goal0, TypeList, Goal).
 
+% ------------------------------------------------------------------------
+%! # Type to Info
+%
+% Predicates to obtain size/measures info about types.
+%
 
-%------------------------------------------------------------------------%
-% translate types to measures
-
-% untestable type2measure/3 EMM
-type2measure(Goal0,Typings0,Measures):-
+type2info(Goal0,Typings0,A,Goal):-
     % TODO: ugly, load this type somewhere else
     %( get_type_rule('$$list',_) -> true
     %; insert_rule('$$list',[[],[term|'$$list']]) ),
     insert_rule('$$list',[[],[term|'$$list']]), % TODO: insert_rule/2 already checks if type is defined twice (JFMC)
-    %
     copy_term((Goal0,Typings0),(Goal,Typings)),
     type_names(Typings),
-    functor(Goal,_,A),
-    type2measure_(0,A,Goal,Measures).
+    functor(Goal,_,A).
 
 type_names([T|Ts]):-
     (type_of_goal(builtin(BT),T) -> true ; BT = T),
@@ -392,10 +396,73 @@ type_names([T|Ts]):-
     type_names(Ts).
 type_names([]).
 
-type2measure_(A,A,_Type,[]).
-type2measure_(N,A,Type,Measures):- N < A, !,
+type2info_(N,A,Type,N1,T):- N < A, !,
     N1 is N+1,
-    arg(N1,Type,T),
+    arg(N1,Type,T).
+
+%! ## Type to Sizes
+%
+% Predicates to obtain size information from types. If they are unable to do so,
+% a measure is obtained instead.
+%
+
+:- use_module(library(hiordlib), [foldl/4, maplist/3]).
+
+:- use_module(resources(size_res/ground_size_res), [ground_term_size/3]).
+
+type2size(Goal0,Approx,Typings0,Sizes):-
+    type2info(Goal0,Typings0,A,Goal),
+    type2size_(0,A,Approx,Goal,Sizes).
+
+type2size_(A,A,_Approx,_Type,[]).
+type2size_(N,A,Approx,Type,Sizes):-
+    type2info_(N,A,Type,N1,T),
+    Sizes=[S|Sizes0],
+    type2size2(T,Approx,S),
+    type2size_(N1,A,Approx,Type,Sizes0).
+
+type2size2(T,Approx,S):- type2size2_(T,Approx,S), !.
+type2size2(T,_Approx,M):- type2measure2_(T,M).
+
+type2size2_(T,Approx,S):-
+    get_type_definition(T,Def),
+    Def \= [bot],
+    type2size_terms(Approx,Def,S).
+
+type2size_terms(Approx,Def,S):-
+    maplist(terms_to_sizes(_),Def,Sizes), !,
+    size_aggregator(Approx,Aggregator,V0),
+    foldl(Aggregator,Sizes,V0,S).
+
+terms_to_sizes(int,A,S):- num(A),
+    ground_term_size(int,A,S).
+terms_to_sizes(length,A,S):- list(A),
+    ground_term_size(length,A,S).
+terms_to_sizes(size,A,S):-
+    ground_term_size(size,A,S).
+
+size_aggregator(ub,max,-0.Inf).
+size_aggregator(lb,min,0.Inf).
+
+max(A,B,A):- A > B, !.
+max(_A,B,B).
+
+min(A,B,A):- A < B, !.
+min(_A,B,B).
+
+%! ## Type to Measures
+%
+% Predicates to obtain measure info from types.
+%
+
+% untestable type2measure/3 EMM
+type2measure(Goal0,Typings0,Measures):-
+    type2info(Goal0,Typings0,A,Goal),
+    type2measure_(0,A,Goal,Measures).
+
+type2measure_(A,A,_Type,[]).
+type2measure_(N,A,Type,Measures):-
+    type2info_(N,A,Type,N1,T),
     Measures=[M|Measures0],
     type2measure2(T,M),
     type2measure_(N1,A,Type,Measures0).
