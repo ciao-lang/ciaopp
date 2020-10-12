@@ -30,14 +30,15 @@ get_modes_assrt(_,_) :- fail. % (default)
 :- use_module(library(assertions/assrt_lib), [assertion_body/7]).
 :- use_module(ciaopp(p_unit/clause_db)).
 :- use_module(ciaopp(p_unit/assrt_db)).
-:- use_module(library(hiordlib), [maplist/3, maplist/4]).
+:- use_module(library(hiordlib), [foldl/4, foldl/5, maplist/3, maplist/4]).
 :- use_module(ciaopp(preprocess_flags), [current_pp_flag/2]).
 :- use_module(ciaopp(ciaopp_log), [pplog/2]).
 
 :- use_module(engine(internals), [module_concat/3]).
 :- use_module(engine(runtime_control), [module_split/3]).
+:- use_module(library(dict), [dic_get/3, dic_lookup/4, dic_replace/4]).
 :- use_module(library(lists),           [member/2, append/3, length/2]).
-:- use_module(library(sets),            [ord_member/2]).
+:- use_module(library(sets),            [insert/3, ord_member/2]).
 :- use_module(library(sort),            [sort/2]).
 :- use_module(library(terms_vars),      [varset/2]).
 :- use_module(library(vndict),          [create_dict/2]).
@@ -99,6 +100,16 @@ gather_entry_modes(Cls) :-
     fail.
 gather_entry_modes(_).
 
+% ---------------------------------------------------------------------------
+%! ## Dead Code Removal
+%
+% TODO: This is not the ideal solution, as analysis can be easily tricked.
+%         Read information from completes in order to infer reachability.
+%
+% We need this to avoid resources analyzing unreachable code, which does not
+% count with information from previous analyses and would cause failure. This
+% applies to both unreachable predicates and clauses.
+
 remove_dead_code(Cls0, Ds0, Cls, Ds) :-
     (source_clause(_, directive(module(_, Exports0, _)), _) -> true ; true),
     (
@@ -112,88 +123,115 @@ remove_dead_code(Cls0, Ds0, Cls, Ds) :-
         maplist(([Module] -> ''(F0/A, F/A) :- module_concat(Module,F0,F)),
                 Exports0, 
                 Exports1),
-        clauses_to_deps(Cls0, Deps0, []),
-        remove_deps(Exports, Deps0, Deps),
-        deps_to_prednames(Deps, Preds0),
-        sort(Preds0, Preds),
-        remove_clauses(Preds, Cls0, Ds0, Cls, Ds),
+        remove_dead_clauses(Exports,Cls0,Ds0,Cls,Ds,Removed),
         (
-            Preds \== [] ->
-            pplog(infer, ['Removing unreachable predicates: ', ''(Preds)])
+            Removed \== [] ->
+                pplog(infer,
+                      ['Unreachable predicates and clauses: ', ''(Removed)])
         ;
             true
         )
     ).
 
-deps_to_prednames([],               []).
-deps_to_prednames([dep(A, B)|Deps], [A, B|Preds]) :-
-    deps_to_prednames(Deps, Preds).
+remove_dead_clauses(Exports0,Cls0,Ds0,Cls,Ds,Removed) :-
+    remove_dups(Exports0,Exports),
+    init_used(Cls0,Ds0,Used),
+    add_exports_to_worklist(Used,Exports,WorkList),
+    mark_all(WorkList,Used),
+    sweep(Used,Cls,Ds,Removed).
 
-remove_clauses([],           Cls,  Ds,  Cls, Ds).
-remove_clauses([Pred|Preds], Cls0, Ds0, Cls, Ds) :-
-    remove_pred(Cls0, Ds0, Pred, Cls1, Ds1),
-    remove_clauses(Preds, Cls1, Ds1, Cls, Ds).
+remove_dups(L0,L1) :-
+    foldl(insert_set,L0,[],L1).
 
-remove_pred([],                [],      _,   [],      []).
-remove_pred([Clause|Program0], [D|Ds0], F/A, Program, Ds) :-
-    (
-        is_clause(Clause, Head, _, _),
-        functor(Head, F, A) ->
-        Program = Program1,
-        Ds = Ds1
+insert_set(El,L0,L1) :-
+    insert(L0,El,L1).
+
+init_used(Cls0,Ds0,Used) :-
+    foldl(init_used_,Cls0,Ds0,_,Used).
+
+init_used_(Cl,D,Used0,Used1) :-
+    clause_to_pred(Cl,Pred),
+    record_used(Used0,Pred,Cl-D-_M,Used1).
+
+clause_to_pred(Cl,F/A) :-
+    is_clause(Cl,Head,_,_),
+    functor(Head,F,A).
+
+record_used(Used0,Pred,V,Used1) :-
+    dic_lookup(Used0,Pred,L,O),
+    ( O = old ->
+        dic_replace(Used0,Pred,[V|L],Used1)
     ;
-        Program = [Clause|Program1],
-        Ds = [D|Ds1]
-    ),
-    remove_pred(Program0, Ds0, F/A, Program1, Ds1).
+        Used1 = Used0,
+        L = [V] ).
 
-clauses_to_deps([],               Deps,  Deps).
-clauses_to_deps([Clause|Program], Deps0, Deps) :-
-    clause_to_dep(Clause, Deps0, Deps1),
-    clauses_to_deps(Program, Deps1, Deps).
+add_exports_to_worklist(Used,Exports,WorkList) :-
+    foldl(add_export_to_worklist(Used),Exports,[],WorkList).
 
-clause_to_dep(Clause, Deps0, Deps) :-
-    is_clause(Clause, Head, Body, _) ->
-    functor(Head, F, A),
-    body_to_dep(Body, F, A, Deps0, Deps)
+add_export_to_worklist(Used,Export,WorkList0,WorkList1) :-
+    mark_export(Used,Export,Bodies),
+    append(Bodies,WorkList0,WorkList1).
+
+mark_export(Used,Export,Bodies) :-
+    dic_get(Used,Export,L),
+    maplist(mark,L,Bodies).
+
+mark(Cl-_-used,Body) :-
+    is_clause(Cl,_,Body,_).
+
+mark_all([],_).
+mark_all([Body|WorkList0],Used) :-
+    mark_body(Body,Used,WorkList0,WorkList1),
+    mark_all(WorkList1,Used).
+
+mark_body((LitPPKey, Body), Used, WorkList0, WorkList2) :-
+    mark_lit(LitPPKey, Used, WorkList0, WorkList1),
+    mark_body(Body,Used,WorkList1,WorkList2).
+mark_body((LitPPKey), Used, WorkList0, WorkList1) :-
+    mark_lit(LitPPKey, Used, WorkList0, WorkList1).
+
+mark_lit(LitPPKey, Used, WorkList0, WorkList1) :-
+    lit_ppkey(LitPPKey, Lit, _),
+    functor(Lit, F, A),
+    ( dic_get(Used,F/A,L) ->
+        foldl(mark_applicable_clause(Lit),L,WorkList0,WorkList1)
     ;
-    Deps = Deps0.
+        WorkList1 = WorkList0 ).
 
-body_to_dep((LitPPKey, Body), F, A, [dep(F/A, FL/AL)|Deps0], Deps) :-
-    !,
-    lit_ppkey(LitPPKey, Lit, _PPKey),
-    functor(Lit, FL, AL),
-    body_to_dep(Body, F, A, Deps0, Deps).
-body_to_dep(LitPPKey, F, A, [dep(F/A, FL/AL)|Deps], Deps) :-
-    lit_ppkey(LitPPKey, Lit, _PPKey),
-    functor(Lit, FL, AL).
-
-:- export(remove_deps/3).
-remove_deps([],               Dependencies,  Dependencies).
-remove_deps([Export|Exports], Dependencies0, Dependencies) :-
-    remove_using_dep(Dependencies0, Export, Dependencies2, Useds0,
-        Exports),
-    sort(Useds0, Useds),
-    remove_deps(Useds, Dependencies2, Dependencies).
-
-remove_using_dep([], _, [], Useds, Useds).
-remove_using_dep([Dependency|Dependencies0], Export, Dependencies, Useds0,
-        Useds) :-
-    (
-        Dependency = dep(_, Export) ->
-        Dependencies = Dependencies1,
-        Useds0 = Useds1
+mark_applicable_clause(Lit,Cl-D-M,WorkList0,WorkList1) :-
+    ( to_mark(Lit,Cl,M,Body) ->
+        mark(Cl-D-M,_),
+        WorkList1 = [Body|WorkList0]
     ;
-        Dependency = dep(Export, Used) ->
-        Dependencies = Dependencies1,
-        Useds0 = [Used|Useds1]
-    ;
-        Dependencies = [Dependency|Dependencies1],
-        Useds0 = Useds1
-    ),
-    remove_using_dep(Dependencies0, Export, Dependencies1, Useds1, Useds).
+        WorkList1 = WorkList0 ).
 
-%--------------------------------------------------------------------------
+to_mark(Lit,Cl,M,Body) :-
+    var(M),
+    is_clause(Cl,Head,Body,_),
+    applicable_clause(Head,Lit).
+
+sweep(Used,Cls,Ds,Removed) :-
+    sweep_(Used,[],[],[],Cls,Ds,Removed).
+
+sweep_(D,Cls,Ds,Removed,Cls,Ds,Removed) :- var(D), !.
+sweep_(dic(F/A,V,L,R),Cls0,Ds0,Removed0,Cls,Ds,Removed) :-
+    sweep_(L,Cls0,Ds0,Removed0,Cls1,Ds1,Removed1),
+    foldl(sweep_clause,V,Cls1-Ds1-[],Cls2-Ds2-RemovedX),
+    ( length(RemovedX,Len), length(V,Len) ->
+        atom_number(AA,A),
+        atom_concat([F, /, AA], K),
+        Removed2 = [K|Removed1]
+    ;
+        append(RemovedX,Removed1,Removed2) ),
+    sweep_(R,Cls2,Ds2,Removed2,Cls,Ds,Removed).
+
+sweep_clause(Cl-_D-M,Cls0-Ds0-Removed0,Cls0-Ds0-[ClId|Removed0]) :- var(M), !,
+    is_clause(Cl,_,_,ClId).
+sweep_clause(Cl-D-_,Cls0-Ds0-Removed0,[Cl|Cls0]-[D|Ds0]-Removed0).
+
+applicable_clause(Head0, Head1) :- \+ \+ Head0 = Head1.
+
+% ---------------------------------------------------------------------------
 % First entry point: collect mode info in the database
 
 gather_modes_info([],           []).

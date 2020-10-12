@@ -5,6 +5,7 @@
 
 :- use_module(engine(io_basic)).
 :- use_module(library(aggregates), [findall/3]).
+:- use_module(library(hiordlib),   [foldl/5]).
 :- use_module(library(lists),      [append/3]).
 :- use_module(library(sets),       [ord_subtract/3]).
 :- use_module(library(sort)).
@@ -388,8 +389,34 @@ info_format(pl,AbsInt,ASub,Gv,OutASub,Comp):-
 
 assert_pred_info(Goal,Call,Succs,Comp):-
     curr_file(_,M),
-    assertion_body(Goal,[],Call,Succs,Comp,[],Body),
-    add_assertion_read(Goal,M,true,pred,Body,no,no,0,0).
+    normalize_goal(Goal,Call,NGoal,NCall),
+    assertion_body(NGoal,[],NCall,Succs,Comp,[],Body),
+    add_assertion_read(NGoal,M,true,pred,Body,no,no,0,0).
+
+% ---------------------------------------------------------------------------
+%! ## Assertion Goal Normalization
+%
+%  `add_assertion_read/9` expects normalized assertions, so they are normalized
+%  here. In order to do so, they are transformed in a way such that every nonvar
+%  term `nv` in the head of the assertion is substituted by a variable `_A` and
+%  the property `_A = nv` is inserted in the calls field.
+%
+%  e.g. normalize_goal(( :- f(a)  : (...)         => ... ),
+%                      ( :- f(_A) : (_A = a, ...) => ... )).
+%
+
+normalize_goal(Goal,Call,NGoal,NCall) :-
+    functor(Goal,F,A),
+    functor(NGoal,F,A),
+    Goal =.. [F|Terms],
+    NGoal =.. [F|NTerms],
+    foldl(normalize_term,Terms,NTerms,NCall,Call).
+
+normalize_term(Goal,Goal,Call,Call) :- var(Goal), !.
+normalize_term(Goal,NGoal,NCall,Call) :-
+    NCall = [( NGoal = Goal )|Call].
+
+% ---------------------------------------------------------------------------
 
 %% Recorda info to be printed for memo_table
 %% There may be more than one for each Key
