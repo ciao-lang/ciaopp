@@ -2,7 +2,9 @@
     [ get_info/5,
       get_absint/4,
       type2measure/3,
-      type2size/4,
+      type2measure2_/2,      
+      type2info/4,
+      type2info_/5,      
       type_holds/3,
       type_fails/3,
       get_memo_lub/5,
@@ -399,56 +401,6 @@ type_names([]).
 type2info_(N,A,Type,N1,T):- N < A, !,
     N1 is N+1,
     arg(N1,Type,T).
-
-%! ## Type to Sizes
-%
-% Predicates to obtain size information from types. If they are unable to do so,
-% a measure is obtained instead.
-%
-
-:- use_module(library(hiordlib), [foldl/4, maplist/3]).
-
-:- use_module(resources(size_res/ground_size_res), [ground_term_size/3]).
-
-type2size(Goal0,Approx,Typings0,Sizes):-
-    type2info(Goal0,Typings0,A,Goal),
-    type2size_(0,A,Approx,Goal,Sizes).
-
-type2size_(A,A,_Approx,_Type,[]).
-type2size_(N,A,Approx,Type,Sizes):-
-    type2info_(N,A,Type,N1,T),
-    Sizes=[S|Sizes0],
-    type2size2(T,Approx,S),
-    type2size_(N1,A,Approx,Type,Sizes0).
-
-type2size2(T,Approx,S):- type2size2_(T,Approx,S), !.
-type2size2(T,_Approx,M):- type2measure2_(T,M).
-
-type2size2_(T,Approx,S):-
-    get_type_definition(T,Def),
-    Def \= [bot],
-    type2size_terms(Approx,Def,S).
-
-type2size_terms(Approx,Def,S):-
-    maplist(terms_to_sizes(_),Def,Sizes), !,
-    size_aggregator(Approx,Aggregator,V0),
-    foldl(Aggregator,Sizes,V0,S).
-
-terms_to_sizes(int,A,S):- num(A),
-    ground_term_size(int,A,S).
-terms_to_sizes(length,A,S):- list(A),
-    ground_term_size(length,A,S).
-terms_to_sizes(size,A,S):-
-    ground_term_size(size,A,S).
-
-size_aggregator(ub,max,-0.Inf).
-size_aggregator(lb,min,0.Inf).
-
-max(A,B,A):- A > B, !.
-max(_A,B,B).
-
-min(A,B,A):- A < B, !.
-min(_A,B,B).
 
 %! ## Type to Measures
 %
