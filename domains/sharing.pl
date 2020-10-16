@@ -63,7 +63,6 @@
 
 :- use_module(domain(s_grshfr), [new1_gvars/4, projected_gvars/3]).
 
-:- use_module(library(hiordlib), [filter/3, foldl/4]).
 :- use_module(library(sets), 
     [ insert/3, 
       merge/3,
