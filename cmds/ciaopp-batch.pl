@@ -44,7 +44,7 @@ main(Args) :-
     process_opts(Args,Paths,Opts), !,
     analysis_start(Paths, Opts).
 main(_) :-
-    format('Usage: ciaopp-batch [-t T --inc=none|module|clause] <Domain> <Path> [Paths]~n',[]).
+    format('Usage: ciaopp-batch [-t T --inc=no|module|clause] <Domain> <Path> [Paths]~n',[]).
 
 process_opts(Args0,Paths,Opts) :-
     ( member('--inc=module', Args0) ->
