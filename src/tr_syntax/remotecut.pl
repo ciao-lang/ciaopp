@@ -5,7 +5,7 @@
 :- use_module(ciaopp(p_unit),   [new_predicate/3]).
 :- use_module(ciaopp(p_unit/clause_db), [clause_locator/2, add_clause_locator/2]).
 
-:- use_module(ciaopp(tr_syntax/meta_call), [meta_call/1, peel_meta_call/4, build_meta_call/4]).
+:- use_module(ciaopp(tr_syntax/meta_call), [meta_call/1, process_meta_call/5]).
 :- use_module(spec(s_simpspec),  [make_atom/2]).
 
 :- use_module(library(lists),    [member/2, append/3]).
@@ -116,9 +116,7 @@ remote_cut((P->Q),Switch,Var,(P->S)):- !,
     put_cut_to(Q,Switch,Var,S).
 remote_cut(P,Switch,Var,P1):-
     meta_call(P), !,
-    peel_meta_call(P,Bs,_,Args),
-    functor(P,F,A),
-    build_meta_call(F/A,NBs,Args,P1),
+    process_meta_call(P,Bs,_,NBs,P1),
     remote_cut_meta_list(Bs,Switch,Var,NBs).
 remote_cut(P,_,_,P).
 

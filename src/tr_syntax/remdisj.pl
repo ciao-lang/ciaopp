@@ -2,11 +2,11 @@
 
 :- use_module(ciaopp(p_unit/program_keys), [clause_key/2, last_clause/1]).
 :- use_module(ciaopp(p_unit), [new_predicate/3]).
-:- use_module(ciaopp(tr_syntax/meta_call), [meta_call/1, peel_meta_call/4, build_meta_call/4]).
+:- use_module(ciaopp(tr_syntax/meta_call), [meta_call/1, process_meta_call/5]).
 :- use_module(spec(s_simpspec), [make_atom/2]).
 :- use_module(ciaopp(p_unit/clause_db), [clause_locator/2, add_clause_locator/2]).
 
-:- use_module(library(lists), [length/2]).
+:- use_module(library(lists), [length/2, append/3]).
 :- use_module(library(sets), [merge/3, ord_intersection/3, ord_subtract/3]).
 :- use_module(library(terms_vars), [varset/2]).
 :- use_module(library(vndict), [prune_dict/3, sort_dict/2]).
@@ -99,6 +99,13 @@ remove_disj_from_body(P,_,_,call(P),_,In,In,Cls,Cls,Ds,Ds,_):-
 remove_disj_from_body('hiord_rt:call'(P),Rest,D,NSg,Id,In,Out,Cls,TCls,Ds,TDs,Loc):-
     nonvar(P), !, % TODO: keep sync with mexpand semantics
     remove_disj_from_body(P,Rest,D,NSg,Id,In,Out,Cls,TCls,Ds,TDs,Loc).
+remove_disj_from_body('hiord_rt:call'(P,Args),Rest,D,NSg,Id,In,Out,Cls,TCls,Ds,TDs,Loc):-
+    nonvar(P), !, % TODO: keep sync with mexpand semantics
+    P =.. PredL,
+    Args =.. [_| ArgsL],
+    append(PredL,ArgsL,FullPL),
+    FullP =.. FullPL,
+    remove_disj_from_body(FullP,Rest,D,NSg,Id,In,Out,Cls,TCls,Ds,TDs,Loc).
 remove_disj_from_body(\+(P),Rest,D,NSg,Id,In,Out,Cls,TCls,Ds,TDs,Loc):- !,
     remove_disj_from_body(((P -> fail);true),Rest,D,NSg,Id,In,Out,Cls,TCls,Ds,TDs,Loc).
 remove_disj_from_body(((P -> Q);R),Rest,D,NSg,Id,In,Out,Cls,TCls,Ds,TDs,Loc):- !,
@@ -163,9 +170,7 @@ remove_disj_from_body((P,Q),Rest,D,Plainconj,Id,In,Out,Cls,TCls,Ds,TDs,Loc):- !,
 %%      add_ppconj(P1,Q1,Plainconj).
 remove_disj_from_body(P,Rest,D,P1,Id,In,Out,Cls,TCls,Ds,TDs,Loc):-
     meta_call(P), !,
-    peel_meta_call(P,Bs,NoGList,Args),
-    functor(P,F,A),
-    build_meta_call(F/A,NBs,Args,P1),
+    process_meta_call(P,Bs,NoGList,NBs,P1),
     remove_disj_from_meta_list(Bs,(Rest,Bs,NoGList),D,NBs,Id,In,Out,Cls,TCls,Ds,TDs,Loc).
 remove_disj_from_body(P,_,_,P,_,In,In,Cls,Cls,Ds,Ds,_):- !.  %true,!,etc
 

@@ -56,6 +56,10 @@ type_of_goal(metapred(Type, Meta), Goal) :-
     -> true
     ; Type=Goal
     ).
+type_of_goal(metapred(Type, Meta), 'hiord_rt:call'(G,As)) :- !,
+    functor(As,_,N),
+    Meta = 'hiord_rt:call'(pred(N), ?), % TODO: keep SYNC with meta_call.pl
+    Type = G.
 % the one introduced by prepare_ai_output:
 type_of_goal(metapred(true(G), true(goal)), true(G)).
 % ACC: Neccesary for parallelizers
