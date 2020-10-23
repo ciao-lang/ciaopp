@@ -4,6 +4,10 @@
 
 :- doc(stability, alpha).
 
+:- doc(module,"This module performs the syntactic SCC computation of the
+program. It also annotates each literal with information about recursivity, meta
+calls, and, optionally, generates entries automatically for the meta calls.").
+
 :- use_module(library(sets), [insert/3, merge/3]).
 :- use_module(library(lists), [member/2, intersection/3, append/3]).
 :- use_module(library(sort), [sort/2]).
@@ -88,7 +92,7 @@ tarjan(Program,(Calls,RC)):-
 :- use_module(ciaopp(plai/program_tarjan)).
 % imperative tarjan
 tarjan(Program,_):-
-    program_tarjan(Program).
+    program_tarjan(Program). % TODO: entries not supported in this implementation
 
 :- endif.
 
@@ -109,40 +113,43 @@ clause_pred(directive(_),[],Ps,Ps).
 clause_pred(clause(H,B),C,TempPs,Ps1):-
     functor(H,N,A),
     insert(TempPs,N/A,Ps1),
-    bodylits(B,[],U_C),
+    get_module_from_sg(H,M),
+    bodylits(B,M,[],U_C),
     sort(U_C,C).
 
-bodylits((B,Bs),S,S2):- !,
-    bodylits(B,S,S1),
-    bodylits(Bs,S1,S2).
-bodylits(G:_,S,S1):-
-  type_of_goal(metapred(_Type,_Meta),G), !,
+bodylits((B,Bs),M,S,S2):- !,
+    bodylits(B,M,S,S1),
+    bodylits(Bs,M,S1,S2).
+bodylits(G:_,M,S,S1):-
+    type_of_goal(metapred(Type,Meta),G), !,
+    % TODO: we do not distinguish between primitive_meta_predicate and meta_predicate
     functor(G,T,A),
-  S1 = [T/A|S2],
-    meta_calls(G,A,S,S2).
-  % TODO: not the optimal solution, working on a better one (IG)
-bodylits(G:_,S,S1):-
+    create_entries(G,Type,Meta,M),
+    S1 = [T/A|S2],
+    meta_calls(G,A,M,S,S2).
+% TODO: not the optimal solution, working on a better one (IG)
+bodylits(G:_,_M,S,S1):-
     type_of_goal(impl_defined,G), !,
     S1 = S.
-bodylits(G:_,S,S1):-
+bodylits(G:_,_M,S,S1):-
     type_of_goal(wam_builtin,G), !,
     S1 = S.
-bodylits(G:_,S,[T/N|S]):-  
+bodylits(G:_,_M,S,[T/N|S]):-
     functor(G,T,N).
-bodylits(!,S,S).
-bodylits(true,S,S).
+bodylits(!,_,S,S).
+bodylits(true,_,S,S).
 
-meta_calls(_G,0,S,S) :- !.
-meta_calls(G,A,S,S2):-
+meta_calls(_G,0,_M,S,S) :- !.
+meta_calls(G,A,M,S,S2):-
     A > 0,
     arg(A,G,GA),
     ( nonvar(GA),
       GA='$'(Term,Body,goal)
     -> ( var(Term) -> S1 = S
-       ; bodylits(Body,S,S1) )
+       ; bodylits(Body,M,S,S1) )
      ; S1 = S ),
     A1 is A-1,
-    meta_calls(G,A1,S1,S2).
+    meta_calls(G,A1,M,S1,S2).
 
 %-------------------------------------------------------------------------
 % strong_connected_components(+,+,+,-,-) 
@@ -452,3 +459,63 @@ is_rec_clause(L,_,_,r,NRPs,RPs) :-
     current_pp_flag(incremental, on), !,
     append(L, RPs, NRPs).
 is_rec_clause([_|_],N,A,r,[N/A|RPs],RPs).
+
+:- doc(section, "Preproc meta calls").
+
+:- use_module(ciaopp(p_unit/itf_db)).
+:- use_module(ciaopp(p_unit/assrt_db)).
+:- use_module(ciaopp(p_unit/p_abs), [get_module_from_sg/2]).
+% Add entries for all the calls to meta_predicates
+
+:- pred create_entries(+Goal,+Type,+Meta,+Mod) #"@var{Meta} is the info in the
+@tt{meta_predicate} directive. ".
+create_entries(_Goal,_Type,_Meta,_Mod) :-
+    current_pp_flag(auto_entries_meta, off), !.
+create_entries(Goal,Type,Meta,Mod) :-
+    Goal =.. [_|GArgs],
+    Type =.. [_|TArgs],
+    Meta =.. [_|MArgs],
+    create_entries_args(GArgs,TArgs,MArgs,Mod).
+
+% TODO: addmodule annotations are not handled because they are not currently
+% supported in ciaopp
+create_entries_args([],[],[],_).
+create_entries_args([GA|GArgs],[TA|TArgs],[MA|MArgs],M) :-
+    create_entry_arg(MA,GA,TA,M),
+    create_entries_args(GArgs,TArgs,MArgs,M).
+
+create_entry_arg('?',_,_,_) :- !. % no meta
+create_entry_arg(_,'$'(_Pred,Goal:LitKey,_),_TA,_ClMod) :-
+    nonvar(Goal), !,
+    get_module_from_sg(Goal,M),
+    add_new_entry(Goal,M,LitKey).
+create_entry_arg(pred(_N),'$'(Goal,Goal:LitKey,_),_TA,ClMod) :-
+    % nothing can be assumed because of predicate abstractions
+    ( % (failure-driven loop)
+      visible(G,ClMod),
+        get_module_from_sg(G,M), % filter here loaded modules
+        add_new_entry(G,M,LitKey),
+        fail
+    ;
+        true
+    ).
+create_entry_arg(goal,'$'(Goal,Goal:LitKey,goal),_,ClMod):-
+    ( % (failure-driven loop)
+      visible(G,ClMod), % what if there is more than one module loaded?
+       % visible is defines, imports, or multifile.
+        get_module_from_sg(G,M), % filter here loadable modules, i.e.,
+        add_new_entry(G,M,LitKey),
+        fail
+    ; true).
+
+% visible definition is wrong in itf_db.pl
+visible(G,Mod) :-
+    current_itf(imports,G,Mod).
+visible(G,Mod) :-
+    current_itf(defines_pred,G,Mod).
+visible(G,Mod) :- % TODO: why Mod here?
+    current_itf(multifile,G,Mod).
+
+add_new_entry(G,M,LitKey) :-
+    atom_codes(LitKey,LitKeyS),
+    add_assertion_read(G,M,true,entry,'::'(G,'=>'([]:[],[]+[]#"Possible meta call at: "||LitKeyS)),[],'',0,0).

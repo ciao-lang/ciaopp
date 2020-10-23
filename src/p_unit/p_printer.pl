@@ -355,6 +355,7 @@ print_assrt(As, S) :-
         succ => Succ,
         comp => Comp,
         dic => Dic,
+        % comment => UserComment,
         fromwhere => From
     },
     ( (var(Head)) ->
@@ -362,6 +363,7 @@ print_assrt(As, S) :-
     ;
         % --- inverse rewrite program
         assertion_body(Head, Compat, Call, Succ, Comp, [], Body),
+        % TODO: printing discards the comments of all assertions
         transform_head(Head, M, HeadT),
         transform_assrt_body(Body, M, BodyT),
         check_global_props(BodyT, BodyT2),

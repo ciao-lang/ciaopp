@@ -440,6 +440,11 @@ pp_flag(rt_inline, 'Decides between use run-time library or package that expands
 current_pp_flags(  rt_inline , off ).
 valid_flag_values( rt_inline , member( _ , [on,off])).
 
+pp_flag(auto_entries_meta).
+pp_flag(auto_entries_meta, 'Generate syntactic overapproximation of higher order calls before analysis').
+current_pp_flags(  auto_entries_meta , off ).
+valid_flag_values( auto_entries_meta , member( _ , [on,off])).
+
 % pp_flag(optim_comp).
 % pp_flag(optim_comp, 'Whether to perform optimizing compilation using the analysis information available (if any).' ).
 % current_pp_flags(  optim_comp         , none ).

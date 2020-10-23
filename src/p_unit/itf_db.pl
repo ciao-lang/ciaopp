@@ -184,6 +184,7 @@ defines_module_(M, Base) :-
     (current_fact(defines_module_rev_idx(M, Base))
     ; lib_defines_module_rev_idx(M, Base)).
 
+% TODO: This is wrong, visibility depends on the module (except for multifiles)
 visible_goal(Goal):-
     current_itf(imports,Goal,_).
 visible_goal(Goal):-
