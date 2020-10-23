@@ -91,13 +91,13 @@ choice_idiom_clause(Var,H,BCut,D,NH,(Choice,NH),ND,(clause(NH,BCut),NId),Loc):-
     prune_dict((H,NH,Var),NewD,ND),
     add_clause_locator(NId, Loc).
 
-% :- use_module(ciaopp(p_unit/itf_db), [assert_itf_chapuza/2]).
+% :- use_module(ciaopp(p_unit/itf_db), [assert_itf_kludge/2]).
 % make_state_consistent:-
 %       IM = engine(internals),
 %       choice_idiom(Var,Choice),
-%       assert_itf_chapuza(remote,imports(Choice,IM)),
+%       assert_itf_kludge(remote,imports(Choice,IM)),
 %       cut_idiom(Var,Cut),
-%       assert_itf_chapuza(remote,imports(Cut,IM)).
+%       assert_itf_kludge(remote,imports(Cut,IM)).
 
 %-------------------------------------------------------------------------
 

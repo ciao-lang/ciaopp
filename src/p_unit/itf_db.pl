@@ -1,5 +1,5 @@
 :- module(itf_db,
-    [ assert_itf/5, assert_itf_chapuza/2,
+    [ assert_itf/5, assert_itf_kludge/2,
       cleanup_itf_db/0,
       current_itf/3,
       retract_itf/5,
@@ -19,7 +19,7 @@
 
 :- reexport(ciaopp(p_unit/itf_base_db)).
 
-:- doc(bug, "assert_itf_chapuza/2 ?").
+:- doc(bug, "assert_itf_kludge/2 ?").
 :- doc(bug, "Missing doc").
 
 cleanup_itf_db:-
@@ -100,7 +100,7 @@ assertz_if_needed(dynamic(Goal)) :-
     ( current_fact(dynamic(Goal)) -> true
     ; assertz_fact(dynamic(Goal))).
 
-assert_itf_chapuza(remote,imports(Goal,IM)):-
+assert_itf_kludge(remote,imports(Goal,IM)):-
     ( current_fact(imports(Goal,IM)) -> true
     ; assertz_fact(imports(Goal,IM)) ).
 

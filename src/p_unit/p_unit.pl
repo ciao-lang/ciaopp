@@ -137,7 +137,7 @@
 :- doc(bug,"13. language/1 is a bit naive.").
 :- doc(bug,"14. Put make_prop_visible/1 to work.").
 :- doc(bug,"15. At least \+ (maybe others?) is not expanded properly.
-    See the current chapuza in type_of_goal(imported,_) and
+    See the current kludge in type_of_goal(imported,_) and
     type_of_goal(metapred,_). This shows up in, e.g., peephole.pl").
 :- doc(bug,"16. Have a look to expansion of basic types. Things are rather
     strange now:
@@ -814,7 +814,7 @@ native_to_prop_visible(NProp,NProp).
 %       extract_module(F,M),
 %       module_spec(Spec,M), % if it was reversible!
 %       functor(G,F,A),
-%       assert_itf_chapuza(p_unit,imports(F,Spec)).
+%       assert_itf_kludge(p_unit,imports(F,Spec)).
 
 % ---------------------------------------------------------------------------
 :- doc(section, "Inject packages for output (post-preprocessing unit)"). % TODO: per module?
