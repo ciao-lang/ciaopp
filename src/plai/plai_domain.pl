@@ -13,6 +13,7 @@
 :- dom_op(exit_to_prime/7).
 :- dom_op(project/5).
 :- dom_op(widencall/3).
+:- dom_op(needs/1).
 :- dom_op(widen/3).
 :- dom_op(compute_lub/2).
 :- dom_op(compute_clauses_lub/3).
@@ -89,6 +90,11 @@ basedom_init_abstract_domain(_AbsInt,[variants]) :-
 %:- dom_base(widencall/3).
 % basedom_widencall(AbsInt,Prime0,Prime1,NewPrime) :- % TODO: [IG] why is this commented?
 %       domains:compute_lub(AbsInt,[Prime0,Prime1],NewPrime).
+
+:- dom_base(widen/3).
+needs(widen) :- fail.
+needs(clauses_lub) :- fail.
+needs(split_combined_domain) :- fail.
 
 :- dom_base(widen/3).
 basedom_widen(AbsInt,Prime0,Prime1,NewPrime) :- % TODO: [IG] define in domain?

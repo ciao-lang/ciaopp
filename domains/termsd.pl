@@ -155,6 +155,10 @@ terms_widencall(Prime0,Prime1,NewPrime):-
 %       terms_compute_lub_el(Prime0,Prime1,Prime),
 %       shortening(Prime,NewPrime).
 
+:- dom_impl(terms, needs/1).
+:- export(terms_needs/1).
+terms_needs(widen).
+
 :- dom_impl(terms, widen/3).
 :- export(terms_widen/3).
 :- pred terms_widen(+Prime0,+Prime1,-NewPrime)

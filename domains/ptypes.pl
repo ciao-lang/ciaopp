@@ -114,6 +114,10 @@ ptypes_widencall(Prime0,Prime1,Result):-
       )
     ).
 
+:- dom_impl(ptypes, needs/1).
+:- export(ptypes_needs/1).
+ptypes_needs(widen).
+
 :- dom_impl(ptypes, widen/3).
 :- export(ptypes_widen/3).
 ptypes_widen(Prime0,Prime1,NewPrime):-

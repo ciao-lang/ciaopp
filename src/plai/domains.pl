@@ -227,6 +227,16 @@ project(AbsInt,Vars,HvFv,ASub,Proj) :-
    list @var{Vars} resulting in the projected abstract substitution
    @var{Proj}.".
 
+:- export(needs/2).
+:- pred needs(+AbsInt,+Op) + is_det
+   #"Succeeds if @var{AbsInt} needs operation @var{Op} for
+    correctness/termination. It must only be used for checking, not enumerating.
+    The supported operations are: @tt{widen} (whether widening is necessary for
+    termination), @tt{clauses_lub} (whether the lub must be performed over the
+    abstract substitution split by clase), and @tt{split_combined_domain}
+    (whether the domain contains information of several domains and it needs to
+    be split).".
+
 :- export(widencall/4).
 :- pred widencall(+AbsInt,+ASub0,+ASub1,-ASub) : atm(AbsInt)
    #"@var{ASub} is the result of widening abstract substitution @var{ASub0}

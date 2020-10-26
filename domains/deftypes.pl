@@ -168,6 +168,10 @@ deftypes_widencall(_Prime0,Prime1,Prime1).
 %       terms_compute_lub_el(Prime0,Prime1,Prime),
 %       shortening(Prime,NewPrime).
 
+:- dom_impl(deftypes, needs/1).
+:- export(deftypes_needs/1).
+deftypes_needs(widen).
+
 :- dom_impl(deftypes, widen/3).
 :- export(deftypes_widen/3).
 :- pred deftypes_widen(+Prime0,+Prime1,-NewPrime)

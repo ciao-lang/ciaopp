@@ -580,6 +580,7 @@ nonrel_call_to_success_builtin0(nonrel_intervals,SgKey,Sg,Sv,Call,Proj,Succ) :- 
 :- dom_impl(nonrel_intervals, exit_to_prime/7).
 :- dom_impl(nonrel_intervals, project/5).
 :- dom_impl(nonrel_intervals, widencall/3).
+:- dom_impl(nonrel_intervals, needs/1).
 :- dom_impl(nonrel_intervals, widen/3).
 :- dom_impl(nonrel_intervals, compute_lub/2).
 :- dom_impl(nonrel_intervals, identical_abstract/2).
@@ -597,6 +598,9 @@ nonrel_call_to_success_builtin0(nonrel_intervals,SgKey,Sg,Sv,Call,Proj,Succ) :- 
 :- dom_impl(nonrel_intervals, unknown_call/4).
 :- dom_impl(nonrel_intervals, unknown_entry/3).
 :- dom_impl(nonrel_intervals, empty_entry/3).
+
+:- export(nonrel_intervals_needs/1).
+nonrel_intervals_needs(widen).
 
 :- export(nonrel_intervals_init_abstract_domain/1).
 nonrel_intervals_init_abstract_domain(PushedFlags) :- nonrel_init_abstract_domain(nonrel_intervals, PushedFlags).

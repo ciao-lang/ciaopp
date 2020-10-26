@@ -190,6 +190,11 @@ etermsvar_widencall(Prime0,Prime1,Result):-
     % display(user,'widencall'),
     etermsvar_widen(Prime0,Prime1,Result).  
 
+
+:- dom_impl(etermsvar, needs/1).
+:- export(etermsvar_needs/1).
+etermsvar_needs(widen).
+
 :- dom_impl(etermsvar, widen/3).
 :- export(etermsvar_widen/3).
 :- pred etermsvar_widen(+Prime0,+Prime1,-NewPrime) : absu * absu * absu.

@@ -174,6 +174,10 @@ eterms_widencall(Prime0,Prime1,Result):-
 %       display(user,'widencall'),
     eterms_widen(Prime0,Prime1,Result).     
 
+:- dom_impl(eterms, needs/1).
+:- export(eterms_needs/1).
+eterms_needs(widen).
+
 :- dom_impl(eterms, widen/3).
 :- export(eterms_widen/3).
 :- pred eterms_widen(+Prime0,+Prime1,-NewPrime)

@@ -32,6 +32,7 @@
 :- dom_impl(shfret, exit_to_prime/7).
 :- dom_impl(shfret, project/5).
 :- dom_impl(shfret, widencall/3).
+:- dom_impl(shfret, needs/1).
 :- dom_impl(shfret, widen/3).
 :- dom_impl(shfret, compute_lub/2).
 :- dom_impl(shfret, identical_abstract/2).
@@ -76,9 +77,9 @@ shfret_call_to_entry(Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo):-
     asub(Proj,PTypes,PModes),
     shfr_call_to_entry(Sv,Sg,Hv,Head,K,Fv,PModes,EModes,ExtraInfoModes),
     eterms_call_to_entry(Sv,Sg,Hv,Head,K,Fv,PTypes,ETypes,ExtraInfoTypes),
-    ( ETypes = '$bottom'
-    -> Entry = '$bottom'
-     ; asub(Entry,ETypes,EModes)
+    ( ETypes = '$bottom' ->
+        Entry = '$bottom'
+    ; asub(Entry,ETypes,EModes)
     ),
     asub(ExtraInfo,ExtraInfoTypes,ExtraInfoModes).
 
@@ -92,8 +93,8 @@ shfret_exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime):-
     asub(ExtraInfo,ExtraInfoTypes,ExtraInfoModes),
     shfr_exit_to_prime(Sg,Hv,Head,Sv,EModes,ExtraInfoModes,PModes),
     eterms_exit_to_prime(Sg,Hv,Head,Sv,ETypes,ExtraInfoTypes,PTypes),
-    ( PTypes = '$bottom'
-    -> Prime = '$bottom'
+    ( PTypes = '$bottom' ->
+        Prime = '$bottom'
      ; asub(Prime,PTypes,PModes)
     ).
 
@@ -119,6 +120,10 @@ shfret_extend(Sg,Prime,Sv,Call,Succ):-
     shfr_extend(Sg,PModes,Sv,CModes,SModes),
     eterms_extend(Sg,PTypes,Sv,CTypes,STypes),
     asub(Succ,STypes,SModes).
+
+
+shfret_needs(widen).
+shfret_needs(split_combined_domain).
 
 %------------------------------------------------------------------------%
 % shfret_widen(+,+,-)                                                        %
@@ -246,10 +251,10 @@ shfret_input_interface(InputUser,Kind,StructI,StructO):-
     ( nonvar(Kind) ->
         KModes=Kind, KTypes=Kind
     ; true ),
-      asub(StructI,ITypes,IModes),
-      shfr_input_interface_(InputUser,KModes,IModes,OModes),
-      eterms_input_interface_(InputUser,KTypes,ITypes,OTypes),
-      asub(StructO,OTypes,OModes).
+    asub(StructI,ITypes,IModes),
+    shfr_input_interface_(InputUser,KModes,IModes,OModes),
+    eterms_input_interface_(InputUser,KTypes,ITypes,OTypes),
+    asub(StructO,OTypes,OModes).
 
 shfr_input_interface_(InputUser,Kind,IModes,OModes):-
     shfr_input_interface(InputUser,Kind,IModes,OModes), !.
