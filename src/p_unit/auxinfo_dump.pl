@@ -1,4 +1,4 @@
-:- module(_, [], [assertions, hiord, datafacts]).
+:- module(_, [], [assertions, hiord, datafacts, isomodes]).
 
 :- doc(module, "This library provides support for saving (dump) and
    loading (restore) auxiliary data (e.g., type definitions) from
