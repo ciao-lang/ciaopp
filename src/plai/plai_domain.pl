@@ -91,10 +91,10 @@ basedom_init_abstract_domain(_AbsInt,[variants]) :-
 % basedom_widencall(AbsInt,Prime0,Prime1,NewPrime) :- % TODO: [IG] why is this commented?
 %       domains:compute_lub(AbsInt,[Prime0,Prime1],NewPrime).
 
-:- dom_base(widen/3).
-needs(widen) :- fail.
-needs(clauses_lub) :- fail.
-needs(split_combined_domain) :- fail.
+:- dom_base(needs/1).
+basedom_needs(_AbsInt, widen) :- fail.
+basedom_needs(_AbsInt, clauses_lub) :- fail.
+basedom_needs(_AbsInt, split_combined_domain) :- fail.
 
 :- dom_base(widen/3).
 basedom_widen(AbsInt,Prime0,Prime1,NewPrime) :- % TODO: [IG] define in domain?
