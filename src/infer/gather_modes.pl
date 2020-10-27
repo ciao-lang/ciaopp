@@ -150,9 +150,10 @@ init_used(Cls0,Ds0,Used) :-
     foldl(init_used_,Cls0,Ds0,_,Used).
 
 init_used_(Cl,D,Used0,Used1) :-
-    clause_to_pred(Cl,Pred),
+    clause_to_pred(Cl,Pred),!,
     record_used(Used0,Pred,Cl-D-_M,Used1).
-
+init_used_(_Cl,_D,Used0,Used0). % In case Cl is not a clause
+    
 clause_to_pred(Cl,F/A) :-
     is_clause(Cl,Head,_,_),
     functor(Head,F,A).
