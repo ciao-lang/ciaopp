@@ -1778,10 +1778,15 @@ maybe_main(File) := R :-
 
 % ---------------------------------------------------------------------------
 
+:- if(defined(has_ciaopp_llvm)).
+:- include(ciaopp_llvm(auto_interface_llvm)). % LLVM-based frontend
+:- endif.
+
 :- if(defined(has_ciaopp_extra)).
 :- include(auto_interface(auto_interface_java)). % Java support (JNL)
 :- endif.
 
-:- if(defined(has_ciaopp_extra)).
-:- include(auto_interface(auto_interface_xc)). % xC support (ULQ)
-:- endif.
+% (archived)
+% :- if(defined(has_ciaopp_extra)).
+% :- include(auto_interface(auto_interface_xc)). % xC support (ULQ)
+% :- endif.

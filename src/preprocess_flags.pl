@@ -180,9 +180,14 @@ valid_flag_values( inter_ana          , sublist2( _ , [
 :- include(ciaopp(preprocess_flags_java)).
 :- endif.
 
-:- if(defined(has_ciaopp_extra)).
-:- include(ciaopp(preprocess_flags_xc)).
+:- if(defined(has_ciaopp_llvm)).
+:- include(ciaopp_llvm(preprocess_flags_llvm)).
 :- endif.
+
+% (archived)
+% :- if(defined(has_ciaopp_extra)).
+% :- include(ciaopp(preprocess_flags_xc)).
+% :- endif.
 
 pp_flag(inter_optimize).
 pp_flag(inter_optimize, 'Determines the kind of optimization to perform.').

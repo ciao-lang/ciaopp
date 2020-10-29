@@ -48,9 +48,12 @@
 % ===========================================================================
 :- doc(section, "Frontend languages").
 
+:- if(defined(has_ciaopp_llvm)).
+:- use_module(ciaopp_llvm(c_translate)).
+:- endif.
+
 :- if(defined(has_ciaopp_extra)).
 :- use_module(ilciao(java_interface)).
-:- use_module(ciaopp_xcore(xc_translate)).
 :- use_module(cafelito(annotator),[cafelito_module/2]).
 :- endif.
 :- use_module(ciaopp(preprocess_flags),[current_pp_flag/2]).
@@ -72,11 +75,14 @@ transformation(X) :- atom(X). % TODO: this is tranformation name, this should no
     "Indicates that a translation is available from language
      @var{L} to Ciao Prolog language.").
 supported_language(ciao).
+:- if(defined(has_ciaopp_llvm)).
+supported_language(c).
+:- endif.
 :- if(defined(has_ciaopp_extra)).
 supported_language(java).
-supported_language(xc).
-supported_language(c).
-supported_language(xc_assembly).
+% (archived)
+% supported_language(xc).
+% supported_language(xc_assembly).
 :- endif.
 
 :- export(language_extension/2).
@@ -84,11 +90,14 @@ supported_language(xc_assembly).
     "@var{E} is an extension (including the dot) for files
      that must be translated from language @var{L} to Ciao.").
 language_extension(ciao,        '.pl').
+:- if(defined(has_ciaopp_llvm)).
+language_extension(c,           '.c').
+:- endif.
 :- if(defined(has_ciaopp_extra)).
 language_extension(java,        '.java').
-language_extension(xc,          '.xc').
-language_extension(c,           '.c').
-language_extension(xc_assembly, '.asm').
+% (archived)
+% language_extension(xc,          '.xc').
+% language_extension(xc_assembly, '.asm').
 :- endif.
 
 :- export(language_output_extension/2).
@@ -96,11 +105,14 @@ language_extension(xc_assembly, '.asm').
     "@var{E} is the extension of the file produced as
      output by the Ciao printer for language @var{L}.").
 language_output_extension(ciao,        '.pl').
+:- if(defined(has_ciaopp_llvm)).
+language_output_extension(c,           '.pl').
+:- endif.
 :- if(defined(has_ciaopp_extra)).
 language_output_extension(java,        '.java').
-language_output_extension(xc,          '.pl').
-language_output_extension(c,           '.pl').
-language_output_extension(xc_assembly, '.pl').
+% (archived)
+% language_output_extension(xc,          '.pl').
+% language_output_extension(xc_assembly, '.pl').
 :- endif.
 
 :- use_module(engine(runtime_control), [push_prolog_flag/2, pop_prolog_flag/1]). % TODO: do in a better way
@@ -117,6 +129,9 @@ language_output_extension(xc_assembly, '.pl').
      get can be given in @var{M}. The translation should produce
      a file and indicate where it is located through @var{O}.").
 translate_input_file(ciao, I, _, _, I).
+:- if(defined(has_ciaopp_llvm)).
+translate_input_file(c, I, _, _, Pl) :- translate_c(I,Pl).
+:- endif.
 :- if(defined(has_ciaopp_extra)).
 translate_input_file(java, I, _, _, NI) :-
     current_pp_flag(java_analysis_level,source),!,
@@ -129,12 +144,9 @@ translate_input_file(java, I, _, _, NI) :-
     java_generate_ciao(Main_Class),
     get_ilciao_output_file(NI),
     pop_prolog_flag(write_strings).
-translate_input_file(xc, I, _, _, Pl) :-
-    translate_xc(I,Pl).
-translate_input_file(c, I, _, _, Pl) :-
-    translate_c(I,Pl).
-translate_input_file(xc_assembly, I, _, _, Pl) :-
-    translate_xc_assembly(I,Pl).
+% (archived)
+% translate_input_file(xc, I, _, _, Pl) :- translate_xc(I,Pl).
+% translate_input_file(xc_assembly, I, _, _, Pl) :- translate_xc_assembly(I,Pl).
 :- endif.
 
 :- export(initial_transformations/2).
@@ -146,13 +158,16 @@ translate_input_file(xc_assembly, I, _, _, Pl) :-
     loaded as clauses.").
 
 initial_transformations(ciao,        []).
+:- if(defined(has_ciaopp_llvm)).
+initial_transformations(c,           [unfold_entry]).
+:- endif.
 :- if(defined(has_ciaopp_extra)).
 initial_transformations(java,        [unfold_entry]):-
     current_pp_flag(java_analysis_level, source),!.
 initial_transformations(java,        []).
-initial_transformations(xc,          [unfold_entry]).
-initial_transformations(c,           [unfold_entry]).
-initial_transformations(xc_assembly, [unfold_entry]).
+% (archived)
+% initial_transformations(xc,          [unfold_entry]).
+% initial_transformations(xc_assembly, [unfold_entry]).
 :- endif.
 
 :- export(detect_language/2).
@@ -538,10 +553,16 @@ output_by_ext('.pl', Stream) :- !,
 
 % TODO: make output_by_ext/2 a hook
 :- if(defined(with_fullpp)).
+:- if(defined(has_ciaopp_llvm)).
+:- include(ciaopp_llvm(printer_llvm)).
+:- endif.
 :- if(defined(has_ciaopp_extra)).
 :- include(ciaopp(printer_java)).
-:- include(ciaopp(printer_xc)).
 :- endif.
+% (archived)
+% :- if(defined(has_ciaopp_extra)).
+% :- include(ciaopp(printer_xc)).
+% :- endif.
 :- endif. % with_fullpp
 
 % ---------------------------------------------------------------------------

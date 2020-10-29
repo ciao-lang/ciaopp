@@ -11,6 +11,9 @@ create_ciaopp_config :-
     update_file_from_clauses(~findall(C, emit_config(C)), ConfigFile, _).
 
 emit_config(C) :-
+    '$bundle_id'(ciaopp_llvm),
+    C = (:- compilation_fact(has_ciaopp_llvm)).
+emit_config(C) :-
     '$bundle_id'(ciaopp_extra),
     C = (:- compilation_fact(has_ciaopp_extra)).
 emit_config(C) :-
