@@ -753,7 +753,7 @@ recompute_complete_from_raw_successes(PredKey,Id,AbsInt,Sg,[NewPrime]) :-
 :- pred bu_update_delete_clauses_plai_db(+Preds,SCCs,+AbsInt,-Completes) + not_fails
    #"@var{ClKeys} is the list of clauses to be deleted, @var{Completes} is the
    list of completes that need to be recomputed.".
-bu_update_delete_clauses_plai_db(Preds, SCCs, AbsInt, Completes):-
+bu_update_delete_clauses_plai_db(Preds, SCCs, AbsInt, Completes) :-
     ( % failure-driven loop
       member(SgKey, Preds),  %% The clause_db (transform.pl) has already been updated
       ( % failure-driven loop
