@@ -31,8 +31,8 @@
     terms_unknown_entry/3,
     terms_empty_entry/3,
     terms_unknown_call/4,
-    terms_collect_abstypes_abs/3,
-    terms_rename_abstypes_abs/3]).
+    terms_collect_auxinfo_asub/3,
+    terms_rename_auxinfo_asub/3]).
 
 :- use_module(ciaopp(p_unit), [new_internal_predicate/3]).
 
@@ -478,15 +478,15 @@ deftypes_asub_to_native(ASub,Qv,OutFlag,OutputUser,Comps):-
 
 %------------------------------------------------------------------------%
 
-:- dom_impl(deftypes, collect_abstypes_abs/3).
-:- export(deftypes_collect_abstypes_abs/3).
-deftypes_collect_abstypes_abs(Abs,Types1,Types) :-
-    terms_collect_abstypes_abs(Abs,Types1,Types).
+:- dom_impl(deftypes, collect_auxinfo_asub/3).
+:- export(deftypes_collect_auxinfo_asub/3).
+deftypes_collect_auxinfo_asub(Abs,Types1,Types) :-
+    terms_collect_auxinfo_asub(Abs,Types1,Types).
 
-:- dom_impl(deftypes, rename_abstypes_abs/3).
-:- export(deftypes_rename_abstypes_abs/3).
-deftypes_rename_abstypes_abs(ASub,Dict,RenASub) :-
-    terms_rename_abstypes_abs(ASub,Dict,RenASub).
+:- dom_impl(deftypes, rename_auxinfo_asub/3).
+:- export(deftypes_rename_auxinfo_asub/3).
+deftypes_rename_auxinfo_asub(ASub,Dict,RenASub) :-
+    terms_rename_auxinfo_asub(ASub,Dict,RenASub).
 
 %------------------------------------------------------------------%
 

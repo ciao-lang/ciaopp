@@ -55,8 +55,8 @@
 %
 :- dom_op(part_conc/4).
 :- dom_op(multi_part_conc/3).
-:- dom_op(collect_abstypes_abs/3).
-:- dom_op(rename_abstypes_abs/3).
+:- dom_op(collect_auxinfo_asub/3).
+:- dom_op(rename_auxinfo_asub/3).
 :- dom_op(dom_statistics/1).
 :- dom_op(contains_parameters/1). % can succeed only for deftypes
 
@@ -138,8 +138,8 @@ basedom_part_conc(_AbsInt,Sg,Subs,Sg,Subs).
 :- dom_base(multi_part_conc/3).
 basedom_multi_part_conc(_AbsInt,Sg,Subs,[(Sg,Subs)]).
 
-:- dom_base(rename_abstypes_abs/3).
-basedom_rename_abstypes_abs(_AbsInt,ASub,_Rens,ASub).
+:- dom_base(rename_auxinfo_asub/3).
+basedom_rename_auxinfo_asub(_AbsInt,ASub,_Rens,ASub).
 
 :- dom_base(dom_statistics/1).
 basedom_dom_statistics(_AbsInt, []).

@@ -603,9 +603,9 @@ svterms_output_interface(ASub,ASub).
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
 
-:- dom_impl(svterms, collect_abstypes_abs/3).
-:- export(svterms_collect_abstypes_abs/3).
-svterms_collect_abstypes_abs((T,_),Types0,Types):-
+:- dom_impl(svterms, collect_auxinfo_asub/3).
+:- export(svterms_collect_auxinfo_asub/3).
+svterms_collect_auxinfo_asub((T,_),Types0,Types):-
     svterms_collect_abstypes_(T,Types0,Types).
 
 svterms_collect_abstypes_([],Types,Types).
@@ -614,9 +614,9 @@ svterms_collect_abstypes_([_:(_,Type)|Abs],Types0,Types):-
     svterms_collect_abstypes_(Abs,Types1,Types).
 
 %% No renaming applicable.
-:- dom_impl(svterms, rename_abstypes_abs/3).
-:- export(svterms_rename_abstypes_abs/3).
-svterms_rename_abstypes_abs((T0,Rest),Dict,(T,Rest)):-  %% JCF: Y Rest que es?
+:- dom_impl(svterms, rename_auxinfo_asub/3).
+:- export(svterms_rename_auxinfo_asub/3).
+svterms_rename_auxinfo_asub((T0,Rest),Dict,(T,Rest)):-  %% JCF: Y Rest que es?
     svterms_rename_abs_(T0,Dict,T).
 
 svterms_rename_abs_([],_,[]).

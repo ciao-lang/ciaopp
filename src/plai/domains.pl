@@ -701,9 +701,9 @@ asub_to_out(AbsInt,ASub,Qv,OutputUser,CompProps) :-
 collect_types_in_abs('$bottom',_AbsInt,Types0,Types) :- !,
     Types = Types0.
 collect_types_in_abs(ASub,AbsInt,Types0,Types) :-
-    collect_abstypes_abs(AbsInt,ASub,Types0,Types).
+    collect_auxinfo_asub(AbsInt,ASub,Types0,Types).
 
-% :- export(collect_abstypes_abs/4).
+% :- export(collect_auxinfo_asub/4).
 
 :- export(rename_types_in_abs/4).  % TODO: [IG] only used in typeslib/dumper.pl
 :- pred rename_types_in_abs(+ASub0,+AbsInt,+Dict,ASub1) + (is_det, not_fails)
@@ -713,9 +713,9 @@ collect_types_in_abs(ASub,AbsInt,Types0,Types) :-
 rename_types_in_abs('$bottom',_AbsInt,_Dict,ASub) :- !,
     ASub = '$bottom'.
 rename_types_in_abs(ASub0,AbsInt,Dict,ASub1) :-
-    rename_abstypes_abs(AbsInt,ASub0,Dict,ASub1).
+    rename_auxinfo_asub(AbsInt,ASub0,Dict,ASub1).
 
-% :- export(rename_abstypes_abs/4).
+% :- export(rename_auxinfo_asub/4).
 
 :- export(dom_statistics/2).
 :- doc(dom_statistics(AbsInt, Info), "Obtains in list @var{Info}

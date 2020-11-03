@@ -1051,17 +1051,17 @@ eterms_output_interface(ASub,ASub).
 
 %------------------------------------------------------------------------%
 
-:- dom_impl(eterms, collect_abstypes_abs/3).
-:- export(eterms_collect_abstypes_abs/3).
-eterms_collect_abstypes_abs([],Types,Types).
-eterms_collect_abstypes_abs([_:(_,Type)|Abs],Types0,Types):-
+:- dom_impl(eterms, collect_auxinfo_asub/3).
+:- export(eterms_collect_auxinfo_asub/3).
+eterms_collect_auxinfo_asub([],Types,Types).
+eterms_collect_auxinfo_asub([_:(_,Type)|Abs],Types0,Types):-
     insert(Types0,Type,Types1),
-    eterms_collect_abstypes_abs(Abs,Types1,Types).
+    eterms_collect_auxinfo_asub(Abs,Types1,Types).
 
-:- dom_impl(eterms, rename_abstypes_abs/3).
-:- export(eterms_rename_abstypes_abs/3).
-eterms_rename_abstypes_abs([],_,[]).
-eterms_rename_abstypes_abs([C|Call],Dict,[RenC|RenCall]):-
+:- dom_impl(eterms, rename_auxinfo_asub/3).
+:- export(eterms_rename_auxinfo_asub/3).
+eterms_rename_auxinfo_asub([],_,[]).
+eterms_rename_auxinfo_asub([C|Call],Dict,[RenC|RenCall]):-
     Dict = (Types,_Names),
     C = Var:(_Name,Type),
     RenC = Var:(RenName,RenType),
@@ -1071,7 +1071,7 @@ eterms_rename_abstypes_abs([C|Call],Dict,[RenC|RenCall]):-
     new_type_name(RenName),         % taken from obtain_ASub_user/2.
     insert_type_name(RenName,[],0), % taken from obtain_ASub_user/2.
 %jcf-end
-    eterms_rename_abstypes_abs(Call,Dict,RenCall).
+    eterms_rename_auxinfo_asub(Call,Dict,RenCall).
 
 get_value_(Rens,Type,RenType):-
     assoc:get_assoc(Type,Rens,RenType), !.

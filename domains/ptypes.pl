@@ -97,9 +97,9 @@ ptypes_unknown_entry(Sg,Qv,Call) :- terms_unknown_entry(Sg,Qv,Call).
 :- export(ptypes_empty_entry/3).
 ptypes_empty_entry(Sg,Qv,Call) :- terms_empty_entry(Sg,Qv,Call).
 
-:- dom_impl(ptypes, collect_abstypes_abs/3).
-:- export(ptypes_collect_abstypes_abs/3).
-ptypes_collect_abstypes_abs(ASub,Types0,Types) :- terms_collect_abstypes_abs(ASub,Types0,Types).
+:- dom_impl(ptypes, collect_auxinfo_asub/3).
+:- export(ptypes_collect_auxinfo_asub/3).
+ptypes_collect_auxinfo_asub(ASub,Types0,Types) :- terms_collect_auxinfo_asub(ASub,Types0,Types).
 
 :- dom_impl(ptypes, widencall/3).
 :- export(ptypes_widencall/3).
@@ -132,4 +132,4 @@ henten([X:T1|Prime0],[X:T2|Prime],[X:T|NewPrime]):-
     hentenwid(T1,T2,T),
     henten(Prime0,Prime,NewPrime).
 
-% :- dom_impl(ptypes, rename_abstypes_abs/3). % TODO: missing, why?
+% :- dom_impl(ptypes, rename_auxinfo_asub/3). % TODO: missing, why?

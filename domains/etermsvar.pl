@@ -812,15 +812,15 @@ etermsvar_output_interface(ASub,ASub).
 
 %------------------------------------------------------------------------%
 
-:- dom_impl(etermsvar, collect_abstypes_abs/3).
-:- export(etermsvar_collect_abstypes_abs/3).
-etermsvar_collect_abstypes_abs(Abs,Types0,Types) :-
-    eterms_collect_abstypes_abs(Abs,Types0,Types).
+:- dom_impl(etermsvar, collect_auxinfo_asub/3).
+:- export(etermsvar_collect_auxinfo_asub/3).
+etermsvar_collect_auxinfo_asub(Abs,Types0,Types) :-
+    eterms_collect_auxinfo_asub(Abs,Types0,Types).
 
-:- dom_impl(etermsvar, rename_abstypes_abs/3).
-:- export(etermsvar_rename_abstypes_abs/3).
-etermsvar_rename_abstypes_abs(Call,Dict,RenCall) :-
-    eterms_rename_abstypes_abs(Call,Dict,RenCall).
+:- dom_impl(etermsvar, rename_auxinfo_asub/3).
+:- export(etermsvar_rename_auxinfo_asub/3).
+etermsvar_rename_auxinfo_asub(Call,Dict,RenCall) :-
+    eterms_rename_auxinfo_asub(Call,Dict,RenCall).
 
 %------------------------------------------------------------------%
 
@@ -882,8 +882,8 @@ etermsvar_part_conc(A,ASub,NA,NASub):-
     %
     eterms_special_builtin/5,
     %
-    eterms_collect_abstypes_abs/3,
-    eterms_rename_abstypes_abs/3,
+    eterms_collect_auxinfo_asub/3,
+    eterms_rename_auxinfo_asub/3,
     eterms_identical_abstract/2,
     eterms_multi_part_conc/3,
     eterms_part_conc/4

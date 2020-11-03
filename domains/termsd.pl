@@ -1127,24 +1127,24 @@ terms_output_interface(ASub,ASub).
 
 :- use_module(library(assoc), [get_assoc/3]).
 
-:- dom_impl(terms, collect_abstypes_abs/3).
-:- export(terms_collect_abstypes_abs/3).
-terms_collect_abstypes_abs([],Types,Types).
-terms_collect_abstypes_abs([_:Type|Abs],Types0,Types):-
+:- dom_impl(terms, collect_auxinfo_asub/3).
+:- export(terms_collect_auxinfo_asub/3).
+terms_collect_auxinfo_asub([],Types,Types).
+terms_collect_auxinfo_asub([_:Type|Abs],Types0,Types):-
     insert(Types0,Type,Types1),
-    terms_collect_abstypes_abs(Abs,Types1,Types).
+    terms_collect_auxinfo_asub(Abs,Types1,Types).
 
-:- dom_impl(terms, rename_abstypes_abs/3).
-:- export(terms_rename_abstypes_abs/3).
-terms_rename_abstypes_abs([],_,[]).
-terms_rename_abstypes_abs([C|Call],Dict,[RenC|RenCall]):-
+:- dom_impl(terms, rename_auxinfo_asub/3).
+:- export(terms_rename_auxinfo_asub/3).
+terms_rename_auxinfo_asub([],_,[]).
+terms_rename_auxinfo_asub([C|Call],Dict,[RenC|RenCall]):-
     Dict = (Types,_),
     C = Var:Type,
     RenC = Var:RenType,
     get_value_(Types,Type,RenType),
 %       new_type_name(RenName),
 %       insert_type_name(RenName,[],0),
-    terms_rename_abstypes_abs(Call,Dict,RenCall).
+    terms_rename_auxinfo_asub(Call,Dict,RenCall).
 
 get_value_(Rens,Type,RenType):-
     assoc:get_assoc(Type,Rens,RenType), !.
