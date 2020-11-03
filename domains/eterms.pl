@@ -177,6 +177,7 @@ eterms_widencall(Prime0,Prime1,Result):-
 :- dom_impl(eterms, needs/1).
 :- export(eterms_needs/1).
 eterms_needs(widen).
+eterms_needs(auxinfo).
 
 :- dom_impl(eterms, widen/3).
 :- export(eterms_widen/3).

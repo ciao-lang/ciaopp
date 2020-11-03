@@ -5,8 +5,8 @@
    PLAI's analysis results. Data can be serialized to/from predicates,
    files, etc.").
 
-:- use_module(ciaopp(infer/infer_dom), [knows_of/2]).
-:- use_module(ciaopp(plai/domains), [collect_types_in_abs/4, rename_types_in_abs/4]).
+:- use_module(ciaopp(plai/domains),
+              [needs/2, collect_types_in_abs/4, rename_types_in_abs/4]).
 
 :- use_module(typeslib(typeslib), [dump_types/2, restore_types/2, is_dump_types_fact/1]).
 
@@ -20,8 +20,8 @@
    substitutions @var{ASubs} of domain @var{AbsInt}. It is expected
    that you issue a call to this one for every item you dump.".
 
-acc_auxiliary_info(AbsInt,ASubs):-
-    knows_of(regtypes,AbsInt), !,
+acc_auxiliary_info(AbsInt,ASubs) :-
+    needs(AbsInt,auxinfo), !,
     collect_all_types_in_abs(ASubs,AbsInt).
 acc_auxiliary_info(_AbsInt,_ASubs).
 

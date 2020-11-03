@@ -193,7 +193,8 @@ etermsvar_widencall(Prime0,Prime1,Result):-
 
 :- dom_impl(etermsvar, needs/1).
 :- export(etermsvar_needs/1).
-etermsvar_needs(widen).
+etermsvar_needs(X) :-
+    eterms_needs(X).
 
 :- dom_impl(etermsvar, widen/3).
 :- export(etermsvar_widen/3).
@@ -868,6 +869,7 @@ etermsvar_part_conc(A,ASub,NA,NASub):-
     getvalues_comp_cond/3,
     generateSucc0_cond/5,
     %
+    eterms_needs/1,
     eterms_project/5,
     eterms_abs_sort/2,
     eterms_extend/5,

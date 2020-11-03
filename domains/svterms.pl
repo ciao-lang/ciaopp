@@ -148,6 +148,11 @@ lessrestric(X,Y,SVx,SVy,SV1,SV2):-
     ).
 
 %------------------------------------------------------------------%
+:- dom_impl(svterms, needs/1).
+:- export(svterms_needs/1).
+svterms_needs(widen).
+svterms_needs(auxinfo).
+
 :- dom_impl(svterms, widencall/3).
 :- export(svterms_widencall/3).
 svterms_widencall(Prime0,Prime1,Result):-

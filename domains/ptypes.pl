@@ -116,7 +116,8 @@ ptypes_widencall(Prime0,Prime1,Result):-
 
 :- dom_impl(ptypes, needs/1).
 :- export(ptypes_needs/1).
-ptypes_needs(widen).
+ptypes_needs(X) :-
+    terms_needs(X).
 
 :- dom_impl(ptypes, widen/3).
 :- export(ptypes_widen/3).

@@ -233,9 +233,11 @@ project(AbsInt,Vars,HvFv,ASub,Proj) :-
     correctness/termination. It must only be used for checking, not enumerating.
     The supported operations are: @tt{widen} (whether widening is necessary for
     termination), @tt{clauses_lub} (whether the lub must be performed over the
-    abstract substitution split by clase), and @tt{split_combined_domain}
-    (whether the domain contains information of several domains and it needs to
-    be split).".
+    abstract substitution split by clase), @tt{split_combined_domain} (whether
+    the domain contains information of several domains and it needs to be
+    split), and @tt{aux_info} (whether the information in the abstract
+    substitutions is not complete and an external solver may be needed,
+    currently only used when outputing the analysis in a @tt{.dump} file)".
 
 :- export(widencall/4).
 :- pred widencall(+AbsInt,+ASub0,+ASub1,-ASub) : atm(AbsInt)
@@ -693,10 +695,9 @@ asub_to_out(AbsInt,ASub,Qv,OutputUser,CompProps) :-
 % % TODO: [IG] move?
 
 :- export(collect_types_in_abs/4).  % TODO: [IG] only used in typeslib/dumper.pl
-:- doc(collect_types_in_abs(ASub,AbsInt,Types,Tail), "Collects
-    the type symbols occurring in @var{ASub} of domain @var{AbsInt}
-    in a difference list @var{Types}-@var{Tail}.").
-
+:- pred collect_types_in_abs(+ASub,+AbsInt,Types,Tail) + (is_det, not_fails)
+   #"Collects the type symbols occurring in @var{ASub} of domain @var{AbsInt} in
+    a difference list @var{Types}-@var{Tail}.".
 collect_types_in_abs('$bottom',_AbsInt,Types0,Types) :- !,
     Types = Types0.
 collect_types_in_abs(ASub,AbsInt,Types0,Types) :-
@@ -705,11 +706,10 @@ collect_types_in_abs(ASub,AbsInt,Types0,Types) :-
 % :- export(collect_abstypes_abs/4).
 
 :- export(rename_types_in_abs/4).  % TODO: [IG] only used in typeslib/dumper.pl
-:- doc(rename_types_in_abs(ASub0,AbsInt,Dict,ASub1), "Renames
-    the type symbols occurring in @var{ASub0} of domain @var{AbsInt}
-    for the corresponding symbols as in (avl-tree) @var{Dict}
-    yielding @var{ASub1}.").
-
+:- pred rename_types_in_abs(+ASub0,+AbsInt,+Dict,ASub1) + (is_det, not_fails)
+   #"Renames the type symbols occurring in @var{ASub0} of domain @var{AbsInt}
+    for the corresponding symbols as in (avl-tree) @var{Dict} yielding
+    @var{ASub1}.".
 rename_types_in_abs('$bottom',_AbsInt,_Dict,ASub) :- !,
     ASub = '$bottom'.
 rename_types_in_abs(ASub0,AbsInt,Dict,ASub1) :-

@@ -21,12 +21,11 @@ instances of the ciaopp analysis database.
 :- use_module(library(lists), [member/2]).
 
 :- use_module(ciaopp(plai/plai_db), [complete/7, memo_table/6]).
-:- use_module(ciaopp(plai/domains), [less_or_equal/3, abs_sort/3]).
+:- use_module(ciaopp(plai/domains), [less_or_equal/3, abs_sort/3, needs/2]).
 :- use_module(ciaopp(plai/fixpo_ops), [each_abs_sort/3, each_less_or_equal/3]).
 :- use_module(ciaopp(p_unit/p_abs)).
 :- use_module(ciaopp(p_unit/p_dump), [restore/1]).
 :- use_module(ciaopp(p_unit/auxinfo_dump), [acc_auxiliary_info/2, dump_auxiliary_info/1]).
-:- use_module(ciaopp(preprocess_flags), [typeanalysis/1]).
 
 :- use_module(typeslib(typeslib), [is_new_type/1]).
 
@@ -166,7 +165,7 @@ human_display_list([X|Xs]) :-
     human_display_list(Xs).
 
 show_auxiliary_info_list(Sub, AbsInt) :-
-    typeanalysis(AbsInt), !,
+    needs(AbsInt,aux_info), !,
     acc_auxiliary_info(AbsInt, Sub),
     dump_auxiliary_info(display_nl).
 show_auxiliary_info_list(_Sub,_).

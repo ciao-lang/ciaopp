@@ -170,7 +170,8 @@ deftypes_widencall(_Prime0,Prime1,Prime1).
 
 :- dom_impl(deftypes, needs/1).
 :- export(deftypes_needs/1).
-deftypes_needs(widen).
+%% deftypes_needs(widen). % not needed because only working with defined types
+deftypes_needs(auxinfo).
 
 :- dom_impl(deftypes, widen/3).
 :- export(deftypes_widen/3).

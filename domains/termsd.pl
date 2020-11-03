@@ -158,6 +158,7 @@ terms_widencall(Prime0,Prime1,NewPrime):-
 :- dom_impl(terms, needs/1).
 :- export(terms_needs/1).
 terms_needs(widen).
+terms_needs(auxinfo).
 
 :- dom_impl(terms, widen/3).
 :- export(terms_widen/3).
