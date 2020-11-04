@@ -47,9 +47,7 @@
     eterms_arg_call_to_success/9]).
 
 :- use_module(library(aggregates), [setof/3]).
-:- use_module(library(terms_vars), [
-    varsbag/3,
-    varset/2]).
+:- use_module(library(terms_vars), [varsbag/3, varset/2]).
 :- use_module(library(terms_check), [variant/2]).
 :- use_module(library(lists), [member/2, dlist/3]).
 :- use_module(library(sets), [merge/3, insert/3]).
@@ -75,7 +73,7 @@
 abssubst('$bottom','$bottom','$bottom').
 abssubst((TypeComp,SameValueComp),TypeComp,SameValueComp).
 
-abssubst_b('$bottom','$bottom',_).
+abssubst_b('$bottom','$bottom',_) :- !.
 abssubst_b('$bottom',_,'$bottom').
 abssubst_b((TypeComp,SameValueComp),TypeComp,SameValueComp).
 
@@ -95,7 +93,7 @@ svterms_concrete(Var,ASub,List):-
 %------------------------------------------------------------------%
 :- dom_impl(svterms, compute_lub/2).
 :- export(svterms_compute_lub/2).
-svterms_compute_lub([ASub1,ASub2|Rest],Lub):-
+svterms_compute_lub([ASub1,ASub2|Rest],Lub):- !,
     svterms_compute_lub_el(ASub1,ASub2,ASub3),
     svterms_compute_lub([ASub3|Rest],Lub).
 svterms_compute_lub([ASub],ASub).
@@ -117,7 +115,7 @@ determinate([sv(X/Sx,Y/Sy)|Sv],Types,[sv(X/Sx,Y/Sy)|SvP]):-
 determinate([_|Sv],Types,SvP):-
     determinate(Sv,Types,SvP).
 
-sval_lub('$bottom','$bottom','$bottom',_).
+sval_lub('$bottom','$bottom','$bottom',_) :- !.
 sval_lub('$bottom',SV2,SV2P,Types):- !,
     determinate(SV2,Types,SV2P).
 sval_lub(SV1,'$bottom',SV1P,Types):- !,
@@ -215,8 +213,8 @@ sv_call_to_entry(_Sv,Sg,_Hv,Head,_K,_Fv,SV_Proj,SV_Entry,no(SV_s)):-
     sv_project(Vars,SV_Entry1,SV_Entry).
 
 samevalueequiv(SV,SV_Proj,NSV):-
-    (
-        setof(sv(X/Sx,Y/Sy),findequiv(X,Sx,Y,Sy,SV_Proj,SV),NSV) -> true
+    ( setof(sv(X/Sx,Y/Sy),findequiv(X,Sx,Y,Sy,SV_Proj,SV),NSV) ->
+        true
     ;
         NSV = []
     ).
@@ -252,8 +250,8 @@ findequiv(X,Sx,Y,Sy,SV_Proj,SV):-
     % dlist(Szl,Sy,Syy).
 
 samevaluelist(Pos,PosSg,SV):-
-    (
-        setof(sv(X/Sx,Y/[]),samevaluevar(X,Sx,Y,Pos,PosSg),SV) -> true
+    ( setof(sv(X/Sx,Y/[]),samevaluevar(X,Sx,Y,Pos,PosSg),SV) ->
+        true
     ;
         SV = []
     ).
@@ -263,13 +261,13 @@ samevaluevar(X,Sx,Y,Pos,PosSg):-
     member(S,P),
     member(Y:PY,PosSg),
     member(SY,PY),
-    dlist(Sx,SY,S).
+    dlist(Sx,SY,S). % TODO: missing cut here?
 samevaluevar(X,Sx,Y,PosSg,Pos):-
     member(X:P,Pos),
     member(S,P),
     member(Y:PY,PosSg),
     member(SY,PY),
-    dlist(Sx,SY,S),
+    dlist(Sx,SY,S), % TODO: missing cut here?
     Sx\==[].
 
 get_positions_of_vars([],_,[]).
@@ -283,21 +281,20 @@ get_pos_var(X,Term,P,Tail,Sel):-
     get_pos_var_arg(A,X,Term,F,Sel,P,Tail).
 get_pos_var(_X,_Term,P,P,_).
 
-get_pos_var_arg(0,_X,_Term,_F,_Sel,P,P).
+get_pos_var_arg(0,_X,_Term,_F,_Sel,P,P) :- !.
 get_pos_var_arg(A,X,Term,F,Sel,P,Tail):-
     arg(A,Term,Arg),
     get_pos_var(X,Arg,P,P1,[F/A|Sel]),
     A1 is A - 1,
     get_pos_var_arg(A1,X,Term,F,Sel,P1,Tail).
 
-
 samevaluelistempty([],[],[]).
 samevaluelistempty([VH|VHead],[VS|VSg],[sv(VH/[],VS/[])|SV]):-
     samevaluelistempty(VHead,VSg,SV).
 
 addimplicit(SV_s,SV_I):-
-    (
-        setof(sv(X/Sx,Y/Sy),transitive(X,Sx,Y,Sy,SV_s), SV_I) -> true
+    ( setof(sv(X/Sx,Y/Sy),transitive(X,Sx,Y,Sy,SV_s), SV_I) ->
+        true
     ;
         SV_I = []
     ).
@@ -335,7 +332,7 @@ sv_exit_to_prime(_Sg,_Hv,_Head,_Sv,'$bottom',_ExtraInfo,Prime) :- !,
     Prime = '$bottom'.
 sv_exit_to_prime(_Sg,_Hv,_Head,_Sv,SV_Exit,yes(SV),SV_Prime):-
     sort(SV,SV_s),
-    samevalueequiv(SV_s,SV_Exit,SV_Prime).
+    samevalueequiv(SV_s,SV_Exit,SV_Prime), !.
 sv_exit_to_prime(_Sg,_Hv,_Head,Sv,SV_Exit,no(SV_s),SV_Prime):-
     samevalueequiv(SV_s,SV_Exit,NSV),
     sort(NSV,NSV_s),
@@ -353,7 +350,7 @@ svterms_project(Sg,Vars,HvFv_u,ASub,Proj):-
     sv_project(Vars,SV,SVProj),
     abssubst_b(Proj,TypesProj,SVProj).
 
-sv_project(_,'$bottom',SVProj):- SVProj = '$bottom'.
+sv_project(_,'$bottom',SVProj):- SVProj = '$bottom', !.
 sv_project(Vars,SV,SVProj):-
     sv_project_aux(SV,Vars,SVProj).
 
@@ -377,7 +374,6 @@ svterms_abs_sort(ASub,ASub_s):-
     sv_sort(SV,SV_s),
     abssubst_b(ASub_s,TASub_s,SV_s).        
 
-
 sv_sort('$bottom','$bottom'):- !.
 sv_sort(SV,SV_s):- 
     sort(SV,SV_s).
@@ -394,13 +390,12 @@ svterms_extend(Sg,Prime,Sv,Call,Succ):-
     abssubst_b(Succ,TSucc,SVSucc).
 
 sv_extend(SV1,SV2,Sv,TSucc1,TSucc,SVSucc):-
-    (
-        TSucc1 \== '$bottom' ->
+    ( TSucc1 \== '$bottom' ->
         splitCall(TSucc1,Sv,TOnlyCall,TRest),
         updatecall(TOnlyCall,TRest,SV2,TNewCall),
         merge(TNewCall,TRest,TSucc),
         merge(SV1,SV2,SVSucc0),
-            %% ojo normalizar TSucc !!??
+            %% warning normalize TSucc !!??
         determinate(SVSucc0,TSucc,SVSucc)
     ;
         TSucc = TSucc1,
@@ -425,8 +420,8 @@ replacetype(X:Tx,TRest,SV2,X:Txn):-
     ).
 
 %% are Call and Prime sorted????? ojo
-splitCall([],_,[],[]).
-splitCall(TCall,[],TCall,[]).
+splitCall([],_,[],[]) :- !.
+splitCall(TCall,[],TCall,[]) :- !.
 splitCall([X:Tx|TCall],[Y|Sv],TOnlyCall,[X:Tx|TNewPrime]):-
     X == Y,!,
     splitCall(TCall,Sv,TOnlyCall,TNewPrime).
@@ -522,33 +517,31 @@ svterms_success_builtin(type(T),_Sv_uns,Condvars,_,Call,Succ):-
 %--------------------------------------------------------------%        
 :- dom_impl(svterms, call_to_success_builtin/6).
 :- export(svterms_call_to_success_builtin/6).
-svterms_call_to_success_builtin('=/2',X=Y,Sv,Call,Proj,Succ):-
+svterms_call_to_success_builtin('=/2',X=Y,Sv,Call,Proj,Succ):- !,
     svterms_call_to_success_fact(p(X,Y),[W],p(W,W),not_provided,Sv,Call,Proj,_Prime,Succ). % TODO: add some ClauseKey?
-
-svterms_call_to_success_builtin('is/2',(X is Y),Sv,Call,Proj,Succ):-
+%
+svterms_call_to_success_builtin('is/2',(X is Y),Sv,Call,Proj,Succ):- !,
     abssubst(Call,TCall,SVCall),
     abssubst(Proj,TProj,_SVProj),
     eterms_call_to_success_builtin('is/2',(X is Y),Sv,TCall,TProj,TSucc1),
     sv_extend([],SVCall,Sv,TSucc1,TSucc,SVSucc),
     abssubst_b(Succ,TSucc,SVSucc).  
-
-svterms_call_to_success_builtin('functor/3',Sg,Sv,Call,Proj,Succ):-
+%
+svterms_call_to_success_builtin('functor/3',Sg,Sv,Call,Proj,Succ):- !,
     abssubst(Call,TCall,SVCall),
     abssubst(Proj,TProj,_SVProj),
     eterms_call_to_success_builtin('functor/3',Sg,Sv,TCall,TProj,TSucc1),
     sv_extend([],SVCall,Sv,TSucc1,TSucc,SVSucc),
     abssubst_b(Succ,TSucc,SVSucc).  
-
-svterms_call_to_success_builtin('arg/3',Sg,Sv,Call,Proj,Succ):-
+%
+svterms_call_to_success_builtin('arg/3',Sg,Sv,Call,Proj,Succ):- !,
     abssubst(Call,TCall,SVCall),
     abssubst(Proj,TProj,SVProj),
     sort([X,Y,Z],Hv),
     eterms_arg_call_to_success(Sg,Hv,arg(X,Y,Z),Sv,TCall,TProj,TSucc1,TypeX,TypeY),
     sv_call_to_entry(Sv,Sg,Hv,arg(X,Y,Z),not_provided,[],SVProj,_SVEntry,ExtraInfo), % TODO: add some ClauseKey? (JF)
-    (
-        concrete(TypeX,ValuesX,[],[]) -> 
-        (
-            getargtypes(TypeY,ValuesX,_,_,SameValues,[]) ->
+    ( concrete(TypeX,ValuesX,[],[]) -> 
+        ( getargtypes(TypeY,ValuesX,_,_,SameValues,[]) ->
             buildargsamevalue(SameValues,Y,Z,SVPrime1)
         ;
             SVPrime1 = []
@@ -558,18 +551,15 @@ svterms_call_to_success_builtin('arg/3',Sg,Sv,Call,Proj,Succ):-
     ),
     sv_exit_to_prime(Sg,Hv,arg(X,Y,Z),Sv,SVPrime1,ExtraInfo,SVPrime),
     sv_extend(SVPrime,SVCall,Sv,TSucc1,TSucc,SVSucc),
-    abssubst_b(Succ,TSucc,SVSucc).  
-
-
+    abssubst_b(Succ,TSucc,SVSucc).
+%
 svterms_call_to_success_builtin(Key,Sg,Sv,Call,Proj,Succ):-
-    member(Key,['>/2','>=/2','=</2','</2']),
+    member(Key,['>/2','>=/2','=</2','</2']), !,
     abssubst(Call,TCall,SVCall),
     abssubst(Proj,TProj,_SVProj),
     eterms_call_to_success_builtin(Key,Sg,Sv,TCall,TProj,TSucc1),
     sv_extend([],SVCall,Sv,TSucc1,TSucc,SVSucc),
     abssubst_b(Succ,TSucc,SVSucc).  
-
-
 
 buildargsamevalue([],_Y,_Z,[]):-!.
 buildargsamevalue([Sel|SameValues],Y,Z,[sv(Y/Sel,Z/[])|SVPrime]):-
