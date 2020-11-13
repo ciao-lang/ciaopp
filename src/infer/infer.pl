@@ -92,6 +92,12 @@ get_info(nf,pred,_Key,Goal,Info):-       %%% JNL
     compute_lub(nf,LPrime,Abs),
     variant(Goal,Goal0),
     asub_to_props(nf,Goal,Abs,Info).
+get_info(nf,point,Key,Goal,Info):- !,
+    get_memo_entry(Key,_Vars,nf,[Asub]),
+    ( Asub == '$bottom' ->
+        Info = [fails(Goal)]
+    ;
+        asub_to_native(nf,Asub,Goal,yes,_A,Info) ).
 get_info(trusted,_Pred,_Key,_Goal,[]):- !. % not implemented yet!!!!
 get_info(Prop,pred,_Key,Goal,Info):- % inferred is pred level % TODO:[new-resources] move later! add cuts!
     current_fact(inferred(Prop,Goal0,Abs)),
