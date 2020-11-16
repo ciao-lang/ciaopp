@@ -73,13 +73,9 @@
 :- use_module(domain(java_cha)).
 :- endif.
 % ===========================================================================
-:- doc(section, "Computation domains").
-:- if(defined(has_ciaopp_extra)).
-:- use_module(domain(nfplai)). % nonfailure
-:- endif.
-:- if(defined(has_ciaopp_extra)).
-:- use_module(domain(detplai)). % determinism
-:- endif.
+:- doc(section, "Non-failure and determinism").
+:- use_module(domain(nfdet/nfplai)). % nonfailure
+:- use_module(domain(nfdet/detplai)). % determinism
 % ===========================================================================
 :- doc(section, "Resources domains").
 :- if(defined(has_ciaopp_extra)).

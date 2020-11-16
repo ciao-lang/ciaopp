@@ -353,7 +353,7 @@ current_menu_level(X) :-
 % (hook)
 :- if(defined(has_ciaopp_extra)).
 menu_default(para, ana_det, det).
-menu_default(para, ana_nf, nfg).
+menu_default(para, ana_nf, nf). % TODO: was nfg (NFGRAPH-based)
 :- endif.
 
 all_tr(optimize, opt).
@@ -1500,7 +1500,7 @@ needed_to_prove(ana_cost, _, P) :-
 preferred_ana(types,    eterms).
 preferred_ana(modes,    shfr).
 preferred_ana(ana_num,  polyhedra). %PP: just guessing
-preferred_ana(ana_nf,   nfg).
+preferred_ana(ana_nf,   nf). % TODO: was nfg (NFGRAPH-based)
 preferred_ana(ana_cost, steps_ualb). % IG: why duplicated?, possible choicepoints
 preferred_ana(ana_cost, resources).
 preferred_ana(ana_size, size_ualb).

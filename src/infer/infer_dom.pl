@@ -153,7 +153,6 @@ complexity_property(Abs,Cost,Goal,Succ,Comp):-
 % -------------------------------------------------------------------------
 
 flag_is(_,_,_):- fail. % (default)
-:- if(defined(has_ciaopp_extra)).
 % Non-failure
 flag_is(nf,not_fails,Flag):-
     Flag == not_fails.
@@ -172,6 +171,7 @@ flag_is(det,mut_exclusive,Flag):-
     Flag == covered.
 flag_is(det,not_mut_exclusive,Flag):-
     Flag == not_covered.
+:- if(defined(has_ciaopp_extra)).
 % Resources
 flag_is(res_plai,Prop,Flag) :-
     flag_set(nf,Prop,Flag).
@@ -190,7 +190,6 @@ flag_is(res_plai_stprf,Prop,Flag) :-
 :- endif.
 
 flag_set(_,_,_):- fail. % (default)
-:- if(defined(has_ciaopp_extra)).
 % Non-failure
 flag_set(nf,not_fails,Flag):-
     Flag = not_fails.
@@ -209,6 +208,7 @@ flag_set(det,mut_exclusive,Flag):-
     Flag = covered.
 flag_set(det,not_mut_exclusive,Flag):-
     Flag = not_covered.
+:- if(defined(has_ciaopp_extra)).
 % Resources
 flag_set(res_plai,Prop,Flag) :-
     flag_set(nf,Prop,Flag).
@@ -261,13 +261,13 @@ asub_to_props(An,Goal,Abs,Info):-
     comp_to_props(An,Goal,Dic,Out_Time, Comp),
     Info=(Succ,Comp),
     !. % no backtracking
+:- endif.
 asub_to_props(nfg,_Goal,nf(_Call,_Succ,Fail,Cover),Info):- !,
     Info=[Fail,Cover].
 asub_to_props(nf,_Goal,nf(_,_,nf(_,Cover,Fail)),Info):- !,  %% JNL
     Info=[Fail,Cover].
-asub_to_props(detg,_Goal,nf(_Call,_Succ,Det,Mut),Info):- !,
+asub_to_props(detg,_Goal,nf(_Call,_Succ,Det,Mut),Info):- !, % TODO: 'det' missing?
     Info=[Det,Mut].
-:- endif.
 
 :- if(defined(has_ciaopp_extra)).
 comp_to_props(An,Goal,Dic,Time,[Comp_Time]):-
@@ -405,14 +405,14 @@ abs_execute_with_info(size_lb,Info,Prop,Sense):- !,
 abs_execute_with_info(size_o,Info,Prop,Sense):- !,
     check_size_info(Prop,Info,Sense).
 :- endif.
-:- if(defined(has_ciaopp_extra)).
+%
 abs_execute_with_info(nfg,Info,Prop,Sense):- !,
     check_nf_info(Prop,Info,Sense).
 abs_execute_with_info(detg,Info,Prop,Sense):- !,
     check_det_info(Prop,Info,Sense).
 abs_execute_with_info(det,Info,Prop,Sense):- !,
     check_det_info(Prop,Info,Sense).
-:- endif.
+%
 abs_execute_with_info(Dom,Info,'basic_props:compat'(X,_Prop),true):-
     abs_execute_with_info(Dom,Info,var(X),true),!.
 abs_execute_with_info(Dom,Info,'basic_props:compat'(X,Prop),Sense):-!,
@@ -497,7 +497,6 @@ check_size_info(C,Cost,Status):-
 check_size_info(_C,_Cost,check).
 :- endif.
 
-:- if(defined(has_ciaopp_extra)).
 check_nf_info(C,Nf,Status):-
     nf_incompatible(C,Nf), !,
     Status=false.
@@ -505,9 +504,7 @@ check_nf_info(C,Nf,Status):-
     nf_included(C,Nf), !,
     Status=true.
 check_nf_info(_C,_Nf,check).
-:- endif.
 
-:- if(defined(has_ciaopp_extra)).
 check_det_info(C,Det,Status):-
     det_incompatible(C,Det), !,
     Status=false.
@@ -515,7 +512,6 @@ check_det_info(C,Det,Status):-
     det_included(C,Det), !,
     Status=true.
 check_det_info(_C,_Det,check).
-:- endif.
 
 :- if(defined(has_ciaopp_extra)).
 cost_incompatible(steps_lb(C),Cost):-
@@ -794,7 +790,6 @@ marshall_args_([$(N1)|Args],N):-
     marshall_args_(Args,N1).
 :- endif.
 
-:- if(defined(has_ciaopp_extra)).
 nf_incompatible(fails,Nf):-
     member(not_fails,Nf).
 nf_incompatible(not_fails,Nf):-
@@ -813,9 +808,7 @@ nf_included(covered,Nf):-
 nf_included(not_covered,Nf):-
     member(not_covered,Nf).
 nf_included(possibly_fails,_Nf).
-:- endif.
 
-:- if(defined(has_ciaopp_extra)).
 det_incompatible(non_det,Det):-
     member(is_det,Det).
 det_incompatible(mut_exclusive,Det):-
@@ -828,7 +821,6 @@ det_included(is_det,Det):-
 det_included(mut_exclusive,Det):-
     member(mut_exclusive,Det).
 det_included(possibly_nondet,_Det).
-:- endif.
 
 % ------------------------------------------------------------------------
 

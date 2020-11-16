@@ -151,7 +151,7 @@ analysis(Analysis) :- lazy_analysis(Analysis), !.
 %
 :- use_module(ciaopp(infer/vartypes), [gather_vartypes/2]).
 :- if(defined(has_ciaopp_extra)).
-:- use_module(infernf(infernf), [non_failure_analysis/6]).
+:- use_module(ciaopp(nfgraph/infernf), [non_failure_analysis/6]).
 :- endif.
 :- use_module(ciaopp(infer/inferseff), [analyze_side_effects/1]).
 :- use_module(ciaopp(infer/infer_db), [cleanup_infer_db/1]).

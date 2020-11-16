@@ -287,29 +287,21 @@ valid_flag_values( ana_num            , numericanalysis( _ )).
 
 pp_flag(ana_nf).  % menu only
 :- if(defined(has_ciaopp_extra)).
-pp_flag(ana_nf, 'Type of non-failure analysis: monovariant (nfg), or multi-variant (nf).' ).
+pp_flag(ana_nf, 'Type of non-failure analysis: multi-variant (nf), or monovariant (nfg), or .' ).
 :- else.
-pp_flag(ana_nf, 'Type of non-failure analysis (not available)' ).
+pp_flag(ana_nf, 'Type of non-failure analysis: multi-variant (nf)' ).
 :- endif.
 current_pp_flags(  ana_nf             , none    ).
 :- if(defined(has_ciaopp_extra)).
 valid_flag_values( ana_nf             , member( _ , [none, nf, nfg ] )).
 :- else.
-valid_flag_values( ana_nf             , member( _ , [none] )).
+valid_flag_values( ana_nf             , member( _ , [none, nf] )).
 :- endif.
 
 pp_flag(ana_det).  % menu only
-:- if(defined(has_ciaopp_extra)).
 pp_flag(ana_det, 'Type of determinacy analysis: multi-variant (det).' ).
-:- else.
-pp_flag(ana_det, 'Type of determinacy analysis (not available).' ).
-:- endif.
 current_pp_flags(  ana_det            , none    ).
-:- if(defined(has_ciaopp_extra)).
 valid_flag_values( ana_det            , member( _ , [none, det] )).
-:- else.
-valid_flag_values( ana_det            , member( _ , [none] )).
-:- endif.
 
 pp_flag(ana_cost).  % menu only
 :- if(defined(has_ciaopp_extra)).
