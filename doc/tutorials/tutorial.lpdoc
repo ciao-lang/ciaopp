@@ -1,0 +1,456 @@
+@begin{itemize}
+@item We demonstrate Ciaopp in use:
+  @begin{itemize}
+  @item Inference of complex properties of programs.
+  @item Modular program analysis.
+  @item Program debugging.
+  @item Program validation.
+  @item Program optimization (e.g., specialization, parallelization).
+  @item Program documentation. 
+  @end{itemize}
+
+@item We discuss some practical issues:
+  @begin{itemize}
+  @item The @emph{assertion} language.
+  @item Dealing with built-ins and complex language features.
+  @item Modular analysis (including libraries).
+  @item Efficiency and incremental analysis (only reanalyze what is needed).
+  @end{itemize}
+@end{itemize}
+
+@section{Properties and Assertions}
+
+@begin{itemize}
+@item Assertion language @cite{assert-lang-ws} suitable for 
+    @emph{multiple purposes} (see later). 
+@item Assertions are typically @emph{optional}. 
+
+@item @emph{Properties} (include @emph{types} as a special case): 
+   @begin{itemize}
+   @item Arbitrary predicates, (generally) @emph{written in the source language}.
+   @item Some predefined in system, some of them ``native'' to an analyzer.
+   @item Others user-defined.
+   @item Should  be ``runnable'' (but property may be an
+         approximation itself). 
+   @end{itemize}
+
+   Examples:
+   @begin{itemize}
+   @item The type of lists:
+@begin{verbatim}
+:- regtype list/1.
+list([]).
+list([_|Y]) :- list(Y).
+@end{verbatim}
+
+   @item The type of integers:
+@begin{verbatim}
+:- regtype int/1 + impl_defined.
+@end{verbatim}
+
+   @item The type of Peano numbers:
+@begin{verbatim}
+:- regtype peano_nat/1.
+peano_nat(0).
+peano_nat(s(X)) :- peano_nat(X).
+@end{verbatim}
+
+   @item The ``type'' of sorted lists:
+@begin{verbatim}
+:- prop sorted/1.
+sorted([]).
+sorted([_]).
+sorted([X,Y|Z]) :- X>Y, sorted([Y|Z]).
+@end{verbatim}
+@end{itemize}
+
+@item Many properties already defined in libraries:
+@begin{itemize}
+@item @tt{engine(basic_props)} for classical things like
+  @tt{num/1}, @tt{list/1}, @ldots
+@item @tt{library(assertions/native_props)} for properties
+  natively understood by @tt{ciaopp}, like @tt{linear/1},
+  @tt{is_det}, @ldots
+@item in their ``original'' library; e.g., @tt{numexpr/1} in
+  @tt{engine(arithmetic)}. 
+@end{itemize}
+
+@item Basic assertions:
+
+@begin{verbatim}
+:- success PredDesc [ : PreC ] => PostC .
+:- calls   PredDesc   : PreC .
+:- comp    PredDesc [ : PreC ] + CompProps .
+@end{verbatim}
+
+Examples:
+@begin{itemize}
+  @item On success (if any) of calls to @tt{qsort(A,B)} with @tt{A} a
+  list, @tt{B} is ground:
+@begin{verbatim}
+  :- success qsort(A,B) : list(A) => ground(B).
+@end{verbatim}
+  @item Calls to @tt{qsort(A,B)} are such that @tt{A} a is a list
+  and @tt{B} is a free variable:
+@begin{verbatim}
+  :- calls qsort(A,B) : ( list(A), var(B) ).
+@end{verbatim}
+  @item Calls to @tt{qsort(A,B)} in which @tt{A} a is a list of
+  integers and @tt{B} a free variable are deterministic and succeed:
+@begin{verbatim}
+  :- comp qsort(A,B) : ( list(int,A), var(B) )
+                     + ( is_det, succeeds ).
+@end{verbatim}
+@end{itemize}
+
+@item Compound assertion (syntactic sugar):
+
+@begin{verbatim}
+:- pred    PredDesc [ : PreC ] [ => PostC ] [ + Comp ] .
+@end{verbatim}
+
+Examples:
+@begin{itemize}
+  @item Calls to @tt{qsort(A,B)} in which @tt{A} a is a list of
+  integers and @tt{B} a free variable are deterministic and succeed
+  with @tt{B} a sorted list:
+ @begin{verbatim}
+  :- pred qsort(A,B) : ( list(int,A), var(B) )
+                    => sorted(B) 
+                     + ( is_det, succeeds ).
+@end{verbatim}
+  @item Calls to @tt{qsort(A,B)} in which @tt{A} a is a free variable
+  and @tt{B} a list of integers succeed with @tt{A} a ground term:
+ @begin{verbatim}
+  :- pred qsort(A,B) : ( var(A), list(int,B) )
+                    => ground(A) 
+                     + succeeds. 
+@end{verbatim}
+@end{itemize}
+
+@item Assertion @emph{status}: 
+@begin{itemize}
+@item @tt{check} (default) -- intended semantics, to be checked.
+@item @tt{true}, @tt{false} -- actual semantics, output from compiler.
+@item @tt{trust} -- actual semantics, input from user (guiding compiler).
+@item @tt{checked} -- validation: a @tt{check} that has been proved
+  (same as a @tt{true}).
+@end{itemize}
+
+Example:
+@begin{itemize}
+@item Use the information that on successes of @tt{is(X,Y)} it is
+  guaranteed that @tt{X} is a number and @tt{Y} a numerical expression:
+@begin{verbatim}
+  :- trust pred is(X,Y) => ( num(X), numexpr(Y) ).
+@end{verbatim}
+@end{itemize}
+
+@item Program point assertions: 
+@begin{itemize}
+@item Same as status, with the property as argument.
+@item @tt{check} is used for run-time checking if package
+  @tt{rtchecks} is included in the program.
+@end{itemize}
+
+Example:
+@begin{itemize}
+@item Trust that all inputs at this point are integers:
+@begin{verbatim}
+  main :- read(X), trust(int(X)), ...
+@end{verbatim}
+@end{itemize}
+
+@item The @tt{entry} assertion:
+@begin{itemize}
+@item Equivalent to ``@tt{trust calls}''.
+@item But only describes calls @emph{external} to a module.
+@end{itemize}
+
+Example:
+@begin{itemize}
+@item All invocations of the program will have integer parameters:
+@begin{verbatim}
+  :- entry main(X) : list(int,X).
+@end{verbatim}
+@end{itemize}
+
+@item Some goodies:
+@begin{itemize}
+@item syntactic sugar,
+@begin{verbatim}
+  :- pred length/2 : list(int) * var => list(int) * int.
+@end{verbatim}
+@item mode macros, 
+@begin{verbatim}
+  :- modedef +X : nonvar(X).
+@end{verbatim}
+so that
+@begin{verbatim}
+  :- pred qsort(+A,B).
+@end{verbatim}
+is equivalent to
+@begin{verbatim}
+  :- pred qsort(A,B) : nonvar(A).
+@end{verbatim}
+@item ``compatibility''  properties, fields for automatic
+  documentation @cite{ciaodoc-tr}, @ldots 
+@begin{verbatim}
+  :- pred sortints(+L,-SL) :: list(int) * list(int) 
+                            + sorted(SL)
+        # "@var{SL} has same elements as @var{L}.".
+@end{verbatim}
+@end{itemize}
+
+@end{itemize}
+
+
+@section{PART I: Analysis}
+
+@begin{itemize}
+@item @tt{ciaopp} includes two basic analyzers:
+  @begin{itemize}
+  @item The PLAI generic, top-down analysis framework.
+    @begin{itemize}
+    @item Several domains: modes (ground, free), independence,
+      patterns, @emph{parametric types} (@tt{list(int)}), etc. 
+    @item Incremental analysis, analysis of programs with delay, @ldots
+    @end{itemize}
+  @item Advanced analyzers (GraCos/CASLOG) for complex properties:
+
+    non-failure, coverage, determinism, sizes, cost, @ldots 
+  @end{itemize}
+@item Issues:
+  @begin{itemize}
+  @item Reporting the results @rightarrow ``true'' assertions.
+  @item Helping the analyzer @rightarrow ``entry/trust'' assertions.
+  @item Dealing with builtins @rightarrow ``trust'' assertions.
+  @item Incomplete programs @rightarrow ``trust'' assertions.
+  @item Modular programs @rightarrow ``trust'' assertions, interface
+    (@tt{.itf}, @tt{.asr}) files.
+  @item Multivariance, incrementality, @ldots
+  @end{itemize}
+@end{itemize}
+
+
+@subsection{Inference of Complex Properties: Non-failure (Intuition)}
+
+@begin{itemize}
+@item Based on the intuitively simple notion of a set of tests
+      ``covering'' the type  of the input variables.
+
+@item Clause: set of primitive tests followed by various
+unifications and body goals.
+
+@item The tests at the beginning determine whether the clause
+should be executed or not (may involve pattern
+matching, arithmetic tests, type tests, etc.)
+
+@item Consider the predicate:
+@begin{verbatim}
+abs(X, Y) :- X >= 0, Y is X.
+abs(X, Y) :- X < 0, Y is -X.
+@end{verbatim} 
+
+@begin{itemize}
+@item and a call to @tt{abs/2} with @tt{X} bound to an integer
+      and @tt{Y} free.
+
+@item The test of @tt{abs/2}, X @geq 0 @vee X < 0, will
+      succeed for this call.
+
+@item ``The test of the predicate @tt{abs/2} covers the type of
+      @tt{X}.''
+
+@item Since the rest of the body literals of @tt{abs/2} are
+      guaranteed not to fail, at least one of the clauses will not
+      fail, and thus the call will also not fail:
+
+@begin{verbatim}
+  :- true pred abs(X, Y) : ( int(X), var(Y) ) + not_fails.
+@end{verbatim} 
+
+@end{itemize}
+
+@end{itemize}
+
+@subsection{Inference of Complex Properties: 
+Lower-Bounds on Cost (Intuition)}
+
+@begin{itemize}
+
+@item Consider:
+@begin{verbatim}
+:- module(lists,[append/3,...],[assertions]).
+
+:- entry append(A,B,C): glist * glist * var.
+
+append([], L, L).
+append([H|L], L1, [H|R]) :- append(L, L1, R).
+@end{verbatim}
+
+@item Assuming:
+@begin{itemize}
+@item Cost metric: number of resolution steps.
+@item Argument size metric: list length. 
+@item Types, modes, covering, and non-failure info available.
+@end{itemize}
+
+@item Let 
+  @tt{Cost_append}(n, m): cost of a call to @tt{append}/3 with
+  input lists of lengths n and m. 
+
+@item A difference equation can be set up for @tt{append}/3:
+
+ @begin{verbatim}
+ @tt{Cost_append}(0, m) = 1 (boundary condition from first clause),
+ @tt{Cost_append}(n, m) = 1 + @tt{Cost_append}(n-1, m).
+ @end{verbatim}
+
+@item Solution obtained: @tt{Cost_append}(n, m) = n+1.
+
+@begin{verbatim}
+:- true pred append(A,B,C)
+         : ( glist(A), glist(B), var(C) )
+        => ( glist(A), glist(B), glist(C), 
+             size_lb(A,length(A)), 
+             size_lb(B,length(B)),
+             size_lb(C,length(B)+length(A))
+           )
+         + steps_lb(length(A)+1).
+@end{verbatim}
+
+@item Based on also inferring argument size relationships (relative sizes).
+@end{itemize}
+
+
+@subsection{``Resource awareness'' example (Upper-Bounds Cost Analysis)}
+
+@begin{itemize}
+@item Given:
+@begin{verbatim}
+:- entry inc_all/2 : list(int) * var.
+
+inc_all([],[]).
+inc_all([H|T],[NH|NT]) :- NH is H+1, inc_all(T,NT).
+@end{verbatim}
+
+@item After running through @tt{ciaopp} (cost analysis) we get:
+@begin{verbatim}
+:- entry inc_all/2 : ground * var.
+
+:- true pred inc_all(A,B) : ( list(int,A), var(B) )
+                         => ( list(int,A), list(int,B) )
+                          + steps_ub(2*length(A)+1).
+
+inc_all([],[]).
+inc_all([H|T],[NH|NT]) :- NH is H+1, inc_all(T,NT).
+@end{verbatim}
+which is a program with a certificate of needed resources!
+@end{itemize}
+
+@subsection{Modular analysis}
+
+@begin{itemize}
+@item Single module analysis (for edit-compile-test cycle):
+
+  @begin{itemize}
+  @item CiaoPP allows the analysis of a module taking into
+    consideration assertions in modules imported from it
+
+  @item After the analysis of a module, CiaoPP stores the results in
+    order to be used when analysing the modules that import it
+
+  @item Also stores the calls to imported modules to improve the
+    results for this module when imported modules are analyzed
+
+  @item Example: given the following two modules:
+
+@begin{verbatim}
+:- module(rev,[rev/2],[assertions]).
+:- use_module(app).
+   rev([],[]).
+   rev([A|X1],Y):- rev(X1,Y1), app(Y1,[A],Y).
+
+:- module(app,[app/3],[assertions]).
+   app([],Y,Y).
+   app([A|X1],Y,[A|Z1]):- app(X1,Y,Z1).
+@end{verbatim}
+
+  @item When analyzing @tt{rev} the first time, nothing can be
+    assumed for the call to @tt{app/3}, but Ciaopp stores the
+    calling pattern for @tt{app/3}.
+
+    If Def domain is used, the analysis result is
+    @tt{rev(X,Y)}:true @mapsto true
+
+  (Not very informative)
+
+  @item When analyzing module @tt{app}, calling patterns from other
+    modules are considered.
+    
+    In the Def domain, with calling pattern
+    @tt{app(X,Y,Z)}:true, the resulting answer pattern is
+    @tt{app(X,Y,Z)}:true @tt{@mapsto (X @wedge Y) @leftrightarrow Z}
+
+  @item If @tt{rev} is analyzed again, it uses new information, and
+    produces a more precise result.
+
+    In the Def domain,  @tt{rev(X,Y)}:true
+    @tt{@mapsto X@leftrightarrow Y}
+  @end{itemize}
+
+
+@item Automatic analysis of multi-module programs
+  @begin{itemize}
+  @item Objective: get results as accurate as possible for large
+    programs and libraries
+
+  @item Two approaches: 
+    @begin{itemize}
+    @item Load all modules into memory and analyze them
+      as if they were a single module (when the analyzer does not run
+      out of memory)
+
+    @item Analyze modules one by one, iterating through the
+      inter-module dependency graph until a fixed point is reached. 
+    @end{itemize}
+  @end{itemize}
+
+@item Specialization of multi-module programs
+  @begin{itemize}
+  @item The same framework can be applied for propagating specialized
+    names generated for each program module.
+
+  @item Libraries can be specialized for a given program.
+  @end{itemize}
+@end{itemize}
+
+
+@section{PART II: Program Validation and Diagnosis (Debugging)}
+
+@begin{itemize}
+@item We compare actual semantics S vs.~intended semantics I for P:
+  @begin{itemize}
+  @item P is @emph{partially  correct} w.r.t. I iff 
+    S @subseteq I. 
+  @item P is @emph{complete} w.r.t. I iff
+    I @subseteq  S.
+  @item P is @emph{incorrect} w.r.t. I iff
+    S @not@subseteq I.
+  @item P is @emph{incomplete} w.r.t. I iff
+    I @not@subseteq S.
+  @end{itemize}
+@item I described via (check) assertions.
+@item Incorrectness and incompleteness indicate that diagnosis should be
+  performed. 
+@item @emph{Problems:} difficulty in computing S (+ I incomplete,
+i.e., @emph{approximate}).
+@item @emph{Approach:} 
+  @begin{itemize}
+  @item Use the abstract interpreter to infer properties of P.
+  @item Compare them to the assertions.
+  @item Generate run-time tests if anything remains to be tested.
+  @end{itemize}
+@end{itemize}
+

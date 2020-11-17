@@ -1,0 +1,655 @@
+In the following sections the precompilation process of CiaoPP is reviewed,
+and each step in the process explained to some extent. References
+are given to other documentation for a more detailed account on
+the different steps in the process.
+
+The description of some precompilation steps is still missing. Bear with us. 
+This document is still under construction.
+
+
+@section{Program mode analysis}
+
+Global analysis of programs is performed in CiaoPP in the context of
+abstract interpretation. Abstract interpretation is a technique which
+consists in interpreting the program over an abstract domain representing
+some properties. Roughly speaking, programs are run on abstract values
+instead of the concrete terms. The result of this analysis is a set of 
+abstract values which represent certain properties about the terms that
+the program variables can be bound to during execution. Such values are
+said to describe the program variables (in the sense of stating properties
+that hold of them). These descriptions are obtained
+for each program point, i.e., before and after calling each literal
+in the program. They are known as @em{call} and @em{success} abstract
+substitutions (or patterns) for the given literal.
+
+In the abstract interpretation framework of CiaoPP (formerly known as
+PLAI), an entry point to the program can be given. It plays for the
+analysis the same role as the query you give to the program when
+running, i.e., it is a description of such a query. Entry points are 
+given to the precompiler by means of assertions.
+See @ref{Using assertions for preprocessing programs} for information on how
+to analyze (and, in general, preprocess with the help of analysis information)
+your program. 
+
+Analysis information is used in debugging, specializing, transforming,
+and optimizing your program in CiaoPP. The kind of optimizations and
+the usefulness of the information from analysis very much rely on
+the analysis domain used. The CiaoPP mode analyzer currently implements
+domains SHARE, SHFR, SON, SHARESON, and SHFRSON, which are used in logic
+programming, and DEF, FR, and FD, which can be used either in
+(Herbrand) logic or constraint logic programming. (Please note that these
+lists may be incomplete.)
+
+@subsection{Set sharing analysis}
+
+The set sharing domain @index{SHARE} was proposed @cite{jacobs89} with the
+objective of  obtaining at compile-time accurate variable groundness
+and sharing information. 
+A variable is said to be ground if it is bound to a constant or a term
+made out of constants. Sharing, or aliasing, expresses the property of
+variables which can be bound to terms which share variables themselves
+(or can be bound to each other). Groundness is a very important property
+in many program optimizations, and sharing is fundamental in strict
+independence detection for logic programs. Furthermore, the set sharing
+abstraction is very adequate to propagate the groundness information
+during the analysis.
+
+Abstract substitutions are lists of lists of (program) variables.
+Intuitively, each list of variables @tt{V1}, @dots{}, @tt{Vn}
+represents the fact that there may be one or more shared variables
+occurring in the terms to which @tt{V1}, @dots{}, @tt{Vn} will be
+bound. If a variable @var{V} does not occur in any set, then there is no
+variable that may occur in the terms to which @tt{V} will be bound and
+thus those terms are definitely ground. If a variable @tt{V} appears
+only in a singleton set, then the terms to which it will be bound may
+contain only variables which do not appear in any other term.
+
+Information in the abstract substitutions of the sharing abstraction
+are given w.r.t. a set of variables. Consider the variables
+@tt{@{V,W,X,Y,Z@}}, and the abstract substitution
+@tt{@{@{Y@},@{W,Z@},@{V,Z@}@}}.
+Since @tt{X} does not appear in it, it means that it is known to be
+ground. Since @tt{Y} appears in a singleton set, it is not sharing with
+any other variable in the set, and thus, it is independent of all others.
+On the contrary, @tt{W} and @tt{Z} may share variables, and also
+@tt{V} and @tt{Z}, 
+but there are no variables shared between the three of them, nor between
+any other subset of the variables.
+
+
+@subsection{Sharing and freeness analysis}
+
+The sharing and freeness domain @index{SHFR} was proposed
+@cite{freeness-iclp91} with the objective of obtaining at compile-time
+accurate variable groundness, sharing, and freeness information. A
+variable is free if it is not bound to anything but possibly another
+variable. 
+Abstract substitutions have two components:
+one is the same as the SHARE domain, and the other is a list of
+program variables, which are known to be always free at execution time.
+
+
+@subsection{Pair sharing analysis}
+
+The pair sharing analysis domain @index{SON} was defined @cite{sonder86} 
+for inferring groundness, sharing, and
+linearity information. A variable is said to be linear if it is bound
+to a term whose variables are all distinct. We can say that it does not
+``share'' with itself. Note that a free variable is indeed linear.
+
+Abstract substitutions in this abstraction have two components:
+definite groundness information is described by means of a list of
+program variables (which are known to be always ground), and possible
+(pair) sharing information is described by pairs of program variables.
+The abstract pair sharing describes substitutions in which two
+variables do not share unless specified by the pair sharing abstract
+counterpart.  Thus, it describes @em{possible} pair-wise sharing of
+variables, while SHARE describes @em{possible} sharing of any
+number of variables.
+
+Consider a set of variables @tt{@{V,W,X,Y,Z@}}, and an
+abstract substitution @tt{(@{X@},@{(W,Z),(V,Z)@})}. This susbtitution
+means that @tt{X} is ground. Also, since the pairs @tt{(V,W)},
+@tt{(V,Y)}, @tt{P(Y,Z)}, and @tt{(Y,W)} do not appear in the pair
+sharing component, these pairs of variables are independent.
+
+
+@subsection{Combined sharing analyses}
+
+The @index{SHARESON} domain is a combination of the SHARE and SON
+domains. The @index{SHFRSON} domain is a combination of the SHFR and
+SON domains. The combination @cite{comdom} is done in such a
+way that the original domains and operations of the analyzer over them
+are re-used, instead of redefining the domains for the combination.
+This has some advantages, and the gain in accuracy can be meaningful.
+
+
+@subsection{Definiteness analysis}
+
+The definiteness abstraction @index{DEF} analyzer @cite{maria-phd} 
+derives @em{definite} interaction between constraints.  More
+precisely, the analysis determines (1) which variables are
+@em{definite}, i.e. constrained to a unique value, with respect to the 
+constraint store in which they occur and (2) keeps track of
+@em{definite} dependencies between program variables. These
+dependencies 
+are used to perform accurate definiteness propagation and are also
+useful in their own right to perform several program optimizations.
+
+An abstract constraint in the definiteness abstraction is either the
+special element @tt{BOT} or a pair @tt{(D,R)}. The @tt{BOT} element
+represents the empty set of constraints @footnote{More precisely, the
+  empty set of @em{satisfiable} constraints, discarding 
+  non-satisfiable constraints.}, and thus provides a precise abstraction
+for states in unreachable program points.  An abstract constraint
+@tt{(D,R)} describes a non-empty set of constraints. @tt{D} approximates
+the set of variables which are known to be definite (i.e. @tt{D} is a
+subset of the set of definite variables). @tt{R} approximates definite
+dependencies. @tt{R} is a set of couples @tt{(X,SS)}, where @tt{X} is a
+variable and @tt{SS} is a set of sets of variables. Each element
+@tt{(X,SS)} in @tt{R} approximates definite dependencies which are
+known to hold between @tt{X} and the sets of variables in @tt{SS}.
+In particular, each @tt{S} in @tt{SS} approximates a set of variables
+whose definiteness implies the definiteness of @tt{X}.
+
+The abstraction of the constraint @tt{X = 3} is
+@tt{(@{X@},@{@})}, i.e. @tt{X} is a definite variable. The
+abstraction of the constraint @tt{X = f(Y,Z)} is
+@tt{(@{@},@{(X,@{@{Y,Z@}@}),(Y,@{@{X@}@}),(Z,@{@{X@}@})@})}, i.e. no
+variable is known to be definite, @tt{X} will become definite as soon as
+both @tt{Y} and @tt{Z} become definite, and @tt{Y} and @tt{Z} will
+become definite as soon as @tt{X} becomes definite. Other examples are:
+@begin{itemize}
+@item @tt{X = 3Y + 2Z} abstracted by
+      @tt{(@{@},@{(X,@{@{Y,Z@}@}),(Y,@{@{X,Z@}@}),(Z,@{@{X,Y@}@})@})}  
+@item @tt{X > Y} abstracted by @tt{(@{@},@{@})}
+@item @tt{X @neq Y} abstracted by @tt{(@{@},@{@})}
+@end{itemize}
+
+
+@subsection{Freeness analysis}
+
+The freeness analysis @index{FR} derives @em{possible} interaction
+between constraints @cite{v.phd}.
+This is indeed very different that freeness in the SHFR domain.
+More precisely, the analysis determines (1) which variables act as
+@em{degrees of freedom} with respect to the satisfiability of the
+constraint store in which they occur and (2) keeps track of @em{possible}
+dependencies between program variables. These dependencies are used
+to perform accurate non-freeness propagation and are also useful
+in their own right to perform program optimizations such as constraint/goal
+reordering (cf. @cite{v.phd}).
+
+Intuitively, a variable @tt{X} acts as a degree of freedom with
+respect to a constraint (store) @tt{c} --or shortly, is @em{free} with
+respect to @tt{c}-- if it can still take all possible values according
+to its type. 
+So for each @tt{v} in the domain of @tt{X} it holds that
+@tt{c @wedge @tt{X=v}} is consistent.
+We also say that @tt{c} @em{constrains} @tt{X} iff @tt{X} is non-free
+in @tt{c}.
+
+In order to derive precise freeness information, it is vital to keep track
+of dependencies between variables. In contrast with the definiteness
+analysis, all @em{possible} dependencies between variables must be
+considered. A constraint @tt{c} establishes a dependency between a set of
+variables @tt{@{X1},...,@tt{Xn@}} iff (further) constraining all but
+one of the variables @em{possibly} (further) constrains the remaining
+variable. 
+More precisely, @tt{c} establishes a dependency
+@tt{@{X1},@tt{@ldots},@tt{Xn@}}
+iff for each @tt{Xi} holds that: for each @tt{Xj} with @tt{j @not= } @tt{i}
+there exists a @tt{vj} in the domain of @tt{Xj} such that
+@tt{c @wedge @tt{X1=v1} @wedge @ldots @wedge @tt{X(i-1)=v(i-1)} @wedge
+@tt{X(i+1)=v(i+1)} @wedge @ldots @wedge @tt{Xn=vn}} constrains @tt{Xi}.
+A variable @tt{X} that is non-free in @tt{c} can be considered as the
+degenerate dependency @tt{@{X@}}.
+For example:
+@begin{itemize}
+@item
+@tt{X=1} or @tt{X < 5} or @tt{X @not= 2} --- @tt{X} is non-free;
+@item
+@tt{X=Y+Z} --- @tt{X}, @tt{Y} and @tt{Z} are free and there is a
+   dependency @tt{@{X,Y,Z@}};
+@item
+@tt{X > Y} --- @tt{X} and @tt{Y} are free and there is a dependency
+   @tt{@{X,Y@}};
+@item
+@tt{X = f(A,B)} --- @tt{X} is non-free, @tt{A} and @tt{B} are free and
+   there are dependencies @tt{@{X,A@}} and @tt{@{X,B@}};
+@item
+@tt{X = f(A) @wedge @tt{Y=3*A}} --- @tt{X} is non-free, @tt{A}
+   and @tt{Y} 
+   are free and there are dependencies @tt{@{X,A@}}, @tt{@{Y,A@}} and
+   @tt{@{X,Y@}}.
+@end{itemize}
+
+The abstract information at each program point is either @tt{BOT}
+(representing an empty set of satisfiable constraints and thus indicating that
+the program point is unreachable) or it consists of:
+the set of free variables, and
+the set of possible dependencies, where each dependency is a set of
+variables (this set also contains singletons
+representing variables that are possibly non-free!).
+
+
+@subsection{Combined definiteness/freeness analysis}
+
+The combined analysis of DEF and FR derives both definiteness 
+and freeness information at the same time. This combined domain is
+known as @index{FD}. 
+
+The information at each program point consists of:
+the set of ground or definite variables, the set of free variables,
+the set of definite dependencies, the set of possible dependencies.
+
+Definite variables are removed from the set of possible dependencies
+(for more details we refer to @cite{v.phd}).
+For example,
+@tt{W = f(Z) @wedge @tt{X+Y=Z} @wedge @tt{X=1}} gives rise to the set
+of possible dependencies
+@tt{@{@{W@}, @{W,Z@}, @{W,Y@}, @{Y,Z@}@}} in the combined analysis, 
+whereas in case of the freeness analysis one obtains
+@tt{@{@{X@}, @{W@}, @{W,Z@}, @{W,Y@}, @{Y,Z@}@}}. 
+
+
+@section{Type analysis}
+
+CiaoPP performs type analysis via abstract type domains of the PLAI
+analysis framework. As all other analysis of PLAI, it is multivariant
+and gives information for each program point. The abstract domains are
+TERMS, PTYPES, ETERMS, and SVTERMS. The class of types used in CiaoPP
+is regular types. This language is a good compromise between
+expressive power and computability because it permits efficient
+algorithms for comparison and intersection of types.  Types is one of
+the many properties that can be expressed in the assertion language of
+CiaoPP (see @ref{Using assertions for preprocessing programs}). See
+@ref{Declaring regular types} for information on how to write regular
+types which are identified by a keyword 'REGTYPE'. Many types are
+defined in Ciao libraries, see for example @ref{Basic data types and
+properties}.
+
+A fundamental operation in the type domains is that of the widening. The
+various domains differ mainly in this operation, which guarantees
+termination of the analysis for domains which  have infinite ascending
+chains.  Domain TERMS uses shortening as the widening operator (see
+@cite{gallagher-types-iclp94}), in several fashions, which are
+selected via the @tt{depth} flag; depth 0 meaning the use of restricted
+shortening @cite{Saglam-Gallagher-94}. Domain ETERMS performs
+structural widening (see @cite{eterms-sas02});  Domain PTYPES
+uses the topological clash widening operator (see
+@cite{VanHentenryckCortesiLeCharlier95}). 
+
+CiaoPP allows different degrees of precision, for example, with the
+flag @tt{type_precision} with value @tt{defined}, the analysis restricts the
+types to the finite domain of predefined types, i.e., the types 
+defined by the user or in libraries, without generating new types.
+Another alternative is to use the normal analysis and to have in the
+output only predefined types, this is handled through the @tt{type_output}
+flag.
+
+Greater precision can be obtained evaluating builtins like @tt{is/2}
+abstractly. ETERMS has a variant which allows evaluation of the types
+which is governed by the @tt{type_eval} flag. Domain SVTERMS
+implements the rigid types domain of @cite{janss92}; in this domain,
+an abstract substitution contains both a type component and a 'same
+value' component which allows more precision in top down analyses like
+those of PLAI.
+
+
+
+@section{Program non-failure and determinacy analysis}
+
+CiaoPP can also perform non-failure and determinacy analysis of the programs.
+The non-failure analysis can detect procedures and goals that can be
+guaranteed not to fail (i.e., to produce at least one solution or not
+to terminate).  Determinacy analysis detects procedures which are 
+deterministic, in the sense of having at most one clause to succeed.
+
+The non-failure/determinacy analyzer can make use of mode and type 
+information. It is thus usually helpful to perform mode and/or type analysis
+in conjunction with non-failure and/or determinacy analysis. In this case,
+it is convenient to provide the types and modes of the arguments of exported 
+predicates, as well as the required type definitions. Alternatively, you
+can also provide modes and types for selected predicates in your program.
+
+The non-failure analyzer uses the mode analyzer to derive mode
+information, and the type analyzer to derive the types of predicates.
+Herbrand covering is checked by a direct implementation of the
+analyses presented in @cite{non-failure-iclp97}.  Testing of covering
+for linear arithmetic tests is implemented directly using either
+(depending on the types of variables):
+
+@begin{itemize} 
+
+@item the Omega test @cite{Pug92}. This test
+  determines whether there is an integer solution to an arbitrary set
+  of linear equalities and inequalities, referred to as a problem.
+
+@item CLP(R)
+
+@end{itemize} 
+
+A full description of the analysis can be found in @cite{non-failure-iclp97}.
+
+
+@section{Program cost analysis}
+
+The cost analyzer can infer both lower and upper bounds on the
+computational time cost about procedures in a program
+@cite{low-bounds-ilps97,low-bou-sas94}.
+The analysis is fully automatic, and only requires type information
+for the program entry point. Types, modes, and size measures are
+automatically inferred by the analyzer.
+
+In order to perform upper bound cost analysis, CiaoPP incorporates a modified
+version of the CASLOG @cite{caslog} system, so that the CiaoPP analyzers
+are used to supply automatically the information about modes, types, and 
+size measures needed by the CASLOG system.
+CiaoPP incorporates also a lower bound cost analysis, described 
+in @cite{low-bounds-ilps97}. The analyzer has been implemented by a
+variant of the version of CASLOG integrated in CiaoPP.  The problem with 
+estimating lower bounds is that it is in general necessary to account for
+the possibility of failure of head
+unification, leading to a trivial lower bound of 0. For this reason,
+the lower bound cost analyzer uses information inferred by the
+non-failure analysis of CiaoPP, described above.
+
+
+@section{Program specialization}
+
+A good number of program optimizations can be improved by analysis
+information. The Ciao precompiler can simplify and specialize programs based
+on that information. The specialization step of CiaoPP can just simplify (SIMP)
+the program w.r.t. the analysis information (eliminating dead code, predicates 
+that are guaranteed to either succeed or fail, etc.), specialize it and then
+simplify it (SPEC), or just specialize it (VERS), i.e. to unfold all versions 
+of the program predicates. See @cite{german-phd} for a detailed
+account on program specialization in CiaoPP.
+
+Simplification amounts to reducing predicates which are known to always
+succeed, fail, or lead to error. Such predicates are reduced to a direct
+call to nothing (if known to succeed), a failure, or an exception.
+This can speed up program execution, and it is also useful in order to
+detect errors at compile-time. Specialization consists in making explicit 
+in your program the different versions of the predicates in it. A version 
+of a predicate is regarded as a way of calling 
+it. The following predicate will have two versions for the calls appearing
+in the example:
+@begin{verbatim}
+?- p(a,X), p(Y,X).
+
+p(a,b).
+@end{verbatim}
+
+Indeed, as specialization is based on the abstract information of global
+analysis, versions depend on such information. Thus, versions exist for
+different @em{abstract call patterns} of a predicate,
+i.e., different @em{abstract} ways of calling it.
+
+If you select to specialize and also simplify, versions which
+do not allow for any additional simplification are collapsed
+together. Thus, a predicate will have as many versions as different
+ways of calling it which allow for different simplifications of the
+definition of the predicate. 
+
+
+@section{Partial evaluation}
+
+With the help of analysis information, CiaoPP can also perform partial
+evaluation of programs, reducing the program code to be actually executed.
+Partial evaluation is performed while analyzing the program, and is
+controlled as explained below.
+
+There are several fixpoint algorithms coexisting in the CiaoPP system.
+The partial evaluator has been integrated with the so-called ``@tt{di}''
+fixpoint, which corresponds to the @em{depth
+  independent} fixpoint algorithm described in @cite{inc-fixp-sas}. 
+It is selected by setting up the flag
+@tt{fixpoint} to the value @tt{di}.
+
+There are a good number of options for controlling the local and global
+levels in the specialization process of partial evaluation. There is also
+the possibility of applying the partial concretization of the abstract 
+properties to the concrete atoms. Finally, the results of partial evaluation
+can be output to a file. 
+
+Since partial evaluation is a recent addition to CiaoPP, its interface is
+not yet incorporated to the CiaoPP menu. The user interface to be used
+and the particular options for the partial evaluation process are explained 
+in this section.
+
+@subsection{Local control}
+
+In order to ensure the local termination of the partial evaluation
+algorithm, it must incorporate some mechanism to stop the unfolding
+process. For this purpose, there exist several well-known techniques
+in the literature, e.g., depth-bounds, loop-checks @cite{Bol93},
+well-founded orderings @cite{BdSM92}, well-quasi orderings
+@cite{SG95}, etc. CiaoPP incorporates a local control rule for this
+purpose which can be controlled by three different strategies:
+@begin{itemize}
+
+@item @tt{off}: corresponds to not computing specialized definitions.
+
+@item @tt{inst}: instantiation is performed, but no 
+  unfolding steps take place.
+  
+@item @tt{det}: this strategy allows the expansion of unfolding
+  while derivations are deterministic and stops them when a
+  non-deterministic branch is required;
+  
+@item @tt{emb}: the non-embedding unfolding rule, which uses the
+    homeomorphic embedding ordering to stop the unfolding process;
+@end{itemize}
+
+The desired strategy can be selected by setting the @tt{local_control}
+flag.  Note that the second strategy is non-terminating (i.e., it does
+not always guarantee termination) but it might be more efficient in
+some cases.
+
+The selection of unfolding is necessary in order to perform  analysis
+with the specialized definitions arising from the partial evaluation. 
+Without an unfolding rule, CiaoPP will simply perform an
+standard analysis, regardless of the options selected for global control.
+
+
+@subsection{Global control}
+
+As a result of unfolding, new patterns are produced and subject to be
+analysed.  The global control is constrained to continue iteratively with
+the analysis of those patterns which are not @em{covered} yet by the
+previously analyzed patterns.  Since this process can be infinite, CiaoPP
+includes some strategies to improve (and in some cases ensure) the
+termination behavior of analysis:
+
+@begin{itemize}
+  
+@item @tt{off}: with this option there is no particular
+  condition to stop the iterative process;
+  
+@item @tt{id}: this strategy allows specializing a new pattern provided
+  it is not equal (modulo renaming) to a formerly analyzed one.
+  
+@item @tt{inst}: this strategy allows us to specialize a new pattern if
+  it is not an instance of a previous pattern.
+
+@item @tt{hom_emb}: the nonembedding abstraction operator uses the
+    homeomorphic embedding ordering to detect when a pattern is covered and,
+    thus, stop the iterative process;
+
+@end{itemize}
+
+The desired strategy can be selected by setting the @tt{global_control} flag.
+Out of the four strategies, only @tt{hom_emb} always ensures the termination 
+of the process. Nevertheless, the @tt{id} and @tt{inst} strategies are more 
+efficient, and terminating in many practical cases.
+
+@subsection{Partial concretization}
+
+Partial evaluation can sometimes achieve more specialization by applying
+a @em{partial concretization} of the abstract property (inferred by the
+analysis being performed) to the concrete atom prior to unfolding it. For 
+this purpose, the @tt{part_concrete} flag can be set.
+The flag can be deactivated with the value @tt{off} at any time.
+
+@subsection{Code generation}
+
+Once the different settings have been selected, the program can be
+loaded and processed. The initial data required is provided, as usual,
+by means of an @tt{entry} declaration in the same file where the program 
+resides. Loading of the program to be specialized can be done with:
+@begin{verbatim}
+module(app).
+@end{verbatim}
+Then,  the analysis is started with the desired domain (e.g., the 
+@tt{eterms} domain):
+@begin{verbatim}
+analyze(eterms).
+@end{verbatim}
+In order to generate a specialized program from the analysis results,
+the so-called @tt{codegen} transformation must be performed:
+@begin{verbatim}
+transform(codegen).
+@end{verbatim}
+The specialized program can be written in a file (e.g., the
+@tt{output_file}) by calling the predicate @tt{output} as follows:
+@begin{verbatim}
+output(output_file).
+@end{verbatim}
+
+
+
+@section{Program parallelization}
+
+Automatic parallelization is performed in CiaoPP by the so called
+@em{annotation} algorithms. You can select the desired algorithm among: MEL,
+CDG, UDG, URLP, and CRLP. The differences between them are
+roughly explained in the following.
+
+CiaoPP currently annotates Independent And-Parallelism (IAP). Independence
+has the very desirable properties of correct and efficient execution 
+w.r.t. standard sequential execution of Prolog or CLP. It also has been 
+demonstrated to be practically exploitable without concerning the user.
+Nonetheless the parallel composition operator @tt{&} can be
+freely used by the programmer, at his/her own risk.
+
+Two different forms of IAP have been identified for the domain of
+computation of logic programming: 
+strict (SIAP) and non-strict (NSIAP). Comparable notions of independence
+have been also identified in the constraint domains. CiaoPP is able to 
+exploit all notions in both programming paradigms. Basically, the
+difference is that SIAP relies on conditions which can usually be
+checked a priori, while NSIAP requires checking conditions which can
+only be known a posteriori (i.e. after execution of the goals involved).
+We refer to @cite{maria-phd} for a clarification. In CiaoPP,
+the independence framework can be selected by the options @tt{pre}
+(for SIAP) or @tt{post} (for NSIAP).
+Selecting @tt{both} instructs the compiler to perform both analyses
+of independence and chose the best result. The MEL, CDG, 
+and UDG annotators @cite{muthu-phd,paco-phd} exploit SIAP, 
+the URLP annotator @cite{nsicond-sas94} exploits NSIAP.
+
+To exploit independence a dependency analysis of the program is performed
+(see @cite{annotators-jlp}). This
+yields a dependency graph, with conditions upon which the dependencies can be
+removed. This graph is treated in different ways by the
+different annotators. Consider the following clause:
+@begin{verbatim}
+p(W,X,Y,Z) :-  a(W), b(X,Y), c(Y,Z).
+@end{verbatim}
+
+The @index{CDG} algorithm considers all possible linearizations of
+the graph, without caring about the length of the resulting
+parallel expressions and possibly modifying the order of the goals which
+are known to be independent. It first exploits unconditional parallelism
+(between goals already known to be independent, where no condition has
+to be checked) if possible, and then considers each boolean combination 
+of the conditions in the graph, and the graph is updated as if such
+conditions hold. The parallel expressions coming out of recursively applying 
+the algorithm after this updating are annotated as possibly nested 
+if-then-elses and combined in a simplified form. For the clause above,
+it will yield:
+@begin{verbatim}
+p(W,X,Y,Z) :- 
+           ( ground(Z) -> a(W) & b(X,Y) & c(Y,Z) 
+                        ; a(W) & (b(X,Y), c(Y,Z)) ).
+@end{verbatim}
+
+The @index{UDG} algorithm only exploits unconditional
+parallelism. It annotates 
+two goals to be run in parallel if no dependency between them is
+present. The transitive dependency relations among goals, represented by
+the graph edges, are considered, and an heuristic is applied in order to
+maximize the possible parallelism under such dependencies.  This
+heuristic is based on finding a perfect linearization, i.e. one in
+which the graph can be converted into a linear (parallel) expression
+with no loss of parallelism. Note that this heuristic, as the one above,
+permits goal reordering as long as the dependencies represented by the
+edges are respected. For the clause above, it will yield:
+@begin{verbatim}
+p(W,X,Y,Z) :- 
+           a(W) & (b(X,Y), c(Y,Z)).
+@end{verbatim}
+
+The @index{MEL} algorithm aims at finding out points in the body of a
+clause where it can be split into different parallel expressions without
+changing the order given by the original clause and without building
+nested parallel expressions. Such points occur where ``false'' conditions
+appear in the graph --there is no way that the goals depending on such
+conditions be independent. The algorithm proceeds right to left in
+the clause body looking for such points. When one is found, the clause
+body is broken into two, a (possibly non perfect) linearization is
+built for the right part of the sequence split, and the process
+continues with the left part. For the clause above, it will yield:
+@begin{verbatim}
+p(W,X,Y,Z) :- 
+           ( ground(Z) -> a(W) & b(X,Y) & c(Y,Z) 
+                        ; a(W) , b(X,Y) , c(Y,Z)
+           ).
+@end{verbatim}
+
+From the examples it can be thought that the heuristic applied by the
+CDG is the best of the three presented. However in real cases and
+without accurate information, the number of tests created by CDG may 
+yield significant overhead, making the other two approaches
+more practical. The user is encouraged to experiment with this.
+
+The @index{URLP} algorithm exploits NSIAP. The dependency analysis in
+this case is much more intricate than for SIAP. Also some extra program
+rewriting has to be done to preserve correctness of the parallel
+execution. URLP starts with the sequence of goals of the body of
+the clause and recursively tries to parallelize pairs of consecutive
+goals or groups of goals by a few simple rewriting rules, based on the
+dependencies found by the analysis. The original order of goals is not
+changed. For the clause above, it may possibly yield:
+@begin{verbatim}
+p(W,X,Y,Z) :- 
+           a(W) & b(X,Y) & c(A,Z), Y=A.
+@end{verbatim}
+
+URLP only exploits unconditional parallelism, as in UDG,
+but the results can be very different. Recall also that URLP
+exploits only a posteriori conditions.
+
+
+@section{Granularity control on parallel programs}
+
+CiaoPP has an annotator which transforms programs in order to perform
+run--time granularity control
+@cite{granularity-pasco94,granularity-jsc}. In general, this control
+process consists of the following steps, (1) compute term sizes
+involved in granularity control, (2) evaluate cost functions
+(inferred through cost analysis), and (3) compare with a threshold and
+decide parallel or sequential execution.  However some optimizations
+are performed to this general process.  This includes cost function
+simplification and improved term size computation. Regarding term size
+computation, CiaoPP uses the technique presented in @cite{termsize-iclp95}.
+This technique is based on the following idea. First, procedures which
+require knowledge regarding term sizes are identified. Then, an analysis
+tries to find other procedures which are called before the former ones,
+and which traverse the terms whose size is to be determined.  Such procedures
+are then transformed so that they compute term sizes ``on the fly.''
+The technique enjoys a systematic way for determining whether a
+given program can be transformed in order to compute a given term size
+at a given program point without additional term traversal.

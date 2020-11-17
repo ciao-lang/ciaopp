@@ -1,0 +1,194 @@
+% -*- TeX-PDF-mode: t; IspellDict: english -*-
+
+\documentclass{standalone}
+
+ \usepackage{tikz}
+ \usetikzlibrary{positioning,shapes,arrows,fit,calc,shadows}
+ \newcommand{\kbd}[1]{\mbox{\tt #1}}
+
+ \begin{document}
+
+% Define the layers to draw the diagram
+\pgfdeclarelayer{background}
+\pgfdeclarelayer{foreground}
+\pgfdeclarelayer{backback}
+\pgfsetlayers{backback,background,main,foreground}
+
+% Define block styles used later
+\tikzstyle{source}=[draw, draw=cyan!80!black!100, fill=cyan!20, text width=6em, font=\sffamily,
+    thick,
+    minimum height=2.5em,drop shadow]
+\tikzstyle{tool}=[draw=green!50!black!100, fill=green!40, text width=5em, font=\sffamily,
+    thick, drop shadow,
+    text centered,
+    chamfered rectangle, chamfered rectangle angle=30, chamfered rectangle xsep=2cm]
+\tikzstyle{midresult}=[draw, fill=white!40, text width=5em, font=\sffamily,
+    thick,
+    rounded rectangle,
+    minimum height=1em,drop shadow]
+\tikzstyle{warnresult}=[color=orange!50!black!100, fill=orange!40, text width=6em, font=\sffamily,
+    thick,
+    rounded corners=2pt,
+    minimum height=1em,drop shadow]
+\tikzstyle{errresult}=[color=red!80!black!100, fill=red!20, text width=6em, font=\sffamily,
+    thick,
+    rounded corners=2pt,
+    minimum height=1em,drop shadow]
+\tikzstyle{okresult}=[color=green!50!black!100, fill=green!40, text width=6em, font=\sffamily,
+    thick,
+    rounded corners=2pt,
+    minimum height=1em,drop shadow]
+\tikzstyle{certresult}=[color=blue!50!black!100, fill=blue!40, text width=5em, font=\sffamily,
+    thick,
+    rounded corners=2pt,
+    minimum height=1em,drop shadow]
+\tikzstyle{coderesult}=[draw, draw=cyan!80!black!100, fill=cyan!20, text width=6em, font=\sffamily,
+    thick, % blue!50!black!100
+    % rounded corners=2pt,
+    minimum height=2.5em,drop shadow]
+
+\scriptsize
+\hspace*{-2mm}
+\begin{tikzpicture}[>=latex]
+
+% On the left
+% -----------
+\node (assertions) [source] {
+  \textbf{Assertions}\\
+  (in user code, builtins,\\ libraries)\\[1ex]
+  \kbd{:- check}\\
+  % :- test\\
+  \kbd{:- trust}\\
+  % Unit-tests \\
+};
+\path (assertions)+(0,-7.2em) node (code) [source] {
+  \textbf{Code}\\
+  (user code, builtins,\\ libraries)
+};
+
+% % Transformation
+% % --------------
+% \path (assertions)+(9em,2em) node (assrtransf) [tool] {Assertion Transformation};
+% \path (assrtransf)+(0em,-9em) node (codetransf) [tool] {Code Transformation};
+
+% Inside Preprocessor
+% -------------------
+% first column
+% \path (assrtransf)+(10em,0em) node (normalizer) [tool] {Assertion Normalizer \& Library Interface};
+% \path (normalizer)+(0,-9em) node (statana) [tool] {Static Analysis (Fixpoint)};
+\path (assertions)+(9.1em,2em) node (normalizer) [tool] {Assertion Normalizer \& Library Interface};
+\path (normalizer)+(0,-9em) node (statana) [tool] {Static Analysis (Fixpoint)};
+
+% second column
+\path (statana)+(9.5em,0) node (anainfo) [source] {Analysis Info};
+\path[color=black] (anainfo)+(0em,+4.5em) node (true) [midresult] {\kbd{:- true}};
+\path (normalizer)+(9.5em,0) node (comparator) [tool] {Static Comparator};
+
+% third column
+\path (anainfo)+(9em,0) node (rtcheck) [tool] {Run-time Check Annotator};
+% \path (rtcheck)+(-3em,-2.8em) node (unittest) [tool] {Unit-Test};
+%
+% \path[color=brown!50!black] (comparator)+(8em,4em) node (texec) [midresult] {:- texec};
+\path[color=blue] (comparator)+(9em,-3em) node (check) [midresult] {\kbd{:- check}};
+\path[color=red] (comparator)+(9em,3em) node (false) [midresult] {\kbd{:- false}};
+\path[color=green!50!black] (comparator)+(9em,0em) node (checked) [midresult] {\kbd{:- checked}};
+
+% On the right
+% ------------
+\path (false)+(8.5em,1.6em) node (cterror) [errresult] {Compile-time error};
+\path (check)+(8.5em,-1.6em) node (verifwarn) [warnresult] {Verification warning(s)};
+\path (checked)+(8.5em,0em) node (verified) [okresult] {Verified assertion(s)};
+% \path (verified)+(-3em,-3em) node (certificate) [certresult] {Certificate (ACC)};
+% \path (rtcheck)+(0em,-7em) node (optcode) [coderesult] {Code with (Optimized) Run-time Tests};
+\path (rtcheck)+(0em,-7em) node (optcode) [coderesult] {Code with Run-time Checks};
+% \path (rtcheck)+(8.5em,0) node (rterror) [errresult] {Possible\\run-time error};
+\path (optcode)+(8.5em,0) node (rterror) [errresult] {Run-time error};
+
+% Arrows
+% ------
+\path [draw, thick, ->] (code.east) -- node [] {} (statana.west) ;
+% \path [draw, thick, ->] (code.east) -- node [] {} (codetransf.west) ;
+% % \path [draw, thick, ->] (codetransf.east) -- node [] {} (statana.west) ;
+% \path [draw, thick, ->] (assertions.east) -- node [] {} (assrtransf.west) ;
+\path [draw, thick, ->] (assertions.east) -- node [] {} (normalizer.west) ;
+% \path [draw, thick, ->] (assrtransf.east) -- node [] {} (normalizer.west) ;
+% \path [draw, thick, ->] (code.east) -- node [] {} (statana.west) ;
+% \path [draw, thick, ->] (assertions) -- node [] {} (normalizer.west) ;
+\path [draw, thick, ->] (normalizer) -- node [] {} (statana) ;
+\path [draw, thick, ->] (normalizer.east) -- node [] {} (comparator.west) ;
+% \path [draw, thick, ->] (comparator.east) -- node [] {} (texec.south west) ;
+\path [draw, thick, ->] (comparator.east) -- node [] {} (check.west) ;
+\path [draw, thick, ->] (statana) -- node [] {} (anainfo) ;
+\path [draw, thick, ->] (comparator.east) -- node [] {} (false.west) ;
+\path [draw, thick, ->] (comparator.east) -- node [] {} (checked.west) ;
+\path [draw, thick, ->] (anainfo) -- node [] {} (true) ;
+\path [draw, thick, ->] (true) -- node [] {} (comparator) ;
+\path [draw, densely dashed, thick, ->] (anainfo) -- node [] {} (rtcheck) ;
+%\path [draw, thick, ->] (texec) -- node [] {} (unittest) ;
+% \draw [thick, ->] (texec.north east) to [bend right] (unittest.south east) ;
+% \path [draw, thick, ->] (unittest) -- node [] {} (rtcheck) ;
+% \path [draw, thick, ->] (rtcheck) -- node [] {} (rterror) ;
+\path [draw, thick, ->] (optcode) -- node [] {} (rterror) ;
+% \draw [thick, ->] (checked.south east) to [bend left] (rtcheck) ;
+\begin{pgfonlayer}{background}
+% \draw [thick, ->] (checked.south east) -- node [] {} (rtcheck) ;
+\end{pgfonlayer}
+\draw [thick, ->] (check.south) -- node [] {} (rtcheck) ;
+\path [draw, thick, ->] (check) -- node [] {} (verifwarn) ;
+\path [draw, thick, ->] (false) -- node [] {} (cterror) ;
+\path [draw, thick, ->] (checked) -- node [] {} (verified) ;
+% \path [draw, thick, ->] (verified) -- node [] {} (certificate) ;
+% \path [draw, thick, ->] (verified) -- node [] {} (optcode) ;
+% \draw [thick, ->] (verifwarn.east) to [bend left] (optcode.north east) ;
+\path [draw, thick, ->] (rtcheck.south) -- node [] {} (optcode) ;
+
+% Titles of main boxes
+% --------------------
+% \path [color=black] (comparator.north)+(-6em,2em) node (preprocessor) {\sffamily \small Preprocessor};
+\path [color=black] (comparator.north)+(0em,2em) node (preprocessor) {\sffamily \small Preprocessor};
+% \path [color=black] (assrtransf.south)+(0,-2em) node (transf) {\sffamily \small Transformations};
+\path [color=black] (assertions.north)+(0,1.5em) node (program) {\sffamily \small Program};
+
+% Main boxes (shadings)
+% ---------------------
+% Program box
+\begin{pgfonlayer}{background}
+  \path (assertions.north west)+(-0.1,0.8) node (g) {};
+  \path (code.south east)+(0.1,-0.1) node (h) {};
+
+  \path[source] (g) rectangle (h);
+\end{pgfonlayer}
+
+% Preprocessor box
+\begin{pgfonlayer}{backback}
+  % \path (assrtransf.north west)+(-0.3,1.1) node (g) {};
+  \path (normalizer.north west)+(-0.3,1.1) node (g) {};
+  \path (rtcheck.south east)+(0.2,-0.6) node (h) {};
+
+  \path[fill=yellow!20,rounded corners, draw=black!50, densely dashed] (g) rectangle (h);
+\end{pgfonlayer}
+
+% % Transformation box
+% \begin{pgfonlayer}{background}
+%   \path (assrtransf.north west)+(-0.2,0.5) node (g) {};
+%   \path (codetransf.south east)+(0.3,-0.5) node (h) {};
+
+%   \path[fill=yellow!50,rounded corners, draw=black!50, densely dashed] (g) rectangle (h);
+% \end{pgfonlayer}
+
+% % Old preprocessor box
+% \begin{pgfonlayer}{background}
+%   \path (statana.north west)+(-0.5,1.0) node (g) {};
+%   \path (checked.south east)+(0.5,-0.5) node (h) {};
+
+%   \path[fill=yellow!20,rounded corners, draw=black!50, densely dashed] (g) rectangle (h);
+% \end{pgfonlayer}
+
+\end{tikzpicture}
+
+ \end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "ciaopp-framework"
+%%% End:
