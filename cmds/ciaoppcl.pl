@@ -79,10 +79,11 @@ main_(_Args) :-
 % ===========================================================================
 :- doc(section, "Help").
 
-ciaopp_banner :-
-    display('Ciao Preprocessor (integrated Alpha version)' ), nl,
-    display(' | This is an alpha distribution, meant only for testing. Please do let us '), nl,
-    display(' | know at ciaopp-bug<at>clip.dia.fi.upm.es any problems you may have.'), nl, nl.
+ciaopp_banner.
+% ciaopp_banner :-
+%     display('Ciao Preprocessor (integrated Alpha version)' ), nl,
+%     display(' | This is an alpha distribution, meant only for testing. Please do let us '), nl,
+%     display(' | know at ciaopp-bug<at>clip.dia.fi.upm.es any problems you may have.'), nl, nl.
 
 short_usage_message(
 "Use 'ciaopp --help' for help.
