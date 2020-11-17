@@ -287,9 +287,9 @@ valid_flag_values( ana_num            , numericanalysis( _ )).
 
 pp_flag(ana_nf).  % menu only
 :- if(defined(has_ciaopp_extra)).
-pp_flag(ana_nf, 'Type of non-failure analysis: multi-variant (nf), or monovariant (nfg), or .' ).
+pp_flag(ana_nf, 'Type of non-failure analysis: multi-variant (nf), or monovariant (nfg).' ).
 :- else.
-pp_flag(ana_nf, 'Type of non-failure analysis: multi-variant (nf)' ).
+pp_flag(ana_nf, 'Type of non-failure analysis: multi-variant (nf).' ).
 :- endif.
 current_pp_flags(  ana_nf             , none    ).
 :- if(defined(has_ciaopp_extra)).
