@@ -145,12 +145,12 @@ analysis(Analysis) :- lazy_analysis(Analysis), !.
 :- if(defined(with_fullpp)).
 :- use_module(ciaopp(plai), [plai/5, mod_plai/5, is_checker/1]).
 %
-:- if(defined(has_ciaopp_extra)).
+:- if(defined(has_ciaopp_cost)).
 :- use_module(domain(resources/reachability),[perform_reachability_analysis/1]).
 :- endif.
 %
 :- use_module(ciaopp(infer/vartypes), [gather_vartypes/2]).
-:- if(defined(has_ciaopp_extra)).
+:- if(defined(has_ciaopp_cost)).
 :- use_module(ciaopp(nfgraph/infernf), [non_failure_analysis/6]).
 :- endif.
 :- use_module(ciaopp(infer/inferseff), [analyze_side_effects/1]).
@@ -239,7 +239,7 @@ not_intermod(AbsInt) :-
 
 % take care of incompatibilities here!
 :- if(defined(with_fullpp)).
-:- if(defined(has_ciaopp_extra)).
+:- if(defined(has_ciaopp_cost)).
 analyze_(nfg,Cls,_Ds,nfinfo(TimeNf,Num_Pred,Num_NF_Pred,NCov),_):- !,
     not_intermod(nfg),
     cleanup_infer_db(nfg),
@@ -340,7 +340,7 @@ add_packages_if_needed(_) :-
 % TODO:[new-resources] move to other module
 
 :- if(defined(with_fullpp)).
-:- if(defined(has_ciaopp_extra)).
+:- if(defined(has_ciaopp_cost)).
 :- use_module(domain(resources/recurrence_processing),
     [ solve_eqs/1,
       gather_and_solve_eqs/1,

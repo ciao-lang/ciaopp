@@ -44,11 +44,9 @@
 :- use_module(library(counters), [inccounter/2]).
 :- use_module(library(terms_vars), [varset/2]).
 
-:- if(defined(has_ciaopp_extra)).
-:- use_module(infercost(algebraic/polynom_comp), % [LD]
-    [
-        polynom_message/7
-    ]).
+:- if(defined(has_ciaopp_cost)).
+:- use_module(infercost(algebraic/polynom_comp), [ % [LD]
+    polynom_message/7]).
 :- use_module(library(aggregates), [findall/3]). 
 :- endif.
 
@@ -115,7 +113,7 @@ init_ctcheck_sum :-
     asserta_fact(is_any_check(no)),
     cleanup_polynom_message.
 
-:- if(defined(has_ciaopp_extra)).
+:- if(defined(has_ciaopp_cost)).
 cleanup_polynom_message :-
     retractall_fact(polynom_message(_,_,_,_,_,_,_)). %[LD]
 :- else.
@@ -140,7 +138,7 @@ inform_as_change_to_user(Old,OldRef,New,Domains,Info) :-
     polynom_collect_message(Old, PolynomMsg), % TODO: ugly implementation!
     decide_inform_user(VCT, STAT, Old, OldRef, New, PolynomMsg, Domains, Info).
 
-:- if(defined(has_ciaopp_extra)).
+:- if(defined(has_ciaopp_cost)).
 polynom_collect_message(As, Msg):-
     findall(msg(UComp, ACost, SafeIntervalsTrue, SafeIntervalsFalse),
             retract_fact(polynom_message(As,UComp,ACost,_IntervalsTrue,SafeIntervalsTrue,_IntervalsFalse,SafeIntervalsFalse)),

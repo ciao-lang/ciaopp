@@ -67,7 +67,7 @@
     reset_previous_analysis/1,
     remove_useless_info/1]).
 
-:- if(defined(has_ciaopp_extra)).
+:- if(defined(has_ciaopp_java)).
 :- use_module(ciaopp(plai/output_java_info), [java_statistics/1]).
 :- else.
 java_statistics(_).

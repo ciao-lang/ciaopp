@@ -52,10 +52,11 @@
 :- use_module(ciaopp_llvm(c_translate)).
 :- endif.
 
-:- if(defined(has_ciaopp_extra)).
+:- if(defined(has_ciaopp_java)).
 :- use_module(ilciao(java_interface)).
 :- use_module(cafelito(annotator),[cafelito_module/2]).
 :- endif.
+
 :- use_module(ciaopp(preprocess_flags),[current_pp_flag/2]).
 
 :- regtype language/1.
@@ -78,11 +79,8 @@ supported_language(ciao).
 :- if(defined(has_ciaopp_llvm)).
 supported_language(c).
 :- endif.
-:- if(defined(has_ciaopp_extra)).
+:- if(defined(has_ciaopp_java)).
 supported_language(java).
-% (archived)
-% supported_language(xc).
-% supported_language(xc_assembly).
 :- endif.
 
 :- export(language_extension/2).
@@ -93,11 +91,8 @@ language_extension(ciao,        '.pl').
 :- if(defined(has_ciaopp_llvm)).
 language_extension(c,           '.c').
 :- endif.
-:- if(defined(has_ciaopp_extra)).
+:- if(defined(has_ciaopp_java)).
 language_extension(java,        '.java').
-% (archived)
-% language_extension(xc,          '.xc').
-% language_extension(xc_assembly, '.asm').
 :- endif.
 
 :- export(language_output_extension/2).
@@ -108,11 +103,8 @@ language_output_extension(ciao,        '.pl').
 :- if(defined(has_ciaopp_llvm)).
 language_output_extension(c,           '.pl').
 :- endif.
-:- if(defined(has_ciaopp_extra)).
+:- if(defined(has_ciaopp_java)).
 language_output_extension(java,        '.java').
-% (archived)
-% language_output_extension(xc,          '.pl').
-% language_output_extension(xc_assembly, '.pl').
 :- endif.
 
 :- use_module(engine(runtime_control), [push_prolog_flag/2, pop_prolog_flag/1]). % TODO: do in a better way
@@ -132,7 +124,7 @@ translate_input_file(ciao, I, _, _, I).
 :- if(defined(has_ciaopp_llvm)).
 translate_input_file(c, I, _, _, Pl) :- translate_c(I,Pl).
 :- endif.
-:- if(defined(has_ciaopp_extra)).
+:- if(defined(has_ciaopp_java)).
 translate_input_file(java, I, _, _, NI) :-
     current_pp_flag(java_analysis_level,source),!,
     cafelito_module(I,NI).
@@ -144,9 +136,6 @@ translate_input_file(java, I, _, _, NI) :-
     java_generate_ciao(Main_Class),
     get_ilciao_output_file(NI),
     pop_prolog_flag(write_strings).
-% (archived)
-% translate_input_file(xc, I, _, _, Pl) :- translate_xc(I,Pl).
-% translate_input_file(xc_assembly, I, _, _, Pl) :- translate_xc_assembly(I,Pl).
 :- endif.
 
 :- export(initial_transformations/2).
@@ -161,7 +150,7 @@ initial_transformations(ciao,        []).
 :- if(defined(has_ciaopp_llvm)).
 initial_transformations(c,           [unfold_entry]).
 :- endif.
-:- if(defined(has_ciaopp_extra)).
+:- if(defined(has_ciaopp_java)).
 initial_transformations(java,        [unfold_entry]):-
     current_pp_flag(java_analysis_level, source),!.
 initial_transformations(java,        []).
@@ -284,7 +273,7 @@ mod_from_base(N, M) :-
     path_split(NoExt, _, M1),
     get_module_java(N,M1,M). % TODO: hack, added by UL % TODO: detect language and call hook
 
-:- if(defined(has_ciaopp_extra)).
+:- if(defined(has_ciaopp_java)).
 % TODO: If file is java, module name is preceeded by 'examples.', needs to
 %   be resolved at analysis part to avoid 'examples.' prefix.
 get_module_java(File,M1,M):-
@@ -556,13 +545,9 @@ output_by_ext('.pl', Stream) :- !,
 :- if(defined(has_ciaopp_llvm)).
 :- include(ciaopp_llvm(printer_llvm)).
 :- endif.
-:- if(defined(has_ciaopp_extra)).
+:- if(defined(has_ciaopp_java)).
 :- include(ciaopp(printer_java)).
 :- endif.
-% (archived)
-% :- if(defined(has_ciaopp_extra)).
-% :- include(ciaopp(printer_xc)).
-% :- endif.
 :- endif. % with_fullpp
 
 % ---------------------------------------------------------------------------
@@ -767,13 +752,13 @@ comp_remove_first_argument(A, B) :-
 % :- multifile custom_compact_global_prop/2.
 
 :- if(defined(with_fullpp)).
-:- if(defined(has_ciaopp_extra)).
+:- if(defined(has_ciaopp_cost)).
 :- use_module(library(resdefs/rescostfunc), [compact_cf/3, compact_size/3]).
 :- endif.
 :- endif. % with_fullpp
 
 :- if(defined(with_fullpp)).
-:- if(defined(has_ciaopp_extra)).
+:- if(defined(has_ciaopp_cost)).
 compact_global_prop(cost(Rel, Ap, Type, Res, _, IF, CFN), Cost) :-
     compact_cf(CFN, IF, CF),
     compact_cost(Rel, Ap, Type, Res, CF, Cost),
@@ -783,7 +768,7 @@ compact_global_prop(cost(Rel, Ap, Type, Res, _, IF, CFN), Cost) :-
 compact_global_prop(C, C).
 
 :- if(defined(with_fullpp)).
-:- if(defined(has_ciaopp_extra)).
+:- if(defined(has_ciaopp_cost)).
 compact_calls_prop(intervals(_, G, _, L), intervals(S, L)) :-
     compact_size(G, _, S), !.
 :- endif.
@@ -791,7 +776,7 @@ compact_calls_prop(intervals(_, G, _, L), intervals(S, L)) :-
 compact_calls_prop(A, A).
 
 :- if(defined(with_fullpp)).
-:- if(defined(has_ciaopp_extra)).
+:- if(defined(has_ciaopp_cost)).
 compact_cost(rel, Ap, Type, Res, CF, RelCost) :-
     compact_rel_cost(Type, Ap, Res, CF, RelCost).
 compact_cost(abs, Ap, Type, Res, CF, AbsCost) :-

@@ -28,7 +28,7 @@
     add_assertion_read/9]).
 :- use_module(ciaopp(p_unit/itf_db), [curr_file/2]).
 :- use_module(typeslib(typeslib), [simplify_step2/0]).
-:- if(defined(has_ciaopp_extra)).
+:- if(defined(has_ciaopp_cost)).
 :- use_module(infercost(infercost_register),
     [is_ualb_complexity_analysis/3]).
 :- endif.
@@ -84,7 +84,7 @@ prepare_ai_output_(_PPoints,_Modes,AbsInt,_Collapse):-
     !,
     simplify_types_anyway(AbsInt),
     prepare_infer_output(AbsInt).
-:- if(defined(has_ciaopp_extra)).
+:- if(defined(has_ciaopp_cost)).
 prepare_ai_output_(_PPoints,_Modes,AbsInt,_Collapse):-
     % currently, have a different treatment
     is_ualb_complexity_analysis(AbsInt, Lower_An, Upper_An),
@@ -458,7 +458,7 @@ tmp_info_to_complete_info(_AbsInt,_Modes).
 
 % -------------------------------------------------------------------------
 
-:- if(defined(has_ciaopp_extra)).
+:- if(defined(has_ciaopp_cost)).
 prepare_infer_output(An):-
     is_ualb_complexity_analysis(An, Lower_An, Upper_An),
     !,

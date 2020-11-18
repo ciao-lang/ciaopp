@@ -118,7 +118,7 @@ Other commands useful when developing or debugging CiaoPP:
 % Plugin-like modules that define analyzers -- EMM
 
 :- if(defined(with_fullpp)).
-:- if(defined(has_ciaopp_extra)).
+:- if(defined(has_ciaopp_cost)).
 :- use_module(resources(resources_register), []).
 :- use_module(infercost(infercost_register), []).
 :- endif.

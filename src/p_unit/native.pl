@@ -128,7 +128,7 @@ native_prop_map(not_ground(Vars),not_ground,Vars):-
 % Should correspond with native/1 above:
 :- doc(hide,native_property/2).
 
-:- if(defined(has_ciaopp_extra)).
+:- if(defined(has_ciaopp_cost)).
 :- use_module(library(resdefs/rescostfunc), [compact_cf/3]).
 :- endif.
 
@@ -162,7 +162,7 @@ native_property('native_props:steps'(G,C),steps(G,C)).
 native_property('native_props:steps_lb'(G,C),steps_lb(G,C)).
 native_property('native_props:steps_ub'(G,C),steps_ub(G,C)).
 native_property('native_props:steps_o'(G,C),steps_o(G,C)).
-:- if(defined(has_ciaopp_extra)).
+:- if(defined(has_ciaopp_cost)).
 native_property('resources_props:cost'(G,Rel,Ap,Type,R,_,IF,CFN),
     cost(G,Rel,Ap,Type,R,CF)) :- compact_cf(CFN,IF,CF).
 :- endif.

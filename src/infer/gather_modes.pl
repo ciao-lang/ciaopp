@@ -15,7 +15,7 @@
 :- use_module(ciaopp(infer/infer),              [get_info/5, type2measure/3]).
 :- use_module(ciaopp(infer/infer_db),           [inferred/3]).
 :- use_module(ciaopp(infer/gather_modes_basic), [translate_to_modes/2, get_metric/2]).
-:- if(defined(has_ciaopp_extra)).
+:- if(defined(has_ciaopp_cost)).
 :- use_module(resources(res_assrt_defs/resources_lib),
         [get_measures_assrt/2, get_modes_assrt/2]).
 :- else.
@@ -479,7 +479,7 @@ gather_measures([Clause|Program], [Dc|Ds], K0, NewProgram0, NewDs0) :-
     gather_measure(Clause, Dc, K0, NewProgram0, NewDs0, NewProgram, NewDs),
     gather_measures(Program, Ds, K0, NewProgram, NewDs).
 
-:- if(defined(has_ciaopp_extra)).
+:- if(defined(has_ciaopp_cost)).
 gather_measure(Clause, Dc, K0, NewProgram0, NewDs0, NewProgram, NewDs) :-
     is_directive(NewDirect, D, DK),
     is_clause(Clause, Head, _B, _Id),
@@ -526,7 +526,7 @@ gather_measure(Clause, Dc, _K0, NewProgram0, NewDs0, NewProgram, NewDs) :-
 :- pop_prolog_flag(multi_arity_warnings).
 
 
-:- if(defined(has_ciaopp_extra)).
+:- if(defined(has_ciaopp_cost)).
 % Obtain measure assertions from ':- measure(F/A,Measure)'
 read_asr_measure(Goal, Measures) :-
     functor(Goal, F, A),

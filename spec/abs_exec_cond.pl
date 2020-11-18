@@ -175,7 +175,7 @@ cond(leq(Sg,Proj),Abs,Goal,Info):-
     less_or_equal_proj(Abs,Goal,SortedEntry,Sg,SortedProj).
 %jcf
 %
-:- if(defined(has_ciaopp_extra)).
+:- if(defined(has_ciao_ppl)).
 cond(polyhedra_constraint,Abs,Goal,Info) :-
     % TODO: REWRITE!!! (e.g, using domain operations)
     Abs = polyhedra,
@@ -185,13 +185,12 @@ cond(polyhedra_constraint,Abs,Goal,Info) :-
     polyhedra_less_or_equal(Info, GoalASub).
 :- endif.
 
-:- if(defined(has_ciaopp_extra)).
+:- if(defined(has_ciao_ppl)).
 % TODO: move above, make it modular, etc.
-:- use_module(domain(polyhedra),
-    [
-        polyhedra_input_user_interface/5,
-        polyhedra_less_or_equal/2
-    ]).
+:- use_module(domain(polyhedra), [
+    polyhedra_input_user_interface/5,
+    polyhedra_less_or_equal/2
+]).
 :- endif.
 
  %% %-------------------------------------------------------------------%

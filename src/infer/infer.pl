@@ -75,7 +75,7 @@ get_absint(Key,AbsInt,Vars,ASub):-
 % get_info(Form,Level,Key,Aux,Info)
 % what's the available Info about Form at point Key given Aux?
 
-:- if(defined(has_ciaopp_extra)).
+:- if(defined(has_ciaopp_cost)).
 :- use_module(domain(resources/plai2infer)).
 :- endif.
 
@@ -103,7 +103,7 @@ get_info(Prop,pred,_Key,Goal,Info):- % inferred is pred level % TODO:[new-resour
     current_fact(inferred(Prop,Goal0,Abs)),
     variant(Goal,Goal0),
     asub_to_props(Prop,Goal,Abs,Info).
-:- if(defined(has_ciaopp_extra)).
+:- if(defined(has_ciaopp_cost)).
 get_info(res_plai,pred,Key,Goal,Info):-
     current_fact(complete(Key,res_plai,Goal0,X1,LPrime,X2,X3)),
     X2 \== no, % it is not a builtin ??

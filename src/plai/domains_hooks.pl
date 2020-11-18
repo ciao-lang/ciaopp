@@ -52,24 +52,16 @@
 % ===========================================================================
 :- doc(section, "Numeric domains").
 :- use_module(domain(nonrel)). % intervals domain % [IG] new, simplified nonrelational domain
-:- if(defined(has_ciaopp_extra)).
+:- if(defined(has_ciao_ppl)).
 :- use_module(domain(polyhedra)).
 :- endif.
 % ===========================================================================
 :- doc(section, "OO/Java domains"). % TODO: imperative? points-to? nullity?
-:- if(defined(has_ciaopp_extra)).
+:- if(defined(has_ciaopp_java)).
 :- use_module(domain(java_nullity)). % for java programs
-:- endif.
-:- if(defined(has_ciaopp_extra)).
 :- use_module(domain(oo_son)).
-:- endif.
-:- if(defined(has_ciaopp_extra)).
 :- use_module(domain(oo_shnltau)).
-:- endif.
-:- if(defined(has_ciaopp_extra)).
 :- use_module(domain(oo_types)).
-:- endif.
-:- if(defined(has_ciaopp_extra)).
 :- use_module(domain(java_cha)).
 :- endif.
 % ===========================================================================
@@ -78,13 +70,9 @@
 :- use_module(domain(nfdet/detplai)). % determinism
 % ===========================================================================
 :- doc(section, "Resources domains").
-:- if(defined(has_ciaopp_extra)).
+:- if(defined(has_ciaopp_cost)).
 :- use_module(domain(resources/res_plai)).
-:- endif.
-:- if(defined(has_ciaopp_extra)).
 :- use_module(domain(resources/res_plai_stprf)).
-:- endif.
-:- if(defined(has_ciaopp_extra)).
 :- use_module(domain(resources/sized_types)).
 :- endif.
 % ===========================================================================

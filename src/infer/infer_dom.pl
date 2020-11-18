@@ -12,7 +12,7 @@
 
 :- use_package(ciaopp(p_unit/p_unit_argnames)).
 
-:- if(defined(has_ciaopp_extra)).
+:- if(defined(has_ciaopp_cost)).
 %[LD] for interval
 :- use_module(infercost(algebraic/polynom_comp),
       [
@@ -32,7 +32,7 @@
 
 :- use_module(ciaopp(infer/inferseff), [seff_property/3]).
 :- use_module(ciaopp(preprocess_flags), [current_pp_flag/2]).
-:- if(defined(has_ciaopp_extra)).
+:- if(defined(has_ciaopp_cost)).
 :- use_module(infercost(algebraic), 
     [ exp_greater_eq_than/2,
       exp_greater_than/2,
@@ -105,7 +105,7 @@ asub_to_info(nfg,_Goal,nf(Call0,Succ0,Fail,Cover),Call,Succ,[Fail,Cover]):-
 asub_to_info(detg,_Goal,nf(Call0,Succ0,Fail,Cover),Call,Succ,[Fail,Cover]):-
     terms_internal_to_native(Call0,no,Call),
     terms_internal_to_native(Succ0,no,Succ).
-:- if(defined(has_ciaopp_extra)).
+:- if(defined(has_ciaopp_cost)).
 asub_to_info(resources,Goal,Abs,Call,Succ,Comp):-
     get_vartypes_from_resource_info(Abs, Call_VarType, Succ_VarType),
     complexity_property(Abs,resources,Goal,Succ0,Comp),
@@ -123,7 +123,7 @@ asub_to_info(An,Goal,Abs,Call,Succ,Comp):-
 asub_to_info(Anal,Goal,Abs,Call,Succ,Comp):-
     inferred_to_property(Anal,Goal,Abs,Call,Succ,Comp).
 
-:- if(defined(has_ciaopp_extra)).
+:- if(defined(has_ciaopp_cost)).
 get_vartypes_from_complexity_info([_Abs_Lb, Abs_Ub], Call_VarType, Succ_VarType):-
     !, 
     Abs_Ub = complexity(Call_VarType, Succ_VarType, _Mode, _Measure, _Mutex, 
@@ -171,7 +171,7 @@ flag_is(det,mut_exclusive,Flag):-
     Flag == covered.
 flag_is(det,not_mut_exclusive,Flag):-
     Flag == not_covered.
-:- if(defined(has_ciaopp_extra)).
+:- if(defined(has_ciaopp_cost)).
 % Resources
 flag_is(res_plai,Prop,Flag) :-
     flag_set(nf,Prop,Flag).
@@ -208,7 +208,7 @@ flag_set(det,mut_exclusive,Flag):-
     Flag = covered.
 flag_set(det,not_mut_exclusive,Flag):-
     Flag = not_covered.
-:- if(defined(has_ciaopp_extra)).
+:- if(defined(has_ciaopp_cost)).
 % Resources
 flag_set(res_plai,Prop,Flag) :-
     flag_set(nf,Prop,Flag).
@@ -232,7 +232,7 @@ flag_set(res_plai_stprf,Prop,Flag) :-
     through the complexity structure.").
 
 asub_to_props(_,_,_,_) :- fail. % (default)
-:- if(defined(has_ciaopp_extra)).
+:- if(defined(has_ciaopp_cost)).
 asub_to_props(resources,Goal,Abs,Info):-
     !,
     Abs=complexity(_Call_VarType, _Succ_Vatype, _Mode, Measure, _Mutex, 
@@ -269,7 +269,7 @@ asub_to_props(nf,_Goal,nf(_,_,nf(_,Cover,Fail)),Info):- !,  %% JNL
 asub_to_props(detg,_Goal,nf(_Call,_Succ,Det,Mut),Info):- !, % TODO: 'det' missing?
     Info=[Det,Mut].
 
-:- if(defined(has_ciaopp_extra)).
+:- if(defined(has_ciaopp_cost)).
 comp_to_props(An,Goal,Dic,Time,[Comp_Time]):-
     is_time_analysis(An),
     !, 
@@ -360,7 +360,7 @@ false, or check. These intervals is pass to other module through
 :- pred abs_execute_with_info(Measure,Info,Prop,Sense)# "@var{Prop} is a
 cost expression e.g. steps_ub(Arithmetic Expr) and @var{Info} is list
 of cost expression".
-:- if(defined(has_ciaopp_extra)).
+:- if(defined(has_ciaopp_cost)).
 abs_execute_with_info(steps_ub,Info,Prop,Sense):-
     current_pp_flag( ctchecks_intervals , on ),!,
     check_cost_info_byvalue(Prop,Info,Sense),
@@ -465,7 +465,7 @@ statically_comp(AbsInt,F/A,Sense,Condition):-
 
 % ------------------------------------------------------------------------
 
-:- if(defined(has_ciaopp_extra)).
+:- if(defined(has_ciaopp_cost)).
 check_cost_info(C,Cost,Status):-
     cost_incompatible(C,Cost), !,
     Status=false.
@@ -475,7 +475,7 @@ check_cost_info(C,Cost,Status):-
 check_cost_info(_C,_Cost,check).
 :- endif.
 
-:- if(defined(has_ciaopp_extra)).
+:- if(defined(has_ciaopp_cost)).
 % Added by EMM
 check_resource_info(C,Cost,Status):-
     resource_incompatible(C,Cost), !,
@@ -487,7 +487,7 @@ check_resource_info(_C,_Cost,check).
 % End Added by EMM
 :- endif.
 
-:- if(defined(has_ciaopp_extra)).
+:- if(defined(has_ciaopp_cost)).
 check_size_info(C,Cost,Status):-
     size_incompatible(C,Cost), !,
     Status=false.
@@ -513,7 +513,7 @@ check_det_info(C,Det,Status):-
     Status=true.
 check_det_info(_C,_Det,check).
 
-:- if(defined(has_ciaopp_extra)).
+:- if(defined(has_ciaopp_cost)).
 cost_incompatible(steps_lb(C),Cost):-
     member(steps_ub(A),Cost),
     infer_dom:exp_greater_than(C,A).
@@ -669,7 +669,7 @@ resource_included_byvalue(cost(abs,ub,call,Res,C),Cost):-
     infer_dom:exp_greater_eq_than_byvalue(C,A,1).
 :- endif.
 
-:- if(defined(has_ciaopp_extra)).
+:- if(defined(has_ciaopp_cost)).
 %------------------------------------------------------------------------------
 % exp_value_greater_than_byvalue(A, C, X)
 % A > C on point X
@@ -779,7 +779,7 @@ compound_remove_size_measures(A,C,SC):-
    compound_remove_size_measures(A1,C,SC).
 :- endif.
 
-:- if(defined(has_ciaopp_extra)).
+:- if(defined(has_ciaopp_cost)).
 marshall_args(Term,N):-
     varset(Term,Vars),
     marshall_args_(Vars,N).
@@ -913,7 +913,7 @@ obtain_bound(cost(abs, B, call, Res, Alb),B,Res,Alb).
 obtain_bound(costb(Res,_,Alb),ub,Res,Alb).
 obtain_bound(costb(Res,Alb,_),lb,Res,Alb).
 
-:- if(defined(has_ciaopp_extra)).
+:- if(defined(has_ciaopp_cost)).
 % Please read this explanation: 
 %  1. A denotes Assertion
 %     C denotes Cost_analysis
@@ -1040,7 +1040,7 @@ verify_incompatible(_C, _A, Intervals, Intervals).
 :- endif.
 
 %------------------------------------------------------------------------------
-:- if(defined(has_ciaopp_extra)).
+:- if(defined(has_ciaopp_cost)).
 % check_cost_interval
 :- doc(check_cost_interval/6, "Compare assertion cost function with
 analysis cost function. When there is intersection between them it gives intervals
@@ -1135,7 +1135,7 @@ check_cost_interval(Prop, Info, IntervalsTrue,
 check_cost_interval(_,_,[],[],[],[]).
 :- endif.
 
-:- if(defined(has_ciaopp_extra)).
+:- if(defined(has_ciaopp_cost)).
 :- push_prolog_flag(multi_arity_warnings,off).
 %------------------------------------------------------------------------------
 % for passing information to ctchecks

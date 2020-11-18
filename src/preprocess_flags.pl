@@ -176,18 +176,13 @@ valid_flag_values( inter_ana          , sublist2( _ , [
                                                    ana_det
                                                  ] ) ).
 
-:- if(defined(has_ciaopp_extra)).
+:- if(defined(has_ciaopp_java)).
 :- include(ciaopp(preprocess_flags_java)).
 :- endif.
 
 :- if(defined(has_ciaopp_llvm)).
 :- include(ciaopp_llvm(preprocess_flags_llvm)).
 :- endif.
-
-% (archived)
-% :- if(defined(has_ciaopp_extra)).
-% :- include(ciaopp(preprocess_flags_xc)).
-% :- endif.
 
 pp_flag(inter_optimize).
 pp_flag(inter_optimize, 'Determines the kind of optimization to perform.').
@@ -286,13 +281,13 @@ current_pp_flags(  ana_num            , none  ).
 valid_flag_values( ana_num            , numericanalysis( _ )).
 
 pp_flag(ana_nf).  % menu only
-:- if(defined(has_ciaopp_extra)).
+:- if(defined(has_ciaopp_cost)).
 pp_flag(ana_nf, 'Type of non-failure analysis: multi-variant (nf), or monovariant (nfg).' ).
 :- else.
 pp_flag(ana_nf, 'Type of non-failure analysis: multi-variant (nf).' ).
 :- endif.
 current_pp_flags(  ana_nf             , none    ).
-:- if(defined(has_ciaopp_extra)).
+:- if(defined(has_ciaopp_cost)).
 valid_flag_values( ana_nf             , member( _ , [none, nf, nfg ] )).
 :- else.
 valid_flag_values( ana_nf             , member( _ , [none, nf] )).
@@ -304,32 +299,32 @@ current_pp_flags(  ana_det            , none    ).
 valid_flag_values( ana_det            , member( _ , [none, det] )).
 
 pp_flag(ana_cost).  % menu only
-:- if(defined(has_ciaopp_extra)).
+:- if(defined(has_ciaopp_cost)).
 pp_flag(ana_cost, 'Type of cost (and size) analysis: lower bounds (steps_lb), upper bounds (steps_ub), both (steps_ualb), complexity order (steps_o), resources (resources), and new resources (res_plai).').
 :- else.
 pp_flag(ana_cost, 'Type of cost (and size) analysis (not available)').
 :- endif.
 current_pp_flags(  ana_cost           , none    ).
-:- if(defined(has_ciaopp_extra)).
+:- if(defined(has_ciaopp_cost)).
 valid_flag_values( ana_cost           , member( _ , [none, steps_ub, steps_lb, steps_ualb, steps_o, resources, res_plai] )).
 :- else.
 valid_flag_values( ana_cost           , member( _ , [none] )).
 :- endif.
 
 pp_flag(ana_size). % menu only
-:- if(defined(has_ciaopp_extra)).
+:- if(defined(has_ciaopp_cost)).
 pp_flag(ana_size, 'Type of size analysis: lower bounds (size_lb), upper bounds (size_ub), both (size_ualb), or complexity order (size_o)').
 :- else.
 pp_flag(ana_size, 'Type of size analysis (not available)').
 :- endif.
 current_pp_flags(  ana_size           , none    ).
-:- if(defined(has_ciaopp_extra)).
+:- if(defined(has_ciaopp_cost)).
 valid_flag_values( ana_size           , member( _ , [none, size_ub, size_lb, size_ualb, size_o] )).
 :- else.
 valid_flag_values( ana_size           , member( _ , [none] )).
 :- endif.
 
-:- if(defined(has_ciaopp_extra)).
+:- if(defined(has_ciaopp_cost)).
 pp_flag(complexity_output).
 pp_flag(complexity_output, 'To output the complexity (steps and term size) inferred for predicates in terms of just arithmetic functions (funct) or complexity orders of such functions (big_o).').
 current_pp_flags(  complexity_output  , funct ).
@@ -502,7 +497,8 @@ valid_flag_values( fixpoint           , member(_,[plai,
                                               dd, di, check_di,
                                               check_di2, check_di3, 
                                               check_di4, check_di5,
-                                              poly_spec, check_reduc_di,
+                                              poly_spec, % (new in has_ciaopp_extra)
+                                              check_reduc_di,
                                               bu]) ).
 :- else.
 valid_flag_values( fixpoint           , member(_,[plai,
@@ -872,7 +868,7 @@ current_pp_flags(  bshare_option  , tNSH ).
 valid_flag_values( bshare_option  , member(_,[bSH,tSH,tNSH])).
 :- endif.
 
-:- if(defined(has_ciaopp_extra)).
+:- if(defined(has_ciaopp_java)).
 pp_flag(oo_types_dyn_info).
 pp_flag(oo_types_dyn_info, 'When analyzing types in Java-like programs, a value [off] relies on variable declaration; [on] forces more precise analysis.').  
 current_pp_flags(   oo_types_dyn_info,on).
@@ -1094,7 +1090,7 @@ typeanalysis(deftypes).
 
 % numeric analyses
 numericanalysis(none).
-:- if(defined(has_ciaopp_extra)).
+:- if(defined(has_ciao_ppl)).
 numericanalysis(polyhedra).
 :- endif.
 numericanalysis(lsign).

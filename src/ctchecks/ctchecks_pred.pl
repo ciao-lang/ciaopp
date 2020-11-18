@@ -32,7 +32,7 @@
 
 %[LD] for interval
 %:- use_module(ciaopp(preprocess_flags),[current_pp_flag/2]).
-:- if(defined(has_ciaopp_extra)).
+:- if(defined(has_ciaopp_cost)).
 :- use_module(infercost(algebraic/polynom_comp),[polynom_current_assertion/1]).
 :- endif.
 %[/LD] for interval
@@ -165,7 +165,7 @@ abs_exec_one_assertion_all(Domains, Info, A, Key, DomsOut, InfoOut, NA) :-
     ; true
     ).
 
-:- if(defined(has_ciaopp_extra)).
+:- if(defined(has_ciaopp_cost)).
 %%LD
 push_polynom_curr_assrt(A) :- asserta_fact(polynom_current_assertion(A)).
 pop_polynom_curr_assrt(A) :- retractall_fact(polynom_current_assertion(A)).
