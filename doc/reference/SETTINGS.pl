@@ -1,61 +1,120 @@
-:- module(_, [], [doccfg]).
+:- module(_, [], [doccfg, ciaopp(ciaopp_options)]).
 
+:- use_module(library(aggregates), [findall/3]).
 :- include(ciaopp_docsrc(docpaths)).
 
 output_name := 'ciaopp'.
 
 doc_structure :=
     ciaopp_ref_man-[
-      part_usage-[
-        tut_quick_start,
-        auto_interface,
-        ciaopp,
-        ciaoppcl,
-        release_tutorial,
-        % 'tutorial',
-        part_domains-[
-          % Available (working) domains (at least the ones in the tutorial)
-          % TODO: add all domains from domains_hooks.pl 
-          sharing, % TODO: review included files
-          sharing_amgu, % TODO: review included files
-          eterms,
-          detplai,
-          nfplai,
-          res_plai
-        ],
-        part_transformations,
-        part_fixpoint,
-        part_other_commands-[
-          'ciaopp-dump',
-          'ciaopp-batch',
-          'ciaopp_batch_report'
-        ]
-      ],
-      % TODO: remove, use cross-refs?
-      part_assertions-[
-        debugging_in_ciaopp,
-        assertions_doc,
-        assertions_props,
-        regtypes_doc,
-        basic_props,
-        native_props,
-        % TODO: use cross-refs
-%%          'unittest'-[...]
-%%                ['unittest/unittest_props',
-%%              'unittestdecls_doc',
-%%              % 'unittest/unittest_utils',
-%%              'unittest/unittest_statistics',
-%%              'unittest/unittest_examples'
-%%             ],
-        rtchecks_doc, % TODO: use cross-refs
-        apply_assertions
-      ],
-      part_extensions-[
-        adding_new_domain,
-        domains,
-        gr
-      ],
+      ~doc_usage,
+      ~doc_assertions, % TODO: remove, use cross-refs?
+      ~doc_extensions,
       ~doc_internals
+    ].
+
+doc_usage :=
+    part_usage-[
+      tut_quick_start,
+      auto_interface,
+      ciaopp,
+      ciaoppcl,
+      release_tutorial,
+      % 'tutorial',
+      ~doc_domains,
+      part_transformations,
+      part_fixpoint,
+      ~doc_other_commands
+    ].
+
+doc_domains := part_domains-(~findall(X,doc_domain(X))).
+
+% All available domains
+% TODO: Synchronize automatically; Do "M-x ciao-grep-root" with ":- dom_def(" to find all definitons.
+doc_domain(aeq_top). % :- dom_def(aeq).
+doc_domain(def). % :- dom_def(def).
+doc_domain(deftypes). % :- dom_def(deftypes).
+doc_domain(depthk). % :- dom_def(depthk).
+doc_domain(eterms). % :- dom_def(eterms).
+doc_domain(etermsvar). % :- dom_def(etermsvar).
+doc_domain(fd). % :- dom_def(frdef).
+doc_domain(fr_top). % :- dom_def(fr).
+doc_domain(gr). % :- dom_def(gr).
+doc_domain(lsign). % :- dom_def(lsign).
+doc_domain(lsigndiff). % :- dom_def(difflsign).
+doc_domain(detplai). % :- dom_def(det).
+doc_domain(nfplai). % :- dom_def(nf).
+doc_domain(nonrel). % :- dom_def(nonrel_intervals).
+doc_domain(pd). % :- dom_def(pd).
+doc_domain(pdb). % :- dom_def(pdb).
+doc_domain(polyhedra). % :- dom_def(polyhedra).
+doc_domain(ptypes). % :- dom_def(ptypes).
+doc_domain(sharefree). % :- dom_def(shfr).
+doc_domain(sharefree_amgu). % :- dom_def(sharefree_amgu).
+doc_domain(sharefree_clique). % :- dom_def(sharefree_clique).
+doc_domain(sharefree_clique_def). % :- dom_def(sharefree_clique_def).
+doc_domain(sharefree_non_var). % :- dom_def(shfrnv).
+doc_domain(shareson). % :- dom_def(shareson).
+doc_domain(sharing). % :- dom_def(share).
+doc_domain(sharing_amgu). % :- dom_def(share_amgu).
+doc_domain(sharing_clique). % :- dom_def(share_clique).
+doc_domain(sharing_clique_1). % :- dom_def(share_clique_1).
+doc_domain(sharing_clique_def). % :- dom_def(share_clique_def).
+doc_domain(shfret). % :- dom_def(shfret).
+doc_domain(shfrlin_amgu). % :- dom_def(shfrlin_amgu).
+doc_domain(shfrson). % :- dom_def(shfrson).
+doc_domain(sondergaard). % :- dom_def(son).
+doc_domain(svterms). % :- dom_def(svterms).
+doc_domain(termsd). % :- dom_def(terms).
+doc_domain(top_path_sharing). % :- dom_def(path).
+:- if(defined(has_ciaopp_cost)).
+doc_domain(sized_types). % :- dom_def(sized_types).
+doc_domain(res_plai_stprf). % :- dom_def(res_plai_stprf).
+doc_domain(res_plai). % :- dom_def(res_plai).
+:- endif.
+:- if(defined(has_ciaopp_java)).
+doc_domain(oo_types). % :- dom_def(oo_types).
+doc_domain(oo_son). % :- dom_def(oo_son).
+doc_domain(oo_shnltau). % :- dom_def(oo_shnltau).
+doc_domain(java_nullity). % :- dom_def(java_nullity).
+doc_domain(java_cha). % :- dom_def(java_cha).
+:- endif.
+%:- if(defined(has_ciaopp_extra)).
+%doc_domain('bshare/bshare'). % :- dom_def(bshare).
+%:- endif.
+
+doc_other_commands :=
+    part_other_commands-[
+      'ciaopp-dump',
+      'ciaopp-batch',
+      'ciaopp_batch_report'
+    ].
+
+doc_assertions :=
+    part_assertions-[
+      debugging_in_ciaopp,
+      assertions_doc,
+      assertions_props,
+      regtypes_doc,
+      basic_props,
+      native_props,
+      % TODO: use cross-refs
+%%      'unittest'-[...]
+%%            ['unittest/unittest_props',
+%%          'unittestdecls_doc',
+%%          % 'unittest/unittest_utils',
+%%          'unittest/unittest_statistics',
+%%          'unittest/unittest_examples'
+%%         ],
+      rtchecks_doc, % TODO: use cross-refs
+      apply_assertions
+    ].
+
+doc_extensions :=
+    part_extensions-[
+      adding_new_domain,
+      domains
+      %gr
     ].
 
 doc_internals :=
