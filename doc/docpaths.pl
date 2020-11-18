@@ -33,8 +33,9 @@ filepath := at_bundle(ciaopp, 'src/p_unit').
 filepath := at_bundle(ciaopp, 'src/tr_syntax').
 filepath := at_bundle(ciaopp, 'src/infer').
 filepath := at_bundle(ciaopp, 'domains').
-%filepath := at_bundle(ciaopp, 'typeslib').
 filepath := at_bundle(ciaopp, 'domains/nfdet').
+
+%filepath := at_bundle(typeslib, 'src').
 
 % ---------------------------------------------------------------------------
 % CiaoPP-Cost
