@@ -1,3 +1,82 @@
+:- doc(version(1*4+0,2020/11/18,6:18*07+'CET'), "
+   @begin{itemize}
+   @item General changes and new features:
+     @begin{itemize}
+     @item LLVM-based frontend improved and moved to its own bundle (see
+       @tt{ciaopp_llvm} bundle)
+     @item split @tt{typeslib} as a separate bundle
+     @item allow heads of entry assertions to be non-normalized
+     @item adapted to new hiord
+     @item [new] command @tt{ciaopp-dump}, which perform several actions
+       over ciaopp analysis dump: it includes old commands
+       @tt{ciaopp-dump-cmp} and @tt{ciaopp-dump-cmp}. New options for:
+       showing the content of a dump file, a code reachability report,
+       static, offline checks of assertions using a dump file, and general
+       statistics of the analysis result.
+     @item [new] added @tt{-op Suffix} option to ciaopp command-line
+     @item [new] warning if no entries were found
+     @item [new] unified messages, now controlled by @tt{ciaopp_log.pl}
+     @item [new] @tt{ciaopp-batch} command to run ciaopp on many files and with timeouts
+     @item [new] modular (non-incremental) analysis with types (shortening)
+     @item [new] bottom-up incremental update of fixpoint (at literal level)
+     @item [new] modular (non-incremental) analysis with types (shortening)
+     @end{itemize}
+   
+   @item Domains:
+     @begin{itemize}
+     @item implemented domains using (a special) trait package
+     @item added @tt{needs/2} operation
+     @item renamed @tt{abstypes_abs} to @tt{auxinfo_asub}
+     @item eterms: @tt{member/2}, @tt{=/2} as native properties (for assertions)
+     @item pdb:
+       @begin{itemize}
+       @item optimize @tt{pdb_compute_lub}: top if any @tt{ASub} is top
+       @item use @tt{fail} literals.
+       @end{itemize}
+     @item sharing: fixed @tt{free/1} handlers
+     @item shfr: fixes in handlers of @tt{==/2}, @tt{=/2},
+       @tt{'\\\\=='/2}, @tt{'\\\\='/2}, @tt{free/1} (native version of
+       @tt{var/1})
+     @end{itemize}
+   
+   @item Fixpoints:
+     @begin{itemize}
+     @item Split compilation options (@tt{debug}, @tt{trace},
+       @tt{rtchecks}) in common file @tt{fixpoint_options.pl}
+     @item Improved tracing of clauses
+     @item Refactored fixpoints to make them easier to merge
+     @end{itemize}
+
+   @item Fixpoint @tt{dd}:
+     @begin{itemize}
+     @item [fix] Reuse a complete with the same head but different vars order
+     @item [performance] Using get_memo_table because Id+Key is unique
+     @item [fix] Case in which a literal is not reachable
+     @item Improved documentation
+     @end{itemize}
+   
+   @item Analysis of higher order code:
+     @begin{itemize}
+     @item [new] Flag for automatic generation of entries of meta
+       calls.
+     @item [fix] @tt{call/N} not detected as meta predicate, flattened
+       if possible.
+     @item [new] @tt{\\\\+} not treated as meta, flatten calls known at
+       compile time.
+     @end{itemize}
+
+   @item Flags and options menu:
+     @begin{itemize}
+     @item [new] Flag to remove useless (unreachable) completes after fixpo.
+     @item @tt{punit_boundary}: change default value to bundle.
+     @item Included @tt{incanal} flag, changed @tt{ext_policy} in menu
+       (same as @tt{pp_flag}).
+     @item Improved options menu (added and simplified dependencies,
+       simplified text, grouped actions, better documentation).
+     @end{itemize}
+   @end{itemize}
+").
+
 :- doc(version(1*3+0,2019/11/3,11:16*23+'CEST'), "
    @begin{itemize}
    @item New functionality:
