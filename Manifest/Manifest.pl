@@ -10,7 +10,6 @@ depends([
 
 alias_paths([
     ciaopp = 'src',
-    auto_interface = 'auto_interface',
     domain = 'domains',
     %
     library = 'lib', % modules reachable as library(...)
@@ -23,7 +22,6 @@ alias_paths([
 ]).
 
 lib('src').
-lib('auto_interface').
 lib('domains').
 %
 lib('lib').

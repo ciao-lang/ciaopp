@@ -1783,5 +1783,5 @@ maybe_main(File) := R :-
 :- endif.
 
 :- if(defined(has_ciaopp_java)).
-:- include(auto_interface(auto_interface_java)). % Java support (JNL)
+:- include(ciaopp(auto_interface_java)). % Java support (JNL)
 :- endif.

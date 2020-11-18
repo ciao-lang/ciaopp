@@ -129,7 +129,7 @@ Other commands useful when developing or debugging CiaoPP:
 % Auto-interface
 
 :- if(defined(with_fullpp)).
-:- reexport(auto_interface(auto_interface)).
+:- reexport(ciaopp(auto_interface)).
 :- doc(hide,auto_analyze/1).
 :- doc(hide,auto_analyze/2).
 :- doc(hide,auto_optimize/1).

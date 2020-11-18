@@ -32,7 +32,6 @@ filepath := at_bundle(ciaopp, 'src/plai/incanal'). % IG: for incremental analysi
 filepath := at_bundle(ciaopp, 'src/p_unit').
 filepath := at_bundle(ciaopp, 'src/tr_syntax').
 filepath := at_bundle(ciaopp, 'src/infer').
-filepath := at_bundle(ciaopp, 'auto_interface').
 filepath := at_bundle(ciaopp, 'domains').
 %filepath := at_bundle(ciaopp, 'typeslib').
 filepath := at_bundle(ciaopp, 'domains/nfdet').
@@ -55,7 +54,6 @@ filepath := at_bundle(ciaopp_tests, 'tests/incanal'). % IG: for incremental anal
 % CiaoPP-Java
 
 filepath := at_bundle(ciaopp_java, 'src').
-filepath := at_bundle(ciaopp_java, 'auto_interface').
 filepath := at_bundle(ciaopp_java, 'domains').
 
 % ---------------------------------------------------------------------------
