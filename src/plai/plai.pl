@@ -154,7 +154,7 @@ plai_(Cls,Ds,Fixp,AbsInt,ModFlag,Stats) :-
         current_pp_flag(local_control,LC),
         ( is_checker(Fixp) -> PH = 'certificate checked by' ;  PH = 'analyzed by'),
         pplog(analyze_module, ['{', PH, ' ', Fixp, ' using ', AbsInt,
-                         ' with local-control ', LC,' in ', TAna, ' msec.}']),
+                               ' with local-control ', LC,' in ', TAna, ' msec.}']),
         % TODO: Total time is wrong, Local_C_Info not added!!!
         ask_unfold_times(Local_C_Info),
         java_statistics(AbsInt),
@@ -163,11 +163,11 @@ plai_(Cls,Ds,Fixp,AbsInt,ModFlag,Stats) :-
         Stats = [TimeInfo,MemoryInfo|DomInfo]
     ; ModFlag = mod ->
         pplog(analyze_module, ['{analyzed by ', Fixp, ' using ', AbsInt, ' in ', TAna,
-      ' msec.}']),
+                               ' msec.}']),
         Local_C_Info = [],
         Stats = [TimeInfo|DomInfo]
     ),
-    ( current_pp_flag(remove_useless_abs_info,yes) ->
+    ( current_pp_flag(remove_useless_abs_info,on) ->
         remove_useless_info(AbsInt) % TODO: time
     ; true
     ),
