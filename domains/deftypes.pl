@@ -183,7 +183,7 @@ deftypes_needs(auxinfo).
    recursive clauses.  @var{NewPrime} is the result of apply one
    widening operation to the least upper bound of the formers.
    Widening operations implemented are ``shortening'' and ``restricted
-   shortening'' @cite{gallagher-types-iclp94,Saglam-Gallagher-95}.".
+   shortening'' @cite{gallagher-types-iclp94,Saglam-Gallagher-94}.".
 
 deftypes_widen(Prime0,Prime1,NewPrime):-
     deftypes_compute_lub_el(Prime0,Prime1,NewPrime).
