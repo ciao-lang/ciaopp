@@ -389,32 +389,49 @@ info_format(pl,AbsInt,ASub,Gv,OutASub,Comp):-
 
 assert_pred_info(Goal,Call,Succs,Comp):-
     curr_file(_,M),
-    normalize_goal(Goal,Call,NGoal,NCall),
+    normhead(Goal,Call,NGoal,NCall),
     assertion_body(NGoal,[],NCall,Succs,Comp,[],Body),
     add_assertion_read(NGoal,M,true,pred,Body,no,no,0,0).
 
 % ---------------------------------------------------------------------------
-%! ## Assertion Goal Normalization
+%! ## Assertion Head Normalization
 %
 %  `add_assertion_read/9` expects normalized assertions, so they are normalized
 %  here. In order to do so, they are transformed in a way such that every nonvar
 %  term `nv` in the head of the assertion is substituted by a variable `_A` and
-%  the property `_A = nv` is inserted in the calls field.
+%  the property `_A = nv` is inserted in the calls field. Repeated variables
+%  are also replaced by unifications.
 %
-%  e.g. normalize_goal(( :- f(a)  : (...)         => ... ),
-%                      ( :- f(_A) : (_A = a, ...) => ... )).
-%
+%  e.g. 
+%    ?- normhead(f(a,X,X,Y), Call, H, NCall).
+%    
+%    H = f(_A,X,_B,Y),
+%    NCall = [_A=a,X=_B|Call] ? 
 
-normalize_goal(Goal,Call,NGoal,NCall) :-
-    functor(Goal,F,A),
-    functor(NGoal,F,A),
-    Goal =.. [F|Terms],
-    NGoal =.. [F|NTerms],
-    foldl(normalize_term,Terms,NTerms,NCall,Call).
+:- use_module(library(dict)).
 
-normalize_term(Goal,Goal,Call,Call) :- var(Goal), !.
-normalize_term(Goal,NGoal,NCall,Call) :-
-    NCall = [( NGoal = Goal )|Call].
+% (NOTE: based on core/lib/normvar/normvar_tr.pl)
+normhead(X, Eq0, Y, Eq) :-
+    functor(X,F,Ar),
+    functor(Y,F,Ar),
+    normhead_args(1, Ar, X, _Seen, Y, Eq, Eq0).
+
+normhead_args(I, Ar, _X, _Seen, _Y, Eq, Eq0) :- I > Ar, !,
+    Eq = Eq0.
+normhead_args(I, Ar, X, Seen, Y, Eq, Eq0) :-
+    arg(I, X, Xi),
+    arg(I, Y, Yi),
+    normhead_arg(Xi, Seen, Yi, Eq, Eq1),
+    I1 is I + 1,
+    normhead_args(I1, Ar, X, Seen, Y, Eq1, Eq0).
+
+normhead_arg(X, Seen, Y, Eq, Eq0) :- var(X), !,
+    dic_lookup(Seen, X, yes, Occ),
+    ( Occ = new -> X = Y, Eq = Eq0
+    ; Eq = [X=Y|Eq0]
+    ).
+normhead_arg(X, _Seen, Y, Eq, Eq0) :-
+    Eq = [Y=X|Eq0].
 
 % ---------------------------------------------------------------------------
 
