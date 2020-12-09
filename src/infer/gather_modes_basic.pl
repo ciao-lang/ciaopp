@@ -23,7 +23,7 @@ translate_to_mode(y/y,'+') :- !.
 translate_to_mode(y/n,'+') :- !. % bug?
 translate_to_mode(n/y,'-') :- !.
 % TODO: In next clause, if changed 2nd arg. to -, the following benchmarks
-% TODO: in (tests/resources/examples) will fail: flat_1, flat_2, flat_3, pqr_2,
+% TODO: in (tests/resources_examples) will fail: flat_1, flat_2, flat_3, pqr_2,
 % TODO: subst_exp_1, param_1, pqr_cm, partition_1, reverse, rtests, lists_sc,
 % TODO: Note that they depend on entry assertions -- EMM
 translate_to_mode(n/n,'+'). % Changed (Oct, 14, 2004) -PLG
