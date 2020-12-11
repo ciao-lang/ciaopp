@@ -851,15 +851,6 @@ do_r_cl(Clause,SgKey,Sg,Sv,Proj,AbsInt,EntryInf,Id,OldL,List,TempPrime,
     decide_flag(AbsInt,TempPrime,NewPrime,SgKey,Sg,Id,Proj,Flag).
 do_r_cl(_,_,_,_,_,_,_,_,List,List,Prime,Prime,_).
 
-widen_succ_off(AbsInt,Prime0,Prime1,LPrime):-
-    current_pp_flag(multi_success,on), !,
-    reduce_equivalent([Prime0,Prime1],AbsInt,LPrime).
-widen_succ_off(AbsInt,Prime0,Prime1,Prime):-
-    singleton(P0,Prime0),
-    singleton(P1,Prime1),
-    singleton(P,Prime), 
-    compute_lub(AbsInt,[P0,P1],P).
-
 reuse_entry(EntryInf,Vars_u,AbsInt,Sv,Sg,Hv,Head,K,Proj,Entry,ExtraInfo):-
     var(EntryInf), !,
     sort(Vars_u,Vars),

@@ -53,7 +53,7 @@
      disjuntions do not have LOC information. Thus messages
      related to them do not include line numbers.").
 
-:- use_module(library(lists), [member/2]).
+:- use_module(library(lists), [member/2, append/3]).
 :- use_module(engine(io_basic), [nl/0]).
 :- use_module(library(write), [writeq/1]).
 :- use_module(ciaopp(p_unit/clause_db), [clause_locator/2]).
@@ -313,7 +313,13 @@ each_apply_trusted(Proj,SgKey,Sg,Sv,AbsInt,ListPrime,LPrime):-
 :- pred widen_succ(+AbsInt,+Prime0,+Prime1,-LPrime) + not_fails.
 widen_succ(AbsInt,Prime0,Prime1,LPrime):-
     current_pp_flag(multi_success,on), !,
-    reduce_equivalent([Prime0,Prime1],AbsInt,LPrime).
+    ( get_singleton(P0,Prime0) ->
+        Primes = [P0|Prime1]
+    ;
+        append(Prime0,Prime1,Primes)
+    ),
+    reduce_equivalent(Primes,AbsInt,LPrime).
+%%  reduce_equivalent([Prime0,Prime1],AbsInt,LPrime). %% IG: old version
 widen_succ(AbsInt,Prime0,Prime1,Prime):-
     current_pp_flag(widen,on), !,
     singleton(P0,Prime0),     % to_see claudio
