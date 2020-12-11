@@ -151,6 +151,7 @@ Execution Examples:
 :- doc(section, "Parse command line arguments").
 
 :- use_module(library(terms), [atom_concat/2]).
+:- use_module(library(compiler/c_itf), [opt_suffix/2]).
 
 :- data output_file/1.
 
@@ -237,7 +238,6 @@ is_flag_value_p(FV, F, V) :- atom_concat(['-p', F, '=', V], FV).
     set_menu_flag/3,
     get_menu_flag/3]).
 :- use_module(library(toplevel), [toplevel/1]).
-:- use_module(library(compiler/c_itf), [opt_suffix/2]).
 
 ciaopp_cmd(help, _Flags) :- !,
     usage_message(Text),

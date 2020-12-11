@@ -174,6 +174,7 @@ detect_language(AbsFile, Lang) :-
 % ===========================================================================
 :- doc(section, "Module loading for preprocessing").
 
+:- use_module(engine(internals), [opt_suff/1]).
 :- use_module(engine(stream_basic), [sourcename/1, absolute_file_name/7]).
 :- use_module(engine(runtime_control), [push_prolog_flag/2, pop_prolog_flag/1]).
 
@@ -252,10 +253,11 @@ module_(ModList, Info):-
     % after loading module should not effect analysis.
     %set_pp_flag(prog_lang, ciao).
 
-absolute_file_names([],[]).
-absolute_file_names([M|Ms],[A|As]):-
-    absolute_file_name(M,'_opt','.pl','.',A,_,_),
-    absolute_file_names(Ms,As).
+absolute_file_names([], []).
+absolute_file_names([M|Ms], [A|As]):-
+    opt_suff(Opt),
+    absolute_file_name(M, Opt, '.pl', '.', A, _, _),
+    absolute_file_names(Ms, As).
 
 :- pred assert_curr_files(Fs) : list(Fs)
    # "Fill @pred{curr_module/1} and @pred{curr_file/2}.".
