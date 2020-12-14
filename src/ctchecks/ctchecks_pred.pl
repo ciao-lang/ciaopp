@@ -92,7 +92,7 @@ check_pred_all(Sg, Domains) :-
     findall(A-ARef, get_check_assertion(Sg, A, ARef), LA),
     predkey_from_sg(Sg, Key),
     decide_get_info_all(Domains, Key, Sg, Info),
-  warn_call_assrts(LA,Sg,0), % TODO: gather all call assrts in an body with ';/2'
+    warn_call_assrts(LA,Sg,0), % TODO: gather all call assrts in an body with ';/2'
     abs_execute_ass_predicate_all(LA, Key, Sg, Domains, Info, NLA),
     inform_as_changes_to_user(NLA),
     !. % TODO: this cut should not be needed (make sure no choicepoints are left)

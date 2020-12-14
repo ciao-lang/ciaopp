@@ -156,7 +156,8 @@ decide_inform_user(VCT, _STAT, Old, OldRef, New, [], _Domains, _Info):-
     assertion_set_calls(New, OrigCall, A2), % TODO: why?
     assertion_set_success(A2, OrigSuccess, A3), % TODO: why?
     assertion_set_comp(A3, OldComp, NewToPrint), % TODO: why?
-    erase(OldRef),
+    erase(OldRef), %% TODO: [IG] Why erase the assertion when printing the
+                   %% message and not when the assertion is checked?
     add_assertion(NewToPrint),
     ( Status = true -> local_inccounter(simp_true_s,_) 
     ;  ( Type = calls -> local_inccounter(simp_checked_c,_) ; 

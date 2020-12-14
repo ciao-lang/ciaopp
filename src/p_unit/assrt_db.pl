@@ -101,9 +101,8 @@ removeall_assertion_read(Goal,M,Status,Type,Body,Dict,Source,LB,LE):-
 %       retractall_fact(lib_assertion_read(Goal,M,Status,Type,Body,Dict,Source,LB,LE)).
 
 :- pred ref_assertion_read(Goal,M,Status,Type,Body,Dict,Source,LB,LE,Ref)
-# "Erases an entry for an assertion for which we have its reference
-  @var{Ref}.  Warning: this predicate is very dangerous and error
-  prone. It must be used with care.".
+   # " Enumerates assertions and their reference @var{Ref}. Warning: this
+   predicate is very dangerous and error prone. It must be used with care.".
 
 :- doc(bug, "This predicate is very dangerous and error prone.").
 
