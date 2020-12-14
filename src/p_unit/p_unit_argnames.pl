@@ -25,5 +25,3 @@
 % @var{fromwhere}. Ignore this field (can take the values: read,
 % asserted, commented), but maybe will dissapear in future
 % implementations.  ".
-
-

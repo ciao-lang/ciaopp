@@ -4,7 +4,7 @@
     replace_program/2,
     %
     entry_assertion/3,
-    exit_assertion/3, % TODO: Not imported anywhere
+    % exit_assertion/3, % TODO: Not imported anywhere
     native_to_prop/2,
     prop_to_native/2,
     native_to_props_visible/2,
@@ -67,9 +67,7 @@
 :- use_module(library(hiordlib), [maplist/2]).
 :- use_module(library(lists), [member/2]).
 :- use_module(library(vndict),
-    [ create_dict/2, complete_dict/3,
-      varnamedict/1, varnamesl2dict/2
-    ]).
+    [ create_dict/2, complete_dict/3, varnamedict/1, varnamesl2dict/2]).
 :- use_module(library(terms_check), [variant/2]).
 :- use_module(engine(internals), [module_concat/3]).
 
@@ -77,16 +75,12 @@
 :- reexport(ciaopp(p_unit/p_canonical)).
 :- use_module(ciaopp(p_unit/itf_db)).
 :- use_module(library(assertions/assrt_lib), [assertion_body/7]).
-:- use_module(ciaopp(p_unit/assrt_db), [assertion_read/9]).
+:- use_module(ciaopp(p_unit/assrt_db), [add_assertion_read/9, assertion_read/9]).
 :- use_module(ciaopp(p_unit/clause_db)).
 :- use_module(ciaopp(p_unit/program_keys),
     [clause_key/2,cleanup_program_keys/0,rewrite_source_clause/3, clause/1]).
 :- use_module(ciaopp(p_unit/unexpand),
-    [
-      generate_unexpanded_data/1
-    , clean_unexpanded_data/0
-    , unexpand_meta_calls/2
-    ]).
+    [ generate_unexpanded_data/1, clean_unexpanded_data/0, unexpand_meta_calls/2]).
 :- use_module(ciaopp(p_unit/native),
     [ builtin/2, native_prop_map/3, native_prop_term/1, native_property/2]).
 
@@ -94,10 +88,8 @@
 
 :- use_module(ciaopp(p_unit/p_asr), [cleanup_pasr/0, preprocessing_unit_opts/4]).
 :- use_module(ciaopp(tr_syntax), [cleanup_tr_syntax/0, traverse_clauses/5]).
-:- use_module(typeslib(typeslib), [
-    legal_user_type_pred/1, 
-    insert_user_type_pred_def/2,
-    post_init_types/0]).
+:- use_module(typeslib(typeslib),
+    [ legal_user_type_pred/1, insert_user_type_pred_def/2, post_init_types/0]).
 
 :- use_module(ciaopp(preprocess_flags)).
 
@@ -178,10 +170,6 @@ preprocessing_unit_list(Fs,Ms,E):-
     post_init_types,
     % TODO: code seems to work without this; perhaps because some other ensure_registry_file; however it seems necessary at least to upload types from the registry (see patch_registry_file_/3)
     % TODO: this was done just before build_defined_types_lattice/0 (when current_pp_flag(types,deftypes)), is it fine here?
-    ( \+ current_pp_flag(intermod,off) ->
-        ensure_registry_current_files(quiet) % [IG] mixed modular
-    ; true
-    ),
     % remove disjunctions and all that stuff
     % TODO: clean pr_key here! otherwise we remove a lot of stuff
     pr_key_clean,
@@ -216,7 +204,7 @@ cleanup_punit :-
 
 %% ---------------------------------------------------------------------------
 
-:- use_module(ciaopp(p_unit/p_abs)).
+:- use_module(ciaopp(p_unit/p_abs), [get_module_from_sg/2]).
 
 % Fill type definition for all regtypes
 init_types:-
@@ -354,6 +342,7 @@ push_history(X) :-
 :- pred pop_history(X) : atom(X) # "Pop history item @var{X}.".
 pop_history(X) :-
     retract_fact(history_item(X)).
+% TODO: should be pop_history :- retract_fact(history_item(_)), !.
 
 % TODO: if we export history_item (or similar) this predicate could be moved to another module
 :- pred get_output_path(UseHistory, Path) => (atm(UseHistory),atm(Path))
@@ -436,8 +425,8 @@ get_single_call([(A;As)],AOut):-!,
     get_one_disjunct((A;As),AOut).
 get_single_call(A,A).
 
-get_one_disjunct((A;_),A).
-get_one_disjunct((_;As),A):-!,
+get_one_disjunct((A;_),A) :- !.
+get_one_disjunct((_;As),A):- !,
     get_one_disjunct(As,A).
 get_one_disjunct(A,A).
 
@@ -452,21 +441,19 @@ filter_call(_,_).
 
 %% ---------------------------------------------------------------------------
  % TODO: Not imported anywhere and not used here, remove??
-:- pred exit_assertion(Goal,Call,Succ) :: callable(Goal)
-    # "There is an exit assertion for @var{Goal} with call
-       pattern @var{Call} and success pattern @var{Succ}.".
-exit_assertion(Goal,Call,Succ):-
-    ( Type=pred ; Type=success ),
-    ( Status=true ; Status=trust ),
-    assertion_read(Goal,_M,Status,Type,Body,_Dict,_S,_LB,_LE),
-    assertion_body(Goal,_Compat,Call,Succ,_Comp,_Comm,Body).
+%% :- pred exit_assertion(Goal,Call,Succ) :: callable(Goal)
+%%    # "There is an exit assertion for @var{Goal} with call
+%%    pattern @var{Call} and success pattern @var{Succ}.".
+%% exit_assertion(Goal,Call,Succ):-
+%%     ( Type=pred ; Type=success ),
+%%     ( Status=true ; Status=trust ),
+%%     assertion_read(Goal,_M,Status,Type,Body,_Dict,_S,_LB,_LE),
+%%     assertion_body(Goal,_Compat,Call,Succ,_Comp,_Comm,Body).
 
 %% ---------------------------------------------------------------------------
-%% :- reexport(ciaopp(p_unit/p_unit_basic), [type_of_goal/2]).
-
 :- pred dynamic_or_unknown_predicate(Goal)
-    # "@var{Goal} is an atom for a predicate such that all its clauses might
- not be available or may change in the program unit.".
+   # "@var{Goal} is an atom for a predicate such that all its clauses might not
+   be available or may change in the program unit.".
 dynamic_or_unknown_predicate(Goal):- type_of_goal(imported,Goal), !.
 % TODO: for imported extract module name from goal and check if is loaded.
 dynamic_or_unknown_predicate(Goal):- type_of_goal(dynamic,Goal), !.
@@ -476,26 +463,11 @@ dynamic_or_unknown_predicate(Goal):- type_of_goal(impl_defined,Goal), !.
 % ---------------------------------------------------------------------------
 :- doc(section, "Assertions").
 
-:- use_module(library(assertions/assrt_lib), [assertion_body/7]).
-:- use_module(ciaopp(p_unit/assrt_db), [
-    add_assertion_read/9,
-    ref_assertion_read/10]).
-
-get_assertion(Goal, Ass) :-
-    Ass = as${module => M,
-        status => Status,
-        type => Type,
-        head => Key,
-        compat => Compat,
-        call => Call,
-        succ => Succ,
-        comp => Comp,
-        dic => Dic,
-        comment => Comment,
-        locator => Loc},
+get_assertion(Goal, As) :-
+    As = as(M,Status,Type,Head,Compat,Call,Succ,Comp,Dic,Loc,Comment,_),
     Loc = loc(S, LB, LE),
-    ref_assertion_read(Goal, M, Status, Type, Body, Dic, S, LB, LE, _ARef),
-    assertion_body(Key, Compat, Call, Succ, Comp, Comment, Body).
+    assertion_read(Goal, M, Status, Type, Body, Dic, S, LB, LE),
+    assertion_body(Head, Compat, Call, Succ, Comp, Comment, Body).
 
 :- export(assertion_set_status/3).
 assertion_set_status(X0, Status, X) :-
@@ -524,7 +496,6 @@ assertion_set_comp(X0, Comp, X) :-
 
 :- pred add_assertions(AssrtList) : list(AssrtList)
    # "Add assertions list @var{AssrtList} to internal DB.".
-
 add_assertions([]).
 add_assertions([A|As]) :-
     add_assertion(A),
@@ -532,21 +503,11 @@ add_assertions([A|As]) :-
 
 :- pred add_assertion(Assrt) # "Add assertion @var{Assrt} to internal DB.".
 add_assertion(As) :-
-    As = as${module => M,
-        status => Status,
-        type => Type,
-        head => Head,
-        compat => Compat,
-        call => Calls,
-        succ => Succ,
-        comp => Comp,
-        dic => Dic,
-        locator => AsLoc,
-        comment => Com},
+    As = as(M,Status,Type,Head,Compat,Calls,Succ,Comp,Dic,AsLoc,Com,_),
     AsLoc = loc(S, LB, LE),
     assertion_body(Head, Compat, Calls, Succ, Comp, Com, Body),
     add_assertion_read(Head, M, Status, Type, Body, Dic, S, LB, LE),
-    !.
+    !. % TODO: why cut?
 add_assertion(As) :-
     error_message("Internal Error: add_assertion: Could not add ~p", [As]).
 
@@ -618,8 +579,8 @@ generate_pr_key(_). % TODO: not for directives
 
 % TODO: used only in some transformations, check again
 :- pred add_defined_pred(ClKey, M) : (term(ClKey), atm(M))
-# "Add the necessary data in itf_db (and @pred{pr_key/1}) to define
-  the predicate @var{ClKey} in the module @var{M}.".
+   # "Add the necessary data in itf_db (and @pred{pr_key/1}) to define the
+   predicate @var{ClKey} in the module @var{M}.".
 add_defined_pred(Key, M) :-
     \+ pr_key(Key),
     functor(Key, F, A),
@@ -648,7 +609,7 @@ new_predicate_name(TmpF,F,A,N,NewF):-
 new_predicate_name(NewF,_F,_A,_N,NewF).
 
 :- pred predicate_names(-list)
-    # "Returns the specs of predicates defined in the current module.".
+   # "Returns the specs of predicates defined in the current module.".
 predicate_names(Names):-
     findall(F/A, current_itf(defines,F,A), Names).
 
@@ -822,10 +783,9 @@ native_to_prop_visible(NProp,NProp).
 :- use_module(engine(stream_basic), [absolute_file_name/7]).
 
 :- pred inject_output_package(A) : atm(A)
-   # "Inject the package @var{A} in the current program database
-      (including the output package list). The necesary information
-      from these packages is loaded for correct treatment and
-      unexpansion.".
+   # "Inject the package @var{A} in the current program database (including the
+   output package list). The necesary information from these packages is loaded
+   for correct treatment and unexpansion.".
 
 inject_output_package(A) :-
     ( curr_file(_, M) -> true
@@ -932,15 +892,10 @@ add_commented_assertions([A|As]) :-
 
 % TODO: changing 'fromwhere' may be avoided
 :- pred add_commented_assertion(A) : term(A)
-    # "Add assertion @var{A} to the commented assertions DB.".
+   # "Add assertion @var{A} to the commented assertions DB.".
 add_commented_assertion(A) :-
-    A = as${module => M, status => S, type => T, head => H, compat => C,
-        call => Ca, succ => Su, comp => Co, dic => D,
-        locator => L, comment => Com},
-    !,
-    A1 = as${module => M, status => S, type => T, head => H, compat => C,
-        call => Ca, succ => Su, comp => Co, dic => D,
-        locator => L, comment => Com, fromwhere => commented},
+    A = as(M,S,T,Head,Compat,Call,Succ,Comp,Dic,Loc,Comm,_), !,
+    A1 = as(M,S,T,Head,Compat,Call,Succ,Comp,Dic,Loc,Comm,commented),
     assertz_fact(commented_assrt(A1)).
 add_commented_assertion(A) :-
     error_message("INTERNAL ERROR: add_commented_assertion: "||
@@ -949,4 +904,3 @@ add_commented_assertion(A) :-
 get_commented_assertion(ClKey, As) :-
     As = as${head => ClKey},
     current_fact(commented_assrt(As)).
-
