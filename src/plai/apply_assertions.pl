@@ -258,10 +258,14 @@ get_call_assertions_asub(Head,SgKey,Sts, AbsInt, AsrProj) :-
     \+ As = [], !,
     compute_lub_assrts(As,AbsInt,Head,AsrProj).
 get_call_assertions_asub(Head,SgKey,Sts, AbsInt, A) :-
-    findall(Body, (assertion_read(Head,_,S,calls,Body,_,_,_,_), member(S,Sts)), As),
+    findall(Body, assertion_read_status(Head,calls,Sts,Body), As),
     \+ As = [], % fail if there are no assertions
     gather_calls_assertions(As,SgKey,Head,Sts,AbsInt,AsrProjs),
     compute_lub(AbsInt,AsrProjs,A).
+
+assertion_read_status(Head,Type,Sts,Body) :-
+    assertion_read(Head,_,S,Type,Body,_,_,_,_),
+    ( member(S,Sts) -> true ; fail ).
 
 compute_lub_assrts([],_,_,'$bottom').
 compute_lub_assrts([call_asr(Head,A)|As],AbsInt,Head,AsrProj) :-
@@ -287,18 +291,16 @@ glb_successes(_,_,_,_,_,_,Prime,Prime,_).
 
 :- export(get_succ_assertion_asubs/7). % for inc assertions
 :- pred get_succ_assertion_asubs(+SgKey,+Head,+Hv,+Sts,+AbsInt,+Proj,-Prime)
-    : (atm(SgKey), list(Hv), list(Sts), atm(AbsInt)) => nonvar(Prime)
-    #"This predicate succeeds if there are assertions that are
-      applicable to @var{Head}:@var{Proj} (normalized). If no @var{Sts} is
-      specified all trusted status are returned".
-% Head:Proj is already normalized
+   : (atm(SgKey), list(Hv), list(Sts), atm(AbsInt)) => nonvar(Prime)
+   #"This predicate succeeds if there are assertions that are applicable to
+   @var{Head}:@var{Proj} (normalized). If no @var{Sts} is specified all trusted
+   status are returned".
 get_succ_assertion_asubs(SgKey,Head,_Hv,Sts,AbsInt,Proj,AsrPrime) :-
     success_asr(SgKey, Head, Sts, AbsInt, AsrProj, AsrPrime),
     identical_abstract(AbsInt, Proj, AsrProj), !.
 get_succ_assertion_asubs(SgKey,Head,Hv,Sts,AbsInt,Proj,AsrPrime) :-
     ( % enumerate all read assrts and gather conditions
-    assertion_read(Head,_M,St,success,Body,_Dict,_Src,_LB,_LE),
-      member(St, Sts),
+      assertion_read_status(Head,success,Sts,Body),
       assertion_body(Head,_Compat,InfoCall,InfoSucc,_Comp,_Comm,Body),
         info_to_asub(AbsInt,_Kind,InfoCall,Hv,AsrProj,Head,no),
         less_or_equal(AbsInt, Proj, AsrProj),
@@ -307,16 +309,16 @@ get_succ_assertion_asubs(SgKey,Head,Hv,Sts,AbsInt,Proj,AsrPrime) :-
         add_success_asr(SgKey, Head, Sts, AbsInt, Proj, Prime),
         fail
     ;
-    success_asr(SgKey, Head, Sts, AbsInt, AsrProj, AsrPrime),
-    identical_abstract(AbsInt, Proj, AsrProj), !
+        success_asr(SgKey, Head, Sts, AbsInt, AsrProj, AsrPrime),
+        identical_abstract(AbsInt, Proj, AsrProj), !
     ).
 
 % Accumulate in one predicate
 :- export(add_success_asr/6). % exported for apply_assertions_inc
 :- pred add_success_asr(+SgKey,+Head, +Sts, +AbsInt, +AsrProj, +AsrPrime)
-    : (atm(SgKey), list(Sts), atm(AbsInt)) + not_fails
-    #"Joins an abstract success pattern from an assertion with a previous
-     value for the call pattern @var{Head}:@var{AsrProj}.".
+   : (atm(SgKey), list(Sts), atm(AbsInt)) + not_fails
+   #"Joins an abstract success pattern from an assertion with a previous value
+   for the call pattern @var{Head}:@var{AsrProj}.".
 add_success_asr(SgKey, Head, Sts, AbsInt, AsrProj, AsrPrime) :-
     current_fact(success_asr(SgKey, Head, Sts, AbsInt, Proj0, Prime0), Ref),
     identical_abstract(AbsInt, Proj0, AsrProj), !,
@@ -329,7 +331,7 @@ add_success_asr(SgKey, Head, Sts, AbsInt, AsrProj, AsrPrime) :-
 % TODO: move to domains?
 :- export(abs_normalize/8).
 :- pred abs_normalize(+AbsInt,+Sg,+Sv,+ASub0,?Head,?Hv,-ASub,-ExtraInfo)
-    : (atm(AbsInt), list(Sv)) => nonvar(ASub) + not_fails.
+   : (atm(AbsInt), list(Sv)) => nonvar(ASub) + not_fails.
 % "abstract unification/normalization"
 %    e.g., (p(a), [],[]) ---> (p(X), [], [X/g])
 abs_normalize(_AbsInt,Sg,_Sv,'$bottom',Head,Hv,'$bottom',_) :- !,
@@ -341,8 +343,8 @@ abs_normalize(AbsInt,Sg,Sv,ASub0,Head,Hv,ASub,ExtraInfo) :-
     functor(Head,F,A),
     varset(Head, Hv),
     % variant case already optimized in call_to_entry (using copy_term)
-    call_to_entry(AbsInt,Sv,Sg,Hv,Head,not_provided,[],ASub0,TmpCall,ExtraInfo), % TODO: add some ClauseKey? (JF)
-    project(AbsInt,Head,Hv,Hv,TmpCall,ASub), !. % TODO: Is this necessary?
+    call_to_entry(AbsInt,Sv,Sg,Hv,Head,not_provided,[],ASub0,ASub,ExtraInfo).
+    % TODO: add some ClauseKey? (JF)
 
 :- export(get_applicable_status/3).
 get_applicable_status(Head,Type,Sts) :-
