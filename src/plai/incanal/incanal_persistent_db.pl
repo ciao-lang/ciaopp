@@ -116,11 +116,12 @@ clean_persistent_analysis :-
 % TODO: copied from ciaopp_batch and adapted
 dump_file(FilePath, DumpFile) :-
     path_split(FilePath, Path, Mod),
-    ( path_splitext(Mod, ModName, '.pl') ->
-        true
-      ;
-        ModName = Mod
-    ),
-    atom_concat(ModName, '.dump_inc', Dump), % TODO: temporary extension
-                                             % for easy finding/cleaning
-    path_concat(Path, Dump, DumpFile).
+    ( path_splitext(Mod, ModName, '.pl') -> true ; ModName = Mod ),
+    % TODO: temporary extension for easy finding/cleaning
+    atom_concat(ModName, '.dump_inc', Dump),
+    current_pp_flag(incanal_dump_dir, Dir),
+    ( Dir = '$default' ->
+        path_concat(Path, Dump, DumpFile)
+    ;
+        path_concat(Dir, Dump, DumpFile)
+    ).

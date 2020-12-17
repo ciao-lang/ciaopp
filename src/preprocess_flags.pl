@@ -30,6 +30,10 @@
 
 :- use_module(engine(hiord_rt), [call/1]). % TODO: review uses here
 
+ % for incanal dir
+:- use_module(library(pathnames), [path_is_absolute/1]).
+:- use_module(library(system), [file_exists/1, file_property/2]).
+
 :- use_module(engine(messages_basic), [message/2]).
 :- use_module(library(lists), [member/2, sublist/2]).
 :- use_module(library(aggregates)).                % for dump_flags
@@ -778,10 +782,22 @@ pp_flag(del_strategy, 'Whether to use a top_down or a bottom_up deletion strateg
 current_pp_flags(  del_strategy       , top_down).
 valid_flag_values( del_strategy       , member(_,[top_down,bottom_up,bottom_up_cls])).
 
+pp_flag(incanal_dump_dir).
+pp_flag(incanal_dump_dir, 'Directory where the incremental analysis dump files will be stored.').
+current_pp_flags( incanal_dump_dir, '$default').
+valid_flag_values(incanal_dump_dir, valid_inc_path(_)).
+
+valid_inc_path('$default') :- !.
+valid_inc_path(X) :-
+    path_is_absolute(X),
+    file_exists(X),
+    file_property(X,type(directory)).
+
 pp_flag(prog_lang).
 pp_flag(prog_lang, 'Programming language.').
 current_pp_flags(  prog_lang          , ciao).
-valid_flag_values( prog_lang          , member(_,Langs)) :- setof(L, supported_language(L), Langs).
+valid_flag_values( prog_lang          , member(_,Langs)) :-
+    setof(L, supported_language(L), Langs).
 
 pp_flag(global_scheduling).
 pp_flag(global_scheduling, 'Global scheduling policy to be used in intermodular analysis.').
@@ -1275,5 +1291,3 @@ show_config_list([]) :- !.
 show_config_list([A|B]) :-
     write(A), nl,
     show_config_list(B).
-
-
