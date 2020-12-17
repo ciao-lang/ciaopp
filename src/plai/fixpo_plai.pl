@@ -27,7 +27,7 @@
 % Plai library
 :- use_module(ciaopp(plai/fixpo_ops)).
 :- use_module(ciaopp(plai/domains)).
-:- use_module(ciaopp(plai/trace_fixp), [fixpoint_trace/7, cleanup/0]).
+:- use_module(ciaopp(plai/trace_fixp), [fixpoint_trace/7]).
 :- use_module(ciaopp(plai/plai_db)).
 :- use_module(ciaopp(plai/psets), [update_if_member_idlist/3]).
 :- use_module(ciaopp(plai/plai_db), [erase_previous_memo_tables_and_parents/4]).
@@ -138,8 +138,7 @@ init_fixpoint:-
     retractall_fact('$depend_list'(_,_,_)),
     retractall_fact(ch_id(_,_)),
     retractall_fact(fixpoint_variant(_,_,_,_,_,_)),
-    retractall_fact(approx_variant(_,_,_,_,_,_,_)),
-    trace_fixp:cleanup.
+    retractall_fact(approx_variant(_,_,_,_,_,_,_)).
 %       init_unfold.
 
 %-------------------------------------------------------------------------

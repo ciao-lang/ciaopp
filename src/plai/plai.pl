@@ -66,6 +66,7 @@
     store_previous_analysis_completes/1,
     reset_previous_analysis/1,
     remove_useless_info/1]).
+:- use_module(ciaopp(plai/trace_fixp), [trace_reset/0]).
 
 :- if(defined(has_ciaopp_java)).
 :- use_module(ciaopp(plai/output_java_info), [java_statistics/1]).
@@ -182,6 +183,7 @@ do_plai(Cls,Ds,Fixp, AbsInt, TPre, TAna):-
 init_plai(AbsInt,Flags,Fixp) :-
     init_abstract_domain(AbsInt,Flags),
     init_fixpoint(Fixp), !, % TODO: fix, move cuts deeper
+    trace_reset, % reset tracing for the new fixpoint
     init_unfold, !, % TODO: fix, move cuts deeper
     init_unfold_times, !, % TODO: fix, move cuts deeper
     cleanup_trans_clauses, !, % TODO: fix, move cuts deeper

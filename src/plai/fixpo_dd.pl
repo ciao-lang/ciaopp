@@ -48,8 +48,7 @@
 %------------------------------------------------------------------------
 init_fixpoint:-
     retractall_fact('$change_list'(_,_,_)),
-    retractall_fact(computing_change(_)),
-    trace_fixp:cleanup.
+    retractall_fact(computing_change(_)).
 
 %------------------------------------------------------------------------%
 % TODO: fix modes, it was: call_to_success(+,+,-,+,+,+,+,-,+,+,+,?)

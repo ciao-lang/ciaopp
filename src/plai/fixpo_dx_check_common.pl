@@ -20,7 +20,7 @@
 % Plai library
 :- use_module(ciaopp(plai/fixpo_ops)).
 :- use_module(ciaopp(plai/domains)).
-:- use_module(ciaopp(plai/trace_fixp), [fixpoint_trace/7, cleanup/0]).
+:- use_module(ciaopp(plai/trace_fixp), [fixpoint_trace/7]).
 :- use_module(ciaopp(plai/plai_db), 
     [complete/7,memo_call/5,memo_table/6,cleanup_plai_db/1,complete_parent/2,update_complete_id/4]).
 :- use_module(ciaopp(plai/plai_db), [erase_previous_memo_tables_and_parents/4]).

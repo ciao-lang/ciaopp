@@ -69,7 +69,6 @@
 init_fixpoint:-
     retractall_fact(complete_variant(_,_,_,_,_,_,_,_)),
     ( current_pp_flag(reduced_cert,on) -> init_relevant_entries ; true),
-    trace_fixp:cleanup,
     current_pp_flag(abs_spec_defs,ASD),
     ( member(ASD,[exec,all]) ->
         reset_equivs,

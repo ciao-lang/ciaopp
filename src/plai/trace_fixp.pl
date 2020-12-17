@@ -1,12 +1,12 @@
 :- module(trace_fixp, [
     fixpoint_trace/7,
     trace_fixp/1,
-    cleanup/0,
     memotable_trace/3,
-    show_spypoint_info/0,
+    show_spypoint_op_count/0,
     show_updated_memotable/3,
     trace_init/0,
-    trace_end/0
+    trace_end/0,
+    trace_reset/0
 ], [assertions, regtypes, datafacts]).
 
 :- use_module(library(aggregates), [findall/3]).
@@ -31,7 +31,7 @@ To deactivate tracing (it can slowdown the analysis), package
 :- doc(stability, devel).
 
 :- data fixpoint_trace/1,
-    fixpoint_info/3.
+    fixpoint_op_count/3.
 
 :- data init_time/1.
 
@@ -45,32 +45,21 @@ trace_init :-
     trace_fixp(no).
 
 trace_end :-
-    clean.
-
-clean :-
+    % TODO: here dump results if not done already? -- for op_count
     end_view,
-    retractall_fact(fixpoint_trace(_)),
-    cleanup.
+    trace_reset.
 
-cleanup :-
-    retractall_fact(fixpoint_info(_,_,_)),
+trace_reset :-
+    retractall_fact(fixpoint_op_count(_,_,_)),
+    retractall_fact(fixpoint_trace(_)),
     clean_fixpoint_graph.
 
 %% --------------------------------------------------------------------
 %% tracing the fixpoint:
 fixpoint_trace(Mess,Id,F,SgKey,Sg,Proj,Childs):-
-    ( fixpoint_trace(info) ->
-        update_fixpoint_info(Mess,Id)
-    ; true
-    ),
-    ( fixpoint_trace(trace) ->
-        trace_fixpoint(Mess,Id,F,Sg,Proj)
-    ; true
-    ),
-    ( fixpoint_trace(view) ->
-        view_fixpoint(Mess,Id,F,SgKey,Sg,Proj,Childs)
-    ; true
-    ).
+    ( fixpoint_trace(op_count) -> update_fixpoint_op_count(Mess,Id) ; true ),
+    ( fixpoint_trace(trace) -> trace_fixpoint(Mess,Id,F,Sg,Proj) ; true ),
+    ( fixpoint_trace(view) -> view_fixpoint(Mess,Id,F,SgKey,Sg,Proj,Childs) ; true).
 
 %% --------------------------------------------------------------------
 %% toggle tracing:
@@ -78,23 +67,22 @@ fixpoint_trace(Mess,Id,F,SgKey,Sg,Proj,Childs):-
 :- export(trace_option/1).
 :- regtype trace_option/1.
 trace_option(no).
-trace_option(info).
+trace_option(op_count).
 trace_option(trace).
 trace_option(view).
 
-:- doc(trace_fixp(X),
-    "Toggle a trace of the fixpoint computation during analysis. The trace
-     can add up information on the analysis (X=info), show certain relevant
-    spy points during analysis (X=trace), and/or display the analysis 
-     graph which is being constructed (X=view). The information added up 
-     can be seen at end of analysis with @tt{ciao:fixpoint_info.}").
-:- pred trace_fixp(X) : var(X)=> list(trace_option,X)
-    # "Mode for querying the current flag value.".
-:- pred trace_fixp(X) : trace_option(X) + not_further_inst(X)
-    # "Mode for setting the current flag to a single value.".
-:- pred trace_fixp(X) : list(trace_option, X)   + not_further_inst(X)
-    # "Mode for setting the current flag to several values.".
+:- doc(trace_fixp(X), "Toggle a trace of the fixpoint computation during
+    analysis. The (X=op_count) option counts steps of fixpoint operations, show
+    certain relevant spy points during analysis (X=trace), and/or display the
+    analysis graph which is being constructed (X=view). The information added up
+    can be seen at end of analysis with @tt{show_fixpoint_op_count.}").
 
+:- pred trace_fixp(X) : trace_option(X) + not_further_inst(X)
+   # "Mode for setting the current flag to a single value.".
+:- pred trace_fixp(X) : list(trace_option, X)   + not_further_inst(X)
+   # "Mode for setting the current flag to several values.".
+%% TODO: Tracing in several ways at the same time is not currently integrated
+%% with preprocess_flags
 trace_fixp(F):-
     var(F), !,
     findall(S,fixpoint_trace(S),F).
@@ -104,7 +92,7 @@ trace_fixp(F):-
 trace_fixp0(X):-
     fixpoint_trace(X), !.
 trace_fixp0(no):-
-    clean.
+    trace_reset. % TODO: why stopping the tracing should clean the result?
 trace_fixp0(view):-
     start_view,
     asserta_fact(fixpoint_trace(view)).
@@ -188,39 +176,40 @@ trace_fixpoint('[mod] check reg').
 
 :- push_prolog_flag(multi_arity_warnings,off).
 
-update_fixpoint_info(Mess,Id) :-
-    update_fixpoint_info(Mess), !,
-    update_fixpoint_info0(Mess,Id).
-update_fixpoint_info(_Mess,_Id).
+update_fixpoint_op_count(Mess,Id) :-
+    update_fixpoint_op_count(Mess), !,
+    update_fixpoint_op_count0(Mess,Id).
+update_fixpoint_op_count(_Mess,_Id).
 
-update_fixpoint_info0(Mess,Id) :-
-    retract_fact(fixpoint_info(Id,Mess,N)), !,
+update_fixpoint_op_count0(Mess,Id) :-
+    retract_fact(fixpoint_op_count(Id,Mess,N)), !,
     N1 is N+1,
-    asserta_fact(fixpoint_info(Id,Mess,N1)).
-update_fixpoint_info0(Mess,Id) :-
-    asserta_fact(fixpoint_info(Id,Mess,1)).
+    asserta_fact(fixpoint_op_count(Id,Mess,N1)).
+update_fixpoint_op_count0(Mess,Id) :-
+    asserta_fact(fixpoint_op_count(Id,Mess,1)).
 
-update_fixpoint_info('non-recursive completed').
-update_fixpoint_info('approx used').
-update_fixpoint_info('approx unchanged').
-update_fixpoint_info('fixpoint initiated').
-update_fixpoint_info('fixpoint iteration').
+update_fixpoint_op_count('visit_clause').
+update_fixpoint_op_count('non-recursive completed').
+update_fixpoint_op_count('approx used').
+update_fixpoint_op_count('approx unchanged').
+update_fixpoint_op_count('fixpoint initiated').
+update_fixpoint_op_count('fixpoint iteration').
 
 :- pop_prolog_flag(multi_arity_warnings).
 %------------------- MORE FIXPOINT TRACE PREDICATES -----------------------%
 % Shows certain spy points of the analysis. It only shows this information
 % if and only if trace_fixp/1 includes the option trace.
-show_spypoint_info :-
-    fixpoint_trace(info),!,
+show_spypoint_op_count :-
+    fixpoint_trace(op_count),!,
     message(inform, ['{The following information contains certain spy points of the analysis}']),
-    show_spypoint_info_.
-show_spypoint_info.
+    show_spypoint_op_count_.
+show_spypoint_op_count.
 
-show_spypoint_info_ :-
-    current_fact(fixpoint_info(Id,Mess,N)),
+show_spypoint_op_count_ :-
+    current_fact(fixpoint_op_count(Id,Mess,N)),
     message(inform, ['{', ~~(Id), ' ', ~~(Mess), ' ', ~~(N), '}']),
     fail.
-show_spypoint_info_.
+show_spypoint_op_count_.
 
 %------------------- MEMOTABLE TRACE PREDICATES -------------------%
 :- use_module(ciaopp(p_unit/itf_db), [curr_file/2]).

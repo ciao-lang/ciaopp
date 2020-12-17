@@ -40,7 +40,6 @@
 :- doc(init_fixpoint/0,"Cleanups the database of analysis of
     temporary information.").
 init_fixpoint:-
-    trace_fixp:cleanup,
     set_pp_flag(widen,off). % TODO: fix!
 
 %------------------------------------------------------------------------%

@@ -171,8 +171,7 @@ init_fixpoint:-
     retractall_fact('$depend_list'(_,_,_)),
     retractall_fact(ch_id(_,_)),
     retractall_fact(fixpoint_variant(_,_,_,_,_,_)),
-    retractall_fact(approx_variant(_,_,_,_,_,_,_)),
-    trace_fixp:cleanup.
+    retractall_fact(approx_variant(_,_,_,_,_,_,_)).
 %       init_unfold.
 
 
