@@ -306,7 +306,8 @@ nf_special_builtin(SgKey):-
 
 nf_builtin('=/2'   , Sg, _CallType, unif, Sg, _CovNf):-!.
 nf_builtin('==/2'  , Sg, _CallType, unif, Sg, _CovNf):-!.
-nf_builtin('\==/2' , Sg, _CallType, unif, Sg, _CovNf):-!. 
+nf_builtin('\\==/2' , Sg, _CallType, unif, Sg, _CovNf):-!.
+nf_builtin('\\=/2' , Sg, _CallType, unif, Sg, _CovNf):-!.
 % 
 nf_builtin('is/2', X is E, CallType, notest, X is E, CovNf):-
      is_free_var(X, CallType),
@@ -315,7 +316,7 @@ nf_builtin('is/2', X is E, CallType, notest, X is E, CovNf):-
 nf_builtin('is/2', X is E, _CallType, arit, =:=(X, E), _CovNf):-!.
 % Arithmetic tests
 nf_builtin('=:=/2', Sg, _CallType, arit, Sg, _CovNf):-!. 
-nf_builtin('=\=/2', Sg, _CallType, arit, Sg, _CovNf):-!. 
+nf_builtin('=\\=/2', Sg, _CallType, arit, Sg, _CovNf):-!.
 nf_builtin('</2',   Sg, _CallType, arit, Sg, _CovNf):-!. 
 nf_builtin('>/2',   Sg, _CallType, arit, Sg, _CovNf):-!. 
 nf_builtin('=</2',  Sg, _CallType, arit, Sg, _CovNf):-!. 
@@ -369,7 +370,7 @@ nf_builtin('display/1', Sg, _CallType, id, Sg, _CovNf):-!.
 nf_builtin('print/1',   Sg, _CallType, id, Sg, _CovNf):-!.
 nf_builtin('check/1',   Sg, _CallType, id, Sg, _CovNf):-!.
 nf_builtin('!/0',   Sg, _CallType, id, Sg, _CovNf):-!.
-nf_builtin('\+/1', Sg, _CallType, negation, Sg, _CovNf):-!.
+nf_builtin('\\+/1', Sg, _CallType, negation, Sg, _CovNf):-!.
 nf_builtin('fail/0', Sg, _CallType, notest, Sg, CovNf):- 
      !, 
      nf_builtin_trust(CovNf, possibly_not_covered, possibly_fails).

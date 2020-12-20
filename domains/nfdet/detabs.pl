@@ -339,7 +339,8 @@ det_builtin('!/0',  Sg, _CallType,  meta, Sg, _MutExDet):-!.
 %det_builtin('=/2'   , Sg, _CallType, unif, Sg, _MutExDet):-!.
 det_builtin('=/2'   , Sg, _CallType, aritunif, Sg, _MutExDet):-!.
 det_builtin('==/2'  , Sg, _CallType, unif, Sg, _MutExDet):-!.
-det_builtin('\\==/2' , Sg, _CallType, unif, Sg, _MutExDet):-!. 
+det_builtin('\\==/2' , Sg, _CallType, unif, Sg, _MutExDet):-!.
+det_builtin('\\=/2' , Sg, _CallType, unif, Sg, _MutExDet):-!.
 % 
 det_builtin('is/2', 'is'(X, E), _CallType, arit, =:=(X, E), _MutExDet):-!.
 % Arithmetic tests

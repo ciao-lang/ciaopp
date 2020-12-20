@@ -64,6 +64,7 @@ push_neg_in_test(X,         Y) :- translate_test(X, Y).
 neg_test(=(X,                   Y), '$noteq$'(X, Y)).
 neg_test('term_compare:=='(X,   Y), '$noteq$'(X, Y)).
 neg_test('term_compare:\\=='(X, Y), =(X,         Y)).
+neg_test('term_compare:\\='(X, Y),  =(X,         Y)).
 neg_test(is(X,                  Y), =\=(X,       Y)).
 neg_test('arithmetic:=\\='(X,   Y), =:=(X,       Y)).
 neg_test('arithmetic:=:='(X,    Y), =\=(X,       Y)).
@@ -87,6 +88,7 @@ neg_test('$notatom$'(X),    atom(X)).
 
 translate_test(=(X, Y),      =(X, Y)) :- !.
 translate_test('\\=='(X, Y), '$noteq$'(X, Y)) :- !.
+translate_test('\\='(X, Y),  '$noteq$'(X, Y)) :- !.
 translate_test('=='(X, Y),   =(X, Y)) :- !.
 translate_test(is(X, Y),     =:=(X, Y)) :- !.
 translate_test('=\\='(X, Y), =\=(X, Y)) :- !.
