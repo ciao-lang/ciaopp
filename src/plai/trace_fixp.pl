@@ -51,7 +51,6 @@ trace_end :-
 
 trace_reset :-
     retractall_fact(fixpoint_op_count(_,_,_)),
-    retractall_fact(fixpoint_trace(_)),
     clean_fixpoint_graph.
 
 %% --------------------------------------------------------------------
