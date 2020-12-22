@@ -259,9 +259,9 @@ dual_widencall(_AbsInt,_ASub0,_ASub1,_ASub) :- fail.
 
 :- export(widen/4).
 :- pred widen(+AbsInt,+ASub0,+ASub1,-ASub) : atm(AbsInt) + not_fails
-   #"@var{ASub} is the result of widening abstract substitution @var{ASub0}
-   and @var{ASub1}, which are supposed to be consecutive approximations
-   to the same abstract value.".
+   #"@var{ASub} is the result of widening abstract substitution @var{ASub0} and
+   @var{ASub1}, which are supposed to be consecutive approximations to the same
+   abstract value. I.e., @tt{less_or_equal(AbsInt,ASub0,ASub1)} succeeds.".
 
 :- export(dual_widen/4).
 % dual_widen(+,+,+,-)

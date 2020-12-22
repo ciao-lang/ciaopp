@@ -626,13 +626,13 @@ pp_flag(ext_policy, 'Entries and successes for analysis.').
 current_pp_flags( ext_policy  , registry ).
 valid_flag_values(ext_policy  , member(_,[assertions,registry])).
 
-
+% TODO: rename by load_policy
 pp_flag(module_loading).
-pp_flag(module_loading, 'Modules to load at the same time.').
+pp_flag(module_loading, 'Modules to load at the same time monolithically.').
 current_pp_flags(module_loading  , one ).
 valid_flag_values(module_loading  , member(_,[one,all,threshold,threshold_scc])).
 
-%% How the initial guess  is applied.
+%% How the initial guess is applied.
 pp_flag(initial_guess).
 pp_flag(initial_guess, 'The policy for obtaining initial guess when computing the analysis of a predicate from the current module.').
 current_pp_flags(  initial_guess     , bottom).
@@ -1026,6 +1026,9 @@ valid_flag_values( output_lang        , member( _ , [intermediate, source, raw] 
 
 %%%% Debugging flags %%%%
 % See manual entry for info about debugging with davinci
+%% TODO: this is disabled because it affect performance. To enable it, comment
+%% out :- use_package(ciaopp(plai/notrace)). in fixpoint_options.pl,
+%% incanal_options.pl, or intermod_options.pl and recompile ciaopp
 pp_flag(trace_fixp).
 pp_flag(trace_fixp, 'Whether to trace fixpoint execution').
 current_pp_flags(  trace_fixp         , no    ).
