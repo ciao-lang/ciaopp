@@ -47,9 +47,12 @@ print_reach_report :-
         % format('~nProcessing ~w:~n', [SgKey]),
         detect_dead_predicate(SgKey),
         ( % failure-driven loop
-          trans_clause(SgKey,_,clause(_Head,_Vars_u,ClKey,Body)),
+          trans_clause(SgKey,_,clause(Head,_Vars_u,ClKey,Body)),
             ( get_memo_table(ClKey, _AbsInt, _, no, _Vars, ASub, _) ->
-                ( bottom(ASub) ->
+                atom_concat(ClKey, '/1', PPKey),
+                ( get_memo_table(PPKey, _AbsInt, _, _, _Vars, PPASub, _), is_bottom(_, PPASub) ->
+                    report_message(ClKey,"clause body of ~w is never executed~n", [ClKey])
+                ; is_bottom(Head,ASub) ->
                     report_message(ClKey,"clause ~w always fails or loops~n",[ClKey])
                 ;   true )
             ;
@@ -73,7 +76,7 @@ report_message(_PredKey,Mess,Params) :- % we don't have locators for predicates
 detect_dead_predicate(SgKey) :-
     findall(comp(Sg, Prime), complete(SgKey, _AbsInt, Sg, _, Prime, _,_), LPrimes),
     process_comps(LPrimes, Fails, Dead),
-    ( Fails == yes ->
+    ( var(Fails) ->
         report_message(SgKey,"Pred ~w always fails or loops~n",[SgKey])
     ; true ),
     ( var(Dead) ->
@@ -84,7 +87,7 @@ detect_dead_predicate(SgKey) :-
 process_comps([], _Fails, _Dead).
 process_comps([comp(Sg,Prime)|Cs], Fails, Dead) :- % if there is a complete, it is never dead
     Dead = no,
-    ( is_bottom(Sg,Prime) -> Fails = yes ; true ),
+    ( \+ is_bottom(Sg,Prime) -> Fails = no ; true ),
     process_comps(Cs, Fails, Dead).
 
 % if the head has no vars [] does not imply bottom (like in fixpo_ops)
