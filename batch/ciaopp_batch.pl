@@ -1,4 +1,5 @@
-:- module(ciaopp_batch, [analysis_start/2], [assertions, isomodes, regtypes, datafacts]).
+:- module(ciaopp_batch, [analysis_start/2],
+          [assertions, isomodes, regtypes, datafacts]).
 
 :- doc(title, "Batch analysis client").
 :- doc(author, "Isabel Garcia-Contreras").

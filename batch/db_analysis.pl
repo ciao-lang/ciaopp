@@ -1,4 +1,4 @@
-:- module(db_analysis, [], [assertions, persdb, datafacts]).
+:- module(db_analysis, [], [assertions, isomodes, persdb, datafacts]).
 
 :- doc(title, "Database for ciaopp_batch process").
 :- doc(author, "Isabel Garcia-Contreras").
