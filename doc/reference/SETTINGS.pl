@@ -97,7 +97,16 @@ doc_assertions :=
       assertions_props,
       regtypes_doc,
       basic_props,
-      native_props,
+      % props native to analyzers, in chapters
+      native_props-[
+          native_props_shfrg_doc,
+          native_props_nfdet_doc,
+          native_props_cardinality_doc,
+          native_props_exceptions_doc,
+          native_props_sideff_doc,
+          native_props_polyhedral_doc,
+          native_props_cost_doc
+      ],
       % TODO: use cross-refs
 %%      'unittest'-[...]
 %%            ['unittest/unittest_props',
