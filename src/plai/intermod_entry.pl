@@ -195,6 +195,10 @@ intermod_entry_point_policy(Policy,AbsInt,Goal,Qv,Call,Prime,Module) :-
 entry_point(AbsInt,Goal,Qv,Call,Prime,Module) :-
     current_itf(multifile,Goal,Module),
     type_of_goal(multifile,Goal),        %% multifiles must be analyzed in any case.
+    % TODO: ugly hack to ignore multifile introduced (temporarily until we have
+    % custom meta_predicatate for phrase?) in by modules using dcg_phrase (e.g.,
+    % module/2)
+    \+ Goal = 'multifile:\6\call_in_module'(_,_),
     entry_assertion(Goal,CInfo,_Name), % IG analyze multifiles only if they have an entry assertion
     varset(Goal,Qv),
     info_to_asub(AbsInt,_,CInfo,Qv,Call,Goal,no),

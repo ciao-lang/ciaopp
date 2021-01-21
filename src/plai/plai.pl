@@ -343,9 +343,15 @@ analyze(check_di5,AbsInt,_RFlag,Goal,Gv,Call,Name):-
     fixpo_check_di5:query(AbsInt,K,Goal,Gv,_,Name,Call,_Succ),
     pop_pp_flag(reuse_fixp_id).
 
+% TODO: unify with intermod_entry: entry_point/6
 entry_point(AbsInt,Goal,Qv,Call,Name):-
     ( type_of_goal(exported,Goal)
-    ; type_of_goal(multifile,Goal)),
+    ; type_of_goal(multifile,Goal),
+      % TODO: ugly hack to ignore multifile introduced (temporarily until we
+      % have custom meta_predicatate for phrase?) in by modules using dcg_phrase
+      % (e.g., module/2)
+      \+ Goal = 'multifile:\6\call_in_module'(_,_)
+    ),
     functor(Goal,F,A),
     functor(G,F,A),
     \+ entry_assertion(G,_Call,_Name),
