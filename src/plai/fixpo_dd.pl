@@ -30,7 +30,6 @@
 :- doc(bug,"Check analysis of meta_calls works after introducing
     fixpoint_reuse_prev_id/5").
 :- doc(bug,"Possibly incorrect results at program point for warplan.").
-:- doc(bug, "singleton/1 is leaving choicepoints.").
 %------------------------------------------------------------------------%
 
 :- export('$change_list'/3).
