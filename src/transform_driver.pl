@@ -11,7 +11,7 @@
 %------------------------------------------------------------------------
 
 :- doc(title, "Transform driver (monolithic)").
-% TODO: add incrental/modular (with parts as a plugin)?
+% TODO: add incremental/modular (with parts as a plugin)?
 
 :- doc(usage, "@tt{:- use_module(ciaopp(transform_driver))}.
    This module is loaded by default in the CiaoPP toplevel and
