@@ -156,11 +156,12 @@ det_extend(Sg,Prime,Sv,Call,Succ):-
     detabs:det_extend(Sg,PDet,Sv,CDet,SDet),
     asub(Succ,STypes,SModes,SDet).
 
-det_needs(widen) :- !.
 det_needs(clauses_lub) :- !.
 det_needs(split_combined_domain) :- !.
 det_needs(X) :-
-    eterms_needs(X).
+    eterms_needs(X), !.
+det_needs(X) :-
+    shfr_needs(X).
 
 %------------------------------------------------------------------------%
 % det_widen(+,+,-)                                                        %
@@ -187,6 +188,7 @@ det_widencall(ASub0,'$bottom',ASub):- !, ASub=ASub0.
 det_widencall(ASub0,ASub1,ASub):-
     asub(ASub0,ATypes0,_AModes0,_ADet0),
     asub(ASub1,ATypes1,AModes1,ADet1),
+    % assuming _AModes0 =< AModes1 and _ANonF0 =< ANonF1
     eterms_widencall(ATypes0,ATypes1,ATypes),
     asub(ASub,ATypes,AModes1,ADet1).
 
@@ -355,6 +357,8 @@ det_special_builtin(SgKey,Sg,_Subgoal,SgKey,Sg):-
 
 :- use_module(ciaopp(plai/domains), [special_builtin/6]).
 
+% TODO: [IG] special_builtin requires Sg to be instantiated
+% TODO: why are we not collecting the info for each domain?
 det_combined_special_builtin0(SgKey,Domains) :-
     % TODO: refactor (define a nondet pred with combined domains instead)
     ( special_builtin(eterms,SgKey,_Sg,SgKey,_Type,_Condvars) ->

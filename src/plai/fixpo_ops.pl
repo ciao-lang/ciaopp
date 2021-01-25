@@ -321,16 +321,23 @@ widen_succ(AbsInt,Prime0,Prime1,LPrime):-
     reduce_equivalent(Primes,AbsInt,LPrime).
 %%  reduce_equivalent([Prime0,Prime1],AbsInt,LPrime). %% IG: old version
 widen_succ(AbsInt,Prime0,Prime1,Prime):-
-    current_pp_flag(widen,on), !,
-    singleton(P0,Prime0),     % to_see claudio
-    singleton(P1,Prime1),     % to_see claudio
-    singleton(P,Prime),       % to_see claudio
-    widen(AbsInt,P0,P1,P), !. % for the singletons
-widen_succ(AbsInt,Prime0,Prime1,Prime):-
-    singleton(P0,Prime0),
-    singleton(P1,Prime1),
-    singleton(P,Prime),
-    compute_lub(AbsInt,[P0,P1],P), !. % for the singletons
+    get_singleton(P0,Prime0),
+    get_singleton(P1,Prime1),
+    get_singleton(P,Prime),
+    ( decide_widen(AbsInt) ->
+        widen(AbsInt,P0,P1,P)
+    ;
+        compute_lub(AbsInt,[P0,P1],P)
+    ).
+
+% widening cannot be disabled for success, even if the program does not need it,
+% for calls it can be disabled with the widencall flag
+:- pred decide_widen(+AbsInt).
+:- export(decide_widen/1).
+decide_widen(AbsInt) :-
+    needs(AbsInt, widen), !.
+decide_widen(_) :-
+    current_pp_flag(widen,on).
 
 :- export(process_analyzed_clause/7).
 :- pred process_analyzed_clause(AbsInt,Sg,Sv,Proj,TempPrime,Prime1,Prime) + not_fails

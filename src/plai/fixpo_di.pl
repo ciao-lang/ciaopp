@@ -126,16 +126,13 @@ call_to_success(SgKey,Call,Proj,Sg,Sv,AbsInt,ClId,Succ,F,N,Id) :-
     init_fixpoint0(SgKey,Call,Proj,Sg,Sv,AbsInt,ClId,F,N,Id,Prime),
     each_extend(Sg,Prime,AbsInt,Sv,Call,Succ).
 
-
 reuse_complete_variant(Ref,SgKey,Proj,Sg,AbsInt,F,N,Id,Id_o,Fs,Prime1,Prime):-
     each_abs_sort(Prime1,AbsInt,Prime),
     check_if_parent_needed(Fs,F,N,NewFs,Flag),
     ( Flag == needed ->
         erase(Ref),
         asserta_fact(complete_variant(Id_o,SgKey,AbsInt,Sg,Proj,Prime,Id,NewFs))
-    ;
-        true
-    ).
+    ;   true ).
 
 reuse_complete(Ref,SgKey,Proj,Sg,AbsInt,F,N,Id,Fs,Prime1,Prime):-
     each_abs_sort(Prime1,AbsInt,Prime),
@@ -143,26 +140,20 @@ reuse_complete(Ref,SgKey,Proj,Sg,AbsInt,F,N,Id,Fs,Prime1,Prime):-
     ( Flag == needed ->
         erase(Ref),
         asserta_fact(complete(SgKey,AbsInt,Sg,Proj,Prime,Id,NewFs))
-    ;
-        true
-    ),
-    ( ( current_pp_flag(widen,on) -> 
+    ;   true ),
+    ( ( decide_widen(AbsInt) -> 
          current_fact(complete_parent(Id,FsP),RefP),
          check_if_parent_needed(FsP,F,N,NewFsP,FlagP),
           ( FlagP == needed ->
               erase(RefP),
               asserta_fact(complete_parent(Id,NewFsP))
-          ;
-              true
-          )
+          ; true )
         )
-    ;
-        true
-    ).
+    ; true ).
 
 init_fixpoint0(SgKey,Call,Proj0,Sg,Sv,AbsInt,ClId,F,N,Id,Prime):-
-    current_pp_flag(widen,on),
-    current_pp_flag(multi_success,off),
+    decide_widen(AbsInt),
+    % current_pp_flag(multi_success,off))), 
     widen_call(AbsInt,SgKey,Sg,F,N,Proj0,Proj), !,
     init_fixpoint1(SgKey,Call,Proj,Sg,Sv,AbsInt,ClId,F,N,Id,Prime).
 init_fixpoint0(SgKey,Call,Proj,Sg,Sv,AbsInt,ClId,F,N,Id,Prime):-
@@ -191,9 +182,7 @@ init_fixpoint_(SgKey,Call,Proj,Sg,Sv,AbsInt,_ClId,F,N,Id,Prime):-
     bagof(X, Y^X^(trans_clause(SgKey,Y,X)),Clauses), !,
     fixpoint_get_new_id(SgKey,AbsInt,Sg,Proj,Id),
     debug('SD '),
-    (
-        (current_pp_flag(widen,on) ;
-         current_pp_flag(global_trees,on) )->
+    ( ( decide_widen(AbsInt) ; current_pp_flag(global_trees,on) ) ->
         asserta_fact(complete_parent(Id,[(F,N)]))
     ; 
         true
@@ -214,7 +203,7 @@ init_fixpoint_(SgKey,_Call,Proj,Sg,Sv,AbsInt,ClId,F,N,Id,LPrime) :-
     fixpoint_get_new_id(SgKey,AbsInt,Sg,Proj,Id),
     singleton(Prime,LPrime),
     asserta_fact(complete(SgKey,AbsInt,Sg,Proj,LPrime,Id,[(F,N)])),
-    ( current_pp_flag(widen,on) ->
+    ( decide_widen(AbsInt) ->
         asserta_fact(complete_parent(Id,[(F,N)]))
     ; 
         true
@@ -502,7 +491,10 @@ each_call_to_success0([Call|LCall],SgKey,Sg,Sv,HvFv_u,AbsInt,ClId,LSucc,F,N,NewN
     append(LSucc0,LSucc1,LSucc),
     each_call_to_success0(LCall,SgKey,Sg,Sv,HvFv_u,AbsInt,ClId,LSucc1,F,N,NewN).
 
+% TODO: this predicate should be renamed to try_widen_call or something similar,
+% because it is allowed to fail
 widen_call(AbsInt,SgKey,Sg,F1,Id0,Proj1,Proj):-
+    % decide_widen(AbsInt), !,
     ( current_pp_flag(widencall,off) -> fail ; true ),
     widen_call0(AbsInt,SgKey,Sg,F1,Id0,[Id0],Proj1,Proj), !,
     fixpoint_trace('result of widening',Id0,F1,SgKey,Sg,Proj,_).

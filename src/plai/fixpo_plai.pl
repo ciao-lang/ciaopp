@@ -349,8 +349,8 @@ call_to_success_approx_variant(SgKey,Subg,Call,Proj,Proj1,Sg,Sv,AbsInt,F,N,Fs,
    #"Starts the computation of the fixpoint of a Goal and call pattern.".
 %-------------------------------------------------------------------------
 init_fixpoint0(SgKey,Call,Proj0,Sg,Sv,AbsInt,F,N,Fs,Id,List,Prime):-
-    current_pp_flag(widen,on),
-    current_pp_flag(multi_success,off),
+    decide_widen(AbsInt),
+    % current_pp_flag(multi_success,off))), !,
     widen_call(AbsInt,SgKey,Sg,F,N,Proj0,Proj), !,
     init_fixpoint1(SgKey,Call,Proj,Sg,Sv,AbsInt,F,N,Fs,Id,List,Prime).
 init_fixpoint0(SgKey,Call,Proj,Sg,Sv,AbsInt,F,N,Fs,Id,List,Prime):-
@@ -443,6 +443,8 @@ init_fixpoint_(SgKey,Call,Proj,Sg,Sv,AbsInt,F,N,Fs,Id,Prime0,List,Prime):-
     decide_approx(AddList,Id,NewFs,AbsInt,SgKey,Sg,Proj,Prime),
     List = AddList.
 
+% TODO: this predicate should be renamed to try_widen_call or something similar,
+% because it is allowed to fail
 widen_call(AbsInt,SgKey,Sg,F1,Id0,Proj1,Proj):-
     ( current_pp_flag(widencall,off) -> fail ; true ),
     widen_call0(AbsInt,SgKey,Sg,F1,Id0,[Id0],Proj1,Proj), !,
@@ -927,7 +929,8 @@ body_succ(Call,Atom,Succ,List,NewList,HvFv_u,AbsInt,ClId,ParentId,Id):-
     decide_memo(AbsInt,Key,ParentId,Id,HvFv_u,Call).
 
 body_succ_(Info,SgKey,Sg,Sv,HFv,Call,Succ,L,NewL,AbsInt,ClId,Key,PId,Id):-
-    Info = [_|_], !,
+    Info = [_|_], !, % this check is just for efficiency
+    needs(AbsInt, split_combined_domain),
     split_combined_domain(AbsInt,Call,Calls,Domains),
     map_body_succ(Info,SgKey,Sg,Sv,HFv,Calls,Succs,L,NewL,Domains,
                   ClId,Key,PId,Id),

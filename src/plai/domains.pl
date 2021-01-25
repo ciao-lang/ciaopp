@@ -455,8 +455,13 @@ less_or_equal_proj(AbsInt,Sg,Proj,Sg1,Proj1) :-
      for a fact @var{Head}.".
 
 % TODO: fix modes, it was: special_builtin(+,+,+,-,-)
+% IG: temporarily disabled +Sg because combined_special_builtin0 does not have
+% the Sg and calls this predicate. Original modes:
+%
+% :- pred special_builtin(+AbsInt,+SgKey,+Sg,?Subgoal,-Type,-Condvars) : atm(AbsInt)
+%
 :- export(special_builtin/6).
-:- pred special_builtin(+AbsInt,+SgKey,+Sg,?Subgoal,-Type,-Condvars) : atm(AbsInt)
+:- pred special_builtin(+AbsInt,+SgKey,?Sg,?Subgoal,-Type,-Condvars) : atm(AbsInt)
    #"Predicate @var{Sg} is considered a ""builtin"" of type @var{Type} in
      domain @var{AbsInt}. Types are domain dependent. Domains may have two
      different ways to treat these predicates: see

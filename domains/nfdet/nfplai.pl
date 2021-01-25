@@ -156,7 +156,9 @@ nf_extend(Sg,Prime,Sv,Call,Succ):-
 nf_needs(clauses_lub) :- !.
 nf_needs(split_combined_domain) :- !.
 nf_needs(X) :-
-    eterms_needs(X).
+    eterms_needs(X), !.
+nf_needs(X) :-
+    shfr_needs(X).
 
 %------------------------------------------------------------------------%
 % nf_widen(+,+,-)                                                        %
@@ -183,6 +185,7 @@ nf_widencall(ASub0,'$bottom',ASub):- !, ASub=ASub0.
 nf_widencall(ASub0,ASub1,ASub):-
     asub(ASub0,ATypes0,_AModes0,_ANonF0),
     asub(ASub1,ATypes1,AModes1,ANonF1),
+    % assuming _AModes0 =< AModes1 and _ANonF0 =< ANonF1
     eterms_widencall(ATypes0,ATypes1,ATypes),
     asub(ASub,ATypes,AModes1,ANonF1).
 

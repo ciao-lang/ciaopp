@@ -122,8 +122,12 @@ shfret_extend(Sg,Prime,Sv,Call,Succ):-
     asub(Succ,STypes,SModes).
 
 
-shfret_needs(widen).
-shfret_needs(split_combined_domain).
+shfret_needs(widen) :- !.
+shfret_needs(split_combined_domain) :- !.
+shfret_needs(X) :-
+    eterms_needs(X), !.
+shfret_needs(X) :-
+    shfr_needs(X).
 
 %------------------------------------------------------------------------%
 % shfret_widen(+,+,-)                                                        %

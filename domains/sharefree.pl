@@ -31,6 +31,11 @@
 :- dom_impl(shfr, unknown_call/4).
 :- dom_impl(shfr, unknown_entry/3).
 :- dom_impl(shfr, empty_entry/3).
+:- dom_impl(shfr, needs/1).
+
+:- export(shfr_needs/1).
+shfr_needs(_) :- fail.
+
 % :- dom_impl(shfr, propagate_downwards_closed(ASub1,ASub2,ASub), downwards_closed(ASub1,ASub2,ASub)).
 % :- dom_impl(shfr, del_real_conjoin(ASub1,ASub2,ASub), real_conjoin(ASub1,ASub2,ASub)).
 % :- dom_impl(shfr, del_hash(ASub,Vars,N), hash(ASub,Vars,N)).

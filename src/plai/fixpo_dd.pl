@@ -8,26 +8,21 @@
     [assertions, nativeprops, datafacts, isomodes, regtypes, ciaopp(ciaopp_options)]).
 
 :- include(fixpoint_options).
-
 :- include(fixpo_dx_common).
 
 :- use_module(ciaopp(plai/tarjan), [recursive_class/2]).
-
 :- use_module(ciaopp(p_unit/program_keys),
     [decode_litkey/5, decode_predkey/3, is_entrykey/1, get_predkey/3, get_clkey/4]).
-
-:- use_module(library(messages)).
-:- use_module(engine(messages_basic), [display_list/1]).
-
 :- use_module(ciaopp(plai/apply_assertions),
     [apply_assrt_no_source/6,apply_assrt_call_to_success/8,apply_assrt_exit/7]).
 :- use_module(ciaopp(plai/incanal/plai_db_comparator), [check_same_success/3]).
 :- use_module(ciaopp(plai/fixpo_ops), [process_analyzed_clause/7, get_singleton/2]).
 % IG: added this to correct comparison between Primes.
-
 :- use_module(ciaopp(plai/plai_db)).
 
 :- use_module(library(lists), [member/2]).
+:- use_module(library(messages)).
+:- use_module(engine(messages_basic), [display_list/1]).
 
 %------------------------------------------------------------------------%
 :- doc(stability, devel).
@@ -115,8 +110,8 @@ reuse_complete(SgKey,Proj,Sg,Sv,AbsInt,F,N,Id,Prime1,Prime):-
 
 :- pred init_fixpoint0/10 + not_fails.
 init_fixpoint0(SgKey,Call,Proj0,Sg,Sv,AbsInt,F,N,Id,Prime):-
-    current_pp_flag(widen,on),
-    current_pp_flag(multi_success,off),
+    decide_widen(AbsInt),
+    % current_pp_flag(multi_success,off))),
     widen_call(AbsInt,SgKey,Sg,F,N,Proj0,Proj), !,
     init_fixpoint1(SgKey,Call,Proj,Sg,Sv,AbsInt,F,N,Id,Prime).
 init_fixpoint0(SgKey,Call,Proj,Sg,Sv,AbsInt,F,N,Id,Prime):-
@@ -132,7 +127,7 @@ init_fixpoint1(SgKey,Call,Proj,Sg,Sv,AbsInt,F,N,Id,Prime):-
 
 init_fixpoint_(SgKey,Call,Proj,Sg,Sv,AbsInt,F,N,Id,Prime):-
     fixpoint_get_new_id(SgKey,AbsInt,Sg,Proj,Id),
-    ( current_pp_flag(widen,on) ->
+    ( decide_widen(AbsInt) ->
         asserta_fact(complete_parent(Id, [(F,N)]))
     ; true),
     fixpoint_trace('non-recursive initiated',Id,N,SgKey,Sg,Proj,_),
@@ -378,10 +373,10 @@ add_change(Id,Lit_Key,Literal,Parents,AbsInt) :-
 insert_in_changelist(Id,Lit_Key,Lit,MFlag) :-
     current_fact('$change_list'(Id,SgKey,ChList),Ref),!,
     insert_literal(ChList,Lit_Key,Lit,NewList,Flag),
-    (Flag == yes ->
-       erase(Ref),
-       asserta_fact('$change_list'(Id,SgKey,NewList)),
-       MFlag = not_marked
+    ( Flag == yes ->
+        erase(Ref),
+        asserta_fact('$change_list'(Id,SgKey,NewList)),
+        MFlag = not_marked
     ;
         MFlag = marked
     ).
@@ -579,6 +574,11 @@ each_call_to_success0([Call0|LCall],RFlag,SgKey,Sg,Sv,HvFv_u,AbsInt,ClId,LSucc,F
     append(LSucc0,LSucc1,LSucc),
     each_call_to_success0(LCall,RFlag,SgKey,Sg,Sv,HvFv_u,AbsInt,ClId,LSucc1,F,N,NewN).
 
+% TODO: this predicate should be renamed to try_widen_call or something similar,
+% because it is allowed to fail
+%
+%% only called if decide_widen(AbsInt) succeeded, therefore this flags overrides
+%% possibly necessary widening on calls
 widen_call(AbsInt,SgKey,Sg,F1,Id0,Proj1,Proj):-
     ( current_pp_flag(widencall,off) -> fail ; true ),
     widen_call0(AbsInt,SgKey,Sg,F1,Id0,[Id0],Proj1,Proj), !,
