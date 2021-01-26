@@ -248,7 +248,6 @@ module_(ModList, Info):-
     detect_language_from_list(AbsFileList, Lang),
     initial_transformations(Lang, Trans),
     perform_transformations(Trans), !. % TODO: module leaves choicepoints, fix!!
-
     % The analysis is transparent so setting prog_lang to ciao
     % after loading module should not effect analysis.
     %set_pp_flag(prog_lang, ciao).
@@ -315,7 +314,6 @@ ensure_lib_sources_loaded.
 
 % ---------------------------------------------------------------------------
 % Cleanup
-
 :- use_module(ciaopp(analyze_driver), [clean_analysis_info/0]).
 :- use_module(ciaopp(p_unit/p_abs), [cleanup_p_abs/0]).
 :- use_module(ciaopp(p_unit/itf_db), [cleanup_itf_db/0]).
@@ -362,10 +360,8 @@ perform_transformations([E|Ls]) :-
 
 :- use_module(ciaopp(p_unit), [internal_predicate_names/1]).
 :- use_module(ciaopp(p_unit/itf_db),   [curr_file/2]).
-:- use_module(ciaopp(p_unit/unexpand), [
-    transform_clause_list/3,
-    transform_name/3
-   ]).
+:- use_module(ciaopp(p_unit/unexpand),
+              [transform_clause_list/3, transform_name/3]).
 
 :- if(defined(with_fullpp)).
 :- use_module(ciaopp(raw_printer), [raw_output/1]).
@@ -792,3 +788,30 @@ compact_abs_cost(Type, Ap, Res, CF, cost(Ap, Type, Res, CF)).
 :- endif.
 :- endif. % with_fullpp
 
+% ---------------------------------------------------------------------------
+:- doc(section, "Preload libraries").
+% ---------------------------------------------------------------------------
+
+:- use_module(library(bundle/bundle_paths), [bundle_path/3]).
+:- use_module(ciaopp(p_unit/p_asr), [gen_lib_sources/1]).
+:- use_module(ciaopp(p_unit/itf_db), [fake_module_name/1]).
+
+:- export(cache_and_preload_lib_sources/0).
+:- pred cache_and_preload_lib_sources/0
+   # "Generate and preload the preprocessed assertions from the
+     libraries (specified in the @tt{cmds/cachedmods/cached_core.pl}
+     module.
+
+     @alert{It cleans the current state of CiaoPP}.".
+
+cache_and_preload_lib_sources :-
+    clean_analysis_info0,
+    cleanup_all,
+    bundle_path(ciaopp, 'cmds/cachedmods/cached_core.pl', P),
+    push_pp_flag(preload_lib_sources, off),
+    module(P),
+    pop_pp_flag(preload_lib_sources),
+    set_fact(fake_module_name(cached_core)), % do not cache info of cached_core
+    ensure_datadir('ciaopp_lib_cache', Dir),
+    p_asr:gen_lib_sources(Dir),
+    ensure_lib_sources_loaded.
