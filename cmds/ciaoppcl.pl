@@ -97,27 +97,31 @@ usage_message(
     ciaopp [-o OutFile] Option Filename [FlagsValues]
 
   Where:
-    -o OutFile  after processing Filename, the resulting source 
+    -o <OutFile>
+            after processing Filename, the resulting source 
             code is written to OutFile.  If this option is
             omitted, the output is written to a file
             automatically named depending on the actions
             performed.
-    -op <Suffix>   Use Suffix as the optional input code suffix 
+    -op <Suffix>
+            Use Suffix as the optional input code suffix 
 
     Option must be one of the following:
-    -Q          runs the interactive (text-based) menu for
+    -Q      runs the interactive (text-based) menu for
             preprocessing Filename.
-    -A          analyzes Filename with the default options
+    -A      analyzes Filename with the default options
             except the flag values set with -f at the 
             command line.
-    -O          optimizes Filename with the default options
+    -O      optimizes Filename with the default options
             except the flag values set with -f at the 
             command line.
-    -V          verifies the assertions of Filename with
+    -V      verifies the assertions of Filename with
             the default options except the flag values set 
             with -f at the command line.
-    -U Config   processes Filename with the
-            options set in the CiaoPP configuration Config.
+
+    -U <Config>
+            processes Filename with the options set in the
+            configuration Config.
 
     FlagsValues is a list of options -fFlagName=FlagValue
     separated by blank spaces, where FlagName is a valid
@@ -126,24 +130,26 @@ usage_message(
     the flags not included in this list will be assumed to take
     their default value.  Examples:
 
-    -flocal_control=on   where local_control is expected to be
-                     a CiaoPP flag;
-    -f local_control=on  same as above, with additional blank spaces
+    -flocal_control=on
+            where local_control is expected to be
+            a CiaoPP flag;
+    -f local_control=on 
+            same as above, with additional blank spaces
 
     Internal flags can also be changed using -pIntFlagName=Value.
 
 Usage 2: (top-level mode)
-       ciaopp -T <toplevel-opts>
+    ciaopp -T <toplevel-opts>
 
-  -T option starts a CiaoPP top-level shell (using <toplevel-opts> as
-  options for the toplevel).  Any of the predicates described in the
-  Section CiaoPP User Menu Interface of the CiaoPP Reference Manual
-  can be used in this top-level.
+    -T     starts a CiaoPP top-level shell (using <toplevel-opts> as
+           options for the toplevel).  Any of the predicates described
+           in the Section 'CiaoPP User Menu Interface' of the CiaoPP
+           Reference Manual can be used in this top-level.
 
 Usage 3: cache libraries
-     ciaopp --gen-lib-caches
+    ciaopp --gen-lib-cache
 
-   Preloads libraries for faster load in CiaoPP toplevel
+    Preloads libraries for faster load in CiaoPP toplevel
 
 Execution Examples:
 
