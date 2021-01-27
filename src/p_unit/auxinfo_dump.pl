@@ -38,6 +38,11 @@ collect_all_types_in_abs([ASub|ASubs],AbsInt):-
     collect_all_types_in_abs(ASubs,AbsInt).
 collect_all_types_in_abs([],_AbsInt).
 
+:- export(has_dump_auxiliary_info/0).
+:- pred has_dump_auxiliary_info/0 #"Succeeds if there is info to dump".
+has_dump_auxiliary_info :-
+    \+ \+ acc_ty(_).
+
 :- export(dump_auxiliary_info/1).
 :- meta_predicate dump_auxiliary_info(pred(1)).
 :- pred dump_auxiliary_info(AssertPred)
@@ -46,7 +51,6 @@ collect_all_types_in_abs([],_AbsInt).
    collected. It is expected that you issue a call to this one after
    you have finished processing your own items you are going to
    dump. It can be either before or after actually dumping them.".
-
 dump_auxiliary_info(AssertPred):-
     findall(AbsType, acc_ty(AbsType), AbsTypes0),
     retractall_fact(acc_ty(_)),

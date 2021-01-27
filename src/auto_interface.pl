@@ -14,8 +14,7 @@
     current_menu_level/1,
     again/0,
     set_last_file/1,
-    get_last_file/1,
-    clean_aux_files/1
+    get_last_file/1
     %                         ,opt_menu_branch/2
     %                         ,all_menu_branch/2
 ], [assertions, fsyntax, dcg, datafacts, ciaopp(ciaopp_options)]).
@@ -38,7 +37,7 @@
 %% For modular checking
 :- use_module(ciaopp(plai/intermod),
     [inductive_ctcheck_summary/3, auto_ctcheck_summary/3, intermod_analyze/2,
-     valid_mod_analysis/1, cleanreg/1, get_modules_analyzed/1]).
+     valid_mod_analysis/1, get_modules_analyzed/1]).
 
 :- use_module(ciaopp(infer/infer_db),        [domain/1]).
 :- use_module(library(assertions/assrt_lib), [assertion_body/7]).
@@ -1763,13 +1762,6 @@ decide_transform(poly) :-
 
 % ---------------------------------------------------------------------------
 % Auxiliary for modular analysis
-
-:- pred clean_aux_files(File) : atom
-   # "Deletes any auxiliary file regarding @var{File} or its related files
-      (e.g., imported modules in a modular program).".
-clean_aux_files(File):-
-    intermod:cleanreg(~maybe_main(File)).
-
 maybe_main(File) := R :-
     current_prolog_flag(main_module,Main),
     ( Main = '' -> R = File

@@ -1,41 +1,46 @@
-:- module(intermod_success,
-    [ 
-        get_success_info/7,
-        apply_success_policy/9
-    ],[assertions, isomodes, datafacts]).
+:- module(intermod_success, [get_success_info/7, apply_success_policy/9],
+          [assertions, isomodes, datafacts]).
+
+:- include(intermod_options). % intermod compilation options
+
+% ------------------------------------------------------------
+:- doc(title, "Intermodular success policy").
+% ------------------------------------------------------------
+
+:- doc(module, "This module implements the policies to compute (possibly)
+temporary success patterns when modular analysis is performed.").
 
 :- use_module(library(terms_vars), [varset/2]).
 :- use_module(library(aggregates), [findall/3]).
 :- use_module(library(terms_check), [variant/2]).
 :- use_module(library(lists), [member/2]).
 
-:- use_module(ciaopp(p_unit/p_abs), 
-    [ %imported_module/2,
-      %get_imported_modules/0,
-        get_imported_module_base/2, ensure_registry_file/3,registry/3,
-        open_mode/3, get_module_from_sg/2,may_be_improved_mark/2]).
+:- use_module(ciaopp(plai/intermod_ops), [ may_be_improved_mark/2]).
+:- use_module(ciaopp(p_unit/itf_db), [get_module_from_sg/2]).
+
 :- use_module(ciaopp(preprocess_flags), [current_pp_flag/2]).
 :- use_module(ciaopp(plai/domains), 
     [abs_sort/3, compute_lub/3, glb/4, less_or_equal/3, unknown_call/5,
       call_to_entry/10]).
 :- use_module(ciaopp(plai/fixpo_ops), [clause_applies/2]).
-:- use_module(ciaopp(p_unit/itf_db), [current_itf/3]).
 :- use_module(ciaopp(p_unit/program_keys), [predkey_from_sg/2]).
+:- use_module(ciaopp(plai/intermod_db), [registry/3,punit_module/2]).
+:- use_module(ciaopp(plai/intermod_punit), [open_mode/3]).
+
 %-----------------------------------------------------------------------------
 
 :- data tmp_success/3.
 
 %-----------------------------------------------------------------------------
 :- pred get_success_info(+Call,+SgKey,+Sg,+Sv,+AbsInt,-Prime,-PatternsApplied)
-# "Given a call pattern for an imported predicate defined by
-  @var{Call} call and @var{Sg} abstract substitution, @var{Prime} is
-  the success substitution resulting from the application of the
-  success policy for imported predicates. @var{PatternsApplied} is
- instatiated to @code{no} if there are no applicable patterns.".
+   # "Given a call pattern for an imported predicate defined by @var{Call} call
+   and @var{Sg} abstract substitution, @var{Prime} is the success substitution
+   resulting from the application of the success policy for imported predicates.
+   @var{PatternsApplied} is instatiated to @tt{no} if there are no applicable
+   patterns. The predicate is allowed to fail if no patterns are found.".
 get_success_info(Call,SgKey,Sg,Sv,AbsInt,Prime,PatternsApplied):-
-    ( nonvar(Sg) -> get_module_from_sg(Sg,Module) ; true ),
-    current_itf(defines_module,Module,Base),
-    p_abs:ensure_registry_file(Module,Base,quiet),
+    get_module_from_sg(Sg,Module),
+    punit_module(Base,Module),  !,
     functor(Sg,F,A),
     functor(SgProj,F,A),
     ( open_mode(Base,_,read_only) ->
@@ -47,20 +52,20 @@ get_success_info(Call,SgKey,Sg,Sv,AbsInt,Prime,PatternsApplied):-
         apply_success_policy(SuccessPolicy,AbsInt,SgKey,Sg,Sv,Call,Patterns,Prime,PatternsApplied)
     ).
 
-:- pred apply_success_policy(+SuccessPolicy,+AbsInt,+SgKey,+Sg,+Sv,+Proj,+Patterns,-Prime,-PatternsApplied)
-# "Applies the success policy given as first argument to the list of
-  triples (SgProj,Proj,Succ) @var{Patterns} w.r.t. @var{Proj}.  If
-  there are no applicable patterns in @var{Patterns}, it returns
-  either @code{'$bottom'} or the topmost substitution, depending on
-  the type of the success policy (either it is underapproximating or
-  overapproximating, respectively.) @var{PatternsApplied} is
-  instatiated to @code{no} if there are no applicable patterns.".
+:- pred apply_success_policy(+SuccPolicy,+AbsInt,+SgKey,+Sg,+Sv,+Proj,+Patterns,-Prime,-PatternsApplied)
+   # "Applies the success policy given as first argument to the list of triples
+   (SgProj,Proj,Succ) @var{Patterns} w.r.t. @var{Proj}. If there are no
+   applicable patterns in @var{Patterns}, it returns either @tt{'$bottom'} or
+   the topmost substitution, depending on the type of the success policy (either
+   it is underapproximating or overapproximating, respectively.)
+   @var{PatternsApplied} is instatiated to @tt{no} if there are no applicable
+   patterns.".
 apply_success_policy(over_first,AbsInt,SgKey,SgCall,Sv,Call,Patterns,Prime,yes) :-
 %       functor(SgCall,F,A),
 %       functor(SgCopy,F,A),
 %       succ_pattern(AbsInt,SgCopy,Proj,Succ),
     member((SgProj,Proj,Succ),Patterns),
-    sub_is_applicable(over_first,SgKey,SgCall,Sv,Call,AbsInt,SgProj,Proj,Succ,Prime0), !,
+    asub_is_applicable(over_first,SgKey,SgCall,Sv,Call,AbsInt,SgProj,Proj,Succ,Prime0), !,
     unknown_call(AbsInt,SgCall,Sv,Call,Prime1),
     glb(AbsInt,Prime0,Prime1,Prime).
 apply_success_policy(over_first,AbsInt,_SgKey,Sg,Sv,Call,_Patterns,Prime,no) :-
@@ -76,7 +81,7 @@ apply_success_policy(over_best,AbsInt,SgKey,SgCall,Sv,Call,Patterns,_Prime,_Patt
 %       functor(SgCopy,F,A),
 %       succ_pattern(AbsInt,SgCopy,Proj,Succ),
     member((SgProj,Proj,Succ),Patterns),
-    sub_is_applicable(over_best,SgKey,SgCall,Sv,Call,AbsInt,SgProj,Proj,Succ,Prime),
+    asub_is_applicable(over_best,SgKey,SgCall,Sv,Call,AbsInt,SgProj,Proj,Succ,Prime),
     ( current_fact(tmp_success(Sv,[Proj0],[_Prime0]),Ref) -> 
         less_or_equal_(over_best,AbsInt,Proj,Proj0),
         erase(Ref),
@@ -94,7 +99,7 @@ apply_success_policy(over_best,AbsInt,_SgKey,Sg,Sv,Call,_Patterns,Prime,no) :-
 apply_success_policy(over_all,AbsInt,SgKey,SgCall,Sv,Call,Patterns,_Prime,_PatternsApplied) :-
     retractall_fact(tmp_success(_,_,_)),
     member((SgProj,Proj,Succ),Patterns),
-    sub_is_applicable(over_all,SgKey,SgCall,Sv,Call,AbsInt,SgProj,Proj,Succ,Prime),
+    asub_is_applicable(over_all,SgKey,SgCall,Sv,Call,AbsInt,SgProj,Proj,Succ,Prime),
     ( current_fact(tmp_success(Sv,[_Proj0],[Prime0]),Ref) -> 
         glb(AbsInt,Prime0,Prime,Prime1),
         erase(Ref),
@@ -114,7 +119,7 @@ apply_success_policy(top,AbsInt,_SgKey,Sg,Sv,Call,_Patterns,Prime,no) :-
     unknown_call(AbsInt,Sg,Sv,Call,Prime).
 apply_success_policy(under_first,AbsInt,SgKey,SgCall,Sv,Call,Patterns,Prime,yes) :-
     member((SgProj,Proj,Succ),Patterns),
-    sub_is_applicable(under_first,SgKey,SgCall,Sv,Call,AbsInt,SgProj,Proj,Succ,Prime0), !,
+    asub_is_applicable(under_first,SgKey,SgCall,Sv,Call,AbsInt,SgProj,Proj,Succ,Prime0), !,
 %       unknown_call(AbsInt,SgCall,Sv,Call,Prime1),
 %       compute_lub(AbsInt,[Prime0,Prime1],Prime).
     Prime0 = Prime.
@@ -123,7 +128,7 @@ apply_success_policy(under_best,AbsInt,SgKey,SgCall,Sv,Call,Patterns,_Prime,_Pat
     %% 'botbest' policy is just like 'best', but using under-approximations.
     retractall_fact(tmp_success(_,_,_)),
     member((SgProj,Proj,Succ),Patterns),
-    sub_is_applicable(under_best,SgKey,SgCall,Sv,Call,AbsInt,SgProj,Proj,Succ,Prime),
+    asub_is_applicable(under_best,SgKey,SgCall,Sv,Call,AbsInt,SgProj,Proj,Succ,Prime),
     ( current_fact(tmp_success(Sv,[Proj0],[_Prime0]),Ref) -> 
         less_or_equal_(under_best,AbsInt,Proj,Proj0),
         erase(Ref),
@@ -137,7 +142,7 @@ apply_success_policy(under_best,_AbsInt,_SgKey,_Sg,_Sv,_Proj,_Patterns,'$bottom'
 apply_success_policy(under_all,AbsInt,SgKey,SgCall,Sv,Call,Patterns,_Prime,_PatternsApplied):-
     retractall_fact(tmp_success(_,_,_)),
     member((SgProj,Proj,Succ),Patterns),
-    sub_is_applicable(under_all,SgKey,SgCall,Sv,Call,AbsInt,SgProj,Proj,Succ,Prime),
+    asub_is_applicable(under_all,SgKey,SgCall,Sv,Call,AbsInt,SgProj,Proj,Succ,Prime),
     ( current_fact(tmp_success(Sv,[_Call],[Prime0]),Ref) -> 
         compute_lub(AbsInt,[Prime0,Prime],Prime1),
         erase(Ref),
@@ -163,19 +168,19 @@ apply_success_policy(bottom_up,AbsInt,SgKey,Sg,Sv,Proj,Patterns,Prime,PatternsAp
 
 %% ----------------------------------------
 
-:- pred sub_is_applicable(+SuccessPolicy,+SgKey,+SgCall,+Sv,+Call,+AbsInt,+SgProj,+Proj,+Succ,-Prime) 
-# "Given a call pattern defined by call @var{SgCall} and abstract
-  substitution @var{Call}, succeeds if @var{SgProj} and
-  (@var{Proj},@var{Succ}) is applicable with respect to
-  @var{SuccessPolicy} with success substitution @var{Prime}.".
-sub_is_applicable(SuccessPolicy,_SgKey,SgCall,_Sv,Call0,AbsInt,SgProj,Proj0,Succ,Prime):-
+:- pred asub_is_applicable(+SuccessPolicy,+SgKey,+SgCall,+Sv,+Call,+AbsInt,+SgProj,+Proj,+Succ,-Prime) 
+   # "Given a call pattern defined by @var{SgCall} and abstract substitution
+   @var{Call}, succeeds if @var{SgProj} and (@var{Proj},@var{Succ}) is
+   applicable with respect to @var{SuccessPolicy} with success substitution
+   @var{Prime}.".
+asub_is_applicable(SuccessPolicy,_SgKey,SgCall,_Sv,Call0,AbsInt,SgProj,Proj0,Succ,Prime):-
     variant(SgCall,SgProj), !,
     SgCall=SgProj,
     abs_sort(AbsInt,Call0,Call),
     abs_sort(AbsInt,Proj0,Proj),
     less_or_equal_(SuccessPolicy,AbsInt,Call,Proj),
     abs_sort(AbsInt,Succ,Prime).
-sub_is_applicable(SuccessPolicy,_SgKey,SgCall,Sv,Call0,AbsInt,SgProj,Proj0,Succ,Prime):-
+asub_is_applicable(SuccessPolicy,_SgKey,SgCall,Sv,Call0,AbsInt,SgProj,Proj0,Succ,Prime):-
     clause_applies(SgProj,SgCall),
     varset(SgProj,Pv),
     \+ Proj0 = '$bottom', \+ Succ = '$bottom',
@@ -190,16 +195,16 @@ sub_is_applicable(SuccessPolicy,_SgKey,SgCall,Sv,Call0,AbsInt,SgProj,Proj0,Succ,
 %%      functor(Sg,F,A),
 %%      functor(SgCopy,F,A),
 %%      get_predkey(F,A,SgKey),
-%%      sub_is_applicable_(AbsInt,SuccessPolicy,SgCopy,Call,Succ,Sg,Sv,Proj,Prime).
+%%      asub_is_applicable_(AbsInt,SuccessPolicy,SgCopy,Call,Succ,Sg,Sv,Proj,Prime).
 %%
 %%
-%%sub_is_applicable_(AbsInt,SuccessPolicy,SgCopy,Call0,Succ,Sg,_Sv,Proj,Prime):-
+%%asub_is_applicable_(AbsInt,SuccessPolicy,SgCopy,Call0,Succ,Sg,_Sv,Proj,Prime):-
 %%      variant(SgCopy,Sg), !,
 %%      SgCopy=Sg,
 %%        abs_sort(AbsInt,Call0,Call),
 %%      less_or_equal_(SuccessPolicy,AbsInt,Proj,Call),
 %%        abs_sort(AbsInt,Succ,Prime).
-%%sub_is_applicable_(AbsInt,SuccessPolicy,SgCopy,Call,Succ,Sg,Sv,Proj,Exit):-
+%%asub_is_applicable_(AbsInt,SuccessPolicy,SgCopy,Call,Succ,Sg,Sv,Proj,Exit):-
 %%      varset(SgCopy,Gv),
 %%      call_to_entry(AbsInt,Gv,SgCopy,Sv,Sg,not_provided,[],Call,Entry,_),
 %%      less_or_equal_(SuccessPolicy,AbsInt,Proj,Entry), 
@@ -233,27 +238,19 @@ comparison_criteria(bottom_up,lt).
 %% ********************************************************************
 %% ********************************************************************
 
-% :- export(succ_pattern/5). %% for compatibility. reexported by p_abs.pl
 :- pred succ_pattern(+SuccessPolicy,+AbsInt,+Sg,-Call,-Succ)
-# "Provides on backtracking the call and success patterns @var{Call}
-  and @var{Succ} of exported predicates of a given goal @var{Sg} on a
-  given abstract domain @var{AbsInt}. It uses @var{SuccessPolicy} to
-  check which marked patterns can be used.
+   # "Provides on backtracking the call and success patterns @var{Call} and
+   @var{Succ} of exported predicates of a given goal @var{Sg} on a given
+   abstract domain @var{AbsInt}. It uses @var{SuccessPolicy} to check which
+   marked patterns can be used.
 
-  This predicate is called by the analysis procedure to get info about
-  imported predicates. For performance reasons, when an external
-  predicate of an imported module is requested, all the exported
-predicates of the imported module are loaded into memory.".
+   This predicate is called by the analysis procedure to get info about imported
+   predicates. For performance reasons, when an external predicate of an
+   imported module is requested, all the exported predicates of the imported
+   module are loaded into memory.".
 succ_pattern(SP,AbsInt,Sg,Call_s,Succ_s):-
-%       current_pp_flag(success_policy,SP),
-%       get_imported_modules,  % This is done only once, do it on demand?
-    ( nonvar(Sg) -> get_module_from_sg(Sg,Module) ; throw(var(Sg)) ),
-%       imported_module(Module,Base),
-    get_imported_module_base(Module, Base),
-    p_abs:ensure_registry_file(Module,Base,quiet),
-    !,
     predkey_from_sg(Sg,SgKey),
-    current_fact(registry(SgKey,Module,regdata(_,AbsInt,Sg,Call,Succ,_,_,_,Mark))), 
+    current_fact(registry(SgKey,_,regdata(_,AbsInt,Sg,Call,Succ,_,_,_,Mark))),
     % ..., and get call patterns on backtracking.
     ( Mark = unmarked -> true
     ; may_be_improved_mark(SP,Mark)

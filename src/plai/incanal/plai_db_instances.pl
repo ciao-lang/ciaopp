@@ -60,7 +60,7 @@ copy_db(FromId, ToId) :-
 :- doc(section, "Unified interface to plai_db.").
 
 :- use_module(ciaopp(plai/plai_db), [complete/7]).
-:- use_module(ciaopp(p_unit/p_abs), [registry/3]).
+:- use_module(ciaopp(plai/intermod_db), [registry/3]).
 
 :- pred plai_db_tuple(DBId, SgKey, AbsInt, Sg, Call, Succ, Id, Add)
     #"Unified interface for plai_db instances. Variables in the tuple are:

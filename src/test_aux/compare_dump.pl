@@ -23,7 +23,8 @@ instances of the ciaopp analysis database.
 :- use_module(ciaopp(plai/plai_db), [complete/7, memo_table/6]).
 :- use_module(ciaopp(plai/domains), [less_or_equal/3, abs_sort/3, needs/2]).
 :- use_module(ciaopp(plai/fixpo_ops), [each_abs_sort/3, each_less_or_equal/3]).
-:- use_module(ciaopp(p_unit/p_abs)).
+:- use_module(ciaopp(plai/intermod_punit), [ensure_registry_file/3]).
+:- use_module(ciaopp(plai/intermod_db), [cleanup_registry/1]).
 :- use_module(ciaopp(p_unit/p_dump), [restore/1]).
 :- use_module(ciaopp(p_unit/auxinfo_dump), [acc_auxiliary_info/2, dump_auxiliary_info/1]).
 
@@ -153,7 +154,7 @@ clean_facts(complete) :-
     retractall_fact(complete(_, _, _, _, _, _, _)),
     retractall_fact(memo_table(_, _, _, _, _, _)).
 clean_facts(registry) :-
-    cleanup_p_abs_all.
+    cleanup_registry(_).
 
 human_display(X) :-
     %numbervars(X, 0, _),

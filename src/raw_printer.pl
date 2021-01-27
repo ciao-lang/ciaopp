@@ -62,7 +62,7 @@ to avoid recomputation), but it not implemented yet.").
 :- use_module(ciaopp(plai/transform), [trans_clause/3, cleanup_trans_clauses/0]).
 :- use_module(ciaopp(plai/plai_db), [complete/7, memo_table/6, raw_success/6]).
 :- use_module(typeslib(typeslib), [show_types/0, show_types_raw_printer/0]).
-:- use_module(ciaopp(p_unit/p_abs), [registry_headers/2, registry/3]).
+:- use_module(ciaopp(plai/intermod_db), [registry_headers/2, registry/3, mod_typedb/2]).
 :- use_module(ciaopp(plai), [generate_trans_clauses/4]).
 :- use_module(ciaopp(plai/fixpo_dd), ['$change_list'/3]).
 :- use_module(ciaopp(p_unit/program_keys),
@@ -162,8 +162,6 @@ show_dep_list_([E|Es]) :-
     format(user,' ~w, ', [E]),
     show_dep_list_(Es).
 
-:- use_module(ciaopp(p_unit/p_abs), [mod_typedb/2]).
-
 :- pred show_global_answer_table(AbsInt) #"Shows de global answer
     table for modular analysis with domain @var{AbsInt}".
 show_global_answer_table(AbsInt) :-
@@ -174,7 +172,7 @@ show_global_answer_table(AbsInt) :-
 show_global_answer_table(_) :-
     display(user, '------+---------+------+---------'), nl,
     ( % failure-driven loop
-      p_abs:mod_typedb(A, B),
+      intermod_db:mod_typedb(A, B),
         show_data(mod_typedb(A, B)),
         fail
     ; true

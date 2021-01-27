@@ -464,7 +464,6 @@ is_rec_clause([_|_],N,A,r,[N/A|RPs],RPs).
 
 :- use_module(ciaopp(p_unit/itf_db)).
 :- use_module(ciaopp(p_unit/assrt_db)).
-:- use_module(ciaopp(p_unit/p_abs), [get_module_from_sg/2]).
 % Add entries for all the calls to meta_predicates
 
 :- pred create_entries(+Goal,+Type,+Meta,+Mod) #"@var{Meta} is the info in the

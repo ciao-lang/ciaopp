@@ -107,7 +107,8 @@ language_output_extension(c,           '.pl').
 language_output_extension(java,        '.java').
 :- endif.
 
-:- use_module(engine(runtime_control), [push_prolog_flag/2, pop_prolog_flag/1]). % TODO: do in a better way
+:- use_module(engine(runtime_control),
+              [push_prolog_flag/2, pop_prolog_flag/1]). % TODO: do in a better way
 
 :- export(translate_input_file/5).
 :- pred translate_input_file(L,In,O,M,Out)
@@ -220,11 +221,16 @@ module_(ModList, Info):-
     incremental_module(ModList, Info).
 :- endif. % with_fullpp
 module_(ModList, Info):-
-    pp_statistics(runtime,_),
     clean_analysis_info0, % TODO: merge! see definition, cleanup_types/0?
     cleanup_all,
+    load_modules(ModList,Info),
+    curr_file(_, Mod), % TODO: use failure-driven loop?
+    clean_unexpanded_data,
+    generate_unexpanded_data(Mod). % TODO: only for output?
+
+load_modules(ModList,Info) :-
     ensure_lib_sources_loaded,
-    % load 
+    pp_statistics(runtime,[T0,_]),
     absolute_file_names(ModList,AbsFileList),
     % (only for message, avoid list if possible)
     ( AbsFileList = [AbsFileDesc] -> true
@@ -233,17 +239,14 @@ module_(ModList, Info):-
     pplog(load_module, ['{Loading current module from ' , ~~(AbsFileDesc)]),
     %
     assert_curr_files(AbsFileList), % TODO: move into preprocessing_unit/3?
+    % assert_initial_types,
     preprocessing_unit(AbsFileList,_Ms,E),
     ( E == yes -> Info=[error|Info0] ; Info=Info0 ),
-    % assert_initial_types, 
-    pp_statistics(runtime,[_,T1]),
-    pplog(load_module, ['{loaded in ',~~(T1), ' msec.}']),
-    Info0=[time(T1,[])],
+    pp_statistics(runtime,[T1,_]),
+    TotalT is T1 - T0,
+    pplog(load_module, ['{loaded in ',~~(TotalT), ' msec.}']),
+    Info0=[time(TotalT,[])],
     pplog(load_module, ['}']),
-    %
-    curr_file(_, Mod),
-    clean_unexpanded_data,
-    generate_unexpanded_data(Mod),
     % Perform initial transformations -- ASM % TODO: improve?
     detect_language_from_list(AbsFileList, Lang),
     initial_transformations(Lang, Trans),
@@ -315,7 +318,7 @@ ensure_lib_sources_loaded.
 % ---------------------------------------------------------------------------
 % Cleanup
 :- use_module(ciaopp(analyze_driver), [clean_analysis_info/0]).
-:- use_module(ciaopp(p_unit/p_abs), [cleanup_p_abs/0]).
+:- use_module(ciaopp(plai/intermod_ops), [cleanup_p_abs/0]).
 :- use_module(ciaopp(p_unit/itf_db), [cleanup_itf_db/0]).
 :- use_module(ciaopp(p_unit), [cleanup_punit/0, cleanup_comment_db/0]).
 :- use_module(ciaopp(p_unit), [pr_key_clean/0, cleanup_commented_assrt/0]).
@@ -328,7 +331,6 @@ ensure_lib_sources_loaded.
 cleanup_all :-
     cleanup_itf_db,
     clean_analysis_info,
-    cleanup_p_abs, % IG: to be removed, cleans internal data about dependencies
     cleanup_punit,
     cleanup_pasr,
     cleanup_code_and_related_assertions,
@@ -626,9 +628,7 @@ print_header(_Mod, S, E_List) :-
 % illegal characters
 %       atom_concat( '_' , Mod , Mod2 ),
 %       displayq( S , Mod2 ),
-    (
-        E_List = [_|_]
-    ->
+    ( E_List = [_|_] ->
         display(S, ', ['),
         print_atom_list(E_List, S),
         display(S, ']')

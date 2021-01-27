@@ -194,7 +194,7 @@ cleanup_punit :-
     %
     retractall_fact(internal_pred_name(_,_,_)),
     retractall_fact(p_unit:native(_,_)),
-    retractall_fact(regtype(_,_)).
+    retractall_fact(regtype(_,_)). % local data
 
 % assert_curr_files([],[]).
 % assert_curr_files([A|As],[M|Ms]):-
@@ -204,14 +204,11 @@ cleanup_punit :-
 
 %% ---------------------------------------------------------------------------
 
-:- use_module(ciaopp(p_unit/p_abs), [get_module_from_sg/2]).
-
 % Fill type definition for all regtypes
 init_types:-
     enum_regtype(Head,Prop),
     get_module_from_sg(Head,Module),%% JCF
     \+ preloaded_module(Module,_),  %% JCF: preloaded modules are processed already.
-%       displayq( init_types( Head , Prop ) ),nl,
     % definable (i.e., not basic --top, num, etc.-- not [] nor [_|_])
     legal_user_type_pred(Head),
     ( Head==Prop ->
@@ -222,7 +219,7 @@ init_types:-
     ; Cls=[(Head:-Prop)]
     ),
     ( Cls=[] -> true
-    ; insert_user_type_pred_def(Head,Cls)
+    ; insert_user_type_pred_def(Head,Cls) % TODO: IG: remove previous definition
     ),
     fail.
 init_types.

@@ -3,19 +3,21 @@
       cleanup_itf_db/0,
       current_itf/3,
       retract_itf/5,
+      get_module_from_sg/2,
       dump_lib_itf/1,
       load_lib_itf/1,
       cleanup_lib_itf/0,
       preloaded_module/2
     ],
-    [assertions, isomodes, datafacts]).
+    [assertions, isomodes, datafacts, nativeprops]).
 
 :- use_module(engine(io_basic)).
 :- use_module(engine(stream_basic), [absolute_file_name/7]).
+:- use_module(engine(runtime_control), [module_split/3]).
 :- use_module(library(pathnames), [path_split/3, path_splitext/3]).
 :- use_module(library(compiler/c_itf), [module_expansion/9]).
-:- use_module(ciaopp(p_unit/p_abs), [get_module_from_sg/2]).
 :- use_module(ciaopp(p_unit/unexpand), [unexpand_meta_calls/2]).
+:- use_module(ciaopp(p_unit/aux_filenames), [just_module_name/2]).
 
 :- reexport(ciaopp(p_unit/itf_base_db)).
 
@@ -201,6 +203,26 @@ visible_spec(F,A):-
 visible_spec(F,A):-
     current_fact(multifile(Goal,_)),
     functor(Goal,F,A).
+
+:- pred get_module_from_sg(+Sg, ?Module) => term * atm + (not_fails, is_det)
+   # "@var{Module} is the name of the module for the predicate to which call
+   pattern @var{Sg} corresponds.".
+% IG: another sort of module_split?
+get_module_from_sg(Sg,Module) :-
+    current_itf(imports,Sg,Module0), atom(Module0), !,
+    ( just_module_name(Module0,Module) -> true ; Module = Module0).
+get_module_from_sg(Sg,Module) :-
+    current_itf(defines_pred,Sg,Module0), !,
+    ( just_module_name(Module0,Module) -> true ; Module = Module0).
+get_module_from_sg(Sg,Module) :-
+    % TODO: why? (inefficient!)
+    functor(Sg,MF,_),
+    module_split(MF, M, _), !,
+    M = Module.
+get_module_from_sg(_,''). %% '\+/1' has no module in Sg. % TODO: ??
+%%%% IG: \+ is removed with a syntactic transformation, this clause can be
+%%%% removed
+
 
 :- use_module(library(write), [writeq/2]).
 :- data lib_defines/3, lib_imports/2, lib_exports/2, lib_multifile/2, lib_meta/2.

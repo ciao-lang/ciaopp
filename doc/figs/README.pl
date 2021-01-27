@@ -31,7 +31,7 @@ components(ciaopp,[],
      plai(plai),program(p_unit),syntax(tr_syntax)]).
 components(p_unit,[ciaopp(p_unit)],
     [ciaopp(p_unit/assrt_db),ciaopp(p_unit/assrt_norm),ciaopp(p_unit/clause_db),
-     ciaopp(p_unit/itf_db),ciaopp(p_unit/p_asr),ciaopp(p_unit/p_abs),ciaopp(p_unit/program_keys)]).
+     ciaopp(p_unit/itf_db),ciaopp(p_unit/p_asr),ciaopp(p_unit/program_keys)]).
 components(plai,[plai(plai)],
     [plai(domains),plai(fixpo_plai),plai(normalize),plai(plai_db),
      plai(re_analysis),plai(tarjan),plai(trace_fixp),plai(transform),

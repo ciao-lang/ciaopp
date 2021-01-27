@@ -95,6 +95,7 @@ basedom_init_abstract_domain(_AbsInt,[variants]) :-
 basedom_needs(_AbsInt, widen) :- fail.
 basedom_needs(_AbsInt, clauses_lub) :- fail.
 basedom_needs(_AbsInt, split_combined_domain) :- fail.
+basedom_needs(_AbsInt, auxinfo) :- fail.
 
 :- dom_base(widen/3).
 basedom_widen(AbsInt,Prime0,Prime1,NewPrime) :- % TODO: [IG] define in domain?

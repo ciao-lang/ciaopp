@@ -134,7 +134,9 @@ doc_internals :=
       'analyze_driver',
       'transform_driver',
       'intermod'-[ % modular analysis
-        'p_abs',
+        'intermod_db',
+        'intermod_schedule',
+        'intermod_punit',
         'intermod_entry',
         'intermod_success'
       ],

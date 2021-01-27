@@ -1,25 +1,36 @@
-:- module(intermod_entry, [], [assertions, isomodes, datafacts]).
+:- module(intermod_entry, [], [assertions, isomodes, nativeprops, datafacts]).
+
+:- include(intermod_options). % intermod compilation options
+
+% ------------------------------------------------------------
+:- doc(title, "Intermodular entry policy").
+% ------------------------------------------------------------
 
 :- doc(module,"This module provides the entry policy algorithms
     for modular analysis. The entry policy is determined by the
     @code{entry_policy} preprocessing flag.").
 
-:- use_module(ciaopp(p_unit/p_abs)).
-:- use_module(ciaopp(p_unit/itf_db), [curr_file/2, current_itf/3]).
-:- use_module(ciaopp(plai/domains), [identical_proj/5, abs_sort/3]).
 :- use_module(library(lists), [member/2]).
-:- use_module(library(pathnames), [path_splitext/3]).
-:- use_module(ciaopp(preprocess_flags), [current_pp_flag/2]).
-:- use_module(ciaopp(p_unit),   [entry_assertion/3, type_of_goal/2, type_of_directive/2]).
-:- use_module(ciaopp(plai/domains), [unknown_entry/4, unknown_call/5, info_to_asub/7, empty_entry/4]).
 :- use_module(library(terms_vars), [varset/2]).
 :- use_module(library(counters), [setcounter/2, inccounter/2]).
 :- use_module(library(vndict), [vars_names_dict/3]).
-:- use_module(ciaopp(plai/transform), [transform_clauses/5]).
-:- use_module(ciaopp(plai/intermod), [top_level_module/2]).
-:- use_module(ciaopp(plai/apply_assertions), [apply_assrt_call_to_success/8]).
 
+:- use_module(ciaopp(plai/intermod_ops)).
+:- use_module(ciaopp(p_unit/itf_db), [get_module_from_sg/2, current_itf/3]). % for multifile
+:- use_module(ciaopp(p_unit),   [type_of_goal/2, type_of_directive/2]).
 :- use_module(ciaopp(p_unit/program_keys), [get_predkey/3]).
+:- use_module(ciaopp(p_unit/assrt_db), [assertion_read/9]). % for entries
+:- use_module(library(assertions/assrt_lib), [assertion_body/7]).
+
+:- use_module(ciaopp(preprocess_flags), [current_pp_flag/2]).
+:- use_module(ciaopp(plai/domains), [identical_proj/5, abs_sort/3]).
+:- use_module(ciaopp(plai/domains),
+   [unknown_entry/4, unknown_call/5, info_to_asub/7, empty_entry/4]).
+:- use_module(ciaopp(plai/transform), [transform_clauses/5]).
+:- use_module(ciaopp(plai/apply_assertions), [apply_assrt_call_to_success/8]).
+:- use_module(ciaopp(plai/intermod_db),
+   [main_module/2, registry/3, registry_headers/2, local_ana_module/2]).
+
 %%------------------------------------------------------------------
 
 :- export(check_curr_entry_id/1).
@@ -40,26 +51,25 @@ curr_entry_id(Id) :-
 
 :- export(get_entry_info/3).
 :- pred get_entry_info(+AbsInt,-Sg,-Proj)
-# "Provides on backtracking entry abstract substitutions for the
-  current module in the global level of intermodular analysis. In the
-  case of manual scheduling, this predicate should be called for every
-  module in the program unit. In the case of automatic scheduling,
-  this predicate should only be called with top-level(U).".
-get_entry_info(AbsInt,Sg,AProj):-
-    retractall_fact(curr_entry_id_(_)),
-    current_pp_flag(entry_policy,Policy),
-    call_pattern(Policy,AbsInt,Sg,Proj,Id),
+   # "Provides on backtracking entry abstract substitutions for the current
+   module in the global level of intermodular analysis. In the case of manual
+   scheduling, this predicate should be called for every module in the program
+   unit. In the case of automatic scheduling, this predicate should only be
+   called with top-level(U).".
+get_entry_info(AbsInt,Sg,AProj) :-
+    current_pp_flag(success_policy,SP),
+    local_ana_module(_,Module),
+    registry(_,Module,regdata(_Id,AbsInt,Sg,Proj,_Succ,_Spec,_,_,Mark)),
+    ( (may_be_improved_mark(SP,Mark) ; not_valid_mark(SP,Mark)) -> true ; fail ),
+    abs_sort(AbsInt,Proj,Proj_s), % TODO: sorting not needed?
     varset(Sg,Sv),
-    apply_assrt_call_to_success(AbsInt,Sg,Sv,Proj,Sv,Proj,AProj,_),
-    assertz_fact(curr_entry_id_(Id)).
+    apply_assrt_call_to_success(AbsInt,Sg,Sv,Proj_s,Sv,Proj_s,AProj,_).
 
 :- pred call_pattern(+Policy,+AbsInt,-Sg,-Call,-Id)
-# "Provides on backtracking the call patterns that must be analyzed
-  for the current module in an intermodular analysis context.
-  Therefore, it does not provide user-defined entry points, which must
-  be obtained using non-intermodular mechanisms.".
-
-% TODO: see ensure_registry_current_files/1
+   # "Provides on backtracking the call patterns that must be analyzed for the
+   current module in an intermodulaar analysis context. Therefore, it does not
+   provide user-defined entry points, which must be obtained using
+   non-intermodular mechanisms.".
 
 :- doc(bug,"when using 'force' policy there should be a smarter
     way to know if user entries should be included or not (now
@@ -69,59 +79,49 @@ get_entry_info(AbsInt,Sg,AProj):-
 %% Reads ALL entries in registry (even if they are unmarked), but only generates
 %% user entries if there is no registry file.
 call_pattern(force,AbsInt,Sg,Call_s,Id):-
-    curr_file(File,CurrModule),
-    path_splitext(File,Base,_),
-    p_abs:ensure_registry_file(CurrModule,Base,quiet), % It is not reread if it is already in memory.
-%       ( 
-%           current_fact(p_abs:registry(_,CurrModule,_)) ->  %% Checks if there exist registry entries.
-%           %% does not add user entries unless it is the top-level module
-        add_entries_if_needed(top_level,CurrModule,AbsInt),
-%       ;
-%           %% adds user entries, because we do not know anything about how this module is called.
-%           add_entries_if_needed(force,CurrModule,AbsInt) 
-%       ),
+    local_ana_module(_FileBase,CurrModule),
+    add_entries_if_needed(top_level,CurrModule,AbsInt),
     registry(_,CurrModule,regdata(Id,AbsInt,Sg,Call,_Succ,_Spec,_,_,_Mark)),
     abs_sort(AbsInt,Call,Call_s).
 call_pattern(force_assrt,AbsInt,Sg,Call_s,Id):-
-    curr_file(File,CurrModule),
-    path_splitext(File,Base,_),
-    ensure_registry_file(CurrModule,Base,quiet), % It is not reread if it is already in memory.
+    local_ana_module(_FileBase,CurrModule),
     add_entries_if_needed(top_level,CurrModule,AbsInt),
     registry(_,CurrModule,regdata(Id,AbsInt,Sg,Call,_Succ,_Spec,Imdg,_,_Mark)),
 %% Filtering entries from assertions, exported predicate list, and initialization/on_abort.
-    (member('$query',Imdg) -> true),  %% Executed only once.
+    ( member('$query',Imdg) -> true ; fail),  %% Executed only once.
     abs_sort(AbsInt,Call,Call_s).
 call_pattern(Policy,AbsInt,Sg,Call_s,Id):-
-    (Policy = all ; Policy = top_level),
-    ensure_registry_current_files(quiet),
+    ( (Policy = all ; Policy = top_level) -> true ; fail ),
     add_entries_if_needed(Policy,_AllModules,AbsInt),
-    !,
-    curr_file(_,CurrModule),
-    registry(_,CurrModule,regdata(Id,AbsInt,Sg,Call,_Succ,_Spec,_,_,Mark)),
+    local_ana_module(_,Module),
+    registry(_,Module,regdata(Id,AbsInt,Sg,Call,_Succ,_Spec,_,_,Mark)),
     current_pp_flag(success_policy,SP),
-    (may_be_improved_mark(SP,Mark) ; not_valid_mark(SP,Mark)),
+    ( (may_be_improved_mark(SP,Mark) ; not_valid_mark(SP,Mark)) -> true ; fail ),
     abs_sort(AbsInt,Call,Call_s).
 
 %% --------------------------------------------------------------------
 
 :- pred add_entries_if_needed(+Policy,?Module,+AbsInt)
-# "Adds the entries written in the source code of @var{CurrModule} for
-  the domains being used, if they have not been added before.".
+   # "Adds the entries written in the source code of @var{CurrModule} for the
+   domains being used, if they have not been added before.".
 add_entries_if_needed(Policy,Module,AbsInt):-
     entry_assertions_to_registry(Policy,Module,AbsInt),
     update_registry_headers(Policy,Module,AbsInt).
 
 update_registry_headers(Policy,CurrModule,AbsInt):-
-    curr_file(_,CurrModule), %% CurrModule may be a free variable (then all current modules must be updated).
-    ( top_level_module(CurrModule,_), Policy = top_level
-    ; Policy = all 
-    ; Policy = force),
-    current_fact(registry_headers(CurrModule,entries_already_analyzed(Domains)),Ref),
+    local_ana_module(_,CurrModule), %% CurrModule may be a free variable (then all current modules must be updated).
+    valid_entry_in_policy(Policy,CurrModule),
+    ( current_fact(registry_headers(CurrModule,entries_already_analyzed(Domains)),Ref) -> true ; fail),
     \+ member(AbsInt,Domains),
     erase(Ref),
     assertz_fact(registry_headers(CurrModule,entries_already_analyzed([AbsInt|Domains]))),
     fail.
 update_registry_headers(_Policy,_CurrModule,_AbsInt).
+
+valid_entry_in_policy(top_level, Mod) :-
+    main_module(_,Mod).
+valid_entry_in_policy(all,_).
+valid_entry_in_policy(force,_).
 
 :- pred entry_assertions_to_registry(+Policy,?Module,+AbsInt)
    # "Adds the entries written in the source code of the modules loaded
@@ -147,9 +147,8 @@ entry_assertions_to_registry(Policy,Module,AbsInt):-
       get_new_reg_id(Id),
       assertz_fact(registry(SgKey,Module,regdata(Id,AbsInt,Goal,Call,Prime,_Spec1,['$query'],[],Mark)))
     ),
-    curr_file(File,Module),
-    path_splitext(File,Base,_),
-    add_changed_module(Module,Base,Module,current,no),
+    local_ana_module(FileBase,Module),
+    add_changed_module(Module,FileBase,Module,current,no),
     fail.
 entry_assertions_to_registry(_Policy,_Module,_AbsInt).
 
@@ -160,8 +159,8 @@ entry_assertions_to_registry(_Policy,_Module,_AbsInt).
      registry headers.".
 pending_intermod_entry_point(Policy,AbsInt,Goal,Qv,Call,Prime,Module) :-
     intermod_entry_point_policy(Policy,AbsInt,Goal,Qv,Call,Prime,Module),
-    current_fact(registry_headers(Module,entries_already_analyzed(Domains))),
-    \+ member(AbsInt,Domains).
+    ( (current_fact(registry_headers(Module,entries_already_analyzed(Domains))),
+    \+ member(AbsInt,Domains)) -> true ; fail ).
 pending_intermod_entry_point(_Policy,AbsInt,Goal,Qv,Call,Prime,Module) :-
     entry_point(AbsInt,Goal,Qv,Call,Prime,Module).
 
@@ -177,15 +176,14 @@ intermod_entry_point(_Policy,AbsInt,Goal,Qv,Call,Prime,Module) :-
 intermod_entry_point_policy(Policy,AbsInt,Goal,Qv,Call,Prime,Module) :-
     type_of_goal(exported,Goal),
     get_module_from_sg(Goal,Module),
-    ( Policy = top_level ->
-        top_level_module(TopLevelModule,_),
-        TopLevelModule = Module
+    ( Policy = top_level -> % exported predicates of top_level
+        main_module(_,Module)
     ; Policy = all % IG: is this a sanity check?
     ; Policy = force
     ),
     functor(Goal,F,A),
     functor(G,F,A),
-    \+ entry_assertion(G,_Call,_Name), % entry assertions treated elsewhere (policy-independent)
+    \+ entry_assertion(G,_,_Call), % entry assertions treated elsewhere (policy-independent)
     varset(Goal,Qv),
     unknown_entry(AbsInt,Goal,Qv,Call),
     unknown_call(AbsInt,Goal,Qv,Call,Prime).
@@ -199,7 +197,7 @@ entry_point(AbsInt,Goal,Qv,Call,Prime,Module) :-
     % custom meta_predicatate for phrase?) in by modules using dcg_phrase (e.g.,
     % module/2)
     \+ Goal = 'multifile:\6\call_in_module'(_,_),
-    entry_assertion(Goal,CInfo,_Name), % IG analyze multifiles only if they have an entry assertion
+    entry_assertion(Goal,_,CInfo), % IG analyze multifiles only if they have an entry assertion
     varset(Goal,Qv),
     info_to_asub(AbsInt,_,CInfo,Qv,Call,Goal,no),
     unknown_call(AbsInt,Goal,Qv,Call,Prime).
@@ -215,8 +213,23 @@ entry_point(AbsInt,Name,[],Call,Prime,_Module):- %% init and on_abort must be an
     unknown_call(AbsInt,Name,[],Call,Prime). % TODO: make sure that Name is right here
 entry_point(AbsInt,Goal,Qv,Call,Prime,Module):-
     %% entries must be analyzed always (if dynamic preds!)
-    entry_assertion(Goal,CInfo,_Name),
-    get_module_from_sg(Goal,Module),
+    entry_assertion(Goal,Module,CInfo),
     varset(Goal,Qv),
     info_to_asub(AbsInt,_approx,CInfo,Qv,Call,Goal,no),
     unknown_call(AbsInt,Goal,Qv,Call,Prime).
+
+entry_assertion(Goal,Mod,Call) :-
+    assertion_read(Goal,Mod,_Status,entry,Body,_Dict,_S,_LB,_LE),
+    assertion_body(Goal,_Compat,Call,_Succ,_Comp,_Comm,Body).
+
+:- pred add_entries_to_registry(+AbsInt) : atm + not_fails.
+:- export(add_entries_to_registry/1).
+add_entries_to_registry(AbsInt) :-
+    retractall_fact(curr_entry_id_(_)),
+    current_pp_flag(entry_policy,Policy),
+    ( % failure-driven loop
+      call_pattern(Policy,AbsInt,_Sg,_Proj,Id),
+        assertz_fact(curr_entry_id_(Id)),
+        fail
+    ; true
+    ).

@@ -504,7 +504,7 @@ intersec_types_2([Var|List], Var_Types, ITypeAss, OTypeAss) :-
         Types = _
     ; Entry = vt(_, Types)
     ),
-    set_top_type(Top),
+    set_top_type(Top), % used as output, do not call it 'set_XXX'
     intersec_type_list_2(Types, Top, LType),
     % \+ bot_type(LType),
     intersec_types_2(List, Var_Types, [Var:LType|ITypeAss], OTypeAss).

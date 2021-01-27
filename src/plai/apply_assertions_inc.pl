@@ -40,15 +40,18 @@ cleanup_applied_assertions_inc(AbsInt) :-
 :- pred update_assertions_pred(+Pred, +AbsInt, +Assrts) + not_fails.
 update_assertions_pred(F/A, AbsInt, Assrts) :-  % This predicate splits in call an success
     get_predkey(F,A,SgKey),
-    % split in call and success assertions
-    split_assrts_by_type(Assrts,CallAs,SuccAs),
-    ( CallAs = [_|_] ->
-      update_assertions_pred_calls(SgKey,F/A,AbsInt)
-    ; true ),
-    % calls are processed before success because they may invalidate success
-    ( SuccAs = [_|_] ->
-        update_assertions_pred_success(SgKey,AbsInt)
-    ; true ).
+    % if the assertion has no completes, do not update
+%    ( \+ \+ complete(SgKey, AbsInt,_,_,_,_,_) ->
+        % split in call and success assertions
+        split_assrts_by_type(Assrts,CallAs,SuccAs),
+        ( CallAs = [_|_] ->
+            update_assertions_pred_calls(SgKey,F/A,AbsInt)
+        ; true ),
+        % calls are processed before success because they may invalidate success
+        ( SuccAs = [_|_] ->
+            update_assertions_pred_success(SgKey,AbsInt)
+        ; true ).
+ %   ; true ).
 
 split_assrts_by_type([],[],[]).
 split_assrts_by_type([DA|As],[DA|CallAs],SuccAs) :-

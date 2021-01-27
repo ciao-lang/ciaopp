@@ -8,7 +8,7 @@
 
 :- use_module(ciaopp(p_unit/p_dump), [dump/2, restore/2]).
 :- use_module(ciaopp(analysis_stats), [add_stat/2]).
-:- use_module(ciaopp(preprocess_flags), [current_pp_flag/2]).
+:- use_module(ciaopp(preprocess_flags)).
 :- use_module(ciaopp(ciaopp_log), [pplog/2]).
 
 :- doc(module, "This module handles the maintenance of the persistent
@@ -36,6 +36,7 @@ reset_persistent_db :-
 :- pred load_persistent_if_needed(Top,Fs) : atm * list
     #"Restores the persistent analysis of tiles in list @var{Fs}
      if it existed and the flag @tt{inc_persistent} is on.".
+% TODO: do not restore analysis if it is already loaded
 load_persistent_if_needed(Top,_Fs) :-
     \+ current_pp_flag(intermod, off),
     current_pp_flag(module_loading, all), !, % monolithic with modular driver 
@@ -71,9 +72,8 @@ has_dump(File, DFile) :-
 inc_persistent(on). % ON by default
 
 :- export(set_inc_persistent/1).
-:- pred set_inc_persistent(St) : inc_persistent_status #"This flags
-    controls the storage of persistent information after the
-    analysis.".
+:- pred set_inc_persistent(St) : inc_persistent_status #"This flags controls the
+    storage of persistent information after the analysis.".
 set_inc_persistent(St) :-
     set_fact(inc_persistent(St)).
 
@@ -82,11 +82,10 @@ set_inc_persistent(St) :-
     should be stored persistently.".
 :- doc(inc_persistent_status(X), "@var{X} can be:
     @begin{itemize}
-    @item @tt{on}: Analysis information will be stored in the same
-    location as the analyzed code (as dump files). This is usefull
-    when analysis scheduling involves loading and unloading
-    modules. To perform an analysis from scratch, these files have
-    to be manually removed.
+    @item @tt{on}: Analysis information will be stored in the same location as
+    the analyzed code (as dump files). This is usefull when analysis scheduling
+    involves loading and unloading modules. To perform an analysis from scratch,
+    these files have to be manually removed.
     @item @tt{off}: No information is stored.
     @end{itemize}").
 inc_persistent_status(on).
@@ -100,7 +99,9 @@ save_persistent_analysis :-
     loaded_module(File),
     dump_file(File, DFile),
     pplog(incremental_high, ['{Analysis stored in: ', DFile, '}\n']),
-    dump(DFile, [incremental]).
+    % ( current_pp_flag(old_trusts, off) -> Assrts = [assertions] ; Assrts = []),
+    Assrts = [assertions],
+    dump(DFile, [incremental|Assrts]).
 
 :- export(clean_persistent_analysis/0).
 :- pred clean_persistent_analysis #"Removes the persistent incremental analysis

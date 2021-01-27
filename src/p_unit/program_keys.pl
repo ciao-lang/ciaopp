@@ -11,8 +11,6 @@
       inverse_rewrite_source_program/2,
       inverse_rewrite_source_program_cl/2,
       inverse_rewrite_source_body/2,
-      % --- DTM: KLUDGE: HAVE TO DISSAPEAR SOON!
-      inverse_rewrite_source_program_wk/2, % TODO: not used, remove
 %         rewrite_source_program/2,
       rewrite_source_all_clauses/2,
       rewrite_source_clause/3,
@@ -387,13 +385,6 @@ meta_term(pred(N),Term,G,goal):-
 % input:  internal format - full syntax
 % output: folded format - full syntax
 %----------------------------------------------------------------------------
-
-inverse_rewrite_source_program_wk([],[]) :- !.
-inverse_rewrite_source_program_wk([Cl:K|Cls],[NCl:K|NCls]):-
-    !,
-    inverse_rewrite_source_program_cl(Cl,NCl),
-    inverse_rewrite_source_program_wk(Cls,NCls).
-
 % THIS_ONE_NEEDS_REVISION
 :- doc(hide,inverse_rewrite_source_program/2).
 

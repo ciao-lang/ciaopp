@@ -16,6 +16,9 @@
 :- doc(module, "This module implements a high level interface of
 incremental analysis (see @lib{incanal_driver} for the low level interface).
 
+Global compilation options of incremental analysis are available in
+@tt{incanal_options}. Edit this file to activate tracing or run-time checks.
+
 @begin{alert}
 
 Incremental analysis only works with fixpoint dd, one abstract domain and
@@ -140,10 +143,11 @@ generated when transforming the code can be modified.
 
 :- use_module(ciaopp(frontend_driver), [module/2]).
 :- use_module(ciaopp(analyze_driver), [clean_analysis_info/0]).
-:- use_module(ciaopp(preprocess_flags), [current_pp_flag/2, set_pp_flag/2]).
+:- use_module(ciaopp(preprocess_flags)).
 :- use_module(ciaopp(p_unit/clause_db), [cleanup_clause_db/0]).
+:- use_module(ciaopp(p_unit/program_keys), [get_predkey/3]).
 :- use_module(ciaopp(plai/fixpo_dd), ['$change_list'/3]).
-:- use_module(typeslib(typeslib), [cleanup_types/0]).
+%:- use_module(typeslib(typeslib), [cleanup_types/0]).
 
 % incanal
 :- use_module(ciaopp(plai/incanal/incanal_driver)).
@@ -194,13 +198,12 @@ incremental_module_(Files, Stats) :-
 % assuming that type definitions do not change
 % TODO: Possible missing type definitions
 update_modules(Files, Stats) :- % Reload files (keeps prev analysis)
-    clean_analysis_info,
-    cleanup_types,
     simple_module(Files, Stats),
     get_current_clauses(NCls),
     get_current_assertions(NAssrts),
     top_level_of_files(Files, Top),
     set_loaded_module(Top),
+%    ( ( loaded_mods(Context), \+ analyzed_mods(Context)) ->
     ( has_dump(Top, _) ->
         init_empty_inc_analysis,
         load_persistent_if_needed(Top,Files), % restore previous analysis
@@ -418,7 +421,8 @@ incremental_analyze(AbsInt, Stats) :-
     save_persistent_analysis,
     store_change_list(Context),
     gather_stats(analysis, Stats),
-    pretty_print_stats(Stats). % TODO: show in a nicer way
+    pretty_print_stats(Stats), % TODO: show in a nicer way
+    set_analyzed_mods(Context).
 
 :- data local_change_list/4.
 store_change_list(Context) :-
@@ -428,6 +432,7 @@ store_change_list(Context) :-
         assertz_fact(local_change_list(Context,A,B,C)),
         fail
     ; true).
+
 restore_change_list(Context) :-
     retractall_fact('$change_list'(_,_,_)),
     ( % failure-driven loop
@@ -544,13 +549,15 @@ apply_diff_as(As) :-
     ; true
     ).
 
+update_all_assertions_analysis(_,_) :-
+    current_pp_flag(old_trusts, on), !.
 update_all_assertions_analysis([],_).
 update_all_assertions_analysis([diff(new_preds, Assrts)|Diffs],AbsInt) :- !,
     split_new_preds(Assrts, SAssrts),
     update_all_assertions_analysis(SAssrts,AbsInt),
     update_all_assertions_analysis(Diffs,AbsInt).
-update_all_assertions_analysis([diff(Pred, Assrts)|Diffs],AbsInt) :-
-    update_assertions_pred(Pred, AbsInt, Assrts),
+update_all_assertions_analysis([diff(P/A, Assrts)|Diffs],AbsInt) :-
+    update_assertions_pred(P/A, AbsInt, Assrts),
     update_all_assertions_analysis(Diffs,AbsInt).
 
 split_new_preds([],[]).

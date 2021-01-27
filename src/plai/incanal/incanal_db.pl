@@ -88,7 +88,7 @@ clean_incremental_db :-
     retractall_fact(save_source_clause(_, _, _)),
     retractall_fact(pred_inc_clkey(_, _, _)),
     retractall_fact(loaded_mods_(_)),
-  retractall_fact(save_assertion_read(_,_,_,_,_,_,_,_,_)).
+    retractall_fact(save_assertion_read(_,_,_,_,_,_,_,_,_)).
 %  retractall_fact(changed_registry_(_,_,_,_)).
 
 :- data save_source_clause/3.
@@ -262,6 +262,7 @@ del_assertion_source_db(A) :-
 :- doc(section, "Predicates for controlling loaded modules.").
 
 :- data loaded_mods_/1.
+:- data analyzed_mods_/1.
 
 :- export(all_different_mods/0).
 :- doc(all_different_mods/0, "Flag that determines if the set
@@ -306,6 +307,20 @@ set_loaded_mods(M) :-
 loaded_mods(Ms) :-
     loaded_mods_(Ms).
 %       maplist(path_basename, X, Ms).
+
+:- export(set_analyzed_mods/1).
+:- pred set_analyzed_mods(M) : list #"Sets the context (as a list
+    of loaded modules) of the incremental analysis.".
+set_analyzed_mods(_M) :-
+    current_pp_flag(module_loading,all), !, % TODO: kludge for monolithic analysis
+    set_fact(analyzed_mods_(monolithic)).
+set_analyzed_mods(M) :-
+    set_fact(analyzed_mods_(M)).
+
+:- export(analyzed_mods/1).
+:- pred analyzed_mods(Ms) => list #"Returns the list of currently loaded modules.".
+analyzed_mods(Ms) :-
+    analyzed_mods_(Ms).
 
 % --------------------------------------------------
 :- doc(section, "Predicates for modular analysis.").

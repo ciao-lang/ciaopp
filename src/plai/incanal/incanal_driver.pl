@@ -56,6 +56,7 @@ according to the strategy defined.
 :- use_module(ciaopp(plai), [topdown_analysis/3, mod_topdown_analysis/3, entry_point/5]).
 :- use_module(ciaopp(plai/intermod_entry), [get_entry_info/3]).
 :- use_module(ciaopp(plai/trace_fixp), [fixpoint_trace/7]).
+:- use_module(ciaopp(plai/intermod_ops), [curr_mod_entry/4]).
 
 %%% ciaopp
 :- use_module(ciaopp(frontend_driver), [module/1]).
@@ -70,9 +71,6 @@ according to the strategy defined.
 :- use_module(ciaopp(p_unit/p_dump), [clean_all_ciaopp_db/0]).
 :- use_module(ciaopp(p_unit/clause_db), [source_clause/3, cleanup_clause_db/0]).
 :- use_module(ciaopp(p_unit/assrt_db), [cleanup_assrt_db/0]).
-:- use_module(ciaopp(p_unit/auxinfo_dump),
-    [restore_auxiliary_info/2, imp_auxiliary_info/4]).
-:- use_module(ciaopp(p_unit/p_abs), [curr_mod_entry/4, typedb/2]).
 
 %%% incanal
 :- use_module(ciaopp(plai/incanal/tarjan_inc)).
@@ -91,7 +89,7 @@ init_empty_inc_analysis :-
     clean_incremental_db,
     cleanup_clause_db,
     cleanup_assrt_db, % removes only program assertions (not cached lib assertions)
-    clean_all_ciaopp_db,
+    clean_all_ciaopp_db, % TODO: review what is removed there
     retractall_fact(changed_complete_id(_,_,_)),
     retractall_fact(changed_complete(_,_,_,_,_)).
 
@@ -120,9 +118,9 @@ sources_from_clkeys([ClKey|ClKeys], [Cl:ClKey|Cls], [D|Ds]) :-
     domain @var{AbsInt} with them.".
 td_add_clauses([], _) :- !.
 td_add_clauses(ClKeys, AbsInt) :-
-    pplog(incremental_high, ['{[incanal] Adding clauses', ClKeys, '}']),
+    pplog(incremental_high, ['{[incanal] Adding clauses ', ClKeys, '}']),
     sources_from_clkeys(ClKeys, Cls, Ds),
-    pplog(incremental_high, ['{[incanal] Added clauses to db', ClKeys, '}']),
+    pplog(incremental_high, ['{[incanal] Added clauses to db ', ClKeys, '}']),
     inc_plai_add(Cls, Ds, dd, AbsInt, _).
 
 % the clause (that may have been transformed into more than one) needs to be
@@ -664,23 +662,17 @@ filter_comps_mod([Comp|Cs], Mod, NCs, [Comp|RestCs]) :-
 
 :- pred apply_changes_imported_mod/3 + not_fails.
 apply_changes_imported_mod(Comps, CMod, Mod) :-
-    restore_auxinfo_mod(Mod, Dict), % restore module types
     findall((SgKey, Reg), get_changed_registry(SgKey, CMod, Mod, Reg), ChRegs),
-    decide_apply_changed_registries(ChRegs, Mod, Comps, Dict).
+    decide_apply_changed_registries(ChRegs, Mod, Comps).
 
-:- pred decide_apply_changed_registries/4 + not_fails.
-decide_apply_changed_registries([], _, _, _).
-decide_apply_changed_registries([(SgKey,ChReg)|ChRegs], Mod, Comps, Dict) :-
-    ChReg = regdata(_,AbsInt,Sg,RegProj,RegPrime,_,_,_,_),
-    ( typeanalysis(AbsInt) -> % TODO: Importing should be a domain action % TODO: use knows_of/2 (JFMC)
-	      imp_auxiliary_info(AbsInt, Dict, [RegProj,RegPrime],[Proj,Prime])
-    ;
-        Proj = RegProj, Prime = RegPrime
-    ),
+:- pred decide_apply_changed_registries/3 + not_fails.
+decide_apply_changed_registries([], _, _).
+decide_apply_changed_registries([(SgKey,ChReg)|ChRegs], Mod, Comps) :-
+    ChReg = regdata(_,AbsInt,Sg,Proj,Prime,_,_,_,_),
     abs_sort(AbsInt, Proj, Proj_s),
     abs_sort(AbsInt, Prime, Prime_s),
     apply_changes_imported_comps(Comps,SgKey,Sg,Proj_s,Prime_s),
-    decide_apply_changed_registries(ChRegs, Mod, Comps, Dict).
+    decide_apply_changed_registries(ChRegs, Mod, Comps).
 
 :- data deleted_comp/0. % This flags is set to avoid computing the reachable
                         % completes if no completes were removed (all are
@@ -703,17 +695,6 @@ apply_changes_imported_comps([Comp|_],SgKey,Sg,ImpProj,ImpPrime) :-
     ).
 apply_changes_imported_comps([_|Comps], SgKey, Sg, ImpProj, ImpPrime) :-
     apply_changes_imported_comps(Comps, SgKey, Sg, ImpProj, ImpPrime).
-
-restore_auxinfo_mod(Mod, Dict) :-
-    set_fact(restore_module(Mod)),
-    restore_auxiliary_info(current_typedb,Dict).
-
-:- data restore_module/1.
-
-% TODO: merge with p_abs:current_typedb/1
-current_typedb(TypeDef):-
-    current_fact(restore_module(Module)),
-    current_fact(typedb(Module,TypeDef)).
 
 % ----------------------------------------------------------------------
 :- doc(section, "Bottom-up update analysis").

@@ -139,7 +139,7 @@ analysis(Analysis) :- lazy_analysis(Analysis), !.
 % (support for incremental analysis)
 :- use_module(ciaopp(plai/incanal), [incremental_analyze/2]).
 % (support for intermodular analysis)
-:- use_module(ciaopp(plai/intermod), [intermod_analyze/3, cleanup_intermod/0]).
+:- use_module(ciaopp(plai/intermod), [intermod_analyze/3]).
 :- endif. % with_fullpp
 
 :- if(defined(with_fullpp)).
@@ -567,7 +567,7 @@ clean_analysis_info0 :-
 :- if(defined(with_fullpp)).
 
 :- use_module(ciaopp(plai), [cleanup_plai/1]).
-:- use_module(ciaopp(p_unit/p_abs), [cleanup_p_abs/0]).
+:- use_module(ciaopp(plai/intermod_ops), [cleanup_p_abs/0]).
 :- use_module(ciaopp(infer/inferseff), [cleanup_seff/0]).
 :- use_module(ciaopp(infer/infer_db), [cleanup_infer_db/1]).
 
@@ -577,7 +577,6 @@ cleanup_for_codegen :-
     cleanup_plai(_),
     cleanup_infer_db(_),
     cleanup_seff,
-    cleanup_p_abs, % IG: to be removed, cleans internal data about dependencies
     cleanup_types,
     cleanup_domain.
     % cleanup_errors. % TODO: why not?

@@ -5,7 +5,7 @@
 :- use_module(ciaopp(test_aux/compare_dump), [not_hidden_directory_files/2]).
 :- use_module(library(pathnames), [path_splitext/3, path_concat/3]).
 :- use_module(library(system), [file_property/2]).
-:- use_module(ciaopp(p_unit/p_abs), [ensure_registry_file/3]).
+:- use_module(ciaopp(plai/intermod_punit), [ensure_registry_file/3]).
 
 main([Path]) :-
     ( file_property(Path, type(regular)) ->

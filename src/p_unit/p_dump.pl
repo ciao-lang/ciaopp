@@ -131,9 +131,10 @@ dump(File, Opts):-
     fast_write(end_of_auxiliary_info),
     ToDump = [plai_db|Xs],
     ( member(incremental, Opts) ->
-        Xs = [trans_clause_db, source_clause_db, inc_db, plai_db_extra, assertions]
+        Xs = [trans_clause_db, source_clause_db, inc_db, plai_db_extra|As]
     ; Xs = []
     ),
+    ( member(assertions, Opts) -> As = [assertions]; As = [] ),
     dump_ciaopp_db_data(ToDump, PredF, PPF),
     close(Stream),
     set_output(O).
@@ -188,7 +189,7 @@ eliminate_deps_comp(complete(A1,A2,A3,A4,A5,A6,_), complete(A1,A2,A3,A4,A5,A6,v)
 eliminate_deps_memo(memo_table(M1,M2,M3,M4,_,_), memo_table(M1,M2,M3,M4,v,v)).
 
 :- multifile dump_flags_list/2.
-dump_flags_list(dump, [dump_pred ,dump_pp ,dump_ext]).
+dump_flags_list(dump, [dump_pred, dump_pp, dump_ext]).
 
 %% --------------------------------------------------------------------
 :- pred restore(Module,Info) :: module * list
@@ -218,7 +219,7 @@ restore_with_flag(File, F) :-
     current_input(O),
     set_input(Stream),
     restore_auxiliary_info(restore_aux, Dict),
-    ( fast_read(T)  ->
+    ( fast_read(T) ->
         read_all_terms(T, Dict, F)
     ; true
     ),

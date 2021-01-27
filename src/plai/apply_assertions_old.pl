@@ -13,17 +13,16 @@
 :- use_module(ciaopp(p_unit), [type_of_goal/2, dynamic_or_unknown_predicate/1,
                            get_call_from_call_assrt/7]).
 :- use_module(ciaopp(plai/domains), 
-    [ abs_sort/3, asub_to_native/6,
-      compute_lub/3, glb/4, less_or_equal/3, unknown_call/5,
-      call_to_entry/10, full_info_to_asub/5, info_to_asub/7,
-      contains_parameters/2, unknown_entry/4,
-      extend/6, project/6, exit_to_prime/8, identical_abstract/3]).
+      [ abs_sort/3, asub_to_native/6, compute_lub/3, glb/4, less_or_equal/3,
+      unknown_call/5, call_to_entry/10, full_info_to_asub/5, info_to_asub/7,
+      contains_parameters/2, unknown_entry/4]).
 :- use_module(typeslib(typeslib), [set_param_matching_mode/1]).
 
 :- use_module(ciaopp(plai/intermod_success), [get_success_info/7]).
-:- use_module(ciaopp(p_unit/itf_db), [curr_file/2, current_itf/3]).
+:- use_module(ciaopp(p_unit/itf_db),
+              [curr_file/2, current_itf/3, get_module_from_sg/2]).
 :- use_module(ciaopp(p_unit/aux_filenames), [get_loaded_module_name/3]).
-:- use_module(ciaopp(p_unit/p_abs), [module_is_processable/1, get_module_from_sg/2]).
+:- use_module(ciaopp(plai/intermod_punit), [module_is_processable/1]).
 :- use_module(ciaopp(p_unit/aux_filenames), [is_library/1]).
 :- use_module(ciaopp(preprocess_flags), [current_pp_flag/2]).
 

@@ -164,7 +164,7 @@ trace_fixpoint('[mod] reg read').
 trace_fixpoint('[mod] reg header created').
 trace_fixpoint('[mod] new child').
 trace_fixpoint('[mod] new parent').
-trace_fixpoint('[mod] new registry').
+trace_fixpoint('[mod] new reg').
 trace_fixpoint('[mod] succ changed').
 trace_fixpoint('[mod] check reg').
 
