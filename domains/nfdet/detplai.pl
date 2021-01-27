@@ -12,7 +12,6 @@
     det_eliminate_equivalent/2,
     det_less_or_equal/2,
     det_identical_abstract/2,
-    det_fixpoint_covered/2,
     det_abs_sort/2,
     det_call_to_success_fact/9,
     det_split_combined_domain/3,
@@ -42,7 +41,6 @@
 :- dom_impl(det, compute_lub/2).
 :- dom_impl(det, compute_clauses_lub/3).
 :- dom_impl(det, identical_abstract/2).
-:- dom_impl(det, fixpoint_covered/2).
 :- dom_impl(det, abs_sort/2).
 :- dom_impl(det, extend/5).
 :- dom_impl(det, less_or_equal/2).
@@ -312,10 +310,6 @@ det_identical_abstract(ASub0,ASub1):-
     AModes0 == AModes1,
     eterms_identical_abstract(ATypes0,ATypes1),
     detabs:det_identical_abstract(ADet0,ADet1).
-
-%------------------------------------------------------------------------%
-
-det_fixpoint_covered(Prime0,Prime1) :- detplai:det_less_or_equal(Prime0,Prime1). % TODO: use absub_fixpoint_covered?
 
 %------------------------------------------------------------------------%
 % det_abs_sort(+,-)                                                           %

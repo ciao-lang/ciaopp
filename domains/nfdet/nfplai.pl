@@ -12,7 +12,6 @@
     nf_eliminate_equivalent/2,
     nf_less_or_equal/2,
     nf_identical_abstract/2,
-    nf_fixpoint_covered/2,
     nf_abs_sort/2,
     nf_call_to_success_fact/9,
     nf_split_combined_domain/3,
@@ -41,7 +40,6 @@
 :- dom_impl(nf, compute_lub/2). 
 :- dom_impl(nf, compute_clauses_lub/3).
 :- dom_impl(nf, identical_abstract/2).
-:- dom_impl(nf, fixpoint_covered/2).
 :- dom_impl(nf, abs_sort/2).
 :- dom_impl(nf, extend/5).
 :- dom_impl(nf, less_or_equal/2).
@@ -299,10 +297,6 @@ nf_identical_abstract(ASub0,ASub1):-
     AModes0 == AModes1,
     eterms_identical_abstract(ATypes0,ATypes1),
     nfabs:nf_identical_abstract(ANonF0,ANonF1).
-
-%------------------------------------------------------------------------%
-
-nf_fixpoint_covered(Prime0,Prime1) :- nfplai:nf_less_or_equal(Prime0,Prime1). % TODO: use absub_fixpoint_covered?
 
 %------------------------------------------------------------------------%
 % nf_abs_sort(+,-)                                                           %
