@@ -165,6 +165,8 @@ shfret_compute_lub(ListASub,Lub):-
     asub(Lub,LubTypes,LubModes).
 
 split([],[],[]).
+split([ASub|ListASub],LTypes,LModes):- ASub == '$bottom', !,
+    split(ListASub,LTypes,LModes).
 split([ASub|ListASub],[ATypes|LTypes],[AModes|LModes]):-
     asub(ASub,ATypes,AModes),
     split(ListASub,LTypes,LModes).
