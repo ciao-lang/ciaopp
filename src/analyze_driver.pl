@@ -11,7 +11,7 @@
 %------------------------------------------------------------------------
 
 :- doc(title, "Analyze driver (monolithic)").
-% TODO: add incrental/modular (with parts as a plugin)?
+% TODO: add incremental/modular (with parts as a plugin)?
 
 :- doc(usage, "@tt{:- use_module(ciaopp(analyze_driver))}.
    This module is loaded by default in the CiaoPP toplevel and
@@ -371,7 +371,6 @@ handle_eqs(An):-
 :- use_module(ciaopp(p_unit/itf_db), [curr_file/2]).
 
 :- use_module(ciaopp(ctchecks/ctchecks_pred), [simplify_assertions_all/1]).
-% :- use_module(ciaopp(ctchecks/assrt_ctchecks_pred) , [ simplify_assertions/2 ]).
 :- use_module(ciaopp(ctchecks/assrt_ctchecks_pp), [pp_compile_time_prog_types/3]).
 :- use_module(ciaopp(ctchecks/ctchecks_pred_messages), [init_ctcheck_sum/0, 
     is_any_false/1, is_any_check/1]).
@@ -410,113 +409,49 @@ decide_summary(ok).
 :- use_module(library(aggregates), [findall/3]).
 
 :- export(acheck/0).
-:- pred acheck # "Checks assertions w.r.t. analysis information.".
+:- pred acheck # "Checks assertions w.r.t. analysis information, obtains from
+   @pred{domain/1} which anaylses were run.".
 acheck :-
-    findall(AbsInt, 
-            ( domain(AbsInt),           % not very nice though...
-              AbsInt \== nf, 
-              AbsInt \== det,
-              aidomain(AbsInt)), 
-    Domains),       
-    check_assertions(Domains),
-    % It triggers check assertions for cost,size, and resources (JNL)
-    check_assertions([]).   
+    findall(AbsInt, domain(AbsInt), AbsInts),
+    check_assertions(AbsInts).
 
 :- export(acheck/1).
+:- pred acheck(AbsInt) #"Checks assertions using the analysis information of
+   @var{AbsInt}. The analysis must be present in CiaoPP (via analysis or restore
+   dump).".
 acheck(AbsInt):-
-    domain(AbsInt),
-    aidomain(AbsInt), !, 
+    domain(AbsInt), !, 
     check_assertions([AbsInt]).
-%
-% (06/06/07 - JNL) The original version of acheck/0 is thought to check
-% assertions wrt PLAI domains. Other domains such as resources, nfg, etc
-% should be integrated. This solution should be temporary.
-acheck(resources):- 
-    check_assertions([]).
 acheck(AbsInt):-
     pplog(ctchecks, ['{Analysis ', ~~(AbsInt), ' not available for checking}']),
     fail.
 
-% check_assertions(Types,Modes):-
-%       pp_statistics(runtime,_),
-%       curr_file(File,_),
-%       pplog(ctchecks, ['{Checking assertions of ',~~(File)]),
-%       perform_pred_ctchecks(Types,Modes),
-%       perform_pp_ctchecks(Types,Modes),
-%       pp_statistics(runtime,[_,CTime]),
-%       pplog(ctchecks, ['{assertions checked in ',~~(CTime), ' msec.}']),
-%       pplog(ctchecks, ['}']).
-
-check_assertions([]):-!.
-%%% -- Commented out by EMM: This code is causing duplicated warnings
-% check_assertions([]):-   % by JNL
-%       pp_statistics(runtime,_),
-%       curr_file(File,_),
-%       pplog(ctchecks, ['{Checking resource assertions of ',~~(File)]),
-%       perform_pred_ctchecks([]),
-%       pp_statistics(runtime,[_,CTime]),
-%       pplog(ctchecks, ['{Resource assertions checked in ',~~(CTime), ' msec.}']),
-%       pplog(ctchecks, ['}']).
-check_assertions(Domains):-
-    pp_statistics(runtime,_),
+:- pred check_assertions(+list).
+check_assertions([]) :-
+    pplog(ctchecks, ['{No analysis found for checking}']).
+check_assertions(AbsInts):-
+    pp_statistics(runtime,[CTime0,_]),
     curr_file(File,_),
     pplog(ctchecks, ['{Checking assertions of ',~~(File)]),
-    perform_pred_ctchecks(Domains),
-    modes_analysis(Modes),
-    types_analysis(Types),
-    perform_pp_ctchecks(Types,Modes), % TODO: why not Domains?
-    pp_statistics(runtime,[_,CTime]),
+    perform_pred_ctchecks(AbsInts),
+    perform_pp_ctchecks(AbsInts),
+    pp_statistics(runtime,[CTime1,_]),
+    CTime is CTime1 - CTime0,
     pplog(ctchecks, ['{assertions checked in ',~~(CTime), ' msec.}']),
     pplog(ctchecks, ['}']).
 
-modes_analysis(Modes):-
-    domain(Modes),
-    knows_of(ground,Modes),
-    !.
-modes_analysis(none):-
-    pplog(ctchecks, ['{No mode analysis available for checking}']).
-
-types_analysis(Types):-
-    domain(Types),
-    knows_of(regtypes,Types),
-    !.
-types_analysis(none).
-%% types_analysis(none):-
-%%     current_pp_flag(verbose_ctchecks,VC),
-%%     (VC == on ->
-%%         pplog(analyze_module, ['{No type analysis available for checking}'])
-%%     ;
-%%         true
-%%     ).
-
 %------------------------------------------------------------------------
-% perform_pred_ctchecks(Types,Modes):-
-%       current_pp_flag(pred_ctchecks,CT),
-%       decide_pred_ctchecks(CT,Types,Modes).
-% decide_pred_ctchecks(none,_Types,_Modes):-!.
-% %decide_pred_ctchecks(old,Types,Modes):-!,
-% %     assrt_ctchecks_pred:simplify_assertions(Types,Modes).
-% decide_pred_ctchecks(New,Types,Modes):-
-%       (New == new; New == new_succ),
-%       ctchecks_pred:simplify_assertions(Types,Modes).
+perform_pred_ctchecks(AbsInts):-
+    ( \+ current_pp_flag(pred_ctchecks,off) ->
+        simplify_assertions_all(AbsInts)
+    ; true ).
 
-perform_pred_ctchecks(Domains):-
-    current_pp_flag(pred_ctchecks,CT),
-    decide_pred_ctchecks(CT,Domains).
-
-decide_pred_ctchecks(off,_):-!.
-decide_pred_ctchecks(_,Domains):-
-    simplify_assertions_all(Domains).
-
-perform_pp_ctchecks(Types,Modes):-
-    current_pp_flag(pp_ctchecks,CT),
-    decide_pp_ctchecks(CT,Types,Modes).
-
-decide_pp_ctchecks(off,_Types,_Modes):-!.
-decide_pp_ctchecks(on,Types,Modes):-!,
+perform_pp_ctchecks(AbsInts) :-
+    current_pp_flag(pp_ctchecks,on), !,
     program(Cls,Ds),
-    pp_compile_time_prog_types(Cls,Ds,[Types,Modes]).
-    
+    pp_compile_time_prog_types(Cls,Ds,AbsInts).
+perform_pp_ctchecks(_).
+
 :- else. % \+ with_fullpp
 % TODO: enable code above, make it modular
 
