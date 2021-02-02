@@ -791,7 +791,9 @@ inject_output_package(A) :-
     ),
     ( get_output_package(A) -> % already loaded
         true
-    ; absolute_file_name(library(A),'_opt','.pl','.',_,File,_),
+    ; % warning_message("Adding package '~q', required for assertion-based output. Update the package list to remove this warning.",[A]),
+      atom_concat('wrap_', A, AWrapper), % TODO: using custom modules (under ciaopp/lib/) include those packages (sometimes as reduced versions)
+      absolute_file_name(library(AWrapper),'_opt','.pl','.',_,File,_),
       load_package_info(M, File),
       add_output_package(A)
     ).
