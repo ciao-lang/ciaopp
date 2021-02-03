@@ -778,6 +778,8 @@ native_to_prop_visible(NProp,NProp).
 :- doc(section, "Inject packages for output (post-preprocessing unit)"). % TODO: per module?
 
 :- use_module(engine(stream_basic), [absolute_file_name/7]).
+:- use_module(ciaopp(ciaopp_log), [pplog/2]).
+:- use_module(ciaopp(analysis_stats), [pp_statistics/2]).
 
 :- pred inject_output_package(A) : atm(A)
    # "Inject the package @var{A} in the current program database (including the
@@ -794,7 +796,11 @@ inject_output_package(A) :-
     ; % warning_message("Adding package '~q', required for assertion-based output. Update the package list to remove this warning.",[A]),
       atom_concat('wrap_', A, AWrapper), % TODO: using custom modules (under ciaopp/lib/) include those packages (sometimes as reduced versions)
       absolute_file_name(library(AWrapper),'_opt','.pl','.',_,File,_),
+      pp_statistics(runtime,[T0,_]),
       load_package_info(M, File),
+      pp_statistics(runtime,[T1,_]),
+      TotalT is T1 - T0,
+      pplog(load_module, ['{adding missing package ', A, ' in ',~~(TotalT), ' msec.}']),
       add_output_package(A)
     ).
 
