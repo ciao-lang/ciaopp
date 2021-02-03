@@ -276,10 +276,7 @@ preprocessing_opts(load_pkg_from(_)).
    processing (e.g., during actual compilation) might normally abort.
    ".
 
-%:- use_module(engine(runtime_control), [statistics/2]).
-
 preprocessing_unit_opts(Fs, Opts, Ms, E) :-
-    %statistics(walltime, [L1|_]),
     % get verbosity
     ( ( current_pp_flag(verbosity, very_high)
       ; member('-v', Opts)
@@ -304,10 +301,6 @@ preprocessing_unit_opts(Fs, Opts, Ms, E) :-
     %% check for props in the related files
     % ver_esp_asr,
     delayed_checks,
-    %
-    %statistics(walltime, [L2|_]),
-    %Ld is L2-L1,
-    %display(user_error, time_preprocessing_unit_opts(Fs,Opts,Ms,Ld)), nl(user_error),
     % any error upon loading?
     there_was_error(E).
 
@@ -361,7 +354,7 @@ process_main_file1(F, Opts, M, Verb) :-
 
 filetype_from_opts(Opts, Type) :-
     ( member(load_pkg_from(_), Opts) ->
-        Type = any % TODO: was `package`, but we are using `wrap_...` files that are modules
+        Type = package
     ; Type = any
     ).
 
@@ -561,6 +554,7 @@ related_files_closure(_Rel, _Verb, _Opts).
 related_files(Rel, Verb, Opts) :-
     retract_fact(related_file(I)),
     \+ current_fact(processed_file(I)),
+% lets ass this at the begining
     \+ user_module(I),
     error_protect(ctrlc_clean(
             process_file(I, asr, any,

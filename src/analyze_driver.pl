@@ -320,10 +320,9 @@ analyze_(AbsInt,Cls,Ds,Info,_):-
 :- use_module(ciaopp(infer/infer_dom), [knows_of/2]).
 
 :- pred add_packages_if_needed(Analysis) : analysis(Analysis)
-    # "Add missing packages required for @var{Analysis} correct output.".
+    # "For the given @var{Analysis} try to write down the
+      corresponding package(s) for a correct output.".
 % --- DTM: This should be in the analysis itself
-
-% TODO: around 10-20 ms each new package, optimize with caches? (JF)
 add_packages_if_needed(shfr) :-
     !,
     inject_output_package(assertions),
