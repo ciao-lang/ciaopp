@@ -494,41 +494,6 @@ first_key(_:noinfo,_):-!,
     fail.
 first_key((_:Key),Key).
 
-%% incr_key(Key,Key1):-
-%%      separate_atom(Key,[F,A,C,N]),
-%%      N1 is N+1,
-%%      make_atom_internal([F,A,C,N1],Key1).
-%% 
-%% create_key(Key,Key1):-
-%%      separate_atom(Key,[F,A,C,_]),
-%%      make_atom_internal([F,A,C],Key1).
-%% 
-%% separate_atom(Key,Components):-
-%%      name(Key,String),
-%%      name('/',[Slash]),
-%%      separate_each(String,Slash,Components).
-%% 
-%% separate_each(String,Slash,[Comp|Components]):-
-%%      append(String1,[Slash|Rest],String), !,
-%%      name(Comp,String1),
-%%      separate_each(Rest,Slash,Components).
-%% separate_each(String,_Slash,[Comp]):-
-%%      name(Comp,String).
-%% 
-%% false_key(F/A,Key):- make_atom_internal([F,A,0,0],Key).
-%% 
-%% false_create_key(F/A,Key):- make_atom_internal([F,A,0],Key).
-%% 
-%% subgoal_number(Key,N):- separate_atom(Key,[_F,_A,_C,N]).
-%% 
-%% clidlist2cllist([],[]).
-%% clidlist2cllist([(Cl,_)|Cls],[NCl|NCls]):-
-%%      clidlist2cllist(Cl,NCl),
-%%      clidlist2cllist(Cls,NCls).
-%% clidlist2cllist(directive(D),(:- D)).
-%% clidlist2cllist(clause(H,true),H):- !.
-%% clidlist2cllist(clause(H,B),(H:-B)).
-
 :- doc(hide,rewrite_cls/2).
 
 rewrite_cls([clid(Cl,_,_)|Cls0],[Cl|Cls]):-
@@ -536,7 +501,7 @@ rewrite_cls([clid(Cl,_,_)|Cls0],[Cl|Cls]):-
 rewrite_cls([],[]).
 
 %-------------------------------------------------------------------%
-% next two predicates are necessary to get the information not      %
+% the next two predicates are necessary to get the information not  %
 % directly available stored in the keys for goals and clauses       % 
 %-------------------------------------------------------------------%
 
