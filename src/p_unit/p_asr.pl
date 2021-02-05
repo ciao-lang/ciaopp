@@ -352,18 +352,11 @@ maybe_translate(F, Opts, M, Lang, NF) :-
 process_main_file1(F, Opts, M, Verb) :-
     maybe_translate(F, Opts, M, Lang, NF),
     set_pp_flag(prog_lang, Lang), % TODO: one per module
-    filetype_from_opts(Opts, Type),
     error_protect(ctrlc_clean(
-            process_file(NF, asr, Type,
+            process_file(NF, asr, any,
                 process_main_info_file(M, Verb, Opts),
                 c_itf:false, c_itf:false, do_nothing)
         ),fail). % TODO: fail or abort?
-
-filetype_from_opts(Opts, Type) :-
-    ( member(load_pkg_from(_), Opts) ->
-        Type = any % TODO: was `package`, but we are using `wrap_...` files that are modules
-    ; Type = any
-    ).
 
 :- use_module(library(sockets), [initial_from_ciaopp/0]).
 :- data socket_initialized/0.
