@@ -68,7 +68,7 @@ make_dict(['$VAR'(N)|Ns],[V|Vs],[Name=V|NVs]):-
 :- pred message_pp_calls/8.
 message_pp_calls(_,none,_,_,_,_,_,_):- !.
 message_pp_calls(Info,AbsInt,Goal,Head,Calls,Dict,K,Status):-
-    A = as(_,check,calls,Head,_,Calls,[],[],Dict,_,_,_),
+    As = as(_,check,calls,Head,[],Calls,[],[],Dict,_,_,_),
     prepare_output_info([AbsInt], [Info], Head, calls_pp(Goal), RelInfo),
     copy_term((Head,'$an_results'(RelInfo),Dict),(GoalCopy,RelInfoCopy,DictCopy)),
     name_vars(DictCopy),
@@ -83,7 +83,6 @@ message_pp_calls(Info,AbsInt,Goal,Head,Calls,Dict,K,Status):-
     ;
         display_message_checked_pp(LC,"at literal ~w successfully checked assertion:~n~p",[L,As])
     ).
-
 %pp%
 %pp%message_pp_calls(Info,AbsInt,Goal,Head,Calls,Dict_,K,Status):-
 %pp%    update_dict(Dict_,Head,Dict),
@@ -138,7 +137,7 @@ message_pp_calls(Info,AbsInt,Goal,Head,Calls,Dict,K,Status):-
 %pp%      )
 %pp%    ),
 %pp%    !.
-
+%
 message_pp_calls(Info,AbsInt,Goal,Head,Calls,Dict,K,Status):-
     error_message("error printing message_pp_calls:~w ~w ~w ~w ~w ~w ~w ~w~n",
     [Info,AbsInt,Goal,Head,Calls,Dict,K,Status]).
@@ -196,7 +195,7 @@ message_pp_entry(Info,AbsInt,Goal,Head,Calls,Dict,K,Status):-
     [Info,AbsInt,Goal,Head,Calls,Dict,K,Status]).
 
 message_pp_success(Info,AbsInt,Goal,Head,Calls,Succ,Dict,K,Status):-
-    As = as(_,check,success,Head,_,Calls,Succ,[],Dict,_,_,_),
+    As = as(_,check,success,Head,[],Calls,Succ,[],Dict,_,_,_),
     prepare_output_info([AbsInt], [Info], Head, success_pp(Goal), RelInfo),
     copy_term((Head,'$an_results'(RelInfo),Dict),(GoalCopy,RelInfoCopy,DictCopy)),
     name_vars(DictCopy),
@@ -213,7 +212,6 @@ message_pp_success(Info,AbsInt,Goal,Head,Calls,Succ,Dict,K,Status):-
     ;
         display_message_checked_pp(LC,"at literal ~w successfully checked assertion:~n~p",[L,As])
     ).
-
 %pp%message_pp_success(Info,AbsInt,Goal,Head,Calls,Succ,Dict0,K,Status):-
 %pp%    ( var(Calls) -> Calls = true ; true ),
 %pp%    update_dict(Dict0,Head,Dict),
@@ -267,7 +265,7 @@ message_pp_success(Info,AbsInt,Goal,Head,Calls,Succ,Dict,K,Status):-
 %pp%      )
 %pp%    ),
 %pp%    !.
-
+%
 message_pp_success(Info,AbsInt,Goal,Head,Calls,Succ,Dict,K,Status):-
     error_message("error printing:~w~n",
     [message_pp_success(Info,AbsInt,Goal,Head,Calls,Succ,Dict,K,Status)] ).
@@ -329,7 +327,7 @@ message_pp_check(Info,AbsInt,Prop,Key,Dict,Status):-
                                    "at literal ~w successfully checked program point assertion.", [L])
     ),
     !.
-
+%
 message_pp_check(Info,AbsInt,Prop,Key,Dict,Stat):-
     error_message("error printing message_pp_checks:~w~n",
     [message_pp_check(Info,AbsInt,Prop,Key,Dict,Stat)] ).
@@ -350,7 +348,7 @@ message_clause_incompatible(Clid,Types,H,Vars,Names):-
     ( Rules = [] -> W1='' ; W1=' with:' ),
     warning_message(LC,"the head of clause ~q is incompatible with its call type~n~8| Head:      ~w~n~8| Call Type: ~w~w"||Forms,
                     [Clid,NH,P_Call,W1|Rules]).
-
+%
 message_clause_incompatible(Clid,Types,H,Vars,Names):-
     error_message("error printing:~w~n",
     [message_clause_incompatible(Clid,Types,H,Vars,Names)] ).
