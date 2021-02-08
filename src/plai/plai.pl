@@ -137,7 +137,8 @@ init_fixpoint(poly_spec):- heuristic_pcpe:init_fixpoint.
     @tt{[time(Total,[(subtask1,T1),...,(subtaskN,TN)])]}.").
 
 plai(Cls,Ds,Fixp,AbsInt,Stats):-
-    plai_(Cls,Ds,Fixp,AbsInt,mon,Stats).
+    stat_no_store(plai_(Cls,Ds,Fixp,AbsInt,mon,Stats), TotalT),
+    pplog(analyze_module, ['{analyzed by plai in ', TotalT, ' msec.}']).
 
 plai_(Cls,Ds,Fixp,AbsInt,ModFlag,Stats) :-
     stat_no_store(init_plai(AbsInt,Flags,Fixp), InitT),
@@ -153,7 +154,7 @@ plai_(Cls,Ds,Fixp,AbsInt,ModFlag,Stats) :-
     TimeInfo = time(Total,[(prep,TPre),(ana,TAna)|Local_C_Info]),
     ( ModFlag = mon ->
         current_pp_flag(local_control,LC),
-        ( is_checker(Fixp) -> PH = 'certificate checked by' ;  PH = 'analyzed by'),
+        ( is_checker(Fixp) -> PH = 'certificate checked by' ;  PH = 'fixpoint reached by'),
         pplog(analyze_module, ['{', PH, ' ', Fixp, ' using ', AbsInt,
                                ' with local-control ', LC,' in ', TAna, ' msec.}']),
         % TODO: Total time is wrong, Local_C_Info not added!!!
@@ -163,7 +164,7 @@ plai_(Cls,Ds,Fixp,AbsInt,ModFlag,Stats) :-
         MemoryInfo = memory(Delta,Details),
         Stats = [TimeInfo,MemoryInfo|DomInfo]
     ; ModFlag = mod ->
-        pplog(analyze_module, ['{analyzed by ', Fixp, ' using ', AbsInt, ' in ', TAna,
+        pplog(analyze_module, ['{fixpoint reached by ', Fixp, ' using ', AbsInt, ' in ', TAna,
                                ' msec.}']),
         Local_C_Info = [],
         Stats = [TimeInfo|DomInfo]
