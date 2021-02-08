@@ -10,8 +10,6 @@
 
 :- use_package(ciaopp(p_unit/p_unit_argnames)).
 
-:- use_module(ciaopp(ctchecks/ctchecks_pred_messages), [memo_ctcheck_sum/1, 
-    prepare_output_info/5,name_vars/1]).
 :- use_module(library(formulae), [list_to_conj/2]).
 :- use_module(library(lists),    [append/3]).
 :- use_module(library(messages)).
@@ -23,23 +21,21 @@
 :- use_module(ciaopp(p_unit/clause_db), [maybe_clause_locator/2]).
 %:- use_module(ciaopp(p_unit/clause_db), [clause_locator/2]).
 :- use_module(ciaopp(p_unit), [prop_to_native/2]).
+:- use_module(ciaopp(p_unit/program_keys),
+              [decode_litkey/5, get_predkey/3, get_clkey/4]).
 
 :- use_module(typeslib(typeslib), [pretty_type_lit_rules/4]).
 :- use_module(ciaopp(plai/domains), [asub_to_info/5, project/6, abs_sort/3]).
 :- use_module(ciaopp(infer), [get_completes_lub/6]).
 :- use_module(ciaopp(infer/infer_dom), [knows_of/2]).
-
-:- use_module(spec(s_simpspec), [make_atom/2]).
-:- use_module(ciaopp(p_unit/program_keys), [decode_litkey/5, get_predkey/3]).
-
-:- use_module(ciaopp(ctchecks/preproc_errors), [preproc_error/2]).
-
 :- use_module(ciaopp(preprocess_flags), [current_pp_flag/2]).
 
+:- use_module(ciaopp(ctchecks/preproc_errors), [preproc_error/2]).
+:- use_module(ciaopp(ctchecks/ctchecks_pred_messages), [memo_ctcheck_sum/1,
+    prepare_output_info/5,name_vars/1]).
 
 output_user_interface(AbsInt,ASub,NVars,Props):-
-    asub_to_info(AbsInt,ASub,NVars,Props,_NativeComp),
-    !.
+    asub_to_info(AbsInt,ASub,NVars,Props,_NativeComp), !.
 
 display_message_check_pp(_LC,_Str,_Args) :-
     current_pp_flag(ass_not_stat_eval, off),!.
@@ -72,32 +68,21 @@ make_dict(['$VAR'(N)|Ns],[V|Vs],[Name=V|NVs]):-
 :- pred message_pp_calls/8.
 message_pp_calls(_,none,_,_,_,_,_,_):- !.
 message_pp_calls(Info,AbsInt,Goal,Head,Calls,Dict,K,Status):-
-    As = as${
-             status    => check,    type      => calls ,
-             head      => Head  ,    
-             call      => Calls ,     succ      => [],
-             comp      => []  ,    dic       => Dict,
-             locator   =>  _Loc
-           },
+    A = as(_,check,calls,Head,_,Calls,[],[],Dict,_,_,_),
     prepare_output_info([AbsInt], [Info], Head, calls_pp(Goal), RelInfo),
     copy_term((Head,'$an_results'(RelInfo),Dict),(GoalCopy,RelInfoCopy,DictCopy)),
     name_vars(DictCopy),
     prettyvars((GoalCopy,RelInfoCopy)),
     decode_litkey(K,F,A,C,L),
-    make_atom([F,A,C],ClId),
-    maybe_clause_locator(ClId,LC),
-    (  Status == check ->
-       true
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% ----------- Commented out for ICLP 2009 rtchecks demo -- EMM ----------- %%
-%% ----------- Please uncomment after July 18 2009              ----------- %%
-%          display_message_check_pp(LC,"at literal ~w not verified assertion:~n~pbecause on call ~p :~n~p",[L,As,GoalCopy,RelInfoCopy])
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    ;  ( Status == false -> 
-         error_message(LC, "at literal ~w false assertion:~n~pbecause on call ~p :~n~p", [L,As, GoalCopy, RelInfoCopy])
-       ; display_message_checked_pp(LC,"at literal ~w successfully checked assertion:~n~p",[L,As])
-       )
-    ),!.
+    get_clkey(F,A,C,ClId),
+    maybe_clause_locator(ClId,LC), !,
+    ( Status == check ->
+        display_message_check_pp(LC,"at literal ~w not verified assertion:~n~pbecause on call ~p :~n~p",[L,As,GoalCopy,RelInfoCopy])
+    ; Status == false -> 
+        error_message(LC, "at literal ~w false assertion:~n~pbecause on call ~p :~n~p", [L,As, GoalCopy, RelInfoCopy])
+    ;
+        display_message_checked_pp(LC,"at literal ~w successfully checked assertion:~n~p",[L,As])
+    ).
 
 %pp%
 %pp%message_pp_calls(Info,AbsInt,Goal,Head,Calls,Dict_,K,Status):-
@@ -119,7 +104,7 @@ message_pp_calls(Info,AbsInt,Goal,Head,Calls,Dict,K,Status):-
 %pp%%   ),
 %pp%    infer_unify_vars0(NVsNNs),
 %pp%    decode_litkey(K,F,A,C,L),
-%pp%        make_atom([F,A,C],ClId),
+%pp%        get_clkey(F,A,C,ClId),
 %pp%        clause_locator(ClId,LC),
 %pp%    ( knows_of(regtypes,AbsInt)
 %pp%    -> ctchecks_messages:inline_types(TProps),
@@ -168,12 +153,12 @@ message_pp_entry(Info,AbsInt,Goal,Head,Calls,Dict_,K,Status):-
     output_user_interface(AbsInt,Proj,NVars,Props0),
     list_to_conj(Props0,Props),
     ( knows_of(regtypes,AbsInt) ->
-      copy_term((NGoal,Props0),(TGoal,TProps))
-     ; true
+        copy_term((NGoal,Props0),(TGoal,TProps))
+    ; true
     ),
     infer_unify_vars0(NVsNNs),
     decode_litkey(K,F,A,C,L),
-    make_atom([F,A,C],ClId),
+    get_clkey(F,A,C,ClId),
     maybe_clause_locator(ClId,LC),
     ( knows_of(regtypes,AbsInt) ->
         ctchecks_messages:inline_types(TProps),
@@ -188,7 +173,7 @@ message_pp_entry(Info,AbsInt,Goal,Head,Calls,Dict_,K,Status):-
         W1='of ',
         W2=' :',
         FormRules="~n  ~w"
-    ),
+    ), !,
     ( Status == false ->
       memo_ctcheck_sum(false),
       error_message(LC,"at literal ~w false entry assertion:
@@ -196,50 +181,38 @@ message_pp_entry(Info,AbsInt,Goal,Head,Calls,Dict_,K,Status):-
                      [L,NHead,NCall,W1,P_Info,W2|ReqRules]),
       Expected = calls(NHead:NCall),
       preproc_error(calls,[lit(F,A,C,L),Expected,Props0,[]])
-    ; ( Status == check -> 
+    ; Status == check -> 
         memo_ctcheck_sum(check),
         display_message_check_pp(LC,"at literal ~w not verified entry assertion:
    :- entry ~w : ~w~n because on call ~w~w~w"||FormRules,
                      [L,NHead,NCall,W1,P_Info,W2|ReqRules])
-      ;
+    ;
         display_message_checked_pp(LC,
             "at literal ~w successfully checked entry assertion:
    :- entry ~w : ~w", [L,NHead,NCall])
-      )
-    ),
-    !.
+    ).
 message_pp_entry(Info,AbsInt,Goal,Head,Calls,Dict,K,Status):-
     error_message("error printing message_pp_entry:~w ~w ~w ~w ~w ~w ~w ~w~n",
     [Info,AbsInt,Goal,Head,Calls,Dict,K,Status]).
 
 message_pp_success(Info,AbsInt,Goal,Head,Calls,Succ,Dict,K,Status):-
-    As = as${
-             status    => check, type => success ,
-             head      => Head,
-             call      => Calls, succ => Succ,
-             comp      => [], dic => Dict,
-             locator   =>  _Loc
-           },
+    As = as(_,check,success,Head,_,Calls,Succ,[],Dict,_,_,_),
     prepare_output_info([AbsInt], [Info], Head, success_pp(Goal), RelInfo),
     copy_term((Head,'$an_results'(RelInfo),Dict),(GoalCopy,RelInfoCopy,DictCopy)),
     name_vars(DictCopy),
     prettyvars((GoalCopy,RelInfoCopy)),
     decode_litkey(K,F,A,C,L),
-    make_atom([F,A,C],ClId),
-    maybe_clause_locator(ClId,LC),
-    (  Status == check ->
-       true
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% ----------- Commented out for ICLP 2009 rtchecks demo -- EMM ----------- %%
-%% ----------- Please uncomment after July 18 2009              ----------- %%
-%          display_message_check_pp(LC,"at literal ~w not verified assertion:~n~pbecause on success ~p :~n~p",[L,As,GoalCopy,RelInfoCopy])
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    ;  ( Status == false -> 
-         error_message(LC, "at literal ~w false assertion:~n~pbecause on success ~p :~n~p", [L,As, GoalCopy, RelInfoCopy])
-       ; display_message_checked_pp(LC,"at literal ~w successfully checked assertion:~n~p",[L,As])
-       )
-    ),!.
-
+    get_clkey(F,A,C,ClId),
+    maybe_clause_locator(ClId,LC), !,
+    ( Status == check ->
+        display_message_check_pp(LC,"at literal ~w not verified assertion:~n~pbecause on success ~p :~n~p",
+                                 [L,As,GoalCopy,RelInfoCopy])
+    ; Status == false ->
+        error_message(LC, "at literal ~w false assertion:~n~pbecause on success ~p :~n~p",
+                      [L,As, GoalCopy, RelInfoCopy])
+    ;
+        display_message_checked_pp(LC,"at literal ~w successfully checked assertion:~n~p",[L,As])
+    ).
 
 %pp%message_pp_success(Info,AbsInt,Goal,Head,Calls,Succ,Dict0,K,Status):-
 %pp%    ( var(Calls) -> Calls = true ; true ),
@@ -257,7 +230,7 @@ message_pp_success(Info,AbsInt,Goal,Head,Calls,Succ,Dict,K,Status):-
 %pp%    ),
 %pp%    infer_unify_vars0(NVsNNs),
 %pp%    decode_litkey(K,F,A,C,L),
-%pp%        make_atom([F,A,C],ClId),
+%pp%        get_clkey(F,A,C,ClId),
 %pp%        clause_locator(ClId,LC),
 %pp%    ( knows_of(regtypes,AbsInt)
 %pp%    -> ctchecks_messages:inline_types(TProps),
@@ -306,54 +279,54 @@ message_pp_check(Info,AbsInt,Prop,Key,Dict,Status):-
     project(AbsInt,NProp,NVars,_,Sorted_Info,Proj),
     output_user_interface(AbsInt,Proj,NVars,Props0),
     list_to_conj(Props0,Props),
-    ( knows_of(regtypes,AbsInt)
-    -> copy_term(NProp,TProp),
-       copy_term(Props0,TProps)
-     ; true
+    ( knows_of(regtypes,AbsInt) ->
+        copy_term(NProp,TProp),
+        copy_term(Props0,TProps)
+    ; true
     ),
     rename((NProp,Props),NDict),
     decode_litkey(Key,F,A,C,L),
-    make_atom([F,A,C],ClId),
+    get_clkey(F,A,C,ClId),
     maybe_clause_locator(ClId,LC),
-    ( knows_of(regtypes,AbsInt)
-    -> varset(TProps,TVars),
-       ctchecks_messages:inline_types(TProps),
-       TGoal =.. [f|TVars],
-       escapify(TGoal,TGoalEsc),
-       typeslib:pretty_type_lit_rules(TGoalEsc,_P_Info,_Types1,Rules1),
+    ( knows_of(regtypes,AbsInt) ->
+        varset(TProps,TVars),
+        ctchecks_messages:inline_types(TProps),
+        TGoal =.. [f|TVars],
+        escapify(TGoal,TGoalEsc),
+        typeslib:pretty_type_lit_rules(TGoalEsc,_P_Info,_Types1,Rules1),
 %          typeslib:pretty_type_lit_rules(TGoal,_P_Info,_Types1,Rules1),
-       ctchecks_messages:filter_required_rules(Rules1,ReqRules1,FormRules1),
-       ( ReqRules1 = [] -> W2='' ; W2=' with:' ),
-       % varset(TProp,RVars),
-       inline_types2(TProp,RVars),
-       RGoal =.. [f|RVars],
-       typeslib:pretty_type_lit_rules(RGoal,_R_Info,_Types2,Rules2),
-       ctchecks_messages:filter_required_rules(Rules2,ReqRules2,FormRules2),
-       ( ReqRules2 = [] -> W4='' ; W4=' with:' )
-     ; ReqRules1=[''],
-       W2='',
-       FormRules1="  ~w",
-       ReqRules2=[''],
-       W4='',
-       FormRules2="  ~w"
+        ctchecks_messages:filter_required_rules(Rules1,ReqRules1,FormRules1),
+        ( ReqRules1 = [] -> W2='' ; W2=' with:' ),
+        % varset(TProp,RVars),
+        inline_types2(TProp,RVars),
+        RGoal =.. [f|RVars],
+        typeslib:pretty_type_lit_rules(RGoal,_R_Info,_Types2,Rules2),
+        ctchecks_messages:filter_required_rules(Rules2,ReqRules2,FormRules2),
+        ( ReqRules2 = [] -> W4='' ; W4=' with:' )
+    ;
+        ReqRules1=[''],
+        W2='',
+        FormRules1="  ~w",
+        ReqRules2=[''],
+        W4='',
+        FormRules2="  ~w"
     ),
     append(ReqRules1,[NProp,W4|ReqRules2],ReqRules),
     append(FormRules1,"~n~8| Expected: ~w~w"||FormRules2,FormRules),
     ( Status == false ->
-      memo_ctcheck_sum(false),
-      error_message(LC,"at literal ~w false program point assertion:
+        memo_ctcheck_sum(false),
+        error_message(LC,"at literal ~w false program point assertion:
 ~8| Called:   ~w~w"||FormRules,
                       [L,Props,W2|ReqRules]),
-      preproc_error(pp,[lit(F,A,C,L),Prop,Props0,[]])
-    ; ( Status == check -> 
+        preproc_error(pp,[lit(F,A,C,L),Prop,Props0,[]])
+    ; Status == check ->
         memo_ctcheck_sum(check),
         display_message_check_pp(LC,"at literal ~w not verified program point assertion:
 ~8| Called:   ~w~w"||FormRules,
                       [L,Props,W2|ReqRules])
-      ;
+    ;
         display_message_checked_pp(LC,
-            "at literal ~w successfully checked program point assertion.", [L])
-      )
+                                   "at literal ~w successfully checked program point assertion.", [L])
     ),
     !.
 
@@ -373,27 +346,24 @@ message_clause_incompatible(Clid,Types,H,Vars,Names):-
     copy_term((H,Vars),(NH,NVars)),
     infer_unify_vars(NVars,Names),
     maybe_clause_locator(Clid,LC),
-    memo_ctcheck_sum(check),  %???
+    memo_ctcheck_sum(check), !, %???
     ( Rules = [] -> W1='' ; W1=' with:' ),
-        warning_message(LC,"the head of clause ~q is incompatible with its call type~n~8| Head:      ~w~n~8| Call Type: ~w~w"||Forms,
-                            [Clid,NH,P_Call,W1|Rules]),
-                             !.
+    warning_message(LC,"the head of clause ~q is incompatible with its call type~n~8| Head:      ~w~n~8| Call Type: ~w~w"||Forms,
+                    [Clid,NH,P_Call,W1|Rules]).
 
 message_clause_incompatible(Clid,Types,H,Vars,Names):-
     error_message("error printing:~w~n",
     [message_clause_incompatible(Clid,Types,H,Vars,Names)] ).
 
-
-
 % a couple of auxiliary predicates
 infer_unify_vars([],[]).
 infer_unify_vars([V|Vs],[N|Ns]):-
-    V= N,
+    V = N,
     infer_unify_vars(Vs,Ns).
 
 infer_unify_vars0([]).
 infer_unify_vars0([V=N|VNs]):-
-    V= N,
+    V = N,
     infer_unify_vars0(VNs).
 
 inline_types([]).
@@ -456,10 +426,9 @@ escapify_one(A,AEsc) :-
     AEsc0=..[F|ArgsEsc],
 %       A1 =.. [F,_],
     ( not_to_escape(A)  ->
-      AEsc = AEsc0
+        AEsc = AEsc0
     ; AEsc = ^(AEsc0)
     ).
-
 
 escapify_list([],[]).
 escapify_list([A|As],[E|Es]) :-

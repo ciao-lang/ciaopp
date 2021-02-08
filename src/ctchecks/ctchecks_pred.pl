@@ -119,18 +119,7 @@ inform_as_changes_to_user([u(Old,OldRef,New,Domains,Info)|As]) :-
 
 get_check_assertion(ClKey, A, ARef) :-
     Status = check,
-    A = as${
-        module => M,
-        status => Status,
-        type => Type,
-        head => Key,
-        compat => Compat,
-        call => Call,
-        succ => Succ,
-        comp => Comp,
-        dic => Dic,
-        comment => Comment,
-        locator => Loc},
+    A = as(M,Status,Type,Key,Compat,Call,Succ,Comp,Dic,Loc,Comment,_),
     Loc = loc(S, LB, LE),
     ref_assertion_read(ClKey, M, Status, Type, Body, Dic, S, LB, LE, ARef),
     check_assrt_type(Type),
@@ -190,15 +179,15 @@ abs_exec_one_assertion_all_([D|Ds], [I|Is], A, Key, DomOut, InfoOut, NewA, Statu
     ; true
     ),
     ( new_status(Flag,A,_Goal) -> 
-      Status = Flag,
-      NewA = NA
+        Status = Flag,
+        NewA = NA
     ; 
-      abs_exec_one_assertion_all_(Ds, Is, NA, Key, DomOut1, InfoOut1, NewA, Status),
-      (  Status = check ->
-         DomOut = [D|DomOut1], InfoOut = [I|InfoOut1]
-      ;
-         DomOut = DomOut1, InfoOut = InfoOut1 
-      )
+        abs_exec_one_assertion_all_(Ds, Is, NA, Key, DomOut1, InfoOut1, NewA, Status),
+        (  Status = check ->
+            DomOut = [D|DomOut1], InfoOut = [I|InfoOut1]
+        ;
+            DomOut = DomOut1, InfoOut = InfoOut1
+        )
     ).
 
 % TODO: (check old comment) if expression in abs_execute_one_assertion is reduced and it is different than 'fail', list_to_conj may fail
@@ -247,8 +236,8 @@ abs_exec_each_succ(Goal, Call, Succ, AbsInt, AGoal, [ASucc|ASuccs], NCall, NSucc
     unknown_call(AbsInt, Goal, Gv, Cond, Cond0),
     call_to_entry(AbsInt, Gv, Goal, ASv, AGoal, not_provided, [], Cond0, Cond1, _ExtraInfo), % TODO: add some ClauseKey? (JF)
     glb(AbsInt, Cond1, ASucc, CondASucc),
-    (   CondASucc = '$bottom' ->  % no success possible with current Pre, thus this
-                                  % complete should be "neutral" for the whole assertion
+    ( CondASucc = '$bottom' ->  % no success possible with current Pre, thus this
+                                % complete should be "neutral" for the whole assertion
         LocalStatus = nosucc,
         NSuccess = fail
     ;
@@ -397,8 +386,8 @@ reduce_compl_succ(nosucc, S, S) :- !.
 reduce_compl_succ(S, nosucc, S) :- !. 
 reduce_compl_succ(_, _, dont_know).
 
-reduce_compl_fin(perfect, true) :-!.
-reduce_compl_fin(true, checked) :-!.
-reduce_compl_fin(fail, false) :-!.
-reduce_compl_fin(nosucc, checked) :-!.
+reduce_compl_fin(perfect, true) :- !.
+reduce_compl_fin(true, checked) :- !.
+reduce_compl_fin(fail, false) :- !.
+reduce_compl_fin(nosucc, checked) :- !.
 reduce_compl_fin(dont_know, check).

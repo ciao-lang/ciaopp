@@ -162,7 +162,7 @@ decide_inform_user(VCT, _STAT, Old, OldRef, New, [], _Domains, _Info):-
     add_assertion(NewToPrint),
     ( Status = true -> local_inccounter(simp_true_s,_) 
     ;  ( Type = calls -> local_inccounter(simp_checked_c,_) ; 
-         local_inccounter(simp_checked_s,_)
+        local_inccounter(simp_checked_s,_)
        )
     ),
     VCT = on,
@@ -172,14 +172,7 @@ decide_inform_user(VCT, _STAT, Old, OldRef, New, [], _Domains, _Info):-
       [FromL, ToL, Old,NewToPrint] ).
 % false or check assertions
 decide_inform_user(_VC, STAT, Old, OldRef, New, [], Domains, Info):-
-    New  = as${
-             module => _Module,
-             status    => Status,    type      => Type ,
-             head      => Goal  ,    
-             call      => Call ,     succ      => Success,
-             comp      => Comp  ,    dic       => Dict,                              
-             locator   => Locator 
-           },       
+    New = as(_,Status,Type,Goal,_,Call,Success,Comp,Dict,Loc,_,_),
     ( Status = check, type_of_goal(exported, Goal),
       current_pp_flag(client_safe_ctchecks, on) ->
         % Do not inform on check calls assertions of exported predicates
@@ -213,7 +206,7 @@ decide_inform_user(_VC, STAT, Old, OldRef, New, [], Domains, Info):-
     copy_term((Goal,'$an_results'(RelInfo),Dict),(GoalCopy,RelInfoCopy,DictCopy)),
     name_vars(DictCopy),
     prettyvars((GoalCopy,RelInfoCopy)),
-    Locator = loc(_File, RFrom, To),
+    Loc = loc(_File, RFrom, To),
     (  RFrom == To ->
         From = RFrom
     ;  From is RFrom+1
