@@ -398,7 +398,7 @@ valid_flag_values( pcpe_evaltime       , nnegint(_) ).
 :- endif.
 
 pp_flag(assert_ctcheck).
-pp_flag(assert_ctcheck, 'Decides whether to run compile-time checks and how the analyses to be used are selected. When auto is selected, CiaoPP tries to select automatically the appropiate analyses based on the properties that appear in the assertions to be checked.').
+pp_flag(assert_ctcheck, 'Decides whether to run compile-time checks and how the analyses to be used are selected. When auto is selected, CiaoPP tries to select automatically the appropriate analyses based on the properties that appear in the assertions to be checked.').
 current_pp_flags(  assert_ctcheck     , auto ).
 valid_flag_values( assert_ctcheck     , member( _ , [auto, manual, off] ) ).
 
@@ -406,7 +406,6 @@ pp_flag(gen_certificate).
 pp_flag(gen_certificate, 'Generate certificate (for abstraction-carrying code).' ).
 current_pp_flags(  gen_certificate    , off ).
 valid_flag_values( gen_certificate    ,  member( _ , [on, off] ) ).
-
 
 pp_flag(reduced_cert).
 pp_flag(reduced_cert, 'Generate reduced certificate (for abstraction-carrying code). It is still not available in the menu. By default it is turned off.' ).
@@ -416,13 +415,13 @@ valid_flag_values( reduced_cert   ,  member( _ , [on, off] ) ).
 % pp_flag(assert_rtcheck, 'Decides whether to transform assertions into runtime-tests. Possible values are:
 %            off: do nothing
 %           main: rt-checks are applied _only_ to the main module
-%  main_and_deps: rt-checks are applied to the main modules and its dependecies without taking into account the system libraries
+%  main_and_deps: rt-checks are applied to the main modules and its dependencies without taking into account the system libraries
 %            all: rt-checks are applied to whole system').
 % current_pp_flags(  assert_rtcheck     , off ).
 % valid_flag_values( assert_rtcheck     , member( _ , [off, main, main_and_deps, all])). % none, pred, pp_assrt, pp_code
 
 pp_flag(compiler).
-pp_flag(compiler, 'An atom specifiying the compiler executable').
+pp_flag(compiler, 'An atom specifying the compiler executable').
 current_pp_flags(  compiler           , ciaoc ).
 valid_flag_values( compiler           , atm(_) ).
 
@@ -707,7 +706,7 @@ current_pp_flags(  rem_use_cls        , off).
 valid_flag_values( rem_use_cls        , member(_,[off, pre, post, both])).
 
 pp_flag(output_show_tautologies).
-pp_flag(output_show_tautologies, 'Decides whether to show tautologic assertions or not in the output.').
+pp_flag(output_show_tautologies, 'Decides whether to show tautological assertions or not in the output.').
 current_pp_flags(  output_show_tautologies, off ).
 valid_flag_values( output_show_tautologies, member( _, [on, off] ) ).
 
@@ -905,7 +904,6 @@ pp_flag(ct_ext_policy).
 pp_flag(ct_ext_policy, 'Entries and successes for CT checking.').
 current_pp_flags( ct_ext_policy  , assertions ).
 valid_flag_values(ct_ext_policy  , member(_,[assertions,registry])).
-
 
 pp_flag(ct_regen_reg).
 pp_flag(ct_regen_reg, 'Whether to regenerate analysis registry while CT checking.').
