@@ -86,11 +86,12 @@ how(Abs,SgKey,Mode,Lit,AssProps,Where) :-
     info_to_asub(Abs,_,AssProps1,Vars0,Props,Lit,no),
     unknown_entry(Abs,Lit0,Vars0,EmptyV),
     ( identical_abstract(Abs,InfoV,EmptyV) ->
-      warning_message("Variables ~w have value top. Diagnosis aborted.",[Vars0]),
-      fail
-    ; how_body(Abs,SgKeyM,ID,AllVars0,Vars0,trace(InfoV,Props,Vars0,[]),
+        warning_message("Variables ~w have value top. Diagnosis aborted.",[Vars0]),
+        fail
+    ;
+        how_body(Abs,SgKeyM,ID,AllVars0,Vars0,trace(InfoV,Props,Vars0,[]),
                                                [],[],[],Where),
-      diag_message(Where)
+        diag_message(Where)
     ).
 
 rename_props([],[],[]).
@@ -107,11 +108,10 @@ get_init_vars(Lit0,Lit,Vars,Vars0) :-
 filter_vars([],[],_,[]).
 filter_vars([LV|LVs],[LV0|LVs0],Vs, Vars0) :-
     ( member_0(LV,Vs) ->
-      Vars0 = [LV0|Vs0]
+        Vars0 = [LV0|Vs0]
     ; Vars0 = Vs0
     ),
     filter_vars(LVs,LVs0,Vs, Vs0).
- 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % how_body/10
@@ -140,8 +140,8 @@ how_body(Abs,SgKey,ID,Vars,SVar,Trace,VDown,VUp,S,Where) :-
     get_clause_id(PrevKey,KeyCl),
     source_clause(KeyCl,clause(_Head,Body),dic(Vars,_)),
     find_lit(Body,Goal:PrevKey),
-     how_lit(Abs,PrevKey,Goal,Vars,PrevInfo,Child,Trace,VDown,VUp,[ID|S],Where).
-
+    how_lit(Abs,PrevKey,Goal,Vars,PrevInfo,Child,Trace,VDown,VUp,[ID|S],Where).
+%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% HEAD OF CLAUSE 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -156,37 +156,31 @@ how_body(Abs,SgKey,ID,Vars,_SVs,trace(InitInfo,InitProp,InitVar,Ss),
     \+ member((PKey,PId),VUp),  % the abstract graph might have cycles
 %       !,
     ( PId == 0 ->  % Entry point
-      Trace = trace(InitInfo,InitProp,InitVar,[entry(EGoal,Head,Vars)|Ss]),
-      fail,
-      Where0 = entry(PKey,ID)
-    ; get_clause_id(PKey,KeyClause),
-      source_clause(KeyClause,clause(_,Body),dic(PVars,_VNames)),
-      find_lit(Body,Goal:PKey),
-      memo_table(PKey,Abs,PId,_Son,PVars,[GoalClInfo]),
-      varset(Goal,Gv),
-      project(Abs,Goal,Gv,_,GoalClInfo,GoalInfo),
-      Trace = trace(InitInfo,InitProp,InitVar,[entry(Goal,Head,Vars)|Ss]),
-      \+ check_trace_deadend(Abs,GoalInfo,Trace),  
-      ( check_trace(Abs,GoalClInfo,Trace,_PSVars)  
-          -> Where0 = entry(PKey,ClKey)
-      ;   %display(leaving_clause(ClKey,ID,PKey)),nl,
-           how_body(Abs,PKey,PId,PVars, PVars,%PSVars,
-           Trace,VDown,[(PKey,PId)|VUp],NewS,Where0)
-      )
+        Trace = trace(InitInfo,InitProp,InitVar,[entry(EGoal,Head,Vars)|Ss]),
+        fail,
+        Where0 = entry(PKey,ID)
+    ;
+        get_clause_id(PKey,KeyClause),
+        source_clause(KeyClause,clause(_,Body),dic(PVars,_VNames)),
+        find_lit(Body,Goal:PKey),
+        memo_table(PKey,Abs,PId,_Son,PVars,[GoalClInfo]),
+        varset(Goal,Gv),
+        project(Abs,Goal,Gv,_,GoalClInfo,GoalInfo),
+        Trace = trace(InitInfo,InitProp,InitVar,[entry(Goal,Head,Vars)|Ss]),
+        \+ check_trace_deadend(Abs,GoalInfo,Trace),  
+        ( check_trace(Abs,GoalClInfo,Trace,_PSVars) ->
+            Where0 = entry(PKey,ClKey)
+        ; 
+            how_body(Abs,PKey,PId,PVars, PVars,%PSVars,
+                     Trace,VDown,[(PKey,PId)|VUp],NewS,Where0)
+        )
     ).
-
-%how_body(_Abs,SgKey,ID,_,_,_,_VDown,_VUp,_S,_Where0) :-
-%       display('Failed: '),
-%       displayq(how_body(SgKey,ID)),
-%        nl,
-%       fail.
     
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % how_lit/11
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %how_lit(_,SgKey,_,_,_,no,_,_,_,_,builtin(SgKey)) :- !.
-
 how_lit(Abs,SgKey,Goal,UpVars,Call,Node,trace(IInfo,IProp,IVar,Ss),VDown,VUp,S,Where) :-
     \+ member((SgKey,Node),VDown),
     memo_table(ClKey,Abs,Node,_Child,ClVars,[ClInfo]),
@@ -195,7 +189,6 @@ how_lit(Abs,SgKey,Goal,UpVars,Call,Node,trace(IInfo,IProp,IVar,Ss),VDown,VUp,S,W
     varset(Goal,Gv),
     varset(Head,Hv),
     project(Abs,Head,Hv,_,ClInfo,HInfo),
-
     unknown_entry(Abs,Goal,Gv,EmptyProj),
     project(Abs,Goal,Gv,_,Call,CallG),
     call_to_entry(Abs,Gv,Goal,Hv,Head,not_provided,[],CallG,Entry,_), % TODO: add some ClauseKey? (JF)
@@ -203,12 +196,11 @@ how_lit(Abs,SgKey,Goal,UpVars,Call,Node,trace(IInfo,IProp,IVar,Ss),VDown,VUp,S,W
     NTrace = trace(IInfo,IProp,IVar,[exit(Head,Goal,ClVars,UpVars)|Ss]),
     \+ check_trace_deadend(Abs,HInfo,NTrace),
     ( check_trace(Abs,HInfo,NTrace,_NewSVars) -> 
-      Where = exit(SgKey,ClKey)
+        Where = exit(SgKey,ClKey)
     ;   
         how_body(Abs,ClKey,Node,ClVars,ClVars,%NewSVars1,
                  NTrace,
                  [(SgKey,Node)|VDown],VUp,S,Where)
-
     ).
 %how_lit(_,SgKey,Goal,_,_,Node,_,_VDown,_VUp,_,_) :-
 %       displayq('Failed: '),
@@ -233,7 +225,6 @@ pop_ID([ID|IDs],ID,IDs).
 check_trace(Abs,Info,trace(VInfo,Prop,Var,[S|Ss]),bingo) :-
     reduce0(Abs,S,Info,Info1,InStack),
     follow_trace(Abs,Info1,Ss,Var,VInfo,Prop,InStack,normal),!.
-%       displayq([S|Ss]),nl.
 
 check_trace_deadend(Abs,Info,trace(VInfo,Prop,Var,[S|Ss])) :-
     reduce0_dead(Abs,S,Info,Info1,InStack),
@@ -275,8 +266,8 @@ follow_trace(Abs,InfoIn,[],Var,_VInfo,Prop,_S,Mode):-
     InfoIn \== '$bottom',
     project(Abs,_,Var,_,InfoIn,InfoPr), % TODO:[new-resources] unbound Sg!
     ( Mode = normal ->
-      glb(Abs,InfoPr,Prop,GLB),
-      GLB == '$bottom'
+        glb(Abs,InfoPr,Prop,GLB),
+        GLB == '$bottom'
 %         display('FOUND BUG!!!'), nl,nl
     ; less_or_equal(Abs,InfoPr,Prop) % succeeds if ass property is checked
     ).
@@ -331,4 +322,3 @@ diag_message(entry(Goal,Head)) :-
     get_clause_id(Goal,ClKey),
     maybe_clause_locator(ClKey,ClLoc),
     error_message(ClLoc,"An error found at literal ~w ~nwhen entering clause ~w.",[P,Head]).
-

@@ -1,7 +1,7 @@
 :- module(_,[],[]).
 
 :- use_module(spec(s_simpspec), [make_atom/2]).
-:- use_module(ciaopp(p_unit/program_keys), [decode_litkey/5, is_clkey/1, decode_clkey/4]).
+:- use_module(ciaopp(p_unit/program_keys)).
 :- use_module(ciaopp(p_unit/clause_db), [source_clause/3]).
 :- use_module(library(lists), [length/2]).
 :- use_module(library(idlists), [member_0/2]).
@@ -21,12 +21,12 @@ get_prev_lit(SgKey,PrevKey) :-
     decode_litkey(SgKey,F,A,C,G),
     G1 is G - 1,
     G1 > 0,
-    make_atom([F,A,C,G1],PrevKey).
+    get_litkey(F,A,C,G1,PrevKey).
 
 :- export(get_clause_id/2).
 get_clause_id(SgKey,ClKey) :-
     decode_litkey(SgKey,F,A,C,_),
-    make_atom([F,A,C],ClKey),!.
+    get_clkey(F,A,C,ClKey),!.
 get_clause_id(SgKey,SgKey).
 
 :- export(find_lit/2).
@@ -54,12 +54,12 @@ get_next_lit(SgKey,NextKey) :-
 get_next_lit(SgKey,NextKey) :-
     decode_litkey(SgKey,F,A,C,G),
     G1 is G + 1,
-    make_atom([F,A,C,G1],NextKey).
+    get_litkey(F,A,C,G1,NextKey).
 
 :- export(get_first_lit_cl/2).
 get_first_lit_cl(ClKey,FKey) :-
     decode_clkey(ClKey,F,A,C),
-    make_atom([F,A,C,1],FKey).
+    get_litkey(F,A,C,1,FKey).
 
 :- export(is_last_lit/1).
 is_last_lit(SgKey) :-
@@ -79,12 +79,12 @@ guess_vars(B,A) :-
     subset(A,B).
 
 :- export(subset/2).
-subset([A],[A|_]).
+subset([A],[A|_]). % TODO: missing cut
 subset(S,[A|Ss]) :-
     subset(S1,Ss),
     ( S = S1
     ; S = [A|S1]
-    ).
+    ). % TODO: missing cut
 
 :- export(gen_list/4).
 gen_list(_,_,L,L).
@@ -110,5 +110,3 @@ get_init_lit(_,Head,Lit,Key) :-
 get_init_lit(Body,_,Lit,Key) :-
 %       get_prev_lit(Key,PKey),
     find_lit(Body,(Lit:Key)).
-
-
