@@ -242,7 +242,7 @@ asub_to_props(resources,Goal,Abs,Info):-
     size_exps(Args,Measure,0,Dic),
     SizeName = size,
     decide_complexity_output_list(Size,Out_Size),
-    size_bounds(Out_Size,[Approx], Args,SizeName,Dic,Succ),
+    size_bounds(Out_Size,[Approx],Args,Measure,SizeName,Dic,Succ),
     decide_complexity_output_list(Time,Out_Time),
     resource_bound(Approx, Resources, Goal, Dic, Out_Time, Comp),
     Info=(Succ,Comp),
@@ -256,7 +256,7 @@ asub_to_props(An,Goal,Abs,Info):-
     size_exps(Args,Measure,0,Dic),
     size_name(An,SizeName),
     decide_complexity_output_list(Size,Out_Size),
-    size_bounds(Out_Size,[],Args,SizeName,Dic,Succ),
+    size_bounds(Out_Size,[],Args,Measure,SizeName,Dic,Succ),
     decide_complexity_output_list(Time,Out_Time),
     comp_to_props(An,Goal,Dic,Out_Time, Comp),
     Info=(Succ,Comp),
@@ -283,12 +283,13 @@ size_exps([A|Args],[M|Measure],N0,[N=SizeMeasure|Dic]):-
     size_exps(Args,Measure,N,Dic).
 size_exps([],_,_,[]).
 
-size_bounds([S|Size],FixedArgs,[A|Args],SizeName,Dic,[SizeExp|Bounds]):-
+size_bounds([S|Size],FixedArgs,[A|Args],[M|Measures],SizeName,Dic,
+            [SizeExp|Bounds]):-
     key_rename_another_term(S,Dic,Exp),
-    append(FixedArgs,[A,Exp],SizeExpArgs),
+    append(FixedArgs,[M,A,Exp],SizeExpArgs),
     SizeExp=..[SizeName|SizeExpArgs],
-    size_bounds(Size,FixedArgs, Args,SizeName,Dic,Bounds).
-size_bounds([],_FixedArgs,[],_,_Dic,[]).
+    size_bounds(Size,FixedArgs,Args,Measures,SizeName,Dic,Bounds).
+size_bounds([],_FixedArgs,[],[],_,_Dic,[]).
 
 comp_bound(ExpName,_Goal,Dic,Exp0,Comp):-
     ( Exp0 = [Exp] -> true ; Exp = Exp0 ),
