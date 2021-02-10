@@ -989,7 +989,7 @@ store_tmp_typedef(typedef(T,D)) :-
 
 :- pred upload_typeslib_to_registry/0 + (not_fails, is_det)
    #"Stores types in the registry (after renaming).".
-upload_typeslib_to_registry:-
+upload_typeslib_to_registry :-
     has_dump_auxiliary_info, !,
     pplog(p_abs,'{ Uploading typeslib to registry }'),
     %% accumulate types already accumulated by mark_to_upload_to_registry

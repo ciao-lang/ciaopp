@@ -166,7 +166,7 @@ human_display_list([X|Xs]) :-
     human_display_list(Xs).
 
 show_auxiliary_info_list(Sub, AbsInt) :-
-    needs(AbsInt,aux_info), !,
+    needs(AbsInt,auxinfo), !,
     acc_auxiliary_info(AbsInt, Sub),
     dump_auxiliary_info(display_nl).
 show_auxiliary_info_list(_Sub,_).

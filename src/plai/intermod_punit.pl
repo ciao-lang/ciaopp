@@ -24,10 +24,9 @@ intermodular graph of a program, i.e., the dependencies of its modules.").
 :- use_module(ciaopp(preprocess_flags)).
 :- use_module(ciaopp(ciaopp_log), [pplog/2]).
 :- use_module(ciaopp(analysis_stats), [pp_statistics/2]).
-:- use_module(ciaopp(plai/trace_fixp), [fixpoint_trace/7]).
 :- use_module(ciaopp(plai/intermod_db)).
 :- use_module(ciaopp(plai/tarjan), [step2/2]).
-:- use_module(ciaopp(p_unit/itf_db), [current_itf/3, curr_file/2]).
+:- use_module(ciaopp(p_unit/itf_db), [current_itf/3]).
 :- use_module(ciaopp(p_unit/aux_filenames), [
     get_module_filename/3, just_module_name/2, is_library/1, get_loaded_module_name/3]).
 :- use_module(ciaopp(plai/intermod_ops),
@@ -497,9 +496,6 @@ module_is_processable_(Base,_ProcessLibs) :-
 module_is_processable_(Base,ProcessLibs) :-
     current_fact(module_is_processable_cache(Base,Processable,ProcessLibs)), !,
     Processable == yes.
-module_is_processable_(Base,ProcessLibs) :- %% all current modules are processable
-    curr_file_base(Base,_Module), !,
-    assert_if_not_asserted_yet(module_is_processable_cache(Base,yes,ProcessLibs)).
 module_is_processable_(Base,ProcessLibs) :-
     is_library(Base), 
     \+ (ProcessLibs == on), !,
@@ -521,12 +517,6 @@ module_is_processable_(Base,ProcessLibs) :-
 module_is_processable_(Base,ProcessLibs) :-
     assert_if_not_asserted_yet(module_is_processable_cache(Base,no,ProcessLibs)),
     fail.
-
-% TODO: get from the compiler
-% TODO: only for checking?
-curr_file_base(Base,Module) :-
-    curr_file(File,Module),
-    path_splitext(File,Base,_).
 
 assert_if_not_asserted_yet(module_is_processable_cache(A,B,C)) :-
     \+ current_fact(module_is_processable_cache(A,B,C)), !,
@@ -653,18 +643,15 @@ read_registry_file_(Module,Base,Verb) :-
           read_types_data_loop(Module,NextTuple),   % NextTuple is the tuple after the last type definition.
           read_reg_data_loop(Module,NextTuple),
           set_input(CI),
-          pplog(p_abs, ['}']),
-          fixpoint_trace('[mod] reg read',Module,_,_,Base,_,_)
+          pplog(p_abs, ['}'])
       ; pplog(p_abs, ['{Wrong version of file: ',RegName,'. It will be overwritten.}']),
         create_registry_header(Module,PlName),
-        add_changed_module(Module,Base,Module,registry_created,no),
-        fixpoint_trace('[mod] reg header created',Module,_,_,Base,_,_)
+        add_changed_module(Module,Base,Module,registry_created,no)
       ),
       close(Stream)
     ; pplog(p_abs, ['{Non-existing file: ',RegName,'}']),
       create_registry_header(Module,PlName),
-      add_changed_module(Module,Base,Module,registry_created,no),
-      fixpoint_trace('[mod] reg header created',Module,_,_,Base,_,_)
+      add_changed_module(Module,Base,Module,registry_created,no)
     ),
     !.
 
@@ -681,10 +668,10 @@ patch_registry_(Module,Base,NeedsTreat) :-
             NeedsTreat = yes,
             current_pp_flag(success_policy,SP),
             may_be_improved_mark(SP,ForceMark),
-            patch_read_reg_data_loop(Module,ForceMark),
-            upload_typedefs_all_domains(Module)
+            patch_read_reg_data_loop(Module,ForceMark)
         ; NeedsTreat = no
-        )
+        ),
+        upload_typedefs_all_domains(Module)
     ; NeedsTreat = yes
     ),
     assertz_fact(patched_registry(Base)).
@@ -758,7 +745,8 @@ create_registry_header(Module,PlFile) :-
     ( (is_library(PlFile), \+current_pp_flag(punit_boundary,on)) ->
       assertz_fact(registry_headers(Module,open_mode(read_only)))
     ; assertz_fact(registry_headers(Module,open_mode(read_write)))
-    ).
+    ),
+    pplog(p_abs, ['{Registry header created ',Module, ' }']).
 
 :- pred read_registry_header(Verb,Module,Stream) : atm * atm * stream
     + (not_fails, is_det)
@@ -769,10 +757,9 @@ create_registry_header(Module,PlFile) :-
 read_registry_header(_Verb,Module,Stream) :-
     read(Stream,v(V)),
     registry_header_format(V,HeaderTerms),
-    read_registry_header_terms(Stream,Module,HeaderTerms).
+    read_registry_header_terms(Stream,Module,HeaderTerms), !.
 read_registry_header(_Verb,Module,_Stream) :-
-    current_itf(defines_module,Module,Base),
-    pplog(p_abs, ['{Wrong version or corrupted file header: ',Base,'}']),
+    pplog(p_abs, ['{Wrong version or corrupted file header: ',Module,'}']),
     fail.
 
 % TODO: unify with itf read
@@ -878,7 +865,6 @@ changed_processable_module(Base,M,M2,Mode,All,Req) :-
     changed_module(M,Base,M2,Mode,All,Req),
     module_is_processable(Base).
 
-% TODO: EXACTLY THE SAME CODE
 :- pred save_registry_info(+Verb,+CurrBase,?Info)
    : atm * atm * term + (not_fails, is_det)
    # "Writes on disk the registry information of the modules related to the

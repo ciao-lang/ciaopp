@@ -150,17 +150,16 @@ cleanup_intermod:-
 manual_analyze(AbsInt,FileName,OpenMode):-
     atom(AbsInt),!,
     manual_analyze([AbsInt],FileName,OpenMode).
-manual_analyze(Analyses,FileName,OpenMode):-
+manual_analyze(AbsInts,FileName,OpenMode):-
     absolute_file_name(FileName, '_opt', '.pl', '.', _, Base, _),
-    valid_mod_analysis(Analyses), !,
+    valid_mod_analysis(AbsInts), !,
     push_pp_flag(intermod,on),
     module(Base,_LoadInfo),
     pplog(modular, ['{Analyzing with manual_analyze: ',~~(FileName)]),
     add_main_module(Base),
-    cleanup_p_abs,
     ( var(OpenMode) -> true ; change_open_mode(Base,OpenMode) ), !,
     reset_total_info,
-    analyze1(Analyses,Info),
+    analyze1(AbsInts,Info),
     add_to_total_info(Info),
     gen_registry_info(quiet,_,_,_),
     save_registry_info(quiet,_SaveInfo),  %% all registry files must be saved.
@@ -223,9 +222,9 @@ intermod_analyze_(Mods,Ext,Load,_AbsInt,_TopLevel,_Info):-
 modular_analyze(AbsInt,TopLevel,Info):-
     atom(AbsInt),!,
     modular_analyze([AbsInt],TopLevel,Info).
-modular_analyze(Analyses,TopLevel,Info):-
+modular_analyze(AbsInts,TopLevel,Info):-
     pp_statistics(runtime,[T1,_]),  %% total ellapsed time.
-    valid_mod_analysis(Analyses), !,
+    valid_mod_analysis(AbsInts), !,
     pplog(modular, ['{Analyzing with modular_analyze: ',~~(TopLevel)]),
     reset_mem_usage,
     push_prolog_flag(gc,on), % TODO: why?
@@ -234,10 +233,10 @@ modular_analyze(Analyses,TopLevel,Info):-
     pp_statistics(runtime,[T3,_]),   %% setup time.
     compute_punit_modules(TopLevel,ModList),
     current_pp_flag(global_scheduling,Scheduling),
-    setup_scheduling(Scheduling,Analyses,TopLevel,ModList),
+    setup_scheduling(Scheduling,AbsInts,TopLevel,ModList),
     pp_statistics(runtime,[T4,_]),  %% setup time.
     SetupTime is T4 - T3,
-    modular_analyze_(Scheduling,Analyses,AnInfo),
+    modular_analyze_(Scheduling,AbsInts,AnInfo),
     save_registry_info(quiet,[time(SaveTime,_)]),
     pp_statistics(runtime,[T2,_]),  %% total ellapsed time.
     set_total_info(AnInfo),
@@ -276,27 +275,27 @@ add_iterations_info(Info0,[iterations(0,[])|Info0]).
 
 %%------------------------------------------------------------------
 
-modular_analyze_(Sched,Analyses,Info):-
+modular_analyze_(Sched,AbsInts,Info):-
     reset_total_info,
     retractall_fact(there_are_previous_errors),
     ( is_naive_scheduling(Sched) ->
-        do_naive_intermod(Analyses)
-    ;   do_intermod(Sched,Analyses)
+        do_naive_intermod(AbsInts)
+    ;   do_intermod(Sched,AbsInts)
     ),
     get_total_info(Info).
 
 %%------------------------------------------------------------------
 
 :- pred do_naive_intermod/1 + not_fails.
-do_naive_intermod(Analyses):-
+do_naive_intermod(AbsInts):-
     current_fact(naive_pending_modules(_)), !,
     findall(CurrModBase, current_fact(naive_module_order(CurrModBase)), Modules),
-    naive_analyze_modules(Analyses,Modules),
+    naive_analyze_modules(AbsInts,Modules),
     ( there_are_previous_errors ->
         true
-    ;   do_naive_intermod(Analyses)
+    ;   do_naive_intermod(AbsInts)
     ).
-do_naive_intermod(_Analyses).
+do_naive_intermod(_AbsInts).
 
 %% Analizes all modules in naive_module_order/1. Stores in
 %% naive_pending_modules/1 those related modules which need
@@ -310,7 +309,6 @@ naive_analyze_modules(_, _) :-
 naive_analyze_modules(AbsInts, [CurrMod|Mods]) :-
     retract_fact(naive_pending_modules(CurrMod)), !,
     pplog(modular, ['{intermod: analyzing ',~~(CurrMod)]),
-    cleanup_p_abs,
     module(CurrMod, Stats),
     get_stat(Stats, time(LoadTime,_)),
     add_stat(load, Stats),
@@ -323,6 +321,7 @@ naive_analyze_modules(AbsInts, [CurrMod|Mods]) :-
     increment_iterations,
     set_local_ana_modules([CurrMod]),
     add_entries_to_registry_all(AbsInts),
+    ( punit_module(_, Mod), upload_typedefs_all_domains(Mod), fail ; true ),
     analyze1(AbsInts,Info),
     debug_inc_dump_dir(CurrMod),
     add_to_total_info(Info), % It adds Info to total_info.
@@ -384,7 +383,6 @@ do_intermod_remaining(_Scheduling,_AbsInt).
 do_intermod_one_module(Scheduling,AbsInt):-
     pop(CurrMod,CurrPty),
     pplog(modular, ['{intermod: analyzing ',~~(CurrMod),' with priority ',~~(CurrPty)]),
-    cleanup_p_abs,
     module(CurrMod,[time(LoadTime,_)]),
     ( current_fact(force_analysis(CurrMod)) ->
         push_pp_flag(entry_policy,force)
@@ -393,6 +391,7 @@ do_intermod_one_module(Scheduling,AbsInt):-
     increment_iterations,
     set_local_ana_modules([CurrMod]),
     add_entries_to_registry(AbsInt),
+    ( punit_module(_, Mod), upload_typedefs_all_domains(Mod), fail ; true ),
     analyze1(AbsInt,Info),
     add_to_total_info(Info), % It adds Info to total_info.
     gen_registry_info(quiet,Callers,Imported,[time(GenRegTime,_)]),
@@ -474,9 +473,9 @@ calc_priority_imported(abs_depth_first,_CurrPty,[IM|IMs],[P|Ps]):-
 monolithic_analyze(AbsInt,TopLevel,Info):-
     atom(AbsInt),!,
     monolithic_analyze([AbsInt],TopLevel,Info).
-monolithic_analyze(Analyses,TopLevel,Info):-
+monolithic_analyze(AbsInts,TopLevel,Info):-
     pp_statistics(runtime,[T1,_]),  %% total ellapsed time.
-    valid_mod_analysis(Analyses), !,
+    valid_mod_analysis(AbsInts), !,
     cleanup_intermod,
     pplog(modular, ['{Analyzing with monolithic_analyze: ',~~(TopLevel)]),
     reset_mem_usage,
@@ -492,8 +491,8 @@ monolithic_analyze(Analyses,TopLevel,Info):-
     set_local_ana_modules(ModList),
     cleanup_persistent_registry(ModList),
     ensure_registry_current_files(quiet),
-    add_entries_to_registry_all(Analyses),
-    analyze1(Analyses,Info0),
+    add_entries_to_registry_all(AbsInts),
+    analyze1(AbsInts,Info0),
     debug_inc_dump_dir(TopLevel),
     add_to_total_info(Info0), % It adds Info to total_info.
     %%%%
