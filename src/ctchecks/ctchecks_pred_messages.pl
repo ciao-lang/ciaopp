@@ -507,7 +507,7 @@ checked_or_true(true).
 
 portray(A) :- A = as${}, !,
     current_output(CO),
-    print_assrt(A, CO).
+    print_assrt(A, CO). % (always newline ended)
 portray('$an_results'(Res)) :-
     find_tab(Res,ResT),
     write_results(ResT).

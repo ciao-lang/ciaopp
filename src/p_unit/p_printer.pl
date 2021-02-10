@@ -341,11 +341,21 @@ get_infos([],_Vars,[]).
 
 print_assrts([], _).
 print_assrts([A|As], S) :-
-    print_assrt(A, S),
+    ( ignore_print_assrt(A) -> true
+    ; print_assrt(A, S), nl(S)
+    ),
     print_assrts(As, S).
 
-print_assrt(As, S) :-
-    As = as${
+ignore_print_assrt(A) :-
+    A = as${
+        type => Type,
+        fromwhere => From
+    },
+    \+ From == commented, % TODO: write test assertions in this case too?
+    Type == test.
+
+print_assrt(A, S) :-
+    A = as${
         module => M,
         status => Status,
         type => Type,
@@ -358,50 +368,34 @@ print_assrt(As, S) :-
         % comment => UserComment,
         fromwhere => From
     },
-    ( (var(Head)) ->
-        format(S, "Empty Assertion", []) % TODO: bug!
-    ;
-        % --- inverse rewrite program
-        assertion_body(Head, Compat, Call, Succ, Comp, [], Body),
-        % TODO: printing discards the comments of all assertions
-        transform_head(Head, M, HeadT),
-        transform_assrt_body(Body, M, BodyT),
-        check_global_props(BodyT, BodyT2),
-        ( Dic = no ->
-%               create_dict((HeadT:-BodyT), _VN),
-%               dict2varnamesl(_VN, VN)
-            create_dict_with_assrt_and_cl(Head, VN)
-        ;
-            VN = Dic
-        ),
-        ( (Type = entry ; Type = prop) ->
-            WriteStatus = nostatus
-        ;
-            WriteStatus = status
-        ),
-        ( From == commented ->
-            ( Type == pred ->
-                write_assertion_as_double_comment(
-                    S,
-                    HeadT, Status, Type,
-                    BodyT2, VN,
-                    WriteStatus),
-                nl(S)
-            ;
-                write_assertion_as_comment(
-                    S,
-                    HeadT, Status, Type,
-                    BodyT2, VN,
-                    WriteStatus),
-                nl(S)
-            )
-        ; Type == test ->
-            true % Don't write test assertions here
-        ;
-            write_assertion(S, HeadT, Status, Type, BodyT2,
-                            VN, WriteStatus),
-            nl(S)
+    ( var(Head) ->
+        throw(error(unbound_head, print_assrt/2))
+    ; true
+    ),
+    % --- inverse rewrite program
+    assertion_body(Head, Compat, Call, Succ, Comp, [], Body),
+    % TODO: printing discards the comments of all assertions
+    transform_head(Head, M, HeadT),
+    transform_assrt_body(Body, M, BodyT),
+    check_global_props(BodyT, BodyT2),
+    ( Dic = no ->
+        % create_dict((HeadT:-BodyT), _VN),
+        % dict2varnamesl(_VN, VN)
+        create_dict_with_assrt_and_cl(Head, VN)
+    ; VN = Dic
+    ),
+    ( (Type = entry ; Type = prop) ->
+        WriteStatus = nostatus
+    ; WriteStatus = status
+    ),
+    ( From == commented ->
+        ( Type == pred ->
+            write_assertion_as_double_comment(S, HeadT, Status, Type, BodyT2, VN, WriteStatus)
+        ; write_assertion_as_comment(S, HeadT, Status, Type, BodyT2, VN, WriteStatus)
         )
+    ; Type == test ->
+        true
+    ; write_assertion(S, HeadT, Status, Type, BodyT2, VN, WriteStatus)
     ).
 
 % ---------------------------------------------------------------------------
