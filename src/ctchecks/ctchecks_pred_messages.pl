@@ -479,7 +479,7 @@ decide_inform_user(_VCT, _STAT, _OldAs, _OldAsRef, _NewAs, _Msg, _Domains, _Info
 local_inccounter_split(Proc,Status,Type,Val) :-
     ( Type = calls -> T = c ; T = s),
     atom_concat([Proc,'_',Status,'_',T], Counter),
-    inccounter(Counter, Val).
+    local_inccounter(Counter, Val).
 
 local_inccounter(Counter, Val) :- % in case the counter is not defined
     inccounter(Counter, Val),!.
