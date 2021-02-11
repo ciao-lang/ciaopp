@@ -170,7 +170,7 @@ decide_inform_user(VCT, _STAT, Old, OldRef, New, [], _Domains, _Info):-
     ; true
     ).
 % false or check assertions
-decide_inform_user(_VC, STAT, Old, OldRef, New, [], Domains, Info):-
+decide_inform_user(VC, STAT, Old, OldRef, New, [], Domains, Info):-
     New = as(_,Status,Type,Goal,_,Call,Success,Comp,Dict,Loc,_,_),
     ( Status = check, type_of_goal(exported, Goal),
       current_pp_flag(client_safe_ctchecks, on) ->
