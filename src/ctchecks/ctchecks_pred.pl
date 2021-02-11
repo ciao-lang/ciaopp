@@ -14,7 +14,7 @@
    [glb/4, info_to_asub/7, unknown_call/5, call_to_entry/10, identical_abstract/3]).
 
 :- use_module(ciaopp(p_unit),
-    [predicate_names/1, entry_assertion/3,  assertion_set_status/3,
+    [predicate_names/1, multifile_predicate_names/1, entry_assertion/3,  assertion_set_status/3,
      assertion_set_calls/3, assertion_set_success/3, assertion_set_comp/3]).
 :- use_module(ciaopp(p_unit/program_keys), [predkey_from_sg/2]).
 :- use_module(ciaopp(p_unit/p_unit_basic), [type_of_goal/2]).
@@ -77,7 +77,7 @@ decide_get_info(_AbsInt,_Key,_Goal, []).
       for all the predicates given the domains in @var{Domains}.".
 simplify_assertions_all(Domains):-
     retractall_fact(ctchecks_log(_,_,_,_,_)),
-    predicate_names(Preds),
+    ( predicate_names(Preds) ; multifile_predicate_names(Preds) ),
     ( % (failure-driven loop)
       member(F/A, Preds),
         functor(Sg,F,A),

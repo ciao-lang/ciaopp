@@ -24,6 +24,7 @@
     new_predicate/3,
     internal_predicate_names/1,
     predicate_names/1,
+    multifile_predicate_names/1,
     %
     language/1,
     %
@@ -61,7 +62,7 @@
 :- use_module(library(messages)).
 
 :- use_module(library(pathnames), [path_splitext/3]).
-:- use_module(library(aggregates), [findall/3]).
+:- use_module(library(aggregates), [findall/3, setof/3]).
 :- use_module(library(compiler/c_itf), [opt_suffix/2, set_ciaopp_expansion/1]).
 
 :- use_module(library(hiordlib), [maplist/2]).
@@ -205,7 +206,7 @@ cleanup_punit :-
 %% ---------------------------------------------------------------------------
 
 % Fill type definition for all regtypes
-init_types:-
+init_types :-
     enum_regtype(Head,Prop),
     get_module_from_sg(Head,Module),%% JCF
     \+ preloaded_module(Module,_),  %% JCF: preloaded modules are processed already.
@@ -606,9 +607,20 @@ new_predicate_name(TmpF,F,A,N,NewF):-
 new_predicate_name(NewF,_F,_A,_N,NewF).
 
 :- pred predicate_names(-list)
-   # "Returns the specs of predicates defined in the current module.".
+   # "Returns the specs of predicates defined in the current punit.".
 predicate_names(Names):-
     findall(F/A, current_itf(defines,F,A), Names).
+
+:- pred multifile_predicate_names(-list)
+   # "Returns the specs of predicates defined in the current punit.".
+% TODO: multifile predicate should be included in predicate_names but we lack
+% tests to check if it would break something
+multifile_predicate_names(NamesMulti):-
+    setof(F/A, get_multifile(F,A), NamesMulti).
+
+get_multifile(F,A) :-
+    current_itf(multifile,Sg,_),
+    functor(Sg,F,A).
 
 :- data internal_pred_name/3.
 
