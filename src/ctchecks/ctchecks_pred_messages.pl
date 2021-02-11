@@ -44,6 +44,7 @@
 :- use_module(library(format)).
 :- use_module(library(counters), [inccounter/2]).
 :- use_module(library(terms_vars), [varset/2]).
+:- use_module(library(terms), [atom_concat/2]).
 
 :- if(defined(has_ciaopp_cost)).
 :- use_module(infercost(algebraic/polynom_comp), [ % [LD]
@@ -149,10 +150,11 @@ polynom_collect_message(_As, []).
 :- endif.
 
 % checked assertion, ctchecks pplog
+% IG: [] is used for everything that has cost/resources
 decide_inform_user(VCT, _STAT, Old, OldRef, New, [], _Domains, _Info):-
-    Old = as${comp => OldComp},
     New = as${status => Status, type => Type},
-    checked_or_true(Status),
+    checked_or_true(Status), !,
+    Old = as${comp => OldComp},
     Old = as${call => OrigCall, succ => OrigSuccess, locator => Loc},
     assertion_set_calls(New, OrigCall, A2), % TODO: why?
     assertion_set_success(A2, OrigSuccess, A3), % TODO: why?
@@ -160,16 +162,13 @@ decide_inform_user(VCT, _STAT, Old, OldRef, New, [], _Domains, _Info):-
     erase(OldRef), %% TODO: [IG] Why erase the assertion when printing the
                    %% message and not when the assertion is checked?
     add_assertion(NewToPrint),
-    ( Status = true -> local_inccounter(simp_true_s,_) 
-    ;  ( Type = calls -> local_inccounter(simp_checked_c,_) ; 
-        local_inccounter(simp_checked_s,_)
-       )
-    ),
-    VCT = on,
-    !,
+    local_inccounter_split(simp,checked,Type,_),
     Loc = loc(_File, FromL, ToL),
-    note_message( "(lns ~d-~d) The assertion:~n~p has been changed to~n~p" , 
-      [FromL, ToL, Old,NewToPrint] ).
+    ( VCT = on ->
+        note_message("(lns ~d-~d) The assertion:~n~p has been changed to~n~p",
+                     [FromL, ToL, Old,NewToPrint])
+    ; true
+    ).
 % false or check assertions
 decide_inform_user(_VC, STAT, Old, OldRef, New, [], Domains, Info):-
     New = as(_,Status,Type,Goal,_,Call,Success,Comp,Dict,Loc,_,_),
@@ -180,18 +179,8 @@ decide_inform_user(_VC, STAT, Old, OldRef, New, [], Domains, Info):-
     ; true
     ),
     %
-    (  Status == check, 
-       ( Type = calls ->
-         local_inccounter(simp_check_c,_) 
-       ; local_inccounter(simp_check_s,_)
-       )
-    ;  Status == false, 
-      ( Type = calls -> 
-        local_inccounter(simp_false_c,_) 
-      ; local_inccounter(simp_false_s,_)
-      )
-    ),
-    (   Status == check, STAT \== off, %VC == on, 
+    local_inccounter_split(simp,Status,Type,_),
+    ( Status == check ->
         filter_left_over(Type, Call, Success, Comp, LeftL),
         list_to_conj(LeftL, Left0),
         copy_term((Left0, Dict),(Left, CDict)),
@@ -201,25 +190,25 @@ decide_inform_user(_VC, STAT, Old, OldRef, New, [], Domains, Info):-
         erase(OldRef),
         add_assertion(New)
     ),
-    !,
-    prepare_output_info(Domains, Info, Goal, Type, RelInfo),
-    copy_term((Goal,'$an_results'(RelInfo),Dict),(GoalCopy,RelInfoCopy,DictCopy)),
-    name_vars(DictCopy),
-    prettyvars((GoalCopy,RelInfoCopy)),
-    Loc = loc(_File, RFrom, To),
-    (  RFrom == To ->
-        From = RFrom
-    ;  From is RFrom+1
-    ),
-    (  Status == check ->
-       show_message(STAT, "(lns ~d-~d) Cannot verify assertion:~n~pbecause 
-on ~p ~p :~n~p ~nLeft to prove: ~w~n", 
-       [From, To, Old, Type, GoalCopy, RelInfoCopy, Left]),
-        memo_ctcheck_sum(check)
-    ;  error_message( "(lns ~d-~d) False assertion:~n~pbecause 
-on ~p ~p :~n~p", 
-       [From, To, Old, Type, GoalCopy, RelInfoCopy]),
-        memo_ctcheck_sum(false)
+    !, % IG: move cut to the head?
+    ( VC == on ->
+        prepare_output_info(Domains, Info, Goal, Type, RelInfo),
+        copy_term((Goal,'$an_results'(RelInfo),Dict),(GoalCopy,RelInfoCopy,DictCopy)),
+        name_vars(DictCopy),
+        prettyvars((GoalCopy,RelInfoCopy)),
+        Loc = loc(_File, RFrom, To),
+        ( RFrom == To -> From = RFrom ; From is RFrom + 1 ),
+        ( Status == check ->
+            show_message(STAT, "(lns ~d-~d) Cannot verify assertion:~n~pbecause
+on ~p ~p :~n~p ~nLeft to prove: ~w~n",
+                         [From, To, Old, Type, GoalCopy, RelInfoCopy, Left]),
+            memo_ctcheck_sum(check)
+        ;
+            error_message( "(lns ~d-~d) False assertion:~n~pbecause on ~p ~p :~n~p",
+                           [From, To, Old, Type, GoalCopy, RelInfoCopy]),
+            memo_ctcheck_sum(false)
+        )
+    ; true
     ).
 % (otherwise)
 decide_inform_user(_Flag1,_Flag2,_Old,_OldRef,_New,[],_Dom,_Info) :- !.
@@ -233,8 +222,7 @@ decide_inform_user(VCT, STAT, OldAs, OldAsRef, NewAs, Msg, Domains, Info):-
         member(msg(steps_lb(_),Acost, LbIncl,LbIncpt), Msg), %upper and lower bound
         %checking interval correctness
         check_interval_error([UbIncl,UbIncpt,LbIncl,LbIncpt],ErrCode),
-        (
-            ErrCode = 0 ->
+        ( ErrCode = 0 ->
             %do computation
             intersect_includes(UbIncl, LbIncl, InclInt),
             coalesce_intervals(InclInt, num, IncludeInt),
@@ -488,6 +476,11 @@ decide_inform_user(VCT, STAT, OldAs, OldAsRef, NewAs, Msg, Domains, Info):-
 % (otherwise)
 decide_inform_user(_VCT, _STAT, _OldAs, _OldAsRef, _NewAs, _Msg, _Domains, _Info).
 
+local_inccounter_split(Proc,Status,Type,Val) :-
+    ( Type = calls -> T = c ; T = s),
+    atom_concat([Proc,'_',Status,'_',T], Counter),
+    inccounter(Counter, Val).
+
 local_inccounter(Counter, Val) :- % in case the counter is not defined
     inccounter(Counter, Val),!.
 local_inccounter(_, _).
@@ -501,6 +494,7 @@ checked_or_true(true).
 % TODO: enable/disable with a flag
 
 :- use_module(engine(stream_basic), [current_output/1]).
+:- use_module(library(streams), [tab/1]).
 :- use_module(ciaopp(p_unit/p_printer), [print_assrt/2]).
 
 :- multifile portray/1.
@@ -514,12 +508,13 @@ portray('$an_results'(Res)) :-
 portray('$dom'(Dom,Res,Rules,Tab)) :-
     name(Dom,Lst), length(Lst,Len),
     format("~n[~w]",[Dom]),
-    write_spaces(Tab - Len + 1), 
+    TabLen is Tab - Len + 1,
+    tab(TabLen),
     format(": ",[]),
     ( Dom == generic_comp ->
-      sort(Res, Res2),
-      list_to_conj(Res2,ResConj),
-      write(ResConj), nl
+        sort(Res, Res2),
+        list_to_conj(Res2,ResConj),
+        write(ResConj), nl
     ; write_info(Res, Tab)
     ),
     ( Rules = [] ->
@@ -538,8 +533,9 @@ write_info([],_).
 write_info([A|As],Tab) :- 
     format("~w ",[A]),
     ( As \== [] ->
-      format(" OR ~n",[]),
-      write_spaces(Tab + 5)
+        format(" OR ~n",[]),
+        TabLen is Tab + 5,
+        tab(TabLen)
     ; true
     ),
     write_info(As,Tab).
@@ -553,12 +549,6 @@ write_rules([typedef(::=(H,B))|Rules]) :-
 %     ; true
 %     ),
     write_rules(Rules).
-
-write_spaces(Zero) :- 0 is Zero,!.
-write_spaces(N) :-
-    write(' '),
-    N1 is N - 1,
-    write_spaces(N1).
 
 find_tab(Res,ResT) :-
     find_tab_x(Res,Tab,Tab,ResT).
@@ -600,12 +590,12 @@ prepare_output_info([none|Ds],[_I|Is],H,Type,AInfo) :-!,
     prepare_output_info(Ds,Is,H,Type,AInfo).
 prepare_output_info([D|Ds],[I|Is],H,Type,AInfoOut) :-
     trans_aux(Type,D,H,I,A),
-    (  knows_of(regtypes,D), \+ A = [[bottom]] ->   % (\=)/2 is not a builtin???
+    ( knows_of(regtypes,D), \+ A = [[bottom]] ->   % (\=)/2 is not a builtin???
        collect_rules(H,A,ReqRules,A1)
     ;  ReqRules = [],
        A1 = A
     ),
-    (  A1 = [] ->
+    ( A1 = [] ->
        AInfoOut = AInfo
     ;  AInfoOut = ['$dom'(D,A1,ReqRules)|AInfo]
     ),
@@ -783,6 +773,7 @@ translate_arith(A, B):-
 % used for intersecting incompatible-incompatible
 % the output value of interval is designated using positive or negative
 %------------------------------------------------------------------------------
+% TODO: cuts missing here
 intersect_incompatibles([c], A, A). %special cases
 intersect_incompatibles(A, [c], A).
 intersect_incompatibles([f], _A, [f]).
@@ -1332,41 +1323,23 @@ separate_bound_interval_rest([c,R1,t,R2,c|Is], IntFalse, IntCheck, [i(R1,R2)|Int
 %------------------------------------------------------------------------------
 add_assertion_w_intervals(_OldAs, _CleanPrecond, [], _Sign, []):- !.
 add_assertion_w_intervals(OldAs, CleanPrecond, ListIntervals, 
-    Sign, NewAssertion):-
-       OldAs= as${
-           type=>Type,
-           call=>OrigPrecond,
-           comp=>Comp
-       },
-       (
-           Sign == t,
-           NewStatus = checked,
-           ( Type = calls  -> 
-             local_inccounter(simp_checked_c,_) 
-           ; local_inccounter(simp_checked_s,_)
-           )
-       ;
-           Sign == c,
-           NewStatus = check,
-           ( Type = calls -> 
-             local_inccounter(simp_check_c,_) 
-           ; local_inccounter(simp_check_s,_)
-           )
-       ;
-           Sign == f,
-           NewStatus = false,
-           ( Type = calls -> 
-             local_inccounter(simp_false_c,_) 
-           ; local_inccounter(simp_false_s,_)
-           )
-       ),
-       !, % TODO: added cut, is it OK? (JF)
-       get_measured_param(OrigPrecond, Comp, CostVar),
-       append([intervals(CostVar,ListIntervals)], CleanPrecond, NewPrecond),
-       %
-       assertion_set_status(OldAs, NewStatus, A2),
-       assertion_set_calls(A2, NewPrecond, NewAssertion),
-       add_assertion(NewAssertion).
+                          Sign, NewAssertion):-
+    OldAs= as${type=>Type, call=>OrigPrecond, comp=>Comp },
+    ( Sign == f ->
+        NewStatus = checked
+    ; Sign == c ->
+        NewStatus = check
+    ; Sign = f ->
+        NewStatus = false
+    ),
+    local_inccounter_split(simp,NewStatus,Type,_),
+    !, % TODO: added cut, is it OK? (JF)
+    get_measured_param(OrigPrecond, Comp, CostVar),
+    append([intervals(CostVar,ListIntervals)], CleanPrecond, NewPrecond),
+    %
+    assertion_set_status(OldAs, NewStatus, A2),
+    assertion_set_calls(A2, NewPrecond, NewAssertion),
+    add_assertion(NewAssertion).
 
 %------------------------------------------------------------------------------
 % the Term interval will only have this following possible form
@@ -1474,9 +1447,7 @@ size_var(nnegint(_)).
 % TODO: this clause needs a cut
 explain_interval(VCT, STAT, SignMsg, OldAssertion, NewAssertion, Domains, Info):-
     SignMsg = [],  % doesn't encounter function intersection
-    OldAssertion= as${
-         comp      => OldComp
-    },
+    OldAssertion= as${ comp      => OldComp },
     NewAssertion   = as${
          status    => Status,       type      => Type ,
          head      => Goal,
@@ -1488,16 +1459,9 @@ explain_interval(VCT, STAT, SignMsg, OldAssertion, NewAssertion, Domains, Info):
     % this might be heavy on large module, for performance reason
     % this should only be applied for false and check case
     Loc = loc(_File, RFrom, To),
-    (  RFrom == To
-    -> From = RFrom
-    ;  From is RFrom+1
-    ),
-    (
-        Status = checked,
-        ( Type = calls  -> 
-          local_inccounter(simp_checked_c,_) 
-        ; local_inccounter(simp_checked_s,_)
-        ),
+    (  RFrom == To -> From = RFrom ;  From is RFrom+1 ),
+    local_inccounter_split(simp,Status,Type,_),
+    ( Status = checked ->
         ( VCT = on -> % TODO: added cut, is it OK? (JF)
             assertion_set_comp(NewAssertion, OldComp, NewAssertionToPrint), % TODO: why?
             note_message( "(lns ~d-~d) The assertion:~n~p has been changed to~n~p" , 
@@ -1505,12 +1469,7 @@ explain_interval(VCT, STAT, SignMsg, OldAssertion, NewAssertion, Domains, Info):
         ;
             true
         )
-    ;
-        Status = check,
-        ( Type = calls -> 
-          local_inccounter(simp_check_c,_) 
-        ; local_inccounter(simp_check_s,_)
-        ),
+    ; Status = check ->
         prepare_output_info(Domains, Info, Goal, Type, RelInfo),
         copy_term((Goal,'$an_results'(RelInfo),Dict),(GoalCopy,RelInfoCopy,DictCopy)),
         name_vars(DictCopy),
@@ -1527,12 +1486,7 @@ explain_interval(VCT, STAT, SignMsg, OldAssertion, NewAssertion, Domains, Info):
         ;
             true
         )
-    ;
-        Status = false,
-        ( Type = calls -> 
-          local_inccounter(simp_false_c,_) 
-        ; local_inccounter(simp_false_s,_)
-        ),
+    ; Status = false ->
         prepare_output_info(Domains, Info, Goal, Type, RelInfo),
         copy_term((Goal,'$an_results'(RelInfo),Dict),(GoalCopy,RelInfoCopy,DictCopy)),
         name_vars(DictCopy),
@@ -1570,27 +1524,19 @@ explain_interval(_VCT, STAT, SignMsg, OldAssertion, NewAssertion, Domains, Info)
     name_vars(DictCopy),
     prettyvars((GoalCopy,RelInfoCopy)),
     Locator = loc(_File, RFrom, To),
-    (  RFrom == To ->
-        From = RFrom
-    ;   From is RFrom+1
-    ),
-    (
-        SignMsg == [1],
+    ( RFrom == To -> From = RFrom ; From is RFrom+1 ),
+    ( SignMsg == [1] ->
         show_message(STAT, "(lns ~d-~d) Uncovered cost function~n Cannot verify assertion:~n~pbecause on ~p ~p :~n~p ~nLeft to prove: ~w~n", 
         [From, To, OldAssertion, Type, GoalCopy, RelInfoCopy, Left])
-    ;
-        SignMsg == [2],
+    ; SignMsg == [2] ->
         show_message(STAT, "(lns ~d-~d) Unconvergence GSL algorithm~n Cannot verify assertion:~n~pbecause on ~p ~p :~n~p ~nLeft to prove: ~w~n", 
         [From, To, OldAssertion, Type, GoalCopy, RelInfoCopy, Left])
-    ;
-        SignMsg == [3],
+    ; SignMsg == [3] ->
         show_message(STAT, "(lns ~d-~d) Encounters small intervals ~n Cannot verify assertion:~n~pbecause on ~p ~p :~n~p ~nLeft to prove: ~w~n", 
         [From, To, OldAssertion, Type, GoalCopy, RelInfoCopy, Left])
-    ;
-        SignMsg == [4],
+    ; SignMsg == [4] ->
         show_message(STAT, "(lns ~d-~d) Searching for safe root algorithm might be unconverge ~n Cannot verify assertion:~n~pbecause on ~p ~p :~n~p ~nLeft to prove: ~w~n", 
         [From, To, OldAssertion, Type, GoalCopy, RelInfoCopy, Left])
-
     ),!.
 %otherwise: show nothing
 explain_interval(_VCT, _STAT, _SignMsg, _OldAssertion, _NewAssertion, _Domains, _Info).
@@ -1732,8 +1678,7 @@ simp_cost(FI, A, B):-
         subtitute_var(FI, A, B)
     ;
         functor(A, F, N),
-        (
-            N == 2,
+        ( N == 2 ->
             arg(1, A, Arg1),
             arg(2, A, Arg2),
             simp_cost(FI, Arg1, TArg1),
@@ -1741,13 +1686,8 @@ simp_cost(FI, A, B):-
             functor(B, F, 2),
             arg(1, B, TArg1),
             arg(2, B, TArg2)
-        ;
-            N == 0,
-            ( var(A) ->
-                subtitute_var(FI, A, B)
-            ;
-                A = B
-            )
+        ;  N == 0 ->
+            ( var(A) ->  subtitute_var(FI, A, B) ; A = B )
         ;
             error_message("~nsimp_cost: function ~p is unspecified~n",[A])
         )
