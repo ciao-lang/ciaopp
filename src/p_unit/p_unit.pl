@@ -800,7 +800,7 @@ inject_output_package(A) :-
       load_package_info(M, File),
       pp_statistics(runtime,[T1,_]),
       TotalT is T1 - T0,
-      pplog(load_module, ['{adding missing package ', A, ' in ',~~(TotalT), ' msec.}']),
+      pplog(load_module, ['{adding missing package ',~~(A), ' in ',time(TotalT), ' msec.}']),
       add_output_package(A)
     ).
 

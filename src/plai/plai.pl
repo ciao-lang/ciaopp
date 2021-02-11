@@ -138,11 +138,11 @@ init_fixpoint(poly_spec):- heuristic_pcpe:init_fixpoint.
 
 plai(Cls,Ds,Fixp,AbsInt,Stats):-
     stat_no_store(plai_(Cls,Ds,Fixp,AbsInt,mon,Stats), TotalT),
-    pplog(analyze_module, ['{analyzed by plai in ', TotalT, ' msec.}']).
+    pplog(analyze_module, ['{analyzed by plai in ', time(TotalT), ' msec.}']).
 
 plai_(Cls,Ds,Fixp,AbsInt,ModFlag,Stats) :-
     stat_no_store(init_plai(AbsInt,Flags,Fixp), InitT),
-    pplog(analyze_module, ['{init for the ', Fixp, ' fixpoint in ',InitT, ' msec.}']),
+    pplog(analyze_module, ['{init for the ', Fixp, ' fixpoint in ', time(InitT), ' msec.}']),
     ( ModFlag = mon -> % TODO: why once_port_reify?
         once_port_reify(do_plai(Cls,Ds,Fixp, AbsInt,TPre,TAna), Port)
     ; ModFlag = mod ->
@@ -156,7 +156,7 @@ plai_(Cls,Ds,Fixp,AbsInt,ModFlag,Stats) :-
         current_pp_flag(local_control,LC),
         ( is_checker(Fixp) -> PH = 'certificate checked by' ;  PH = 'fixpoint reached by'),
         pplog(analyze_module, ['{', PH, ' ', Fixp, ' using ', AbsInt,
-                               ' with local-control ', LC,' in ', TAna, ' msec.}']),
+                               ' with local-control ', LC,' in ', time(TAna), ' msec.}']),
         % TODO: Total time is wrong, Local_C_Info not added!!!
         ask_unfold_times(Local_C_Info),
         java_statistics(AbsInt),
@@ -164,7 +164,7 @@ plai_(Cls,Ds,Fixp,AbsInt,ModFlag,Stats) :-
         MemoryInfo = memory(Delta,Details),
         Stats = [TimeInfo,MemoryInfo|DomInfo]
     ; ModFlag = mod ->
-        pplog(analyze_module, ['{fixpoint reached by ', Fixp, ' using ', AbsInt, ' in ', TAna,
+        pplog(analyze_module, ['{fixpoint reached by ', Fixp, ' using ', AbsInt, ' in ', time(TAna),
                                ' msec.}']),
         Local_C_Info = [],
         Stats = [TimeInfo|DomInfo]
@@ -177,7 +177,7 @@ plai_(Cls,Ds,Fixp,AbsInt,ModFlag,Stats) :-
 
 do_plai(Cls,Ds,Fixp, AbsInt, TPre, TAna):-
     stat_no_store(preprocess(Fixp,AbsInt,Cls,Ds,Ps), TPre), !, % TODO: fix, move cuts deeper
-    pplog(analyze_module, ['{preprocessed for the ', Fixp, ' fixpoint in ',TPre, ' msec.}']),
+    pplog(analyze_module, ['{preprocessed for the ', Fixp, ' fixpoint in ',time(TPre), ' msec.}']),
     reset_mem_usage,
     stat_no_store(topdown_analysis(Fixp,AbsInt,Ps),TAna).
 
@@ -415,7 +415,7 @@ mod_plai(Cls,Ds,Fixp,AbsInt,Stats):-
 
 do_mod_plai(Cls,Ds,Fixp,AbsInt,TPre,TAna):-
     stat_no_store(preprocess(Fixp,AbsInt,Cls,Ds,Ps), TPre), !, % TODO: fix, move cuts deeper
-    pplog(analyze_module, ['{preprocessed for ', Fixp, ' in ', TPre, ' msec.}']),
+    pplog(analyze_module, ['{preprocessed for ', Fixp, ' in ', time(TPre), ' msec.}']),
     stat_no_store(mod_topdown_analysis(AbsInt,Fixp,Ps), TAna).
 %------------------------------------------------------------------------%
 

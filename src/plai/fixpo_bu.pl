@@ -74,7 +74,7 @@ tp(AbsInt):-
     !,
     pp_statistics( walltime, [ _, T1 ] ),
     is_analysis_option(AbsInt,AbsIntOpt),
-    pplog(analyze_module, ['{analyzed by bu using ', ~~(AbsIntOpt), ' in ', ~~(T1), ' msec}']).
+    pplog(analyze_module, ['{analyzed by bu using ', ~~(AbsIntOpt), ' in ', time(T1), ' msec}']).
 
 one_iteration(SgKey,ClKey,Head,Vars_u,Body,AbsInt):-
     varset(Head,Hv),
@@ -193,7 +193,7 @@ show_if_debug(Sh,Op,SgKey,share_amgu):-
 
 bu_output(AbsInt):-
     current_fact(iterate(AbsInt,N)),
-    pplog(analyze_module, ['{Number of iterations: ', ~~(N), '}']),
+    pplog(analyze_module, ['{Number of iterations: ', N, '}']),
     bu_output_(AbsInt).
 :- if(defined(has_ciaopp_extra)).
 bu_output_(bshare):-

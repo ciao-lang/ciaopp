@@ -71,22 +71,22 @@ update_mem_usage:-
 
 report_mem_usage:-
     mem_usage(_Total,Delta,Details),
-    pplog(spec_module, ['{Total memory ', ~~(Delta), '}']),
+    pplog(spec_module, ['{Total memory ', Delta, '}']),
     member((program,P,P0),Details),
     P_used is P - P0,
-    pplog(spec_module, ['{Program memory ', ~~(P_used), '}']),
+    pplog(spec_module, ['{Program memory ', P_used, '}']),
     member((global_stack,G,G0),Details),
     G_used is G - G0,
-    pplog(spec_module, ['{Term Heap ', ~~(G_used), '}']),
+    pplog(spec_module, ['{Term Heap ', G_used, '}']),
     member((local_stack,L,L0),Details),
     L_used is L - L0,
-    pplog(spec_module, ['{Stack ', ~~(L_used), '}']),
+    pplog(spec_module, ['{Stack ', L_used, '}']),
     member((trail,T,T0),Details),
     T_used is T - T0,
-    pplog(spec_module, ['{Trail ', ~~(T_used), '}']),
+    pplog(spec_module, ['{Trail ', T_used, '}']),
     member((choice,C,C0),Details),
     C_used is C - C0,
-    pplog(spec_module, ['{Choice-points ', ~~(C_used), '}']).
+    pplog(spec_module, ['{Choice-points ', C_used, '}']).
 
 :- pred ask_mem_usage(-Delta,-Details) # "Returns in @var{Delta} 
       the total memory used in bytes and in @var{Details} such 

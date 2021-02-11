@@ -176,7 +176,7 @@ gen_registry_info(Verb,Callers,Imported) :-
    # "As @pred{gen_registry_info/3}, but also returns @var{Info}.".
 gen_registry_info(Verb,Callers,Imported,[time(Time,[])]) :-
     stat_no_store(gen_registry_info(Verb,Callers,Imported), Time),
-    pplog(p_abs, ['{Generated registry in ',Time,' msec.}']).
+    pplog(p_abs, ['{Generated registry in ',time(Time),' msec.}']).
 
 get_imported_changed_modules(Imported) :-
     findall(Base,imported_changed_module(Base),Imported).

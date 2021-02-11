@@ -71,7 +71,7 @@ arg_filtering(Cls,_Ds,AbsInt,NCls,NDs):-
     create_filters(Init_sp,AbsInt),
     arg_filt(Cls,NCls,NDs),
     pp_statistics(runtime,[_,T]),
-    pplog(spec_module, ['{transformed by arg_filtering in ', ~~(T),' msec.}']).
+    pplog(spec_module, ['{transformed by arg_filtering in ', time(T),' msec.}']).
 
 :- pred list_exported(+Init,+AbsInt,-Init_sp) # "@var{Init_sp} is the
     list of implemented versions which are exported by the

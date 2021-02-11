@@ -65,7 +65,7 @@ codegen(Abs,Sp_program,Sp_Dicts,[TimeInfo,MemoryInfo]):-
     TimeInfo = time(T,[]),
     ask_mem_usage(Delta,Details),
     MemoryInfo = memory(Delta,Details),
-    pplog(spec_module, ['{transformed by codegen in ', ~~(T),' msec.}']).
+    pplog(spec_module, ['{transformed by codegen in ', time(T),' msec.}']).
 
 :- doc(codegen_af(+Abs,-Sp_program,-Sp_Dicts), "@var{Sp_Program}
       is the specialized program generated when analysis performs
@@ -80,7 +80,7 @@ codegen_af(Abs,Sp_program,Sp_Dicts,[TimeInfo,MemoryInfo]):-
     TimeInfo = time(T,[]),
     ask_mem_usage(Delta,Details),
     MemoryInfo = memory(Delta,Details),
-    pplog(spec_module, ['{transformed by codegen_af in ', ~~(T),' msec.}']).
+    pplog(spec_module, ['{transformed by codegen_af in ', time(T),' msec.}']).
     
 common_pre_codegen(Abs,Orig_Prog,Init_sp):-
     pp_statistics(runtime,_),
@@ -566,7 +566,7 @@ codegen_min(Abs,Sp_Prog,Sp_Dicts,[TimeInfo,MemoryInfo,MinInfo]):-
     MemoryInfo = memory(Delta,Details),
     get_min_rate(Versions,Rate),
     MinInfo = min(Rate,Versions),
-    pplog(spec_module, ['{transformed by codegen_min in ', ~~(Total),' msec.}']).
+    pplog(spec_module, ['{transformed by codegen_min in ', time(Total),' msec.}']).
 
 get_min_rate([OV,_,_,MV],Rate):-
     add_all(OV,Orig),

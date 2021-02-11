@@ -438,7 +438,7 @@ check_assertions(AbsInts):-
     perform_pp_ctchecks(AbsInts),
     pp_statistics(runtime,[CTime1,_]),
     CTime is CTime1 - CTime0,
-    pplog(ctchecks, ['{assertions checked in ',~~(CTime), ' msec.}']),
+    pplog(ctchecks, ['{assertions checked in ',time(CTime), ' msec.}']),
     pplog(ctchecks, ['}']).
 
 %------------------------------------------------------------------------

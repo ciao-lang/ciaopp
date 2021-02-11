@@ -44,7 +44,7 @@
 %       pplog(ctchecks, ['{Diagnosing']),
 %       findall(Where,how(Abs,SgKey,calls,Lit,AssProps,Where),AllWhere),
 %       statistics(runtime,[_,CTime]),
-%       pplog(ctchecks, ['{completed in ',CTime,' msec.}']),
+%       pplog(ctchecks, ['{completed in ',time(CTime),' msec.}']),
 %       pplog(ctchecks, ['}']),
 %       displayq(AllWhere).
 

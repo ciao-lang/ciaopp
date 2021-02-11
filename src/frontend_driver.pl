@@ -244,7 +244,7 @@ load_modules(ModList,Info) :-
     ( E == yes -> Info=[error|Info0] ; Info=Info0 ),
     pp_statistics(runtime,[T1,_]),
     TotalT is T1 - T0,
-    pplog(load_module, ['{loaded in ',~~(TotalT), ' msec.}']),
+    pplog(load_module, ['{loaded in ',time(TotalT), ' msec.}']),
     Info0=[time(TotalT,[])],
     pplog(load_module, ['}']),
     % Perform initial transformations -- ASM % TODO: improve?

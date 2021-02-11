@@ -86,7 +86,7 @@ unfold(SelRule,Unfold,Sg,Sv,Proj,AbsInt,Id,NF,A,LC_Time):-
     readjust_max_mem_usage,
     unf_int(Unfold,SelRule,Sg,Sv,Proj,AbsInt,Id,F,A,UnfClauses0,_ChTree),
     pp_statistics(runtime,[_,T_u]),
-    pplog(spec_module_high, ['{unfolded in ', ~~(T_u), ' msec.}']),
+    pplog(spec_module_high, ['{unfolded in ', time(T_u), ' msec.}']),
     increment_unfold_time(T_u),
     decide_remove_useless_post(UnfClauses0,AbsInt,Sg,Sv,Proj,UnfClauses),
     add_all_clauses(UnfClauses,NF,A,NewClauses),
@@ -97,7 +97,7 @@ unfold(SelRule,Unfold,Sg,Sv,Proj,AbsInt,Id,NF,A,LC_Time):-
     pp_statistics(runtime,[GT1,_]),
     global_time_ellapsed(GT1,GT,LC_Time),
     increment_local_control_time(LC_Time),
-    pplog(spec_module, ['{local control ',~~(LC_Time), ' msec.}']).
+    pplog(spec_module, ['{local control ',time(LC_Time), ' msec.}']).
 
 decide_write_goal(Sg):-
     debug_write('GOAL'),

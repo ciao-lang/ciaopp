@@ -201,7 +201,7 @@ restore(File, [time(T1,[])]):-
     pp_statistics(runtime,_),
     restore_with_flag( File , current ),
     pp_statistics(runtime,[_,T1]),
-    pplog(dump, ['{restored analysis in ',~~(T1), ' msec.}']).
+    pplog(dump, ['{restored analysis in ',time(T1), ' msec.}']).
 
 :- pred restore(Module) :: module
 # "Restores from disk analysis information related to @var{Module}. It

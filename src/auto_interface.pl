@@ -1291,7 +1291,7 @@ continue_auto_assert_ctchecks(_ANYERROR,File,OFile,GENCERT):-
        ( current_pp_flag(reduced_cert,on) -> remove_irrelevant_entries ; true ),
        dump(Cert_Name),
        pp_statistics(runtime,[_,T]),
-       pplog(auto_interface, ['{certificate saved in ', ~~(T), ' msec.}\n}'])
+       pplog(auto_interface, ['{certificate saved in ', time(T), ' msec.}\n}'])
     ; true
     ),
     do_output(OFile, check).

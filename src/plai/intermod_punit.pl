@@ -859,7 +859,7 @@ save_registry_info(Verb,[time(T,[])]) :-
     ; true
     ),
     pp_statistics(runtime,[_,T]),
-    pplog(p_abs, ['{Saved registry in ',T,' msec.}']), !.
+    pplog(p_abs, ['{Saved registry in ',time(T),' msec.}']), !.
 
 changed_processable_module(Base,M,M2,Mode,All,Req) :-
     changed_module(M,Base,M2,Mode,All,Req),
@@ -882,7 +882,7 @@ save_registry_info(Verb,CurrBase,[time(T,[])]) :-
     ),
     pp_statistics(runtime,[T1,_]),
     T is T0 - T1,
-    pplog(p_abs, ['{Saved registry in ',T,' msec.}']), !.
+    pplog(p_abs, ['{Saved registry in ',time(T),' msec.}']), !.
 
 write_registry_files([],_Verb).
 write_registry_files([Base|BList],Verb) :-

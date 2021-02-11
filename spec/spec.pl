@@ -138,7 +138,7 @@ simplify_specialize(Abs,Spec,Prog,Dicts,NewProg,NewDicts):-
     newformat(NTmpProg,NewProg),
     erase_all_local_data,
     pp_statistics(runtime,[_,T]),
-    pplog(spec_module, ['{transformed by ', ~~(Spec), ' in ', ~~(T), ' msec.}']).
+    pplog(spec_module, ['{transformed by ', ~~(Spec), ' in ', time(T), ' msec.}']).
 
 filter_out_non_static([],[]).
 filter_out_non_static([F/A|Preds],Static_Preds):-

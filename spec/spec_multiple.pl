@@ -680,7 +680,7 @@ all_versions(Program,Dicts,Abs,Sp_program,Sp_Dicts):-
     newformat(Sp_Prog,Sp_program),
     erase_all_local_data,
     pp_statistics(runtime,[_,T]),
-    pplog(spec_module, ['{transformed by vers in ', ~~(T),' msec.}']).
+    pplog(spec_module, ['{transformed by vers in ', time(T),' msec.}']).
 
 :- pred get_version_name(+AbsInt,+Sg,+Call,-Name) 
 # "Given a predicate call @var{Sg} and a call pattern @var{Call} in

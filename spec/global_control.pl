@@ -130,7 +130,7 @@ do_spec_definition(Sg,Sv,Proj,AbsInt,Id,NClauses,NSg):-
     global_time_ellapsed(GT1,GT,TT),
 %       TT is TT0 - LC_Time,
     increment_global_control_time(TT),
-    pplog(spec_module, ['{global control ',~~(TT), ' msec.}']).
+    pplog(spec_module, ['{global control ',time(TT), ' msec.}']).
 
 decide_part_conc(mono,AbsInt,Sg0,_Sv0,Proj0,Sg,Sv,Proj):-!,
     copy_term((Sg0,Proj0),(Sg1,Proj1)),

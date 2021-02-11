@@ -46,10 +46,10 @@ analyze_side_effects(Clauses):-
     retractall_fact(parent(_,_,_)),
     analyze_side_effects_(Clauses),
     pp_statistics(runtime,[_,T1]),
-    pplog(infer, ['{analyzed by seff in ', ~~(T1), ' msec.}']),
+    pplog(infer, ['{analyzed by seff in ', time(T1), ' msec.}']),
     update_info,
     pp_statistics(runtime,[_,T2]),
-    pplog(infer, ['{updated seff info in ', ~~(T2), ' msec.}']).
+    pplog(infer, ['{updated seff info in ', time(T2), ' msec.}']).
 
 analyze_side_effects_([Clause:_|List_of_clauses]) :-
     side_effect_analyze(Clause), !,

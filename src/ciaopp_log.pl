@@ -10,5 +10,15 @@
 pplog(Group, Message) :- %% flag to display the module?
     current_pp_flag(pplog, L),
     member(Group, L), !,
-    message(inform, Message).
+    cut_floats(Message, ProcMessage),
+    message(inform, ProcMessage).
 pplog(_, _).
+
+cut_floats([], []).
+cut_floats([T|Fs], [NF|NFs]) :-
+    ( T = time(F), float(F) ->
+        NF is integer(F*1000.0)/1000.0
+    ;
+        NF = T
+    ),
+    cut_floats(Fs, NFs).
