@@ -1,4 +1,4 @@
-:- module(assrt_ctchecks_pp, [pp_compile_time_prog_types/3], [assertions]).
+:- module(assrt_ctchecks_pp, [ctcheck_pp/2, pp_compile_time_prog_types/3], [assertions]).
 
 :- use_module(library(lists), [member/2]).
 :- use_module(library(formulae), [list_to_conj/2]).
@@ -15,6 +15,7 @@
 :- use_module(ciaopp(infer), [get_memo_lub/5]).
 :- use_module(ciaopp(infer/infer_dom), [abs_execute_with_info/4]).
 :- use_module(library(assertions/assrt_lib), [assertion_body/7]).
+:- use_module(ciaopp(p_unit), [program/2, filtered_program_clauses/3]).
 :- use_module(ciaopp(p_unit/assrt_db), [assertion_read/9]).
 :- use_module(ciaopp(p_unit/itf_db), [curr_file/2]).
 :- use_module(spec(s_simpspec), 
@@ -53,13 +54,22 @@
     In 0.8 we had this feature.").
 %-------------------------------------------------------------------%
 
+:- pred ctcheck_pp(+AbsInts,+ModList).
+ctcheck_pp(AbsInts,ModList) :-
+    ( list(ModList) ->
+        filtered_program_clauses(ModList,Cls,Ds)
+    ; % ModList = all, % IG: sanity check
+        program(Cls,Ds)
+    ),
+    pp_compile_time_prog_types(Cls,Ds,AbsInts).
+
 pp_compile_time_prog_types([],[],_).
 % Directives do not have program points                       %
-pp_compile_time_prog_types([directive(_Dir):_Id|Cs],[_D|Dicts],Abs):-
-    pp_compile_time_prog_types(Cs,Dicts,Abs).
-pp_compile_time_prog_types([clause(H,Body):Clid|Cs],[Dict|Dicts],Abs):-
-    pp_compile_time_check_types(Body,H,Clid,Dict,Abs),
-    pp_compile_time_prog_types(Cs,Dicts,Abs).
+pp_compile_time_prog_types([directive(_Dir):_Id|Cs],[_D|Ds],AbsInts):- !,
+    pp_compile_time_prog_types(Cs,Ds,AbsInts).
+pp_compile_time_prog_types([clause(H,Body):Clid|Cs],[D|Ds],AbsInts):-
+    pp_compile_time_check_types(Body,H,Clid,D,AbsInts),
+    pp_compile_time_prog_types(Cs,Ds,AbsInts).
 
 % call type incompatible with head of the clause
 pp_compile_time_check_types(Body,H,Clid,dic(Vars,Names),[Types,_]):-
@@ -68,14 +78,14 @@ pp_compile_time_check_types(Body,H,Clid,dic(Vars,Names),[Types,_]):-
     are_bottom(TypesInfo,none),!,
     message_clause_incompatible(Clid,Types,H,Vars,Names).
 % The clause is a fact                                        %
-pp_compile_time_check_types(true,_H,_Clid,_Dict,_Abs):- !.
+pp_compile_time_check_types(true,_H,_Clid,_Dict,_AbsInts):- !.
 % The body is just a cut                                      %
-pp_compile_time_check_types(!,_H,_Clid,_Dict,_Abs):- !.
+pp_compile_time_check_types(!,_H,_Clid,_Dict,_AbsInts):- !.
 % Rest of clauses. We try to simplify its body                %
-pp_compile_time_check_types(Body,_H,_Clid,dic(Vars,Names),Abs):-
+pp_compile_time_check_types(Body,_H,_Clid,dic(Vars,Names),AbsInts):-
     body2list(Body,Blist),
     next_pred(Blist,Pred),
-    pp_ct_body_list_types(Pred,Blist,Vars,Names,Abs).
+    pp_ct_body_list_types(Pred,Blist,Vars,Names,AbsInts).
 
 %-------------------------------------------------------------%
 %-------------------------------------------------------------%
@@ -84,15 +94,15 @@ prepare_info_pp(_,none,MInfo,Modes,MInfo,Modes) :- !.
 prepare_info_pp(TInfo,Types,_,_,TInfo,Types).
 
 pp_ct_body_list_types(none,[],_,_,_).
-pp_ct_body_list_types((!/0),[!:_|Goals],Vars,Names,Abs):-!,
+pp_ct_body_list_types((!/0),[!:_|Goals],Vars,Names,AbsInts):-!,
     next_pred(Goals,Pred),
-    pp_ct_body_list_types(Pred,Goals,Vars,Names,Abs).
+    pp_ct_body_list_types(Pred,Goals,Vars,Names,AbsInts).
 % This goal is a program point assertion                      %
-pp_ct_body_list_types(_FA,[Goal:K|Goals],Vars,Names,Abs):-
+pp_ct_body_list_types(_FA,[Goal:K|Goals],Vars,Names,AbsInts):-
     pp_check(Goal,Prop),!,
-    pp_ct_check_assertion(Prop,K,Vars,Names,Abs),
+    pp_ct_check_assertion(Prop,K,Vars,Names,AbsInts),
     next_pred(Goals,NPred),
-    pp_ct_body_list_types(NPred,Goals,Vars,Names,Abs).
+    pp_ct_body_list_types(NPred,Goals,Vars,Names,AbsInts).
 % Goal is a builtin whose call is violated using type info    %
 %
 % pp_ct_body_list_types(F/A,[(Goal:K)|_],Vars,Names,[Types,Modes]):-
@@ -151,8 +161,8 @@ pp_ct_body_list_types(F/A,[(Goal:K)|_],Vars,_Names,[Types,Modes]):-
                 message_pp_entry(TypesInfo,Types,Goal,Head,Calls,Dict,K,checked),
                 inccounter_cond(pp_checked_c,Calls) 
             ; 
-                prepare_info_pp(TypesInfo,Types,ModesInfo,Modes,Info,Abs),
-                message_pp_entry(Info,Abs,Goal,Head,Calls,Dict,K,check),
+                prepare_info_pp(TypesInfo,Types,ModesInfo,Modes,Info,AbsInts),
+                message_pp_entry(Info,AbsInts,Goal,Head,Calls,Dict,K,check),
                 local_inccounter(pp_check_c,_)
             ),
             fail
@@ -190,8 +200,8 @@ pp_ct_body_list_types(F/A,[(Goal:K)|_],Vars,_Names,[Types,Modes]):-
                message_pp_calls_diag(ModesInfo,Modes,Goal,Head,Calls,Dict,K,checked),
                inccounter_cond(pp_checked_c,Calls) 
            ; 
-               prepare_info_pp(TypesInfo,Types,ModesInfo,Modes,Info,Abs),
-               message_pp_calls_diag(Info,Abs,Goal,Head,Calls,Dict,K,check),
+               prepare_info_pp(TypesInfo,Types,ModesInfo,Modes,Info,AbsInts),
+               message_pp_calls_diag(Info,AbsInts,Goal,Head,Calls,Dict,K,check),
                local_inccounter(pp_check_c,_)
            )
         )
@@ -234,8 +244,8 @@ pp_ct_body_list_types(F/A,[(Goal:K)|Goals],Vars,_Names,[Types,Modes]):-
               inccounter_cond(pp_checked_s,Succ0) ,
               message_pp_success_diag(ModesInfo,Modes,Goal,Head,Calls0,
                                  Succ0,Dict,K,checked)
-            ; prepare_info_pp(TypesInfo,Types,ModesInfo,Modes,Info,Abs),
-              message_pp_success_diag(Info,Abs,Goal,Head,Calls0,Succ0,Dict,K,check),
+            ; prepare_info_pp(TypesInfo,Types,ModesInfo,Modes,Info,AbsInts),
+              message_pp_success_diag(Info,AbsInts,Goal,Head,Calls0,Succ0,Dict,K,check),
               local_inccounter(pp_check_s,_)
             )
         )
@@ -256,9 +266,9 @@ pp_ct_body_list_types(_P,[(Goal:K)|Goals],Vars,Names,[Types,Modes]):-
     rename(NGoal,Dict),
     preproc_warning(always_fails,[NGoal,K]).
 % None of the previous                                        %
-pp_ct_body_list_types(_,[_|Goals],Vars,Names,Abs):-
+pp_ct_body_list_types(_,[_|Goals],Vars,Names,AbsInts):-
     next_pred(Goals,NPred),
-    pp_ct_body_list_types(NPred,Goals,Vars,Names,Abs).
+    pp_ct_body_list_types(NPred,Goals,Vars,Names,AbsInts).
 
 % check pre-condition in success P:Pre => Post assertions
 check_precond(_Types_Modes,_Head,_K,_Vars,_Goal,[]) :-!.
@@ -298,8 +308,8 @@ pp_ct_check_assertion(Prop,K,Vars,Names,[Types,Modes]):-
         ;   (NNProp == true, S = checked)
         ;    S = check
         ),!,
-        prepare_info_pp(TypesInfo,Types,ModesInfo,Modes,Info,Abs),      
-        message_pp_check(Info,Abs,Prop,K,dic(Vars,Names),S)
+        prepare_info_pp(TypesInfo,Types,ModesInfo,Modes,Info,AbsInts),      
+        message_pp_check(Info,AbsInts,Prop,K,dic(Vars,Names),S)
     ).
 
 not_already_bottom('$bottom',_):-!, fail.
@@ -318,7 +328,7 @@ are_bottom(Type_term,_):-
 
 %% %-------------------------------------------------------------------%   
 %% % pp_ct_abs_ex_body_list_types(+,+,-,+,-,+)                         %
-%% % pp_ct_abs_ex_body_list_types(Sense,Goals,NewGoals,Vars,Result,Abs)%
+%% % pp_ct_abs_ex_body_list_types(Sense,Goals,NewGoals,Vars,Result,AbsInts)%
 %% %  Special case of pp_ct_body_list when the goal is abstractly      %
 %% %  executable                                                       %
 %% %-------------------------------------------------------------------%

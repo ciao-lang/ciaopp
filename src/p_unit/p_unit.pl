@@ -1,6 +1,7 @@
 :- module(p_unit, [
     preprocessing_unit/3,
     program/2,
+    filtered_program_clauses/3,
     replace_program/2,
     %
     entry_assertion/3,
@@ -52,7 +53,7 @@
     cleanup_punit/0, % TODO: update with other cleanup_* preds here
     %
     get_call_from_call_assrt/7
-], [assertions, basicmodes, regtypes, datafacts, hiord]).
+], [assertions, basicmodes, regtypes, datafacts, hiord, nativeprops]).
 
 :- use_package(ciaopp(p_unit/p_unit_argnames)).
 
@@ -234,7 +235,8 @@ one_type_clause(Head,Body):-
 %% ---------------------------------------------------------------------------
 
 % TODO: change name?
-:- pred program(P,D) :: list(clause) * list(varnamedict) : var * var
+:- pred program(P,D) : var * var
+   => list(clause) * list(varnamedict)
     # "@var{P} are the clauses (no directives) of the current module
        and @var{D} their dictionaries.".
 program(P,D):-
@@ -242,6 +244,35 @@ program(P,D):-
              current_fact(source_clause(Key,clause(H,B),Dict)),
             P0),
     split1(P0,P,D).
+
+:- pred filtered_program_clauses(+Mods,-P,-D)
+   : (list(Mods))
+   => list * list(clause) * list(varnamedict)
+   #"@var{P} are the clauses of module @var{Mod} and @var{D} their dictionaries.".
+filtered_program_clauses(Mods,P,D) :-
+    findall((clause(H,B),Key,Dict),
+            filtered_source_clause(Mods,Key,clause(H,B),Dict),
+             P0),
+    split1(P0,P,D).
+
+:- pred filtered_source_clause(+list,-,-,-).
+filtered_source_clause(Mods,Key,clause(H,B),Dict) :-
+    current_fact(source_clause(Key,clause(H,B),Dict)),
+    functor(H,F,A),
+    functor(Sg,F,A),
+    get_pred_mod_defined(Sg,Mod),
+    ( member(Mod,Mods) -> true ; fail ).
+
+:- use_module(ciaopp(p_unit/itf_db), [current_itf/3]).
+
+:- export(get_pred_mod_defined/2).
+:- pred get_pred_mod_defined(+Sg,-Mod) + non_det
+   #"Returns the module where a predicate given by goal @var{Sg} is defined. If
+    the @var{Sg} is multifile, the modules where it is defined are enumerated.".
+get_pred_mod_defined(Sg,Mod) :-
+    current_itf(defines_pred,Sg,Mod), !.
+get_pred_mod_defined(Sg,Mod) :-
+    current_itf(multifile,Sg,Mod).
 
 split1([],[],[]).
 split1([(Cl,K,D)|P0s],[Cl:K|Ps],[D|Ds]):-

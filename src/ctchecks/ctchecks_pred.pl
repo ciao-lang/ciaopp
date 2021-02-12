@@ -1,21 +1,25 @@
-:- module(ctchecks_pred, [simplify_assertions_all/1, ctchecks_log/5],
-    [assertions, regtypes, isomodes, datafacts, ciaopp(ciaopp_options)]).
+:- module(ctchecks_pred,
+          [simplify_assertions_all/1, simplify_assertions_mods/2, ctchecks_log/5],
+          [assertions, regtypes, isomodes, datafacts, ciaopp(ciaopp_options)]).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+:- doc(title, "Compile-time Assertion Checking").
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 :- use_package(ciaopp(p_unit/p_unit_argnames)).
 
 :- use_module(ciaopp(preprocess_flags)).
-
 :- use_module(ciaopp(ctchecks/comp_ctchecks), [abs_execute_comp/5, abs_execute_sizes/5]).
 :- use_module(ciaopp(ctchecks/ctchecks_pred_messages), [inform_as_change_to_user/5]).
 
 %% CiaoPP library:
-
 :- use_module(ciaopp(plai/domains), 
    [glb/4, info_to_asub/7, unknown_call/5, call_to_entry/10, identical_abstract/3]).
 
 :- use_module(ciaopp(p_unit),
-    [predicate_names/1, multifile_predicate_names/1, entry_assertion/3,  assertion_set_status/3,
-     assertion_set_calls/3, assertion_set_success/3, assertion_set_comp/3]).
+    [predicate_names/1, multifile_predicate_names/1, entry_assertion/3, assertion_set_status/3,
+     assertion_set_calls/3, assertion_set_success/3, assertion_set_comp/3,
+     get_pred_mod_defined/2]).
 :- use_module(ciaopp(p_unit/program_keys), [predkey_from_sg/2]).
 :- use_module(ciaopp(p_unit/p_unit_basic), [type_of_goal/2]).
 :- use_module(library(assertions/assrt_lib), [assertion_body/7]).
@@ -72,28 +76,40 @@ decide_get_info(_AbsInt,_Key,_Goal, []).
      type @var{Type} (calls or success) status @var{check}.".
 
 % ---------------------------------------------------------------------------
-:- pred simplify_assertions_all(+Domains)
-   # "Analyze calls, success and comp assertions with the check status
-      for all the predicates given the domains in @var{Domains}.".
-simplify_assertions_all(Domains):-
+:- pred simplify_assertions_all(+AbsInts)
+   # "Verify calls, success and comp assertions with the check status for all
+   the predicates given the domains in @var{AbsInts}.".
+simplify_assertions_all(AbsInts):-
+    simplify_assertions_mods(AbsInts, all).
+
+:- pred simplify_assertions_mods(+AbsInts, +MaybeModList)
+   # "Analyze calls, success and comp assertions with the check status for all
+   the predicates in the modules given by @var{MaybeModList} given the domains
+   in @var{AbsInts}. If @var{MaybeModList} is the atom @tt{all}, all predicates are
+   considered".
+simplify_assertions_mods(AbsInts, ModList):-
     retractall_fact(ctchecks_log(_,_,_,_,_)),
     ( predicate_names(Preds) ; multifile_predicate_names(Preds) ),
     ( % (failure-driven loop)
       member(F/A, Preds),
         functor(Sg,F,A),
-        check_pred_all(Sg, Domains),
+        ( ModList = all -> true
+        ; (get_pred_mod_defined(Sg,Mod), member(Mod,ModList)) -> true
+        ; fail
+        ),
+        check_pred_all(Sg, AbsInts),
         fail
     ; true
     ).
 
-:- pred check_pred_all(+Sg, +Domains) # "Execute abstractly assertions
-   for a predicate @var{Sg} over the domains @var{Domains}".
-check_pred_all(Sg, Domains) :-
+:- pred check_pred_all(+Sg, +AbsInts) # "Execute abstractly assertions
+   for a predicate @var{Sg} over the domains @var{AbsInts}".
+check_pred_all(Sg, AbsInts) :-
     findall(A-ARef, get_check_assertion(Sg, A, ARef), LA),
     predkey_from_sg(Sg, Key),
-    decide_get_info_all(Domains, Key, Sg, Info),
+    decide_get_info_all(AbsInts, Key, Sg, Info),
     warn_call_assrts(LA,Sg,0), % TODO: gather all call assrts in an body with ';/2'
-    abs_execute_ass_predicate_all(LA, Key, Sg, Domains, Info, NLA),
+    abs_execute_ass_predicate_all(LA, Key, Sg, AbsInts, Info, NLA),
     inform_as_changes_to_user(NLA),
     !. % TODO: this cut should not be needed (make sure no choicepoints are left)
 
@@ -113,8 +129,8 @@ warn_call_assrts([A|As], Sg, N) :-
     warn_call_assrts(As, Sg, N1).
 
 inform_as_changes_to_user([]).
-inform_as_changes_to_user([u(Old,OldRef,New,Domains,Info)|As]) :-
-    inform_as_change_to_user(Old,OldRef,New,Domains,Info),
+inform_as_changes_to_user([u(Old,OldRef,New,AbsInts,Info)|As]) :-
+    inform_as_change_to_user(Old,OldRef,New,AbsInts,Info),
     inform_as_changes_to_user(As).
 
 get_check_assertion(ClKey, A, ARef) :-
@@ -134,13 +150,13 @@ decide_get_info_all([D|Ds],Key,P,[I|Is]):-
     decide_get_info(D,Key,P,I),
     decide_get_info_all(Ds,Key,P,Is).
 
-abs_execute_ass_predicate_all([], _Key, _Goal, _Domains, _Info, []).
-abs_execute_ass_predicate_all([A-ARef|Ass], Key, Goal, Domains, Info, Out) :-
-    abs_exec_one_assertion_all(Domains, Info, A, Key, DomsOut, InfoOut, NA),
+abs_execute_ass_predicate_all([], _Key, _Goal, _AbsInts, _Info, []).
+abs_execute_ass_predicate_all([A-ARef|Ass], Key, Goal, AbsInts, Info, Out) :-
+    abs_exec_one_assertion_all(AbsInts, Info, A, Key, DomsOut, InfoOut, NA),
     Out = [u(A,ARef,NA,DomsOut,InfoOut)|AsR],
-    abs_execute_ass_predicate_all(Ass, Key, Goal, Domains, Info, AsR).
+    abs_execute_ass_predicate_all(Ass, Key, Goal, AbsInts, Info, AsR).
 
-abs_exec_one_assertion_all(Domains, Info, A, Key, DomsOut, InfoOut, NA) :-
+abs_exec_one_assertion_all(AbsInts, Info, A, Key, DomsOut, InfoOut, NA) :-
     ( current_pp_flag(ctchecks_intervals, on) -> CheckIntervals = on
     ; CheckIntervals = off
     ),
@@ -148,7 +164,7 @@ abs_exec_one_assertion_all(Domains, Info, A, Key, DomsOut, InfoOut, NA) :-
     ( CheckIntervals = on -> push_polynom_curr_assrt(A) %%LD
     ; true
     ),
-    abs_exec_one_assertion_all_(Domains, Info, A, Key, DomsOut, InfoOut, NA, _Status),
+    abs_exec_one_assertion_all_(AbsInts, Info, A, Key, DomsOut, InfoOut, NA, _Status),
     % retract fact for interval information % TODO: ugly
     ( CheckIntervals = on -> pop_polynom_curr_assrt(A) %%LD
     ; true

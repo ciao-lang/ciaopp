@@ -201,14 +201,14 @@ analyze1(Analysis,Info):-
 analyze1(Analysis,Info):-
     trace_init,
     analysis(Analysis), !,
-    curr_file(File,_),
     current_pp_flag(fixpoint,Fixp),
     %% *** Needs to be revised MH
     ( is_checker(Fixp) ->
         Header = '{Checking certificate for '
     ; Header = '{Analyzing '
     ),
-    pplog(analyze_module, [~~(Header),~~(File)]),
+    findall(~~(File),curr_file(File,_),Files),
+    pplog(analyze_module, [~~(Header)|Files]),
     program(Cls,Ds),
     push_history(Analysis), % TODO: check that this does not break intermod_analyze
     analyze_(Analysis,Cls,Ds,Info,step1), % TODO:[new-resources] are two steps really needed? (JF)
@@ -371,8 +371,8 @@ handle_eqs(An):-
 
 :- use_module(ciaopp(p_unit/itf_db), [curr_file/2]).
 
-:- use_module(ciaopp(ctchecks/ctchecks_pred), [simplify_assertions_all/1]).
-:- use_module(ciaopp(ctchecks/assrt_ctchecks_pp), [pp_compile_time_prog_types/3]).
+:- use_module(ciaopp(ctchecks/ctchecks_pred), [simplify_assertions_mods/2]).
+:- use_module(ciaopp(ctchecks/assrt_ctchecks_pp), [ctcheck_pp/2]).
 :- use_module(ciaopp(ctchecks/ctchecks_pred_messages), [init_ctcheck_sum/0, 
     is_any_false/1, is_any_check/1]).
 
@@ -411,51 +411,62 @@ decide_summary(ok).
 
 :- export(acheck/0).
 :- pred acheck # "Checks assertions w.r.t. analysis information, obtains from
-   @pred{domain/1} which anaylses were run.".
+   @pred{domain/1} which analyses were run.".
 acheck :-
     findall(AbsInt, domain(AbsInt), AbsInts),
-    check_assertions(AbsInts).
+    acheck(AbsInts,all).
 
 :- export(acheck/1).
 :- pred acheck(AbsInt) #"Checks assertions using the analysis information of
    @var{AbsInt}. The analysis must be present in CiaoPP (via analysis or restore
    dump).".
 acheck(AbsInt):-
-    domain(AbsInt), !, 
-    check_assertions([AbsInt]).
-acheck(AbsInt):-
-    pplog(ctchecks, ['{Analysis ', ~~(AbsInt), ' not available for checking}']),
-    fail.
+    acheck([AbsInt],all).
 
-:- pred check_assertions(+list).
-check_assertions([]) :-
+:- export(acheck/2).
+:- pred acheck(+AbsInt,+list).
+:- pred acheck(+AbsInt,+MaybeModList) : atm(MaybeModList)
+   #"If @var{MaybeModList} is the atom @tt{all}, all modules in the current
+    punit are considered. If it is a list of @bf{module names}, only the
+    assertions or predicates in those modules are checked.".
+acheck(AbsInt,MaybeModList) :-
+    check_assertions(AbsInt, MaybeModList).
+
+:- pred check_assertions(+list,+MaybeModList).
+check_assertions([], _ModList) :-
     pplog(ctchecks, ['{No analysis found for checking}']).
-check_assertions(AbsInts):-
+check_assertions(AbsInts, ModList):-
+    pplog(ctchecks, ['{Checking assertions of ']),
+    ( list(ModList) ->
+        Files = ModList
+    ;
+        findall(~~(File), curr_file(File,_), Files)
+    ),
+    pplog(ctchecks, Files),
     pp_statistics(runtime,[CTime0,_]),
-    curr_file(File,_),
-    pplog(ctchecks, ['{Checking assertions of ',~~(File)]),
-    perform_pred_ctchecks(AbsInts),
-    perform_pp_ctchecks(AbsInts),
+    perform_pred_ctchecks(AbsInts,ModList),
+    perform_pp_ctchecks(AbsInts,ModList),
     pp_statistics(runtime,[CTime1,_]),
     CTime is CTime1 - CTime0,
     pplog(ctchecks, ['{assertions checked in ',time(CTime), ' msec.}']),
     pplog(ctchecks, ['}']).
 
 %------------------------------------------------------------------------
-perform_pred_ctchecks(AbsInts):-
-    ( \+ current_pp_flag(pred_ctchecks,off) ->
-        simplify_assertions_all(AbsInts)
-    ; true ).
+perform_pred_ctchecks(AbsInts,ModList) :-
+    \+ current_pp_flag(pred_ctchecks,off), !,
+    simplify_assertions_mods(AbsInts,ModList).
+perform_pred_ctchecks(_,_).
 
-perform_pp_ctchecks(AbsInts) :-
+perform_pp_ctchecks(AbsInts, ModList) :-
     current_pp_flag(pp_ctchecks,on), !,
-    program(Cls,Ds),
-    pp_compile_time_prog_types(Cls,Ds,AbsInts).
-perform_pp_ctchecks(_).
+    ctcheck_pp(AbsInts,ModList).
+perform_pp_ctchecks(_,_).
 
 :- else. % \+ with_fullpp
 % TODO: enable code above, make it modular
 
+:- export(acheck/2).
+acheck(_,_) :- fail.
 :- export(acheck/1).
 acheck(_) :- fail.
 :- export(acheck/0).

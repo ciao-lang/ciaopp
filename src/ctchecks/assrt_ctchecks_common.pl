@@ -62,7 +62,7 @@ recorda_assertion(Goal,assert(loc(S,LB,LE),Status,Kind,Body,D)):-
 get_assertions([],[],[]).
 get_assertions([K|Keys],[P|Preds],AllAss):-
     get_basic_assertions(P,G,Ass),
-    (Ass == [] ->
+    ( Ass == [] ->
         AllAss = MoreAss
     ;
         AllAss = [(K,G,Ass)|MoreAss]),

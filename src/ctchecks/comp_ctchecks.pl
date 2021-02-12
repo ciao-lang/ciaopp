@@ -1,7 +1,4 @@
-:- module(comp_ctchecks, [
-    abs_execute_comp/5,
-    abs_execute_sizes/5
-], [assertions]).
+:- module(comp_ctchecks, [abs_execute_comp/5, abs_execute_sizes/5], [assertions]).
 
 :- use_module(ciaopp(infer/infer), [get_info/5]).
 :- use_module(ciaopp(infer/infer_dom), [abs_execute_with_info/4, knows_of/2]).
@@ -17,7 +14,6 @@
 
 :- doc(bug,"3. The check assertions with resource-related properties
                should be review in more detail.").
-
 
 abs_execute_comp(Goal,Comp,AComp,NewComp,Status):-
     get_cost_info(Goal,Cost0,_Succ),
@@ -77,8 +73,6 @@ check_comp_info_one(C,Cost,Nf,Det,Status):-
     new_status(Status0,Status).
 check_comp_info_one(_C,_Cost,_Nf,_Det,check).
 
-% 
-
 check_size_info([],_Size,Status,Status,[]).
 check_size_info([C|Comp],Size,Status0,Status,NewComp):-
     prop_to_native(C,Prop),
@@ -93,10 +87,8 @@ check_size_info_one(C,Size,Status):-
     new_status(Status0,Status).
 check_size_info_one(_C,_Size,check).
 
-
 new_status(fail,false):- !.
 new_status(Status,Status).
-
 
 select_info(steps_ub,Cost,_Nf,_Det,Cost).
 select_info(steps_lb,Cost,_Nf,_Det,Cost).
@@ -107,32 +99,30 @@ select_info(detg,_Cost,_Nf,Det,Det).
 select_info(det,_Cost,_Nf,Det,Det).
 select_info(res_plai,Cost,_,_,Cost).
 
-compose_status(true,Status,Status).
-compose_status(Status,true,Status).
-compose_status(false,_Status,false).
-compose_status(_Status,false,false).
+compose_status(true,Status,Status) :- !.
+compose_status(Status,true,Status) :- !.
+compose_status(false,_Status,false) :- !.
+compose_status(_Status,false,false) :- !.
 compose_status(check,check,check).
 
-new_comp(true,_C,NewComp,NewComp).
+new_comp(true,_C,NewComp,NewComp) :- !.
 new_comp(_any,C,NewComp,[C|NewComp]).
 
 get_cost_info(Goal,Cost,Succ):-
-    (  get_info(steps_ub,pred,_Key,Goal,(SuccU,CostU))
-    -> append(CostU,CostLO,Cost),
-       append(SuccU,SuccLO,Succ)
-     ; Cost=CostLO,
-       Succ=SuccLO
+    ( get_info(steps_ub,pred,_Key,Goal,(SuccU,CostU)) ->
+        append(CostU,CostLO,Cost),
+        append(SuccU,SuccLO,Succ)
+    ;
+        Cost=CostLO, Succ=SuccLO
     ),
-    (  get_info(steps_lb,pred,_Key,Goal,(SuccL,CostL))
-    -> append(CostL,CostO,CostLO),
-       append(SuccL,SuccO,SuccLO)
-     ; CostLO=CostO,
-       SuccLO=SuccO 
+    ( get_info(steps_lb,pred,_Key,Goal,(SuccL,CostL)) ->
+        append(CostL,CostO,CostLO),
+        append(SuccL,SuccO,SuccLO)
+    ;
+        CostLO=CostO, SuccLO=SuccO 
     ),
-    (  get_info(steps_o,pred,_Key,Goal,(SuccO,CostO))
-    -> true
-     ; CostO= [],
-       SuccO= []
+    ( get_info(steps_o,pred,_Key,Goal,(SuccO,CostO)) -> true
+    ; CostO= [], SuccO= []
     ).
 
 get_resource_info(Goal,Cost,[]):-
@@ -163,24 +153,22 @@ get_resource_info(Goal,Cost,[]):-
 %       list_concat(LLRes,Cost).
 
 get_size_info(Goal,Cost,Succ):-
-    (  get_info(size_ub,pred,_Key,Goal,(SuccU,CostU))
-    -> append(CostU,CostLO,Cost),
-       append(SuccU,SuccLO,Succ)
-     ; Cost=CostLO,
-       Succ=SuccLO
+    ( get_info(size_ub,pred,_Key,Goal,(SuccU,CostU)) ->
+        append(CostU,CostLO,Cost),
+        append(SuccU,SuccLO,Succ)
+    ;
+        Cost=CostLO, Succ=SuccLO
     ),
-    (  get_info(size_lb,pred,_Key,Goal,(SuccL,CostL))
-    -> append(CostL,CostO,CostLO),
-       append(SuccL,SuccO,SuccLO)
-     ; CostLO=CostO,
-       SuccLO=SuccO 
+    ( get_info(size_lb,pred,_Key,Goal,(SuccL,CostL)) ->
+        append(CostL,CostO,CostLO),
+        append(SuccL,SuccO,SuccLO)
+    ;
+        CostLO=CostO, SuccLO=SuccO 
     ),
-    (  get_info(size_o,pred,_Key,Goal,(SuccO,CostO))
-    -> true
-     ; CostO= [],
-       SuccO= []
+    ( get_info(size_o,pred,_Key,Goal,(SuccO,CostO)) -> true
+    ;
+        CostO= [], SuccO= []
     ).
-
 
 get_nf_info(Goal,Call,Nf):-
 %       get_info(nfg,pred,Call,Goal,Nf), !.
