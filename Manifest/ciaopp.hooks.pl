@@ -12,6 +12,18 @@
 '$builder_hook'(item_nested(cmds)).
 '$builder_hook'(cmds:cmd('ciaopp', [main='cmds/ciaoppcl'])).
 
+:- use_module(ciaobld(ciaoc_aux), [cmd_build_copy/4]).
+:- use_module(library(bundle/bundle_paths), [bundle_path/3]).
+
+ciaopp_client_sh := ~bundle_path(ciaopp, 'cmds/ciaopp-client.bash').
+
+% TODO: strange target, only for installation, define in another way?
+'$builder_hook'(item_nested(ciaopp_client)).
+'$builder_hook'(ciaopp_client:cmd('ciao-client', [main='NONE_AUTOGEN', shscript])).
+'$builder_hook'(ciaopp_client:build_bin) :- % (override build)
+    % (we just copy the script from the builder)
+    cmd_build_copy(core, shscript, ~ciaopp_client_sh, 'ciaopp-client').
+
 % ===========================================================================
 
 '$builder_hook'(prepare_build_bin) :-
