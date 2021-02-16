@@ -263,6 +263,16 @@ pp_flag(menu_fixpo, 'Customize fixpoint.').
 current_pp_flags(  menu_fixpo   , on ).
 valid_flag_values( menu_fixpo   , member( _ , [on,off] ) ).
 
+pp_flag(main_module). % only menu
+pp_flag(main_module, 'Main module.').
+current_pp_flags(  main_module   , '$default' ).
+valid_flag_values( main_module   , valid_main_module( _ ) ).
+
+valid_main_module('$default') :- !.
+valid_main_module(X) :-
+    path_is_absolute(X),
+    file_exists(X),
+    file_property(X,type(regular)).
 
 pp_flag(check_config_ana). % only menu
 pp_flag(check_config_ana, 'Decides whether to configure analysis flags or not.').

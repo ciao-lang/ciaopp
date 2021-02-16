@@ -36,8 +36,8 @@
 
 %% For modular checking
 :- use_module(ciaopp(plai/intermod),
-    [inductive_ctcheck_summary/3, auto_ctcheck_summary/3, intermod_analyze/2,
-     valid_mod_analysis/1, get_modules_analyzed/1]).
+    [inductive_ctcheck_summary/3, intermod_analyze/2, intermod_ctcheck/2,
+     valid_mod_analysis/1]).
 
 :- use_module(ciaopp(infer/infer_db),        [domain/1]).
 :- use_module(library(assertions/assrt_lib), [assertion_body/7]).
@@ -65,8 +65,6 @@
    ]).
 :- use_module(library(prompt),[prompt_for_default/2]).
 :- use_module(library(pathnames), [path_splitext/3]).
-
-:- use_module(engine(runtime_control), [current_prolog_flag/2]). % TODO: do not define main_module as a prolog flag
 
 :- doc(bug, "1 commented out the question for error file since we
     are generating it in any case (not yet implemented)").
@@ -394,8 +392,9 @@ check   , 'Analysis Domain' # assert_ctcheck  - auto.
 %check(1), 'Modular Analysis'    # ct_mod_ana - curr_mod     <- cct.
 %check   , 'Modular Checking'    # ct_modular - curr_mod :: mod_check  <- cct.
 check   , 'Modules to Check' # ct_modular - curr_mod  :: mod_check  <- cct.
+check   , 'Main module'          # main_module  - '$default'.
 check   , 'Iterate Over Modules' # ct_mod_iterate - on :: post_iter  <- cct_mod. % TODO: equivalent to intermod? (JF)
-check(1) ,'Interleave Analysis and Checking'# interleave_an_check - on <- cct_mod_reg.
+check(1) ,'Interleave Analysis and Checking'# interleave_an_check - off <- cct_mod_reg.
 check(1), 'Related Modules Info'        # ct_ext_policy - assertions <- cct.
 check(1), 'Regenerate Analysis Registry'# ct_regen_reg - off::reg_reg <- cct_mod_reg.
 check   , 'Report Non-Verified Assrts'  # ass_not_stat_eval - warning <- cct2.
@@ -409,7 +408,7 @@ check   , 'Reduced Certificate'         # reduced_cert       - off  <- gencert.
 %check   , 'Optimizing Compilation'# optim_comp - none.
 check   , 'Generate CT Checking Intervals'        # ctchecks_intervals    - on.
 
-opt      , 'Type of Optimization'         # inter_optimize - spec :: opt_menu_branch.
+opt      , 'Type of Optimization'  # inter_optimize - spec :: opt_menu_branch.
 ~spsl    , 'Abs Specialization'    # spec_poly - off.
 ~spsl(1) , 'Preserve Finite Failure'      # pres_inf_fail-off  <- spec_pif.
 ~spsl(1) , 'Execute Unif at Spec Time'    # exec_unif - on     <- spec_pif.
@@ -432,7 +431,7 @@ spec(1)  , 'Post-minimization'            # min_crit          - none <- spec_lc.
 
 :- if(defined(has_ciaopp_extra)).
 sp_poly     , 'Fitness Function'          # poly_fitness       - balance.
-sp_poly     , 'Maximum Size of Solution'         # pcpe_bounded_size  - '10K' <- polybounded.
+sp_poly     , 'Maximum Size of Solution'  # pcpe_bounded_size  - '10K' <- polybounded.
 sp_poly     , 'Strategy'                  # poly_strategy      - all_sols.
 sp_poly     , 'Aggressivity'              # aggressivity       - normal.
 sp_poly(1)  , 'Pruning'                   # poly_pruning       - heuristic <- polystrat.
@@ -440,8 +439,8 @@ sp_poly(1)  , 'Heuristic'                 # polyvar_pcpe       - pred <- polyheu
 sp_poly(1)  , 'Modes Domain'              # poly_modes         - sd <- polyvar.
 sp_poly(1)  , 'Depth of Pruning'          # poly_depth_lim     - 3 <- polydepth.
 sp_poly(1)  , 'Evaluation Time per sol in msecs' # pcpe_evaltime  - 200.
-sp_poly(1)  , 'Argument Filtering'       # inter_opt_arg_filt - on.
-sp_poly(1)  , 'Post Minimization'        # min_crit           - none.
+sp_poly(1)  , 'Argument Filtering'        # inter_opt_arg_filt - on.
+sp_poly(1)  , 'Post Minimization'         # min_crit           - none.
 sp_poly(1)  , 'Verbosity in Output Files' # output_info        - medium. % TODO: move as an moutput(_) option?
 :- endif.
 
@@ -1173,7 +1172,11 @@ do_output(OFile, Menu) :-
     % human-readable output
     get_menu_flag(Menu,menu_output,Output),
     ( Output == on ->
-        ( var(OFile) -> output ; output(OFile) )
+        ( current_pp_flag(intermod,on) ->
+            warning_message("Output in source program of intermodular analysis currently not supported")
+        ;
+            ( var(OFile) -> output ; output(OFile) )
+        )
     ; true
     ),
     % restorable output
@@ -1225,199 +1228,78 @@ auto_check_assert(File, OFile) :-
 
 auto_check_assert_(File, OFile) :-
     get_menu_flag(check, assert_ctcheck, CTCHECKS),
-    ( CTCHECKS == auto ->
+    ( CTCHECKS == off ->
+        error_message("Incompatible flag value: assert_ctcheck = off"), throw(bug)
+    ; CTCHECKS == auto ->
         auto_sel_dom(File)
-    ; true
-    ),
-    %
+    ; true ),
     get_menu_flag(check, gen_certificate, GENCERT),
-    ( GENCERT==manual ->
+    ( GENCERT == on -> % It was "GENCERT == manual" but this option does not exist
         % TODO: *** This needs to be revised... MH
         set_pp_flag(dump_pred,nodep),
         set_pp_flag(dump_pp,off),
         set_pp_flag(fixpoint,di)
     ; true
     ),
-    %
-    get_menu_flag(check, assert_ctcheck, CTCHECKS),
-    ( ( CTCHECKS == manual
-      ; CTCHECKS == auto 
-      ) ->
-        get_menu_flag(ana, inter_ana, LIST),
-        exec_analysis_list_acheck(File,LIST,ANYERROR),
-        ctcheck_open_module_if_not_ctchecked(File,LIST,ANYERROR)
-% %%        get_menu_flag(check, verbose_ctchecks, VCT ),
-% %%        push_pp_flag(verbose_ctchecks, VCT),
-%           acheck
-% %, pop_pp_flag(verbose_ctchecks)
-    ; module(File)
-    ),
-    continue_auto_assert_ctchecks(ANYERROR, File, OFile, GENCERT),
+    get_menu_flag(ana, inter_ana, MenuAna),
+    retrieve_menu_analyses(MenuAna, AbsInts),
+    exec_analysis_list_acheck(File,AbsInts,ANYERROR),
+    gencert_ctchecks(ANYERROR, File, GENCERT),
+    do_output(OFile, check),
     set_last_file(File).
 
 :- pop_prolog_flag(multi_arity_warnings).
 
-%% ctcheck_open_module_if_not_ctchecked(+File,+LIST,-ANYERROR)
-%% Checks if the module open in emacs has not been processed when
-%% checking the whole program (incremental modular ctchecking).
-%% In that case, checks it in order to show the resulting buffer.
-ctcheck_open_module_if_not_ctchecked(File,LIST,ANYERROR):-
-    current_pp_flag(intermod,on), % TODO: correct? (JF)
-    ( current_pp_flag(mnu_modules_to_analyze,all)
-    ; current_pp_flag(ct_modular,all)
-    ),
-    path_splitext(File,Base,_),
-    get_modules_analyzed(ModList),
-    \+ member(Base,ModList),
-    !,
-    push_pp_flag(intermod,off), % TODO: correct? (JF)
-    push_pp_flag(mnu_modules_to_analyze,current),
-    push_pp_flag(ct_modular,curr_mod),
-    exec_analysis_list_acheck(File,LIST,ANYERROR),
-    pop_pp_flag(ct_modular),
-    pop_pp_flag(mnu_modules_to_analyze),
-    pop_pp_flag(intermod). % TODO: correct? (JF)
-ctcheck_open_module_if_not_ctchecked(_File,_LIST,_ANYERROR).
-
-continue_auto_assert_ctchecks(Err,_,OFile,_):-
+gencert_ctchecks(Err,_,_):-
     Err == error, !,
-    error_message("Errors detected. Further preprocessing aborted."),
-    do_output(OFile, check).
-continue_auto_assert_ctchecks(_ANYERROR,File,OFile,GENCERT):-
-    ( GENCERT==on ->
-       atom_concat(File,'.cert',Cert_Name),
-       pplog(auto_interface, ['{Generating certificate ',~~(Cert_Name)]),
-       pp_statistics(runtime,_),
-       ( current_pp_flag(reduced_cert,on) -> remove_irrelevant_entries ; true ),
-       dump(Cert_Name),
-       pp_statistics(runtime,[_,T]),
-       pplog(auto_interface, ['{certificate saved in ', time(T), ' msec.}\n}'])
+    error_message("Errors detected. Further preprocessing aborted.").
+gencert_ctchecks(_,File,GENCERT):-
+    ( GENCERT == on ->
+        atom_concat(File,'.cert',Cert_Name),
+        pplog(auto_interface, ['{Generating certificate ',~~(Cert_Name)]),
+        pp_statistics(runtime,_),
+        ( current_pp_flag(reduced_cert,on) -> remove_irrelevant_entries ; true ),
+        dump(Cert_Name),
+        pp_statistics(runtime,[_,T]),
+        pplog(auto_interface, ['{certificate saved in ', time(T), ' msec.}\n}'])
     ; true
-    ),
-    do_output(OFile, check).
+    ).
 %       get_menu_flag(check, optim_comp, OPTIMCOMP),
 %       ( OPTIMCOMP == none ->
 %           decide_output(OFile)
 %       ; optim_comp(OPTIMCOMP)
 %       ).
 
-% ana = current module, ct check = current module
-exec_analysis_list_acheck(File,LIST,ANYERROR) :-
-    current_pp_flag(intermod,off), % TODO: correct? (JF)
-    %current_pp_flag(mnu_modules_to_analyze,current),
-    %current_pp_flag(ct_modular,curr_mod),
-    !,
-    ( current_pp_flag(assert_ctcheck,auto) ->
-        true
-    ; module(File)
-    ),
-    current_pp_flag(ct_ext_policy, CT_ext_policy),
-    exec_analysis_list_acheck_11(LIST, CT_ext_policy ,ANYERROR).
-% ana = current module, ct check = all
-exec_analysis_list_acheck(File,LIST,ANYERROR) :-
-    % assume: current_pp_flag(intermod,on), % TODO: correct? (JF)
-    current_pp_flag(mnu_modules_to_analyze,current),
-    current_pp_flag(ct_modular,all),!,
-    current_pp_flag(ct_ext_policy, CT_ext_policy),
-    exec_analysis_list_acheck_1n(File, LIST, CT_ext_policy,ANYERROR).
-% ana = all, ct checking = all
-exec_analysis_list_acheck(File,LIST,ANYERROR) :-
-    % assume: current_pp_flag(intermod,on), % TODO: correct? (JF)
-    current_pp_flag(mnu_modules_to_analyze,all),
-    current_pp_flag(ct_modular,all),!,
-    % push_pp_flag(intermod,on), % TODO: already on (JF)
-    current_pp_flag(ct_ext_policy, CT_ext_policy),
-    exec_mod_ct_x(LIST,File,auto,CT_ext_policy,ANYERROR),
-    get_concrete_analyses(LIST,Anals),
-    ( current_pp_flag(interleave_an_check,off) ->
-        auto_ctcheck_summary(Anals,~maybe_main(File),ANYERROR)
-    ; true
-    ).
-    % pop_pp_flag(intermod).
-% Intermodular analysis (all), but CT one module
-exec_analysis_list_acheck(File,LIST,ANYERROR) :-
-    % assume: current_pp_flag(intermod,on), % TODO: correct? (JF)
-    current_pp_flag(mnu_modules_to_analyze,all),
-    current_pp_flag(ct_modular,curr_mod),
-    current_pp_flag(ct_ext_policy, CT_ext_policy),
-    exec_mod_ct_x(LIST,File,auto,CT_ext_policy,ANYERROR),
-    module(File),
-    exec_analysis_list_acheck_11(LIST, CT_ext_policy,ANYERROR).
+exec_analysis_list_acheck(_File,AbsInts,AnyError) :- 
+    current_pp_flag(intermod, off), !,
+    analyze(AbsInts),
+    acheck_summary(AnyError).
+exec_analysis_list_acheck(File,AbsInts,AnyError) :-
+    % TODO: IG: probably this is not working
+    current_pp_flag(interleave_an_check,on), !,
+    inductive_ctcheck_summary(AbsInts,~maybe_main(File),AnyError).
+exec_analysis_list_acheck(File,AbsInts,AnyError) :-
+    maybe_main(File,TopLevel),
+    module(TopLevel),
+    intermod_analyze(AbsInts,TopLevel),
+    intermod_ctcheck(AbsInts,[File]),
+    % errors not propagated to caller (E.g., for command line, etc.)
+    % see decide_summary/1 in analyze_driver
+    AnyError = [].
 
-% one module analysis and one module checking.
-exec_analysis_list_acheck_11(LIST, assertions,ANYERROR):- !,
-    % push_pp_flag(intermod,off), % TODO: already off (JF)
-    exec_analysis_list(LIST, check),
-    acheck_summary(ANYERROR).
-    % pop_pp_flag(intermod). % TODO: already off (JF)
-exec_analysis_list_acheck_11(LIST, registry, ANYERROR):-
-    throw(bug_not_allowed(exec_analysis_list_acheck_11(LIST, registry, ANYERROR))). % TODO: remove this code? it should not be possible
-    % push_pp_flag(intermod,on),
-    % push_pp_flag(entry_policy,force),
-    % push_pp_flag(success_policy,over_all), % !!! all/botall ?
-    % exec_analysis_list(LIST, check),
-    % acheck_summary(ANYERROR),
-    % pop_pp_flag(entry_policy),
-    % pop_pp_flag(success_policy),
-    % pop_pp_flag(intermod).
+retrieve_menu_analyses([],[]).
+retrieve_menu_analyses([D|Ds],[A|As]):-
+    get_menu_ana(D,A), !,
+    retrieve_menu_analyses(Ds,As).
+retrieve_menu_analyses([_|Ds],As):-
+    retrieve_menu_analyses(Ds,As).
 
-% one module analysis and all modules checking.
-exec_analysis_list_acheck_1n(File, LIST, assertions,ANYERROR) :- !,
-    exec_mod_ct_x(LIST,File,ind,_,ANYERROR).  % inductive
-exec_analysis_list_acheck_1n(File, LIST, EP,ANYERROR):-
-    exec_mod_ct_x(LIST,File,curr_auto,EP,ANYERROR).
-
-exec_mod_ct_x(Ds,File,X,EP,ANYERROR):-
-    conc_ana(Ds,As),
-    x_check(X,As,File,EP,ANYERROR).
-
-conc_ana([],[]).
-conc_ana([D|Ds],[A|As]):-
-    % needs revision PP
-%       types_or_modes(D,A),!,
-    get_conc_a(D,A), !,
-    conc_ana(Ds,As).
-conc_ana([_|Ds],As):-
-    conc_ana(Ds,As).
-
-%pp%get_conc_a(D,A):-
-%pp%    get_menu_flag(check,assert_ctcheck,auto),!,
-%pp%    preferred_ana(D,A).
-get_conc_a(D,A):-
+get_menu_ana(D,A):-
     get_menu_flag(check,D,A),
     A \= none,!.
 
-x_check(ind,D,File,_,ANYERROR) :-
-    inductive_ctcheck_summary(D,~maybe_main(File),ANYERROR).
-x_check(auto,D,File,_EP,_ANYERROR) :-
-    ct_intermod_analyze(D,~maybe_main(File)).
-x_check(curr_auto,D,File,_EP,ANYERROR) :-
-    auto_ctcheck_summary(D,~maybe_main(File),ANYERROR).
-
-ct_intermod_analyze(D,File) :-
-    current_pp_flag(ct_regen_reg,on),!,
-    intermod_analyze(D,File).
-ct_intermod_analyze(_,_).
-
-get_concrete_analyses([],[]).
-get_concrete_analyses([D|Ds],As):-
-    get_menu_flag(check,D,A),
-    ( A == none ->
-        As = As0
-    ; As = [A|As0]
-    ),
-    get_concrete_analyses(Ds,As0).
-
-% types_or_modes(types,Types) :- 
-%       get_menu_flag(check, types, Types),
-%       analysis(Types).
-% types_or_modes(modes,Modes) :-
-%       get_menu_flag(check, modes, Modes),
-%       analysis(Modes).
-
 % ---------------------------------------------------------------------------
 % Auto selection of domains for CT checking
-
 auto_sel_dom(_) :-
     get_menu_flag(check,ct_modular,all),!,
     % TODO: ad-hoc!
@@ -1428,8 +1310,7 @@ auto_sel_dom(File) :-
     get_menu_flag(ana,inter_ana,As),
     curr_file(_,M),
     determine_needed(As,M,Ds),
-    pplog(auto_interface, ['{Analyses needed to check assertions: ',~~(Ds)]),
-    pplog(auto_interface, ['}']).
+    pplog(auto_interface, ['{Analyses needed to check assertions: ',~~(Ds), '}']).
 
 needed_to_prove_prop(M, Dom, A) :-
     get_one_prop(M, P),
@@ -1762,10 +1643,10 @@ decide_transform(poly) :-
 
 % ---------------------------------------------------------------------------
 % Auxiliary for modular analysis
-maybe_main(File) := R :-
-    current_prolog_flag(main_module,Main),
-    ( Main = '' -> R = File
-    ; R = Main
+maybe_main(File, MainFile) :-
+    get_menu_flag(check, main_module,Main),
+    ( Main = '$default' -> MainFile = File
+    ; MainFile = Main
     ).
 
 % ---------------------------------------------------------------------------

@@ -1,6 +1,6 @@
 :- module(ctchecks_pred,
           [simplify_assertions_all/1, simplify_assertions_mods/2, ctchecks_log/5],
-          [assertions, regtypes, isomodes, datafacts, ciaopp(ciaopp_options)]).
+          [assertions, regtypes, nativeprops, isomodes, datafacts, ciaopp(ciaopp_options)]).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 :- doc(title, "Compile-time Assertion Checking").
@@ -77,20 +77,20 @@ decide_get_info(_AbsInt,_Key,_Goal, []).
 
 % ---------------------------------------------------------------------------
 :- pred simplify_assertions_all(+AbsInts)
-   # "Verify calls, success and comp assertions with the check status for all
-   the predicates given the domains in @var{AbsInts}.".
+   # "Check calls, success and comp assertions with status @tt{check} for all
+   the predicates using the domains @var{AbsInts}.".
 simplify_assertions_all(AbsInts):-
     simplify_assertions_mods(AbsInts, all).
 
-:- pred simplify_assertions_mods(+AbsInts, +MaybeModList)
-   # "Analyze calls, success and comp assertions with the check status for all
+:- pred simplify_assertions_mods(+AbsInts, +MaybeModList) + (not_fails, is_det)
+   # "Check calls, success and comp assertions with the check status for all
    the predicates in the modules given by @var{MaybeModList} given the domains
    in @var{AbsInts}. If @var{MaybeModList} is the atom @tt{all}, all predicates are
-   considered".
+   considered.".
 simplify_assertions_mods(AbsInts, ModList):-
     retractall_fact(ctchecks_log(_,_,_,_,_)),
-    ( predicate_names(Preds) ; multifile_predicate_names(Preds) ),
     ( % (failure-driven loop)
+      (predicate_names(Preds) ; multifile_predicate_names(Preds)),
       member(F/A, Preds),
         functor(Sg,F,A),
         ( ModList = all -> true
@@ -102,16 +102,19 @@ simplify_assertions_mods(AbsInts, ModList):-
     ; true
     ).
 
-:- pred check_pred_all(+Sg, +AbsInts) # "Execute abstractly assertions
-   for a predicate @var{Sg} over the domains @var{AbsInts}".
+:- pred check_pred_all(+Sg, +AbsInts) + (not_fails, is_det)
+   # "Execute abstractly assertions for a predicate @var{Sg} over the domains
+     @var{AbsInts}".
 check_pred_all(Sg, AbsInts) :-
     findall(A-ARef, get_check_assertion(Sg, A, ARef), LA),
+    \+ LA = [], !,
     predkey_from_sg(Sg, Key),
     decide_get_info_all(AbsInts, Key, Sg, Info),
     warn_call_assrts(LA,Sg,0), % TODO: gather all call assrts in an body with ';/2'
     abs_execute_ass_predicate_all(LA, Key, Sg, AbsInts, Info, NLA),
     inform_as_changes_to_user(NLA),
     !. % TODO: this cut should not be needed (make sure no choicepoints are left)
+check_pred_all(_, _).
 
 % TODO: temporary warning, fix checking several call assertions!!
 :- use_module(library(messages), [warning_message/2]).

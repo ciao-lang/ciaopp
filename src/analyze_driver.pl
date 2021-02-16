@@ -384,11 +384,11 @@ ctcheck_sum(error).
 
 :- export(acheck_summary/1).
 :- pred acheck_summary(S): var(S) => ctcheck_sum(S)
-# "Checks assertions w.r.t. analysis information. Upon success @var{S} 
-  is bound to: ok (the compile-time checking process has generated no error 
-  nor warning), warning (compile-time checking has not generated any error, 
-  but there has been at least one warning) or error (at least one error has 
-  been produced).".
+   # "Checks assertions w.r.t. analysis information. Upon success @var{S} is
+   bound to: ok (the compile-time checking process has generated no error nor
+   warning), warning (compile-time checking has not generated any error, but
+   there has been at least one warning) or error (at least one error has been
+   produced).".
 
 acheck_summary(Sum) :-
     init_ctcheck_sum,

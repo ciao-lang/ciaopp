@@ -4,29 +4,18 @@
         valid_mod_analysis/1,
         intermod_analyze/2,
         intermod_analyze/3,
-        auto_check/2,
+        intermod_ctcheck/2,
         auto_transform/3,
         auto_simp_libs/2,
         auto_simp_libs/3,
-        % scenario 2
-        auto_ctcheck/2,
-        auto_ctcheck/4,
-        % scenario 1
-        monolithic_ctcheck/2,
-        monolithic_ctcheck/3,
         % scenario 5
         inductive_ctcheck/2,
         inductive_ctcheck/4,
         inductive_ctcheck_summary/3,
         % scenario 3
         auto_ctcheck_opt/2,
-        auto_ctcheck_opt/3,
-        %
-        auto_ctcheck_list/3,
-        auto_ctcheck_summary/3
+        auto_ctcheck_opt/3
     ],[assertions, basicmodes, nativeprops, fsyntax]).
-
-:- reexport(ciaopp(plai/intermod_punit), [get_modules_analyzed/1]). % for auto_interface
 
 :- use_package(dynamic). % TODO: use datafacts? dynamic is here only for asserta/1, retract/1 and the 'dead-code' part
 
@@ -58,16 +47,12 @@ Global compilation options of intermodular analysis are available in
 :- use_module(ciaopp(plai/intermod_ops)).
 
 :- use_module(ciaopp(frontend_driver), [module/1,module/2,output/1,output/0]).
-:- use_module(ciaopp(analyze_driver), [analyze/1,analyze1/2,acheck_summary/1]).
+:- use_module(ciaopp(analyze_driver),
+              [analyze/1,analyze1/2,acheck_summary/1, acheck/1, acheck/2]).
 :- use_module(ciaopp(p_unit), [program/2, replace_program/2]).
 :- use_module(ciaopp(plai/re_analysis), [update_ai_info_case/4]).
 :- use_module(ciaopp(plai), [cleanup_plai/1]).
 
-:- use_module(engine(messages_basic), [message/2]).
-:- use_module(library(lists), [append/3]).
-:- use_module(library(llists), [append/2]).
-:- use_module(library(pathnames)).
-:- use_module(library(aggregates), [findall/3]).
 :- use_module(spec(spec), [simplify_specialize/6]).
 :- use_module(spec(codegen), [codegen/4, codegen_af/4]).
 :- use_module(ciaopp(plai/plai_db), [complete/7, cleanup_plai_db/1]).
@@ -81,11 +66,13 @@ Global compilation options of intermodular analysis are available in
     remove_useless_info/1
      ]).
 :- use_module(ciaopp(p_unit/aux_filenames), [get_module_filename/3, just_module_name/2]).
-:- use_module(ciaopp(p_unit/itf_db), [cleanup_itf_db/0, get_module_from_sg/2]).
+:- use_module(ciaopp(p_unit/itf_db), [get_module_from_sg/2]).
 :- use_module(ciaopp(preprocess_flags)).
 :- use_module(ciaopp(p_unit/p_dump), [dump_dir/1, dump/2]).
 :- use_module(ciaopp(ciaopp_log)).
 :- use_module(ciaopp(raw_printer)).
+% ctcheck
+:- use_module(ciaopp(ctchecks/ctchecks_pred)).
 
 % ciao libraries
 :- use_module(engine(internals), [ast_filename/2]).
@@ -98,8 +85,14 @@ Global compilation options of intermodular analysis are available in
 :- use_module(library(system_extra), [mkpath/1]).
 :- use_module(library(terms), [atom_concat/2]).
 :- use_module(library(compiler/c_itf), [cleanup_itf_cache/0]).
+:- use_module(library(lists), [append/3]).
+:- use_module(library(llists), [append/2]).
+:- use_module(library(pathnames)).
+:- use_module(library(aggregates), [findall/3]).
+:- use_module(library(hiordlib), [maplist/3]).
 :- use_module(engine(stream_basic), [absolute_file_name/7]).
 :- use_module(engine(runtime_control), [push_prolog_flag/2, pop_prolog_flag/1]).
+:- use_module(engine(messages_basic), [message/2]).
 
 % statistics
 :- use_module(ciaopp(analysis_stats)).
@@ -130,7 +123,6 @@ cleanup_intermod:-
     cleanup_intermod_scheduling,
     clean_program_structure,
     cleanup_p_abs_all,
-    cleanup_itf_db,
     set_pp_flag(widen, W).
 
 :- data there_are_previous_errors/0.
@@ -186,7 +178,7 @@ valid_mod_analysis(AbsInt):-
 :- multifile aidomain/1.  % This predicate is defined in domains.pl.
 
 %% ********************************************************************
-%% Intermodular analysis.
+:- doc(section, "Intermodular fixpoint analysis").
 %% ********************************************************************
 intermod_analyze(AbsInt,TopLevel):-
     intermod_analyze(AbsInt,TopLevel,_Info).
@@ -284,8 +276,6 @@ modular_analyze_(Sched,AbsInts,Info):-
     ),
     get_total_info(Info).
 
-%%------------------------------------------------------------------
-
 :- pred do_naive_intermod/1 + not_fails.
 do_naive_intermod(AbsInts):-
     current_fact(naive_pending_modules(_)), !,
@@ -350,14 +340,12 @@ naive_analyze_modules(AbsInts, [_CurrMod|Mods]):-
 
 ctcheck_module_naive(Module):-
     current_pp_flag(interleave_an_check,on), !,
-%       acheck_summary(Result),
     acheck_info(assert_count(CTInfo),Summary),
     add_to_total_info([assert_count(Module,CTInfo)]),
     ( Summary == error ->
         message(inform, ['{Compile-time check errors found in: ', ~~(Module),'}']),
         retractall_fact(naive_pending_modules(_)),
-        set_fact(there_are_previous_errors),
-        output
+        set_fact(there_are_previous_errors)
     ;   true
     ).
 ctcheck_module_naive(_).
@@ -490,7 +478,7 @@ monolithic_analyze(AbsInts,TopLevel,Info):-
     reset_total_info,
     set_local_ana_modules(ModList),
     cleanup_persistent_registry(ModList),
-    ensure_registry_current_files(quiet),
+%    ensure_registry_current_files(quiet),
     add_entries_to_registry_all(AbsInts),
     analyze1(AbsInts,Info0),
     debug_inc_dump_dir(TopLevel),
@@ -533,10 +521,12 @@ debug_inc_dump_dir(CurrMod) :-
     dump(DumpName,[incremental]).
 debug_inc_dump_dir(_). % if the dump directory is not set, do not dump
 
-%% ******************************************************************
-%% Modular analysis checking
+
+%% ********************************************************************
+:- doc(section, "Intermodular fixpoint checking (certificate)").
+%% ********************************************************************
 %%    registry must have reached a fixpoint!!!!!!!
-%% ******************************************************************
+% NOT reviewed by IG
 :- pred auto_check(+AbsInt,+TopLevel) # "After using @pred{modular_analyze/2},
    this predicate allows checking the results of the analysis. Generates
    internal (@code{complete/7}) information for all the modules in the program
@@ -593,7 +583,6 @@ auto_check_one_module(AbsInt,File):-
 %jcf (to save memory; the process will be slower).
 %jcf    cleanup_p_abs_all,
     module(BaseAbs),
-%
     fixpo_ops:restore_previous_analysis(AbsInt),   %% restores needed types (module/1 removes them)
     %
     set_local_ana_modules([BaseAbs]),
@@ -617,28 +606,14 @@ filter_completes(AbsInt,Module):-
 filter_completes(_AbsInt,_Module).
 
 %% ******************************************************************
+:- doc(section, "Intermodular program transformation").
 %% Modular program transformations (for specialization)
 %% ******************************************************************
-
-valid_transformation(Trans):-
-    transformation(Trans), !.
-valid_transformation(Trans):-
-    message(error0, ['{Not a valid transformation: ',~~(Trans),'}']),
-    fail.
-
-%%------------------------------------------------------------------
-
-:- prop transformation(Transformation)
-    # "@var{Transformation} is a valid transformation identifier.".
-:- multifile transformation/1.
-
-%% ---------------------------------------------------------------------------
-
+% NOT reviewed by IG
 :- pred auto_transform(+AbsInt,+Trans,+TopLevel)
 # "Performs transformation @var{Trans} of the program unit which has
   @var{TopLevel} as top-level module, using @var{AbsInt} to get
   information about the program.".
-
 auto_transform(AbsInt,Trans,TopLevel):-
     auto_transform_(AbsInt,Trans,TopLevel,_Info).
 
@@ -652,7 +627,7 @@ auto_transform_(AbsInt,Trans,TopLevel,Info):-
     %%
     get_all_module_cycles(TopLevel,CycleList),
     pp_statistics(runtime,[T1,_]),
-    auto_transform_cycles(AbsInt,Trans,CycleList),
+    auto_transform_cycles(CycleList,AbsInt,Trans),
     pp_statistics(runtime,[T2,_]),
     global_time_ellapsed(T2,T1,Ellapsed),
     Info = [time(Ellapsed,[(transform,Ellapsed)])],
@@ -662,12 +637,22 @@ auto_transform_(AbsInt,Trans,TopLevel,Info):-
     pop_pp_flag(intermod),
     pplog(modular, ['}']).
 
+valid_transformation(Trans):-
+    transformation(Trans), !.
+valid_transformation(Trans):-
+    message(error0, ['{Not a valid transformation: ',~~(Trans),'}']),
+    fail.
+
+:- prop transformation(Transformation)
+    # "@var{Transformation} is a valid transformation identifier.".
+:- multifile transformation/1.
+
 %% ---------------------------------------------------------------------------
 
-auto_transform_cycles(_AbsInt,_Trans,[]).
-auto_transform_cycles(AbsInt,Trans,[Cycle|CycleList]):-
+auto_transform_cycles([], _AbsInt,_Trans) :- !.
+auto_transform_cycles([Cycle|CycleList], AbsInt,Trans):-
     transform_one_cycle(AbsInt,Trans,Cycle),
-    auto_transform_cycles(AbsInt,Trans,CycleList).
+    auto_transform_cycles(CycleList,AbsInt,Trans).
 
 transform_one_cycle(AbsInt,Trans,[Base]):- !,
     transform_one_module(AbsInt,Trans,Base,_Changed).
@@ -681,7 +666,7 @@ transform_fixpoint(AbsInt,Trans,Cycle):-
     ;   true
     ).
 
-transform_module_list(_AbsInt,_Trans,[],no).
+transform_module_list(_AbsInt,_Trans,[],no) :- !.
 transform_module_list(AbsInt,Trans,[Base|Bases],Changed):-
     transform_one_module(AbsInt,Trans,Base,Changed0),
     ( Changed0 == yes ->
@@ -697,26 +682,22 @@ transform_one_module(AbsInt,Trans,File,Changed):-
     just_module_name(BaseAbs,Mod),
     ( module_not_transformable(Mod) ->
         pplog(modular, ['{intermod: Module not transformable: ',~~(BaseAbs),'}'])
+    ; registry_is_empty(AbsInt,Mod,BaseAbs) ->
+        pplog(modular, ['{intermod: Module does not need transformation: ',~~(BaseAbs),'}'])
     ;
-%jcf%
-        ( registry_is_empty(AbsInt,Mod,BaseAbs) ->
-            pplog(modular, ['{intermod: Module does not need transformation: ',~~(BaseAbs),'}'])
-        ;
-            module(BaseAbs),
-            set_local_ana_modules([BaseAbs]),
-            add_entries_to_registry(AbsInt),
-            analyze1(AbsInt,_),
-            gen_registry_info(quiet,_Callers,_Imported),
-%    Program must be re-read.
-            program(Cls2,Ds2),
-            get_spec_info_imported,
-            transform_(Trans,AbsInt,Cls2,Ds2,BaseAbs,Changed),
-% Missing: replacement of specialized versions in .reg files!!
-            save_registry_info(quiet,BaseAbs,_SaveInfo),
-%
-            atom_concat(BaseAbs,'_opt.pl',OutFile),
-            output(OutFile)
-        )
+        module(BaseAbs),
+        set_local_ana_modules([BaseAbs]),
+        add_entries_to_registry(AbsInt),
+        analyze1(AbsInt,_),
+        gen_registry_info(quiet,_Callers,_Imported),
+        %    Program must be re-read.
+        program(Cls2,Ds2),
+        get_spec_info_imported,
+        transform_(Trans,AbsInt,Cls2,Ds2,BaseAbs,Changed),
+        % Missing: replacement of specialized versions in .reg files!!
+        save_registry_info(quiet,BaseAbs,_SaveInfo),
+        atom_concat(BaseAbs,'_opt.pl',OutFile),
+        output(OutFile)
     ),
     !.
 
@@ -752,92 +733,51 @@ simpspec_(Spec,AbsInt,Cls,Ds,NewCls,NewDs):-
     simplify_specialize(AbsInt,Spec,Cls,Ds,NewCls,NewDs).
 
 %% ******************************************************************
-%% Modular compile-time checking
+:- doc(section, "Intermodular compile-time checking.").
 %% ******************************************************************
 
-:- pred auto_ctcheck_list(+AbsInt,+TopLevel, +Modules)
-# "Performs CT assertion checking of modules on the @var{Modules} list
-  of the program unit which has
-  @var{TopLevel} as a top-level module, using @var{AbsInt} to get
-  information about the program.".
+:- pred intermod_ctcheck(+AbsInts,+Modules) + not_fails
+   #"Assuming that modular fixpoint already reached. Only supporting ctchecks of
+    pred assertions (not program point)".
+% reviewed by IG
+intermod_ctcheck(AbsInts,Modules) :-
+    current_pp_flag(module_loading,LoadPolicy),
+    current_pp_flag(ct_modular,CTModPolicy),
+    stat_no_store(intermod_ctcheck_(AbsInts,Modules,LoadPolicy,CTModPolicy), CTime),
+    pplog(ctchecks, ['{(intermod) assertions checked in ',time(CTime), ' msec.}']).
 
-auto_ctcheck_list(AbsInt, TopLevel,Modules) :-
-    auto_ctcheck(AbsInt, TopLevel,_Info,Modules).
+% monolithic analysis, ctcheck all modules (analysis already loaded)
+intermod_ctcheck_(AbsInts,_Modules,all,all) :- !,
+    acheck(AbsInts).
+% monolithic analysis, ctcheck only `Modules` (analysis already loaded)
+intermod_ctcheck_(AbsInts,Modules,all,curr_mod) :- !,
+    maplist(just_module_name, Modules, ModNames),
+    acheck(AbsInts,ModNames).
+% modular analysis, ctcheck all modules
+intermod_ctcheck_(AbsInts,_Modules,one,all) :- !,
+    get_punit_modules(ModList),
+    modular_ctcheck(ModList,AbsInts).
+% modular analysis, ctcheck only `Modules`
+intermod_ctcheck_(AbsInts,Modules,one,curr_mod) :- !,
+    modular_ctcheck(Modules,AbsInts).
 
-:- pred auto_ctcheck(+AbsInt,+TopLevel)
-# "Performs CT assertion checking of the program unit which has
-  @var{TopLevel} as a top-level module, using @var{AbsInt} to get
-  information about the program.".
-
-auto_ctcheck_summary(AbsInt, TopLevel,Summary) :-
-    auto_ctcheck_internal(AbsInt, TopLevel,_Info,_Modules,Summary).
-
-auto_ctcheck(AbsInt, TopLevel) :-
-    auto_ctcheck_internal(AbsInt, TopLevel,_Info,_Modules,_).
-
-auto_ctcheck(AbsInt, TopLevel,Info,ModuleList) :-
-    auto_ctcheck_internal(AbsInt, TopLevel, Info,ModuleList,_).
-
-auto_ctcheck_internal(AbsInt, TopLevel, [(time,Time),Info],ModuleList,Summary) :-
-%       valid_mod_analysis_all(AbsInt),!,
-    pp_statistics(runtime,[T1,_]),
-    cleanup_intermod,
-    pplog(modular, ['{Modular-based assertion checking with auto_ctchecks: ',~~(TopLevel)]),
-    set_main_module(TopLevel),
-    push_pp_flag(intermod,auto),
-    ( current_pp_flag(ct_ext_policy, assertions) ->
-        push_pp_flag(entry_policy, force_assrt),
-        push_pp_flag(success_policy,top)
-    ;
-        push_pp_flag(entry_policy, force),
-        push_pp_flag(success_policy,under_all)
-    ),
-    ( var(ModuleList) ->
-        compute_punit_modules(TopLevel, _),
-        get_punit_modules(ModuleList)
-    ; true
-    ),
-    auto_ctcheck_(AbsInt, TopLevel, ModuleList, Info,Summary),
-    pop_pp_flag(entry_policy),
-    pop_pp_flag(success_policy),
-    pop_pp_flag(intermod),
-    pp_statistics(runtime,[T2,_]),
-    Time is T2 - T1,
-    pplog(modular, ['}']).
-
-auto_ctcheck_(_AbsInt, _TopModule, [], assert_count([]),ok).
-auto_ctcheck_(AbsInt, TopModule, [Module|Modules], assert_count(Info),SOut) :-
+modular_ctcheck([], _AbsInts).
+modular_ctcheck([Module|Modules], AbsInts) :-
     module(Module,_LoadInfo),
-    pplog(modular, ['{Analyzing for auto_ctcheck: ',~~(Module)]),
-    set_main_module(TopModule),
-    cleanup_p_abs,
+    pplog(modular, ['{(intermod) analyzing for ctcheck: ',~~(Module)]),
     set_local_ana_modules([Module]),
-    add_entries_to_registry(AbsInt),
-    analyze1(AbsInt,_Info),
+    analyze1(AbsInts,_Info),
     pplog(modular, ['}']),!,
-    acheck_info(assert_count(Info1),Summ),
-    output,
-    auto_ctcheck_(AbsInt, TopModule, Modules, assert_count(Info2),S1),
-    combine_info(Info1, Info2, Info),
-    combine_summ(Summ,S1,SOut).
-
-combine_summ(ok,ok,OK) :- !, OK = ok.
-combine_summ(error,_,E) :- !, E=error.
-combine_summ(_,error,E) :- !, E=error.
-combine_summ(_,_,warning).
-
-combine_info(I, [], I) :- !.
-combine_info([], I, I) :- !.
-combine_info([(C,V)|Is],[(C,V1)|Is1],[(C,V2)|Is2]) :-
-    V2 is V + V1,
-    combine_info(Is, Is1, Is2).
+    just_module_name(Module, ModName),
+    simplify_assertions_mods(AbsInts,[ModName]),
+    modular_ctcheck(Modules, AbsInts).
 
 % -----------------------------------------------------------------------------
 :- pred auto_ctcheck_opt(+AbsInt,+TopLevel)
 # "Performs CT assertion checking of the program unit which has
   @var{TopLevel} as a top-level module, using @var{AbsInt} to get
   information about the program (exploits order of the modules).".
-
+% NOT reviewed by IG
 :- doc(bug,"auto_ctcheck_opt/2-3 does modify the source code of
     program modules.  This issue can only be solved when _opt.pl
     files are handled properly.").
@@ -858,15 +798,15 @@ auto_ctcheck_opt(AbsInt, TopLevel, [(time,Time),Info]) :-
     set_main_module(CopyTopLevel),
     get_all_module_cycles(CopyTopLevel, ModuleLList),
     append(ModuleLList, ModuleList),
-    auto_ctcheck_opt_(AbsInt, TopLevel, ModuleList, Info),
+    auto_ctcheck_opt_(ModuleList, AbsInt, TopLevel, Info),
     pop_pp_flag(entry_policy),
     pop_pp_flag(intermod),
     pp_statistics(runtime,[T2,_]),
     Time is T2 - T1,
     pplog(modular, ['}']).
 
-auto_ctcheck_opt_(_AbsInt, _TopModule, [], assert_count([])).
-auto_ctcheck_opt_(AbsInt, TopModule, [Module|Modules], assert_count(Info)) :-
+auto_ctcheck_opt_([], _AbsInt, _TopModule, assert_count([])).
+auto_ctcheck_opt_([Module|Modules], AbsInt, TopModule, assert_count(Info)) :-
 %       absolute_file_name(FileName, '_opt', '.pl', '.', _, Base, _),
     module(Module,_LoadInfo),
     pplog(modular, ['{Analyzing for auto_ctcheck: ',~~(Module)]),
@@ -887,41 +827,14 @@ auto_ctcheck_opt_(AbsInt, TopModule, [Module|Modules], assert_count(Info)) :-
       delete_file(Module_ast)
     ; true
     ),
-    auto_ctcheck_opt_(AbsInt, TopModule, Modules, assert_count(Info2)),
+    auto_ctcheck_opt_(Modules, AbsInt, TopModule, assert_count(Info2)),
     combine_info(Info1, Info2, Info).
-% -----------------------------------------------------------------------------
-
-monolithic_ctcheck(AbsInt,TopLevel):-
-    monolithic_ctcheck(AbsInt,TopLevel,_Info).
-
-monolithic_ctcheck(AbsInt,TopLevel,[(time,Time),Info]):-
-    valid_mod_analysis(AbsInt), !,
-    cleanup_intermod,
-    pplog(modular, ['{Generating check info for program unit: ',~~(TopLevel)]),
-    set_main_module(TopLevel),
-    push_pp_flag(intermod,auto),
-    push_pp_flag(entry_policy,force),
-    push_pp_flag(dump_pp,off),
-    compute_punit_modules(TopLevel,_),
-    get_punit_modules(ModList),
-    pp_statistics(runtime,[T1,_]),
-    module(ModList),
-    set_local_ana_modules(ModList),
-    add_entries_to_registry(AbsInt),
-    analyze1(AbsInt,_Info),
-    pop_pp_flag(dump_pp),
-    pop_pp_flag(entry_policy),
-    pop_pp_flag(intermod),
-    pplog(modular, ['}']),
-    acheck_info(Info,_Summary),
-    pp_statistics(runtime,[T2,_]),
-    Time is T2 - T1.
 
 % -----------------------------------------------------------------------------
 
 inductive_ctcheck_summary(AbsInt,TopLevel,ERR):-
     inductive_ctcheck(AbsInt,TopLevel,_Info,ERR).
-
+% NOT reviewed by IG
 inductive_ctcheck(AbsInt,TopLevel):-
     inductive_ctcheck(AbsInt,TopLevel,_Info,_ERR).
 
@@ -949,6 +862,17 @@ ind_ctcheck_(AbsInt, [Module|Modules], assert_count(Info),ERR) :-
     ind_ctcheck_(AbsInt, Modules, assert_count(Info2),ERR2),
     combine_info(Info1, Info2, Info),
     combine_summ(ERR1,ERR2,ERR).
+
+combine_summ(ok,ok,OK) :- !, OK = ok.
+combine_summ(error,_,E) :- !, E=error.
+combine_summ(_,error,E) :- !, E=error.
+combine_summ(_,_,warning).
+
+combine_info(I, [], I) :- !.
+combine_info([], I, I) :- !.
+combine_info([(C,V)|Is],[(C,V1)|Is1],[(C,V2)|Is2]) :-
+    V2 is V + V1,
+    combine_info(Is, Is1, Is2).
 
 analyze_list([]).
 analyze_list([A|As]):-
@@ -1007,14 +931,13 @@ get_modules_regnames([Mod|ModList],[Reg|RegList]):-
 %%-------------------------------------------------------------------
 
 delete_files(FileList):-
-    list(FileList),
-    !,
+    list(FileList), !,
     delete_files_('.',FileList).
 delete_files(Dir):-
     directory_files(Dir,Files),
     delete_files_(Dir,Files).
 
-delete_files_(_Dir,[]).
+delete_files_(_Dir,[]) :- !.
 delete_files_(Dir,['.'|Files]):- !,
     delete_files_(Dir,Files).
 delete_files_(Dir,['..'|Files]):- !,
@@ -1051,14 +974,14 @@ delete_files_type_(Dir,Ext,[File|Files]):-
     absolute_file_name(File,'',Ext,Dir,AbsFile,_,_),
     ( file_exists(AbsFile) ->
         delete_file(AbsFile)
-    ; true
+    ;   true
     ),
     delete_files_type_(Dir,Ext,Files).
 
 %% ******************************************************************
 %% dead-code elimination for libraries.
 %% ******************************************************************
-
+% NOT reviewed by IG
 :- doc(bug,"The code for auto_simp_libs/2-3 is still under rough
     development.").
 
