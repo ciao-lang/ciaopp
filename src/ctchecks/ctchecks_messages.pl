@@ -77,11 +77,11 @@ message_pp_calls(Info,AbsInt,Goal,Head,Calls,Dict,K,Status):-
     get_clkey(F,A,C,ClId),
     maybe_clause_locator(ClId,LC), !,
     ( Status == check ->
-        display_message_check_pp(LC,"at literal ~w not verified assertion:~n~pbecause on call ~p :~n~p",[L,As,GoalCopy,RelInfoCopy])
+        display_message_check_pp(LC,"At literal ~w could not verify assertion:~n~pbecause on call ~p :~n~p",[L,As,GoalCopy,RelInfoCopy])
     ; Status == false -> 
-        error_message(LC, "at literal ~w false assertion:~n~pbecause on call ~p :~n~p", [L,As, GoalCopy, RelInfoCopy])
+        error_message(LC, "At literal ~w false assertion:~n~pbecause on call ~p :~n~p", [L,As, GoalCopy, RelInfoCopy])
     ;
-        display_message_checked_pp(LC,"at literal ~w successfully checked assertion:~n~p",[L,As])
+        display_message_checked_pp(LC,"At literal ~w successfully checked assertion:~n~p",[L,As])
     ).
 %pp%
 %pp%message_pp_calls(Info,AbsInt,Goal,Head,Calls,Dict_,K,Status):-
@@ -120,19 +120,19 @@ message_pp_calls(Info,AbsInt,Goal,Head,Calls,Dict,K,Status):-
 %pp%    ),
 %pp%    ( Status == false ->
 %pp%      memo_ctcheck_sum(false),
-%pp%      error_message(LC,"at literal ~w false calls assertion:
+%pp%      error_message(LC,"At literal ~w false calls assertion:
 %pp%   :- calls ~w : ~w~n because on call ~w~w~w"||FormRules,
 %pp%                         [L,NHead,NCall,W1,P_Info,W2|ReqRules]),
 %pp%      Expected = calls(NHead:NCall),
 %pp%      preproc_error(calls,[lit(F,A,C,L),Expected,Props0,[]])
 %pp%    ; ( Status == check -> 
 %pp%        memo_ctcheck_sum(check),
-%pp%        display_message_check_pp(LC,"at literal ~w not verified calls assertion:
+%pp%        display_message_check_pp(LC,"At literal ~w could not verify calls assertion:
 %pp%   :- calls ~w : ~w~n because on call ~w~w~w"||FormRules,
 %pp%                         [L,NHead,NCall,W1,P_Info,W2|ReqRules])
 %pp%      ;
 %pp%        display_message_checked_pp(LC,
-%pp%                "at literal ~w successfully checked calls assertion:
+%pp%                "At literal ~w successfully checked calls assertion:
 %pp%   :- calls ~w : ~w", [L,NHead,NCall])
 %pp%      )
 %pp%    ),
@@ -175,19 +175,19 @@ message_pp_entry(Info,AbsInt,Goal,Head,Calls,Dict_,K,Status):-
     ), !,
     ( Status == false ->
       memo_ctcheck_sum(false),
-      error_message(LC,"at literal ~w false entry assertion:
+      error_message(LC,"At literal ~w false entry assertion:
    :- entry ~w : ~w~n because on call ~w~w~w"||FormRules,
                      [L,NHead,NCall,W1,P_Info,W2|ReqRules]),
       Expected = calls(NHead:NCall),
       preproc_error(calls,[lit(F,A,C,L),Expected,Props0,[]])
     ; Status == check -> 
         memo_ctcheck_sum(check),
-        display_message_check_pp(LC,"at literal ~w not verified entry assertion:
+        display_message_check_pp(LC,"At literal ~w could not verify entry assertion:
    :- entry ~w : ~w~n because on call ~w~w~w"||FormRules,
                      [L,NHead,NCall,W1,P_Info,W2|ReqRules])
     ;
         display_message_checked_pp(LC,
-            "at literal ~w successfully checked entry assertion:
+            "At literal ~w successfully checked entry assertion:
    :- entry ~w : ~w", [L,NHead,NCall])
     ).
 message_pp_entry(Info,AbsInt,Goal,Head,Calls,Dict,K,Status):-
@@ -204,13 +204,13 @@ message_pp_success(Info,AbsInt,Goal,Head,Calls,Succ,Dict,K,Status):-
     get_clkey(F,A,C,ClId),
     maybe_clause_locator(ClId,LC), !,
     ( Status == check ->
-        display_message_check_pp(LC,"at literal ~w not verified assertion:~n~pbecause on success ~p :~n~p",
+        display_message_check_pp(LC,"At literal ~w could not verify assertion:~n~pbecause on success ~p :~n~p",
                                  [L,As,GoalCopy,RelInfoCopy])
     ; Status == false ->
-        error_message(LC, "at literal ~w false assertion:~n~pbecause on success ~p :~n~p",
+        error_message(LC, "At literal ~w false assertion:~n~pbecause on success ~p :~n~p",
                       [L,As, GoalCopy, RelInfoCopy])
     ;
-        display_message_checked_pp(LC,"at literal ~w successfully checked assertion:~n~p",[L,As])
+        display_message_checked_pp(LC,"At literal ~w successfully verified assertion:~n~p",[L,As])
     ).
 %pp%message_pp_success(Info,AbsInt,Goal,Head,Calls,Succ,Dict0,K,Status):-
 %pp%    ( var(Calls) -> Calls = true ; true ),
@@ -246,7 +246,7 @@ message_pp_success(Info,AbsInt,Goal,Head,Calls,Succ,Dict,K,Status):-
 %pp%
 %pp%    ( Status == false ->
 %pp%      memo_ctcheck_sum(false),
-%pp%      error_message(LC,"at literal ~w false success assertion:
+%pp%      error_message(LC,"At literal ~w false success assertion:
 %pp%   :- success ~w : ~w => ~w~n because on success ~w~w~w"||FormRules,
 %pp%                      [L,NHead,NCall,NSucc,W1,P_Info,W2|ReqRules]),
 %pp%      Expected = success('=>'((NHead:NCall),NSucc)),
@@ -254,13 +254,13 @@ message_pp_success(Info,AbsInt,Goal,Head,Calls,Succ,Dict,K,Status):-
 %pp%
 %pp%    ; ( Status == check -> 
 %pp%        memo_ctcheck_sum(check),
-%pp%        display_message_check_pp(LC,"at literal ~w not verified success assertion:
+%pp%        display_message_check_pp(LC,"At literal ~w could not verify assertion:
 %pp%   :- success ~w : ~w => ~w~n because on success ~w~w~w"||FormRules,
 %pp%                         [L,NHead,NCall,NSucc,W1,P_Info,W2|ReqRules])
 %pp%      ;
 %pp%          
 %pp%                display_message_checked_pp(LC,
-%pp%                "at literal ~w successfully checked success assertion:
+%pp%                "At literal ~w successfully checked success assertion:
 %pp%   :- success ~w : ~w => ~w~n", [L,NHead,NCall,NSucc])
 %pp%      )
 %pp%    ),
@@ -313,18 +313,18 @@ message_pp_check(Info,AbsInt,Prop,Key,Dict,Status):-
     append(FormRules1,"~n~8| Expected: ~w~w"||FormRules2,FormRules),
     ( Status == false ->
         memo_ctcheck_sum(false),
-        error_message(LC,"at literal ~w false program point assertion:
+        error_message(LC,"At literal ~w false program point assertion:
 ~8| Called:   ~w~w"||FormRules,
                       [L,Props,W2|ReqRules]),
         preproc_error(pp,[lit(F,A,C,L),Prop,Props0,[]])
     ; Status == check ->
         memo_ctcheck_sum(check),
-        display_message_check_pp(LC,"at literal ~w not verified program point assertion:
+        display_message_check_pp(LC,"At literal ~w could not verify program point assertion:
 ~8| Called:   ~w~w"||FormRules,
                       [L,Props,W2|ReqRules])
     ;
         display_message_checked_pp(LC,
-                                   "at literal ~w successfully checked program point assertion.", [L])
+                                   "At literal ~w successfully verified program point assertion.", [L])
     ),
     !.
 %

@@ -8,7 +8,9 @@
        [assertions, regtypes, datafacts, ciaopp(ciaopp_options)]).
 
 :- doc(title, "Messages for predicate compile-time checking").
-:- doc(module, "Messages for predicate compile-time checking").
+
+:- doc(module, "This module prints the messages emitted during
+       compile-time checking of predicate-level assertions.").
 
 :- doc(bug, "Missing cuts in all calls to member/2.").
 :- doc(bug, "Intervals should be moved somewhere else.").
@@ -165,8 +167,15 @@ decide_inform_user(VCT, _STAT, Old, OldRef, New, [], _Domains, _Info):-
     local_inccounter_split(simp,checked,Type,_),
     Loc = loc(_File, FromL, ToL),
     ( VCT = on ->
-        note_message("(lns ~d-~d) The assertion:~n~p has been changed to~n~p",
-                     [FromL, ToL, Old,NewToPrint])
+        % TODO: (MH) Simplifying for now the message since presumably
+        %       at this point the assertion is totally checked. If
+        %       there has been some simplification then we should show
+        %       the new assertion (but that should be done in the case
+        %       below?)  Old:
+        %% note_message("(lns ~d-~d) The assertion:~n~p has been changed to~n~p",
+        %%              [FromL, ToL, Old,NewToPrint])
+        note_message("(lns ~d-~d) Verified assertion:~n~p", 
+                     [FromL, ToL, Old] )
     ; true
     ).
 % false or check assertions
@@ -199,13 +208,26 @@ decide_inform_user(VC, STAT, Old, OldRef, New, [], Domains, Info):-
         Loc = loc(_File, RFrom, To),
         ( RFrom == To -> From = RFrom ; From is RFrom + 1 ),
         ( Status == check ->
-            show_message(STAT, "(lns ~d-~d) Cannot verify assertion:~n~pbecause
-on ~p ~p :~n~p ~nLeft to prove: ~w~n",
-                         [From, To, Old, Type, GoalCopy, RelInfoCopy, Left]),
+            %  show_message(STAT, "(lns ~d-~d) Cannot verify assertion:~n~pbecause on ~p ~p :~n~p ~nLeft to prove: ~w~n", 
+            %              [From, To, Old, Type, GoalCopy, RelInfoCopy, Left]),
+            % MH: Changed to this message format which seems easier to read. Same with rest of messages.
+
+            % TODO: The (for ~p) part is because when printing the
+            % inferred info the clause variables are used, whereas the
+            % assertion just before is printed with
+            % A,B,... variables. At the very least the assertion
+            % should be printed with the program variable names, and
+            % ideally with the same as in the abstract information.
+            
+            show_message(STAT, "(lns ~d-~d) Could not verify assertion:~n~pbecause (for ~p)~n~p~ncould not be derived from inferred ~p:~n~p~n", 
+                         [From, To, Old, GoalCopy, Left, Type, RelInfoCopy]),
             memo_ctcheck_sum(check)
         ;
-            error_message( "(lns ~d-~d) False assertion:~n~pbecause on ~p ~p :~n~p",
-                           [From, To, Old, Type, GoalCopy, RelInfoCopy]),
+            % error_message( "(lns ~d-~d) False assertion:~n~pbecause on ~p ~p :~n~p", 
+            %                [From, To, Old, Type, GoalCopy, RelInfoCopy]),
+            % TODO: (MH) we should get from the partial evaluator the first property that fails!
+            error_message("(lns ~d-~d) False assertion:~n~pbecause (for ~p) the ~p field is incompatible with inferred ~p:~n~p", 
+                          [From, To, Old, GoalCopy, Type, Type, RelInfoCopy]),
             memo_ctcheck_sum(false)
         )
     ; true
@@ -499,12 +521,15 @@ checked_or_true(true).
 
 :- multifile portray/1.
 
+% Assertions
 portray(A) :- A = as${}, !,
     current_output(CO),
     print_assrt(A, CO). % (always newline ended)
+% Analysis results
 portray('$an_results'(Res)) :-
     find_tab(Res,ResT),
     write_results(ResT).
+% Domain values
 portray('$dom'(Dom,Res,Rules,Tab)) :-
     name(Dom,Lst), length(Lst,Len),
     format("~n[~w]",[Dom]),
@@ -1123,7 +1148,7 @@ extract_user_intervals([i(A,B)|Ls],[[A,B]|Rs]):-
 
 %------------------------------------------------------------------------------
 % assertion_changed_message
-% shows all splitted assertion 
+% shows all split assertions
 %------------------------------------------------------------------------------
 assertion_changed_message(VCT, STAT, OldAs, AsFalse, AsCheck, AsTrue, Domains, Info):-
     OldAs  = as${
@@ -1139,7 +1164,7 @@ assertion_changed_message(VCT, STAT, OldAs, AsFalse, AsCheck, AsTrue, Domains, I
         AsTrue \= [],
         (
             VCT == on ->
-            note_message(" (lns ~d-~d) The assertion ~n ~p has been changed to the following assertions:",[FromL, ToL, OldAs]),
+            note_message(" (lns ~d-~d) Assertion:~n ~phas been changed to the following assertions:",[FromL, ToL, OldAs]),
             format(user, "~n",[]),      
             simplify_assertion(AsTrue, AsTruePrint),
             show_changed_message(VCT, STAT, true, AsTruePrint)
@@ -1149,13 +1174,13 @@ assertion_changed_message(VCT, STAT, OldAs, AsFalse, AsCheck, AsTrue, Domains, I
     ;
         (
             AsFalse \= [],
-            % as_message(error, " (lns ~d-~d) The assertion ~n ~p has been changed to the following assertions:",[FromL, ToL, OldAs]),
-            as_message(note, " (lns ~d-~d) The assertion ~n ~p has been changed to the following assertions:",[FromL, ToL, OldAs]),
+            % as_message(error, " (lns ~d-~d) Assertion:~n ~phas been changed to the following assertions:",[FromL, ToL, OldAs]),
+            as_message(note, " (lns ~d-~d) Assertion:~n ~phas been changed to the following assertions:",[FromL, ToL, OldAs]),
             format(user, "~n",[]) 
         ;
             % AsCheck must not be empty
-            % as_message(STAT, " (lns ~d-~d) The assertion ~n ~p has been changed to the following assertions:",[FromL, ToL, OldAs]),
-            as_message(note, " (lns ~d-~d) The assertion ~n ~p has been changed to the following assertions:",[FromL, ToL, OldAs]),
+            % as_message(STAT, " (lns ~d-~d) Assertion:~n ~phas been changed to the following assertions:",[FromL, ToL, OldAs]),
+            as_message(note, " (lns ~d-~d) Assertion:~n ~phas been changed to the following assertions:",[FromL, ToL, OldAs]),
             format(user, "~n",[])
         ),  % TODO: Missing cut
         simplify_assertion(AsFalse, AsFalsePrint),
@@ -1464,7 +1489,7 @@ explain_interval(VCT, STAT, SignMsg, OldAssertion, NewAssertion, Domains, Info):
     ( Status = checked ->
         ( VCT = on -> % TODO: added cut, is it OK? (JF)
             assertion_set_comp(NewAssertion, OldComp, NewAssertionToPrint), % TODO: why?
-            note_message( "(lns ~d-~d) The assertion:~n~p has been changed to~n~p" , 
+            note_message( "(lns ~d-~d) Assertion:~n~phas been changed to~n~p" , 
               [From, To, OldAssertion,NewAssertionToPrint] )
         ;
             true
