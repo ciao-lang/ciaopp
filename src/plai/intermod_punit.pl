@@ -64,8 +64,8 @@ whether to process the file @bf{again}.
 :- use_module(library(system), [file_exists/1]).
 :- use_module(library(fastrw),
               [fast_read/1, fast_write/1, fast_read/2, fast_write/2]).
-
-:- use_module(library(system), [working_directory/2, file_exists/1]).
+:- use_module(library(hiordlib), [maplist/2]).
+:- use_module(library(system), [working_directory/2, file_exists/1, modif_time0/2, modif_time/2]).
 :- use_module(library(bundle/bundle_paths), [reverse_bundle_path/3]).
 :- use_module(library(compiler/c_itf), 
     [false/1, process_files_from/7, uses/2, includes/2]).
@@ -308,11 +308,38 @@ redo_unchanged_module(Base) :-
     % add Base to the not-changed set and fill the intermod graph
     ( current_fact(src_not_changed(Base)) -> true % IG: can this happen?
     ;
-        pplog(p_abs, [~~(Base), ' is up-to-date']),
-        assertz_fact(src_not_changed(Base)),
+        get_module_filename(reg,Base,RegFile),
+        ( modif_time(RegFile,RegTime) -> % file exists
+            ( outdated_reg(Base,RegFile,RegTime) ->
+                assertz_fact(src_changed(Base))
+            ; assertz_fact(src_not_changed(Base))
+            )
+        ; % if the file does not exist we do not care if it changed (there is
+          % not an analysis result)
+          assertz_fact(src_not_changed(Base))
+        ),
         fill_intermod_graph(Base)
     ),
     fail.
+% Detect if the .reg file associated to Base is outdated w.r.t, its
+% source .pl file (or any included .pl).
+
+% (similar to c_itf:changed_dependencies/2 but for .reg and
+% considering only included files)
+outdated_reg(Base,RegFile,RegTime) :-
+    ( changed_dep(Base,RegTime)
+    ; includes(Base,I),
+      changed_dep(I,RegTime)
+    ),
+    !,
+    pplog(p_abs, ['{', ~~(RegFile), ' is not up-to-date}']).
+outdated_reg(_Base,RegFile,_RegTime) :-
+    pplog(p_abs, ['{', ~~(RegFile), ' is up-to-date}']).
+
+changed_dep(Base,RegTime) :-
+    get_module_filename(pl,Base,PlName),
+    modif_time0(PlName,PlTime), % (0 if does not exist)
+    PlTime > RegTime.
 
 % TASK: check that this is really traversing all dependencies
 % This predicate is only called if the module is changed
@@ -321,6 +348,8 @@ process_changed_module(Base) :-
     ( src_not_changed(Base) -> % WHY?
         throw(error_not_changed(Base)) ; true ),
     add_src_changed(Base), % added to know that a module needs processing
+    get_module_filename(reg,Base,RegName),
+    pplog(p_abs, ['{', ~~(RegName), ' is not up-to-date}']),
     fill_intermod_graph(Base).
 
 fill_intermod_graph(Base) :-
