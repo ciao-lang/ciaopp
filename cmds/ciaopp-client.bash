@@ -37,7 +37,7 @@ server=http://localhost:8000
 daemon=ciaopp_daemon
 
 # Encode arguments extended with '--cwd'
-cwd=`realpath $(pwd)`
+cwd=`pwd -P`
 args=`args_to_json --cwd "$cwd" "$@"`
 url=$server/$daemon
 
