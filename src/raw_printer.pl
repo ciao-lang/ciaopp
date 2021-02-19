@@ -62,7 +62,7 @@ to avoid recomputation), but it not implemented yet.").
 :- use_module(ciaopp(plai/transform), [trans_clause/3, cleanup_trans_clauses/0]).
 :- use_module(ciaopp(plai/plai_db), [complete/7, memo_table/6, raw_success/6]).
 :- use_module(typeslib(typeslib), [show_types/0, show_types_raw_printer/0]).
-:- use_module(ciaopp(plai/intermod_db), [registry_headers/2, registry/3, mod_typedb/2]).
+:- use_module(ciaopp(plai/intermod_db), [registry/3, mod_typedb/2]).
 :- use_module(ciaopp(plai), [generate_trans_clauses/4]).
 :- use_module(ciaopp(plai/fixpo_dd), ['$change_list'/3]).
 :- use_module(ciaopp(p_unit/program_keys),

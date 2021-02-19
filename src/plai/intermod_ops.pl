@@ -12,7 +12,6 @@
     %% exported to obtain the entries of the fixpoint (intermod_entry/intermod_success modules)
     may_be_improved_mark/2,
     not_valid_mark/2,
-    %%%intermodule-graph
     registry_is_empty/3,
 %%%Resource intermodule-analysis (JNL)
     get_imported_calls/1 % used only in resources/intermod
@@ -212,12 +211,14 @@ ensure_registry_current_files(_Verb).
 
 ensure_registry_imported_files(Verb) :-
     current_fact(imported_module(IM,Base)),
+    local_ana_module(Base,_),
     ensure_registry_file(IM,Base,Verb),
     fail.
 ensure_registry_imported_files(_Verb).
 
 ensure_registry_caller_files(Verb) :-
     caller_module(CM,Base),
+    local_ana_module(Base,_),
     ensure_registry_file(CM,Base,Verb),
     fail.
 ensure_registry_caller_files(_Verb).
@@ -271,7 +272,6 @@ mark_callers_registry(['$query'|Imdgs],PKey,ParentReg,AbsInt,CurrModule,NewMark,
 mark_callers_registry([(Id,SgCaller,_Caller,Base)|Imdgs],PKey,ParentReg, AbsInt,CurrModule,NewMark,BasenamesMarked) :-
     current_pp_flag(success_policy,SP),
     just_module_name(Base,M),
-    ensure_registry_file(M,Base,quiet),  %% just in case. If it is already loaded, it does nothing. % TODO: can we really ensure that it is loaded?
     predkey_from_sg(SgCaller, SgKey),
     ( current_fact(registry(SgKey,M,OldReg),Ref),
       OldReg = regdata(Id,AbsInt,Sg,Call,Succ,Spec,ImdgList,Chdg,OldMark) ->

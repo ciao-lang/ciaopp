@@ -6,7 +6,7 @@
     local_ana_module/2,
     % intermodular analysis graph
     registry/3,
-    registry_headers/2
+    registry_header/2
     ],[assertions, isomodes, regtypes, nativeprops, datafacts]).
 
 :- include(intermod_options). % intermod compilation options
@@ -130,8 +130,8 @@ set_local_ana_modules(Mods) :-
    other auxiliary information (e.g., types).".
 
 %% ------------------------------------------------------------
-:- data registry_headers/2.
-:- pred registry_headers(Module,HeaderTerm) %% :: atm * term
+:- data registry_header/2.
+:- pred registry_header(Module,HeaderTerm) %% :: atm * term
    %% IG: disabled types to be able to run rtchecks on data
    # "@var{HeaderTerm} is a term read from the registry header of module
    @var{Module}. Data predicate to store the header terms of every registry file
@@ -177,7 +177,7 @@ regdata_set_mark(OldReg, Mark, NewReg) :-
 :- export(cleanup_registry/1).
 cleanup_registry(Module) :-
     retractall_fact(registry(_,Module,_)),
-    retractall_fact(registry_headers(Module,_)),
+    retractall_fact(registry_header(Module,_)),
     retractall_fact(mod_typedb(_,_)).
 
 %% --------------------------------------------------------------------

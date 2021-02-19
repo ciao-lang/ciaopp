@@ -19,7 +19,25 @@
 :- doc(title, "Program structure for intermodular analysis").
 
 :- doc(module, "This module contains the functionality to compute the
-intermodular graph of a program, i.e., the dependencies of its modules.").
+intermodular graph of a program, i.e., the dependencies of its modules.
+
+The predicate @pred{compute_intermodule_graph/1} calls the Ciao compiler to
+obtain which modules are in the intermodular punit, which is controlled by the
+flag @tt{punit_boundary}. This is done by:
+@begin{itemize}
+
+@item @pred{process_changed_module/1}: Is executed if the module changed (w.r.t. the
+@tt{.itf} file.
+
+@item @pred{check_stop_one_module/1}: Decides whether the compiler needs to keep
+processing the modules imported by the current module.
+
+@item @pred{redo_unchanged_module/1}: Is executed if there were no changes since
+the last time the module was @bf{compiled}, if always fails because it is asking
+whether to process the file @bf{again}.
+
+@end{itemize}
+").
 
 :- use_module(ciaopp(preprocess_flags)).
 :- use_module(ciaopp(ciaopp_log), [pplog/2]).
@@ -226,7 +244,7 @@ compute_punit_modules(TopLevelFile,ModList) :-
     retractall_fact(module_to_analyze_parents(_)),
     absolute_file_name(TopLevelFile,'_opt','.pl','.',AbsFile,AbsBase,_),
     %
-    retractall_fact(delay_patch_registry(_,_)),
+    retractall_fact(delay_patch_registry(_)),
     retractall_fact(patched_registry(_)),
     compute_intermodule_graph(AbsFile),
     delayed_patch_registry,
@@ -261,17 +279,13 @@ module_to_analyze_depth(M,D,F) :-
 :- data module_to_analyze/2.
 :- data module_to_analyze_parents/1.
 
-:- pred compute_intermodule_graph(+AbsFile)
+:- pred compute_intermodule_graph(+AbsFile) + (not_fails, is_det)
    # "Obtains in @pred{intermodule_graph/2} the dependencies among modules of
    the program unit given by the module in file @var{AbsFile} (depending on
    punit_boundary flag, library modules are included or not in the program
-   unit). For every module included in the intermodular graph, @var{ProcessGoal}
-   is called.".
-
-% TODO:{DOC} 
-%   compute_intermodule_graph/2 is called before analysis,
-%   this predicate fills src_changed/1, which is used by 
-%   gen_registry_info/?, which is called (for each module) after analysis
+   unit). This predicate fills datas @pred{src_changed/1} and
+   @pred{src_not_changed/1}, detecting if the analysis result is outdated for
+   each module in the intermodular graph.".
 compute_intermodule_graph(AbsFile) :-
     path_splitext(AbsFile, AbsBase, _),
     retractall_fact(intermodular_graph_edge(_,_)),
@@ -281,48 +295,46 @@ compute_intermodule_graph(AbsFile) :-
     retractall_fact(src_changed(_)),
     retractall_fact(src_not_changed(_)),
     error_protect(ctrlc_clean(
-                                 process_files_from(AbsFile, zzz, any, 
-                                 process_one_module, 
-                                 check_stop_one_module(AbsBase), c_itf:false, redo_one_module)
-                             ),fail). % TODO: fail or abort?
+        process_files_from(AbsFile, zzz, any,
+                           process_changed_module,
+                           check_stop_one_module(AbsBase),
+                           c_itf:false,
+                           redo_unchanged_module)
+    ),fail). % TODO: fail or abort?
 
-redo_one_module(Base) :-
+redo_unchanged_module(Base) :-
     % we are here because the itf was up to date and
     % c_itf is asking if we want to re-treat the module,
-    % lets add Base to the not-changed set and fill the intermod graph
-    ( current_fact(src_not_changed(Base)) -> true
-    ; assertz_fact(src_not_changed(Base)),
-      fill_intermod_graph(Base)
+    % add Base to the not-changed set and fill the intermod graph
+    ( current_fact(src_not_changed(Base)) -> true % IG: can this happen?
+    ;
+        pplog(p_abs, [~~(Base), ' is up-to-date']),
+        assertz_fact(src_not_changed(Base)),
+        fill_intermod_graph(Base)
     ),
     fail.
 
 % TASK: check that this is really traversing all dependencies
 % This predicate is only called if the module is changed
-process_one_module(Base) :-
+process_changed_module(Base) :-
     % add to src_changed/1 only if
-    ( src_not_changed(Base) ->
-        true
-    ;
-      add_src_changed(Base), % added to know that a module needs processing
-      fill_intermod_graph(Base)
-    ).
+    ( src_not_changed(Base) -> % WHY?
+        throw(error_not_changed(Base)) ; true ),
+    add_src_changed(Base), % added to know that a module needs processing
+    fill_intermod_graph(Base).
 
 fill_intermod_graph(Base) :-
     asserta_fact(intermodular_graph_node(Base)),
-    ( % setof(IFile,get_related_module(Base,IFile),IFileList0) ->
-      findall(IFile,uses(Base,IFile),IFileList0) ->
-        file_path(Base,BasePath),
-        working_directory(Old,BasePath),
-        processable_basenames(IFileList0,IBaseList),
-        findall(I, includes(Base,I), IncludeList0),
-        basenames(IncludeList0,IncludeList),
-        assert_include_list(IncludeList),
-        working_directory(BasePath,Old),
-        assertz_fact(initial_vertex(Base,IBaseList)),
-        assert_intermodule_graph(IBaseList,Base)
-    ;
-        assertz_fact(initial_vertex(Base,[])) % TODO: unreachable code
-    ).
+    findall(IFile,uses(Base,IFile),IFileList0),
+    file_path(Base,BasePath),
+    working_directory(Old,BasePath),
+    processable_basenames(IFileList0,IBaseList),
+    findall(I, includes(Base,I), IncludeList0),
+    basenames(IncludeList0,IncludeList),
+    assert_include_list(IncludeList),
+    working_directory(BasePath,Old),
+    assertz_fact(initial_vertex(Base,IBaseList)),
+    assert_intermodule_graph(IBaseList,Base).
 
 file_path(Base,Path) :-
     absolute_file_name(Base,'_opt','.pl','.',_,_,Path).
@@ -360,12 +372,10 @@ basenames([File|Files],[Base|Bases]) :-
     basenames(Files,Bases).
 
 :- pred check_stop_one_module(_,Base)
-   #"Succeeds if the processing the compiler does not need to continue processing
+   #"Succeeds if the compiler does not need to continue processing
     the modules imported by this one.".
 check_stop_one_module(_TopBase,Base) :-
-    \+ module_is_processable(Base), !. % If the module is processable, we do not stop
-check_stop_one_module(TopBase,Base) :-
-    \+ check_registry_up_to_date(TopBase, Base). % TODO: Why is this done here
+    \+ module_is_processable(Base). % If the module is processable, fail
 
 %% ********************************************************************
 :- doc(section, "Intermodular graph depth computation").
@@ -511,8 +521,13 @@ module_is_processable_(Base,ProcessLibs) :-
     fail.
 module_is_processable_(Base,ProcessLibs) :-
     just_module_name(Base,Module),
-    read_registry_file(Module,Base,quiet),  %% just in case. % TODO:{JF2} does not need to check src_changed/1
+    read_registry_file(Module,Base,quiet),
+    % does not need to check src_changed/1, reading so that `open_mode/3` is known.
+    %
+    % IG: reading the registry could be postponed to `process_changed_module/1`
+    % or `redo_unchanged_module/1` if open_mode is not useful.
     open_mode(Base,_,read_write), !,
+    ( delay_patch_registry(Base) -> true ; assertz_fact(delay_patch_registry(Base))),
     assert_if_not_asserted_yet(module_is_processable_cache(Base,yes,ProcessLibs)).
 module_is_processable_(Base,ProcessLibs) :-
     assert_if_not_asserted_yet(module_is_processable_cache(Base,no,ProcessLibs)),
@@ -567,35 +582,24 @@ add_module_to_analyze(Base,Force) :-
     ; asserta_fact(module_to_analyze(Base,Force))
     ).
 
-:- pred check_registry_up_to_date/2 + (not_fails, is_det).
-check_registry_up_to_date(Base,TopLevelBase) :-
-    just_module_name(Base,Module),
-    get_module_filename(reg,Base,RegName),
-    ( file_exists(RegName) ->
-        read_registry_file_(Module,Base,quiet)
-    ; true
-    ),
-    ( delay_patch_registry(Base,TopLevelBase) -> true
-    ; assertz_fact(delay_patch_registry(Base,TopLevelBase))).
-
-:- data delay_patch_registry/2. % ugly hack to delay patch until src_changed/1 is known
+:- data delay_patch_registry/1. % ugly hack to delay patch until src_changed/1 is known
 
 delayed_patch_registry :-
     ( % (failure-driven loop)
-      retract_fact(delay_patch_registry(Base,TopLevelBase)),
-        delayed_patch_registry_(Base,TopLevelBase),
+      retract_fact(delay_patch_registry(Base)),
+        delayed_patch_registry_(Base),
         fail
     ; true
     ).
 
-:- pred delayed_patch_registry_/2 + (not_fails, is_det).
-delayed_patch_registry_(Base,TopLevelBase) :-
+:- pred delayed_patch_registry_/1 + (not_fails, is_det).
+delayed_patch_registry_(Base) :-
     just_module_name(Base,Module),
     get_module_filename(reg,Base,RegName),
     ( file_exists(RegName) ->
         patch_registry_(Module,Base,NeedsTreat),
         ( NeedsTreat = no,
-          all_entries_unmarked(Base,TopLevelBase) ->
+          all_entries_unmarked(Base) ->
             true
         ; add_module_to_analyze(Base,no_force)
         )
@@ -606,7 +610,7 @@ delayed_patch_registry_(Base,TopLevelBase) :-
 
 %% Succeeds if all entries are unmarked for AbsInt.
 %% AbsInt can be either a domain name or a list of domains.
-all_entries_unmarked(Base,_TopLevelBase) :-
+all_entries_unmarked(Base) :-
     just_module_name(Base,Module),
     \+ current_fact(registry(_,Module,regdata(_,_,_,_,_,_,_,_,'-'))),
     \+ current_fact(registry(_,Module,regdata(_,_,_,_,_,_,_,_,'+'))).
@@ -637,13 +641,12 @@ read_registry_file_(Module,Base,Verb) :-
     ( file_exists(RegName) ->
       open(RegName, read, Stream),
       ( read_registry_header(Verb,Module,Stream) ->
-          pplog(p_abs, ['{Reading ',RegName]),
+          pplog(p_abs, ['{Reading ',RegName, '}']),
           current_input(CI),
           set_input(Stream),
           read_types_data_loop(Module,NextTuple),   % NextTuple is the tuple after the last type definition.
           read_reg_data_loop(Module,NextTuple),
-          set_input(CI),
-          pplog(p_abs, ['}'])
+          set_input(CI)
       ; pplog(p_abs, ['{Wrong version of file: ',RegName,'. It will be overwritten.}']),
         create_registry_header(Module,PlName),
         add_changed_module(Module,Base,Module,registry_created,no)
@@ -729,7 +732,7 @@ patch_read_reg_data_loop(Module,ForceMark) :-
     ).
 
 registry_already_read(Module) :-
-    current_fact(registry_headers(Module,_)), !.
+    current_fact(registry_header(Module,_)), !.
 
 %% --------------------------------------------------------------------
 :- pred create_registry_header(+Module,+PlFileName) : atm * atm
@@ -738,13 +741,13 @@ registry_already_read(Module) :-
    must be aware of the contents of the header and the order of the header terms
    (stored as terms in @pred{registry_header_format/2})".
 create_registry_header(Module,PlFile) :-
-    retractall_fact(registry_headers(Module,_)),
-    assertz_fact(registry_headers(Module,entries_already_analyzed([]))),
+    retractall_fact(registry_header(Module,_)),
+    assertz_fact(registry_header(Module,entries_already_analyzed([]))),
     path_splitext(PlFile, FileBase, _),
-    assertz_fact(registry_headers(Module,module_base(FileBase))),
+    assertz_fact(registry_header(Module,module_base(FileBase))),
     ( (is_library(PlFile), \+current_pp_flag(punit_boundary,on)) ->
-      assertz_fact(registry_headers(Module,open_mode(read_only)))
-    ; assertz_fact(registry_headers(Module,open_mode(read_write)))
+      assertz_fact(registry_header(Module,open_mode(read_only)))
+    ; assertz_fact(registry_header(Module,open_mode(read_write)))
     ),
     pplog(p_abs, ['{Registry header created ',Module, ' }']).
 
@@ -766,7 +769,7 @@ read_registry_header(_Verb,Module,_Stream) :-
 read_registry_header_terms(_Stream,_Module,[]) :- !.
 read_registry_header_terms(Stream,Module,[H|Hs]) :-
     fast_read(Stream,H),
-    assertz_fact(registry_headers(Module,H)),
+    assertz_fact(registry_header(Module,H)),
     read_registry_header_terms(Stream,Module,Hs).
 
 %% --------------------------------------------------------------------
@@ -801,7 +804,7 @@ write_registry_file_loop(_Module).
 
 :- pred write_registry_header(Module,Stream) : atm * stream + (not_fails, is_det)
    # "Writes the header of @var{Module}'s registry file to @var{Stream} from the
-   data predicate @tt{registry_headers/2}.".
+   data predicate @tt{registry_header/2}.".
 write_registry_header(Module,Stream) :-
     reg_version(V),
     writeq(Stream,v(V)),display(Stream,'.'),nl(Stream),
@@ -811,7 +814,7 @@ write_registry_header(Module,Stream) :-
 % TODO: unify with itf writting
 write_header_terms(_Stream,_Module,[]) :- !.
 write_header_terms(Stream,Module,[H|Hs]) :-
-    ( registry_headers(Module,H) -> true ; fail ),
+    ( registry_header(Module,H) -> true ; fail ),
     fast_write(Stream,H),
     write_header_terms(Stream,Module,Hs).
 
@@ -822,8 +825,8 @@ write_header_terms(Stream,Module,[H|Hs]) :-
 change_open_mode(Base,OpenMode) :-
     just_module_name(Base,Module),
     read_registry_file(Module,Base,verbose),  %% if it is not loaded yet, loads it.
-    retract_fact(registry_headers(Module,open_mode(_OldOpenMode))),
-    asserta_fact(registry_headers(Module,open_mode(OpenMode))),
+    retract_fact(registry_header(Module,open_mode(_OldOpenMode))),
+    asserta_fact(registry_header(Module,open_mode(OpenMode))),
     add_changed_module(Module,Base,Module,current,no).
 
 :- pred open_mode(Base,Type,OpenMode) 
@@ -834,7 +837,7 @@ change_open_mode(Base,OpenMode) :-
 open_mode(Base,Type,OpenMode) :-
 %% It only works if module's registry has been already loaded. If it has not, it fails.
     just_module_name(Base,Module),
-    current_fact(registry_headers(Module,open_mode(OpenMode))),
+    current_fact(registry_header(Module,open_mode(OpenMode))),
     ( is_library(Base) ->
       Type = library
     ; Type = user

@@ -29,7 +29,7 @@
 :- use_module(ciaopp(plai/transform), [transform_clauses/5]).
 :- use_module(ciaopp(plai/apply_assertions), [apply_assrt_call_to_success/8]).
 :- use_module(ciaopp(plai/intermod_db),
-   [main_module/2, registry/3, registry_headers/2, local_ana_module/2]).
+   [main_module/2, registry/3, registry_header/2, local_ana_module/2]).
 
 %%------------------------------------------------------------------
 
@@ -106,17 +106,17 @@ call_pattern(Policy,AbsInt,Sg,Call_s,Id):-
    domains being used, if they have not been added before.".
 add_entries_if_needed(Policy,Module,AbsInt):-
     entry_assertions_to_registry(Policy,Module,AbsInt),
-    update_registry_headers(Policy,Module,AbsInt).
+    update_registry_header(Policy,Module,AbsInt).
 
-update_registry_headers(Policy,CurrModule,AbsInt):-
+update_registry_header(Policy,CurrModule,AbsInt):-
     local_ana_module(_,CurrModule), %% CurrModule may be a free variable (then all current modules must be updated).
     valid_entry_in_policy(Policy,CurrModule),
-    ( current_fact(registry_headers(CurrModule,entries_already_analyzed(Domains)),Ref) -> true ; fail),
+    ( current_fact(registry_header(CurrModule,entries_already_analyzed(Domains)),Ref) -> true ; fail),
     \+ member(AbsInt,Domains),
     erase(Ref),
-    assertz_fact(registry_headers(CurrModule,entries_already_analyzed([AbsInt|Domains]))),
+    assertz_fact(registry_header(CurrModule,entries_already_analyzed([AbsInt|Domains]))),
     fail.
-update_registry_headers(_Policy,_CurrModule,_AbsInt).
+update_registry_header(_Policy,_CurrModule,_AbsInt).
 
 valid_entry_in_policy(top_level, Mod) :-
     main_module(_,Mod).
@@ -159,7 +159,7 @@ entry_assertions_to_registry(_Policy,_Module,_AbsInt).
      registry headers.".
 pending_intermod_entry_point(Policy,AbsInt,Goal,Qv,Call,Prime,Module) :-
     intermod_entry_point_policy(Policy,AbsInt,Goal,Qv,Call,Prime,Module),
-    ( (current_fact(registry_headers(Module,entries_already_analyzed(Domains))),
+    ( (current_fact(registry_header(Module,entries_already_analyzed(Domains))),
     \+ member(AbsInt,Domains)) -> true ; fail ).
 pending_intermod_entry_point(_Policy,AbsInt,Goal,Qv,Call,Prime,Module) :-
     entry_point(AbsInt,Goal,Qv,Call,Prime,Module).
@@ -174,13 +174,8 @@ intermod_entry_point(_Policy,AbsInt,Goal,Qv,Call,Prime,Module) :-
     entry_point(AbsInt,Goal,Qv,Call,Prime,Module).
 
 intermod_entry_point_policy(Policy,AbsInt,Goal,Qv,Call,Prime,Module) :-
-    type_of_goal(exported,Goal),
-    get_module_from_sg(Goal,Module),
-    ( Policy = top_level -> % exported predicates of top_level
-        main_module(_,Module)
-    ; Policy = all % IG: is this a sanity check?
-    ; Policy = force
-    ),
+    current_itf(exports, Goal, Module), % backtracking here
+    ( Policy = top_level -> main_module(_,Module) ; true ), % else Policy = all ; Policy = force
     functor(Goal,F,A),
     functor(G,F,A),
     \+ entry_assertion(G,_,_Call), % entry assertions treated elsewhere (policy-independent)
