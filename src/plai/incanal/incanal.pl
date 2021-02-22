@@ -157,8 +157,7 @@ generated when transforming the code can be modified.
 :- use_module(ciaopp(plai/apply_assertions_inc)).
 
 :- use_module(ciaopp(ciaopp_log), [pplog/2]).
-:- use_module(ciaopp(analysis_stats),
-    [stat/2, gather_stats/2, pretty_print_stats/1]).
+:- use_module(ciaopp(analysis_stats)).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 :- pred reset_incremental_analysis_info/0 #"Resets incremental and regular ciaopp
@@ -401,6 +400,7 @@ incremental_analyze(AbsInt, Stats) :-
     pplog(incremental,['{Incrementally analyzed with dd for ', ~~(AbsInt), ' (no entries found). }']).
 incremental_analyze(AbsInt, Stats) :-
     stat(proc_diff, process_diff(ProcDiff,ADiff)),
+    pp_statistics(runtime, [T0|_]),
     extract_cl_diff_info(ProcDiff, Additions, Deletions),
     loaded_mods(Context),
     restore_change_list(Context),
@@ -417,11 +417,16 @@ incremental_analyze(AbsInt, Stats) :-
     analysis_actions(AbsInt, Additions, Deletions), % run fixpo if not done before on delete or add
     remove_useless_completes(AbsInt), %% TODO: count time
     store_current_fixpoint_id(Context),
-    pplog(incremental,['{Incrementally analyzed with dd for ', ~~(AbsInt), ' }']),
+    pp_statistics(runtime, [T1|_]),
+    T is T1 - T0,
+    pplog(incremental,['{Incrementally analyzed with dd for ', ~~(AbsInt), ' in ', time(T), ' msec.']),
     save_persistent_analysis,
     store_change_list(Context),
     gather_stats(analysis, Stats),
-    pretty_print_stats(Stats), % TODO: show in a nicer way
+    ( current_pp_flag(pplog, L), member(incremental_high, L) ->
+        pretty_print_stats(Stats) % TODO: show in a nicer way
+    ; true ),
+    pplog(incremental, [' }']),
     set_analyzed_mods(Context).
 
 :- data local_change_list/4.
