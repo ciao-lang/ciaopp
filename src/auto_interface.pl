@@ -1270,8 +1270,13 @@ gencert_ctchecks(_,File,GENCERT):-
 %       ; optim_comp(OPTIMCOMP)
 %       ).
 
-exec_analysis_list_acheck(_File,AbsInts,AnyError) :- 
+exec_analysis_list_acheck(File,AbsInts,AnyError) :-
     current_pp_flag(intermod, off), !,
+    ( current_pp_flag(assert_ctcheck, manual) ->
+        % IG: if auto, the module was already loaded (to automatically detect
+        % which domains are required for the properties in the assertions)
+        module(File)
+    ; true),
     analyze(AbsInts),
     acheck_summary(AnyError).
 exec_analysis_list_acheck(File,AbsInts,AnyError) :-
