@@ -177,6 +177,9 @@ analyze(Analysis):- analyze(Analysis,_),!. % TODO: remove cut
   # "Same as analyze(@var{Analysis}) but in @var{Info} returns statistics (time
     and memory).".
 :- if(defined(with_fullpp)).
+analyze(_Analysis,[]):-
+    \+ curr_file(_File,_), !,
+    message(error, ['Could not analyze, no modules have been loaded']).
 analyze(Analysis,Info):-
     \+ current_pp_flag(intermod, off), !,
     % push_pp_flag(entry_policy,force),  %% needed for generating proper output!
