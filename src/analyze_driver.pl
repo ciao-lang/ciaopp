@@ -1,12 +1,11 @@
-:- module(_, [],
-    [
-        assertions,
-        basicmodes,
-        regtypes,
-        nativeprops,
-        datafacts,
-        ciaopp(ciaopp_options)
-    ]).
+:- module(_, [], [
+    assertions,
+    basicmodes,
+    regtypes,
+    nativeprops,
+    datafacts,
+    ciaopp(ciaopp_options)
+]).
 
 %------------------------------------------------------------------------
 
@@ -163,14 +162,10 @@ analysis(Analysis) :- lazy_analysis(Analysis), !.
 :- endif. % with_fullpp
 
 :- export(analyze/1).
-:- pred analyze(-Analysis) => analysis
-# "Returns on backtracking all available analyses.".
-% TODO: remove previous assertion
 :- pred analyze(+Analysis) : analysis + (not_fails, no_choicepoints)
-  # "Analyzes the current module with @var{Analysis}. If the intermod flag is
-    not off, this predicate may call @pred{module/1}.".
-analyze(Analysis):- var(Analysis), !, analysis(Analysis).
-analyze(Analysis):- analyze(Analysis,_),!. % TODO: remove cut
+   # "Analyzes the current module with @var{Analysis}. If the intermod
+      flag is not off, this predicate may call @pred{module/1}.".
+analyze(Analysis) :- analyze(Analysis,_).
 
 :- export(analyze/2).
 :- pred analyze(+Analysis,-Info)
@@ -179,48 +174,35 @@ analyze(Analysis):- analyze(Analysis,_),!. % TODO: remove cut
 :- if(defined(with_fullpp)).
 analyze(_Analysis,[]):-
     \+ curr_file(_File,_), !,
-    message(error, ['Could not analyze, no modules have been loaded']).
-analyze(Analysis,Info):-
-    \+ current_pp_flag(intermod, off), !,
+    message(error, ['Could not analyze, no modules have been loaded']),
+    fail.
+analyze(Analysis,Info) :-
+    \+ current_pp_flag(intermod, off),
+    !,
     % push_pp_flag(entry_policy,force),  %% needed for generating proper output!
     curr_file(File,_),
     intermod_analyze(Analysis,File,Info).
-    %       pop_pp_flag(entry_policy)
+    % pop_pp_flag(entry_policy)
 :- endif. % with_fullpp
-analyze(Analysis,Info):-
+analyze(Analysis,Info) :-
     analyze1(Analysis,Info).
 
 :- export(analyze1/2).
-analyze1(AbsInt,Info) :- ( AbsInt = [] ; AbsInt = [_|_] ), !,
-    analyze1_several_domains(AbsInt,[],Info).
+analyze1(AbsInt,_Info) :- var(AbsInt), !,
+    message(error0, ['{Not a valid analysis: ',~~(AbsInt),'}']),
+    fail.
+analyze1(Analysis,Info) :- ( Analysis = [] ; Analysis = [_|_] ), !,
+    analyze1_several_domains(Analysis,[],Info).
 :- if(defined(with_fullpp)).
-analyze1(Analysis,Info):-
-    current_pp_flag(incremental, on), !,
+analyze1(Analysis,Info) :-
+    analysis(Analysis),
+    !,
     trace_init,
-    incremental_analyze(Analysis, Info),
-    add_stat(ana, Info),
-    % TODO: does incremental_analyze call assert_domain/1? (BEFORE COMMIT)
+    analyze1_(Analysis,Info),
     trace_end.
-analyze1(Analysis,Info):-
-    trace_init,
-    analysis(Analysis), !,
-    current_pp_flag(fixpoint,Fixp),
-    %% *** Needs to be revised MH
-    ( is_checker(Fixp) ->
-        Header = '{Checking certificate for '
-    ; Header = '{Analyzing '
-    ),
-    findall(~~(File),curr_file(File,_),Files),
-    pplog(analyze_module, [~~(Header)|Files]),
-    program(Cls,Ds),
-    push_history(Analysis), % TODO: check that this does not break intermod_analyze
-    analyze_(Analysis,Cls,Ds,Info,step1), % TODO:[new-resources] are two steps really needed? (JF)
-    assert_domain(Analysis),
-    pplog(analyze_module, ['}']),
-    trace_end, !. % TODO: remove cut
 :- endif. % with_fullpp
-analyze1(Analysis,_Info):-
-    message(error0, ['{Not a valid analysis: ',~~(Analysis),'}']),
+analyze1(AbsInt,_Info):-
+    message(error0, ['{Not a valid analysis: ',~~(AbsInt),'}']),
     fail.
 
 % Analyzes the program for the domains in the list
@@ -230,6 +212,29 @@ analyze1_several_domains([AbsInt|As], TotalInfo0, TotalInfo):-
     % TODO: move to a separate module
     add_to_info(Info,TotalInfo0,TotalInfo1),
     analyze1_several_domains(As, TotalInfo1, TotalInfo).
+
+:- if(defined(with_fullpp)).
+analyze1_(AbsInt,Info) :-
+    current_pp_flag(incremental, on), !,
+    incremental_analyze(AbsInt, Info),
+    % TODO: does incremental_analyze call assert_domain/1? (BEFORE COMMIT)
+    add_stat(ana, Info).
+analyze1_(AbsInt,Info) :-
+    current_pp_flag(fixpoint,Fixp),
+    %% *** Needs to be revised MH
+    ( is_checker(Fixp) ->
+        Header = '{Checking certificate for '
+    ; Header = '{Analyzing '
+    ),
+    findall(~~(File),curr_file(File,_),Files),
+    pplog(analyze_module, [~~(Header)|Files]),
+    program(Cls,Ds),
+    push_history(AbsInt), % TODO: check that this does not break intermod_analyze
+    analyze_(AbsInt,Cls,Ds,Info,step1), % TODO:[new-resources] are two steps really needed? (JF)
+    assert_domain(AbsInt),
+    pplog(analyze_module, ['}']),
+    !. % TODO: this cut should not be needed (make sure that there are no dangling choice points)
+:- endif. % with_fullpp
 
 % ---------------------------------------------------------------------------
 

@@ -165,6 +165,9 @@ manual_analyze(AbsInts,FileName,OpenMode):-
 :- prop valid_mod_analysis(DomainList) # "Succeeds if the domains in
    @var{DomainList} are valid analysis domains for modular analysis".
 
+valid_mod_analysis(AbsInt) :- var(AbsInt), !,
+    message(error0, ['{Not a valid modular analysis: ',~~(AbsInt),'}']),
+    fail.
 valid_mod_analysis([]).
 valid_mod_analysis([A|As]):- !,
     valid_mod_analysis(A),
