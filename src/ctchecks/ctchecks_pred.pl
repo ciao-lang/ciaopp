@@ -153,6 +153,8 @@ decide_get_info_all([D|Ds],Key,P,[I|Is]):-
     decide_get_info(D,Key,P,I),
     decide_get_info_all(Ds,Key,P,Is).
 
+:- pred abs_execute_ass_predicate_all(+list,+,+,+list,+,-).
+
 abs_execute_ass_predicate_all([], _Key, _Goal, _AbsInts, _Info, []).
 abs_execute_ass_predicate_all([A-ARef|Ass], Key, Goal, AbsInts, Info, Out) :-
     abs_exec_one_assertion_all(AbsInts, Info, A, Key, DomsOut, InfoOut, NA),
@@ -182,21 +184,22 @@ push_polynom_curr_assrt(_).
 pop_polynom_curr_assrt(_).
 :- endif.
 
+:- pred abs_exec_one_assertion_all_(AbsInts,Info,A,Key,DomsOut,InfoOut,NewA,-Status).
+% TODO: IG: why run abs_exec_size_assertion if there are no domains left?
+%%%  At least check if it is a comp assertion?
 abs_exec_one_assertion_all_([], [], A, Key, [generic_comp], [AInfoOut], NAOut, StatusOut):-
     abs_exec_comp_assertion(A, Key, AInfo, NA, Status),
     ( Status \== check ->
-      AInfoOut = AInfo,
-      NAOut = NA,
-      StatusOut = Status
-    ; abs_exec_size_assertion(NA, Key, AInfo1, NAOut, StatusOut),
-      append(AInfo, AInfo1, AInfoOut)
+        AInfoOut = AInfo,
+        NAOut = NA,
+        StatusOut = Status
+    ;
+        abs_exec_size_assertion(NA, Key, AInfo1, NAOut, StatusOut),
+        append(AInfo, AInfo1, AInfoOut)
     ).
 abs_exec_one_assertion_all_([D|Ds], [I|Is], A, Key, DomOut, InfoOut, NewA, Status) :-
     abs_exec_one_assertion(D, I, A, Key, NA ,Flag),
-    ( Flag = false, DomOut = [D], InfoOut = [I],!
-    ; Flag = checked, DomOut = [], InfoOut = [],!
-    ; true
-    ),
+    ( (Flag = false ; Flag = checked) -> DomOut = [D], InfoOut = [I] ; true ),
     ( new_status(Flag,A,_Goal) -> 
         Status = Flag,
         NewA = NA
@@ -212,21 +215,23 @@ abs_exec_one_assertion_all_([D|Ds], [I|Is], A, Key, DomOut, InfoOut, NewA, Statu
 % TODO: (check old comment) if expression in abs_execute_one_assertion is reduced and it is different than 'fail', list_to_conj may fail
 
 %------------------------------------------------------------------------------
-abs_exec_complete_cs(_Goal,_Call,_Succ,_AbsInt,[],nosucc,nosucc,nosucc) :- !.
-abs_exec_complete_cs(Goal,Call,Succ,AbsInt,
+abs_exec_complete_success(_Goal,_Call,_Succ,_AbsInt,[],nosucc,nosucc,nosucc) :- !.
+abs_exec_complete_success(Goal,Call,Succ,AbsInt,
                  [complete(AGoal,ACall,ASuccs,Key,Id)|Cmpls],
-                  NCalls,NSuccs,Status):-
+                 NCalls,NSuccs,Status):-
+    % check if the complete is relevant
     abs_execute_exp(Goal,Call,AbsInt,AGoal,ACall,NCall),
     abs_exec_each_succ(Goal,Call,Succ,AbsInt,AGoal,ASuccs,NCall,
                        LocalNSucc,LocalStatus),
     reduce_compl_fin(LocalStatus,LogStatus),
     assertz_fact(ctchecks_log(AbsInt,LogStatus,success,Key,Id)),               
     ( LocalStatus == true, is_perfect_match(AbsInt,Goal,ACall) ->
-      Status = perfect
-    ; abs_exec_complete_cs(Goal,Call,Succ,AbsInt,Cmpls,NCalls0,NSuccs0,Status0),
-      reduce_compl(LocalStatus, Status0, Status),
-      compose_cs_goals(Status,Call,NCalls0,NCall,NCalls),        % left to prove goals of calls
-      compose_cs_goals(Status,Succ,LocalNSucc,NSuccs0,NSuccs)   % left to prove goals of successes
+        Status = perfect
+    ;
+        abs_exec_complete_success(Goal,Call,Succ,AbsInt,Cmpls,NCalls0,NSuccs0,Status0),
+        reduce_compl(LocalStatus, Status0, Status),
+        compose_cs_goals(Status,Call,NCalls0,NCall,NCalls),      % left to prove goals of calls
+        compose_cs_goals(Status,Succ,LocalNSucc,NSuccs0,NSuccs)  % left to prove goals of successes
     ).
 
 % checks wether there is an entry exactly matching the precondition,
@@ -244,11 +249,16 @@ compose_cs_goals(dont_know,OrigL,G1,G2,Orig) :-
 compose_cs_goals(_Status,Orig,G1,G2,GOut) :-
     synt_compose_disj(Orig,G1,G2,GOut).
 
+:- pred abs_exec_each_succ(+Goal, +AsCall, +AsSucc, +AbsInt, +AGoal, +ComplSuccs, -NCall, -NSucc, -Status).
+% IG: ComplSuccs is a list because of multivariant on success
+
 abs_exec_each_succ(_Goal, _Call, _Succ, _AbsInt, _AGoal, [], _NCall, nosucc, nosucc) :- !.
+% IG: if '$bottom' in the complete, the predicate never succeeeds and the
+% assertion is trivially verified
+abs_exec_each_succ(_, _, _, _, _,  ['$bottom'], _NCall, nosucc, nosucc) :- !.
 abs_exec_each_succ(Goal, Call, Succ, AbsInt, AGoal, [ASucc|ASuccs], NCall, NSucc, Status):-
     current_pp_flag(pred_ctchecks, Flag), 
-    Flag == on_succ,
-    !,
+    Flag == on_succ, !,
     varset(Goal, Gv),
     varset(ASucc, ASv),
     info_to_asub(AbsInt, _, Call, Gv, Cond, Goal, no), 
@@ -267,7 +277,6 @@ abs_exec_each_succ(Goal, Call, Succ, AbsInt, AGoal, [ASucc|ASuccs], NCall, NSucc
     abs_exec_each_succ(Goal, Call, Succ, AbsInt, AGoal, ASuccs, NCall, NSuccess1, NStatus),  
     reduce_compl_succ(LocalStatus, NStatus ,Status),
     compose_compl_goals(LocalStatus, NStatus, Succ, NSuccess, NSuccess1, NSucc).
-%
 abs_exec_each_succ(Goal, Call, Succ, AbsInt, AGoal,  [ASucc|ASuccs], NCall, NSucc, Status):-
     abs_execute_exp(Goal, Succ, AbsInt, AGoal, ASucc, NSuccess),
     reduce_success(NCall, NSuccess, LocalStatus0),
@@ -299,11 +308,14 @@ abs_exec_complete_call(Goal, Call, AbsInt,
 
 %--------------------------------------------------------------------------------
 :- export(abs_exec_one_assertion/6).
-abs_exec_one_assertion(_AbsInt, [], A, _Key, A, check) :- !.
+abs_exec_one_assertion(_AbsInt, [], A, _Key, NA, checked) :- !,
+    assertion_set_status(A, checked, NA).
+% IG: if there are no completes, it means that the predicate is unreachable in
+% that domain and everything is trivially checked.
 abs_exec_one_assertion(AbsInt, Cmpls, A, _Key, NA, Status) :-
     A = as${status=>check, type=>success, head=>Goal, call=>Call, succ=>Success},
     !,
-    abs_exec_complete_cs(Goal, Call, Success, AbsInt, Cmpls, NCall, NSuccess, Status0),
+    abs_exec_complete_success(Goal, Call, Success, AbsInt, Cmpls, NCall, NSuccess, Status0),
     reduce_compl_fin(Status0,Status),
     ( Status = check -> % TODO: why?
         list_to_conj(OCall, NCall),

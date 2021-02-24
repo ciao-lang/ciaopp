@@ -41,7 +41,6 @@
 
 :- use_module(library(lists), [member/2, append/3, length/2]).
 :- use_module(library(sort)).
-:- use_module(engine(io_basic)).
 :- use_module(library(write)).
 :- use_module(library(format)).
 :- use_module(library(counters), [inccounter/2]).
@@ -135,12 +134,12 @@ memo_ctcheck_sum(check) :-
 % process assertion level
 %------------------------------------------------------------------------------
 
-inform_as_change_to_user(Old,OldRef,New,Domains,Info) :-
+inform_as_change_to_user(Old,OldRef,New,AbsInts,Info) :-
     current_pp_flag(pplog,L),
     ( member(ctchecks, L) -> VCT = on ; VCT = off ),
     current_pp_flag(ass_not_stat_eval,STAT),   
     polynom_collect_message(Old, PolynomMsg), % TODO: ugly implementation!
-    decide_inform_user(VCT, STAT, Old, OldRef, New, PolynomMsg, Domains, Info).
+    decide_inform_user(VCT, STAT, Old, OldRef, New, PolynomMsg, AbsInts, Info).
 
 :- if(defined(has_ciaopp_cost)).
 polynom_collect_message(As, Msg):-
@@ -153,10 +152,10 @@ polynom_collect_message(_As, []).
 
 % checked assertion, ctchecks pplog
 % IG: [] is used for everything that has cost/resources
-decide_inform_user(VCT, _STAT, Old, OldRef, New, [], _Domains, _Info):-
+decide_inform_user(VCT, _STAT, Old, OldRef, New, [], AbsInts, Info):-
     New = as${status => Status, type => Type},
     checked_or_true(Status), !,
-    Old = as${comp => OldComp},
+    Old = as${comp => OldComp, head => Goal},
     Old = as${call => OrigCall, succ => OrigSuccess, locator => Loc},
     assertion_set_calls(New, OrigCall, A2), % TODO: why?
     assertion_set_success(A2, OrigSuccess, A3), % TODO: why?
@@ -174,12 +173,20 @@ decide_inform_user(VCT, _STAT, Old, OldRef, New, [], _Domains, _Info):-
         %       below?)  Old:
         %% note_message("(lns ~d-~d) The assertion:~n~p has been changed to~n~p",
         %%              [FromL, ToL, Old,NewToPrint])
-        note_message("(lns ~d-~d) Verified assertion:~n~p", 
-                     [FromL, ToL, Old] )
+        prepare_output_info(AbsInts, Info, Goal, Type, RelInfo),
+        ( RelInfo = [] ->
+            note_message("(lns ~d-~d) Trivially verified assertion (unreachable predicate):~n~p", 
+                         [FromL, ToL, Old] )
+        ; member('$dom'(_,[[bottom]],_), RelInfo) ->
+            note_message("(lns ~d-~d) Trivially verified assertion (the predicate does not succeed for the precondition in the assertion):~n~p", [FromL, ToL, Old] )
+        ;
+            note_message("(lns ~d-~d) Verified assertion:~n~p", 
+                         [FromL, ToL, Old] )
+        )
     ; true
     ).
 % false or check assertions
-decide_inform_user(VC, STAT, Old, OldRef, New, [], Domains, Info):-
+decide_inform_user(VC, STAT, Old, OldRef, New, [], AbsInts, Info):-
     New = as(_,Status,Type,Goal,_,Call,Success,Comp,Dict,Loc,_,_),
     ( Status = check, type_of_goal(exported, Goal),
       current_pp_flag(client_safe_ctchecks, on) ->
@@ -201,7 +208,7 @@ decide_inform_user(VC, STAT, Old, OldRef, New, [], Domains, Info):-
     ),
     !, % IG: move cut to the head?
     ( VC == on ->
-        prepare_output_info(Domains, Info, Goal, Type, RelInfo),
+        prepare_output_info(AbsInts, Info, Goal, Type, RelInfo),
         copy_term((Goal,'$an_results'(RelInfo),Dict),(GoalCopy,RelInfoCopy,DictCopy)),
         name_vars(DictCopy),
         prettyvars((GoalCopy,RelInfoCopy)),
@@ -238,7 +245,7 @@ decide_inform_user(_Flag1,_Flag2,_Old,_OldRef,_New,[],_Dom,_Info) :- !.
 %------------------------------------------------------------------------------
 % process assertion at comp level w/ interval information
 %------------------------------------------------------------------------------
-decide_inform_user(VCT, STAT, OldAs, OldAsRef, NewAs, Msg, Domains, Info):-
+decide_inform_user(VCT, STAT, OldAs, OldAsRef, NewAs, Msg, AbsInts, Info):-
     ( 
         member(msg(steps_ub(_),Acost, UbIncl,UbIncpt), Msg), %checking whether it has
         member(msg(steps_lb(_),Acost, LbIncl,LbIncpt), Msg), %upper and lower bound
@@ -269,9 +276,9 @@ decide_inform_user(VCT, STAT, OldAs, OldAsRef, NewAs, Msg, Domains, Info):-
             ;
                 true
             ),
-            update_spawn_assertion(VCT, STAT, OldAs, OldAsRef, NewAs, Ival, Domains, Info)
+            update_spawn_assertion(VCT, STAT, OldAs, OldAsRef, NewAs, Ival, AbsInts, Info)
         ;
-            explain_interval(VCT, STAT, [ErrCode], OldAs, NewAs, Domains, Info)
+            explain_interval(VCT, STAT, [ErrCode], OldAs, NewAs, AbsInts, Info)
         )
     ;%only have ub
         member(msg(steps_ub(_),_,Incl,Incpt), Msg),     
@@ -297,9 +304,9 @@ decide_inform_user(VCT, STAT, OldAs, OldAsRef, NewAs, Msg, Domains, Info):-
             ;
                 true
             ),
-            update_spawn_assertion(VCT, STAT, OldAs, OldAsRef, NewAs, Ival, Domains, Info)
+            update_spawn_assertion(VCT, STAT, OldAs, OldAsRef, NewAs, Ival, AbsInts, Info)
         ;
-            explain_interval(VCT, STAT, [ErrCode], OldAs, NewAs, Domains, Info)
+            explain_interval(VCT, STAT, [ErrCode], OldAs, NewAs, AbsInts, Info)
         )
     ;%only have lb
         member(msg(steps_lb(_),_,Incl,Incpt), Msg),     
@@ -325,13 +332,13 @@ decide_inform_user(VCT, STAT, OldAs, OldAsRef, NewAs, Msg, Domains, Info):-
             ;
                 true
             ),
-            update_spawn_assertion(VCT, STAT, OldAs, OldAsRef, NewAs, Ival, Domains, Info)
+            update_spawn_assertion(VCT, STAT, OldAs, OldAsRef, NewAs, Ival, AbsInts, Info)
         ;
-            explain_interval(VCT, STAT, [ErrCode], OldAs, NewAs, Domains, Info)
+            explain_interval(VCT, STAT, [ErrCode], OldAs, NewAs, AbsInts, Info)
         ) 
     ).
 % handling steps_o separately
-decide_inform_user(VCT, STAT, OldAs, OldAsRef, NewAs, Msg, Domains, Info):-
+decide_inform_user(VCT, STAT, OldAs, OldAsRef, NewAs, Msg, AbsInts, Info):-
     member(msg(steps_o(_),_,_Incl,_Incpt), Msg), !,
     %giving message
     ( VCT == on ->
@@ -356,10 +363,10 @@ decide_inform_user(VCT, STAT, OldAs, OldAsRef, NewAs, Msg, Domains, Info):-
     %update assertion DB
     add_assertion(NewAsFull),
     % in this case the assertion is valid for whole interval
-    explain_interval(VCT, STAT, [], OldAs, NewAs, Domains, Info), 
+    explain_interval(VCT, STAT, [], OldAs, NewAs, AbsInts, Info), 
     erase(OldAsRef).
 % (for resources)
-decide_inform_user(VCT, STAT, OldAs, OldAsRef, NewAs, Msg, Domains, Info):-
+decide_inform_user(VCT, STAT, OldAs, OldAsRef, NewAs, Msg, AbsInts, Info):-
     ( 
         member(msg(cost(CostProperty,ub,CostType,Res,_),Acost, UbIncl,UbIncpt), Msg), %checking whether it has
         member(msg(cost(CostProperty,lb,CostType,Res,_),Acost, LbIncl,LbIncpt), Msg), %upper and lower bound
@@ -393,9 +400,9 @@ decide_inform_user(VCT, STAT, OldAs, OldAsRef, NewAs, Msg, Domains, Info):-
             ;
                 true
             ),
-            update_spawn_assertion(VCT, STAT, OldAs, OldAsRef, NewAs, Ival, Domains, Info)
+            update_spawn_assertion(VCT, STAT, OldAs, OldAsRef, NewAs, Ival, AbsInts, Info)
         ;
-            explain_interval(VCT, STAT, [ErrCode], OldAs, NewAs, Domains, Info)
+            explain_interval(VCT, STAT, [ErrCode], OldAs, NewAs, AbsInts, Info)
         )
     ;%only have ub
         member(msg(cost(CostProperty,ub,CostType,Res,_),Acost, Incl, Incpt), Msg),    
@@ -422,9 +429,9 @@ decide_inform_user(VCT, STAT, OldAs, OldAsRef, NewAs, Msg, Domains, Info):-
             ;
                 true
             ),
-            update_spawn_assertion(VCT, STAT, OldAs, OldAsRef, NewAs, Ival, Domains, Info)
+            update_spawn_assertion(VCT, STAT, OldAs, OldAsRef, NewAs, Ival, AbsInts, Info)
         ;
-            explain_interval(VCT, STAT, [ErrCode], OldAs, NewAs, Domains, Info)
+            explain_interval(VCT, STAT, [ErrCode], OldAs, NewAs, AbsInts, Info)
         )
     ;%only have lb
         member(msg(cost(CostProperty,lb,CostType,Res,_),Acost, Incl, Incpt), Msg), 
@@ -451,13 +458,13 @@ decide_inform_user(VCT, STAT, OldAs, OldAsRef, NewAs, Msg, Domains, Info):-
             ;
                 true
             ),
-            update_spawn_assertion(VCT, STAT, OldAs, OldAsRef, NewAs, Ival, Domains, Info)
+            update_spawn_assertion(VCT, STAT, OldAs, OldAsRef, NewAs, Ival, AbsInts, Info)
         ;
-            explain_interval(VCT, STAT, [ErrCode], OldAs, NewAs, Domains, Info)
+            explain_interval(VCT, STAT, [ErrCode], OldAs, NewAs, AbsInts, Info)
         ) 
     ).
 % (for res_plai)
-decide_inform_user(VCT, STAT, OldAs, OldAsRef, NewAs, Msg, Domains, Info):-
+decide_inform_user(VCT, STAT, OldAs, OldAsRef, NewAs, Msg, AbsInts, Info):-
     ( 
         member(msg(costb(ub,Res,_,_),Acost, UbIncl,UbIncpt), Msg), %checking whether it has
         member(msg(costb(lb,Res,_,_),Acost, LbIncl,LbIncpt), Msg), %upper and lower bound
@@ -490,13 +497,13 @@ decide_inform_user(VCT, STAT, OldAs, OldAsRef, NewAs, Msg, Domains, Info):-
                 true
 
             ),
-            update_spawn_assertion(VCT, STAT, OldAs, OldAsRef, NewAs, Ival, Domains, Info)
+            update_spawn_assertion(VCT, STAT, OldAs, OldAsRef, NewAs, Ival, AbsInts, Info)
         ;
-            explain_interval(VCT, STAT, [ErrCode], OldAs, NewAs, Domains, Info)
+            explain_interval(VCT, STAT, [ErrCode], OldAs, NewAs, AbsInts, Info)
         )
     ).
 % (otherwise)
-decide_inform_user(_VCT, _STAT, _OldAs, _OldAsRef, _NewAs, _Msg, _Domains, _Info).
+decide_inform_user(_VCT, _STAT, _OldAs, _OldAsRef, _NewAs, _Msg, _AbsInts, _Info).
 
 local_inccounter_split(Proc,Status,Type,Val) :-
     ( Type = calls -> T = c ; T = s),
@@ -529,7 +536,7 @@ portray(A) :- A = as${}, !,
 portray('$an_results'(Res)) :-
     find_tab(Res,ResT),
     write_results(ResT).
-% Domain values
+% AbsInt values
 portray('$dom'(Dom,Res,Rules,Tab)) :-
     name(Dom,Lst), length(Lst,Len),
     format("~n[~w]",[Dom]),
@@ -539,11 +546,11 @@ portray('$dom'(Dom,Res,Rules,Tab)) :-
     ( Dom == generic_comp ->
         sort(Res, Res2),
         list_to_conj(Res2,ResConj),
-        write(ResConj), nl
+        write(ResConj), format("~n",[])
     ; write_info(Res, Tab)
     ),
     ( Rules = [] ->
-        nl
+        format("~n",[])
     ; format("~nwith:~n~n",[]),
       % Flag for a format of rules here 
       write_rules(Rules)
@@ -610,19 +617,23 @@ name_vars([]).
 name_vars([V=V|Vs]):-
     name_vars(Vs).
 
+:- pred prepare_output_info(+AbsInts,+,+Head,+Type,-Info)
+   : list(AbsInts) => list(Info).
 prepare_output_info([],[],_Head,_Type,[]) :-!.
 prepare_output_info([none|Ds],[_I|Is],H,Type,AInfo) :-!,
     prepare_output_info(Ds,Is,H,Type,AInfo).
 prepare_output_info([D|Ds],[I|Is],H,Type,AInfoOut) :-
     trans_aux(Type,D,H,I,A),
     ( knows_of(regtypes,D), \+ A = [[bottom]] ->   % (\=)/2 is not a builtin???
-       collect_rules(H,A,ReqRules,A1)
-    ;  ReqRules = [],
-       A1 = A
+        collect_rules(H,A,ReqRules,A1)
+    ;
+        ReqRules = [],
+        A1 = A
     ),
     ( A1 = [] ->
-       AInfoOut = AInfo
-    ;  AInfoOut = ['$dom'(D,A1,ReqRules)|AInfo]
+        AInfoOut = AInfo
+    ;
+        AInfoOut = ['$dom'(D,A1,ReqRules)|AInfo]
     ),
     prepare_output_info(Ds,Is,H,Type,AInfo).
 
@@ -1080,7 +1091,7 @@ same_value(_,   A, A).
 %------------------------------------------------------------------------------
 %the assertion already has no interval precondition
 % The two cost functions do not intersect
-update_spawn_assertion(VCT, STAT, OldAs, OldAsRef, NewAs, [], Domains, Info):-
+update_spawn_assertion(VCT, STAT, OldAs, OldAsRef, NewAs, [], AbsInts, Info):-
     OldAs= as${ call=>OldCall },
     \+ exist_interval_pred(OldCall),
     !,
@@ -1088,11 +1099,11 @@ update_spawn_assertion(VCT, STAT, OldAs, OldAsRef, NewAs, [], Domains, Info):-
     assertion_set_status(OldAs, Status, NewAsFull),
     add_assertion(NewAsFull),
     % in this case the assertion is valid for whole interval
-    explain_interval(VCT, STAT, [], OldAs, NewAs, Domains, Info), 
+    explain_interval(VCT, STAT, [], OldAs, NewAs, AbsInts, Info), 
     erase(OldAsRef).
 %
 % the cost functions intersect
-update_spawn_assertion(VCT, STAT, OldAs, OldAsRef, _NewAs, Intervals, Domains, Info):-
+update_spawn_assertion(VCT, STAT, OldAs, OldAsRef, _NewAs, Intervals, AbsInts, Info):-
     OldAs = as${ call => OldCall },
     \+ exist_interval_pred(OldCall),
     !,
@@ -1100,12 +1111,12 @@ update_spawn_assertion(VCT, STAT, OldAs, OldAsRef, _NewAs, Intervals, Domains, I
     add_assertion_w_intervals(OldAs, OldCall, IntFalse, f, AsFalse),        
     add_assertion_w_intervals(OldAs, OldCall, IntTrue, t, AsTrue),
     add_assertion_w_intervals(OldAs, OldCall, IntCheck, c, AsCheck),
-    assertion_changed_message(VCT, STAT, OldAs, AsFalse, AsCheck, AsTrue, Domains, Info),
+    assertion_changed_message(VCT, STAT, OldAs, AsFalse, AsCheck, AsTrue, AbsInts, Info),
     erase(OldAsRef).
 %
 %the assertion already has interval precondition
 % The two cost functions do not intersect
-update_spawn_assertion(VCT, STAT, OldAs, OldAsRef, NewAs, [], Domains, Info):-
+update_spawn_assertion(VCT, STAT, OldAs, OldAsRef, NewAs, [], AbsInts, Info):-
     OldAs = as${ call=>OldCall },
     exist_interval_pred(OldCall),
     !,
@@ -1113,12 +1124,12 @@ update_spawn_assertion(VCT, STAT, OldAs, OldAsRef, NewAs, [], Domains, Info):-
     assertion_set_status(OldAs, Status, NewAsFull),
     add_assertion(NewAsFull),
     % in this case the assertion is valid for whole interval
-    explain_interval(VCT, STAT, [], OldAs, NewAs, Domains, Info), % need to be refine on the
+    explain_interval(VCT, STAT, [], OldAs, NewAs, AbsInts, Info), % need to be refine on the
     %                                                             % explain_interval_bound/3
     erase(OldAsRef).
 %
 %the cost functions intersect
-update_spawn_assertion(VCT, STAT, OldAs, OldAsRef, _NewAs, Intervals, Domains, Info):-
+update_spawn_assertion(VCT, STAT, OldAs, OldAsRef, _NewAs, Intervals, AbsInts, Info):-
     OldAs = as${ call=>PreCond },
     exist_interval_pred(PreCond),
     !,
@@ -1135,7 +1146,7 @@ update_spawn_assertion(VCT, STAT, OldAs, OldAsRef, _NewAs, Intervals, Domains, I
     add_assertion_w_intervals(OldAs, CleanPrecond, IntFalse, f, AsFalse),   
     add_assertion_w_intervals(OldAs, CleanPrecond, IntTrue, t, AsTrue),
     add_assertion_w_intervals(OldAs, CleanPrecond, IntCheck, c, AsCheck),
-    assertion_changed_message(VCT, STAT, OldAs, AsFalse, AsCheck, AsTrue, Domains, Info),
+    assertion_changed_message(VCT, STAT, OldAs, AsFalse, AsCheck, AsTrue, AbsInts, Info),
     erase(OldAsRef).        
 
 get_list_user_interval('resources_props:intervals'(_, _, _, L), L).
@@ -1150,7 +1161,7 @@ extract_user_intervals([i(A,B)|Ls],[[A,B]|Rs]):-
 % assertion_changed_message
 % shows all split assertions
 %------------------------------------------------------------------------------
-assertion_changed_message(VCT, STAT, OldAs, AsFalse, AsCheck, AsTrue, Domains, Info):-
+assertion_changed_message(VCT, STAT, OldAs, AsFalse, AsCheck, AsTrue, AbsInts, Info):-
     OldAs  = as${
              type      => Type ,
              head      => Goal  ,    
@@ -1190,7 +1201,7 @@ assertion_changed_message(VCT, STAT, OldAs, AsFalse, AsCheck, AsTrue, Domains, I
         show_changed_message(VCT, STAT, check, AsCheckPrint),
         show_changed_message(VCT, STAT, true, AsTruePrint),
         %
-        prepare_output_info(Domains, Info, Goal, Type, RelInfo),
+        prepare_output_info(AbsInts, Info, Goal, Type, RelInfo),
         copy_term((Goal,'$an_results'(RelInfo),Dict),(GoalCopy,RelInfoCopy,DictCopy)),
         name_vars(DictCopy),
         prettyvars((GoalCopy, RelInfoCopy)),
@@ -1470,7 +1481,7 @@ size_var(nnegint(_)).
 % there is error encountered.
 %---------------------------------------------------------------
 % TODO: this clause needs a cut
-explain_interval(VCT, STAT, SignMsg, OldAssertion, NewAssertion, Domains, Info):-
+explain_interval(VCT, STAT, SignMsg, OldAssertion, NewAssertion, AbsInts, Info):-
     SignMsg = [],  % doesn't encounter function intersection
     OldAssertion= as${ comp      => OldComp },
     NewAssertion   = as${
@@ -1495,7 +1506,7 @@ explain_interval(VCT, STAT, SignMsg, OldAssertion, NewAssertion, Domains, Info):
             true
         )
     ; Status = check ->
-        prepare_output_info(Domains, Info, Goal, Type, RelInfo),
+        prepare_output_info(AbsInts, Info, Goal, Type, RelInfo),
         copy_term((Goal,'$an_results'(RelInfo),Dict),(GoalCopy,RelInfoCopy,DictCopy)),
         name_vars(DictCopy),
         prettyvars((GoalCopy,RelInfoCopy)),
@@ -1512,7 +1523,7 @@ explain_interval(VCT, STAT, SignMsg, OldAssertion, NewAssertion, Domains, Info):
             true
         )
     ; Status = false ->
-        prepare_output_info(Domains, Info, Goal, Type, RelInfo),
+        prepare_output_info(AbsInts, Info, Goal, Type, RelInfo),
         copy_term((Goal,'$an_results'(RelInfo),Dict),(GoalCopy,RelInfoCopy,DictCopy)),
         name_vars(DictCopy),
         prettyvars((GoalCopy,RelInfoCopy)),
@@ -1521,7 +1532,7 @@ explain_interval(VCT, STAT, SignMsg, OldAssertion, NewAssertion, Domains, Info):
          memo_ctcheck_sum(false)
     ).
 %
-explain_interval(_VCT, STAT, SignMsg, OldAssertion, NewAssertion, Domains, Info):-
+explain_interval(_VCT, STAT, SignMsg, OldAssertion, NewAssertion, AbsInts, Info):-
     STAT \== off, 
     (
         SignMsg = [1]
@@ -1544,7 +1555,7 @@ explain_interval(_VCT, STAT, SignMsg, OldAssertion, NewAssertion, Domains, Info)
     copy_term((Left0, Dict),(Left, CDict)),
     name_vars(CDict), prettyvars(Left),
     !,
-    prepare_output_info(Domains, Info, Goal, Type, RelInfo),
+    prepare_output_info(AbsInts, Info, Goal, Type, RelInfo),
     copy_term((Goal,'$an_results'(RelInfo),Dict),(GoalCopy,RelInfoCopy,DictCopy)),
     name_vars(DictCopy),
     prettyvars((GoalCopy,RelInfoCopy)),
@@ -1564,7 +1575,7 @@ explain_interval(_VCT, STAT, SignMsg, OldAssertion, NewAssertion, Domains, Info)
         [From, To, OldAssertion, Type, GoalCopy, RelInfoCopy, Left])
     ),!.
 %otherwise: show nothing
-explain_interval(_VCT, _STAT, _SignMsg, _OldAssertion, _NewAssertion, _Domains, _Info).
+explain_interval(_VCT, _STAT, _SignMsg, _OldAssertion, _NewAssertion, _AbsInts, _Info).
 
 %---------------------------------------------------------------
 %separate_interval and separate_interval_rest
