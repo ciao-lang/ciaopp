@@ -862,7 +862,7 @@ valid_flag_values( pp_ctchecks  , member(_,[off,on])).
 
 % (This ensures correctness when intermod analysis is not enabled.)
 pp_flag(client_safe_ctchecks).
-pp_flag(client_safe_ctchecks, 'Calls assertions of exported predicates are never marked as checked. When runtime checks are enabled, this forces checks on module boundaries.'). % Note: unverified calls assertions are not reported when this flag is enabled
+pp_flag(client_safe_ctchecks, 'Assume that runtime checks are enabled on module boundaries (at least for exported predicates). When this flag is enabled, compile time checking does not prompt un-checked assertions for exported predicates.'). % Note: unverified calls assertions are not reported when this flag is enabled
 current_pp_flags(  client_safe_ctchecks, off ).
 valid_flag_values( client_safe_ctchecks, member(_,[off,on])).
 

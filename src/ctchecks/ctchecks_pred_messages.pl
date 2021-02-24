@@ -188,33 +188,34 @@ decide_inform_user(VCT, _STAT, Old, OldRef, New, [], AbsInts, Info):-
 % false or check assertions
 decide_inform_user(VC, STAT, Old, OldRef, New, [], AbsInts, Info):-
     New = as(_,Status,Type,Goal,_,Call,Success,Comp,Dict,Loc,_,_),
-    ( Status = check, type_of_goal(exported, Goal),
-      current_pp_flag(client_safe_ctchecks, on) ->
+    ( Status = check, current_pp_flag(client_safe_ctchecks, on) ->
+        % IG: why client_safe_ctchecks not used in the previous clause (checked)?
         % Do not inform on check calls assertions of exported predicates
-        fail
+        ( type_of_goal(exported, Goal) -> fail ; true )
     ; true
     ),
     %
     local_inccounter_split(simp,Status,Type,_),
-    ( Status == check ->
-        filter_left_over(Type, Call, Success, Comp, LeftL),
-        list_to_conj(LeftL, Left0),
-        copy_term((Left0, Dict),(Left, CDict)),
-        name_vars(CDict), prettyvars(Left)
-    ; 
-        Status == false,
+    ( Status = false -> % TODO: WHY?
         erase(OldRef),
         add_assertion(New)
+    ; true
     ),
     !, % IG: move cut to the head?
     ( VC == on ->
         prepare_output_info(AbsInts, Info, Goal, Type, RelInfo),
-        copy_term((Goal,'$an_results'(RelInfo),Dict),(GoalCopy,RelInfoCopy,DictCopy)),
+        ( Status = check ->
+            filter_left_over(Type, Call, Success, Comp, LeftL),
+            list_to_conj(LeftL, Left0)
+        ;
+            Left0 = [] % dummy, not used if the assertion is false
+        ),
+        copy_term((Goal,'$an_results'(RelInfo),Left0,Dict),(GoalCopy,RelInfoCopy,Left,DictCopy)),
         name_vars(DictCopy),
-        prettyvars((GoalCopy,RelInfoCopy)),
+        prettyvars((GoalCopy,Left,RelInfoCopy)),
         Loc = loc(_File, RFrom, To),
-        ( RFrom == To -> From = RFrom ; From is RFrom + 1 ),
-        ( Status == check ->
+        ( RFrom == To -> From = RFrom ; From is RFrom + 1 ), % ?????
+        ( Status = check ->
             %  show_message(STAT, "(lns ~d-~d) Cannot verify assertion:~n~pbecause on ~p ~p :~n~p ~nLeft to prove: ~w~n", 
             %              [From, To, Old, Type, GoalCopy, RelInfoCopy, Left]),
             % MH: Changed to this message format which seems easier to read. Same with rest of messages.
