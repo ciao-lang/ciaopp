@@ -1,12 +1,10 @@
-:- module(ctchecks_messages,
-    [
-        message_pp_calls/8,
-        message_pp_entry/8,
-        message_pp_success/9,
-        message_pp_check/6,
-        message_clause_incompatible/5
-    ],
-    [assertions, regtypes]).
+:- module(ctchecks_messages, [
+    message_pp_calls/8,
+    message_pp_entry/8,
+    message_pp_success/9,
+    message_pp_check/6,
+    message_clause_incompatible/5
+], [assertions, regtypes]).
 
 :- use_package(ciaopp(p_unit/p_unit_argnames)).
 
@@ -37,10 +35,8 @@
 output_user_interface(AbsInt,ASub,NVars,Props):-
     asub_to_info(AbsInt,ASub,NVars,Props,_NativeComp), !.
 
-display_message_check_pp(_LC,_Str,_Args) :-
-    current_pp_flag(ass_not_stat_eval, off),!.
-display_message_check_pp(LC,Str,Args) :-
-    current_pp_flag(ass_not_stat_eval, warning),!,
+display_message_check_pp(_LC,_Str,_Args) :- current_pp_flag(ass_not_stat_eval, off), !.
+display_message_check_pp(LC,Str,Args) :- current_pp_flag(ass_not_stat_eval, warning),!,
     warning_message(LC,Str,Args).
 display_message_check_pp(LC,Str,Args) :-
     error_message(LC,Str,Args).
@@ -75,13 +71,26 @@ message_pp_calls(Info,AbsInt,Goal,Head,Calls,Dict,K,Status):-
     prettyvars((GoalCopy,RelInfoCopy)),
     decode_litkey(K,F,A,C,L),
     get_clkey(F,A,C,ClId),
-    maybe_clause_locator(ClId,LC), !,
+    maybe_clause_locator(ClId,LC),
+    !,
     ( Status == check ->
-        display_message_check_pp(LC,"At literal ~w could not verify assertion:~n~pbecause on call ~p :~n~p",[L,As,GoalCopy,RelInfoCopy])
+        display_message_check_pp(LC,
+            "At literal ~w could not verify assertion:~n"||
+            "~p"||
+            "because on call ~p :~n"||
+            "~p",
+            [L,As,GoalCopy,RelInfoCopy])
     ; Status == false -> 
-        error_message(LC, "At literal ~w false assertion:~n~pbecause on call ~p :~n~p", [L,As, GoalCopy, RelInfoCopy])
-    ;
-        display_message_checked_pp(LC,"At literal ~w successfully checked assertion:~n~p",[L,As])
+        error_message(LC,
+            "At literal ~w false assertion:~n"||
+            "~p"||
+            "because on call ~p :~n"||
+            "~p",
+            [L,As, GoalCopy, RelInfoCopy])
+    ; display_message_checked_pp(LC,
+          "At literal ~w successfully checked assertion:~n"||
+          "~p",
+          [L,As])
     ).
 %pp%
 %pp%message_pp_calls(Info,AbsInt,Goal,Head,Calls,Dict_,K,Status):-
@@ -138,9 +147,8 @@ message_pp_calls(Info,AbsInt,Goal,Head,Calls,Dict,K,Status):-
 %pp%    ),
 %pp%    !.
 %
-message_pp_calls(Info,AbsInt,Goal,Head,Calls,Dict,K,Status):-
-    error_message("error printing message_pp_calls:~w ~w ~w ~w ~w ~w ~w ~w~n",
-    [Info,AbsInt,Goal,Head,Calls,Dict,K,Status]).
+message_pp_calls(Info,AbsInt,Goal,Head,Calls,Dict,K,Status) :-
+    throw(bug_failed(message_pp_calls(Info,AbsInt,Goal,Head,Calls,Dict,K,Status))).
 
 :- pred message_pp_entry/8.
 message_pp_entry(Info,AbsInt,Goal,Head,Calls,Dict_,K,Status):-
@@ -171,28 +179,34 @@ message_pp_entry(Info,AbsInt,Goal,Head,Calls,Dict_,K,Status):-
         P_Info=NGoal,
         W1='of ',
         W2=' :',
-        FormRules="~n  ~w"
-    ), !,
+        FormRules="~n"||"  ~w"
+    ),
+    !,
     ( Status == false ->
-      memo_ctcheck_sum(false),
-      error_message(LC,"At literal ~w false entry assertion:
-   :- entry ~w : ~w~n because on call ~w~w~w"||FormRules,
-                     [L,NHead,NCall,W1,P_Info,W2|ReqRules]),
-      Expected = calls(NHead:NCall),
-      preproc_error(calls,[lit(F,A,C,L),Expected,Props0,[]])
+        memo_ctcheck_sum(false),
+        error_message(LC,
+            "At literal ~w false entry assertion:~n"||
+            "   :- entry ~w : ~w~n"||
+            " because on call ~w~w~w"||
+            FormRules,
+            [L,NHead,NCall,W1,P_Info,W2|ReqRules]),
+        Expected = calls(NHead:NCall),
+        preproc_error(calls,[lit(F,A,C,L),Expected,Props0,[]])
     ; Status == check -> 
         memo_ctcheck_sum(check),
-        display_message_check_pp(LC,"At literal ~w could not verify entry assertion:
-   :- entry ~w : ~w~n because on call ~w~w~w"||FormRules,
-                     [L,NHead,NCall,W1,P_Info,W2|ReqRules])
-    ;
-        display_message_checked_pp(LC,
-            "At literal ~w successfully checked entry assertion:
-   :- entry ~w : ~w", [L,NHead,NCall])
+        display_message_check_pp(LC,
+            "At literal ~w could not verify entry assertion:~n"||
+            "   :- entry ~w : ~w~n"||
+            " because on call ~w~w~w"||
+            FormRules,
+            [L,NHead,NCall,W1,P_Info,W2|ReqRules])
+    ; display_message_checked_pp(LC,
+          "At literal ~w successfully checked entry assertion:~n"||
+          "   :- entry ~w : ~w",
+          [L,NHead,NCall])
     ).
-message_pp_entry(Info,AbsInt,Goal,Head,Calls,Dict,K,Status):-
-    error_message("error printing message_pp_entry:~w ~w ~w ~w ~w ~w ~w ~w~n",
-    [Info,AbsInt,Goal,Head,Calls,Dict,K,Status]).
+message_pp_entry(Info,AbsInt,Goal,Head,Calls,Dict,K,Status) :-
+    throw(bug_failed(message_pp_entry(Info,AbsInt,Goal,Head,Calls,Dict,K,Status))).
 
 message_pp_success(Info,AbsInt,Goal,Head,Calls,Succ,Dict,K,Status):-
     As = as(_,check,success,Head,[],Calls,Succ,[],Dict,_,_,_),
@@ -204,13 +218,23 @@ message_pp_success(Info,AbsInt,Goal,Head,Calls,Succ,Dict,K,Status):-
     get_clkey(F,A,C,ClId),
     maybe_clause_locator(ClId,LC), !,
     ( Status == check ->
-        display_message_check_pp(LC,"At literal ~w could not verify assertion:~n~pbecause on success ~p :~n~p",
-                                 [L,As,GoalCopy,RelInfoCopy])
+        display_message_check_pp(LC,
+            "At literal ~w could not verify assertion:~n"||
+            "~p"||
+            "because on success ~p :~n"||
+            "~p",
+            [L,As,GoalCopy,RelInfoCopy])
     ; Status == false ->
-        error_message(LC, "At literal ~w false assertion:~n~pbecause on success ~p :~n~p",
-                      [L,As, GoalCopy, RelInfoCopy])
-    ;
-        display_message_checked_pp(LC,"At literal ~w successfully verified assertion:~n~p",[L,As])
+        error_message(LC,
+            "At literal ~w false assertion:~n"||
+            "~p"||
+            "because on success ~p :~n"||
+            "~p",
+            [L,As, GoalCopy, RelInfoCopy])
+    ; display_message_checked_pp(LC,
+          "At literal ~w successfully verified assertion:~n"||
+          "~p",
+          [L,As])
     ).
 %pp%message_pp_success(Info,AbsInt,Goal,Head,Calls,Succ,Dict0,K,Status):-
 %pp%    ( var(Calls) -> Calls = true ; true ),
@@ -267,8 +291,7 @@ message_pp_success(Info,AbsInt,Goal,Head,Calls,Succ,Dict,K,Status):-
 %pp%    !.
 %
 message_pp_success(Info,AbsInt,Goal,Head,Calls,Succ,Dict,K,Status):-
-    error_message("error printing:~w~n",
-    [message_pp_success(Info,AbsInt,Goal,Head,Calls,Succ,Dict,K,Status)] ).
+    throw(bug_failed(message_pp_success(Info,AbsInt,Goal,Head,Calls,Succ,Dict,K,Status))).
 
 message_pp_check(Info,AbsInt,Prop,Key,Dict,Status):-
     copy_term((Info,Prop,Dict),(NInfo,NProp,NDict)),
@@ -310,27 +333,29 @@ message_pp_check(Info,AbsInt,Prop,Key,Dict,Status):-
         FormRules2="  ~w"
     ),
     append(ReqRules1,[NProp,W4|ReqRules2],ReqRules),
-    append(FormRules1,"~n~8| Expected: ~w~w"||FormRules2,FormRules),
+    append(FormRules1,"~n"||"~4| Expected: ~w~w"||FormRules2,FormRules),
     ( Status == false ->
         memo_ctcheck_sum(false),
-        error_message(LC,"At literal ~w false program point assertion:
-~8| Called:   ~w~w"||FormRules,
-                      [L,Props,W2|ReqRules]),
+        error_message(LC,
+            "At literal ~w false program point assertion:~n"||
+            "~4| Called:   ~w~w"||
+            FormRules,
+            [L,Props,W2|ReqRules]),
         preproc_error(pp,[lit(F,A,C,L),Prop,Props0,[]])
     ; Status == check ->
         memo_ctcheck_sum(check),
-        display_message_check_pp(LC,"At literal ~w could not verify program point assertion:
-~8| Called:   ~w~w"||FormRules,
-                      [L,Props,W2|ReqRules])
-    ;
-        display_message_checked_pp(LC,
-                                   "At literal ~w successfully verified program point assertion.", [L])
+        display_message_check_pp(LC,
+            "At literal ~w could not verify program point assertion:~n"||
+            "~4| Called:   ~w~w"||
+            FormRules,
+            [L,Props,W2|ReqRules])
+    ; display_message_checked_pp(LC,
+          "At literal ~w successfully verified program point assertion.", [L])
     ),
     !.
 %
-message_pp_check(Info,AbsInt,Prop,Key,Dict,Stat):-
-    error_message("error printing message_pp_checks:~w~n",
-    [message_pp_check(Info,AbsInt,Prop,Key,Dict,Stat)] ).
+message_pp_check(Info,AbsInt,Prop,Key,Dict,Stat) :-
+    throw(bug_failed(message_pp_check(Info,AbsInt,Prop,Key,Dict,Stat))).
 
 message_clause_incompatible(Clid,Types,H,Vars,Names):-
     functor(H,N,A),
@@ -346,12 +371,14 @@ message_clause_incompatible(Clid,Types,H,Vars,Names):-
     maybe_clause_locator(Clid,LC),
     memo_ctcheck_sum(check), !, %???
     ( Rules = [] -> W1='' ; W1=' with:' ),
-    warning_message(LC,"the head of clause ~q is incompatible with its call type~n~8| Head:      ~w~n~8| Call Type: ~w~w"||Forms,
-                    [Clid,NH,P_Call,W1|Rules]).
+    warning_message(LC,"the head of clause ~q is incompatible with its call type~n"||
+        "~4| Head:      ~w~n"||
+        "~4| Call Type: ~w~w"||
+        Forms,
+        [Clid,NH,P_Call,W1|Rules]).
 %
-message_clause_incompatible(Clid,Types,H,Vars,Names):-
-    error_message("error printing:~w~n",
-    [message_clause_incompatible(Clid,Types,H,Vars,Names)] ).
+message_clause_incompatible(Clid,Types,H,Vars,Names) :-
+    throw(bug_failed(message_clause_incompatible(Clid,Types,H,Vars,Names))).
 
 % a couple of auxiliary predicates
 infer_unify_vars([],[]).
@@ -395,11 +422,9 @@ inline_types2(Prop,[P]):-
     copy_term(Prop,InProp),
     denorm_goal_prop(InProp,P,P).
 
-filter_required_rules([typedef(::=(T,_))|Ds],Rs,Fs):-
-    functor(G,T,1),
-    type(G), !,  % not inferred
+filter_required_rules([typedef(::=(T,_))|Ds],Rs,Fs) :- functor(G,T,1), type(G), !,  % not inferred
     ctchecks_messages:filter_required_rules(Ds,Rs,Fs).
-filter_required_rules([typedef(::=(T,D))|Ds],[T,D|Rs],"~n    ~w ::= ~w"||Fs):-
+filter_required_rules([typedef(::=(T,D))|Ds],[T,D|Rs],"~n"||"    ~w ::= ~w"||Fs) :-
     ctchecks_messages:filter_required_rules(Ds,Rs,Fs).
 filter_required_rules([],[],[]).
 
