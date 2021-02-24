@@ -189,8 +189,7 @@ analyze(Analysis,Info) :-
 
 :- export(analyze1/2).
 analyze1(AbsInt,_Info) :- var(AbsInt), !,
-    message(error0, ['{Not a valid analysis: ',~~(AbsInt),'}']),
-    fail.
+    throw(error(instantiation_error, analyze1/2-1)).
 analyze1(Analysis,Info) :- ( Analysis = [] ; Analysis = [_|_] ), !,
     analyze1_several_domains(Analysis,[],Info).
 :- if(defined(with_fullpp)).
