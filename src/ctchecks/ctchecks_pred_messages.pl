@@ -1,11 +1,6 @@
-:- module(ctchecks_pred_messages, 
-       [inform_as_change_to_user/5,
-       is_any_false/1, is_any_check/1,
-       memo_ctcheck_sum/1,
-       init_ctcheck_sum/0,
-       prepare_output_info/5,
-       name_vars/1], 
-       [assertions, regtypes, datafacts, ciaopp(ciaopp_options)]).
+:- module(ctchecks_pred_messages, [], [
+    assertions, regtypes, datafacts, ciaopp(ciaopp_options)
+]).
 
 :- doc(title, "Messages for predicate compile-time checking").
 
@@ -19,8 +14,8 @@
 :- use_package(ciaopp(p_unit/p_unit_argnames)).
 
 :- use_module(library(formulae), [list_to_conj/2]).
-:- use_module(library(messages),
-              [show_message/3, warning_message/2, error_message/2, note_message/2]).
+:- use_module(library(messages), [
+    show_message/3, warning_message/2, error_message/2, note_message/2]).
 
 :- use_module(ciaopp(p_unit), [prop_to_native/2]).
 :- use_module(ciaopp(p_unit), [
@@ -103,12 +98,16 @@
 %[LD]
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+:- export(is_any_false/1).
+:- export(is_any_check/1).
+
 :- data is_any_false/1.
 :- data is_any_check/1.
 
 is_any_false(no).
 is_any_check(no).
 
+:- export(init_ctcheck_sum/0).
 init_ctcheck_sum :-
     retractall_fact(is_any_false(_)),
     retractall_fact(is_any_check(_)),
@@ -123,6 +122,7 @@ cleanup_polynom_message :-
 cleanup_polynom_message.
 :- endif.
 
+:- export(memo_ctcheck_sum/1).
 memo_ctcheck_sum(false) :-
     retract_fact(is_any_false(_)),
     asserta_fact(is_any_false(yes)).
@@ -134,6 +134,7 @@ memo_ctcheck_sum(check) :-
 % process assertion level
 %------------------------------------------------------------------------------
 
+:- export(inform_as_change_to_user/5).
 inform_as_change_to_user(Old,OldRef,New,AbsInts,Info) :-
     current_pp_flag(pplog,L),
     ( member(ctchecks, L) -> VCT = on ; VCT = off ),
@@ -175,13 +176,18 @@ decide_inform_user(VCT, _STAT, Old, OldRef, New, [], AbsInts, Info):-
         %%              [FromL, ToL, Old,NewToPrint])
         prepare_output_info(AbsInts, Info, Goal, Type, RelInfo),
         ( RelInfo = [] ->
-            note_message("(lns ~d-~d) Trivially verified assertion (unreachable predicate):~n~p", 
-                         [FromL, ToL, Old] )
+            note_message("(lns ~d-~d) Trivially verified assertion:~n"||
+                "~p"||
+                "because the predicate is unreachable", 
+                [FromL, ToL, Old])
         ; member('$dom'(_,[[bottom]],_), RelInfo) ->
-            note_message("(lns ~d-~d) Trivially verified assertion (the predicate does not succeed for the precondition in the assertion):~n~p", [FromL, ToL, Old] )
-        ;
-            note_message("(lns ~d-~d) Verified assertion:~n~p", 
-                         [FromL, ToL, Old] )
+            note_message("(lns ~d-~d) Trivially verified assertion:~n"||
+                "~p"||
+                "because the predicate never succeeds (for the given precondition)",
+                [FromL, ToL, Old])
+        ; note_message("(lns ~d-~d) Verified assertion:~n"||
+              "~p", 
+              [FromL, ToL, Old])
         )
     ; true
     ).
@@ -227,15 +233,23 @@ decide_inform_user(VC, STAT, Old, OldRef, New, [], AbsInts, Info):-
             % should be printed with the program variable names, and
             % ideally with the same as in the abstract information.
             
-            show_message(STAT, "(lns ~d-~d) Could not verify assertion:~n~pbecause (for ~p)~n~p~ncould not be derived from inferred ~p:~n~p~n", 
-                         [From, To, Old, GoalCopy, Left, Type, RelInfoCopy]),
+            show_message(STAT, "(lns ~d-~d) Could not verify assertion:~n"||
+                "~p"||
+                "because (for ~p)~n"||
+                "    ~p~n"||
+                "could not be derived from inferred ~p:~n"||
+                "~p", 
+                [From, To, Old, GoalCopy, Left, Type, RelInfoCopy]),
             memo_ctcheck_sum(check)
         ;
-            % error_message( "(lns ~d-~d) False assertion:~n~pbecause on ~p ~p :~n~p", 
-            %                [From, To, Old, Type, GoalCopy, RelInfoCopy]),
+            % error_message("(lns ~d-~d) False assertion:~n~pbecause on ~p ~p :~n~p", 
+            %               [From, To, Old, Type, GoalCopy, RelInfoCopy]),
             % TODO: (MH) we should get from the partial evaluator the first property that fails!
-            error_message("(lns ~d-~d) False assertion:~n~pbecause (for ~p) the ~p field is incompatible with inferred ~p:~n~p", 
-                          [From, To, Old, GoalCopy, Type, Type, RelInfoCopy]),
+            error_message("(lns ~d-~d) False assertion:~n"||
+                "~p"||
+                "because (for ~p) the ~p field is incompatible with inferred ~p:~n"||
+                "~p", 
+                [From, To, Old, GoalCopy, Type, Type, RelInfoCopy]),
             memo_ctcheck_sum(false)
         )
     ; true
@@ -524,7 +538,7 @@ checked_or_true(true).
 % TODO: enable/disable with a flag
 
 :- use_module(engine(stream_basic), [current_output/1]).
-:- use_module(library(streams), [tab/1]).
+:- use_module(library(streams), [tab/1, nl/0]).
 :- use_module(ciaopp(p_unit/p_printer), [print_assrt/2]).
 
 :- multifile portray/1.
@@ -547,11 +561,11 @@ portray('$dom'(Dom,Res,Rules,Tab)) :-
     ( Dom == generic_comp ->
         sort(Res, Res2),
         list_to_conj(Res2,ResConj),
-        write(ResConj), format("~n",[])
+        write(ResConj), nl
     ; write_info(Res, Tab)
     ),
     ( Rules = [] ->
-        format("~n",[])
+        nl
     ; format("~nwith:~n~n",[]),
       % Flag for a format of rules here 
       write_rules(Rules)
@@ -614,10 +628,12 @@ filter_left_over(calls, Call, _, _, Call).
 filter_left_over(success, _, Succ, _, Succ).
 filter_left_over(comp, _, _, Comp, Comp).
 
+:- export(name_vars/1).
 name_vars([]).
 name_vars([V=V|Vs]):-
     name_vars(Vs).
 
+:- export(prepare_output_info/5).
 :- pred prepare_output_info(+AbsInts,+,+Head,+Type,-Info)
    : list(AbsInts) => list(Info).
 prepare_output_info([],[],_Head,_Type,[]) :-!.
@@ -1170,43 +1186,43 @@ assertion_changed_message(VCT, STAT, OldAs, AsFalse, AsCheck, AsTrue, AbsInts, I
              locator   => Loc
            },       
     Loc = loc(_File, FromL, ToL),   
-    (
-        AsFalse == [],
-        AsCheck == [],
-        AsTrue \= [],
-        (
-            VCT == on ->
-            note_message(" (lns ~d-~d) Assertion:~n ~phas been changed to the following assertions:",[FromL, ToL, OldAs]),
-            format(user, "~n",[]),      
+    ( AsFalse == [],
+      AsCheck == [],
+      AsTrue \= [] ->
+        ( VCT == on ->
+            note_message("(lns ~d-~d) Assertion:~n"||
+                "~p"||
+                "has been changed to the following assertions:",
+                [FromL, ToL, OldAs]),
             simplify_assertion(AsTrue, AsTruePrint),
             show_changed_message(VCT, STAT, true, AsTruePrint)
-        ;
-            true
+        ; true
         )
-    ;
-        (
-            AsFalse \= [],
-            % as_message(error, " (lns ~d-~d) Assertion:~n ~phas been changed to the following assertions:",[FromL, ToL, OldAs]),
-            as_message(note, " (lns ~d-~d) Assertion:~n ~phas been changed to the following assertions:",[FromL, ToL, OldAs]),
-            format(user, "~n",[]) 
-        ;
-            % AsCheck must not be empty
-            % as_message(STAT, " (lns ~d-~d) Assertion:~n ~phas been changed to the following assertions:",[FromL, ToL, OldAs]),
-            as_message(note, " (lns ~d-~d) Assertion:~n ~phas been changed to the following assertions:",[FromL, ToL, OldAs]),
-            format(user, "~n",[])
-        ),  % TODO: Missing cut
-        simplify_assertion(AsFalse, AsFalsePrint),
-        simplify_assertion(AsCheck, AsCheckPrint),
-        simplify_assertion(AsTrue, AsTruePrint),
-        show_changed_message(VCT, STAT, false, AsFalsePrint),
-        show_changed_message(VCT, STAT, check, AsCheckPrint),
-        show_changed_message(VCT, STAT, true, AsTruePrint),
-        %
-        prepare_output_info(AbsInts, Info, Goal, Type, RelInfo),
-        copy_term((Goal,'$an_results'(RelInfo),Dict),(GoalCopy,RelInfoCopy,DictCopy)),
-        name_vars(DictCopy),
-        prettyvars((GoalCopy, RelInfoCopy)),
-        format(user, "because on ~p ~p :~n~p", [Type, GoalCopy, RelInfoCopy])
+    ; ( AsFalse \= [] ->
+          % as_message(error, " (lns ~d-~d) Assertion:~n"||"~p"||"has been changed to the following assertions:",[FromL, ToL, OldAs]),
+          as_message(note, "(lns ~d-~d) Assertion:~n"||
+              "~p"||
+              "has been changed to the following assertions:",
+              [FromL, ToL, OldAs])
+      ; % AsCheck must not be empty
+        % as_message(STAT, " (lns ~d-~d) Assertion:~n"||"~p"||"has been changed to the following assertions:",[FromL, ToL, OldAs]),
+        as_message(note, "(lns ~d-~d) Assertion:~n"||
+            "~p"||
+            "has been changed to the following assertions:",
+            [FromL, ToL, OldAs])
+      ),
+      simplify_assertion(AsFalse, AsFalsePrint),
+      simplify_assertion(AsCheck, AsCheckPrint),
+      simplify_assertion(AsTrue, AsTruePrint),
+      show_changed_message(VCT, STAT, false, AsFalsePrint),
+      show_changed_message(VCT, STAT, check, AsCheckPrint),
+      show_changed_message(VCT, STAT, true, AsTruePrint),
+      %
+      prepare_output_info(AbsInts, Info, Goal, Type, RelInfo),
+      copy_term((Goal,'$an_results'(RelInfo),Dict),(GoalCopy,RelInfoCopy,DictCopy)),
+      name_vars(DictCopy),
+      prettyvars((GoalCopy, RelInfoCopy)),
+      format(user, "because on ~p ~p :~n~p", [Type, GoalCopy, RelInfoCopy]) % TODO: use messages
     ).
 
 %------------------------------------------------------------------------------
@@ -1484,73 +1500,74 @@ size_var(nnegint(_)).
 % TODO: this clause needs a cut
 explain_interval(VCT, STAT, SignMsg, OldAssertion, NewAssertion, AbsInts, Info):-
     SignMsg = [],  % doesn't encounter function intersection
-    OldAssertion= as${ comp      => OldComp },
-    NewAssertion   = as${
-         status    => Status,       type      => Type ,
-         head      => Goal,
-         call      => Call ,        succ      => Success,
-         dic       => Dict,         comp      => Comp,
-         locator   => Loc,
-         fromwhere => From 
-    },
+    OldAssertion = as${ comp => OldComp },
+    NewAssertion = as${
+         status => Status, type => Type,
+         head => Goal,
+         call => Call, succ => Success,
+         dic => Dict, comp => Comp,
+         locator => Loc,
+         fromwhere => From},
     % this might be heavy on large module, for performance reason
     % this should only be applied for false and check case
     Loc = loc(_File, RFrom, To),
-    (  RFrom == To -> From = RFrom ;  From is RFrom+1 ),
+    ( RFrom == To -> From = RFrom ; From is RFrom+1 ),
     local_inccounter_split(simp,Status,Type,_),
     ( Status = checked ->
         ( VCT = on -> % TODO: added cut, is it OK? (JF)
             assertion_set_comp(NewAssertion, OldComp, NewAssertionToPrint), % TODO: why?
-            note_message( "(lns ~d-~d) Assertion:~n~phas been changed to~n~p" , 
-              [From, To, OldAssertion,NewAssertionToPrint] )
-        ;
-            true
+            note_message("(lns ~d-~d) Assertion:~n"||
+                "~p"||
+                "has been changed to~n"||
+                "~p", 
+                [From, To, OldAssertion,NewAssertionToPrint])
+        ; true
         )
     ; Status = check ->
         prepare_output_info(AbsInts, Info, Goal, Type, RelInfo),
         copy_term((Goal,'$an_results'(RelInfo),Dict),(GoalCopy,RelInfoCopy,DictCopy)),
         name_vars(DictCopy),
         prettyvars((GoalCopy,RelInfoCopy)),
-        (
-            STAT \== off,
+        ( STAT \== off ->
             filter_left_over(Type, Call, Success, Comp, LeftL),
             list_to_conj(LeftL, Left0),
             copy_term((Left0, Dict),(Left, CDict)),
             name_vars(CDict), prettyvars(Left),
-            show_message(STAT, "(lns ~d-~d) Cannot verify assertion:~n~pbecause on ~p ~p :~n~p ~nLeft to prove: ~w~n", 
-            [From, To, OldAssertion, Type, GoalCopy, RelInfoCopy, Left]),
-             memo_ctcheck_sum(check)
-        ;
-            true
+            show_message(STAT, "(lns ~d-~d) Cannot verify assertion:~n"||
+                "~p"||
+                "because on ~p ~p :~n"||
+                "~p~n"||
+                "Left to prove: ~w", 
+                [From, To, OldAssertion, Type, GoalCopy, RelInfoCopy, Left]),
+            memo_ctcheck_sum(check)
+        ; true
         )
     ; Status = false ->
         prepare_output_info(AbsInts, Info, Goal, Type, RelInfo),
         copy_term((Goal,'$an_results'(RelInfo),Dict),(GoalCopy,RelInfoCopy,DictCopy)),
         name_vars(DictCopy),
         prettyvars((GoalCopy,RelInfoCopy)),
-        error_message( "(lns ~d-~d) False assertion:~n~pbecause on ~p ~p :~n~p", 
-        [From, To, OldAssertion, Type, GoalCopy, RelInfoCopy]),
-         memo_ctcheck_sum(false)
+        error_message("(lns ~d-~d) False assertion:~n"||
+            "~p"||
+            "because on ~p ~p :~n"||
+            "~p", 
+            [From, To, OldAssertion, Type, GoalCopy, RelInfoCopy]),
+        memo_ctcheck_sum(false)
     ).
 %
 explain_interval(_VCT, STAT, SignMsg, OldAssertion, NewAssertion, AbsInts, Info):-
     STAT \== off, 
-    (
-        SignMsg = [1]
-    ;
-        SignMsg = [2]
-    ;
-        SignMsg = [3]
-    ;
-        SignMsg = [4]
+    ( SignMsg == [1] -> MsgStr = "Uncovered cost function"
+    ; SignMsg == [2] -> MsgStr = "Unconvergence GSL algorithm"
+    ; SignMsg == [3] -> MsgStr = "Encounters small intervals"
+    ; SignMsg == [4] -> MsgStr = "Searching for safe root algorithm might be unconverge"
     ),
-    NewAssertion  = as${
-             type      => Type,
-             head      => Goal,    
-             call      => Call,    succ      => Success,
-             comp      => Comp,    dic       => Dict,
-             locator   => Locator 
-              },       
+    NewAssertion = as${
+        type => Type,
+        head => Goal,    
+        call => Call, succ => Success,
+        comp => Comp, dic => Dict,
+        locator => Locator},       
     filter_left_over(Type, Call, Success, Comp, LeftL),
     list_to_conj(LeftL, Left0),
     copy_term((Left0, Dict),(Left, CDict)),
@@ -1562,20 +1579,14 @@ explain_interval(_VCT, STAT, SignMsg, OldAssertion, NewAssertion, AbsInts, Info)
     prettyvars((GoalCopy,RelInfoCopy)),
     Locator = loc(_File, RFrom, To),
     ( RFrom == To -> From = RFrom ; From is RFrom+1 ),
-    ( SignMsg == [1] ->
-        show_message(STAT, "(lns ~d-~d) Uncovered cost function~n Cannot verify assertion:~n~pbecause on ~p ~p :~n~p ~nLeft to prove: ~w~n", 
-        [From, To, OldAssertion, Type, GoalCopy, RelInfoCopy, Left])
-    ; SignMsg == [2] ->
-        show_message(STAT, "(lns ~d-~d) Unconvergence GSL algorithm~n Cannot verify assertion:~n~pbecause on ~p ~p :~n~p ~nLeft to prove: ~w~n", 
-        [From, To, OldAssertion, Type, GoalCopy, RelInfoCopy, Left])
-    ; SignMsg == [3] ->
-        show_message(STAT, "(lns ~d-~d) Encounters small intervals ~n Cannot verify assertion:~n~pbecause on ~p ~p :~n~p ~nLeft to prove: ~w~n", 
-        [From, To, OldAssertion, Type, GoalCopy, RelInfoCopy, Left])
-    ; SignMsg == [4] ->
-        show_message(STAT, "(lns ~d-~d) Searching for safe root algorithm might be unconverge ~n Cannot verify assertion:~n~pbecause on ~p ~p :~n~p ~nLeft to prove: ~w~n", 
-        [From, To, OldAssertion, Type, GoalCopy, RelInfoCopy, Left])
-    ),!.
-%otherwise: show nothing
+    show_message(STAT, "(lns ~d-~d) ~s~n"||
+        "Cannot verify assertion:~n"||
+        "~p"||
+        "because on ~p ~p :~n"||
+        "~p~n"||
+        "Left to prove: ~w", 
+        [From, To, MsgStr, OldAssertion, Type, GoalCopy, RelInfoCopy, Left]).
+% otherwise: show nothing
 explain_interval(_VCT, _STAT, _SignMsg, _OldAssertion, _NewAssertion, _AbsInts, _Info).
 
 %---------------------------------------------------------------
@@ -1713,21 +1724,19 @@ compact_abs_cost(Type, Ap, Res, CF, cost(Ap, Type, Res, CF)).
 simp_cost(FI, A, B):-
     ( var(A) ->
         subtitute_var(FI, A, B)
-    ;
-        functor(A, F, N),
-        ( N == 2 ->
-            arg(1, A, Arg1),
-            arg(2, A, Arg2),
-            simp_cost(FI, Arg1, TArg1),
-            simp_cost(FI, Arg2, TArg2),
-            functor(B, F, 2),
-            arg(1, B, TArg1),
-            arg(2, B, TArg2)
-        ;  N == 0 ->
-            ( var(A) ->  subtitute_var(FI, A, B) ; A = B )
-        ;
-            error_message("~nsimp_cost: function ~p is unspecified~n",[A])
-        )
+    ; functor(A, F, N),
+      ( N == 2 ->
+          arg(1, A, Arg1),
+          arg(2, A, Arg2),
+          simp_cost(FI, Arg1, TArg1),
+          simp_cost(FI, Arg2, TArg2),
+          functor(B, F, 2),
+          arg(1, B, TArg1),
+          arg(2, B, TArg2)
+      ; N == 0 ->
+          ( var(A) ->  subtitute_var(FI, A, B) ; A = B )
+      ; error_message("simp_cost: function ~p is unspecified",[A]) % TODO: exception?
+      )
     ).
 
 % TODO: Missing cuts
