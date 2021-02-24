@@ -5,7 +5,7 @@
 :- doc(author, "Jose F. Morales (simplified version)"). % TODO: this module requires more changes
 
 :- doc(module, "This module provides an interface to unfold
-       transformation implemented in @{unfold_core.pl}. It transforms
+       transformation implemented in @file{unfold_core.pl}. It transforms
        CiaoPP internal representation of code into the representation
        used in the unfold step and performs such unfolding.").
 

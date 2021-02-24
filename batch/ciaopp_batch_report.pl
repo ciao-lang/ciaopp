@@ -5,7 +5,7 @@
 
 :- doc(module, "This command generates a report in xml format compatible with
    junit xml
-   (@url{https://www.ibm.com/support/knowledgecenter/en/SSQ2R2_14.1.0/com.ibm.rsar.analysis.codereview.cobol.doc/topics/cac_useresults_junit.html).
+   (@url{https://www.ibm.com/support/knowledgecenter/en/SSQ2R2_14.1.0/com.ibm.rsar.analysis.codereview.cobol.doc/topics/cac_useresults_junit.html}).
    It can then be used to visualize the results of launching ciaopp_batch with
    the allure tool (see @url{https://github.com/allure-framework}), as well as
    in gitlab (@url{https://docs.gitlab.com/ee/ci/unit_test_reports.html}.").
