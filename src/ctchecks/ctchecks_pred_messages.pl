@@ -90,7 +90,7 @@ inform_as_change_to_user(Old,OldRef,New,AbsInts,Info) :-
 
 % checked assertion, ctchecks pplog
 decide_inform_user(VCT, _STAT, Old, OldRef, New, AbsInts, Info) :-
-    New = as${status => Status, type => Type},
+    New = as${status => Status, type => Type, dic => Dict},
     checked_or_true(Status), !,
     Old = as${comp => OldComp, head => Goal},
     Old = as${call => OrigCall, succ => OrigSuccess, locator => Loc},
@@ -101,8 +101,11 @@ decide_inform_user(VCT, _STAT, Old, OldRef, New, AbsInts, Info) :-
                    %% message and not when the assertion is checked?
     add_assertion(NewToPrint),
     local_inccounter_split(simp,checked,Type,_),
-    Loc = loc(_File, FromL, ToL),
     ( VCT = on ->
+        copy_term((Old,Dict), (OldCopy,DictCopy)),
+        name_vars(DictCopy),
+        prettyvars(OldCopy),
+        Loc = loc(_File, FromL, ToL),
         % TODO: (MH) Simplifying for now the message since presumably
         %       at this point the assertion is totally checked. If
         %       there has been some simplification then we should show
@@ -115,15 +118,15 @@ decide_inform_user(VCT, _STAT, Old, OldRef, New, AbsInts, Info) :-
             note_message("(lns ~d-~d) Trivially verified assertion:~n"||
                 "~p"||
                 "because the predicate is unreachable", 
-                [FromL, ToL, Old])
+                [FromL, ToL, OldCopy])
         ; member('$dom'(_,[[bottom]],_), RelInfo) ->
             note_message("(lns ~d-~d) Trivially verified assertion:~n"||
                 "~p"||
                 "because the predicate never succeeds (for the given precondition)",
-                [FromL, ToL, Old])
+                [FromL, ToL, OldCopy])
         ; note_message("(lns ~d-~d) Verified assertion:~n"||
               "~p", 
-              [FromL, ToL, Old])
+              [FromL, ToL, OldCopy])
         )
     ; true
     ).
@@ -151,14 +154,14 @@ decide_inform_user(VC, STAT, Old, OldRef, New, AbsInts, Info):-
             list_to_conj(LeftL, Left0)
         ; Left0 = [] % dummy, not used if the assertion is false
         ),
-        copy_term((Goal,'$an_results'(RelInfo),Left0,Dict),(GoalCopy,RelInfoCopy,Left,DictCopy)),
+        copy_term((Old,RelInfo,Left0,Dict),(OldCopy,RelInfoCopy,Left,DictCopy)),
         name_vars(DictCopy),
-        prettyvars((GoalCopy,Left,RelInfoCopy)),
+        prettyvars((Left,RelInfoCopy)),
         Loc = loc(_File, RFrom, To),
         ( RFrom == To -> From = RFrom ; From is RFrom + 1 ), % ?????
         ( Status = check ->
             %  show_message(STAT, "(lns ~d-~d) Cannot verify assertion:~n~pbecause on ~p ~p :~n~p ~nLeft to prove: ~w~n", 
-            %              [From, To, Old, Type, GoalCopy, RelInfoCopy, Left]),
+            %              [From, To, Old, Type, GoalCopy, '$an_results'(RelInfoCopy), Left]),
             % MH: Changed to this message format which seems easier to read. Same with rest of messages.
             %
             % TODO: The (for ~p) part is because when printing the
@@ -170,20 +173,20 @@ decide_inform_user(VC, STAT, Old, OldRef, New, AbsInts, Info):-
             %
             show_message(STAT, "(lns ~d-~d) Could not verify assertion:~n"||
                 "~p"||
-                "because (for ~p)~n"||
+                "because~n"||
                 "    ~p~n"||
                 "could not be derived from inferred ~p:~n"||
                 "~p", 
-                [From, To, Old, GoalCopy, Left, Type, RelInfoCopy]),
+                [From, To, OldCopy, Left, Type, '$an_results'(RelInfoCopy)]),
             memo_ctcheck_sum(check)
         ; % error_message("(lns ~d-~d) False assertion:~n~pbecause on ~p ~p :~n~p", 
-          %               [From, To, Old, Type, GoalCopy, RelInfoCopy]),
+          %               [From, To, Old, Type, GoalCopy, '$an_results'(RelInfoCopy)]),
           % TODO: (MH) we should get from the partial evaluator the first property that fails!
           error_message("(lns ~d-~d) False assertion:~n"||
               "~p"||
-              "because (for ~p) the ~p field is incompatible with inferred ~p:~n"||
+              "because the ~p field is incompatible with inferred ~p:~n"||
               "~p", 
-              [From, To, Old, GoalCopy, Type, Type, RelInfoCopy]),
+              [From, To, OldCopy, Type, Type, '$an_results'(RelInfoCopy)]),
           memo_ctcheck_sum(false)
         )
     ; true
@@ -303,7 +306,7 @@ filter_left_over(comp, _, _, Comp, Comp).
 
 :- export(name_vars/1).
 name_vars([]).
-name_vars([V=V|Vs]):-
+name_vars([V='$VAR'(V)|Vs]):-
     name_vars(Vs).
 
 :- export(prepare_output_info/5).
@@ -316,14 +319,12 @@ prepare_output_info([D|Ds],[I|Is],H,Type,AInfoOut) :-
     trans_aux(Type,D,H,I,A),
     ( knows_of(regtypes,D), \+ A = [[bottom]] ->   % (\=)/2 is not a builtin???
         collect_rules(H,A,ReqRules,A1)
-    ;
-        ReqRules = [],
-        A1 = A
+    ; ReqRules = [],
+      A1 = A
     ),
     ( A1 = [] ->
         AInfoOut = AInfo
-    ;
-        AInfoOut = ['$dom'(D,A1,ReqRules)|AInfo]
+    ; AInfoOut = ['$dom'(D,A1,ReqRules)|AInfo]
     ),
     prepare_output_info(Ds,Is,H,Type,AInfo).
 
