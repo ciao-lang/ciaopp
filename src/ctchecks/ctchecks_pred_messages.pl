@@ -90,10 +90,11 @@ inform_as_change_to_user(Old,OldRef,New,AbsInts,Info) :-
 
 % checked assertion, ctchecks pplog
 decide_inform_user(VCT, _STAT, Old, OldRef, New, AbsInts, Info) :-
-    New = as${status => Status, type => Type, dic => Dict},
-    checked_or_true(Status), !,
-    Old = as${comp => OldComp, head => Goal},
-    Old = as${call => OrigCall, succ => OrigSuccess, locator => Loc},
+    New = as${status => Status, type => Type},
+    checked_or_true(Status),
+    !,
+    Old = as${comp => OldComp},
+    Old = as${call => OrigCall, succ => OrigSuccess},
     assertion_set_calls(New, OrigCall, A2), % TODO: why?
     assertion_set_success(A2, OrigSuccess, A3), % TODO: why?
     assertion_set_comp(A3, OldComp, NewToPrint), % TODO: why?
@@ -102,37 +103,12 @@ decide_inform_user(VCT, _STAT, Old, OldRef, New, AbsInts, Info) :-
     add_assertion(NewToPrint),
     local_inccounter_split(simp,checked,Type,_),
     ( VCT = on ->
-        copy_term((Old,Dict), (OldCopy,DictCopy)),
-        name_vars(DictCopy),
-        prettyvars(OldCopy),
-        Loc = loc(_File, FromL, ToL),
-        % TODO: (MH) Simplifying for now the message since presumably
-        %       at this point the assertion is totally checked. If
-        %       there has been some simplification then we should show
-        %       the new assertion (but that should be done in the case
-        %       below?)  Old:
-        %% note_message("(lns ~d-~d) The assertion:~n~p has been changed to~n~p",
-        %%              [FromL, ToL, Old,NewToPrint])
-        prepare_output_info(AbsInts, Info, Goal, Type, RelInfo),
-        ( RelInfo = [] ->
-            note_message("(lns ~d-~d) Trivially verified assertion:~n"||
-                "~p"||
-                "because the predicate is unreachable", 
-                [FromL, ToL, OldCopy])
-        ; member('$dom'(_,[[bottom]],_), RelInfo) ->
-            note_message("(lns ~d-~d) Trivially verified assertion:~n"||
-                "~p"||
-                "because the predicate never succeeds (for the given precondition)",
-                [FromL, ToL, OldCopy])
-        ; note_message("(lns ~d-~d) Verified assertion:~n"||
-              "~p", 
-              [FromL, ToL, OldCopy])
-        )
+        inform_checked(Old, New, AbsInts, Info)
     ; true
     ).
 % false or check assertions
 decide_inform_user(VC, STAT, Old, OldRef, New, AbsInts, Info):-
-    New = as(_,Status,Type,Goal,_,Call,Success,Comp,Dict,Loc,_,_),
+    New = as(_,Status,Type,Goal,_,_,_,_,_,_,_,_),
     ( Status = check, current_pp_flag(client_safe_ctchecks, on) ->
         % IG: why client_safe_ctchecks not used in the previous clause (checked)?
         % Do not inform on check calls assertions of exported predicates
@@ -140,59 +116,96 @@ decide_inform_user(VC, STAT, Old, OldRef, New, AbsInts, Info):-
     ; true
     ),
     %
+    !,
     local_inccounter_split(simp,Status,Type,_),
     ( Status = false -> % TODO: WHY?
         erase(OldRef),
         add_assertion(New)
     ; true
     ),
-    !, % IG: move cut to the head?
-    ( VC == on ->
-        prepare_output_info(AbsInts, Info, Goal, Type, RelInfo),
-        ( Status = check ->
-            filter_left_over(Type, Call, Success, Comp, LeftL),
-            list_to_conj(LeftL, Left0)
-        ; Left0 = [] % dummy, not used if the assertion is false
-        ),
-        copy_term((Old,RelInfo,Left0,Dict),(OldCopy,RelInfoCopy,Left,DictCopy)),
-        name_vars(DictCopy),
-        prettyvars((Left,RelInfoCopy)),
-        Loc = loc(_File, RFrom, To),
-        ( RFrom == To -> From = RFrom ; From is RFrom + 1 ), % ?????
-        ( Status = check ->
-            %  show_message(STAT, "(lns ~d-~d) Cannot verify assertion:~n~pbecause on ~p ~p :~n~p ~nLeft to prove: ~w~n", 
-            %              [From, To, Old, Type, GoalCopy, '$an_results'(RelInfoCopy), Left]),
-            % MH: Changed to this message format which seems easier to read. Same with rest of messages.
-            %
-            % TODO: The (for ~p) part is because when printing the
-            % inferred info the clause variables are used, whereas the
-            % assertion just before is printed with
-            % A,B,... variables. At the very least the assertion
-            % should be printed with the program variable names, and
-            % ideally with the same as in the abstract information.
-            %
-            show_message(STAT, "(lns ~d-~d) Could not verify assertion:~n"||
-                "~p"||
-                "because~n"||
-                "    ~p~n"||
-                "could not be derived from inferred ~p:~n"||
-                "~p", 
-                [From, To, OldCopy, Left, Type, '$an_results'(RelInfoCopy)]),
-            memo_ctcheck_sum(check)
-        ; % error_message("(lns ~d-~d) False assertion:~n~pbecause on ~p ~p :~n~p", 
-          %               [From, To, Old, Type, GoalCopy, '$an_results'(RelInfoCopy)]),
-          % TODO: (MH) we should get from the partial evaluator the first property that fails!
-          error_message("(lns ~d-~d) False assertion:~n"||
-              "~p"||
-              "because the ~p field is incompatible with inferred ~p:~n"||
-              "~p", 
-              [From, To, OldCopy, Type, Type, '$an_results'(RelInfoCopy)]),
-          memo_ctcheck_sum(false)
-        )
+    ( VC = on ->
+        inform_non_checked(STAT, Old, New, AbsInts, Info)
     ; true
     ).
 % (otherwise)
 decide_inform_user(_Flag1,_Flag2,_Old,_OldRef,_New,_Dom,_Info) :- !.
+
+:- export(inform_checked/4).
+inform_checked(Old, New, AbsInts, Info) :-
+    New = as${type => Type, dic => Dict},
+    Old = as${head => Goal, locator => Loc},
+    %
+    prepare_output_info(AbsInts, Info, Goal, Type, RelInfo),
+    copy_term((Old,Dict), (OldCopy,DictCopy)),
+    name_vars(DictCopy),
+    prettyvars(OldCopy),
+    Loc = loc(_File, FromL, ToL),
+    % TODO: (MH) Simplifying for now the message since presumably
+    %       at this point the assertion is totally checked. If
+    %       there has been some simplification then we should show
+    %       the new assertion (but that should be done in the case
+    %       below?)  Old:
+    %% note_message("(lns ~d-~d) The assertion:~n~p has been changed to~n~p",
+    %%              [FromL, ToL, Old,NewToPrint])
+    ( RelInfo = [] ->
+        note_message("(lns ~d-~d) Trivially verified assertion:~n"||
+            "~p"||
+            "because the predicate is unreachable", 
+            [FromL, ToL, OldCopy])
+    ; member('$dom'(_,[[bottom]],_), RelInfo) ->
+        note_message("(lns ~d-~d) Trivially verified assertion:~n"||
+            "~p"||
+            "because the predicate never succeeds (for the given precondition)",
+            [FromL, ToL, OldCopy])
+    ; note_message("(lns ~d-~d) Verified assertion:~n"||
+          "~p", 
+          [FromL, ToL, OldCopy])
+    ).
+
+:- export(inform_non_checked/5).
+inform_non_checked(STAT, Old, New, AbsInts, Info) :-
+    New = as(_,Status,Type,Goal,_,Call,Success,Comp,Dict,Loc,_,_),
+    prepare_output_info(AbsInts, Info, Goal, Type, RelInfo),
+    ( Status = check ->
+        filter_left_over(Type, Call, Success, Comp, LeftL),
+        list_to_conj(LeftL, Left0)
+    ; Left0 = [] % dummy, not used if the assertion is false
+    ),
+    copy_term((Old,RelInfo,Left0,Dict),(OldCopy,RelInfoCopy,Left,DictCopy)),
+    name_vars(DictCopy),
+    prettyvars((OldCopy,Left,RelInfoCopy)),
+    Loc = loc(_File, RFrom, To),
+    ( RFrom == To -> From = RFrom ; From is RFrom + 1 ), % ?????
+    ( Status = check ->
+        %  show_message(STAT, "(lns ~d-~d) Cannot verify assertion:~n~pbecause on ~p ~p :~n~p ~nLeft to prove: ~w~n", 
+        %              [From, To, Old, Type, GoalCopy, '$an_results'(RelInfoCopy), Left]),
+        % MH: Changed to this message format which seems easier to read. Same with rest of messages.
+        %
+        % TODO: The (for ~p) part is because when printing the
+        % inferred info the clause variables are used, whereas the
+        % assertion just before is printed with
+        % A,B,... variables. At the very least the assertion
+        % should be printed with the program variable names, and
+        % ideally with the same as in the abstract information.
+        %
+        show_message(STAT, "(lns ~d-~d) Could not verify assertion:~n"||
+            "~p"||
+            "because~n"||
+            "    ~p~n"||
+            "could not be derived from inferred ~p:~n"||
+            "~p", 
+            [From, To, OldCopy, Left, Type, '$an_results'(RelInfoCopy)]),
+        memo_ctcheck_sum(check)
+    ; % error_message("(lns ~d-~d) False assertion:~n~pbecause on ~p ~p :~n~p", 
+      %               [From, To, Old, Type, GoalCopy, '$an_results'(RelInfoCopy)]),
+      % TODO: (MH) we should get from the partial evaluator the first property that fails!
+      error_message("(lns ~d-~d) False assertion:~n"||
+          "~p"||
+          "because the ~p field is incompatible with inferred ~p:~n"||
+          "~p", 
+          [From, To, OldCopy, Type, Type, '$an_results'(RelInfoCopy)]),
+      memo_ctcheck_sum(false)
+    ).
 
 :- export(local_inccounter_split/4).
 local_inccounter_split(Proc,Status,Type,Val) :-
@@ -299,7 +312,7 @@ filter_required_rules([R|Rs],RIn,ROut):-
     filter_required_rules(Rs,[R|RIn],ROut).
 filter_required_rules([],Rs,Rs).
 
-:- export(filter_left_over/5).
+%:- export(filter_left_over/5).
 filter_left_over(calls, Call, _, _, Call).
 filter_left_over(success, _, Succ, _, Succ).
 filter_left_over(comp, _, _, Comp, Comp).
