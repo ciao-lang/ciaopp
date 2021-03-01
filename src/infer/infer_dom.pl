@@ -848,8 +848,8 @@ does_not_use_memo_lub(resources).
 
 knows_of(regtypes,Dom):- determinable(Dom,types).
 knows_of(X,nf):- nf_info(X).
-% knows_of(X,nf):- knows_of(X,eterms). % PLG
-% knows_of(X,nf):- knows_of(X,shfr).   % PLG
+knows_of(X,nf):- knows_of(X,eterms). % PLG
+knows_of(X,nf):- knows_of(X,shfr).   % PLG
 knows_of(X,nfg):- nf_info(X).
 % knows_of(X,nfg):- knows_of(X,eterms). % EMM
 % knows_of(X,nfg):- knows_of(X,shfr).   % EMM

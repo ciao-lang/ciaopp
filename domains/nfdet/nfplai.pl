@@ -25,7 +25,8 @@
     nf_unknown_call/4,
     nf_unknown_entry/3,
     nf_empty_entry/3,
-    nf_dom_statistics/1
+    nf_dom_statistics/1,
+    nf_obtain_info/4
 ], [assertions,regtypes,basicmodes]).
 
 :- include(ciaopp(plai/plai_domain)).
@@ -57,10 +58,13 @@
 :- dom_impl(nf, unknown_entry/3).
 :- dom_impl(nf, empty_entry/3).
 :- dom_impl(nf, dom_statistics/1).
+:- dom_impl(nf, obtain_info/4).
 
 :- use_module(domain(eterms)).
 :- use_module(domain(sharefree)).
 :- use_module(domain(nfdet/nfabs)).
+
+:- use_module(ciaopp(infer/infer_dom), [knows_of/2]).
 
 :- use_module(library(idlists), [memberchk/2]).
 :- use_module(library(lists), [append/3]).
@@ -468,3 +472,15 @@ nf_empty_entry(Sg,Vars,Entry):-
 %-----------------------------------------------------------------------
 
 nf_dom_statistics(Info):- nfabs_dom_statistics(Info).
+
+%-----------------------------------------------------------------------
+
+nf_obtain_info(Prop,Vars,ASub0,Info) :- knows_of(Prop,eterms), !,
+    asub(ASub0,ASub,_,_),
+    eterms_obtain_info(Prop,Vars,ASub,Info).
+nf_obtain_info(Prop,Vars,ASub0,Info) :- knows_of(Prop,shfr), !,
+    asub(ASub0,_,ASub,_),
+    shfr_obtain_info(Prop,Vars,ASub,Info).
+nf_obtain_info(Prop,_Vars,ASub0,Info) :- knows_of(Prop,nf), !,
+    asub(ASub0,_,_,ASub),
+    nfabs:nf_asub_to_native(ASub,_,Info).

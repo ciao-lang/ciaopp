@@ -22,7 +22,9 @@
     [abs_sort/3,asub_to_info/5,call_to_entry/10,
      compute_lub/3, %do_compute_lub/3,
      obtain_info/5,
-     asub_to_native/6]).
+     asub_to_native/6,
+     split_combined_domain/4
+    ]).
 :- use_module(ciaopp(plai/plai_db)).
 :- use_module(ciaopp(pool)).
 :- use_module(ciaopp(p_unit), [type_of_goal/2]).
@@ -181,10 +183,15 @@ get_proj_prime_pair([complete(G,Proj,[_Prime|T],K,_)|R],K,G,Proj,Prime):-
 get_proj_prime_pair([_|R],K,G,Proj,Prime):-
     get_proj_prime_pair(R,K,G,Proj,Prime).
 
-kind_of_info(regtypes,AbsInt,Vars,Proj,Prime,Pre,Post):- !,
-    asub_to_info(AbsInt,Proj,Vars,Pre0,_),
+kind_of_info(regtypes,AbsInt,Vars,Proj0,Prime0,Pre,Post):- !,
+    % Test for combined domain.
+    ( split_combined_domain(AbsInt,[],_,_) ->
+        obtain_info(AbsInt,regtypes,Vars,Proj0,Pre0),
+        obtain_info(AbsInt,regtypes,Vars,Prime0,Post0)
+    ; asub_to_info(AbsInt,Proj0,Vars,Pre0,_),
+      asub_to_info(AbsInt,Prime0,Vars,Post0,_)
+    ),
     inline_type_names(Pre0,Pre),
-    asub_to_info(AbsInt,Prime,Vars,Post0,_),
     inline_type_names(Post0,Post).
 kind_of_info(Prop,AbsInt,Vars,Proj,Prime,Pre,Post):-
     obtain_info(AbsInt,Prop,Vars,Proj,Pre),
