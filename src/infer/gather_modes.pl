@@ -12,8 +12,10 @@
 %% An argument is output if it is not input and it is ground in every
 %% successful return from the procedure
 
-:- use_module(ciaopp(infer/infer),              [get_info/5, type2measure/3]).
-:- use_module(ciaopp(infer/infer_db),           [inferred/3]).
+:- use_module(ciaopp(infer/infer),
+              [get_info/5, get_memo_lub/5, type2measure/3]).
+:- use_module(ciaopp(infer/infer_db), [domain/1, inferred/3]).
+:- use_module(ciaopp(infer/infer_dom), [does_not_use_memo_lub/1]).
 :- use_module(ciaopp(infer/gather_modes_basic), [translate_to_modes/2, get_metric/2]).
 :- if(defined(has_ciaopp_cost)).
 :- use_module(resources(res_assrt_defs/resources_lib),
@@ -30,7 +32,14 @@ get_modes_assrt(_,_) :- fail. % (default)
 :- use_module(library(assertions/assrt_lib), [assertion_body/7]).
 :- use_module(ciaopp(p_unit/clause_db)).
 :- use_module(ciaopp(p_unit/assrt_db)).
-:- use_module(library(hiordlib), [foldl/4, foldl/5, maplist/3, maplist/4]).
+:- use_module(library(hiordlib), [
+    foldl/4,
+    foldl/5,
+    maplist/2,
+    maplist/3,
+    maplist/4,
+    partition/4
+]).
 :- use_module(ciaopp(preprocess_flags), [current_pp_flag/2]).
 :- use_module(ciaopp(ciaopp_log), [pplog/2]).
 
@@ -103,14 +112,41 @@ gather_entry_modes(_).
 % ---------------------------------------------------------------------------
 %! ## Dead Code Removal
 %
-% TODO: This is not the ideal solution, as analysis can be easily tricked.
-%         Read information from completes in order to infer reachability.
+% We need this to avoid resources analyzing unreachable code, which
+% does not count with information from previous analyses and would
+% cause failure.
 %
-% We need this to avoid resources analyzing unreachable code, which does not
-% count with information from previous analyses and would cause failure. This
-% applies to both unreachable predicates and clauses.
 
-remove_dead_code(Cls0, Ds0, Cls, Ds) :-
+remove_dead_code(Cls0,Ds0,Cls,Ds) :-
+    % If fact info is being stored, we do not need to call
+    % ad_hoc_remove_dead_code/5.
+    ( ( current_pp_flag(fact_info,on) ; domain(nf) ) ->
+        Cls1 = Cls0,
+        Ds1 = Ds0,
+        Removed1 = []
+    ; ad_hoc_remove_dead_code(Cls0,Ds0,Cls1,Ds1,Removed1)
+    ),
+    maplist(to_keypair,Cls1,Ds1,ClDs1),
+    findall(Domain,domain_uses_memo_lub(Domain),Domains),
+    partition(used_clause(Domains),ClDs1,ClDs,RemovedDs),
+    maplist(to_keypair,Cls,Ds,ClDs),
+    ( Removed1 = [], RemovedDs = [] ->
+        true
+    ; maplist(to_keypair,Removed2,_,RemovedDs),
+      maplist(clause_id,Removed2,Removed3),
+      append(Removed1,Removed3,Removed4),
+      sort(Removed4,Removed),
+      pplog(infer, ['Unreachable predicates and clauses: ', ''(Removed)])
+    ).
+
+% ------------------------------------------------------------------------
+%! ### Ad Hoc Code Removal
+%
+% First code removal step. Needed because domains only store fact info
+% if the flag `fact_info` is set.
+%
+
+ad_hoc_remove_dead_code(Cls0, Ds0, Cls, Ds, Removed) :-
     (source_clause(_, directive(module(_, Exports0, _)), _) -> true ; true),
     (
         var(Exports0) ->
@@ -123,14 +159,7 @@ remove_dead_code(Cls0, Ds0, Cls, Ds) :-
         maplist(([Module] -> ''(F0/A, F/A) :- module_concat(Module,F0,F)),
                 Exports0, 
                 Exports1),
-        remove_dead_clauses(Exports,Cls0,Ds0,Cls,Ds,Removed),
-        (
-            Removed \== [] ->
-                pplog(infer,
-                      ['Unreachable predicates and clauses: ', ''(Removed)])
-        ;
-            true
-        )
+        remove_dead_clauses(Exports,Cls0,Ds0,Cls,Ds,Removed)
     ).
 
 remove_dead_clauses(Exports0,Cls0,Ds0,Cls,Ds,Removed) :-
@@ -227,10 +256,60 @@ sweep_(dic(F/A,V,L,R),Cls0,Ds0,Removed0,Cls,Ds,Removed) :-
     sweep_(R,Cls2,Ds2,Removed2,Cls,Ds,Removed).
 
 sweep_clause(Cl-_D-M,Cls0-Ds0-Removed0,Cls0-Ds0-[ClId|Removed0]) :- var(M), !,
-    is_clause(Cl,_,_,ClId).
+    clause_id(Cl,ClId).
 sweep_clause(Cl-D-_,Cls0-Ds0-Removed0,[Cl|Cls0]-[D|Ds0]-Removed0).
 
+clause_id(Cl,ClId) :- is_clause(Cl,_,_,ClId).
+
 applicable_clause(Head0, Head1) :- \+ \+ Head0 = Head1.
+
+% ------------------------------------------------------------------------
+%! ### ciaopp Based Code Removal
+%
+% Predicates to remove dead code using information inferred by other
+% domains.
+%
+
+% TODO: Move.
+domain_uses_memo_lub(Domain) :- domain(Domain),
+    \+ does_not_use_memo_lub(Domain).
+
+% TODO: Duplicated.
+to_keypair(A,B,A-B).
+
+used_clause(Domains,Cl-_) :-
+    is_clause(Cl,_,Body,Key),
+    ( Body = true:_, current_pp_flag(fact_info,off) ->
+        ( domain(nf) ->  % Only nf stores entries for facts by default.
+            used_clause_(Key,nf)
+        ; true
+        )
+    ; maplist(used_clause_(Key),Domains)
+    ).
+
+% A clause is reachable iff:
+%
+% - The end of the clause is reachable (needed because domains other
+%   than nf don't store info for the first point of facts).
+% Or
+% - The first point of the clause is reachable. We cannot just test
+%   whether there is an entry at a memo table at such point because in
+%   some cases a $bottom entry is inserted for unreachable clauses,
+%   e.g., (using nf, $bottom is represented by fails in output):
+%
+% :- entry p(A) : num(A).
+%
+% p(1) :- true(not_fails), q, true(not_fails).
+% p(a) :- true($bottom), q, true($bottom).
+%
+% q :- true(not_fails), true, true(not_fails).
+used_clause_(Key,Domain) :-
+    get_memo_lub(Key,_Vars,Domain,_Lub,ASub),
+    ASub \== '$bottom'.
+used_clause_(Key0,Domain) :-
+    atom_concat(Key0,'/1',Key),
+    get_memo_lub(Key,_Vars,Domain,_Lub,ASub),
+    ASub \== '$bottom'.
 
 % ---------------------------------------------------------------------------
 % First entry point: collect mode info in the database

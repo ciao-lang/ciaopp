@@ -3,6 +3,7 @@
       asub_to_out/6,
       asub_to_props/4, 
       abs_execute_with_info/4,
+      does_not_use_memo_lub/1,
       flag_is/3,
       flag_set/3,
       knows_of/2,
@@ -839,6 +840,11 @@ non_collapsable(path).
 non_collapsable(res_plai).
 non_collapsable(sized_types).
 non_collapsable(res_plai_stprf).
+
+% TODO: Add more.
+does_not_use_memo_lub(nfg).
+does_not_use_memo_lub(detg).
+does_not_use_memo_lub(resources).
 
 knows_of(regtypes,Dom):- determinable(Dom,types).
 knows_of(X,nf):- nf_info(X).

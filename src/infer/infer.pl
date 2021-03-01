@@ -206,6 +206,11 @@ inline_type_name(T,T).
 get_memo_entry(Key,Vars,AbsInt,Subst):-
             current_fact(memo_table(Key,AbsInt,_,_,Vars,Subst)).
 
+:- pred get_memo_lub(Key,Vars,AbsInt,Lub,ASub)
+   : ( gnd(Key), term(Vars), gnd(AbsInt), var(Lub), var(ASub) )
+   => ( gnd(Key), list(var,Vars), gnd(AbsInt), nonvar(Lub), nonvar(ASub) )
+   # "Obtains program point info inferred by domain @var{AbsInt} at point @var{Key}.".
+
 %? get_memo_lub('$bottom',_,_,_,'$bottom'):- !.
 get_memo_lub(Key,Vars,AbsInt,Lub,ASub):-
     current_fact(memo_lub(Key,AbsInt,Lub,Vars,ASub)), !.
