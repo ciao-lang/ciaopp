@@ -23,7 +23,7 @@
      compute_lub/3, %do_compute_lub/3,
      obtain_info/5,
      asub_to_native/6,
-     split_combined_domain/4
+     needs/2
     ]).
 :- use_module(ciaopp(plai/plai_db)).
 :- use_module(ciaopp(pool)).
