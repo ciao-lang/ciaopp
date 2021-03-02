@@ -184,8 +184,7 @@ get_proj_prime_pair([_|R],K,G,Proj,Prime):-
     get_proj_prime_pair(R,K,G,Proj,Prime).
 
 kind_of_info(regtypes,AbsInt,Vars,Proj0,Prime0,Pre,Post):- !,
-    % Test for combined domain.
-    ( split_combined_domain(AbsInt,[],_,_) ->
+    ( needs(AbsInt,split_combined_domain) ->
         obtain_info(AbsInt,regtypes,Vars,Proj0,Pre0),
         obtain_info(AbsInt,regtypes,Vars,Prime0,Post0)
     ; asub_to_info(AbsInt,Proj0,Vars,Pre0,_),
