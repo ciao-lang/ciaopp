@@ -22,40 +22,22 @@
 :- use_module(spec(abs_exec), [abs_exec/4]).
 
 :- use_module(ciaopp(plai/domains), 
-    [ 
-        concrete/4,
-        less_or_equal_proj/5,
-        abs_sort/3,
-        project/6,
-        identical_abstract/3
-    ]).
-
+    [ concrete/4, less_or_equal_proj/5, abs_sort/3, project/6,
+      identical_abstract/3 ]).
 :- use_module(domain(sharing), [share_project/5]).
-
 :- use_module(domain(s_grshfr), 
-    [ 
-        change_values_if_differ/5,
-        member_value_freeness/3,
-        projected_gvars/3,
-        var_value/3
-    ]).
-
+    [ change_values_if_differ/5, member_value_freeness/3, projected_gvars/3,
+        var_value/3 ]).
 :- use_module(domain(sharefree), [sh_free_vars_compatible/2]).
      
 :- use_module(library(lsets), [ord_split_lists/4]).
- 
 :- use_module(library(lists), [member/2]).
 :- use_module(library(terms_vars), [varset/2]).
-:- use_module(library(sets), [ 
-    insert/3,
-    ord_subtract/3, 
-    ord_member/2, 
-    merge/3]).
-:- use_module(typeslib(typeslib), [
-    dz_type_included/2,
-    type_intersection_2/3,
-    is_ground_type/1,
-    is_empty_type/1]).
+:- use_module(library(sets), [insert/3, ord_subtract/3, ord_member/2, merge/3]).
+
+:- use_module(typeslib(typeslib),
+              [ dz_type_included/2, type_intersection_2/3, is_ground_type/1,
+                is_empty_type/1]).
 
 :- use_module(ciaopp(infer), [get_memo_lub/5]).
 
@@ -67,118 +49,118 @@
 %-------------------------------------------------------------------%
 %-------------------------------------------------------------------%
 % cond(+,+,+,+)                                                     %
-% cond(Cond,Abs,Goal,Info)                                          %
-%  Succeeds if Cond holds for Goal with abstract domain Abs and the %
+% cond(Cond,AbsInt,Goal,Info)                                       %
+%  Succeeds if Cond holds for Goal with abstract domain AbsInt and the%
 %  abstract call substitution Info                                  %
 %  All the conditions are reduced to determinable tests:            %
 %   ground, indep, nonground, unlinked
 %-------------------------------------------------------------------%
 cond(true,_,_,_).
-cond(type_incl(N,Type),Abs,Goal,Info):-
+cond(type_incl(N,Type),AbsInt,Goal,Info):-
     arg(N,Goal,ArgN),
-    type_of(Abs,ArgN,Info,T),
+    type_of(AbsInt,ArgN,Info,T),
     dz_type_included(T,Type).
-cond(incomp_type(N,Type),Abs,Goal,Info):-
+cond(incomp_type(N,Type),AbsInt,Goal,Info):-
     arg(N,Goal,ArgN),
-    type_of(Abs,ArgN,Info,T),
+    type_of(AbsInt,ArgN,Info,T),
     type_intersection_2(T,Type,T3),
     is_empty_type(T3).
 %       types_are_incompatible(RealType,T).
-cond(notvartype(N),Abs,Goal,Info):-
+cond(notvartype(N),AbsInt,Goal,Info):-
     arg(N,Goal,Var),
     ( var(Var) -> 
-      \+ type_of(Abs,Var,Info,term)
+      \+ type_of(AbsInt,Var,Info,term)
     ;
         true
     ).
-cond(all_ground_types,Abs,Goal,Info):-
+cond(all_ground_types,AbsInt,Goal,Info):-
     varset(Goal,Vars),
-    all_ground_with_types(Vars,Abs,Info).
-cond(one_concr_nequal,Abs,A = B,Info):-
+    all_ground_with_types(Vars,AbsInt,Info).
+cond(one_concr_nequal,AbsInt,A = B,Info):-
     varset(A = B,Vars),
-    each_concret_one(Vars,Abs,Info,Infoconcr),
+    each_concret_one(Vars,AbsInt,Info,Infoconcr),
     copy_term((A = B,Infoconcr),(A1 = B1,Info2concr)),
     apply(Info2concr),
     A1 \== B1.
-cond(one_concr_equal,Abs,A = B,Info):-
+cond(one_concr_equal,AbsInt,A = B,Info):-
     varset(A = B,Vars),
-    each_concret_one(Vars,Abs,Info,Infoconcr),
+    each_concret_one(Vars,AbsInt,Info,Infoconcr),
     copy_term((A = B,Infoconcr),(A1 = B1,Info2concr)),
     apply(Info2concr),
     A1 == B1.
-% cond(one_concr_nequal,Abs,Goal,Info):-
+% cond(one_concr_nequal,AbsInt,Goal,Info):-
 %       arg(1,Goal,Arg1),
 %       arg(2,Goal,Arg2),
-%       concrete(Abs,Arg1,Info,[One]),
-%       concrete(Abs,Arg2,Info,[Two]),
+%       concrete(AbsInt,Arg1,Info,[One]),
+%       concrete(AbsInt,Arg2,Info,[Two]),
 %       One \== Two.
-cond(ground(N),Abs,Goal,Info):-
+cond(ground(N),AbsInt,Goal,Info):-
     arg(N,Goal,ArgN),
     varset(ArgN,L),
-    all_ground(L,Abs,Info).
-cond(free(N),Abs,Goal,Info):-
+    all_ground(L,AbsInt,Info).
+cond(free(N),AbsInt,Goal,Info):-
     arg(N,Goal,ArgN),
-    free(Abs,ArgN,Info).
-cond(free(N,M),Abs,Goal,Info):-
-    arg(N,Goal,ArgN),
-    arg(M,Goal,ArgM),
-    free(Abs,ArgN,Info),
-    free(Abs,ArgM,Info).
-cond(indep(N,M),Abs,Goal,Info):-
+    free(AbsInt,ArgN,Info).
+cond(free(N,M),AbsInt,Goal,Info):-
     arg(N,Goal,ArgN),
     arg(M,Goal,ArgM),
-    indep(Abs,ArgN,ArgM,Info).
-cond(frgr(N,M),Abs,Goal,Info):-
+    free(AbsInt,ArgN,Info),
+    free(AbsInt,ArgM,Info).
+cond(indep(N,M),AbsInt,Goal,Info):-
     arg(N,Goal,ArgN),
     arg(M,Goal,ArgM),
-    free(Abs,ArgN,Info),
-    ground(Abs,ArgM,Info).
-cond(frindep(N,M),Abs,Goal,Info):-
+    indep(AbsInt,ArgN,ArgM,Info).
+cond(frgr(N,M),AbsInt,Goal,Info):-
     arg(N,Goal,ArgN),
     arg(M,Goal,ArgM),
-    free(Abs,ArgN,Info),
-    free(Abs,ArgM,Info),
-    indep(Abs,ArgN,ArgM,Info).
-cond(freerec(N),Abs,Goal,Info):-
+    free(AbsInt,ArgN,Info),
+    ground(AbsInt,ArgM,Info).
+cond(frindep(N,M),AbsInt,Goal,Info):-
+    arg(N,Goal,ArgN),
+    arg(M,Goal,ArgM),
+    free(AbsInt,ArgN,Info),
+    free(AbsInt,ArgM,Info),
+    indep(AbsInt,ArgN,ArgM,Info).
+cond(freerec(N),AbsInt,Goal,Info):-
     arg(N,Goal,ArgN),
     varset(ArgN,Vars),
     member(Var,Vars),
-    free(Abs,Var,Info).
-%        f_rec(ArgN,Abs,Info).
+    free(AbsInt,Var,Info).
+%        f_rec(ArgN,AbsInt,Info).
 %% GP nonground/3 undefined!
-%% cond(nonground(N),Abs,Goal,Info):-
+%% cond(nonground(N),AbsInt,Goal,Info):-
 %%         arg(N,Goal,ArgN),
-%%         nonground(Abs,ArgN,Info).
+%%         nonground(AbsInt,ArgN,Info).
 %% GP unlinked/4 undefined!
-%% cond(unlinked(N,M),Abs,Goal,Info):-
+%% cond(unlinked(N,M),AbsInt,Goal,Info):-
 %%      arg(N,Goal,ArgN),
 %%         arg(M,Goal,ArgM),
-%%      unlinked(Abs,ArgN,ArgM,Info).
-cond(nonvar(N),Abs,Goal,Info):-
+%%      unlinked(AbsInt,ArgN,ArgM,Info).
+cond(nonvar(N),AbsInt,Goal,Info):-
     arg(N,Goal,ArgN),
-%% MGB  nonvar(Abs,ArgN,Info).
-    not_free(Abs,ArgN,Info).
-cond(not_indep(N,M),Abs,Goal,Info):-
-    not_cond(indep(N,M),Abs,Goal,Info).
-cond(not_ground(N),Abs,Goal,Info):-
-    not_cond(ground(N),Abs,Goal,Info).
-cond([Cond|_],Abs,Goal,Info):-
-    cond(Cond,Abs,Goal,Info).
-cond([_|Conds],Abs,Goal,Info):-
-    cond(Conds,Abs,Goal,Info).
+%% MGB  nonvar(AbsInt,ArgN,Info).
+    not_free(AbsInt,ArgN,Info).
+cond(not_indep(N,M),AbsInt,Goal,Info):-
+    not_cond(indep(N,M),AbsInt,Goal,Info).
+cond(not_ground(N),AbsInt,Goal,Info):-
+    not_cond(ground(N),AbsInt,Goal,Info).
+cond([Cond|_],AbsInt,Goal,Info):-
+    cond(Cond,AbsInt,Goal,Info).
+cond([_|Conds],AbsInt,Goal,Info):-
+    cond(Conds,AbsInt,Goal,Info).
 %jcf
-cond(leq(Sg,Proj),Abs,Goal,Info):-
-    abs_sort(Abs,Proj,SortedProj),
+cond(leq(Sg,Proj),AbsInt,Goal,Info):-
+    abs_sort(AbsInt,Proj,SortedProj),
     varset(Goal,Gv),
-    project(Abs,Goal,Gv,_,Info,Entry),
-    abs_sort(Abs,Entry,SortedEntry),
-    less_or_equal_proj(Abs,Goal,SortedEntry,Sg,SortedProj).
+    project(AbsInt,Goal,Gv,_,Info,Entry),
+    abs_sort(AbsInt,Entry,SortedEntry),
+    less_or_equal_proj(AbsInt,Goal,SortedEntry,Sg,SortedProj).
 %jcf
 %
 :- if(defined(has_ciao_ppl)).
-cond(polyhedra_constraint,Abs,Goal,Info) :-
+cond(polyhedra_constraint,AbsInt,Goal,Info) :-
     % TODO: REWRITE!!! (e.g, using domain operations)
-    Abs = polyhedra,
+    AbsInt = polyhedra,
     Info = (_Addr, Vars),
     Goal = 'native_props:constraint'(Cons_Sys),
     polyhedra_input_user_interface(Cons_Sys, Vars, GoalASub, Goal, no), % TODO: check that last 2 args are OK
@@ -193,33 +175,33 @@ cond(polyhedra_constraint,Abs,Goal,Info) :-
 ]).
 :- endif.
 
- %% %-------------------------------------------------------------------%
- %% % f_rec(+,+,+)                                                      %
- %% % f_rec(Term,Abs,Info)                                              %
- %% %  Succeeds if Term has at least one variable that can be shown to  %
- %% %  be free                                                          %
- %% %-------------------------------------------------------------------%
- %% f_rec(Term,Abs,Info):-
- %%         var(Term),
- %%         !,
- %%         free(Abs,Term,Info).
- %% f_rec(Term,Abs,Info):-
- %%         functor(Term,_,2),
- %%         !,
- %%         arg(1,Term,Arg1),
- %%         arg(2,Term,Arg2),
- %%         (f_rec(Arg1,Abs,Info)
- %%     ;
- %%         f_rec(Arg2,Abs,Info)).
- %% f_rec(Term,Abs,Info):-
- %%         functor(Term,'-',1),
- %%         !,
- %%         arg(1,Term,Arg1),
- %%         f_rec(Arg1,Abs,Info).
- %% 
+%% %-------------------------------------------------------------------%
+%% % f_rec(+,+,+)                                                      %
+%% % f_rec(Term,AbsInt,Info)                                           %
+%% %  Succeeds if Term has at least one variable that can be shown to  %
+%% %  be free                                                          %
+%% %-------------------------------------------------------------------%
+%% f_rec(Term,AbsInt,Info):-
+%%         var(Term),
+%%         !,
+%%         free(AbsInt,Term,Info).
+%% f_rec(Term,AbsInt,Info):-
+%%         functor(Term,_,2),
+%%         !,
+%%         arg(1,Term,Arg1),
+%%         arg(2,Term,Arg2),
+%%         (f_rec(Arg1,AbsInt,Info)
+%%     ;
+%%         f_rec(Arg2,AbsInt,Info)).
+%% f_rec(Term,AbsInt,Info):-
+%%         functor(Term,'-',1),
+%%         !,
+%%         arg(1,Term,Arg1),
+%%         f_rec(Arg1,AbsInt,Info).
+%% 
 %-------------------------------------------------------------------%
 % ground(+,+,+)                                                     %
-% ground(Abs,X,Info)                                                %
+% ground(AbsInt,X,Info)                                             %
 % X is a variable. The predicate suceeds if X is ground w.r.t. Info %
 %-------------------------------------------------------------------%
 ground(son,X,(GroundComponent,_)):-
@@ -234,6 +216,8 @@ ground(shfrnv,X,ac(d((_SharingComponent,FreeComponent),_DelComponent),_)):- !,
     var_value(FreeComponent,X,g).
 ground(shfrnv,X,(_SharingComponent,FreeComponent)):-
     var_value(FreeComponent,X,g).
+ground(gr,X,GrComponent):-
+    var_value(GrComponent,X,g).
 % GPS These domains are not active yet in 1.0
 %% ground(aeq,X,ac(d(aeqs(Eqs,_,_,_,NGr),_DelComponent),_)):- !,
 %%      avariables_ic_subst(X,Eqs,X_ic),
@@ -252,17 +236,15 @@ ground(def,X,ac(d(a(GroundComponent,_DepComponent),_DelComponent),_)):-
 %% ground(fd,X,(_F,D)):-
 %%      ground(def,X,D).
 
-
-
-all_ground([],_Abs,_Info).
-all_ground([V|Vs],Abs,Info):-
-    ground(Abs,V,Info),
-    all_ground(Vs,Abs,Info).
+all_ground([],_AbsInt,_Info).
+all_ground([V|Vs],AbsInt,Info):-
+    ground(AbsInt,V,Info),
+    all_ground(Vs,AbsInt,Info).
 
 %-------------------------------------------------------------------%
 % free(+,+,+)                                                       %
-% free(Abs,Term,Info)                                               %
-%  Term can be shown to be free with Abs and Info.                  %
+% free(AbsInt,Term,Info)                                            %
+%  Term can be shown to be free with AbsInt and Info.               %
 %-------------------------------------------------------------------%
 free(shfr,X,(_,FreeComponent)):- !,
     var_value(FreeComponent,X,f).
@@ -288,17 +270,15 @@ free(shfrnv,X,ac(d((_,FreeComponent),_DelComponent),_)):-
 %% 
 %-------------------------------------------------------------------%
 % indep(+,+,+,+)                                                    %
-% indep(Abs,Term1,Term2,Info)                                       %
+% indep(AbsInt,Term1,Term2,Info)                                    %
 %  Term1 and Term2 can be shown to be independent from each other   %
 %-------------------------------------------------------------------%
 indep(son,X,Y,(_,DepComponent)):-
     sort([X,Y],Couple),
     \+ord_member(Couple,DepComponent).
-
 indep(share,X,Y,Sharing):-
     ord_split_lists(Sharing,X,IntersectX,_DisjointX),
     ord_split_lists(IntersectX,Y,[],_DisjointY).
-
 indep(shfr,X,Y,(SharingComponent,_)):-
     ord_split_lists(SharingComponent,X,IntersectX,_DisjointX),
     ord_split_lists(IntersectX,Y,[],_DisjointY).
@@ -322,8 +302,8 @@ indep(fd,X,Y,(_D,as(_G1,Old,_G2,New))):-
 
 %% %-------------------------------------------------------------------%
 %% % nonvar(+,+,+)                                                     %
-%% % nonvar(Abs,Term,Info)                                             %
-%% %  Term can be shown not to be nonvar with Abs and Info.            %
+%% % nonvar(AbsInt,Term,Info)                                          %
+%% %  Term can be shown not to be nonvar with AbsInt and Info.         %
 %% %-------------------------------------------------------------------%
 %% nonvar(shfrnv,X,ac(d((_SharingComponent,FreeComponent),_DelComponent),_)):- !,
 %%         var_value(FreeComponent,X,nv).
@@ -332,8 +312,8 @@ indep(fd,X,Y,(_D,as(_G1,Old,_G2,New))):-
 
 %-------------------------------------------------------------------%
 % not_ground(+,+,+)                                                 %
-% not_ground(Abs,Term,Info)                                         %
-%  Term can be shown not to be ground with Abs and Info.            %
+% not_ground(AbsInt,Term,Info)                                      %
+%  Term can be shown not to be ground with AbsInt and Info.         %
 %-------------------------------------------------------------------%
 not_ground(shfr,X,(SharingComponent,FreeComponent)):-
     var_value(FreeComponent,X,Value),
@@ -375,8 +355,8 @@ test_not_ground(_,X,(SharingComponent,FreeComponent)):-
  
 %-------------------------------------------------------------------%
 % not_free(+,+,+)                                                   %
-% not_free(Abs,Term,Info)                                           %
-%  Term can be shown not to be free with Abs and Info.              %
+% not_free(AbsInt,Term,Info)                                        %
+%  Term can be shown not to be free with AbsInt and Info.           %
 %-------------------------------------------------------------------%
 not_free(def,X,a(G,_)):- !,
     ord_member(X,G).
@@ -423,7 +403,7 @@ test_not_free(nf,X,(SharingComponent,FreeComponent)):-
 
 %-------------------------------------------------------------------%
 % not_independent(+,+,+,+)                                          %
-% not_independent(Abs,Term1,Term2,Info)                             %
+% not_independent(AbsInt,Term1,Term2,Info)                             %
 %  Term1 and Term2 can be shown to be not independent               %
 %-------------------------------------------------------------------%
 not_independent(shfr,X,Y,(SharingComponent,FreeComponent)):-
@@ -448,74 +428,71 @@ not_independent(shfrson,X,Y,(_Son,SharingComponent,FreeComponent)):-
 
 %-------------------------------------------------------------------%
 % not_cond(+,+,+,+)                                                 %
-% not_cond(Cond,Abs,Goal,Info)                                      %
-%  Cond can be shown not to hold for Goal with abstract domain Abs  %
+% not_cond(Cond,AbsInt,Goal,Info)                                   %
+%  Cond can be shown not to hold for Goal with abstract domain AbsInt%
 %  and abstract call substitution Info                              %
 %-------------------------------------------------------------------%
-not_cond([L|R],Abs,Goal,Info):-
-    not_cond(L,Abs,Goal,Info),
-    not_cond(R,Abs,Goal,Info).
-not_cond(type_incl(N,Type),Abs,Goal,Info):-
+not_cond([L|R],AbsInt,Goal,Info):-
+    not_cond(L,AbsInt,Goal,Info),
+    not_cond(R,AbsInt,Goal,Info).
+not_cond(type_incl(N,Type),AbsInt,Goal,Info):-
     arg(N,Goal,ArgN),
-    type_of(Abs,ArgN,Info,T),
+    type_of(AbsInt,ArgN,Info,T),
     type_intersection_2(T,Type,T3),
     is_empty_type(T3).
 %       types_are_incompatible(T,Type).
-not_cond(incomp_type(N,Type),Abs,Goal,Info):-
+not_cond(incomp_type(N,Type),AbsInt,Goal,Info):-
     arg(N,Goal,ArgN),
-    type_of(Abs,ArgN,Info,T),
+    type_of(AbsInt,ArgN,Info,T),
     dz_type_included(T,Type).
-not_cond(ground(N),Abs,Goal,Info):-
+not_cond(ground(N),AbsInt,Goal,Info):-
     arg(N,Goal,ArgN),
     varset(ArgN,Variables),
     member(Var,Variables),
-    not_ground(Abs,Var,Info).
-not_cond(free(N),Abs,Goal,Info):-
+    not_ground(AbsInt,Var,Info).
+not_cond(free(N),AbsInt,Goal,Info):-
     arg(N,Goal,ArgN),
-    not_free(Abs,ArgN,Info).
-not_cond(freerec(N),Abs,Goal,Info):-
+    not_free(AbsInt,ArgN,Info).
+not_cond(freerec(N),AbsInt,Goal,Info):-
     arg(N,Goal,ArgN),
-    ground(Abs,ArgN,Info).
-not_cond(frgr(N,M),Abs,Goal,Info):-
-    cond(Abs,free(N),Goal,Info),
-    cond(Abs,free(M),Goal,Info).
-not_cond(frgr(N,M),Abs,Goal,Info):-
-    cond(Abs,ground(N),Goal,Info),
-    cond(Abs,ground(M),Goal,Info).
-not_cond(free(N,_),Abs,Goal,Info):-
+    ground(AbsInt,ArgN,Info).
+not_cond(frgr(N,M),AbsInt,Goal,Info):-
+    cond(AbsInt,free(N),Goal,Info),
+    cond(AbsInt,free(M),Goal,Info).
+not_cond(frgr(N,M),AbsInt,Goal,Info):-
+    cond(AbsInt,ground(N),Goal,Info),
+    cond(AbsInt,ground(M),Goal,Info).
+not_cond(free(N,_),AbsInt,Goal,Info):-
     arg(N,Goal,ArgN),
-    not_free(Abs,ArgN,Info).
-not_cond(free(_,N),Abs,Goal,Info):-
+    not_free(AbsInt,ArgN,Info).
+not_cond(free(_,N),AbsInt,Goal,Info):-
     arg(N,Goal,ArgN),
-    not_free(Abs,ArgN,Info).
-not_cond(frindep(N,_),Abs,Goal,Info):-
+    not_free(AbsInt,ArgN,Info).
+not_cond(frindep(N,_),AbsInt,Goal,Info):-
     arg(N,Goal,ArgN),
-    not_free(Abs,ArgN,Info).
-not_cond(frindep(_,N),Abs,Goal,Info):-
+    not_free(AbsInt,ArgN,Info).
+not_cond(frindep(_,N),AbsInt,Goal,Info):-
     arg(N,Goal,ArgN),
-    not_free(Abs,ArgN,Info).
-not_cond(frindep(N,M),Abs,Goal,Info):-
+    not_free(AbsInt,ArgN,Info).
+not_cond(frindep(N,M),AbsInt,Goal,Info):-
     arg(N,Goal,ArgN),
     arg(M,Goal,ArgM),
-    not_independent(Abs,ArgN,ArgM,Info).
+    not_independent(AbsInt,ArgN,ArgM,Info).
 not_cond(indep(N,M),shfr,Goal,Info):-
     arg(N,Goal,ArgN),
     arg(M,Goal,ArgM),
     not_independent(shfr,ArgN,ArgM,Info).
 not_cond(not_indep(N,M),shfr,Goal,Info):-
     cond(indep(N,M),shfr,Goal,Info).
-not_cond(nonvar(N),Abs,Goal,Info):-
+not_cond(nonvar(N),AbsInt,Goal,Info):-
     arg(N,Goal,ArgN),
-    free(Abs,ArgN,Info).
-
+    free(AbsInt,ArgN,Info).
 
 all_ground_with_types([],_,_).
-all_ground_with_types([Var|Vars],Abs,Info):- 
-    type_of(Abs,Var,Info,T),
+all_ground_with_types([Var|Vars],AbsInt,Info):- 
+    type_of(AbsInt,Var,Info,T),
     is_ground_type(T),
-    all_ground_with_types(Vars,Abs,Info).
-
-    
+    all_ground_with_types(Vars,AbsInt,Info).
 
 type_of(eterms,X,Sust,T):-
     member(Y:(_N,T),Sust),
@@ -536,80 +513,72 @@ type_of(terms,X,Sust,T):-
     member(Y:T,Sust),
     X == Y,!.
 
-each_concret_one([],_Abs,_Info,[]).
-each_concret_one([Var|Vars],Abs,Info,[Var:A|InfoConcr]):-
-    concrete(Abs,Var,Info,C),
+each_concret_one([],_AbsInt,_Info,[]).
+each_concret_one([Var|Vars],AbsInt,Info,[Var:A|InfoConcr]):-
+    concrete(AbsInt,Var,Info,C),
     C = [A],
-    each_concret_one(Vars,Abs,Info,InfoConcr).
+    each_concret_one(Vars,AbsInt,Info,InfoConcr).
 
 apply([X:Term|ASub]):-
     X=Term,
     apply(ASub).
 apply([]).
 
+:- pred abs_exec_reg_type_with_post_info(K_Pre,K_Post,AbsInt,Sense) 
+   # "This predicate allows abstractly executing a literal which is assumed to
+   be a call to the regular type. This can be doen even if the literal contains
+   functors, i.e., it does not need to be normalized. The implementation is
+   surprinsingly simple and efficient. This implementation is correct assuming
+   type analysis will always return bottom if the partial instantation in the
+   literal is incompatible with the regular type which is being called at that
+   program point. With that assumption, the literal can be abstractly executable
+   to true iff the abstract substitutions before (@var{K_Pre}) and after the
+   literal (@var{K_Post}) are identical. Also, the literal is abstractly
+   executable to false iff the abstract substitution in @var{K_Post} is bottom.
+   The only problem with this implementation is that it requires both the pre
+   and post analysis information for the literal}".
 
-
-:- pred abs_exec_reg_type_with_post_info(K_Pre,K_Post,Abs,Sense) 
-
-   # "This predicate allows abstractly executing a literal which is
-      assumed to be a call to the regular type. This can be doen even
-      if the literal contains functors, i.e., it does not need to be
-      normalized. The implementation is surprinsingly simple and
-      efficient. This implementation is correct assuming type analysis
-      will always return bottom if the partial instantation in the
-      literal is incompatible with the regular type which is being
-      called at that program point. With that assumption, the literal
-      can be abstractly executable to true iff the abstract
-      substitutions before (@var{K_Pre}) and after the literal
-      (@var{K_Post}) are identical. Also, the literal is abstractly
-      executable to false iff the abstract substitution in
-      @var{K_Post} is bottom. The only problem with this
-      implementation is that it requires both the pre and post
-      analysis information for the literal}".
-
-abs_exec_reg_type_with_post_info(K_Pre,K_Post,Abs,Sense):-
-    get_memo_lub(K_Post,Vars,Abs,yes,Info1),
+abs_exec_reg_type_with_post_info(K_Pre,K_Post,AbsInt,Sense):-
+    get_memo_lub(K_Post,Vars,AbsInt,yes,Info1),
     (Info1 == '$bottom' ->
         Sense = fail
     ;
-        get_memo_lub(K_Pre,Vars,Abs,yes,Info0),
-        identical_abstract(Abs,Info0,Info1),
+        get_memo_lub(K_Pre,Vars,AbsInt,yes,Info0),
+        identical_abstract(AbsInt,Info0,Info1),
         Sense = true
     ).
 
-:- pred abs_exec_reg_type_with_post_info_one_version(Num,K_Pre,K_Post,Abs,Sense)
+:- pred abs_exec_reg_type_with_post_info_one_version(Num,K_Pre,K_Post,AbsInt,Sense)
+   # "This predicate is very similar to
+   @pred{abs_exec_reg_type_with_post_info/4} but only the information which
+   corresponds to one version of analysis, identified by @var{Num} is considered
+   instead of the lub of all existing analysis versions for the literal. This is
+   needed in multi variant specialization is to be performed.".
 
-    # "This predicate is very similar to
-      @pred{abs_exec_reg_type_with_post_info/4} but only the
-      information which corresponds to one version of analysis,
-      identified by @var{Num} is considered instead of the lub of all
-      existing analysis versions for the literal. This is needed in
-      multi variant specialization is to be performed.".
-
-abs_exec_reg_type_with_post_info_one_version(Num,K_Pre,K_Post,Abs,Sense):-
-    current_fact(memo_table(K_Post,Abs,Num,_,Vars,[Info_Post_u])),
+abs_exec_reg_type_with_post_info_one_version(Num,K_Pre,K_Post,AbsInt,Sense):-
+    current_fact(memo_table(K_Post,AbsInt,Num,_,Vars,[Info_Post_u])),
     (Info_Post_u == '$bottom' ->
         Sense = fail
     ;
-        current_fact(memo_table(K_Pre,Abs,Num,_,Vars,[Info_Pre_u])),
-        abs_sort(Abs,Info_Post_u, Info_Post),
-        abs_sort(Abs,Info_Pre_u, Info_Pre),
-        identical_abstract(Abs,Info_Pre,Info_Post),
+        current_fact(memo_table(K_Pre,AbsInt,Num,_,Vars,[Info_Pre_u])),
+        abs_sort(AbsInt,Info_Post_u, Info_Post),
+        abs_sort(AbsInt,Info_Pre_u, Info_Pre),
+        identical_abstract(AbsInt,Info_Pre,Info_Post),
         Sense = true
     ).
 
-:- pred abs_exec_conj_props(+Conj,+Abs,+Info)
+:- pred abs_exec_conj_props(+Conj,+AbsInt,+Info)
    # "This predicate succeeds if it can prove that the conjuntion of
      properties represented by the list @var{Conj} is @em{true} in the
      context of @var{Info}, which is an abstract substitution in the
-     abstract domain @var{Abs}.".
+     abstract domain @var{AbsInt}.".
 
 abs_exec_conj_props([],_,_).
-abs_exec_conj_props([Prop|Props],Abs,Info):-
-    abs_exec_prop(Prop,Abs,Info),
-    abs_exec_conj_props(Props,Abs,Info).
+abs_exec_conj_props([Prop|Props],AbsInt,Info):-
+    abs_exec_prop(Prop,AbsInt,Info),
+    abs_exec_conj_props(Props,AbsInt,Info).
 
-abs_exec_prop(Prop,Abs,Info):-
+abs_exec_prop(Prop,AbsInt,Info):-
     functor(Prop,F,A),
-    abs_exec(Abs,F/A,true,Condition),
-    cond(Condition,Abs,Prop,Info).
+    abs_exec(AbsInt,F/A,true,Condition),
+    cond(Condition,AbsInt,Prop,Info).

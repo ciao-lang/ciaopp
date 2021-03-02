@@ -20,10 +20,8 @@
 %                                                                   %
 %-------------------------------------------------------------------% 
 
-
 % builtins that can be abstractly evaluated, 
 % and the conditions required
-
 
 %-------------------------------------------------------------------%
 % abs_exec(+,+,+,-)                                                 %
@@ -58,14 +56,13 @@ find_original_pred_if_needed(F,A,OrigF,OrigA):-
 %%      )
     .
 
-
 abs_exec_(_,true/0,true,true).
 abs_exec_(_,otherwise/0,true,true).
 abs_exec_(_,fail/0,fail,true). % in any domain
 abs_exec_(_,false/0,fail,true).
 % rest of builtin predicates
 abs_exec_(Domain,Pred,Sense,Cond):-
-    abs_ex(Pred,Determ,Sense,Cond),
+    abs_ex(Pred,Determ,Sense,Cond), % backtracking here
     determinable(Domain,Determ).
 
 dyn_abs_exec(Domain,/(Name,Arity),imported(SpecName),leq(Sg,Proj)):-
@@ -112,7 +109,7 @@ dyn_abs_exec(Domain,/(Name,Arity),imported(SpecName),leq(Sg,Proj)):-
 %-------------------------------------------------------------------%
 determinable(_,true):-!.
 determinable(_,false):-!.
-
+%
 determinable(terms,types).
 determinable(eterms,types).
 determinable(etermsvar,types).
@@ -121,47 +118,49 @@ determinable(ptypes,types).
 determinable(evalterms,types).
 determinable(svterms,types).
 determinable(deftypes,types).
-
+%
 determinable(def,ground).
-
+%
 determinable(share,ground).
 determinable(share,indep).
-
+%
 determinable(son,ground).
 determinable(son,indep).
-
+%
 determinable(shfr,ground).
 determinable(shfr,indep).
 determinable(shfr,free).
 determinable(shfr,not_indep).
 determinable(shfr,not_ground).
-
+%
+determinable(gr,ground).
+%
 determinable(sharefree_amgu,X):-
     determinable(shfr,X).
-
+%
 determinable(sharefree_clique,X):-
     determinable(shfr,X).
-
+%
 determinable(sharefree_clique_def,X):-
     determinable(shfr,X).
-
+%
 determinable(shfrnv,X):-
     determinable(shfr,X).
 determinable(shfrnv,nonvar).
-
+%
 determinable(shfrson,X):-
     determinable(shfr,X).
-
+%
 determinable(aeq,ground).
 determinable(aeq,indep).
 determinable(aeq,free).
 determinable(aeq,not_indep).
-
+%
 determinable(fr,indep).
 determinable(fr,free).
 determinable(fr,not_ground).
 %determinable(fr,unconstrained). cannot be used in any optimization by now
-
+%
 determinable(fd,ground).
 determinable(fd,indep).
 determinable(fd,free).
@@ -171,10 +170,10 @@ determinable(fd,not_ground).
 %% TODO: find a better name for Determ instead of 'polyhedra'?
 %%       (e.g., linear arithmetic)
 determinable(polyhedra,polyhedra).
-
+%
 determinable(Dom,[X|Xs]):-
     determinable(Dom,X),
     determinable(Dom,Xs).
-
- %% determinable(typeshfr,Prop):-
- %%     determinable(shfr,Prop).
+%
+%% determinable(typeshfr,Prop):-
+%%     determinable(shfr,Prop).

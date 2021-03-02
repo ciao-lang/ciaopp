@@ -29,7 +29,6 @@
 %       atom_codes(Arity2,Arity1),
 %       atom_number(Arity2,Arity).
 
-
 %-------------------------------------------------------------------%
 % Predicates abstractly executable to true with type   info         %
 %-------------------------------------------------------------------%

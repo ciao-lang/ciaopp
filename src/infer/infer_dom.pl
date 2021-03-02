@@ -431,40 +431,43 @@ abs_execute_with_info(Dom,Info,'basic_props:compat'(X,Prop),Sense):-!,
 %% PP: Handle parametric types in assertions (don't know if 
 %% this is the best point to plug it...)
 abs_execute_with_info(Dom,Info,Prop,Sense):-
-    knows_of(regtypes, Dom),
+    ( knows_of(regtypes, Dom) -> true ; fail ), % leaves choicepoints
     functor(Prop,F,2),
-    statically_comp(Dom,F/2,Sense,Cond),
-    make_prop_type_unary(Prop,UProp),
-    functor(UProp,UF,1),
-    convert_cond(Cond,UF,NewCond),
-    cond(NewCond,Dom,UProp,Info), !.
-abs_execute_with_info(Dom,_Info,Prop,Sense):-
-    knows_of(regtypes, Dom),
-    functor(Prop,_F,2),!,
-    Sense = Prop.
+    ( statically_comp(Dom,F/2,Sense,Cond) ->
+        make_prop_type_unary(Prop,UProp),
+        functor(UProp,UF,1),
+        convert_cond(Cond,UF,NewCond),
+        cond(NewCond,Dom,UProp,Info)
+    ; Sense = Prop
+    ),
+    !.
 abs_execute_with_info(AbsInt,Info,Prop,Sense):-
     functor(Prop,F,A),
     statically_comp(AbsInt,F/A,Sense,Condition),
     cond(Condition,AbsInt,Prop,Info), !.
 abs_execute_with_info(_AbsInt,_Info,Prop,Prop).
 
-statically_comp(AbsInt,ground/1,true,ground(1)):-
-    determinable(AbsInt,ground).
-statically_comp(AbsInt,ground/1,fail,not_ground(1)):-
-    determinable(AbsInt,free).
-statically_comp(AbsInt,var/1,true,free(1)):-
-    determinable(AbsInt,free).
-statically_comp(AbsInt,indep/2,true,indep(1,2)):-
-    determinable(AbsInt,indep).
-statically_comp(AbsInt,indep/2,fail,not_indep(1,2)):-
-    determinable(AbsInt,not_indep).
-statically_comp(AbsInt,F/1,Sense,Condition):-
-    determinable(AbsInt,free),
-    functor(FAtom,F,1),
-    prop_to_native(FAtom,regtype(_)),
-    \+ (equivalent_to_top_type(F)),
-    Sense = fail,
-    Condition = free(1).
+% IG: this code was duplicating information of the abstract execution table
+% (static_abs_exec_table.pl), also it was wrong because it was being called
+% without transforming the properties into native form.
+
+%% statically_comp(AbsInt,ground/1,true,ground(1)):-
+%%     determinable(AbsInt,ground).
+%% statically_comp(AbsInt,ground/1,fail,not_ground(1)):-
+%%     determinable(AbsInt,free).
+%% statically_comp(AbsInt,var/1,true,free(1)):-
+%%     determinable(AbsInt,free).
+%% statically_comp(AbsInt,indep/2,true,indep(1,2)):-
+%%     determinable(AbsInt,indep).
+%% statically_comp(AbsInt,indep/2,fail,not_indep(1,2)):-
+%%     determinable(AbsInt,not_indep).
+%% statically_comp(AbsInt,F/1,Sense,Condition):-
+%%     determinable(AbsInt,free),
+%%     functor(FAtom,F,1),
+%%     prop_to_native(FAtom,regtype(_)),
+%%     \+ (equivalent_to_top_type(F)),
+%%     Sense = fail,
+%%     Condition = free(1).
 statically_comp(AbsInt,F/A,Sense,Condition):-
     abs_exec(AbsInt,F/A,Sense,Condition).
 
