@@ -28,7 +28,7 @@
 @section{Variable naming convention for CiaoPP domains}
 
 Both in the PLAI fixpoints and domains, for simplicity, we use the following
-variable names meaning:
+variable name meanings:
 
  @begin{itemize}
 @item @var{AbsInt}  : identifier of the abstract interpreter being used.
