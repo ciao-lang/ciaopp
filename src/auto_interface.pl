@@ -41,7 +41,7 @@
 
 :- use_module(ciaopp(infer/infer_db),        [domain/1]).
 :- use_module(library(assertions/assrt_lib), [assertion_body/7]).
-:- use_module(ciaopp(p_unit/assrt_db),      [assertion_read/9]).
+:- use_module(ciaopp(p_unit/assrt_db),      [pgm_assertion_read/9]).
 :- use_module(ciaopp(p_unit), [prop_to_native/2]).
 :- use_module(ciaopp(p_unit/itf_db),        [curr_file/2]).
 :- use_module(ciaopp(p_unit/aux_filenames), [is_library/1]).
@@ -1314,12 +1314,31 @@ auto_sel_dom(File) :-
     module(File),
     get_menu_flag(ana,inter_ana,As),
     curr_file(_,M),
+    retractall_fact(prop_covered(_,_)),
     determine_needed(As,M,Ds),
     pplog(auto_interface, ['{Analyses needed to check assertions: ',~~(Ds), '}']).
 
+:- data prop_covered/2.
+% cache to store wether a property was already covered in previously selected
+% domains. E.g., if shfr covers groundness, do not run eterms/nf (they also know
+% about groundess).
+set_prop_covered(Prop,AbsInt) :-
+    ( prop_covered(Prop, _) ->
+        true
+    ; assertz_fact(prop_covered(Prop,AbsInt))
+    ).
+
 needed_to_prove_prop(M, Dom, A) :-
-    get_one_prop(M, P),
-    needed_to_prove(A, Dom, P).
+    ( % failure-driven loop
+      get_one_prop(M, P),
+      \+ prop_covered(P, _),
+        ( needed_to_prove(A, Dom, P) ->
+            set_prop_covered(P, Dom)
+        ; true),
+        fail
+    ;
+        prop_covered(_,Dom), ! % fail if the domain is not necessary
+    ).
 
 determine_needed([],_,[]).
 determine_needed([A|As],M,[Dom|Ds]) :-
@@ -1332,7 +1351,10 @@ determine_needed([A|As],M,Ds) :-
     determine_needed(As,M,Ds).
 
 get_one_prop(M,P) :-
-    assertion_read(_,M1,check,Kind,Body,_,Base,_,_),
+    % IG: if we use assertion_read instead, all assertions from all libraries
+    % are considered. If the libraries are not checked, pgm_assertion_read
+    % includes the libraries as well.
+    pgm_assertion_read(_,M1,check,Kind,Body,_,Base,_,_),
     take_assertion(M,M1,Kind,Base),
     assertion_body(_,_,Call,Succ,Comp,_,Body),
     ( member(Prop,Succ) ; member(Prop,Call) ; member(Prop,Comp) ),

@@ -160,8 +160,8 @@ valid_flag_values( dump_ext   , member( _  , [all, int  , iter ] ) ).
 
 pp_flag(inter_all). % only for menu
 pp_flag(inter_all, 'Select which high-level action of the preprocessor.').
-current_pp_flags(  inter_all          , analyze ).
-valid_flag_values( inter_all          , member( _ , 
+current_pp_flags(  inter_all   , analyze ).
+valid_flag_values( inter_all   , member( _ , 
                                             [
                                              analyze, 
                                              check_assertions, 
@@ -170,15 +170,9 @@ valid_flag_values( inter_all          , member( _ ,
 
 pp_flag(inter_ana). % only for menu
 pp_flag(inter_ana, 'Select high-level analyses.').
-current_pp_flags(  inter_ana          , [types,modes,ana_num,ana_nf,ana_det,ana_cost]   ).
-valid_flag_values( inter_ana          , sublist2( _ , [
-                                                   types,
-                                                   modes,
-                                                   ana_num,
-                                                   ana_nf,
-                                                   ana_cost,
-                                                   ana_det
-                                                 ] ) ).
+current_pp_flags(  inter_ana   , [modes,types,ana_num,ana_nf,ana_det,ana_cost]).
+valid_flag_values( inter_ana   ,
+                   sublist2( _ , [modes, types, ana_num, ana_nf, ana_cost, ana_det])).
 
 :- if(defined(has_ciaopp_java)).
 :- include(ciaopp(preprocess_flags_java)).
