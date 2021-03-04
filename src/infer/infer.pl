@@ -95,7 +95,7 @@ get_info(nf,pred,_Key,Goal,Info):-       %%% JNL
     variant(Goal,Goal0),
     asub_to_props(nf,Goal,Abs,Info).
 get_info(nf,point,Key,Goal,Info):- !,
-    get_memo_entry(Key,_Vars,nf,[Asub]),
+    get_memo_lub(Key,_Vars,nf,yes,Asub),
     ( Asub == '$bottom' ->
         Info = [fails(Goal)]
     ;
