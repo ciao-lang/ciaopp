@@ -1,4 +1,4 @@
-:- module(_, [], [assertions, regtypes, datafacts, ciaopp(ciaopp_options)]).
+:- module(_, [], [assertions, regtypes, datafacts, nativeprops, ciaopp(ciaopp_options)]).
 
 :- doc(title, "Messages for predicate compile-time checking").
 
@@ -324,7 +324,7 @@ name_vars([V='$VAR'(V)|Vs]):-
 
 :- export(prepare_output_info/5).
 :- pred prepare_output_info(+AbsInts,+,+Head,+Type,-Info)
-   : list(AbsInts) => list(Info).
+   : list(AbsInts) => list(Info) + not_fails.
 prepare_output_info([],[],_Head,_Type,[]) :-!.
 prepare_output_info([none|Ds],[_I|Is],H,Type,AInfo) :-!,
     prepare_output_info(Ds,Is,H,Type,AInfo).

@@ -317,15 +317,14 @@ abs_exec_one_assertion(AbsInt, Cmpls, A, _Key, NA, Status) :-
     !,
     abs_exec_complete_success(Goal, Call, Success, AbsInt, Cmpls, NCall, NSuccess, Status0),
     reduce_compl_fin(Status0,Status),
-    ( Status = check -> % TODO: why?
+    ( Status = check ->
         list_to_conj(OCall, NCall),
-        list_to_conj(OSuccess, NSuccess)
-    ; OCall    = Call,
-      OSuccess = Success
-    ),
-    assertion_set_status(A, Status, A2),
-    assertion_set_calls(A2, OCall, A3),
-    assertion_set_success(A3, OSuccess, NA).
+        list_to_conj(OSuccess, NSuccess),
+        assertion_set_calls(A, OCall, A2),
+        assertion_set_success(A2, OSuccess, NA)
+    ;
+        assertion_set_status(A, Status, NA)
+    ).
 abs_exec_one_assertion(AbsInt, Cmpls, A, _Key, NA, Status) :-
     A = as${ status=>check, type=>calls, head=>Goal,call=>Call},
     !,
@@ -337,20 +336,19 @@ abs_exec_one_assertion(AbsInt, Cmpls, A, _Key, NA, Status) :-
         Status = check
     ; Status = Status1
     ),
-    ( Status = check -> % TODO: why?
-        list_to_conj(NNCall, NCall)
-    ; NNCall = Call
-    ),
-    assertion_set_status(A, Status, A2),
-    assertion_set_calls(A2, NNCall, NA).
+    ( Status = check ->
+        list_to_conj(NNCall, NCall),
+        assertion_set_calls(A, NNCall, NA)
+    ;
+        assertion_set_status(A, Status, NA)
+    ).
 abs_exec_one_assertion(AbsInt, Cmpls, A, _Key, NA, Status) :-
     A = as${ status=>check, type=>comp, head=>Goal, call=>Call},
     !,
     abs_exec_complete_call(Goal, Call, AbsInt, Cmpls, NCall, _Status0),
     Status = check,
     list_to_conj(NNCall, NCall),
-    assertion_set_status(A, Status, A2),
-    assertion_set_calls(A2, NNCall, NA).
+    assertion_set_calls(A, NNCall, NA).
 
 abs_exec_comp_assertion(A, _Key, AComp, NA, Status) :-
     A = as${ status=>check, type=>comp, head=>Goal, call=>Call, comp=>Comp},
