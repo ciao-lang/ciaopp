@@ -41,7 +41,7 @@
 
 :- use_module(ciaopp(infer/infer_db),        [domain/1]).
 :- use_module(library(assertions/assrt_lib), [assertion_body/7]).
-:- use_module(ciaopp(p_unit/assrt_db),      [pgm_assertion_read/9]).
+:- use_module(ciaopp(p_unit/assrt_db),      [assertion_read/9]).
 :- use_module(ciaopp(p_unit), [prop_to_native/2]).
 :- use_module(ciaopp(p_unit/itf_db),        [curr_file/2]).
 :- use_module(ciaopp(p_unit/aux_filenames), [is_library/1]).
@@ -1352,9 +1352,15 @@ determine_needed([A|As],M,Ds) :-
 
 get_one_prop(M,P) :-
     % IG: if we use assertion_read instead, all assertions from all libraries
-    % are considered. If the libraries are not checked, pgm_assertion_read
+    % are considered. If the libraries are not cached, pgm_assertion_read
     % includes the libraries as well.
-    pgm_assertion_read(_,M1,check,Kind,Body,_,Base,_,_),
+    %pgm_assertion_read(_,M1,check,Kind,Body,_,Base,_,_),
+    %
+    % TODO: JF: using assertion_read/9 again to make sure that we can
+    %   check calls to libraries, as it seems to be used in
+    %   take_assertion/4
+    %
+    assertion_read(_,M1,check,Kind,Body,_,Base,_,_),
     take_assertion(M,M1,Kind,Base),
     assertion_body(_,_,Call,Succ,Comp,_,Body),
     ( member(Prop,Succ) ; member(Prop,Call) ; member(Prop,Comp) ),
