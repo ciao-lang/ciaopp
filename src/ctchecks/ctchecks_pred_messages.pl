@@ -180,19 +180,11 @@ inform_non_checked(STAT, Old, New, AbsInts, Info) :-
         %  show_message(STAT, "(lns ~d-~d) Cannot verify assertion:~n~pbecause on ~p ~p :~n~p ~nLeft to prove: ~w~n", 
         %              [From, To, Old, Type, GoalCopy, '$an_results'(RelInfoCopy), Left]),
         % MH: Changed to this message format which seems easier to read. Same with rest of messages.
-        %
-        % TODO: The (for ~p) part is because when printing the
-        % inferred info the clause variables are used, whereas the
-        % assertion just before is printed with
-        % A,B,... variables. At the very least the assertion
-        % should be printed with the program variable names, and
-        % ideally with the same as in the abstract information.
-        %
         show_message(STAT, "(lns ~d-~d) Could not verify assertion:~n"||
             "~p"||
             "because~n"||
             "    ~p~n"||
-            "could not be derived from inferred ~p:~n"||
+            "could not be derived from inferred ~p:"||
             "~p", 
             [From, To, OldCopy, Left, Type, '$an_results'(RelInfoCopy)]),
         memo_ctcheck_sum(check)
@@ -201,7 +193,7 @@ inform_non_checked(STAT, Old, New, AbsInts, Info) :-
       % TODO: (MH) we should get from the partial evaluator the first property that fails!
       error_message("(lns ~d-~d) False assertion:~n"||
           "~p"||
-          "because the ~p field is incompatible with inferred ~p:~n"||
+          "because the ~p field is incompatible with inferred ~p:"||
           "~p", 
           [From, To, OldCopy, Type, Type, '$an_results'(RelInfoCopy)]),
       memo_ctcheck_sum(false)
@@ -245,7 +237,8 @@ portray('$dom'(Dom,Res,Rules,Tab)) :-
     format("~n[~w]",[Dom]),
     TabLen is Tab - Len + 1,
     tab(TabLen),
-    format(": ",[]),
+    % TODO: MH Check if taking this out is damaging! (Looks better without?) ************* 
+    % format(": ",[]),
     ( Dom == generic_comp ->
         sort(Res, Res2),
         list_to_conj(Res2,ResConj),
