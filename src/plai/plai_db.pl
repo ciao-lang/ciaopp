@@ -61,7 +61,7 @@ parents_complete([(K,Id)|Ps]) :-
 :- data memo_lub/5.
 
 :- doc(complete_parent(Id,Parents), "Used to keep the trace of the
-    parents in the and-or graph for the di fixpoint. The parents
+    parents in the and-or graph for the dd/di fixpoints. The parents
     are used to choose previous aproximations to apply the
     widening operators on calls The and-or graph node is @var{Id},
     and @var{Parents} is a list of couples of graph node and
