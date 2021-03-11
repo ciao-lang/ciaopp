@@ -21,7 +21,7 @@
 
 :- use_package(menu).
 
-:- doc(title,"The CiaoPP high-level interface").
+:- doc(title, "The CiaoPP high-level interface").
 :- doc(author, "CiaoPP development team").
 
 :- use_module(ciaopp(frontend_driver), [module/1, output/0, output/1]).
@@ -1189,7 +1189,6 @@ do_output(OFile, Menu) :-
         note_message("Dumped analysis in ~w", [DumpF])
     ;   true
     ).
-:- push_prolog_flag(multi_arity_warnings, off).
 
 :- pred auto_analyze(F)
    # "Analyze the module @var{F} with the current analysis options (use
@@ -1204,8 +1203,9 @@ auto_analyze(File, OFile) :-
 
 auto_analyze_(File, OFile) :-
     module(File),
-    get_menu_flag(ana, inter_ana, Analyses),
-    exec_analysis_list(Analyses, ana),
+    get_menu_flag(ana, inter_ana, AnaKinds),
+    anakinds_to_absints(AnaKinds, ana, AbsInts),
+    analyze(AbsInts),
     %
     get_menu_flag(ana, vers, Vers) ,
     ( Vers == on -> transform(vers) ; true ),
@@ -1226,13 +1226,32 @@ auto_check_assert(File) :-
 auto_check_assert(File, OFile) :-
     with_menu_flags(check, auto_check_assert_(File, OFile)).
 
+% TODO: load module first in both intermod on and off
 auto_check_assert_(File, OFile) :-
+    % Make sure that we enabled ctchecks in the flags
     get_menu_flag(check, assert_ctcheck, CTCHECKS),
     ( CTCHECKS == off ->
         error_message("Incompatible flag value: assert_ctcheck = off"), throw(bug)
-    ; CTCHECKS == auto ->
-        auto_sel_dom(File)
-    ; true ),
+    ; true
+    ),
+    % Select and load TopLevel module (or just File if intermod is off)
+    ( current_pp_flag(intermod, off) -> TopLevel = File
+    ; maybe_main(File,TopLevel)
+    ),
+    ( current_pp_flag(interleave_an_check,on), 
+      \+ current_pp_flag(intermod, off) -> true % TODO: IG: probably this is not working
+    ; module(TopLevel)
+    ),
+    % Decide domains for the given program (if CTCHECKS is auto) or
+    % just read from menu.
+    get_menu_flag(ana, inter_ana, AnaKinds),
+    ( CTCHECKS == auto -> decide_domains(AnaKinds) ; true ),
+    anakinds_to_absints(AnaKinds, check, AbsInts),
+    % pplog(auto_interface, ['{Analyses selected to check assertions: ',~~(AbsInts), '}']),
+    % Perform analyses
+    exec_analyses_and_acheck(AbsInts, TopLevel, File, OFile).
+
+exec_analyses_and_acheck(AbsInts, TopLevel, File, OFile) :-
     get_menu_flag(check, gen_certificate, GENCERT),
     ( GENCERT == on -> % It was "GENCERT == manual" but this option does not exist
         % TODO: *** This needs to be revised... MH
@@ -1241,14 +1260,21 @@ auto_check_assert_(File, OFile) :-
         set_pp_flag(fixpoint,di)
     ; true
     ),
-    get_menu_flag(ana, inter_ana, MenuAna),
-    retrieve_menu_analyses(MenuAna, AbsInts),
-    exec_analysis_list_acheck(File,AbsInts,ANYERROR),
-    gencert_ctchecks(ANYERROR, File, GENCERT),
+    ( current_pp_flag(intermod, off) ->
+        analyze(AbsInts),
+        acheck_summary(AnyError) % TODO: TopLevel vs File?
+    ; ( current_pp_flag(interleave_an_check,on) -> % TODO: IG: probably this is not working
+          inductive_ctcheck_summary(AbsInts,TopLevel,AnyError)
+      ; intermod_analyze(AbsInts,TopLevel),
+        intermod_ctcheck(AbsInts,[File]),
+        % errors not propagated to caller (E.g., for command line, etc.)
+        % see decide_summary/1 in analyze_driver
+        AnyError = []
+      )
+    ),
+    gencert_ctchecks(AnyError, File, GENCERT),
     do_output(OFile, check),
     set_last_file(File).
-
-:- pop_prolog_flag(multi_arity_warnings).
 
 gencert_ctchecks(Err,_,_):-
     Err == error, !,
@@ -1270,87 +1296,125 @@ gencert_ctchecks(_,File,GENCERT):-
 %       ; optim_comp(OPTIMCOMP)
 %       ).
 
-exec_analysis_list_acheck(File,AbsInts,AnyError) :-
-    current_pp_flag(intermod, off), !,
-    ( current_pp_flag(assert_ctcheck, manual) ->
-        % IG: if auto, the module was already loaded (to automatically detect
-        % which domains are required for the properties in the assertions)
-        module(File)
-    ; true),
-    analyze(AbsInts),
-    acheck_summary(AnyError).
-exec_analysis_list_acheck(File,AbsInts,AnyError) :-
-    % TODO: IG: probably this is not working
-    current_pp_flag(interleave_an_check,on), !,
-    inductive_ctcheck_summary(AbsInts,~maybe_main(File),AnyError).
-exec_analysis_list_acheck(File,AbsInts,AnyError) :-
-    maybe_main(File,TopLevel),
-    module(TopLevel),
-    intermod_analyze(AbsInts,TopLevel),
-    intermod_ctcheck(AbsInts,[File]),
-    % errors not propagated to caller (E.g., for command line, etc.)
-    % see decide_summary/1 in analyze_driver
-    AnyError = [].
-
-retrieve_menu_analyses([],[]).
-retrieve_menu_analyses([D|Ds],[A|As]):-
-    get_menu_ana(D,A), !,
-    retrieve_menu_analyses(Ds,As).
-retrieve_menu_analyses([_|Ds],As):-
-    retrieve_menu_analyses(Ds,As).
-
-get_menu_ana(D,A):-
-    get_menu_flag(check,D,A),
-    A \= none,!.
+% Extract the (menu flag) selected abstract domains AbsInts from the
+% specified analysis kinds AnaKinds.
+anakinds_to_absints([],_Menu,[]).
+anakinds_to_absints([AnaKind|AnaKinds],Menu,[AbsInt|AbsInts]):-
+    get_menu_flag(Menu,AnaKind,AbsInt),
+    \+ AbsInt = none,
+    !,
+    anakinds_to_absints(AnaKinds,Menu,AbsInts).
+anakinds_to_absints([_|AnaKinds],Menu,AbsInts):-
+    anakinds_to_absints(AnaKinds,Menu,AbsInts).
 
 % ---------------------------------------------------------------------------
-% Auto selection of domains for CT checking
-auto_sel_dom(_) :-
-    get_menu_flag(check,ct_modular,all),!,
-    % TODO: ad-hoc!
-    get_menu_flag(ana,inter_ana,As),
-    decide_analyses_mod(As).
-auto_sel_dom(File) :-
-    module(File),
-    get_menu_flag(ana,inter_ana,As),
-    curr_file(_,M),
-    retractall_fact(prop_covered(_,_)),
-    determine_needed(As,M,Ds),
-    pplog(auto_interface, ['{Analyses needed to check assertions: ',~~(Ds), '}']).
+%! # Auto selection of domains for ctchecks
+%  (based on the properties specified in the program assertions)
+
+% TODO: Auto selection based on assertions do not track were
+%   precission is losed during analysis, a more sophisticated domain
+%   selection should be semantic (IG&JF).
+
+% TODO: Auto selection for intermodular analysis is dummy (see comment
+%   above anyway).
+
+% Decide which domains are needed for the given analysis kinds and
+% select them in the corresponding menu flags.
+decide_domains(AnaKinds) :-
+    ( current_pp_flag(intermod, off) ->
+        decide_domains_monolithic(AnaKinds, AnaFlags)
+    ; % TODO: this was enabled only for 'get_menu_flag(check,ct_modular,all)' [IG&JF]
+      decide_domains_intermod(AnaKinds, AnaFlags)
+    ),
+    select_anaflags(AnaFlags).
+
+decide_domains_monolithic(AnaKinds, AnaFlags) :-
+    cleanup_decide_domains,
+    decide_domains_monolithic_(AnaKinds, AnaFlags),
+    cleanup_decide_domains. % (no longer needed)
+
+decide_domains_monolithic_([],[]).
+decide_domains_monolithic_([AnaKind|AnaKinds],[f(AnaKind, AbsInt)|AnaFlags]) :-
+    decide_domain_monolithic(AnaKind, AbsInt),
+    decide_domains_monolithic_(AnaKinds,AnaFlags).
+
+% TODO: ad-hoc for modular ct checking (it fixes types and modes)
+decide_domains_intermod([], []).
+decide_domains_intermod([AnaKind|AnaKinds], [f(AnaKind, AbsInt)|AnaFlags]):-
+    decide_domain_intermod(AnaKind, AbsInt),
+    decide_domains_intermod(AnaKinds, AnaFlags).
+
+% TODO: ad-hoc for intermod ct checking (it fixes types and modes)
+decide_domain_intermod(types, eterms) :- !.
+decide_domain_intermod(modes, shfr) :- !.
+decide_domain_intermod(_AnaKind, none).
+
+% Select menu flags AnaFlags for analysis (setting each AnaKind to the
+% corresponding AbsInt)
+select_anaflags([]).
+select_anaflags([f(AnaKind,AbsInt)|AnaFlags]) :-
+    set_menu_flag(check,AnaKind,AbsInt),
+    select_anaflags(AnaFlags).
+
+% ---------------------------------------------------------------------------
+% Decide necessary domains from assertions to be checked
+
+cleanup_decide_domains :-
+    retractall_fact(prop_covered(_,_)).
 
 :- data prop_covered/2.
-% cache to store wether a property was already covered in previously selected
-% domains. E.g., if shfr covers groundness, do not run eterms/nf (they also know
-% about groundess).
+% Cache to store whether a (native) property was already covered in
+% previously selected domains AbsInt. E.g., if shfr covers groundness,
+% do not run eterms/nf (they also know about groundess).
 set_prop_covered(Prop,AbsInt) :-
     ( prop_covered(Prop, _) ->
         true
     ; assertz_fact(prop_covered(Prop,AbsInt))
     ).
 
-needed_to_prove_prop(M, Dom, A) :-
+% Decide the domain AbsInt necessary to analyze the existing
+% properties from any loaded module (curr_file/2). 'none' if this
+% analysis is not needed.
+decide_domain_monolithic(AnaKind, AbsInt) :-
+    preferred_ana(AnaKind,AbsInt0),
+    curr_file(_,M), % (for each loaded module) % TODO: do for a selection?
+    needed_to_prove_prop(M, AbsInt0, AnaKind),
+    !,
+    AbsInt = AbsInt0.
+decide_domain_monolithic(_AnaKind, none).
+
+needed_to_prove_prop(M, AbsInt, A) :-
     ( % failure-driven loop
-      get_one_prop(M, P),
-      \+ prop_covered(P, _),
-        ( needed_to_prove(A, Dom, P) ->
-            set_prop_covered(P, Dom)
-        ; true),
+      get_one_prop(M, Prop),
+      \+ prop_covered(Prop, _),
+        ( needed_to_prove(A, AbsInt, Prop) ->
+            set_prop_covered(Prop, AbsInt)
+        ; true
+        ),
         fail
-    ;
-        prop_covered(_,Dom), ! % fail if the domain is not necessary
+    ; true
+    ),
+    ( prop_covered(_,AbsInt) -> true
+    ; fail % fail if the domain is not necessary
     ).
 
-determine_needed([],_,[]).
-determine_needed([A|As],M,[Dom|Ds]) :-
-    preferred_ana(A,Dom),
-    needed_to_prove_prop(M, Dom, A),!,
-    set_menu_flag(check,A,Dom),
-    determine_needed(As,M,Ds).
-determine_needed([A|As],M,Ds) :-
-    set_menu_flag(check,A,none),
-    determine_needed(As,M,Ds).
+% Enumerate all native props Prop (see prop_to_native/2) from check
+% assertions of module M
+get_one_prop(M,Prop) :-
+    relevant_assertion(M,Body),
+    assertion_body(_,_,Call,Succ,Comp,_,Body),
+    ( member(Prop0,Succ) 
+    ; member(Prop0,Call)
+    ; member(Prop0,Comp)
+    ),
+    prop_to_native(Prop0,Prop).
 
-get_one_prop(M,P) :-
+% The assertion Body is relevant for ctchecks:
+%  - calls assertions from libraries
+%  - calls, success, or comp assertions if:
+%    - M1 is M (our own module)
+%    - any module if ct_modular=all
+relevant_assertion(M,Body) :-
     % IG: if we use assertion_read instead, all assertions from all libraries
     % are considered. If the libraries are not cached, pgm_assertion_read
     % includes the libraries as well.
@@ -1361,18 +1425,15 @@ get_one_prop(M,P) :-
     %   take_assertion/4
     %
     assertion_read(_,M1,check,Kind,Body,_,Base,_,_),
-    take_assertion(M,M1,Kind,Base),
-    assertion_body(_,_,Call,Succ,Comp,_,Body),
-    ( member(Prop,Succ) ; member(Prop,Call) ; member(Prop,Comp) ),
-    prop_to_native(Prop,P).
-
-take_assertion(M,M1,Kind,Base) :-
-    M \== M1,
-    is_library(Base), !, % assume that one does not check libraries with auto
-    Kind  == calls.
-take_assertion(M,M1,Kind,_Base) :-
-    ( M == M1; current_pp_flag(ct_modular,all)),
-    member(Kind,[comp,success,calls]).
+    ( M \== M1, is_library(Base) ->
+        % assume that one does not check libraries with auto
+        Kind = calls
+    ; ( M == M1 
+      ; current_pp_flag(ct_modular,all)
+      ) ->
+        ( Kind = comp ; Kind = success ; Kind = calls )
+    ; fail
+    ).
 
 needed_to_prove_def(AnaKind, Ana, P) :-
     preferred_ana(AnaKind, Ana),
@@ -1387,7 +1448,8 @@ needed_to_prove_def(AnaKind, Ana, P) :-
 needed_to_prove(modes, _, ground(_)) :- !.
 needed_to_prove(modes, _, free(_)) :- !.
 % This handles most of the cases
-needed_to_prove(AnaKind, Dom, P) :- needed_to_prove_def(AnaKind, Dom, P), !.
+needed_to_prove(AnaKind, AbsInt, P) :- needed_to_prove_def(AnaKind, AbsInt, P), !.
+%
 needed_to_prove(ana_det, _, P) :- needed_to_prove(ana_cost, _, P).
 needed_to_prove(ana_det, _, P) :- needed_to_prove(ana_size, _, P).
 % but: we need nf for proving lower bounds or disproving upper bounds
@@ -1418,19 +1480,6 @@ preferred_ana(ana_cost, steps_ualb). % IG: why duplicated?, possible choicepoint
 preferred_ana(ana_cost, resources).
 preferred_ana(ana_size, size_ualb).
 preferred_ana(ana_det,  det).
-
-% TODO: ad-hoc for modular ct checking (it fixes types and modes)
-decide_analyses_mod([]).
-decide_analyses_mod([A|As]):-
-    decide_one_analysis_mod(A),
-    decide_analyses_mod(As).
-
-decide_one_analysis_mod(types) :-
-    set_menu_flag(check,types,terms).
-decide_one_analysis_mod(modes) :-
-    set_menu_flag(check,modes,shfr).
-decide_one_analysis_mod(A) :-
-    set_menu_flag(check,A,none).
 
 % ---------------------------------------------------------------------------
 % Auto check certificate
@@ -1509,23 +1558,6 @@ entry_policy_value(registry,top_level).
 
 % success_policy_value(assertions,top).
 % success_policy_value(registry,under_all).
-
-exec_analysis_list([A|B], AnaOrCheck) :-
-    get_menu_flag(AnaOrCheck, A, none),
-    !,
-    exec_analysis_list(B, AnaOrCheck).
-exec_analysis_list([A|B], AnaOrCheck) :-
-    get_menu_flag(AnaOrCheck, A, P),
-    !,
-    ( analysis(P) ->
-        ( analyze(P) ->
-            true
-        ; error_message("There was an error when executing analysis ~w", [P])
-        )
-    ; error_message("Unknown analysis: ~w", [P])
-    ),
-    exec_analysis_list(B, AnaOrCheck).
-exec_analysis_list([], _).
 
 exec_optimize(none) :- !.
 :- if(defined(has_ciaopp_extra)).
