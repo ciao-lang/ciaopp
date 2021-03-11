@@ -48,7 +48,7 @@ Global compilation options of intermodular analysis are available in
 
 :- use_module(ciaopp(frontend_driver), [module/1,module/2,output/1,output/0]).
 :- use_module(ciaopp(analyze_driver),
-              [analyze/1,analyze1/2,acheck_summary/1, acheck/1, acheck/2]).
+              [analyze/1,analyze1/2,acheck_summary/1, acheck/2]).
 :- use_module(ciaopp(p_unit), [program/2, replace_program/2]).
 :- use_module(ciaopp(plai/re_analysis), [update_ai_info_case/4]).
 :- use_module(ciaopp(plai), [cleanup_plai/1]).
@@ -480,7 +480,7 @@ monolithic_analyze(AbsInts,TopLevel,Info):-
     reset_total_info,
     set_local_ana_modules(ModList),
     cleanup_persistent_registry(ModList),
-%    ensure_registry_current_files(quiet),
+    ensure_registry_current_files(quiet),
     add_entries_to_registry_all(AbsInts),
     analyze1(AbsInts,Info0),
     debug_inc_dump_dir(TopLevel),
@@ -738,7 +738,7 @@ simpspec_(Spec,AbsInt,Cls,Ds,NewCls,NewDs):-
 :- doc(section, "Intermodular compile-time checking.").
 %% ******************************************************************
 
-:- pred intermod_ctcheck(+AbsInts,+Modules) + not_fails
+:- pred intermod_ctcheck(+AbsInts,+Modules) : list(atm) * list(atm) + not_fails
    #"Assuming that modular fixpoint already reached. Only supporting ctchecks of
     pred assertions (not program point)".
 % reviewed by IG
@@ -750,7 +750,7 @@ intermod_ctcheck(AbsInts,Modules) :-
 
 % monolithic analysis, ctcheck all modules (analysis already loaded)
 intermod_ctcheck_(AbsInts,_Modules,all,all) :- !,
-    acheck(AbsInts).
+    acheck(AbsInts, all).
 % monolithic analysis, ctcheck only `Modules` (analysis already loaded)
 intermod_ctcheck_(AbsInts,Modules,all,curr_mod) :- !,
     maplist(just_module_name, Modules, ModNames),
