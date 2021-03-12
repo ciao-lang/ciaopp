@@ -77,7 +77,7 @@ to check for program inconsistencies. On the contrary, trust assertions are
 
 @begin{cartouche}
 @begin{itemize}
-@item{} The specification of a program is made of all check
+@item The specification of a program is made of all check
   assertions for the program predicates.
 @end{itemize}
 @end{cartouche}
@@ -438,7 +438,7 @@ declared.@footnote{However, if the language supports a module system,
 
 @begin{cartouche}
 @begin{itemize}
-@item{} The effect of calls to foreign predicates may be declared
+@item The effect of calls to foreign predicates may be declared
 @comment{(in the unit the predicates are defined)}
   by using trust declarations for such predicates.
 @end{itemize}
@@ -535,7 +535,7 @@ adding trust declarations for the dynamic predicates.
 
 @begin{cartouche}
 @begin{itemize}
-@item{} The effect of calls to predicates which are dynamically modified
+@item The effect of calls to predicates which are dynamically modified
 may be declared by using trust declarations for such predicates.
 @end{itemize}
 @end{cartouche}
@@ -564,7 +564,7 @@ unit code---that specified by the entry declarations given).
 
 @begin{cartouche}
 @begin{itemize}
-@item{} All predicates that can be queried by the user and all
+@item All predicates that can be queried by the user and all
   predicates that can be called
   from parts of the program which do not explicitely appear in the
   preprocessing unit 
@@ -724,7 +724,7 @@ asserted are also dynamic calls.
 
 @begin{cartouche}
 @begin{itemize}
-@item{} All dynamic calls must be declared by using entry
+@item All dynamic calls must be declared by using entry
   declarations for the predicates that can be called in a dynamic
   way.
 @end{itemize}
