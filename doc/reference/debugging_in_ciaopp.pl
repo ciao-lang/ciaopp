@@ -214,19 +214,19 @@ The @tt{qsort} procedure should be able to sort all lists. Thus, we
 also require that all calls to it that have a list in the first
 argument and a variable in the second argument do not fail:
 @begin{verbatim} 
-:- comp qsort(A,B) : (list(A) , var(B)) + does_not_fail.
+:- comp qsort(A,B) : (list(A) , var(B)) + not_fails.
 @end{verbatim}
 
 Instead of the above basic assertions, the following compound one could
 be given:
 @begin{verbatim} 
-:- pred qsort(A,B) : (list(A) , var(B)) => list(B) + does_not_fail.
+:- pred qsort(A,B) : (list(A) , var(B)) => list(B) + not_fails.
 @end{verbatim}
 which will be equivalent to:
 @begin{verbatim}
 :- calls qsort(A,B) : (list(A), var(B)).
 :- success qsort(A,B) : (list(A), var(B)) => list(B).
-:- comp qsort(A,B) : (list(A) , var(B)) + does_not_fail.
+:- comp qsort(A,B) : (list(A) , var(B)) + not_fails.
 @end{verbatim}
 
 This will not allow to call @tt{qsort} with anything else than a
