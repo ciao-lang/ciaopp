@@ -392,7 +392,7 @@ check   , 'Analysis Domain' # assert_ctcheck  - auto.
 %check(1), 'Modular Analysis'    # ct_mod_ana - curr_mod     <- cct.
 %check   , 'Modular Checking'    # ct_modular - curr_mod :: mod_check  <- cct.
 check   , 'Modules to Check' # ct_modular - curr_mod  :: mod_check  <- cct.
-check   , 'Main module'          # main_module  - '$default'.
+check   , 'Main module'          # main_module  - '$default'. % TODO: not interactive, added ad-hoc in menu.pl
 check   , 'Iterate Over Modules' # ct_mod_iterate - on :: post_iter  <- cct_mod. % TODO: equivalent to intermod? (JF)
 check(1) ,'Interleave Analysis and Checking'# interleave_an_check - off <- cct_mod_reg.
 check(1), 'Related Modules Info'        # ct_ext_policy - assertions <- cct.
