@@ -237,7 +237,7 @@ portray('$dom'(Dom,Res,Rules,Tab)) :-
     format("~n[~w]",[Dom]),
     TabLen is Tab - Len + 1,
     tab(TabLen),
-    % TODO: MH Check if taking this out is damaging! (Looks better without?) ************* 
+    % MH Looks better without...
     % format(": ",[]),
     ( Dom == generic_comp ->
         sort(Res, Res2),
