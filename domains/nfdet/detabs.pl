@@ -29,6 +29,8 @@
 :- use_module(domain(s_eqs), [peel/4]).
 :- use_module(domain(nfdet/nfdet_statistics)).
 :- use_module(ciaopp(p_unit/program_keys), [predkey_from_sg/2]).
+
+:- use_module(library(idlists), [memberchk/2]).
 :- use_module(library(lists), [member/2, append/3]).
 :- use_module(library(hiordlib), [foldr/4]).
 :- use_module(library(sets), [merge/3]).
@@ -137,16 +139,22 @@ accumulate('$bottom',ASub0,ASub0):- !.
 accumulate(ASub,ASub0,NewASub):-
     asub(ASub0,Tests0,MutExclusive0,Det0),
     asub(ASub,Tests,MutExclusive1,Det1),
-    append_(Tests,Tests0,Tests1),
+    tests_union(Tests,Tests0,Tests1),
     lub_mut_exclusion(MutExclusive0,MutExclusive1,MutExclusive),
     lub_determinism(Det0,Det1,Det),
     asub(NewASub,Tests1,MutExclusive,Det).
 %
 
-append_(Tests,Tests0,Tests1):-
+tests_union(Tests,Tests0,Tests1):-
     Tests=[_|_], !,
-    append(Tests,Tests0,Tests1).
-append_(Tests,Tests0,[Tests|Tests0]).
+    tests_union_(Tests,Tests0,Tests1).
+tests_union(Tests,Tests0,[Tests|Tests0]).
+
+tests_union_([],Tests,Tests).
+tests_union_([T|Ts],Tests0,Tests1) :- memberchk(T,Tests0), !,
+    tests_union_(Ts,Tests0,Tests1).
+tests_union_([T|Ts],Tests0,[T|Tests1]) :-
+    tests_union_(Ts,Tests0,Tests1).
 
 lub_mut_exclusion(mut_exclusive,mut_exclusive,mut_exclusive):- !.
 lub_mut_exclusion(_,_,possibly_not_mut_exclusive).

@@ -30,6 +30,7 @@
 :- use_module(domain(nfdet/nfdet_statistics)).
 :- use_module(ciaopp(p_unit/program_keys), [predkey_from_sg/2]).
 
+:- use_module(library(idlists), [memberchk/2]).
 :- use_module(library(lists), [append/3]).
 :- use_module(library(hiordlib), [foldr/4]).
 :- use_module(library(sets), [merge/3]).
@@ -137,20 +138,26 @@ accumulate(ASub,ASub0,NewASub):-
     asub(ASub0,Tests0,Covered0,Fails0),
     asub(ASub,Tests,Covered1,Fails1),
     ( Fails1 == not_fails ->
-        append_(Tests,Tests0,Tests1),
+        tests_union(Tests,Tests0,Tests1),
         % Tests1=[Tests|Tests0],
         lub_covering(Covered0,Covered1,Covered),
         lub_nonfailure(Fails0,Fails1,Fails)
-    ; append_(Tests,Tests0,Tests1), % Tests1=[Tests|Tests0],
+    ; tests_union(Tests,Tests0,Tests1), % Tests1=[Tests|Tests0],
       Covered=Covered0,
       Fails=Fails0
     ),
     asub(NewASub,Tests1,Covered,Fails).
 
-append_(Tests,Tests0,Tests1):-
+tests_union(Tests,Tests0,Tests1):-
     Tests=[_|_], !,
-    append(Tests,Tests0,Tests1).
-append_(Tests,Tests0,[Tests|Tests0]).
+    tests_union_(Tests,Tests0,Tests1).
+tests_union(Tests,Tests0,[Tests|Tests0]).
+
+tests_union_([],Tests,Tests).
+tests_union_([T|Ts],Tests0,Tests1) :- memberchk(T,Tests0), !,
+    tests_union_(Ts,Tests0,Tests1).
+tests_union_([T|Ts],Tests0,[T|Tests1]) :-
+    tests_union_(Ts,Tests0,Tests1).
 
 lub_covering(covered,covered,covered):- !.
 lub_covering(_,_,possibly_not_covered).
