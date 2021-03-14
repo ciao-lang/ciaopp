@@ -206,17 +206,17 @@ test_list_to_mutual_exclusion_test([], InTest, InTest):-
     !.
 test_list_to_mutual_exclusion_test([T|TList], InTest, OuTest):-
     ( has_a_cut(T) -> 
-        TemTest = InTest
+        test_list_to_mutual_exclusion_test(TList, InTest, OuTest)
     ; clause_test_to_minset_test(T, Clause_Test),
       ( Clause_Test == true ->
           OuTest = true
       ; ( Clause_Test == false ->
             TemTest = InTest
         ; TemTest = [Clause_Test|InTest]
-        )
+        ),
+        test_list_to_mutual_exclusion_test(TList, TemTest, OuTest)
       )
-    ),
-    test_list_to_mutual_exclusion_test(TList, TemTest, OuTest).
+    ).
 
 % has_a_cut(t(_InVars,_Unif,_Arith,Meta)):- member(cut, Meta). 
 has_a_cut(t(_InVars,_Unif,_Arith,Meta)):- member((!), Meta). 
