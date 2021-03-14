@@ -431,8 +431,8 @@ acheck(AbsInt):-
     acheck([AbsInt],all).
 
 :- export(acheck/2).
-:- pred acheck(+AbsInt,+list).
-:- pred acheck(+AbsInt,+MaybeModList) : atm(MaybeModList)
+:- pred acheck(+AbsInt,+ModList) : list(atm) * list.
+:- pred acheck(+AbsInt,+MaybeModList) : list(atm) * atm
    #"If @var{MaybeModList} is the atom @tt{all}, all modules in the current
     punit are considered. If it is a list of @bf{module names}, only the
     assertions or predicates in those modules are checked.".

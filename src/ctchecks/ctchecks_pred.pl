@@ -65,6 +65,7 @@ decide_get_info(AbsInt,Key,MGoal,[complete(MGoal,MCall,[MSuccess],Key,lub)]):-
 %       current_pp_flag(collapse_ai_vers, on),
     current_pp_flag(multivariant_ctchecks, off),
     get_completes_lub(Key,MGoal,AbsInt,yes,MCall,MSuccess),!.
+% TODO: is the following unreachable? multivariant_ctchecks can only be on or off.
 decide_get_info(AbsInt,Key,MGoal,Info) :-
     get_info(AbsInt,pred,Key,MGoal,Info),!.
 decide_get_info(_AbsInt,_Key,_Goal, []).
@@ -76,13 +77,15 @@ decide_get_info(_AbsInt,_Key,_Goal, []).
      type @var{Type} (calls or success) status @var{check}.".
 
 % ---------------------------------------------------------------------------
-:- pred simplify_assertions_all(+AbsInts)
+:- pred simplify_assertions_all(+AbsInts) : list(atm)
    # "Check calls, success and comp assertions with status @tt{check} for all
    the predicates using the domains @var{AbsInts}.".
 simplify_assertions_all(AbsInts):-
     simplify_assertions_mods(AbsInts, all).
 
-:- pred simplify_assertions_mods(+AbsInts, +MaybeModList) + (not_fails, is_det)
+:- pred simplify_assertions_mods(+AbsInts, +MaybeModList) : list(atm) * atm.
+:- pred simplify_assertions_mods(+AbsInts, +MaybeModList) : list(atm) * list(atm)
+   + (not_fails, is_det)
    # "Check calls, success and comp assertions with the check status for all
    the predicates in the modules given by @var{MaybeModList} given the domains
    in @var{AbsInts}. If @var{MaybeModList} is the atom @tt{all}, all predicates are
@@ -249,7 +252,7 @@ compose_cs_goals(dont_know,OrigL,G1,G2,Orig) :-
 compose_cs_goals(_Status,Orig,G1,G2,GOut) :-
     synt_compose_disj(Orig,G1,G2,GOut).
 
-:- pred abs_exec_each_succ(+Goal, +AsCall, +AsSucc, +AbsInt, +AGoal, +ComplSuccs, -NCall, -NSucc, -Status).
+:- pred abs_exec_each_succ(+Goal, +AsCall, +AsSucc, +AbsInt, +AGoal, +ComplSuccs, +NCall, -NSucc, -Status).
 % IG: ComplSuccs is a list because of multivariant on success
 
 abs_exec_each_succ(_Goal, _Call, _Succ, _AbsInt, _AGoal, [], _NCall, nosucc, nosucc) :- !.
