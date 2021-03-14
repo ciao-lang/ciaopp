@@ -106,6 +106,9 @@ cond(free(N,M),AbsInt,Goal,Info):-
     arg(M,Goal,ArgM),
     free(AbsInt,ArgN,Info),
     free(AbsInt,ArgM,Info).
+cond(indep(_N),AbsInt,Goal,Info):- % IG: in practice N = 1 because it is a list
+    varset(Goal,Vars),
+    list_indep(AbsInt,Vars,Info).
 cond(indep(N,M),AbsInt,Goal,Info):-
     arg(N,Goal,ArgN),
     arg(M,Goal,ArgM),
@@ -283,6 +286,7 @@ indep(shfr,X,Y,(SharingComponent,_)):-
     ord_split_lists(SharingComponent,X,IntersectX,_DisjointX),
     ord_split_lists(IntersectX,Y,[],_DisjointY).
 indep(shfr,X,Y,ac(d((SharingComponent,_),_DelComponent),_)):-
+    % TODO: old functors of shfr asub???
     ord_split_lists(SharingComponent,X,IntersectX,_DisjointX),
     ord_split_lists(IntersectX,Y,[],_DisjointY).
 indep(shareson,X,Y,((_,DepComponent),_)):-
@@ -293,12 +297,35 @@ indep(shfrson,X,Y,((_,DepComponent),_,_)):-
     \+ord_member(Couple,DepComponent).
 indep(fr,X,_,as(Old,New)):-
     ord_split_lists(Old,X,[],_DisjointO),
-    ord_split_lists(New,X,[],_DisjointN),!.
+    ord_split_lists(New,X,[],_DisjointN), !.
 indep(fr,_,X,as(Old,New)):-
     ord_split_lists(Old,X,[],_DisjointO),
     ord_split_lists(New,X,[],_DisjointN).
 indep(fd,X,Y,(_D,as(_G1,Old,_G2,New))):-
     indep(fr,X,Y,as(Old,New)).
+
+%-------------------------------------------------------------------%
+% indep(+,+,+)                                                      %
+% indep(AbsInt,Vars,Info)                                           %
+%  Vars can be shown to be independent from each other              %
+%-------------------------------------------------------------------%
+list_indep(shfr, Vars, (SharingAsub,_)) :-
+    %%%% the variables in are in different sharing sets.
+    all_in_different_sharing_sets(Vars,SharingAsub).
+
+% TODO: PERFORMANCE!, can we take advantage of ordering to reduce the number of
+% checks?
+% all_in_different_sharing_sets(+,+).
+all_in_different_sharing_sets([_V], _Sharing) :- !.
+all_in_different_sharing_sets([V0|Vs], Sharing) :-
+    ord_split_lists(Sharing, V0, V0SharingSets, _Disjoint),
+    vs_not_in_sharing_sets(Vs,V0SharingSets),
+    all_in_different_sharing_sets(Vs, Sharing).
+
+vs_not_in_sharing_sets([],_SharingSets).
+vs_not_in_sharing_sets([V|Vs],SharingSets) :-
+    ord_split_lists(SharingSets,V,[],_Disjoint),
+    vs_not_in_sharing_sets(Vs,SharingSets).
 
 %% %-------------------------------------------------------------------%
 %% % nonvar(+,+,+)                                                     %

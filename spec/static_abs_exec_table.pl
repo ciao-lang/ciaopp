@@ -236,7 +236,8 @@ abs_ex(constraint/1,polyhedra,true,polyhedra_constraint).
 % will have to be rethought about (is now disabled)
 %abs_ex(ground/1,ground,ground,true):-!.
 abs_ex(ground/1,ground,true,ground(1)).
-abs_ex(indep/1,indep,indep,true).
+abs_ex(indep/1,ground,true,ground(1)).
+abs_ex(indep/1,indep,true,indep(1)).
 
 abs_ex(freeze/2,ground,freeze,true):-!.
 abs_ex(freeze/2,nonvar,freeze,true).
@@ -245,8 +246,6 @@ abs_ex(when/2,ground,when,true):-!.
 abs_ex(when/2,nonvar,when,true).
 % abs_ex(when/2,nonground,when,true):-!.
 % abs_ex(when/2,free,when,true):-!.
-
-
 
 abs_ex_if_not_constraint(Determ,Sense,Cond):-
     language(lp),
