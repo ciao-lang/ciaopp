@@ -222,11 +222,11 @@ analyze1_(AbsInt,Info) :-
     current_pp_flag(fixpoint,Fixp),
     %% *** Needs to be revised MH
     ( is_checker(Fixp) ->
-        Header = '{Checking certificate for '
+        Header = '{Checking certificate '
     ; Header = '{Analyzing '
     ),
     findall(~~(File),curr_file(File,_),Files),
-    pplog(analyze_module, [~~(Header)|Files]),
+    pplog(analyze_module, [~~(Header), '(', AbsInt, '): '|Files]),
     program(Cls,Ds),
     push_history(AbsInt), % TODO: check that this does not break intermod_analyze
     analyze_(AbsInt,Cls,Ds,Info,step1), % TODO:[new-resources] are two steps really needed? (JF)
