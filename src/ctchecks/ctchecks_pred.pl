@@ -415,7 +415,7 @@ reduce_compl_succ(nosucc, S, S) :- !.
 reduce_compl_succ(S, nosucc, S) :- !. 
 reduce_compl_succ(_, _, dont_know).
 
-reduce_compl_fin(perfect, true) :- !.
+reduce_compl_fin(perfect, checked) :- !.
 reduce_compl_fin(true, checked) :- !.
 reduce_compl_fin(fail, false) :- !.
 reduce_compl_fin(nosucc, checked) :- !.
