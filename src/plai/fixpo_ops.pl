@@ -65,7 +65,7 @@
 :- use_module(ciaopp(plai/apply_assertions), [apply_assrt_exit/7]).
 :- use_module(ciaopp(plai/plai_db)).
 :- use_module(ciaopp(preprocess_flags), [current_pp_flag/2]).
-:- use_module(ciaopp(p_unit), [language/1]).
+:- use_module(ciaopp(p_unit), [language/1, type_of_goal/2]).
 :- use_module(ciaopp(p_unit/program_keys), [predkey_from_sg/2]).
 :- use_module(ciaopp(p_unit/auxinfo_dump)).
 
@@ -296,6 +296,16 @@ each_less_or_equal([S1|S1s], AbsInt, [S2|S2s]) :-
 
 %-----------------------------------------------------------------
 
+% IG: It could happen that there is a dynamic predicate with predefined clauses
+% in the program. If this is the case, if Sg does not unify with any of the
+% clauses, ListPrime = [], and this will be represented later as '$bottom', this
+% is clearly wrong. Moreover, even if the defined clauses unify with Sg and they
+% are (correctly!) analyzed, we cannot assume that those are the only clauses of
+% the dynamic predicate, and the topmost approximation of Sg:Prime needs to be
+% used
+each_apply_trusted(Proj,_SgKey,Sg,Sv,AbsInt,_ListPrime,[Prime]):-
+    type_of_goal(dynamic,Sg), !,
+    unknown_call(AbsInt,Sg,Sv,Proj,Prime).
 each_apply_trusted(Proj,SgKey,Sg,Sv,AbsInt,ListPrime,LPrime):-
     current_pp_flag(multi_success,off), !,
     applicable(ListPrime,AbsInt,Prime0), % applicable computes the lub
