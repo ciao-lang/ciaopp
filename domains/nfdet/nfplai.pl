@@ -174,7 +174,7 @@ nf_widen(ASub0,ASub1,ASub):-
     asub(ASub1,ATypes1,AModes1,ANonF1),
     shfr_compute_lub([AModes0,AModes1],AModes),
     eterms_widen(ATypes0,ATypes1,ATypes),
-    nfabs:nf_compute_lub([ANonF0,ANonF1],ANonF),
+    nfabs:nf_widen(ANonF0,ANonF1,ANonF),
     asub(ASub,ATypes,AModes,ANonF).
 
 %------------------------------------------------------------------------%

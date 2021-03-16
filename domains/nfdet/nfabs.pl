@@ -3,6 +3,7 @@
     nf_exit_to_prime/7,
     nf_project/5,
     nf_extend/5,
+    nf_widen/3,
     nf_compute_lub/2,
     nf_compute_covering/3,
     nf_glb/3,
@@ -35,9 +36,38 @@
 :- use_module(library(hiordlib), [foldr/4]).
 :- use_module(library(sets), [merge/3]).
 
+:- doc(title,"Nonfailure Abstract Domain").
+:- doc(module,"
+
+This module implements the abstract operations of a nonfailure domain
+for the PLAI framework of abstract interpretation. Abstract
+substitutions for this domain are a pair of (Covered,Fails) elements,
+where Covered is @tt{possibly_not_covered}, @tt{not_covered} or
+@tt{covered}; and Fails is @tt{possibly_fails}, @tt{fails} or
+@tt{not_fails}. Note that the lattice for covering is analogous to the
+lattice of nonfailure, but applied to guard tests.
+
+The abstract domain lattices for nonfailure and covering are:
+
+@begin{verbatim}
+
+   possibly_not_covered          possibly_fails
+         /     \\                   /     \\
+        /       \\                 /       \\
+ not_covered  covered           fails   not_fails
+        \\      /                 \\       /
+         \\    /                   \\     /
+         $bottom                    $bottom
+
+@end{verbatim}
+
+").
+
 %------------------------------------------------------------------------%
 
 :- doc(bug,"Think on an adequate treatment for negation.").
+
+% TODO: Convering info may not be very useful for users; we may want to hide it.
 
 %------------------------------------------------------------------------%
 
@@ -105,13 +135,29 @@ select_tests(Tests,_Vars,Tests).
 % Return back to the calling clause: merge the tests in Call with the
 % tests in Prime
 
+% TODO: Fixed by replacing glb with custom definition. Same for defabs? (VP)
 nf_extend(_Sg,Prime,_Sv,Call,Succ):-
-    asub(Prime,Tests0,Covered0,Fails0),
-    asub(Call,Tests1,Covered1,Fails1),
+    asub(Prime,Tests0,_Covered,Fails0),
+    asub(Call,Tests1,Covered,Fails1),
     merge_tests(Tests0,Tests1,Tests),
-    glb_covering(Covered0,Covered1,Covered),
-    glb_nonfailure_1(Fails0,Fails1,Fails),
+    extend_nonfailure(Fails0,Fails1,Fails),
     asub(Succ,Tests,Covered,Fails).
+
+extend_covering('$bottom',_,'$bottom'):-!.
+extend_covering(_,'$bottom','$bottom'):-!.
+extend_covering(not_covered,_,not_covered):-!.
+extend_covering(_,not_covered,not_covered):-!.
+extend_covering(possibly_not_covered,_,possibly_not_covered):-!.
+extend_covering(_,possibly_not_covered,possibly_not_covered):-!.
+extend_covering(_,_,covered).
+
+extend_nonfailure('$bottom',_,'$bottom'):-!.
+extend_nonfailure(_,'$bottom','$bottom'):-!.
+extend_nonfailure(fails,_,fails):-!.
+extend_nonfailure(_,fails,fails):-!.
+extend_nonfailure(possibly_fails,_,possibly_fails):-!.
+extend_nonfailure(_,possibly_fails,possibly_fails):-!.
+extend_nonfailure(_,_,not_fails).
 
 % b) simple tests, do not collect:
 merge_tests(_Tests0,Tests,Tests).
@@ -119,8 +165,28 @@ merge_tests(_Tests0,Tests,Tests).
 %% merge_tests(Tests0,Tests1,Tests):-
 %%      append(Tests0,Tests1,Tests).
 
-glb_nonfailure_1(not_fails,not_fails,not_fails):- !.
-glb_nonfailure_1(_,_,possibly_fails).
+%------------------------------------------------------------------------%
+% nf_widen(+,+,-)                                                        %
+% nf_widen(Prime0,Prime1,NewPrime)                                       %
+%------------------------------------------------------------------------%
+
+nf_widen(Prime0,Prime1,NewPrime) :-
+    asub(ASub,[],covered,not_fails),
+    foldr(widen,[Prime0,Prime1],ASub,NewPrime).
+
+widen('$bottom',ASub0,ASub0):- !.
+widen(ASub0,'$bottom',ASub0):- !.
+widen(ASub,ASub0,NewASub):-
+    asub(ASub0,Tests0,Covered0,Fails0),
+    asub(ASub,Tests,Covered1,Fails1),
+    tests_union(Tests,Tests0,Tests1), % Tests1=[Tests|Tests0],
+    ( Fails0 = not_fails ->
+        lub_covering(Covered0,Covered1,Covered),
+        lub_nonfailure(Fails0,Fails1,Fails)
+    ; extend_covering(Covered0,Covered1,Covered),
+      extend_nonfailure(Fails0,Fails1,Fails)
+    ),
+    asub(NewASub,Tests1,Covered,Fails).
 
 %------------------------------------------------------------------------%
 % nf_compute_lub(+,-)                                                    %
@@ -130,23 +196,22 @@ glb_nonfailure_1(_,_,possibly_fails).
 % is called from the fixpoint)
 
 nf_compute_lub(ListASub,Lub):-
-    asub(ASub,[],covered,not_fails),
-    foldr(accumulate, ListASub, ASub, Lub).
+    asub(Asub,[],'$bottom','$bottom'),
+    foldr(accumulate,ListASub,Asub,Lub).
 
 accumulate('$bottom',ASub0,ASub0):- !.
+accumulate(ASub0,'$bottom',ASub0):- !.
 accumulate(ASub,ASub0,NewASub):-
     asub(ASub0,Tests0,Covered0,Fails0),
-    asub(ASub,Tests,Covered1,Fails1),
-    ( Fails1 == not_fails ->
-        tests_union(Tests,Tests0,Tests1),
-        % Tests1=[Tests|Tests0],
-        lub_covering(Covered0,Covered1,Covered),
-        lub_nonfailure(Fails0,Fails1,Fails)
-    ; tests_union(Tests,Tests0,Tests1), % Tests1=[Tests|Tests0],
-      Covered=Covered0,
-      Fails=Fails0
+    asub(ASub,Tests1,Covered1,Fails1),
+    accumulate_covering(Covered0,Covered1,Covered),
+    accumulate_nonfailure(Fails0,Fails1,Fails),
+    % Do not accumulate tests of failing clauses.
+    ( represents_failure(Fails1) ->
+        Tests = Tests0
+    ; tests_union(Tests1,Tests0,Tests)
     ),
-    asub(NewASub,Tests1,Covered,Fails).
+    asub(NewASub,Tests,Covered,Fails).
 
 tests_union(Tests,Tests0,Tests1):-
     Tests=[_|_], !,
@@ -159,11 +224,29 @@ tests_union_([T|Ts],Tests0,Tests1) :- memberchk(T,Tests0), !,
 tests_union_([T|Ts],Tests0,[T|Tests1]) :-
     tests_union_(Ts,Tests0,Tests1).
 
-lub_covering(covered,covered,covered):- !.
-lub_covering(_,_,possibly_not_covered).
+accumulate_covering(covered,_,covered):- !.
+accumulate_covering(_,covered,covered):- !.
+accumulate_covering(A,B,C):- lub_covering(A,B,C).
 
-lub_nonfailure(not_fails,not_fails,not_fails):- !.
-lub_nonfailure(_,_,possibly_fails).
+accumulate_nonfailure(not_fails,_,not_fails):- !.
+accumulate_nonfailure(_,not_fails,not_fails):- !.
+accumulate_nonfailure(A,B,C):- lub_nonfailure(A,B,C).
+
+lub_covering(A,B,C) :-
+    ( le_covering(A,B) ->
+        C = B
+    ; le_covering(B,A) ->
+        C = A
+    ; C = possibly_not_covered
+    ).
+
+lub_nonfailure(A,B,C) :-
+    ( le_nonfailure(A,B) ->
+        C = B
+    ; le_nonfailure(B,A) ->
+        C = A
+    ; C = possibly_fails
+    ).
 
 %------------------------------------------------------------------------%
 % nf_compute_covering(+,+,-)                                             %
@@ -179,15 +262,15 @@ nf_compute_covering(ModeTypes,Lub,ASub):-
     ( TestsList = [] -> CoverTest = false %% ???? PLG
     ; TestsList = [[]] -> CoverTest = true %% ???? PLG
     ; TestsList = [_|_] -> 
-      test_list_to_cover_test(TestsList, [], CoverTest)
-    % if only one asub, lub is not computed, thus, it is not a list:
+        test_list_to_cover_test(TestsList, [], CoverTest)
+        % if only one asub, lub is not computed, thus, it is not a list:
     ; test_list_to_cover_test([TestsList], [], CoverTest)
     ),
     covers_check(ModeTypes,false,_Masc,CoverTest,Res),
     result_to_covering(Res,Covered),
     covering_to_nonfailure(Covered,Fails1),
     % Fails0 should always be not_fails!
-    lub_nonfailure(Fails0,Fails1,Fails),
+    extend_nonfailure(Fails0,Fails1,Fails),
     foldr_testlist(TestsList,Tests),
     asub(ASub,Tests,Covered,Fails).
 
@@ -250,11 +333,21 @@ nf_glb(ASub0,ASub1,Glb):-
     glb_nonfailure(Fails0,Fails1,Fails),
     asub(Glb,Tests,Covered,Fails).
 
-glb_covering(possibly_not_covered,possibly_not_covered,possibly_not_covered):- !.
-glb_covering(_,_,covered).
+glb_covering(A,B,C) :-
+    ( le_covering(A,B) ->
+        C = A
+    ; le_covering(B,A) ->
+        C = B
+    ; C = '$bottom'
+    ).
 
-glb_nonfailure(possibly_fails,possibly_fails,possibly_fails):- !.
-glb_nonfailure(_,_,not_fails).
+glb_nonfailure(A,B,C) :-
+    ( le_nonfailure(A,B) ->
+        C = A
+    ; le_nonfailure(B,A) ->
+        C = B
+    ; C = '$bottom'
+    ).
 
 %------------------------------------------------------------------------%
 % nf_less_or_equal(+,+)                                                  %
@@ -267,13 +360,13 @@ nf_less_or_equal(ASub0,ASub1):-
     le_covering(Covered0,Covered1),
     le_nonfailure(Fails0,Fails1).
 
-le_covering(covered,possibly_not_covered).
-le_covering(covered,covered).
-le_covering(possibly_not_covered,possibly_not_covered).
+le_covering(A,A):- !.
+le_covering('$bottom',_).
+le_covering(_,possibly_not_covered).
 
-le_nonfailure(not_fails,possibly_fails).
-le_nonfailure(possibly_fails,possibly_fails).
-le_nonfailure(not_fails,not_fails).
+le_nonfailure(A,A):- !.
+le_nonfailure('$bottom',_).
+le_nonfailure(_,possibly_fails).
 
 %------------------------------------------------------------------------%
 % nf_identical_abstract(+,+)                                             %
@@ -449,8 +542,8 @@ is_a_test(Btype):- Btype == meta.
 builtin_trust_to_succ(CovNF,Call,Succ):-
     asub(Call,Tests,Covered1,Fails1),
     nf_builtin_trust(CovNF, Covered0, Fails0),   
-    glb_covering(Covered0,Covered1,Covered),
-    glb_nonfailure_1(Fails0,Fails1,Fails),
+    extend_covering(Covered0,Covered1,Covered),
+    extend_nonfailure(Fails0,Fails1,Fails),
     asub(Succ,Tests,Covered,Fails).
  
 nf_builtin_trust((Covered, Fails), Covered, Fails).   
@@ -470,14 +563,14 @@ nf_builtin_trust((Covered, Fails), Covered, Fails).
 
 nf_input_interface(not_fails(_),perfect,(Cov,Fail0),(Cov,Fail1)):-
     myappend(Fail0,[not_fails],Fail1).
-%nf_input_interface(fails(_),approx,(Cov,Fail0),(Cov,Fail1)):-
-%       myappend(Fail0,[possibly_fails],Fail1).
+nf_input_interface(fails(_),approx,(Cov,Fail0),(Cov,Fail1)):-
+    myappend(Fail0,[fails],Fail1).
 nf_input_interface(possibly_fails(_),perfect,(Cov,Fail0),(Cov,Fail1)):-
     myappend(Fail0,[possibly_fails],Fail1).
 nf_input_interface(covered(_),perfect,(Cov0,Fail),(Cov1,Fail)):-
     myappend(Cov0,[covered],Cov1).
-%nf_input_interface(not_covered(_),approx,(Cov0,Fail),(Cov1,Fail)):-
-%       myappend(Cov0,[possibly_not_covered],Cov1).
+nf_input_interface(not_covered(_),approx,(Cov0,Fail),(Cov1,Fail)):-
+    myappend(Cov0,[not_covered],Cov1).
 nf_input_interface(possibly_not_covered(_),perfect,(Cov0,Fail),(Cov1,Fail)):-
     myappend(Cov0,[possibly_not_covered],Cov1).
 
@@ -497,8 +590,8 @@ may_be_var(X,X):- ( X=[] ; true ), !.
 nf_input_user_interface((Cov0,Fail0),Qv,ASub,_Sg,_MaybeCallASub):-
     may_be_var(Cov0,Cov1),
     may_be_var(Fail0,Fail1),
-    foldr(glb_covering, Cov1, covered, Covered),
-    foldr(glb_nonfailure, Fail1, not_fails, Fails),
+    foldr(glb_covering, Cov1, possibly_not_covered, Covered),
+    foldr(glb_nonfailure, Fail1, possibly_fails, Fails),
     nf_empty_entry(sg_not_provided,Qv,Entry),
     asub(Entry,Tests,_Covered,_Fails),
     asub(ASub,Tests,Covered,Fails).
@@ -513,10 +606,18 @@ nf_input_user_interface((Cov0,Fail0),Qv,ASub,_Sg,_MaybeCallASub):-
 
 nf_asub_to_native(ASub,Qv,[PropF,PropC]):-
     asub(ASub,_Tests,Covered,Fails),
+    \+ represents_failure(Fails),
     functor(PropF,Fails,1),
-    functor(PropC,Covered,1),
+    ( Covered = '$bottom' ->
+        Covered0 = not_covered
+    ; Covered = Covered0
+    ),
+    functor(PropC,Covered0,1),
     arg(1,PropF,Qv),
     arg(1,PropC,Qv).
+
+represents_failure('$bottom').
+represents_failure(fails).
 
 %------------------------------------------------------------------------%
 % nf_unknown_call(+,+,+,-)                                               %
