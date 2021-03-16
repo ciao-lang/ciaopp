@@ -263,14 +263,23 @@ trusted(SgKey,_Proj,Sg0,_Sv,AbsInt,_Loc,_Prime):-
           assertion_body(Sg,Ip,IC,ISucc,[],Cm,Body)
      ;
          ( AbsInt = det ; AbsInt = nf ), % IG: choice points ?
-           assertion_read(Sg,_M,Status,comp,Body0,_Dict,Source,LB,LE),
-           assertion_body(Sg,Ip,IC,IS,Comp,Cm,Body0),
-           assertion_body(Sg,Ip,IC,Comp,IS,Cm,Body)
+         ( assertion_read(Sg,_M,Status,comp,Body0,_Dict,Source,LB,LE) ->
+             assertion_body(Sg,Ip,IC,_,Comp,Cm,Body0)
+         ; Comp = []
+         ),
+         ( assertion_read(Sg,_M,Status,success,Body1,_Dict,Source,LB,LE) ->
+             assertion_body(Sg,Ip,IC,IS,_,Cm,Body1)
+         ; IS = []
+         ),
+         ( Comp \= [] ; IS \= [] ),
+         append(Comp,IS,CompIS),
+         assertion_body(Sg,Ip,IC,CompIS,Comp,Cm,Body)
      % deprecated exit assertions
        % ; assertion_read(Sg,_M,Status,exit,Body,_Dict,Source,LB,LE)
      ;  % [IG] done in apply_trust_success
          current_pp_flag(old_trusts, on),
-         (AbsInt \= res_plai, AbsInt \= res_plai_stprf, AbsInt \= sized_types),
+         (AbsInt \= res_plai, AbsInt \= res_plai_stprf, AbsInt \= sized_types,
+          AbsInt \= det, AbsInt \= nf),
           assertion_read(Sg,_M,Status,success,Body,_Dict,Source,LB,LE),
           ( Status == check ->
             (
