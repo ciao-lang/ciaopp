@@ -3,35 +3,35 @@
    @item General changes and new features:
      @begin{itemize}
      @item LLVM-based frontend improved and moved to its own bundle (see
-       @tt{ciaopp_llvm} bundle)
-     @item split @tt{typeslib} as a separate bundle
-     @item allow heads of entry assertions to be non-normalized
-     @item adapted to new hiord
-     @item [new] command @tt{ciaopp-dump}, which perform several actions
-       over ciaopp analysis dump: it includes old commands
-       @tt{ciaopp-dump-cmp} and @tt{ciaopp-dump-cmp}. New options for:
-       showing the content of a dump file, a code reachability report,
-       static, offline checks of assertions using a dump file, and general
-       statistics of the analysis result.
-     @item [new] added @tt{-op Suffix} option to ciaopp command-line
-     @item [new] warning if no entries were found
-     @item [new] unified messages, now controlled by @tt{ciaopp_log.pl}
-     @item [new] @tt{ciaopp-batch} command to run ciaopp on many files and with timeouts
-     @item [new] modular (non-incremental) analysis with types (shortening)
-     @item [new] bottom-up incremental update of fixpoint (at literal level)
-     @item [new] modular (non-incremental) analysis with types (shortening)
+       @tt{ciaopp_llvm} bundle).
+     @item Split @tt{typeslib} as a separate bundle.
+     @item Allow heads of entry assertions to be non-normalized.
+     @item Adapted to new hiord.
+     @item [new] Command @tt{ciaopp-dump}, which performs several
+       actions over a ciaopp analysis dump: it subsumes the old
+       @tt{ciaopp-dump-cmp} and @tt{ciaopp-dump-cmp} commands. New
+       options for: showing the contents of a dump file, a code
+       reachability report, static, offline checks of assertions using
+       a dump file, and general statistics for the analysis results.
+     @item [new] Added @tt{-op Suffix} option to ciaopp command-line (useful for flycheck).
+     @item [new] Warning if no entries were found
+     @item [new] Unified messages, now controlled by @tt{ciaopp_log.pl}
+     @item [new] @tt{ciaopp-batch} command to run ciaopp on many files and with timeouts.
+     @item [new] Modular (non-incremental) analysis with types (shortening).
+     @item [new] Bottom-up incremental update of fixpoint (at literal level).
+     @item [new] Modular (non-incremental) analysis with types (shortening).
      @end{itemize}
    
    @item Domains:
      @begin{itemize}
-     @item implemented domains using (a special) trait package
-     @item added @tt{needs/2} operation
-     @item renamed @tt{abstypes_abs} to @tt{auxinfo_asub}
-     @item eterms: @tt{member/2}, @tt{=/2} as native properties (for assertions)
+     @item Implemented domains using (a special) trait package.
+     @item Added @tt{needs/2} operation.
+     @item Renamed @tt{abstypes_abs} to @tt{auxinfo_asub}.
+     @item eterms: @tt{member/2}, @tt{=/2} as native properties (for assertions).
      @item pdb:
        @begin{itemize}
-       @item optimize @tt{pdb_compute_lub}: top if any @tt{ASub} is top
-       @item use @tt{fail} literals.
+       @item Optimize @tt{pdb_compute_lub}: top if any @tt{ASub} is top.
+       @item Use @tt{fail} literals.
        @end{itemize}
      @item sharing: fixed @tt{free/1} handlers
      @item shfr: fixes in handlers of @tt{==/2}, @tt{=/2},
@@ -55,12 +55,12 @@
      @item Improved documentation
      @end{itemize}
    
-   @item Analysis of higher order code:
+   @item Analysis of higher-order code:
      @begin{itemize}
      @item [new] Flag for automatic generation of entries of meta
        calls.
-     @item [fix] @tt{call/N} not detected as meta predicate, flattened
-       if possible.
+     @item [fix] @tt{call/N} was not being detected as meta predicate
+       (and flattened when possible).
      @item [new] @tt{\\\\+} not treated as meta, flatten calls known at
        compile time.
      @end{itemize}
