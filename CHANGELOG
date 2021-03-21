@@ -15,54 +15,56 @@ Version/Change Log
 Version 1.4 (2020/11/18, 6:18:7 CET)
         * General changes and new features:
              * LLVM-based frontend improved and moved to its own bundle
-               (see `ciaopp_llvm' bundle)
+               (see `ciaopp_llvm' bundle).
 
-             * split `typeslib' as a separate bundle
+             * Split `typeslib' as a separate bundle.
 
-             * allow heads of entry assertions to be non-normalized
+             * Allow heads of entry assertions to be non-normalized.
 
-             * adapted to new hiord
+             * Adapted to new hiord.
 
-             * [new] command `ciaopp-dump', which perform several
-               actions over ciaopp analysis dump: it includes old
-               commands `ciaopp-dump-cmp' and `ciaopp-dump-cmp'. New
-               options for: showing the content of a dump file, a code
+             * [new] Command `ciaopp-dump', which performs several
+               actions over a ciaopp analysis dump: it subsumes the old
+               `ciaopp-dump-cmp' and `ciaopp-dump-cmp' commands. New
+               options for: showing the contents of a dump file, a code
                reachability report, static, offline checks of
-               assertions using a dump file, and general statistics of
-               the analysis result.
+               assertions using a dump file, and general statistics for
+               the analysis results.
 
-             * [new] added `-op Suffix' option to ciaopp command-line
+             * [new] Added `-op Suffix' option to ciaopp command-line
+               (useful for flycheck).
 
-             * [new] warning if no entries were found
+             * [new] Warning if no entries were found
 
-             * [new] unified messages, now controlled by `ciaopp_log.pl'
+             * [new] Unified messages, now controlled by `ciaopp_log.pl'
 
              * [new] `ciaopp-batch' command to run ciaopp on many files
-               and with timeouts
+               and with timeouts.
 
-             * [new] modular (non-incremental) analysis with types
-               (shortening)
+             * [new] Modular (non-incremental) analysis with types
+               (shortening).
 
-             * [new] bottom-up incremental update of fixpoint (at
-               literal level)
+             * [new] Bottom-up incremental update of fixpoint (at
+               literal level).
 
-             * [new] modular (non-incremental) analysis with types
-               (shortening)
+             * [new] Modular (non-incremental) analysis with types
+               (shortening).
 
         * Domains:
-             * implemented domains using (a special) trait package
+             * Implemented domains using (a special) trait package.
 
-             * added `needs/2' operation
+             * Added `needs/2' operation.
 
-             * renamed `abstypes_abs' to `auxinfo_asub'
+             * Renamed `abstypes_abs' to `auxinfo_asub'.
 
              * eterms: `member/2', `=/2' as native properties (for
-               assertions)
+               assertions).
 
              * pdb:
-                  * optimize `pdb_compute_lub': top if any `ASub' is top
+                  * Optimize `pdb_compute_lub': top if any `ASub' is
+                    top.
 
-                  * use `fail' literals.
+                  * Use `fail' literals.
 
              * sharing: fixed `free/1' handlers
 
@@ -88,12 +90,12 @@ Version 1.4 (2020/11/18, 6:18:7 CET)
 
              * Improved documentation
 
-        * Analysis of higher order code:
+        * Analysis of higher-order code:
              * [new] Flag for automatic generation of entries of meta
                calls.
 
-             * [fix] `call/N' not detected as meta predicate, flattened
-               if possible.
+             * [fix] `call/N' was not being detected as meta predicate
+               (and flattened when possible).
 
              * [new] `\+' not treated as meta, flatten calls known at
                compile time.
