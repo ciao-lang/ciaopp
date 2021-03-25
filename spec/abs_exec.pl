@@ -24,7 +24,7 @@
 % and the conditions required
 
 %-------------------------------------------------------------------%
-% abs_exec(+,+,+,-)                                                 %
+% abs_exec(+,?,?,-)                                                 %
 % abs_exec(Abs,Pred,Sense,Cond)                                     %
 %  Pred is abstractly executable to Sense with abstract domain Abs  %
 %  if Cond holds                                                    %
@@ -132,6 +132,7 @@ determinable(shfr,indep).
 determinable(shfr,free).
 determinable(shfr,not_indep).
 determinable(shfr,not_ground).
+determinable(shfr,sharing).
 %
 determinable(gr,ground).
 %

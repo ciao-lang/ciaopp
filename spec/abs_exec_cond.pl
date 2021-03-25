@@ -23,8 +23,9 @@
 
 :- use_module(ciaopp(plai/domains), 
     [ concrete/4, less_or_equal_proj/5, abs_sort/3, project/6,
-      identical_abstract/3 ]).
-:- use_module(domain(sharing), [share_project/5]).
+      identical_abstract/3, project/5 ]).
+:- use_module(domain(sharing),
+              [share_project/5,share_less_or_equal/2, share_input_interface/4]).
 :- use_module(domain(s_grshfr), 
     [ change_values_if_differ/5, member_value_freeness/3, projected_gvars/3,
         var_value/3 ]).
@@ -143,6 +144,14 @@ cond(nonvar(N),AbsInt,Goal,Info):-
     arg(N,Goal,ArgN),
 %% MGB  nonvar(AbsInt,ArgN,Info).
     not_free(AbsInt,ArgN,Info).
+cond(sharing(N,M),AbsInt,Goal,ASub) :-
+    arg(N,Goal,ArgN),
+    arg(M,Goal,ArgM),
+    share_input_interface(sharing(ArgN,ArgM), Kind,_,Acc),
+    Acc = (_Gv,ShPropASub,_I0),
+    Kind = perfect, % Sanity check, sharing is exactly representable
+    project(AbsInt,ArgN,[],ASub,(ShASub,_GrASub)),
+    share_less_or_equal(ShPropASub,ShASub).
 cond(not_indep(N,M),AbsInt,Goal,Info):-
     not_cond(indep(N,M),AbsInt,Goal,Info).
 cond(not_ground(N),AbsInt,Goal,Info):-
@@ -155,7 +164,7 @@ cond([_|Conds],AbsInt,Goal,Info):-
 cond(leq(Sg,Proj),AbsInt,Goal,Info):-
     abs_sort(AbsInt,Proj,SortedProj),
     varset(Goal,Gv),
-    project(AbsInt,Goal,Gv,_,Info,Entry),
+    project(AbsInt,Goal,Gv,[],Info,Entry),
     abs_sort(AbsInt,Entry,SortedEntry),
     less_or_equal_proj(AbsInt,Goal,SortedEntry,Sg,SortedProj).
 %jcf

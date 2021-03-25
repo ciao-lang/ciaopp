@@ -239,6 +239,8 @@ abs_ex(ground/1,ground,true,ground(1)).
 abs_ex(indep/1,ground,true,ground(1)).
 abs_ex(indep/1,indep,true,indep(1)).
 
+abs_ex(sharing/2,sharing,true,sharing(1,2)).
+
 abs_ex(freeze/2,ground,freeze,true):-!.
 abs_ex(freeze/2,nonvar,freeze,true).
 
