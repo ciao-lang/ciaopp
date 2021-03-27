@@ -173,15 +173,16 @@ det_compute_mut_exclusion(ModeTypes,Lub,ASub):-
     % this one is a little tricky: Lub is not a well-formed abstract
     % substitution, it is a collection of tests from compute_lub
     asub(Lub,TestsList,_MutExclusive,Det0),
-    ( TestsList = [] -> MutualExclusionTest = true %% ???? PLG Differs from nf.
-    ; TestsList = [[]] -> MutualExclusionTest = true %% ???? PLG
-    ; TestsList = [_|_] -> 
-      test_list_to_mutual_exclusion_test(TestsList, [], MutualExclusionTest)
-    % if only one asub, lub is not computed, thus, it is not a list:
-    ; test_list_to_mutual_exclusion_test([TestsList], [], MutualExclusionTest)
+    % if only one asub, it is always mutually exclusive:
+    ( TestsList = t(_,_,_,_) ->
+        MutExclusive = mut_exclusive
+    ; ( TestsList = [] -> MutualExclusionTest = true  %% ???? PLG Differs from nf.
+      ; TestsList = [[]] -> MutualExclusionTest = true  %% ???? PLG
+      ; test_list_to_mutual_exclusion_test(TestsList, [], MutualExclusionTest)
+      ),
+      mutual_exclusion_check(ModeTypes,false,_Masc,MutualExclusionTest,Res),
+      result_to_mut_exclusion(Res,MutExclusive)
     ),
-    mutual_exclusion_check(ModeTypes,false,_Masc,MutualExclusionTest,Res),
-    result_to_mut_exclusion(Res,MutExclusive),
     mut_exclusion_to_determinism(MutExclusive,Det1),
     % Det0 should always be is_det!
     lub_determinism(Det0,Det1,Det),
