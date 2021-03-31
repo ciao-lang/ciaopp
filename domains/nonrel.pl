@@ -271,7 +271,7 @@ nonrel_call_to_entry(AbsInt,_Sv,Sg,Hv,Head,_K,Fv,Proj,Entry,Proj) :-
 :- pred insert_values_asub(+NewVars, +ASub, +AbsElem, -NewASub)
     #"Inserts values in an abstract substitution @var{ASub}, asigning each
     variable in @var{NewVars} @var{AbsElem} producing @var{NewASub}.
-    @var{NewVars} has to be sorted.}".
+    @var{NewVars} has to be sorted.".
 insert_values_asub([], [], _, []) :- !.
 insert_values_asub([], ASub, _, ASub) :- !.
 insert_values_asub([V|Vs], [], AbsElem, [V/AbsElem|NASub0]) :- !,

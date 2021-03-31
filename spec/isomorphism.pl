@@ -28,7 +28,7 @@ unfolded atom calls, based on a given minimization criterion").
 print_debug_info :- fail.
 
 :- pred isomorphic(+Call1,+Call2,+Key) #"Determines whether two
-unfolded atom calls @var{Call1} and var@{Call2} are isomorphic. Each
+unfolded atom calls @var{Call1} and @var{Call2} are isomorphic. Each
 atom call is a tuple containing the unfolded clauses, the generalized
 atom, and the characteristic tree resulting of unfolding the atom call
 w.r.t. the program. Isomorphism will depend on the @tt{min_crit}
@@ -157,7 +157,7 @@ match_clause(Orig_Clause,clauseinst(Gen_Head,Inst,_Body),Sg):-
     exec_all(Inst),
     variant(Orig_Clause,clauseinst(Gen_Head,Inst,_Body)).
 
-:- pred exec_all(+L) #"Exectues all builtins in var@{L}".
+:- pred exec_all(+L) #"Executes all builtins in @var{L}".
 
 exec_all([]).
 exec_all([H|Tail]):-
@@ -184,7 +184,7 @@ add_builtins_clause(Clause,Ch_Path,Clausewb):-
     get_builtins(Ch_Path,Builtins),
     Clausewb =.. [clauseinst,Head,Builtins,Body].
 
-:- pred get_builtins(+L,-) #"Collects all builtins from L.  A builtin
+:- pred get_builtins(+L,-) #"Collects all builtins from L. A builtin
 is represented by a pair (Predicate,[Bindings]) ".
 
 get_builtins([],[]).

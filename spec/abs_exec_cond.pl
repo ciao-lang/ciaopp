@@ -563,7 +563,7 @@ apply([]).
    literal (@var{K_Post}) are identical. Also, the literal is abstractly
    executable to false iff the abstract substitution in @var{K_Post} is bottom.
    The only problem with this implementation is that it requires both the pre
-   and post analysis information for the literal}".
+   and post analysis information for the literal".
 
 abs_exec_reg_type_with_post_info(K_Pre,K_Post,AbsInt,Sense):-
     get_memo_lub(K_Post,Vars,AbsInt,yes,Info1),
