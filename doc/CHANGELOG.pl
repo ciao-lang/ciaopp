@@ -141,7 +141,8 @@
 ").
 
 :- doc(version(1*2+0,2006/01/03,11:16*23+'CEST'),
-    "New version").
+    "Check point").
 
 :- doc(version(1*0+0,2001/11/07,19:05*57+'CET'),
-    "New version").
+    "Major code reorganization from CiaoPP 0.8. Moved to repo system. 
+     See 0.8 manual for changelog prior to 1.0 (covers 1999-2000).").
