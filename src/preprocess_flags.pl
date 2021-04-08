@@ -89,7 +89,7 @@ persistent_dir(dbdir, '~/.ciao.d/ciaopp_flags').
 % :- multifile valid_flag_values/2.
 :- discontiguous valid_flag_values/2.
 :- pred valid_flag_values(Name,Value_Checker) 
-    :: pp_flag * callable
+    :: pp_flag * cgoal
     # "@var{Value_Checker} is a goal that checks that a value given as
        first argument of this term is a valid value for @var{Name}.".
 

@@ -217,7 +217,7 @@ ewiden([X:T1|Prime0],[X:T2|Prime],[X:T|NewPrime]):-
 :- dom_impl(etermsvar, call_to_entry/9).
 :- export(etermsvar_call_to_entry/9).
 :- pred etermsvar_call_to_entry(+Sv,+Sg,+Hv,+Head,+K,+Fv,+Proj,-Entry,-ExtraInfo)
-   : term * callable * list * callable * term * list * absu * absu * extrainfo.
+   : term * cgoal * list * cgoal * term * list * absu * absu * extrainfo.
 
 etermsvar_call_to_entry(_Sv,Sg,Hv,Head,_K,Fv,Proj,Entry,(yes,Proj)):- 
     variant(Sg,Head), !,
@@ -250,7 +250,7 @@ variables_are_variable_type([],[]).
 :- dom_impl(etermsvar, exit_to_prime/7).
 :- export(etermsvar_exit_to_prime/7).
 :- pred etermsvar_exit_to_prime(+Sg,+Hv,+Head,+Sv,+Exit,-ExtraInfo,-Prime)
-   : list * list * callable * callable * absu * extrainfo * absu.
+   : list * list * cgoal * cgoal * absu * extrainfo * absu.
 
 % TODO: almost duplicated
 etermsvar_exit_to_prime(_Sg,_Hv,_Head,_Sv,'$bottom',_ExtraInfo,Prime) :- !,
@@ -270,7 +270,7 @@ etermsvar_exit_to_prime(Sg,Hv,Head,Sv,Exit,(no,ExtraInfo),Prime):-
 etermsvar_exit_to_prime(_Sg,_Hv,_Head,_Sv,_Exit,_ExtraInfo,'$bottom').
 
 :- pred unify_term_and_type_term(+Term1,+Tv,+Term2,+ASub,-NewASub)
-   : callable * list * callable * absu * absu.
+   : cgoal * list * cgoal * absu * absu.
 
 unify_term_and_type_term_exit(Term1,Tv,Term2,ASub,Proj,NewASub):-
     copy_term((Term2,ASub),(TypeTerm,ASub0)),
@@ -496,14 +496,14 @@ etermsvar_concrete(Var,ASub,List):-
 %------------------------------------------------------------------%
 :- dom_impl(etermsvar, unknown_entry/3).
 :- export(etermsvar_unknown_entry/3).
-:- pred etermsvar_unknown_entry(+Sg,+Qv,-Call) : callable * list * absu.
+:- pred etermsvar_unknown_entry(+Sg,+Qv,-Call) : cgoal * list * absu.
 
 etermsvar_unknown_entry(_Sg,Vars,ASub):-
     variables_are_top_type(Vars,ASub).
 
 :- dom_impl(etermsvar, empty_entry/3).
 :- export(etermsvar_empty_entry/3).
-:- pred etermsvar_empty_entry(+Sg,+Vars,-Entry) : callable * list * absu.
+:- pred etermsvar_empty_entry(+Sg,+Vars,-Entry) : cgoal * list * absu.
 
 etermsvar_empty_entry(_Sg,Vars,ASub):-
     variables_are_variable_type(Vars,ASub).
@@ -512,7 +512,7 @@ etermsvar_empty_entry(_Sg,Vars,ASub):-
 :- dom_impl(etermsvar, unknown_call/4).
 :- export(etermsvar_unknown_call/4).
 :- pred etermsvar_unknown_call(+Sg,+Vars,+Call,-Succ)
-   : callable * list * absu * absu.
+   : cgoal * list * absu * absu.
 
 etermsvar_unknown_call(Sg,Vars,Call,Succ):-
     eterms_unknown_call(Sg,Vars,Call,Succ).
@@ -521,7 +521,7 @@ etermsvar_unknown_call(Sg,Vars,Call,Succ):-
 :- dom_impl(etermsvar, call_to_success_fact/9).
 :- export(etermsvar_call_to_success_fact/9).
 :- pred etermsvar_call_to_success_fact(+Sg,+Hv,+Head,+K,+Sv,+Call,+Proj,-Prime,-Succ)
-   : callable * list * callable * term * list * absu * absu * absu * absu.
+   : cgoal * list * cgoal * term * list * absu * absu * absu * absu.
 
 etermsvar_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ):-
     etermsvar_call_to_entry(Sv,Sg,Hv,Head,K,[],Proj,Entry,ExtraInfo),

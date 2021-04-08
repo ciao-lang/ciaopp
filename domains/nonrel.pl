@@ -158,7 +158,7 @@
 %-----------------------------------------------------------------------
 
 :- export(nonrel_unknown_entry/4).
-:- pred nonrel_unknown_entry(+AbsInt,+Sg,+Vars,-Call) : atm * callable * list * term
+:- pred nonrel_unknown_entry(+AbsInt,+Sg,+Vars,-Call) : atm * cgoal * list * term
     #"Gives the ``top'' value for a given set of variables @var{Vars},
     resulting in abstract constraint @var{Call}.".
 nonrel_unknown_entry(AbsInt,_Sg,Qv,Call):-
@@ -229,7 +229,7 @@ project_aux([Var|Vs], [_|ASub], NASub0) :-
 
 :- export(nonrel_call_to_entry/10).
 :- pred nonrel_call_to_entry(+AbsInt,+Sv,+Sg,+Hv,+Head,+K,+Fv,+Proj,-Entry,-ExtraInfo)
-    : atm * list * callable * list * callable * term * list * term * term * term
+    : atm * list * cgoal * list * cgoal * term * list * term * term * term
 
     #"It obtains the abstract substitution @var{Entry} which results from
     adding the abstraction of @var{Sg} = @var{Head} to @var{Proj}, later
@@ -284,7 +284,7 @@ insert_values_asub(Vs, [X/Val|ASub], AbsElem, [X/Val|NASub0]) :-
 
 :- export(nonrel_exit_to_prime/8).
 :- pred nonrel_exit_to_prime(+AbsInt,+Sg,+Hv,+Head,+Sv,+Exit,-ExtraInfo,-Prime)
-    : atm * list * list * callable * callable * term * term * term # 
+    : atm * list * list * cgoal * cgoal * term * term * term # 
  "".
 nonrel_exit_to_prime(_,_Sg,_Hv,_Head,_Sv,'$bottom',_Flag,Prime) :- !, % generic
     Prime = '$bottom'.
@@ -372,7 +372,7 @@ nonrel_extend_([X1/V1|ASub1], [X2/V2|ASub2], AbsInt, Succ) :-  % generic
 
 :- export(nonrel_call_to_success_fact/10).
 :- pred nonrel_call_to_success_fact(+AbsInt,+Sg,+Hv,+Head,+K,+Sv,+Call,+Proj,-Prime,-Succ)
-    : atm * callable * list * callable * list * term * term * term * term * term 
+    : atm * cgoal * list * cgoal * list * term * term * term * term * term 
     #"Specialized version of @pred{call_to_entry/9} + @pred{exit_to_prime/7}
     + @pred{extend/4} for facts".
 nonrel_call_to_success_fact(AbsInt,_,_,_,_,_,Call,Proj,Bot,Bot) :-
@@ -387,7 +387,7 @@ nonrel_call_to_success_fact(AbsInt,Sg,Hv,Head,_K,Sv,Call,Proj,Prime,Succ) :-
 
 :- export(nonrel_special_builtin/5).
 :- pred nonrel_special_builtin(+AbsInt,+SgKey,+Sg,-Type,-Condvars)
-    : atm * predname * callable * atm * term
+    : atm * predname * cgoal * atm * term
     #"@begin{alert}This predicate needs to be implemented by the
     user.@end{alert}".
 nonrel_special_builtin(_,'=/2',_,_,_) :- !.
@@ -406,7 +406,7 @@ nonrel_success_builtin(_,_,_,_,_). % TODO: not finished, Succ is unbound (JF)
 
 :- export(nonrel_call_to_success_builtin/7).
 :- pred nonrel_call_to_success_builtin(+AbsInt,+SgKey,+Sg,+Sv,+Call,+Proj,-Succ)
-    : atm * predname * callable * list * term * term * term
+    : atm * predname * cgoal * list * term * term * term
     #"Handles those builtins for which computing @var{Proj} is easier than
     @var{Succ}. Currently only builtins @pred{=/2} and @pred{==/2} are
     implemented. More builtins can be added by the user.".
@@ -462,7 +462,7 @@ nonrel_asub_to_native(_AbsInt,_Qv,_,ASub,ASub,[]).
 
 :- export(nonrel_unknown_call/5).
 :- pred nonrel_unknown_call(+AbsInt,+Sg,+Vars,+Call,-Succ)
-    : atm * callable * list * term * term
+    : atm * cgoal * list * term * term
     #"Gives the ``top'' value for the variables involved in a literal whose
     definition is not present, and adds this top value to @var{Call}".
 nonrel_unknown_call(AbsInt,_Sg,Vars,Call,Succ):-

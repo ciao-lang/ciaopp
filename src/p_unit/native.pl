@@ -54,7 +54,7 @@ builtin_package(nativeprops).
    # "@var{Prop} identifies a native property.".
 
 native_prop_term(Prop):- native:native(Prop).
-native_prop_term(regtype(Prop)):- callable(Prop).
+native_prop_term(regtype(Prop)):- cgoal(Prop).
 
 :- redefining(native/1).
 :- doc(doinclude,native/1).

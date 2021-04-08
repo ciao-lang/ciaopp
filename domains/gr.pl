@@ -187,7 +187,7 @@ binding((X,Term,Vars)):-
 % The top value is  X/any forall X in the set of variables             |
 %-----------------------------------------------------------------------
 :- pred gr_unknown_entry(+Sg,+Qv,-Call)
-   : callable * list * term => gr_asub(Call) + (not_fails, is_det)
+   : cgoal * list * term => gr_asub(Call) + (not_fails, is_det)
    #"Gives the ``top'' value for the variables involved in a literal whose
    definition is not present, and adds this top value to Call. In this domain
    the top value is X/any forall X in the set of variables".
@@ -207,7 +207,7 @@ gr_create_values([X|Xs],[X/Value|New],Value):-
     gr_create_values(Xs,New,Value).
 
 :- pred gr_empty_entry(+Sg,+Vars,-Entry)
-   : callable * list * term => gr_asub(Entry) + (not_fails, is_det)
+   : cgoal * list * term => gr_asub(Entry) + (not_fails, is_det)
    # "Gives the ``empty'' value in this domain for a given set of variables
    @var{Vars}, resulting in the abstract substitution @var{Entry}. I.e., obtains
    the abstraction of a substitution in which all variables @var{Vars} are
@@ -303,7 +303,7 @@ project_aux_(>,Head1,Tail1,_,[Head2/Val|Tail2],Proj) :-
 %------------------------------------------------------------------------%
 
 :- pred gr_call_to_entry(+Sv,+Sg,+Hv,+Head,+K,+Fv,+Proj,-Entry,-ExtraInfo)
-   : ( list(Sv), callable(Sg), list(Hv), callable(Head), term(K), list(Fv), gr_asub(Proj)) % cheaper properties
+   : ( list(Sv), cgoal(Sg), list(Hv), cgoal(Head), term(K), list(Fv), gr_asub(Proj)) % cheaper properties
    => (gr_asub(Entry), gr_extrainfo(ExtraInfo)) + (not_fails, is_det)
    #"
 It obtains the abstract substitution @var{Entry} which results from
@@ -374,7 +374,7 @@ gr_call_to_entry(Sv,Sg,Hv,Head,_K,Fv,Proj,Entry,ExtraInfo):-
 %------------------------------------------------------------------------%
 
 :- pred gr_exit_to_prime(+Sg,+Hv,+Head,+Sv,+Exit,?ExtraInfo,-Prime)
-   : term * list * callable * callable * gr_asub * term * term
+   : term * list * cgoal * cgoal * gr_asub * term * term
    => ( gr_extrainfo(ExtraInfo), gr_asub(Prime))
    #"
 It computes the prime abstract substitution @var{Prime}, i.e.  the result of 
@@ -515,7 +515,7 @@ update_Call_(<,ElemC,Call,ElemP,Prime,[ElemC|Succ]):-
 %-------------------------------------------------------------------------
 
 :- pred gr_call_to_success_fact(+Sg,+Hv,+Head,+K,+Sv,+Call,+Proj,-Prime,-Succ)
-   : callable * list * callable * term * list * gr_asub * gr_asub * term * term
+   : cgoal * list * cgoal * term * list * gr_asub * gr_asub * term * term
    => ( gr_asub(Prime), gr_asub(Succ) ) + (not_fails, is_det)
    #"Specialized version of call_to_entry + exit_to_prime + extend for facts".
 
@@ -557,7 +557,7 @@ gr_call_to_success_fact(_Sg,_Hv,_Head,_K,_Sv,_Call,_Proj,'$bottom','$bottom').
 %-------------------------------------------------------------------------
 
 :- pred gr_special_builtin(+Pred,+Sg,+Subgoal,?Type,-Condvars)
-   : term * callable * term * term * term
+   : term * cgoal * term * term * term
    #" Satisfied if the builtin does not need a very complex action. It       
  divides builtins into groups determined by the flag returned in the    
  second argument + some special handling for some builtins:             
@@ -933,7 +933,7 @@ gr_success_builtin(Key,_,_,_,Succ,Succ):-
 % Handles those builtins for which computing Proj is easier than Succ    %
 %-------------------------------------------------------------------------
 :- pred gr_call_to_success_builtin(+SgKey,+Sg,+Sv,+Call,+Proj,-Succ)
-   : atm * callable * list * gr_asub * gr_asub * term
+   : atm * cgoal * list * gr_asub * gr_asub * term
    => gr_asub(Succ) + (not_fails, is_det)
    #"Handles those builtins for which computing @var{Proj} is easier than
     @var{Succ}".
@@ -1079,7 +1079,7 @@ member_value_gr([_|Rest],RestV,Value):-
 %------------------------------------------------------------------------%
 
 :- pred gr_unknown_call(+Sg,+Vars,+Call,-Succ)
-   : callable * list * gr_asub * term => gr_asub(Succ) + (not_fails, is_det)
+   : cgoal * list * gr_asub * term => gr_asub(Succ) + (not_fails, is_det)
    #"Gives the ``top'' value for the variables involved in a literal whose
    definition is not present, and adds this top value to @var{Call}".
 gr_unknown_call(_Sg,Vars,Call,Succ):-

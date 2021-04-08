@@ -570,7 +570,7 @@ shfr_unknown_entry(_Sg,Qv,Call):-
 % in Fr is X/f forall X in the set of variables                          |
 %-------------------------------------------------------------------------
 :- export(shfr_empty_entry/3).
-:- pred shfr_empty_entry(+Sg,+Vars,-Entry): callable * list * absu # "Gives the
+:- pred shfr_empty_entry(+Sg,+Vars,-Entry): cgoal * list * absu # "Gives the
 ""empty"" value in this domain for a given set of variables
 @var{Vars}, resulting in the abstract substitution @var{Entry}. I.e.,
 obtains the abstraction of a substitution in which all variables

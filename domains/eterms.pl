@@ -209,7 +209,7 @@ eterms_extrainfo(_). % TODO: define
 :- dom_impl(eterms, call_to_entry/9).
 :- export(eterms_call_to_entry/9).
 :- pred eterms_call_to_entry(+Sv,+Sg,+Hv,+Head,+K,+Fv,+Proj,-Entry,-ExtraInfo)
-   : term * callable * list * callable * term * list * eterms_asub * term * term
+   : term * cgoal * list * cgoal * term * list * eterms_asub * term * term
    => (eterms_asub(Entry), eterms_extrainfo(ExtraInfo))
    # "It obtains the abstract substitution @var{Entry} which results
    from adding the abstraction of the @var{Sg} = @var{Head} to
@@ -277,7 +277,7 @@ variables_are_variable_type(Fv,ASub):-
 :- dom_impl(eterms, exit_to_prime/7).
 :- export(eterms_exit_to_prime/7).
 :- pred eterms_exit_to_prime(+Sg,+Hv,+Head,+Sv,+Exit,-ExtraInfo,-Prime)
-   : list * list * callable * callable * eterms_asub * term * term
+   : list * list * cgoal * cgoal * eterms_asub * term * term
    => (eterms_extrainfo(ExtraInfo), eterms_asub(Prime))
    # "It computes the prime abstract substitution @var{Prime}, i.e.
    the result of going from the abstract substitution over the head
@@ -339,7 +339,7 @@ replace_names([X:(N_e,_T)|ExtraInfo],[X:(N1_e,T1)|Prime1],[X:(N,T1)|Prime]):-
 % %     replace_names(ExtraInfo,Prime1,Prime).
 
 :- pred unify_term_and_type_term(+Term1,+Tv,+Term2,+ASub,-NewASub)
-   : callable * list * callable * eterms_asub * term => eterms_asub(NewASub)
+   : cgoal * list * cgoal * eterms_asub * term => eterms_asub(NewASub)
    # "It unifies the term @var{Term1} to the type term @var{Term2}
    obtaining the the abstract substitution TypeAss which is sorted and
    projeted on @var{Tv}".
@@ -628,7 +628,7 @@ eterms_concrete(Var,ASub,List):-
 :- dom_impl(eterms, unknown_entry/3).
 :- export(eterms_unknown_entry/3).
 :- pred eterms_unknown_entry(+Sg,+Qv,-Call)
-   : callable * list * term => eterms_asub(Call)
+   : cgoal * list * term => eterms_asub(Call)
    # "Gives the ``top'' value for the variables involved in a literal
    whose definition is not present, and adds this top value to
    Call. In this domain the top value is X:term forall X in the set of
@@ -640,7 +640,7 @@ eterms_unknown_entry(_Sg,Vars,ASub):-
 :- dom_impl(eterms, empty_entry/3).
 :- export(eterms_empty_entry/3).
 :- pred eterms_empty_entry(+Sg,+Vars,-Entry)
-   : callable * list * term => eterms_asub(Entry)
+   : cgoal * list * term => eterms_asub(Entry)
    # "Gives the ""empty"" value in this domain for a given set of
    variables @var{Vars}, resulting in the abstract substitution
    @var{Entry}. I.e., obtains the abstraction of a substitution in
@@ -655,7 +655,7 @@ eterms_empty_entry(_Sg,Vars,ASub):-
 :- dom_impl(eterms, unknown_call/4).
 :- export(eterms_unknown_call/4).
 :- pred eterms_unknown_call(+Sg,+Vars,+Call,-Succ)
-   : callable * list * eterms_asub * term => eterms_asub(Succ)
+   : cgoal * list * eterms_asub * term => eterms_asub(Succ)
    # "Gives the ``top'' value for the variables involved in a literal
    whose definition is not present, and adds this top value to
    @var{Call}".
@@ -686,7 +686,7 @@ variables_are_top_type([],[]).
 :- dom_impl(eterms, call_to_success_fact/9).
 :- export(eterms_call_to_success_fact/9).
 :- pred eterms_call_to_success_fact(+Sg,+Hv,+Head,+K,+Sv,+Call,+Proj,-Prime,-Succ)
-   : callable * list * callable * term * list * eterms_asub * eterms_asub * term * term
+   : cgoal * list * cgoal * term * list * eterms_asub * eterms_asub * term * term
    => (eterms_asub(Prime), eterms_asub(Succ))
    # "Specialized version of call_to_entry + exit_to_prime + extend for facts".
 
@@ -701,7 +701,7 @@ eterms_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ):-
 :- dom_impl(eterms, special_builtin/5).
 :- export(eterms_special_builtin/5).
 :- pred eterms_special_builtin(+SgKey,+Sg,+Subgoal,-Type,-Condvars)
-   : (atm(SgKey), callable(Sg), callable(Subgoal))
+   : (atm(SgKey), cgoal(Sg), cgoal(Subgoal))
    # "@var{Type} is a flag indicating what is the abstraction of
    builtin @var{SgKey} and to which variables @var{Condvars} of the
    goal @var{Sg} it affects.".
@@ -829,7 +829,7 @@ set_union([T1,T2|L],T):-
 :- dom_impl(eterms, call_to_success_builtin/6).
 :- export(eterms_call_to_success_builtin/6).
 :- pred eterms_call_to_success_builtin(+SgKey,+Sg,+Sv,+Call,+Proj,-Succ)
-   : atm * callable * list * eterms_asub * eterms_asub * term => eterms_asub(Succ)
+   : atm * cgoal * list * eterms_asub * eterms_asub * term => eterms_asub(Succ)
    # "Same as above but for each particular builtin.".
 
 eterms_call_to_success_builtin('arg/3',Sg,Sv,Call,Proj,Succ):- !,

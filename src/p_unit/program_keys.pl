@@ -112,10 +112,10 @@ null_directive_key((0,0)).
 :- doc(body(Body),"@var{Body} is a conjunction of simple goals:
     @includedef{body/1}").
 body((G,B)):-
-    callable(G),
+    cgoal(G),
     body(B).
 body(G):-
-    callable(G).
+    cgoal(G).
 
 %---------------------------------------------------------------------------
 % The keys
@@ -127,7 +127,7 @@ body(G):-
     one defined by the first clause?  Tip: To define it, look for the
     predicate rewrite_source_body/5 in program_keys.pl. -- EMM").
 
-:- pred lit_ppkey/3 :: literal_ppkey * callable * litkey.
+:- pred lit_ppkey/3 :: literal_ppkey * cgoal * litkey.
 lit_ppkey(Lit:PPKey,  Lit, PPKey) :- !.
 lit_ppkey(!,          !,   noinfo) :- !.
 lit_ppkey(builtin(B), B,   noinfo) :- !.
@@ -166,7 +166,7 @@ predkey(Clid) :- atm(Clid).
 :- regtype clause/1.
 :- doc(clause/1, "Defined as: @includedef{clause/1}").
 clause(clause(Head, Body) :Clid) :-
-    callable(Head),
+    cgoal(Head),
     clausebody(Body),
     clkey(Clid).
 clause(directive(Body) :Clid) :-
@@ -196,10 +196,10 @@ clausebody((L, B)) :-
 
 :- regtype literal_ppkey/1.
 literal_ppkey(Lit:PPKey) :-
-    callable(Lit),
+    cgoal(Lit),
     litkey(PPKey).
 literal_ppkey(builtin(B) :noinfo) :-
-    callable(B).
+    cgoal(B).
 literal_ppkey(!).
 
 % ----------------------------------------------------------------------
@@ -250,9 +250,9 @@ clause_number(H,N):-
 
 head(0).
 head(1).
-head(X):- callable(X).
+head(X):- cgoal(X).
 
-:- pred clauses_keys(H,ClIds) : callable * var => callable * list(clkey)
+:- pred clauses_keys(H,ClIds) : cgoal * var => cgoal * list(clkey)
     # "@var{ClIds} are the clause keys of all clauses already known
        for predicate @var{H}.".
 clauses_keys(H,Keys):-
@@ -310,7 +310,7 @@ rewrite_source_all_clauses([clause(H,B)|Clauses],[NCl:ClId|NewClauses]):-
 
 :- prop headcl/1.
 headcl(0).
-headcl(H) :- callable(H).
+headcl(H) :- cgoal(H).
 
 :- pred rewrite_source_clause(Clause0,ClId,Clause)
     : clause * clkey * var => clause * clkey * clause

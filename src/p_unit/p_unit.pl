@@ -409,7 +409,7 @@ atom_concat_with_underscore(L, L).
 
 %% ---------------------------------------------------------------------------
 
-:- pred entry_assertion(Goal,Call,Name) :: callable(Goal)
+:- pred entry_assertion(Goal,Call,Name) :: cgoal(Goal)
     # "There is an entry assertion for @var{Goal} with call
        pattern @var{Call}, uniquely identifiable by @var{Name}.".
 entry_assertion(Goal,Call,Name):-
@@ -470,7 +470,7 @@ filter_call(_,_).
 
 %% ---------------------------------------------------------------------------
  % TODO: Not imported anywhere and not used here, remove??
-%% :- pred exit_assertion(Goal,Call,Succ) :: callable(Goal)
+%% :- pred exit_assertion(Goal,Call,Succ) :: cgoal(Goal)
 %%    # "There is an exit assertion for @var{Goal} with call
 %%    pattern @var{Call} and success pattern @var{Succ}.".
 %% exit_assertion(Goal,Call,Succ):-
@@ -727,7 +727,7 @@ enum_regtype(Goal, NProp) :-
     ; NProp=NProp0
     ).
 
-:- pred prop_to_native(+Prop,-NProp) => callable * native_prop_term
+:- pred prop_to_native(+Prop,-NProp) => cgoal * native_prop_term
    # "Obtain the native property (lit) @var{NProp} that corresponds to
    the (lit) @var{Prop} user predicate.".
 
@@ -747,7 +747,7 @@ prop_to_native_(Prop,NProp):-
 prop_to_native_(Prop,NProp):-
     native_property(Prop,NProp). % builtin tables
 
-:- pred native_to_prop(+NProp,-Prop) => native_prop_term * callable
+:- pred native_to_prop(+NProp,-Prop) => native_prop_term * cgoal
    # "Obtain the user predicate (lit) @var{Prop} that corresponds to
    the native property (lit) @var{NProp}.".
 
@@ -763,7 +763,7 @@ native_to_prop(NProp2,Prop) :-
 
 %% ---------------------------------------------------------------------------
 
-:- pred native_to_props_visible(Props,Goals) :: list(callable) * list(callable)
+:- pred native_to_props_visible(Props,Goals) :: list(cgoal) * list(cgoal)
     # "Maps native @var{Props} into their corresponding @var{Goals}
       visible in the current module.".
 native_to_props_visible([],[]).

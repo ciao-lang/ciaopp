@@ -57,7 +57,7 @@ mode_t(call).
 mode_t(succ).
 
 :- pred how(Abs,Key,Mode,Lit,Props,Bug) : 
-     (atom(Abs),atom(Key),mode_t(MOde),callable(Lit),list(callable,Props)) => 
+     (atom(Abs),atom(Key),mode_t(MOde),cgoal(Lit),list(cgoal,Props)) => 
       bug_location(Bug) # 
      "Locates a bug @var{Bug} related to domain @var{Abs}, a program point 
       @var{Key}, with expected properties @var{Props}  (call or success - determined by @var{Mode}). 

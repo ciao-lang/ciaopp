@@ -97,7 +97,7 @@ importing libraries @lib{ciaopp/p_unit}, @lib{ciaopp/p_unit/itf_db},
 %%    correct. Now solved.").
 %% :- doc(bug,"10. Implicit importation of builtin modules from another 
 %%      builtin module does not work: properties are not read in. This is 
-%%      relevant when using package pure for properties callable/1 and iso/1 in
+%%      relevant when using package pure for properties cgoal/1 and iso/1 in
 %%      basiccontrol. This was part of the previous bug: now solved.").
 
 %% Solved with set_ciaopp_expansion(true)

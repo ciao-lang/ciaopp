@@ -12,7 +12,7 @@
 :- use_module(library(hiordlib), [maplist/2]).
 
 %% ---------------------------------------------------------------------------
-:- pred type_of_goal(Type, Goal) :: ( callable(Goal),
+:- pred type_of_goal(Type, Goal) :: ( cgoal(Goal),
         member(Type, [imported, exported, multifile, dynamic,
                 metapred(T, Meta), builtin(T)]) )
      # "@var{Goal} is declared of type @var{Type}.".

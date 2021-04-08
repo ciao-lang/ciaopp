@@ -8,8 +8,8 @@
 
 :- use_module(ciaopp(p_unit/itf_db)).
 
-:- pred process_meta_call(Goal,GList,NoGList,NGList,NGoal) : callable(Goal)
-   => callable * list * list * list * callable
+:- pred process_meta_call(Goal,GList,NoGList,NGList,NGoal) : cgoal(Goal)
+   => cgoal * list * list * list * cgoal
    # "Given a meta-predicate call @var{Goal}, returns in @var{GList} the list of
    arguments which are goals, in @var{NoGList} the arguments which are not
    goals, in @var{NGoal} a goal to a meta-predicate named @var{Goal} with but
@@ -22,7 +22,7 @@ process_meta_call(Goal,GList,NoGList,NGList,NGoal) :-
     build_meta_call_args(Args,MetaArgs,NGList,NArgs),
     NGoal =..[F|NArgs].
 
-:- pred meta_call(Goal) : callable(Goal) 
+:- pred meta_call(Goal) : cgoal(Goal) 
    # "Succeeds if @var{Goal} is a meta-predicate call.".
 meta_call(Goal):-
     meta_call_(Goal, _).

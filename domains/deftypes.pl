@@ -192,7 +192,7 @@ deftypes_widen(Prime0,Prime1,NewPrime):-
 :- dom_impl(deftypes, call_to_entry/9).
 :- export(deftypes_call_to_entry/9).
 :- pred deftypes_call_to_entry(+Sv,+Sg,+Hv,+Head,+K,+Fv,+Proj,-Entry,-ExtraInfo)
-   : term * callable * list * callable * term * list * deftypes_asub * term * term
+   : term * cgoal * list * cgoal * term * list * deftypes_asub * term * term
    => (deftypes_asub(Entry), deftypes_extrainfo(ExtraInfo))
    # "It obtains the abstract substitution @var{Entry} which results
    from adding the abstraction of the @var{Sg} = @var{Head} to
@@ -251,7 +251,7 @@ deftypes_extrainfo(dummy).
 :- dom_impl(deftypes, exit_to_prime/7).
 :- export(deftypes_exit_to_prime/7).
 :- pred deftypes_exit_to_prime(+Sg,+Hv,+Head,+Sv,+Exit,?ExtraInfo,-Prime)
-   : callable * list * callable * list * deftypes_asub * term * term
+   : cgoal * list * cgoal * list * deftypes_asub * term * term
    => (deftypes_extrainfo(ExtraInfo), deftypes_asub(Prime))
    # "It computes the prime abstract substitution @var{Prime}, i.e.
    the result of going from the abstract substitution over the head
@@ -284,7 +284,7 @@ deftypes_exit_to_prime(Sg,Hv,Head,Sv,Exit,_ExtraInfo,Prime):-
 deftypes_exit_to_prime(_Sg,_Hv,_Head,_Sv,_Exit,_ExtraInfo,'$bottom').
 
 :- pred unify_term_and_type_term_approx(+Term1,+Tv,+Term2,+ASub,-NewASub)
-   : callable * list * callable * deftypes_asub * term
+   : cgoal * list * cgoal * deftypes_asub * term
    => deftypes_asub(NewASub)
    # "it unifies the term @var{Term1} to the type term @var{Term2}
    obtaining the the abstract substitution TypeAss which is sorted and
@@ -384,7 +384,7 @@ deftypes_glb0([],[],[]).
 :- dom_impl(deftypes, unknown_entry/3).
 :- export(deftypes_unknown_entry/3).
 :- pred deftypes_unknown_entry(+Sg,+Qv,-Call)
-   : callable * list * term => deftypes_asub(Call)
+   : cgoal * list * term => deftypes_asub(Call)
    # "Gives the ``top'' value for the variables involved in a literal
    whose definition is not present, and adds this top value to
    Call. In this domain the top value is X:term forall X in the set of
@@ -395,7 +395,7 @@ deftypes_unknown_entry(Sg,Qv,Call) :- terms_unknown_entry(Sg,Qv,Call).
 :- dom_impl(deftypes, empty_entry/3).
 :- export(deftypes_empty_entry/3).
 :- pred deftypes_empty_entry(+Sg,+Vars,-Entry)
-   : callable * list * term => deftypes_asub(Entry)
+   : cgoal * list * term => deftypes_asub(Entry)
    # "Gives the \"empty\" value in this domain for a given set of
    variables @var{Vars}, resulting in the abstract substitution
    @var{Entry}. I.e., obtains the abstraction of a substitution in
@@ -409,7 +409,7 @@ deftypes_empty_entry(Sg,Qv,Call) :- terms_empty_entry(Sg,Qv,Call).
 :- dom_impl(deftypes, call_to_success_fact/9).
 :- export(deftypes_call_to_success_fact/9).
 :- pred deftypes_call_to_success_fact(+Sg,+Hv,+Head,+K,+Sv,+Call,+Proj,-Prime,-Succ)
-   : callable * list * callable * term * list * deftypes_asub * deftypes_asub * term * term
+   : cgoal * list * cgoal * term * list * deftypes_asub * deftypes_asub * term * term
    => (deftypes_asub(Prime), deftypes_asub(Succ))
    # "Specialized version of call_to_entry + exit_to_prime + extend for facts".
 

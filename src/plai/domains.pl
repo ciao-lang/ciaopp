@@ -616,7 +616,7 @@ asub_to_out(AbsInt,ASub,Qv,OutputUser,CompProps) :-
 % TODO: body_succ0('$var',...) passes unbound Sg (due to metacall), use call(Sg) (or similar) instead? (JF)
 :- export(unknown_call/5).
 :- pred unknown_call(+AbsInt,+Sg,+Vars,+Call,-Succ)
-    : (atm(AbsInt), callable(Sg), list(Vars)) + not_fails
+    : (atm(AbsInt), cgoal(Sg), list(Vars)) + not_fails
     #"@var{Succ} is the result of adding to @var{Call} the ``topmost''
       abstraction in domain @var{AbsInt} of the variables @var{Vars}
       involved in a literal @var{Sg} whose definition is not present in the
@@ -629,7 +629,7 @@ asub_to_out(AbsInt,ASub,Qv,OutputUser,CompProps) :-
     variables @var{Vars} corresponding to literal @var{Sg}.".
 
 :- export(empty_entry/4).
-:- pred empty_entry(+AbsInt,+Sg,+Vars,-Entry) : atm * callable * list * term + not_fails
+:- pred empty_entry(+AbsInt,+Sg,+Vars,-Entry) : atm * cgoal * list * term + not_fails
    #"@var{Entry} is the ""empty"" abstraction in domain @var{AbsInt} of
      variables @var{Vars}. I.e., it is the abstraction of a substitution on
      @var{Vars} in which all variables are unbound: free and unaliased.".
