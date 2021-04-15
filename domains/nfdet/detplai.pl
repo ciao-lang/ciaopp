@@ -235,7 +235,7 @@ split_back([ASub|ListASub],[ATypes|LTypes],[AModes|LModes],[ASubDet|LDet]):-
 % det_compute_clauses_lub(ListASub,Lub)                                  %
 %------------------------------------------------------------------------%
 
-det_compute_clauses_lub(['$bottom'],_Proj,[]):- !.
+det_compute_clauses_lub(['$bottom'],_Proj,['$bottom']):- !.
 det_compute_clauses_lub([ASub],Proj,[Lub]):-
     asub(ASub,ATypes,AModes,ADetList),
     asub(Proj,PTypes,PModes,_PDetList),

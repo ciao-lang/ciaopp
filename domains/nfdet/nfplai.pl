@@ -231,7 +231,7 @@ split_back([ASub|ListASub],[ATypes|LTypes],[AModes|LModes],[ASubNonF|LNonF]):-
 % nf_compute_clauses_lub(ListASub,Lub)                                   %
 %------------------------------------------------------------------------%
 
-nf_compute_clauses_lub(['$bottom'],_Proj,[]):- !.
+nf_compute_clauses_lub(['$bottom'],_Proj,['$bottom']):- !.
 nf_compute_clauses_lub([ASub],Proj,[Lub]):-
     asub(ASub,ATypes,AModes,ANonFList),
     asub(Proj,PTypes,PModes,_PNonFList),
