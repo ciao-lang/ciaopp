@@ -1,6 +1,7 @@
 :- bundle(ciaopp).
 depends([
     core,
+    ciaodbg-[optional], 
     typeslib,
     ciao_ppl-[optional], % (optional for polyhedra, numerical constraints, etc.)
     ciao_gsl-[optional], % TODO: remove once ciaopp dep is explicit
