@@ -12,7 +12,7 @@
 This part documents several levels of interaction with CiaoPP. As
 quick introduction we recommend going through the @ref{CiaoPP Quick
 Tutorial} and @ref{Advanced Tutorial on Program Development and
-Optimization using the Ciao Preprocessor} sections.
+Optimization using the CiaoPP Program Processor} sections.
 
 CiaoPP can be used from an intuitive graphical menu interface, based
 on the @apl{emacs} editor, which allows the interactive selection of

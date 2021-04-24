@@ -15,7 +15,7 @@ In this tutorial we assume that CiaoPP has been installed (see
 @ref{Installation} for more information).
 
 For more information see the @ref{Advanced Tutorial on Program
-    Development and Optimization using the Ciao Preprocessor}.
+Development and Optimization using the CiaoPP Program Processor}.
 
 In this tutorial we want to quickly illustrate the kind of static processing
 that @apl{CiaoPP} can perform.
@@ -106,7 +106,7 @@ element of a list.
 @section{Advanced Preprocessing}
 
 @apl{CiaoPP} has several parameters for each of the main actions. For more
-    information, see the @ref{Advanced Tutorial on Program Development and
-    Optimization using the Ciao Preprocessor}.
+information, see the @ref{Advanced Tutorial on Program Development and
+Optimization using the CiaoPP Program Processor}.
 
 ").

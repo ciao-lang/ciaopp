@@ -3,7 +3,7 @@
 :- doc(filetype, documentation).
 
 :- doc(title, "Advanced Tutorial on Program Development and Optimization using the
-    Ciao Preprocessor").
+   CiaoPP Program Processor").
 
 :- doc(author, "The Ciao Development Team").
 

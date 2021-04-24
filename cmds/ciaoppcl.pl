@@ -84,7 +84,7 @@ main_(_Args) :-
 
 ciaopp_banner.
 % ciaopp_banner :-
-%     display('Ciao Preprocessor (integrated Alpha version)' ), nl,
+%     display('CiaoPP Program Processor (integrated Alpha version)' ), nl,
 %     display(' | This is an alpha distribution, meant only for testing. Please do let us '), nl,
 %     display(' | know at ciaopp-bug<at>clip.dia.fi.upm.es any problems you may have.'), nl, nl.
 

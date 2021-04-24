@@ -1,10 +1,8 @@
-# The Ciao Preprocessor
+# The CiaoPP Program Processor
 
-CiaoPP is an extensible and modular abstract interpretation-based
-preprocessor for [Ciao](https://github.com/ciao-lang/ciao).
-
-CiaoPP performs a number of program debugging, analysis, and
-source-to-source transformations:
+CiaoPP is an program processor framework for
+[Ciao](https://github.com/ciao-lang/ciao). CiaoPP performs a number of
+program debugging, analysis, and source-to-source transformations:
 
  - **Inference of properties** of the predicates and literals of the
    program (*types*, *modes* and other *variable instantiation*

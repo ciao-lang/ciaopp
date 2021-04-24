@@ -2,11 +2,11 @@
 
 :- doc(filetype, application).
 
-:- doc(title,"The Ciao Preprocessor").
+:- doc(title,"The CiaoPP Program Processor").
 :- doc(subtitle, "A Program Analysis, Verification, Debugging, and Optimization Tool").
 :- doc(author, "The Ciao Development Team").
 
-:- doc(logo, 'ciaopp-logo').
+:- doc(logo, 'ciao-logo').
 
 :- doc(subtitle_extra,"REFERENCE MANUAL").
 :- doc(subtitle_extra,"@bf{The Ciao Documentation Series}").
