@@ -71,7 +71,7 @@ The abstract domain lattices for nonfailure and covering are:
 
 %------------------------------------------------------------------------%
 
-asub(nf(Tests,Covered,Fails),Tests,Covered,Fails).
+asub(nf(Tests,Unfold_Tests,Covered,Fails),Tests,Unfold_Tests,Covered,Fails).
 
 tests(t(InVars,Unif,Arith,Meta),InVars,Unif,Arith,Meta).
 
@@ -93,7 +93,7 @@ nf_call_to_entry(_Sv,Sg,_Hv,_Head,_K,_Fv,_Proj,Entry,_Extra):-
 % onto the variables of the goal
 
 nf_exit_to_prime(Sg,_Hv,Head,_Sv,Exit,GVars,Prime):-
-    asub(Exit,Tests,Covered,Fails),
+    asub(Exit,Tests,Unfold,Covered,Fails),
     tests(Tests,_InVars,Unif,Arith,Meta),
 %%
 %%      create_unif_tests(Sg,Type,SgInVars,SgEqs),
@@ -108,7 +108,7 @@ nf_exit_to_prime(Sg,_Hv,Head,_Sv,Exit,GVars,Prime):-
 %%
     peel(Sg,Head,Bindings,Unif), !,
     tests(PrimeTests,GVars,Bindings,Arith,Meta),
-    asub(Prime,PrimeTests,Covered,Fails).
+    asub(Prime,PrimeTests,Unfold,Covered,Fails).
 nf_exit_to_prime(_Sg,_Hv,_Head,_Sv,_Exit,_Extra,'$bottom').
 
 % new_tests([],[],[]).
@@ -122,9 +122,9 @@ nf_exit_to_prime(_Sg,_Hv,_Head,_Sv,_Exit,_Extra,'$bottom').
 % To project on Vars, leave only tests for Vars
 
 nf_project(_Sg,Vars,_HvFv_u,ASub,Proj):-
-    asub(ASub,Tests0,Covered,Fails),
+    asub(ASub,Tests0,Unfold,Covered,Fails),
     select_tests(Tests0,Vars,TestsProj),
-    asub(Proj,TestsProj,Covered,Fails).
+    asub(Proj,TestsProj,Unfold,Covered,Fails).
 
 select_tests(Tests,_Vars,Tests).
 
@@ -136,12 +136,25 @@ select_tests(Tests,_Vars,Tests).
 % tests in Prime
 
 % TODO: Fixed by replacing glb with custom definition. Same for defabs? (VP)
+% Unfold tests if the predicate of the body call has only one clause
+% and only builtin tests are performed in such clause. 
 nf_extend(_Sg,Prime,_Sv,Call,Succ):-
-    asub(Prime,Tests0,_Covered,Fails0),
-    asub(Call,Tests1,Covered,Fails1),
-    merge_tests(Tests0,Tests1,Tests),
-    extend_nonfailure(Fails0,Fails1,Fails),
-    asub(Succ,Tests,Covered,Fails).
+    asub(Prime,Tests0,Unfold0,Covered0,Fails0),
+    asub(Call,Tests1,Unfold1,_Covered1,Fails1),
+    ((Unfold0 == unfold, tests(Tests0,InVars0,Unif0,Arith0,Meta0))
+     -> tests(Tests1,InVars1,Unif1,Arith1,Meta1), 
+        append(InVars0,InVars1,InVars),
+        append(Unif0,Unif1,Unif),
+        append(Arith0,Arith1,Arith),
+        append(Meta0,Meta1,Meta),
+        tests(Tests,InVars,Unif,Arith,Meta),
+        extend_unfold_tests(Unfold0, Unfold1, Unfold),
+        extend_nonfailure(not_fails,Fails1,Fails)
+      ; Unfold = not_unfold,
+        Tests = Tests1,
+        extend_nonfailure(Fails0,Fails1,Fails)
+    ),
+    asub(Succ,Tests,Unfold,Covered0,Fails).
 
 extend_covering('$bottom',_,'$bottom'):-!.
 extend_covering(_,'$bottom','$bottom'):-!.
@@ -159,11 +172,9 @@ extend_nonfailure(possibly_fails,_,possibly_fails):-!.
 extend_nonfailure(_,possibly_fails,possibly_fails):-!.
 extend_nonfailure(_,_,not_fails).
 
-% b) simple tests, do not collect:
-merge_tests(_Tests0,Tests,Tests).
-% c) collect tests from the body goals
-%% merge_tests(Tests0,Tests1,Tests):-
-%%      append(Tests0,Tests1,Tests).
+extend_unfold_tests(not_unfold, _, not_unfold):-!.
+extend_unfold_tests(_, not_unfold, not_unfold):-!.
+extend_unfold_tests(_,_, unfold).
 
 %------------------------------------------------------------------------%
 % nf_widen(+,+,-)                                                        %
@@ -171,22 +182,24 @@ merge_tests(_Tests0,Tests,Tests).
 %------------------------------------------------------------------------%
 
 nf_widen(Prime0,Prime1,NewPrime) :-
-    asub(ASub,[],covered,not_fails),
+    asub(ASub,[],unfold,covered,not_fails),
     foldr(widen,[Prime0,Prime1],ASub,NewPrime).
 
 widen('$bottom',ASub0,ASub0):- !.
 widen(ASub0,'$bottom',ASub0):- !.
 widen(ASub,ASub0,NewASub):-
-    asub(ASub0,Tests0,Covered0,Fails0),
-    asub(ASub,Tests,Covered1,Fails1),
-    tests_union(Tests,Tests0,Tests1), % Tests1=[Tests|Tests0],
+    asub(ASub0,Tests0,Unfold0,Covered0,Fails0),
+    asub(ASub,Tests1,Unfold1,Covered1,Fails1),
+    tests_union(Tests1,Tests0,Tests), % Tests=[Tests1|Tests0],
     ( Fails0 = not_fails ->
         lub_covering(Covered0,Covered1,Covered),
-        lub_nonfailure(Fails0,Fails1,Fails)
+        lub_nonfailure(Fails0,Fails1,Fails),
+        lub_unfold_tests(Unfold0,Unfold1,Unfold)
     ; extend_covering(Covered0,Covered1,Covered),
-      extend_nonfailure(Fails0,Fails1,Fails)
+      extend_nonfailure(Fails0,Fails1,Fails),
+      extend_unfold_tests(Unfold0,Unfold1,Unfold)
     ),
-    asub(NewASub,Tests1,Covered,Fails).
+    asub(NewASub,Tests,Unfold,Covered,Fails).
 
 %------------------------------------------------------------------------%
 % nf_compute_lub(+,-)                                                    %
@@ -196,22 +209,25 @@ widen(ASub,ASub0,NewASub):-
 % is called from the fixpoint)
 
 nf_compute_lub(ListASub,Lub):-
-    asub(Asub,[],'$bottom','$bottom'),
+    asub(Asub,[],'$bottom','$bottom','$bottom'),
     foldr(accumulate,ListASub,Asub,Lub).
 
 accumulate('$bottom',ASub0,ASub0):- !.
 accumulate(ASub0,'$bottom',ASub0):- !.
 accumulate(ASub,ASub0,NewASub):-
-    asub(ASub0,Tests0,Covered0,Fails0),
-    asub(ASub,Tests1,Covered1,Fails1),
+    asub(ASub0,Tests0,Unfold0,Covered0,Fails0),
+    asub(ASub,Tests1,Unfold1,Covered1,Fails1),
     accumulate_covering(Covered0,Covered1,Covered),
     accumulate_nonfailure(Fails0,Fails1,Fails),
-    % Do not accumulate tests of failing clauses.
-    ( represents_failure(Fails1) ->
-        Tests = Tests0
-    ; tests_union(Tests1,Tests0,Tests)
+    accumulate_unfold_tests(Unfold0,Unfold1,Unfold),
+    % Only the tests of non-failing clauses are accumulated, i.e.,
+    % only such tests will be added to the disjunction for the
+    % covering check.
+    ( Fails1 == not_fails ->
+        tests_union(Tests1,Tests0,Tests)
+    ; Tests = Tests0 
     ),
-    asub(NewASub,Tests,Covered,Fails).
+    asub(NewASub,Tests,Unfold,Covered,Fails).
 
 tests_union(Tests,Tests0,Tests1):-
     Tests=[_|_], !,
@@ -232,6 +248,9 @@ accumulate_nonfailure(not_fails,_,not_fails):- !.
 accumulate_nonfailure(_,not_fails,not_fails):- !.
 accumulate_nonfailure(A,B,C):- lub_nonfailure(A,B,C).
 
+accumulate_unfold_tests('$bottom',X,X):-!.
+accumulate_unfold_tests(_,_,not_unfold).
+
 lub_covering(A,B,C) :-
     ( le_covering(A,B) ->
         C = B
@@ -248,6 +267,14 @@ lub_nonfailure(A,B,C) :-
     ; C = possibly_fails
     ).
 
+lub_unfold_tests(A,B,C) :-
+    ( le_unfold_tests(A,B) ->
+        C = B
+    ; le_unfold_tests(B,A) ->
+        C = A
+    ; C = not_unfold
+    ).
+    
 %------------------------------------------------------------------------%
 % nf_compute_covering(+,+,-)                                             %
 % nf_compute_covering(ModeTypes,Lub,ASub)                                %
@@ -258,7 +285,7 @@ lub_nonfailure(A,B,C) :-
 nf_compute_covering(ModeTypes,Lub,ASub):-
     % this one is a little tricky: Lub is not a well-formed abstract
     % substitution, it is a collection of tests from compute_lub
-    asub(Lub,TestsList,_Covered,Fails0),
+    asub(Lub,TestsList,Unfold,_Covered,Fails0),
     ( TestsList = [] -> CoverTest = false %% ???? PLG
     ; TestsList = [[]] -> CoverTest = true %% ???? PLG
     ; TestsList = [_|_] -> 
@@ -271,8 +298,7 @@ nf_compute_covering(ModeTypes,Lub,ASub):-
     covering_to_nonfailure(Covered,Fails1),
     % Fails0 should always be not_fails!
     extend_nonfailure(Fails0,Fails1,Fails),
-    foldr_testlist(TestsList,Tests),
-    asub(ASub,Tests,Covered,Fails).
+    asub(ASub,TestsList,Unfold,Covered,Fails).
 
 % covers_check_(ModeTypes,false,_Masc,MinSetTestsList,Res):-
 %       covers_check(ModeTypes,false,_Masc,MinSetTestsList,Res), !.
@@ -284,10 +310,6 @@ result_to_covering(false,possibly_not_covered).
 
 covering_to_nonfailure(covered,not_fails).
 covering_to_nonfailure(possibly_not_covered,possibly_fails).
-
-foldr_testlist(_TestsList,Tests):-
-    nf_empty_entry(sg_not_provided,[],Entry),
-    asub(Entry,Tests,_Covered,_Fails).
 
 %% Added by PLG.
 
@@ -318,6 +340,7 @@ clause_test_to_minset_test(Clause_Test, Clause_Minset_Test):-
 
 % End added by PLG
 
+    
 %------------------------------------------------------------------------%
 % nf_glb(+,+,-)                                                          %
 % nf_glb(ASub0,ASub1,Glb)                                                %
@@ -326,12 +349,15 @@ clause_test_to_minset_test(Clause_Test, Clause_Minset_Test):-
 nf_glb('$bottom',_ASub,ASub3) :- !, ASub3='$bottom'.
 nf_glb(_ASub,'$bottom',ASub3) :- !, ASub3='$bottom'.
 nf_glb(ASub0,ASub1,Glb):-
-    asub(ASub0,Tests0,Covered0,Fails0),
-    asub(ASub1,Tests1,Covered1,Fails1),
-    merge_tests(Tests0,Tests1,Tests),
+    asub(ASub0,_Tests0,Unfold0,Covered0,Fails0),
+    asub(ASub1,Tests1,Unfold1,Covered1,Fails1),
+    % VP: Changed merge_tests/3 to preserve tests of single clause preds.
+    %% merge_tests(Tests0,Tests1,Tests),
+    Tests = Tests1,
+    glb_unfold_tests(Unfold0,Unfold1,Unfold),
     glb_covering(Covered0,Covered1,Covered),
     glb_nonfailure(Fails0,Fails1,Fails),
-    asub(Glb,Tests,Covered,Fails).
+    asub(Glb,Tests,Unfold,Covered,Fails).
 
 glb_covering(A,B,C) :-
     ( le_covering(A,B) ->
@@ -349,16 +375,25 @@ glb_nonfailure(A,B,C) :-
     ; C = '$bottom'
     ).
 
+glb_unfold_tests(A,B,C) :-
+    ( le_unfold_tests(A,B) ->
+        C = A
+    ; le_unfold_tests(B,A) ->
+        C = B
+    ; C = '$bottom'
+    ).
+
 %------------------------------------------------------------------------%
 % nf_less_or_equal(+,+)                                                  %
 % nf_less_or_equal(ASub0,ASub1)                                          %
 %------------------------------------------------------------------------%
 
 nf_less_or_equal(ASub0,ASub1):-
-    asub(ASub0,_Tests0,Covered0,Fails0),
-    asub(ASub1,_Tests1,Covered1,Fails1),
+    asub(ASub0,_Tests0,Unfold0,Covered0,Fails0),
+    asub(ASub1,_Tests1,Unfold1,Covered1,Fails1),
     le_covering(Covered0,Covered1),
-    le_nonfailure(Fails0,Fails1).
+    le_nonfailure(Fails0,Fails1),
+    le_unfold_tests(Unfold0,Unfold1).
 
 le_covering(A,A):- !.
 le_covering('$bottom',_).
@@ -368,14 +403,18 @@ le_nonfailure(A,A):- !.
 le_nonfailure('$bottom',_).
 le_nonfailure(_,possibly_fails).
 
+le_unfold_tests(A,A):- !.
+le_unfold_tests('$bottom',_):-!.
+le_unfold_tests(_,not_unfold).
+    
 %------------------------------------------------------------------------%
 % nf_identical_abstract(+,+)                                             %
 % nf_identical_abstract(ASub1,ASub2)                                     %
 %------------------------------------------------------------------------%
 
 nf_identical_abstract(ASub0,ASub1):-
-    asub(ASub0,_Tests0,Covered,Fails),
-    asub(ASub1,_Tests1,Covered,Fails).
+     asub(ASub0,_Tests0,Unfold,Covered,Fails),
+     asub(ASub1,_Tests1,Unfold,Covered,Fails).
 
 %------------------------------------------------------------------------%
 % nf_abs_sort(+,-)                                                           %
@@ -521,15 +560,15 @@ nf_success_builtin_(BType, _CallType, _CovNF, BSg, Call, Succ):-
     nf_success_test(BType, NewBSg, Call, Succ).
 
 nf_success_test(BType, BSg, Call, Succ):-
-    asub(Call,Tests0,Covered,Fails),
-    tests(Tests0,InVars,Unif0,Arith0,Meta0),
+    asub(Call,Tests0,Unfold,Covered,Fails),
+    tests(Tests0,InVars0,Unif0,Arith0,Meta0),
     add_test(BType,BSg,Unif0,Arith0,Meta0,Unif,Arith,Meta),
-    tests(Tests,InVars,Unif,Arith,Meta),
-    asub(Succ,Tests,Covered,Fails).
-
+    tests(Tests,InVars0,Unif,Arith,Meta),
+    asub(Succ,Tests,Unfold,Covered,Fails).
+    
 nf_success_negation(Call, Succ):-
-    asub(Call,Tests,Covered,_Fails),
-    asub(Succ,Tests,Covered,possibly_fails).
+    asub(Call,Tests,_Unfold,Covered,_Fails),
+    asub(Succ,Tests,not_unfold,Covered,possibly_fails).
 
 add_test(unif,Sg,Unif,Arith,Meta,[Sg|Unif],Arith,Meta).
 add_test(arit,Sg,Unif,Arith,Meta,Unif,[Sg|Arith],Meta).
@@ -540,11 +579,11 @@ is_a_test(Btype):- Btype == arit.
 is_a_test(Btype):- Btype == meta.
 
 builtin_trust_to_succ(CovNF,Call,Succ):-
-    asub(Call,Tests,Covered1,Fails1),
+    asub(Call,Tests,_Unfold,Covered1,Fails1),
     nf_builtin_trust(CovNF, Covered0, Fails0),   
     extend_covering(Covered0,Covered1,Covered),
     extend_nonfailure(Fails0,Fails1,Fails),
-    asub(Succ,Tests,Covered,Fails).
+    asub(Succ,Tests,not_unfold,Covered,Fails).
  
 nf_builtin_trust((Covered, Fails), Covered, Fails).   
 
@@ -593,8 +632,8 @@ nf_input_user_interface((Cov0,Fail0),Qv,ASub,_Sg,_MaybeCallASub):-
     foldr(glb_covering, Cov1, possibly_not_covered, Covered),
     foldr(glb_nonfailure, Fail1, possibly_fails, Fails),
     nf_empty_entry(sg_not_provided,Qv,Entry),
-    asub(Entry,Tests,_Covered,_Fails),
-    asub(ASub,Tests,Covered,Fails).
+    asub(Entry,Tests,_Unfold,_Covered,_Fails),
+    asub(ASub,Tests,not_unfold,Covered,Fails).
 
 %------------------------------------------------------------------------%
 % nf_asub_to_native(+,+,-)                                               %
@@ -605,7 +644,7 @@ nf_input_user_interface((Cov0,Fail0),Qv,ASub,_Sg,_MaybeCallASub):-
 % part of the assertion!!!
 
 nf_asub_to_native(ASub,Qv,[PropF,PropC]):-
-    asub(ASub,_Tests,Covered,Fails),
+    asub(ASub,_Tests,_Unfold,Covered,Fails),
     \+ represents_failure(Fails),
     functor(PropF,Fails,1),
     ( Covered = '$bottom' ->
@@ -625,8 +664,8 @@ represents_failure(fails).
 %------------------------------------------------------------------------%
 
 nf_unknown_call(_Sg,_Vars,Call,Succ):-
-    asub(Call,Tests,_,_),
-    asub(Succ,Tests,possibly_not_covered,possibly_fails).
+    asub(Call,Tests,_,_,_),
+    asub(Succ,Tests,not_unfold,possibly_not_covered,possibly_fails).
 
 %------------------------------------------------------------------------%
 % nf_unknown_entry(+,+,-)                                                %
@@ -643,7 +682,7 @@ nf_unknown_entry(Sg,Vars,Entry):-
 
 nf_empty_entry(_Sg,Vars,Entry):-
     tests(Tests,Vars,[],[],[]),
-    asub(Entry,Tests,covered,not_fails).
+    asub(Entry,Tests,unfold,covered,not_fails).
 
 %-----------------------------------------------------------------------
 
