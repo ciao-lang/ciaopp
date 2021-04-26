@@ -182,21 +182,27 @@ doc_internals :=
         'db_analysis',
         'tasks_db'
       ],
-      'TestingBenchmarking'-[
-        'ciaopp_bench_manager',
-        'incanal_intermod_bench_driver_doc'-[
-          'incanal_intermod_bench_driver',
-          'incanal_intermod_test',
-          'edition_sequence_generator',
-          'naive_reader',
-          'module_writer',
-          'summarize_stat',
-          'analysis_stats'
-        ],
-        'plai_db_instances',
-        'plai_db_comparator'
-       ]
-     ].
+      ~ciaopp_testing
+    ].
+
+:- use_module(engine(internals), ['$bundle_id'/1]).
+
+ciaopp_testing :=
+    'TestingBenchmarking'-[
+      'ciaopp_bench_manager',
+      'incanal_intermod_bench_driver_doc'-[
+        'incanal_intermod_bench_driver',
+        'incanal_intermod_test',
+        'edition_sequence_generator',
+        'naive_reader',
+        'module_writer',
+        'summarize_stat',
+        'analysis_stats'
+      ],
+      'plai_db_instances',
+      'plai_db_comparator'
+    ] :- '$bundle_id'(ciaopp_tests), !.
+ciaopp_testing := [].
 
 % TODO: port this manual
 allow_markdown := no.
