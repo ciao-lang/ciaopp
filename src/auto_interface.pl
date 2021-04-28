@@ -406,7 +406,7 @@ check   , 'Customize Analysis Flags'    # check_config_ana   - off  <- cct_manua
 check   , 'Generate Certificate'        # gen_certificate    - off.
 check   , 'Reduced Certificate'         # reduced_cert       - off  <- gencert.
 %check   , 'Optimizing Compilation'# optim_comp - none.
-check   , 'Generate CT Checking Intervals'        # ctchecks_intervals    - on.
+check   , 'Generate CT Checking Intervals'        # ctchecks_intervals    - off.
 
 opt      , 'Type of Optimization'  # inter_optimize - spec :: opt_menu_branch.
 ~spsl    , 'Abs Specialization'    # spec_poly - off.
@@ -1275,6 +1275,11 @@ exec_analyses_and_acheck(AbsInts, TopLevel, File, OFile) :-
     gencert_ctchecks(AnyError, File, GENCERT),
     do_output(OFile, check),
     set_last_file(File).
+
+analyze_each([]).
+analyze_each([D|Ds]) :-
+    analyze(D),
+    analyze_each(Ds).
 
 gencert_ctchecks(Err,_,_):-
     Err == error, !,

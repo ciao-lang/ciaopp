@@ -379,7 +379,7 @@ trans_aux(success_pp(G),AbsInt,Head,Ss,SInfoL):-!,
     collect_success_info([Ss],AbsInt,Head,G,SInfoL).
 %       append(SInfoL1,SInfoL2,SInfoL).
 %       trans_aux(success,AbsInt,Goal,Completes,SInfoL2).
-trans_aux(success,generic_comp,_Goal,Info,Info):-!.  % for size properties
+trans_aux(success,_,_Goal,Info,Info):-!.  % for size properties
 trans_aux(comp,generic_comp,_Goal,Info,Info):-!.
 %%      displayq(Info).
 trans_aux(comp,_AbsInt,_Goal,_Info,[]).

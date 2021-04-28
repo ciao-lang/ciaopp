@@ -31,6 +31,7 @@
 :- use_module(ciaopp(p_unit/program_keys), [get_predkey/3, predkey_from_sg/2]).
 
 :- use_module(library(aggregates), [findall/3]).
+:- use_module(library(lists), [append/3]).
 :- use_module(library(sort), [sort/2]).
 :- use_module(library(terms_check), [variant/2]).
 :- use_module(library(terms_vars),  [varset/2]).
@@ -100,6 +101,24 @@ get_info(nf,point,Key,Goal,Info):- !,
         Info = [fails(Goal)]
     ;
         asub_to_native(nf,Asub,Goal,yes,_A,Info) ).
+get_info(steps_ualb,Pred,Key,Goal,(Sizes,Steps)):- !,
+    ( get_info(steps_lb,Pred,Key,Goal,(SizesLb,StepsLb)) ->
+        true
+    ; SizesLb = [],
+      StepsLb = []
+    ),
+    ( get_info(steps_ub,Pred,Key,Goal,(SizesUb,StepsUb)) ->
+        true
+    ; SizesUb = [],
+      StepsUb = []
+    ),
+    ( SizesLb = [_|_] -> true
+    ; SizesUb = [_|_] -> true
+    ; StepsLb = [_|_] -> true
+    ; StepsUb = [_|_]
+    ),
+    append(SizesLb,SizesUb,Sizes),
+    append(StepsLb,StepsUb,Steps).
 get_info(trusted,_Pred,_Key,_Goal,[]):- !. % not implemented yet!!!!
 get_info(Prop,pred,_Key,Goal,Info):- % inferred is pred level % TODO:[new-resources] move later! add cuts!
     current_fact(inferred(Prop,Goal0,Abs)),

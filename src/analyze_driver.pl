@@ -209,7 +209,11 @@ analyze1_several_domains([], TotalInfo, TotalInfo).
 analyze1_several_domains([AbsInt|As], TotalInfo0, TotalInfo):-
     analyze1(AbsInt,Info),
     % TODO: move to a separate module
-    add_to_info(Info,TotalInfo0,TotalInfo1),
+    % TODO: Workaround. Fix format of nfg stats.
+    ( AbsInt = nfg ->
+        TotalInfo1 = TotalInfo0
+    ; add_to_info(Info,TotalInfo0,TotalInfo1)
+    ),
     analyze1_several_domains(As, TotalInfo1, TotalInfo).
 
 :- if(defined(with_fullpp)).

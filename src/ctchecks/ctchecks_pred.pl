@@ -222,6 +222,15 @@ abs_exec_complete_success(_Goal,_Call,_Succ,_AbsInt,[],nosucc,nosucc,nosucc) :- 
 abs_exec_complete_success(Goal,Call,Succ,AbsInt,
                  [complete(AGoal,ACall,ASuccs,Key,Id)|Cmpls],
                  NCalls,NSuccs,Status):-
+    % TODO: infer_dom:abs_execute_with_info/4 works differently for
+    % "comp" domains (steps_*, resources, nf, det, etc.). We cannot
+    % run checks for calls or success properties using these domains
+    % at this stage; NCalls and NSuccs would become "check" when
+    % properties properties cannot be verified. Checks for properties
+    % belonging to these domains are currently run in later stages of
+    % the process (see abs_exec_size_assertion/5 and
+    % abs_execute_comp/5).
+    \+ buggy_only_comp_dom(AbsInt), !,
     % check if the complete is relevant
     abs_execute_exp(Goal,Call,AbsInt,AGoal,ACall,NCall),
     abs_exec_each_succ(Goal,Call,Succ,AbsInt,AGoal,ASuccs,NCall,
@@ -236,6 +245,10 @@ abs_exec_complete_success(Goal,Call,Succ,AbsInt,
         compose_cs_goals(Status,Call,NCalls0,NCall,NCalls),      % left to prove goals of calls
         compose_cs_goals(Status,Succ,LocalNSucc,NSuccs0,NSuccs)  % left to prove goals of successes
     ).
+abs_exec_complete_success(_Goal,Call,Succ,_AbsInt,_Info,NCall,NSucc,dont_know) :-
+    % Convert to expected format.
+    list_to_conj(Call, NCall),
+    list_to_conj(Succ, NSucc).
 
 % checks wether there is an entry exactly matching the precondition,
 % in which case the assertion may get status true instaed of checked.
@@ -300,7 +313,15 @@ compose_compl_goals(_,_,Orig,A,B,Out) :-
 abs_exec_complete_call(_Goal, _Call, res_plai, _, nosucc, nosucc) :- !.  % TODO:[new-resources] avoid to check call for res_plai (temporary MKL) <== remove ad-hoc, add hook if needed (JF)
 abs_exec_complete_call(_Goal, _Call, _AbsInt, [], nosucc, nosucc) :- !.
 abs_exec_complete_call(Goal, Call, AbsInt, 
-                [complete(AGoal, ACall, _ASuccs,Key,Id)|Cmpls], NCalls, Status):-
+                       [complete(AGoal, ACall, _ASuccs,Key,Id)|Cmpls], NCalls, Status):-
+    % TODO: infer_dom:abs_execute_with_info/4 works differently for
+    % "comp" domains (steps_*, resources, nf, det, etc.). We cannot
+    % run checks for calls or success properties (directly) using
+    % these domains; NCalls would become "check" when properties
+    % cannot be verified. Checks for properties belonging to these
+    % domains are currently run in later stages of the process (see
+    % abs_exec_size_assertion/5 and abs_execute_comp/5).
+    \+ buggy_only_comp_dom(AbsInt), !,
     abs_execute_exp(Goal, Call,  AbsInt, AGoal, ACall, NCall),
     reduce_calls(NCall,SingleStatus0),
     assertz_fact(ctchecks_log(AbsInt,SingleStatus0,calls,Key,Id)),
@@ -308,6 +329,9 @@ abs_exec_complete_call(Goal, Call, AbsInt,
     abs_exec_complete_call(Goal, Call, AbsInt, Cmpls, NCalls0, Status0),
     synt_compose_disj(Call, NCall,NCalls0,NCalls), 
     reduce_compl(SingleStatus, Status0, Status).
+abs_exec_complete_call(_Goal, Call, _AbsInt, _Info, NCall, dont_know) :-
+    % Convert to expeced format.
+    list_to_conj(Call, NCall).
 
 %--------------------------------------------------------------------------------
 :- export(abs_exec_one_assertion/6).
@@ -390,6 +414,10 @@ synt_compose_disj(Orig, _NewExp1, _NewExp2, Orig).
 new_status(Flag,_,_):-
     Flag \== check,
     !.
+
+buggy_only_comp_dom(nf).
+buggy_only_comp_dom(det).
+buggy_only_comp_dom(res_plai).
 
 reduce_calls(  true  , checked ) :- !.  % -
 reduce_calls(  fail  , false   ) :- !.  % +

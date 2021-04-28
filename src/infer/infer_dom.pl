@@ -265,10 +265,10 @@ asub_to_props(An,Goal,Abs,Info):-
 :- endif.
 asub_to_props(nfg,_Goal,nf(_Call,_Succ,Fail,Cover),Info):- !,
     Info=[Fail,Cover].
-asub_to_props(nf,_Goal,nf(_,_,nf(_,Cover,Fail)),Info):- !,  %% JNL
-    Info=[Fail,Cover].
-asub_to_props(detg,_Goal,nf(_Call,_Succ,Det,Mut),Info):- !, % TODO: 'det' missing?
+asub_to_props(detg,_Goal,nf(_Call,_Succ,Det,Mut),Info):- !,
     Info=[Det,Mut].
+asub_to_props(nf,_Goal,nf(_,_,nf(_,_,Cover,Fail)),[Fail,Cover]):-!.
+asub_to_props(det,_Goal,det(_,_,det(_,Mut,Det)),[Det,Mut]).
 
 :- if(defined(has_ciaopp_cost)).
 comp_to_props(An,Goal,Dic,Time,[Comp_Time]):-
@@ -412,6 +412,8 @@ abs_execute_with_info(size_o,Info,Prop,Sense):- !,
 :- endif.
 %
 abs_execute_with_info(nfg,Info,Prop,Sense):- !,
+    check_nf_info(Prop,Info,Sense).
+abs_execute_with_info(nf,Info,Prop,Sense):- !,
     check_nf_info(Prop,Info,Sense).
 abs_execute_with_info(detg,Info,Prop,Sense):- !,
     check_det_info(Prop,Info,Sense).
@@ -558,9 +560,9 @@ cost_included(steps_o(C),Cost):-
     function_greater_eq_than_order_of_function(C, A).
 cost_included(steps(C),Cost):-
     member(steps_ub(U),Cost),
-    exp_eq_than(C,U),
+    infer_dom:exp_eq_than(C,U),
     member(steps_lb(L),Cost),
-    exp_eq_than(C,L).
+    infer_dom:exp_eq_than(C,L).
 cost_included(terminates,Cost):-
     member(steps_ub(A),Cost),
     A \== inf.
@@ -617,9 +619,9 @@ size_included(size_o(V,C),Cost):-
     function_greater_eq_than_order_of_function(C, A).
 size_included(size(V,C),Cost):-
      find_property_value(size_ub,V,Cost,U),
-     exp_eq_than(C,U),
+     infer_dom:exp_eq_than(C,U),
      find_property_value(size_lb,V,Cost,L),
-     exp_eq_than(C,L).
+     infer_dom:exp_eq_than(C,L).
 
 %---- byvalue --------
 % Here are several predicates to support expression comparison
@@ -706,12 +708,19 @@ exp_greater_eq_than_byvalue(A, C, X):-
 
 %/---- byvalue --------
 find_property_value(PropName, Var, [Prop|_], Value):-
-    Prop =.. [PropName,A,V], % TODO: use prop_unapply? (JF)
+    Prop =.. [PropName,_M,A,V], % TODO: use prop_unapply? (JF)
     A == Var,
     !,
     Value = V.
 find_property_value(PropName, Var, [_Prop|R], Value):-
    find_property_value(PropName, Var, R, Value).
+
+exp_eq_than(C,A):-
+    \+ \+ ( marshall_args(f(C,A),0),
+            remove_size_measures(C,SC),
+            remove_size_measures(A,SA),
+            algebraic:exp_eq_than(SC,SA)
+          ).
 
 exp_greater_eq_than(C,A):-
     order_of_function_greater_than_function(C, A), !. % ?? -PLG
@@ -816,6 +825,7 @@ nf_included(covered,Nf):-
 nf_included(not_covered,Nf):-
     member(not_covered,Nf).
 nf_included(possibly_fails,_Nf).
+nf_included(possibly_not_covered,_Nf).
 
 det_incompatible(non_det,Det):-
     member(is_det,Det).
@@ -1171,10 +1181,16 @@ build_message(Bound,IntervalsTrue,SafeIntervalsTrue,IntervalsFalse,SafeIntervals
 % in polynom NormalForm, the order of polynom is sorted descending
 % but we need to make it ascending, X^0+...+X^n according to GSL spec
 
-cost_difference([],_,[]):-!. %handling global change in library that is already true
-cost_difference(_,[],[]):-!. %[] might be uncovered function
+cost_difference([],X,MinusX):-!, %handling global change in library that is already true
+    minus_cost(X,MinusX).
+cost_difference(X,[],X):-!.
 cost_difference(A,B,C):-
     difference(A,B,C).
+
+minus_cost([],[]).
+minus_cost([X|Xs],[Y|Ys]) :-
+    Y is -X,
+    minus_cost(Xs,Ys).
 
 normalize_zero([0.0],[0]):-!.
 normalize_zero([0.0|Res],[0|NormalRes]):-

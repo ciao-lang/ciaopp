@@ -109,20 +109,16 @@ new_comp(true,_C,NewComp,NewComp) :- !.
 new_comp(_any,C,NewComp,[C|NewComp]).
 
 get_cost_info(Goal,Cost,Succ):-
-    ( get_info(steps_ub,pred,_Key,Goal,(SuccU,CostU)) ->
-        append(CostU,CostLO,Cost),
-        append(SuccU,SuccLO,Succ)
-    ;
-        Cost=CostLO, Succ=SuccLO
+    ( get_info(steps_ualb,pred,_Key,Goal,(Succ0,Cost0)) ->
+        true
+    ; Cost0 = [],
+      Succ0 = []
     ),
-    ( get_info(steps_lb,pred,_Key,Goal,(SuccL,CostL)) ->
-        append(CostL,CostO,CostLO),
-        append(SuccL,SuccO,SuccLO)
-    ;
-        CostLO=CostO, SuccLO=SuccO 
-    ),
-    ( get_info(steps_o,pred,_Key,Goal,(SuccO,CostO)) -> true
-    ; CostO= [], SuccO= []
+    ( get_info(steps_o,pred,_Key,Goal,(Succ1,Cost1)) ->
+        append(Succ0,Succ1,Succ),
+        append(Cost0,Cost1,Cost)
+    ; Cost = Cost0,
+      Succ = Succ0
     ).
 
 get_resource_info(Goal,Cost,[]):-
