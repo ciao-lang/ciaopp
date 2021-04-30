@@ -275,18 +275,25 @@ assert_curr_files([F|Fs]) :-
 mod_from_base(N, M) :-
     path_splitext(N, NoExt, _),
     path_split(NoExt, _, M1),
-    get_module_java(N,M1,M). % TODO: hack, added by UL % TODO: detect language and call hook
+    get_module(N,M1,M).
 
 :- if(defined(has_ciaopp_java)).
 % TODO: If file is java, module name is preceeded by 'examples.', needs to
 %   be resolved at analysis part to avoid 'examples.' prefix.
-get_module_java(File,M1,M):-
+get_module(File,M1,M):-
+    % TODO: hack, added by UL % TODO: detect language and call hook
     current_pp_flag(java_analysis_level,bytecode),
     atom_concat(_, '.java', File),
     !,
     atom_concat('examples.',M1, M).
 :- endif.
-get_module_java(_,M,M).
+get_module(_,M0,M) :-
+    opt_suff(Opt), % IG: remove suffix from module name (language-dependent?)
+    atom_codes(M0, M0L),
+    atom_codes(Opt,OL),
+    append(ML,OL,M0L), !,
+    atom_codes(M,ML).
+get_module(_,M,M).
 
 detect_language_from_list([AbsFile|_], Lang) :- !,
     detect_language(AbsFile, Lang).

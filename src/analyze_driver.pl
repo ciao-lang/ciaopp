@@ -229,8 +229,8 @@ analyze1_(AbsInt,Info) :-
         Header = '{Checking certificate '
     ; Header = '{Analyzing '
     ),
-    findall(~~(File),curr_file(File,_),Files),
-    pplog(analyze_module, [~~(Header), '(', AbsInt, '): '|Files]),
+    findall(File,curr_file(File,_),Files),
+    pplog(analyze_module, [~~(Header), '(', AbsInt, '): '|[Files]]),
     program(Cls,Ds),
     push_history(AbsInt), % TODO: check that this does not break intermod_analyze
     analyze_(AbsInt,Cls,Ds,Info,step1), % TODO:[new-resources] are two steps really needed? (JF)
@@ -435,7 +435,7 @@ acheck(AbsInt):-
     acheck([AbsInt],all).
 
 :- export(acheck/2).
-:- pred acheck(+AbsInt,+ModList) : list(atm) * list.
+:- pred acheck(+AbsInt,+ModList) : list(atm) * list(atm).
 :- pred acheck(+AbsInt,+MaybeModList) : list(atm) * atm
    #"If @var{MaybeModList} is the atom @tt{all}, all modules in the current
     punit are considered. If it is a list of @bf{module names}, only the
@@ -447,16 +447,21 @@ acheck(AbsInt,MaybeModList) :-
 check_assertions([], _ModList) :-
     pplog(ctchecks, ['{No analysis found for checking}']).
 check_assertions(AbsInts, ModList):-
-    pplog(ctchecks, ['{Checking assertions of ']),
-    ( list(ModList) ->
-        Files = ModList
-    ;
-        findall(~~(File), curr_file(File,_), Files)
-    ),
-    pplog(ctchecks, Files),
+    pplog(ctchecks, ['{Checking assertions ']),
     pp_statistics(runtime,[CTime0,_]),
-    perform_pred_ctchecks(AbsInts,ModList),
-    perform_pp_ctchecks(AbsInts,ModList),
+    ( ( list(ModList) ->
+        member(Mod,ModList),
+        ( curr_file(File,Mod) -> true ; fail)
+        ;
+            curr_file(File,Mod)
+        ),
+      % failure-driven loop
+      pplog(ctchecks, ['{Checking assertions of\n', File]),
+      perform_pred_ctchecks(AbsInts,[Mod]),
+      perform_pp_ctchecks(AbsInts,[Mod]),
+      pplog(ctchecks, ['}']),
+      fail
+    ; true),
     pp_statistics(runtime,[CTime1,_]),
     CTime is CTime1 - CTime0,
     pplog(ctchecks, ['{assertions checked in ',time(CTime), ' msec.}']),
