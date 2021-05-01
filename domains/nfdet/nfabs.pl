@@ -141,20 +141,27 @@ select_tests(Tests,_Vars,Tests).
 nf_extend(_Sg,Prime,_Sv,Call,Succ):-
     asub(Prime,Tests0,Unfold0,Covered0,Fails0),
     asub(Call,Tests1,Unfold1,_Covered1,Fails1),
-    ((Unfold0 == unfold, tests(Tests0,InVars0,Unif0,Arith0,Meta0))
-     -> tests(Tests1,InVars1,Unif1,Arith1,Meta1), 
-        append(InVars0,InVars1,InVars),
-        append(Unif0,Unif1,Unif),
-        append(Arith0,Arith1,Arith),
-        append(Meta0,Meta1,Meta),
-        tests(Tests,InVars,Unif,Arith,Meta),
-        extend_unfold_tests(Unfold0, Unfold1, Unfold),
-        extend_nonfailure(not_fails,Fails1,Fails)
-      ; Unfold = not_unfold,
-        Tests = Tests1,
-        extend_nonfailure(Fails0,Fails1,Fails)
+    ( Unfold0 == unfold, Tests0 = t(_,_,_,_) ->
+        unfold_tests(Tests0,Tests1,Tests),
+        extend_unfold_tests(Unfold0,Unfold1,Unfold)
+    ; Unfold = not_unfold,
+      Tests = Tests1
     ),
+    extend_nonfailure(Fails0,Fails1,Fails),
     asub(Succ,Tests,Unfold,Covered0,Fails).
+
+%% unfold_tests(Tests0,Tests1,Tests) :-
+    % TODO: enable this version when test unfolding in directly
+    % recursive predicates is solved.
+    %% tests(Tests0,InVars0,Unif0,Arith0,Meta0),
+    %% tests(Tests1,InVars1,Unif1,Arith1,Meta1),
+    %% append(InVars0,InVars1,InVars),
+    %% append(Unif0,Unif1,Unif),
+    %% append(Arith0,Arith1,Arith),
+    %% append(Meta0,Meta1,Meta),
+    %% tests(Tests,InVars,Unif,Arith,Meta).
+% (dummy version)
+unfold_tests(_Tests0,Tests,Tests).
 
 extend_covering('$bottom',_,'$bottom'):-!.
 extend_covering(_,'$bottom','$bottom'):-!.
