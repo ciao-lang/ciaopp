@@ -1,4 +1,4 @@
-:- module(_, [], [assertions, regtypes, datafacts, nativeprops, ciaopp(ciaopp_options)]).
+:- module(_, [], [assertions, isomodes, regtypes, datafacts, nativeprops, ciaopp(ciaopp_options)]).
 
 :- doc(title, "Messages for predicate compile-time checking").
 
