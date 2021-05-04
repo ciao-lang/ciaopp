@@ -359,6 +359,8 @@ not_ground(shfrnv,X,(SharingComponent,FreeComponent)):-
 not_ground(shfrnv,X,ac(d((SharingComponent,FreeComponent),_DelComponent),_)):-
     var_value(FreeComponent,X,Value),
     test_not_ground(Value,X,(SharingComponent,FreeComponent)).
+not_ground(sharefree_clique,X,(_SharingComponent,FreeComponent)):-
+    var_value(FreeComponent,X,f).
 %% not_ground(aeq,X,AEqs):- 
 %%      AEqs = aeqs(Eqs,_,_,_,_),!,
 %%      member_key(X,Eqs,ATerm),
