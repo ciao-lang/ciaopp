@@ -31,7 +31,7 @@
 :- use_module(domain(sharefree), [sh_free_vars_compatible/2]).
      
 :- use_module(library(lsets), [ord_split_lists/4]).
-:- use_module(library(lists), [member/2]).
+:- use_module(library(lists), [member/2, append/3]).
 :- use_module(library(terms_vars), [varset/2]).
 :- use_module(library(sets), [insert/3, ord_subtract/3, ord_member/2, merge/3]).
 
@@ -238,6 +238,8 @@ ground(def,X,ac(d(a(GroundComponent,_DepComponent),_DelComponent),_)):-
 %%         ord_member(X,GroundComponent).
 %% ground(fd,X,(_F,D)):-
 %%      ground(def,X,D).
+ground(sharefree_clique,X,(_SharingComponent,FreeComponent)):-
+    var_value(FreeComponent,X,g).
 
 all_ground([],_AbsInt,_Info).
 all_ground([V|Vs],AbsInt,Info):-
@@ -270,6 +272,9 @@ free(shfrnv,X,ac(d((_,FreeComponent),_DelComponent),_)):-
 %%         ord_split_lists(New,X,[],_DisjointN).
 %% free(fd,X,(_D,as(_G1,Old,_G2,New))):-
 %%      free(fr,X,as(Old,New)).
+free(sharefree_clique,X,(_,FreeComponent)):- !,
+    var_value(FreeComponent,X,f).
+
 %% 
 %-------------------------------------------------------------------%
 % indep(+,+,+,+)                                                    %
@@ -396,7 +401,7 @@ not_free(share,X,Sharing):-
 not_free(shfr,X,(SharingComponent,FreeComponent)):-
     var_value(FreeComponent,X,Value),
     test_not_free(Value,X,(SharingComponent,FreeComponent)).
-not_free(shfr,X,ac(d((SharingComponent,FreeComponent),_DelComponent),_)):-
+not_free(shfr,X,ac(d((SharingComponent,FreeComponent),_DelComponent),_)):- % TODO: remove, deprecated shfr format or maybe a different domain?
     var_value(FreeComponent,X,Value),
     test_not_free(Value,X,(SharingComponent,FreeComponent)).
 not_free(shfrnv,X,(SharingComponent,FreeComponent)):-
@@ -405,6 +410,12 @@ not_free(shfrnv,X,(SharingComponent,FreeComponent)):-
 not_free(shfrnv,X,ac(d((SharingComponent,FreeComponent),_DelComponent),_)):-
     var_value(FreeComponent,X,Value),
     test_not_free(Value,X,(SharingComponent,FreeComponent)).
+not_free(sharefree_clique,X,((Cliques,SharingComponent),FreeComponent)):-
+    var_value(FreeComponent,X,Value),
+    % including all sharing (cliques are an over approximation of all sharing sets)
+    append(Cliques,SharingComponent,TotalSharing),
+    test_not_free(Value,X,(TotalSharing,FreeComponent)).
+
 %% not_free(aeq,X,AEqs):- 
 %%      AEqs = aeqs(Eqs,_,_,_,_),!,
 %%      member_key(X,Eqs,ATerm),
