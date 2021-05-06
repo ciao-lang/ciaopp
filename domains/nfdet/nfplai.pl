@@ -101,9 +101,13 @@ nf_call_to_entry(Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo):-
     eterms_call_to_entry(Sv,Sg,Hv,Head,K,Fv,PTypes,ETypes,ExtraInfoTypes),
     ( ETypes = '$bottom' ->
         Entry = '$bottom'
-    ; nfabs:nf_call_to_entry(Sv,Sg,Hv,Head,K,Fv,PNonF,ENonF,_Extra),
-      shfr_obtain_info(free,Sv,PModes,FVars),
+    ; shfr_obtain_info(free,Sv,PModes,FVars),
       ord_subtract(Sv,FVars,InVars),
+      nfabs:nf_call_to_entry(Sv,Sg,Hv,Head,K,Fv,PNonF,InVars,ENonF0,_Extra),
+      ( nfabs:possibly_fail_unif_tests(ENonF0, PModes) ->
+          nfabs:nf_unknown_call(Sg,InVars,ENonF0,ENonF)
+      ; ENonF0 = ENonF
+      ),
       asub(Entry,ETypes,EModes,ENonF)
     ),
     asub(ExtraInfo,ExtraInfoTypes,ExtraInfoModes,InVars).

@@ -1,5 +1,5 @@
 :- module(nfabs, [
-    nf_call_to_entry/9,
+    nf_call_to_entry/10,
     nf_exit_to_prime/7,
     nf_project/5,
     nf_extend/5,
@@ -20,7 +20,8 @@
     nf_unknown_call/4,
     nf_unknown_entry/3,
     nf_empty_entry/3,
-    nfabs_dom_statistics/1
+    nfabs_dom_statistics/1,
+    possibly_fail_unif_tests/2
 ], [assertions,regtypes,basicmodes,hiord]).
 
 :- use_module(domain(nfdet/nfsets), [create_minset_and_project/4]).
@@ -35,6 +36,7 @@
 :- use_module(library(lists), [append/3]).
 :- use_module(library(hiordlib), [foldr/4]).
 :- use_module(library(sets), [merge/3]).
+:- use_module(library(terms_vars), [varset/2]).
 
 :- doc(title,"Nonfailure Abstract Domain").
 :- doc(module,"
@@ -82,8 +84,12 @@ tests(t(InVars,Unif,Arith,Meta),InVars,Unif,Arith,Meta).
 % Entering a clause: initialize an asub to start gathering the tests of
 % this clause 
 
-nf_call_to_entry(_Sv,Sg,_Hv,_Head,_K,_Fv,_Proj,Entry,_Extra):-
-    nf_empty_entry(Sg,_Vars,Entry). % TODO: unbound _Vars! use []? (JF)
+nf_call_to_entry(_Sv,Sg,Hv,Head,_K,_Fv,_Proj,InVars,Entry,_Extra):-
+    nf_empty_entry(Sg,Hv,Entry0),
+    asub(Entry0,_Tests,Unfold,Covered,Fails),
+    asub(Entry,Tests,Unfold,Covered,Fails),
+    peel(Sg,Head,Bindings,[]),
+    tests(Tests,InVars,Bindings,[],[]).
 
 %------------------------------------------------------------------------%
 % nf_exit_to_prime(+,+,+,+,+,-,-)                                        %
@@ -450,7 +456,12 @@ nf_special_builtin(SgKey):-
 % WARNING: use '\\==/2' instead of '\==/2', in the predicate
 % nf_builtin/6, i.e. quote the character "\".
 
-nf_builtin('=/2'   , Sg, _CallType, unif, Sg, _CovNf):-!.
+nf_builtin('=/2'   , Sg, CallType, Type, Sg, CovNf):- !,
+    ( possibly_fails_unif(CallType, Sg) ->
+        nf_builtin_trust(CovNf, possibly_not_covered, possibly_fails),
+        Type = notest
+    ; Type = unif
+    ).
 nf_builtin('==/2'  , Sg, _CallType, unif, Sg, _CovNf):-!.
 nf_builtin('\\==/2' , Sg, _CallType, unif, Sg, _CovNf):-!.
 nf_builtin('\\=/2' , Sg, _CallType, unif, Sg, _CovNf):-!.
@@ -530,10 +541,48 @@ nf_builtin('indep/2', Sg, _CallType, notest, Sg, CovNf):-
      !, 
      nf_builtin_trust(CovNf, possibly_not_covered, possibly_fails).
 
+% TODO: This should be an shfr domain operation.
 is_free_var(X, CallType):-
      nonvar(CallType),
      shfr_obtain_info(free,[X],CallType,[Y]),
      X == Y.
+
+% TODO: This should be an shfr domain operation.
+possibly_fails_unif(CallType, X=Y) :-
+    nonvar(CallType),
+    \+ is_indep_var(X, CallType),
+    \+ is_indep_var(Y, CallType),
+    varset(X=Y, Vars),
+    CallType = (Sharing,_),
+    ( member(Var, Vars), shares(Sharing, Var) ->
+        true
+    ; fail
+    ).
+
+% TODO: This should be an shfr domain operation.
+is_indep_var(X, CallType) :-
+    is_free_var(X, CallType),
+    CallType = (Sharing,_),
+    \+ shares(Sharing, X).
+
+% TODO: This should be an shfr domain operation.
+shares(Sets, Var) :-
+    ( member(Set, Sets), shares_(Var, Set) ->
+        true
+    ; fail
+    ).
+
+shares_(Var, Set) :-
+    Set = [_,_|_],
+    memberchk(Var, Set).
+
+possibly_fail_unif_tests(ENonF, CallTypes) :-
+    asub(ENonF,Tests,_,_,_),
+    tests(Tests,_,Unif,_,_),
+    ( member(U, Unif), possibly_fails_unif(CallTypes, U) ->
+        true
+    ; fail
+    ).
 
 %-------------------------------------------------------------------------
 % nf_success_builtin(+,+,+,+,+,-)                                        |
