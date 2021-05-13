@@ -66,6 +66,7 @@
 :- endif.
 % ===========================================================================
 :- doc(section, "Non-failure and determinism").
+:- use_module(domain(nfdet/nfdet)). % nonfailure+determinism
 :- use_module(domain(nfdet/nfplai)). % nonfailure
 :- use_module(domain(nfdet/detplai)). % determinism
 % ===========================================================================

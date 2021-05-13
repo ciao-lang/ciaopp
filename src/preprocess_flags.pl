@@ -296,15 +296,15 @@ pp_flag(ana_nf, 'Type of non-failure analysis: multi-variant (nf).' ).
 :- endif.
 current_pp_flags(  ana_nf             , none    ).
 :- if(defined(has_ciaopp_cost)).
-valid_flag_values( ana_nf             , member( _ , [none, nf, nfg ] )).
+valid_flag_values( ana_nf             , member( _ , [none, nf, nfg, nfdet ] )).
 :- else.
-valid_flag_values( ana_nf             , member( _ , [none, nf] )).
+valid_flag_values( ana_nf             , member( _ , [none, nf, nfdet] )).
 :- endif.
 
 pp_flag(ana_det).  % menu only
 pp_flag(ana_det, 'Type of determinacy analysis: multi-variant (det).' ).
 current_pp_flags(  ana_det            , none    ).
-valid_flag_values( ana_det            , member( _ , [none, det] )).
+valid_flag_values( ana_det            , member( _ , [none, det, nfdet] )).
 
 pp_flag(ana_cost).  % menu only
 :- if(defined(has_ciaopp_cost)).

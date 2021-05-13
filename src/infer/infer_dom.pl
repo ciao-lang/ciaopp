@@ -849,6 +849,7 @@ convert_cond(incomp_type(N,_),NU,incomp_type(N,NU)).
 
 non_collapsable(nf).
 non_collapsable(det).
+non_collapsable(nfdet).
 non_collapsable(path).
 non_collapsable(res_plai).
 non_collapsable(sized_types).
