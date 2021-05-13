@@ -34,7 +34,7 @@ function esc_arg {
 }
 
 server=http://localhost:8000
-daemon=ciaopp_daemon
+daemon=ciaopp_actmod
 
 # Encode arguments extended with '--cwd'
 cwd=`pwd -P`

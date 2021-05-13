@@ -35,6 +35,9 @@ cmd('cmds/ciaopp-dump').
 cmd('cmds/ciaopp-batch').
 cmd('batch/ciaopp_master'). % TODO: use libexec?
 cmd('batch/ciaopp_batch_report'). % TODO: merge with ciaopp-dump?
+%
+cmd(ciaopp_actmod, [main='cmds/ciaopp_actmod', libexec]).
+service(ciaopp_actmod, [actmod, daemon]).
 
 readme('INSTALLATION', [main='doc/readmes/INSTALLATION_CIAOPP.lpdoc']).
 readme('CHANGELOG', [main='doc/readmes/CHANGELOG_CIAOPP.pl']).
