@@ -785,7 +785,7 @@ mark_useful_sons(Id, AbsInt) :-
 remove_useless_from_plai_db(AbsInt) :-
     current_fact(complete(SgKey, AbsInt, Sg, Proj, LPrime, Id, Fs), Ref),
     ( useless(Id) ->
-        note_message("removing complete ~w ~w",[SgKey,Id]),
+        pplog(analyze, "removing complete ~w ~w",[SgKey,Id]),
         delete_complete(SgKey,AbsInt,Id)
     ; (Id = no, Fs = []) -> % Auxiliary complete, remove for now
         erase(Ref)
