@@ -85,7 +85,7 @@ Global compilation options of intermodular analysis are available in
 :- use_module(library(system_extra), [mkpath/1]).
 :- use_module(library(terms), [atom_concat/2]).
 :- use_module(library(compiler/c_itf), [cleanup_itf_cache/0]).
-:- use_module(library(lists), [append/3]).
+:- use_module(library(lists), [append/3,select/3]).
 :- use_module(library(llists), [append/2]).
 :- use_module(library(pathnames)).
 :- use_module(library(aggregates), [findall/3]).
@@ -474,8 +474,10 @@ monolithic_analyze(AbsInts,TopLevel,Info):-
     push_pp_flag(intermod,auto),
     compute_punit_modules(TopLevel,_),
     get_punit_modules(ModList), % TODO: count execution time
+    ( main_module(MainBase,MainM2) -> true ; fail),
+    ( select(MainBase,ModList,M0) -> true ; fail ),
     %%%%
-    module(ModList,LStats),
+    module([MainBase|M0],LStats), % first module is considered top by incanal
     get_stat(LStats, time(LoadTime,_)),
     reset_total_info,
     set_local_ana_modules(ModList),

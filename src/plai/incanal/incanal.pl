@@ -179,8 +179,9 @@ reset_incremental_analysis_info :-
 incremental_module(Files) :-
     incremental_module(Files, _).
 
-:- pred incremental_module(Files, Stats) : list(Files) => list(Stats) + not_fails
-    #"Same as @pred{incremental_module/1} but returns runtime
+:- pred incremental_module(Files, Stats) : list(Files)
+   => list(Stats) + not_fails
+   #"Same as @pred{incremental_module/1} but returns runtime
      statistics in @var{Stats}.".
 incremental_module(Files, Stats) :-
     incremental_module_(Files, S1),
