@@ -474,7 +474,7 @@ monolithic_analyze(AbsInts,TopLevel,Info):-
     push_pp_flag(intermod,auto),
     compute_punit_modules(TopLevel,_),
     get_punit_modules(ModList), % TODO: count execution time
-    ( main_module(MainBase,MainM2) -> true ; fail),
+    ( main_module(MainBase,_) -> true ; fail),
     ( select(MainBase,ModList,M0) -> true ; fail ),
     %%%%
     module([MainBase|M0],LStats), % first module is considered top by incanal

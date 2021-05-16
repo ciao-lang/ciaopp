@@ -69,6 +69,8 @@
 :- use_module(ciaopp(p_unit/program_keys), [predkey_from_sg/2]).
 :- use_module(ciaopp(p_unit/auxinfo_dump)).
 
+:- use_module(ciaopp(ciaopp_log), [pplog/2]).
+
 :- use_module(library(messages), [warning_message/3, warning_message/2, note_message/2]).
 :- use_module(library(sort), [sort/2]).
 :- use_module(library(aggregates), [findall/3]).
@@ -785,7 +787,7 @@ mark_useful_sons(Id, AbsInt) :-
 remove_useless_from_plai_db(AbsInt) :-
     current_fact(complete(SgKey, AbsInt, Sg, Proj, LPrime, Id, Fs), Ref),
     ( useless(Id) ->
-        pplog(analyze, "removing complete ~w ~w",[SgKey,Id]),
+        pplog(analyze, ['removing complete ', SgKey, ' ', Id]),
         delete_complete(SgKey,AbsInt,Id)
     ; (Id = no, Fs = []) -> % Auxiliary complete, remove for now
         erase(Ref)
