@@ -2,6 +2,7 @@
 
 :- doc(title,"The CiaoPP command-line interface").
 :- doc(author, "The Ciao Development Team").
+
 :- doc(module, 
 "This is the top-level and command-line interface to CiaoPP. Please
 look at @lib{ciaopp} documentation for top-level usage information.
@@ -73,11 +74,11 @@ main_(['--gen-lib-cache']) :- !,
 main_(Args) :-
     % TODO: use get_opts/1 like in lpdoc
     parse_opts(Args, Cmd, Flags),
+    ( var(Cmd) -> Cmd = toplevel([]) ; true ), % (default)
     !,
     ciaopp_cmd(Cmd, Flags).
 main_(_Args) :-
-    short_usage_message(Text),
-    format(user_error,Text,[]).
+    short_usage_message.
 
 % ===========================================================================
 :- doc(section, "Help").
@@ -88,13 +89,13 @@ ciaopp_banner.
 %     display(' | This is an alpha distribution, meant only for testing. Please do let us '), nl,
 %     display(' | know at ciaopp-bug<at>clip.dia.fi.upm.es any problems you may have.'), nl, nl.
 
-short_usage_message(
-"Use 'ciaopp --help' for help.
-").
+:- export(short_usage_message/0).
+short_usage_message :-
+    display(user_error, 'Use \'ciaopp --help\' for help.'), nl(user_error).
 
 usage_message(
 "Usage 1: (batch mode)
-    ciaopp [-o OutFile] Option Filename [FlagsValues]
+    ciaopp [OPTIONS] Action Filename [FlagsValues]
 
   Where:
     -o <OutFile>
@@ -106,7 +107,12 @@ usage_message(
     -op <Suffix>
             Use Suffix as the optional input code suffix 
 
-    Option must be one of the following:
+    --cwd Dir
+            Switch to the selected directory
+    --timeout Timeout 
+            Execute with a timeout limit (ms)
+
+    Action must be one of the following:
     -Q      runs the interactive (text-based) menu for
             preprocessing Filename.
     -A      analyzes Filename with the default options
@@ -167,13 +173,8 @@ Execution Examples:
 :- use_module(library(terms), [atom_concat/2]).
 :- use_module(library(compiler/c_itf), [opt_suffix/2]).
 
-:- data output_file/1.
-
-parse_opts([], Cmd, Flags) :- !,
-    ( var(Cmd) -> % default
-        Cmd = toplevel([])
-    ; true
-    ),
+:- export(parse_opts/3).
+parse_opts([], _Cmd, Flags) :- !,
     Flags = [].
 % commands
 parse_opts(['-h'|_], Cmd, Flags) :- !,
@@ -182,9 +183,11 @@ parse_opts(['-h'|_], Cmd, Flags) :- !,
 parse_opts(['--help'|_], Cmd, Flags) :- !,
     Cmd = help,
     Flags = [].
+% (unavailable as actmod)
 parse_opts(['-T'|ToplevelOpts], Cmd, Flags) :- !,
     Cmd = toplevel(ToplevelOpts), % TODO: make behavior consistent with other ciao tools
     Flags = [].
+% (unavailable as actmod)
 parse_opts(['-Q', File|Opts], Cmd, Flags) :- !,
     Cmd = customize_and_preprocess(File),
     parse_opts(Opts, Cmd, Flags).
@@ -197,18 +200,28 @@ parse_opts(['-V', File|Opts], Cmd, Flags) :- !,
 parse_opts(['-O', File|Opts], Cmd, Flags) :- !,
     Cmd = opt(File),
     parse_opts(Opts, Cmd, Flags).
+% (unavailable as actmod)
 parse_opts(['-U', Menu, File|Opts], Cmd, Flags) :- !,
     Cmd = restore_menu(Menu,File),
     parse_opts(Opts, Cmd, Flags).
-% input opts
+% opt suffix
 parse_opts(['-op', Suff|Opts], Cmd, Flags) :- !,
-    opt_suffix(_, Suff),
-    parse_opts(Opts, Cmd, Flags).
+    Flags = [opt_suffix(Suff)|Flags0],
+    parse_opts(Opts, Cmd, Flags0).
+% current working directory (absolute path)
+parse_opts(['--cwd', AbsPath|Opts], Cmd, Flags) :- !,
+    Flags = [cwd(AbsPath)|Flags0],
+    parse_opts(Opts, Cmd, Flags0).
+% optional timeout
+parse_opts(['--timeout', T|Opts], Cmd, Flags) :- !,
+    atom_codes(T, TCs),
+    number_codes(Tn, TCs),
+    Flags = [timeout(Tn)|Flags0],
+    parse_opts(Opts, Cmd, Flags0).
 % output
 parse_opts(['-o', File|Opts], Cmd, Flags) :- !,
-    retractall_fact(output_file(_)),
-    asserta_fact(output_file(File)),
-    parse_opts(Opts, Cmd, Flags).
+    Flags = [output_file(File)|Flags0],
+    parse_opts(Opts, Cmd, Flags0).
 % parse flags
 parse_opts(['-f', FV|Opts], Cmd, Flags) :- is_flag_value(FV, F, V), !,
     Flags = [f(F,V)|Flags0],
@@ -237,7 +250,11 @@ is_flag_value_p(FV, F, V) :- atom_concat(['-p', F, '=', V], FV).
 % ===========================================================================
 :- doc(section, "Commands").
 
-:- use_module(library(menu/menu_generator), []).
+% (options are passed through restore_menu_flags_list/1 pred)
+:- use_module(library(menu/menu_generator), [
+    % TODO: at least these operations should be in a separate module (menu_db?)
+    get_menu_flags/1,
+    restore_menu_flags_list/1]).
 :- use_module(ciaopp(ciaopp), [
     set_last_file/1,
     again/0,
@@ -251,7 +268,10 @@ is_flag_value_p(FV, F, V) :- atom_concat(['-p', F, '=', V], FV).
     restore_menu_config/1,
     set_menu_flag/3,
     get_menu_flag/3]).
-:- use_module(library(toplevel), [toplevel/1]).
+:- use_module(ciaopp(preprocess_flags), [current_pp_flag/2]).
+:- use_module(library(system), [working_directory/2]).
+:- use_module(library(timeout), [call_with_time_limit/3]). % TODO: experimental!
+:- use_module(library(port_reify), [once_port_reify/2, port_call/1]).
 
 ciaopp_cmd(help, _Flags) :- !,
     usage_message(Text),
@@ -266,40 +286,82 @@ ciaopp_cmd(restore_menu(Menu,File), _Flags) :- !,
     restore_menu_config(Menu),
     set_last_file(File),
     again.
-ciaopp_cmd(ana(File), Flags) :- !,
-    get_output_filename(OFile),
-    set_flags(Flags, ana),
-    auto_analyze(File, OFile).
-ciaopp_cmd(check(File), Flags) :- !,
-    get_output_filename(OFile),
-    set_flags(Flags, check),
-    auto_check_assert(File, OFile).
-ciaopp_cmd(opt(File), Flags) :- !,
-    get_output_filename(OFile),
-    set_flags(Flags, opt),
-    auto_optimize(File, OFile).
+ciaopp_cmd(Cmd, Flags) :-
+    ciaopp_run(Cmd, Flags).
 
-% TODO: use optional output(F) instead (so that no output/1 means default)
-get_output_filename(X) :- output_file(X), !.
-get_output_filename(_).
+:- export(ciaopp_run/2).
+ciaopp_run(Cmd, Flags) :-
+    ( Cmd = ana(File) -> Cmd0 = ana
+    ; Cmd = check(File) -> Cmd0 = check
+    ; Cmd = opt(File) -> Cmd0 = opt
+    ),
+    ( member(output_file(OFile), Flags) -> true
+    ; true % OFile unbound
+    ),
+    ( member(timeout(Timeout), Flags) -> true
+    ; Timeout = none % No timeout
+    ),
+    get_menu_flags(OldMenuFlags),
+    set_flags(Flags, Cmd0, [], OldFlags), % TODO: add a way to reset flags
+    once_port_reify(ciaopp_run_with_time_limit(Timeout, Cmd0, File, OFile, GotTimeout), Port),
+    restore_flags(OldFlags),
+    restore_menu_flags_list(OldMenuFlags),
+    ( GotTimeout = yes ->
+        display(user_error, '{ERROR: timeout}'), nl(user_error)
+    ; true
+    ),
+    port_call(Port).
 
-% ---------------------------------------------------------------------------
-% Set flags (depends on command)
+ciaopp_run_with_time_limit(none, Cmd0, File, OFile, GotTimeout) :- !,
+    auto_run(Cmd0, File, OFile), GotTimeout = no.
+ciaopp_run_with_time_limit(Timeout, Cmd0, File, OFile, GotTimeout) :-
+    call_with_time_limit(Timeout, auto_run(Cmd0, File, OFile), GotTimeout = yes),
+    ( var(GotTimeout) -> GotTimeout = no ; true ).
 
-set_flags([], _) :- !.
-set_flags([f(F,V)|Flags], Cmd0) :-
-    set_menu_flag_option(Cmd0, F, V),
-    !,
-    set_flags(Flags, Cmd0).
-set_flags([p(F,V)|Flags], Cmd0) :-
-    set_pp_flag(F, V),
-    !,
-    set_flags(Flags, Cmd0).
-set_flags([F|Flags], Cmd0) :-
-    display('Unrecognized flag '),
-    displayq(F),
-    nl, % TODO: exit?
-    set_flags(Flags, Cmd0).
+auto_run(Cmd0, File, OFile) :-
+    ( Cmd0 = ana -> auto_analyze(File, OFile)
+    ; Cmd0 = check -> auto_check_assert(File, OFile)
+    ; Cmd0 = opt -> auto_optimize(File, OFile)
+    ).
+
+% Set context and save previous state in OldFlags
+set_flags([], _Cmd0, OldFlags, OldFlags).
+set_flags([Flag|Flags], Cmd0, OldFlags0, OldFlags) :-
+    set_flag(Flag, Cmd0, OldFlags0, OldFlags1),
+    set_flags(Flags, Cmd0, OldFlags1, OldFlags).
+
+set_flag(f(F,V), Cmd0, OldFlags0, OldFlags) :- !,
+    ( set_menu_flag_option(Cmd0, F, V) -> true
+    ; display('Unrecognized flag '), displayq(F), nl
+    ),
+    OldFlags = OldFlags0.
+set_flag(opt_suffix(Suff), _Cmd0, OldFlags0, OldFlags) :- !,
+    opt_suffix(OldSuff,Suff),
+    OldFlags = [opt_suffix(OldSuff)|OldFlags0].
+set_flag(cwd(AbsPath), _Cmd0, OldFlags0, OldFlags) :- !,
+    working_directory(OldAbsPath,AbsPath),
+    OldFlags = [cwd(OldAbsPath)|OldFlags0].
+set_flag(p(F,V), _Cmd0, OldFlags0, OldFlags) :- !,
+    ( current_pp_flag(F, OldV) ->
+        set_pp_flag(F, V),
+        OldFlags = [p(F,OldV)|OldFlags0]
+    ; OldFlags = OldFlags0
+    ).
+set_flag(_Flag, _Cmd0, OldFlags, OldFlags).
+
+% Restore saved context
+restore_flags([]).
+restore_flags([Flag|Flags]) :-
+    restore_flag(Flag),
+    restore_flags(Flags).
+
+restore_flag(p(F,OldV)) :- !,
+    set_pp_flag(F,OldV).
+restore_flag(opt_suffix(Suff)) :- !,
+    opt_suffix(_,Suff).
+restore_flag(cwd(Dir)) :- !,
+    working_directory(_,Dir).
+restore_flag(_).
 
 set_menu_flag_option(opt, inter_optimize, V) :- !,
     set_menu_flag(opt, inter_optimize, V).
@@ -315,6 +377,7 @@ set_menu_flag_option(A, F, V) :-
 :- use_module(library(lists), [member/2]).
 :- use_module(library(system), [file_exists/1]).
 :- use_module(engine(runtime_control), [set_prolog_flag/2]).
+:- use_module(library(toplevel), [toplevel/1]).
 
 ciaopp_toplevel(Opts2) :-
     set_prolog_flag(quiet, warning),
