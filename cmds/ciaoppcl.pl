@@ -61,6 +61,7 @@ CiaoPP shell (this is the default behavior):
 :- use_module(engine(io_basic)).
 :- use_module(library(format), [format/3]).
 :- use_module(ciaopp_batch(ciaopp_worker)).
+:- use_module(ciaopp_actmod, [main/1]).
 :- use_module(ciaopp(frontend_driver), [cache_and_preload_lib_sources/0]).
 
 main(Args) :-
@@ -69,6 +70,9 @@ main(Args) :-
 main_(['--worker', ID]) :- % Worker mode (internal for ciaopp-batch)
     !,
     ciaopp_worker:start_worker(ID).
+main_(['--actmod'|Args]) :- % Actmod mode (see 'service' entry in Manifest)
+    !,
+    ciaopp_actmod:main(Args).
 main_(['--gen-lib-cache']) :- !,
     cache_and_preload_lib_sources.
 main_(Args) :-

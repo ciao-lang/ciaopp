@@ -35,9 +35,12 @@ cmd('cmds/ciaopp-dump').
 cmd('cmds/ciaopp-batch').
 cmd('batch/ciaopp_master'). % TODO: use libexec?
 cmd('batch/ciaopp_batch_report'). % TODO: merge with ciaopp-dump?
-%
-cmd(ciaopp_actmod, [main='cmds/ciaopp_actmod', libexec]).
-service(ciaopp_actmod, [actmod, daemon]).
+
+% NOTE: These lines enable ciaopp_actmod as a separate binary.
+%   A child ciaopp process started with '--actmod' seems more robust.
+%     cmd(ciaopp_actmod, [main='cmds/ciaopp_actmod', libexec]). % (dedicated actmod, not used)
+%     service(ciaopp_actmod, [actmod, daemon]).
+service(ciaopp_actmod, [actmod, child/*daemon*/, binexec(ciaopp)]).
 
 readme('INSTALLATION', [main='doc/readmes/INSTALLATION_CIAOPP.lpdoc']).
 readme('CHANGELOG', [main='doc/readmes/CHANGELOG_CIAOPP.pl']).
