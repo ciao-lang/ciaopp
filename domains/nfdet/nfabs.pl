@@ -30,6 +30,7 @@
 :- use_module(domain(sharefree), [shfr_obtain_info/4]).
 :- use_module(domain(s_eqs), [peel/4]).
 :- use_module(domain(nfdet/nfdet_statistics)).
+:- use_module(domain(nfdet/nfdet_common), [tests/5]).
 :- use_module(ciaopp(p_unit/program_keys), [predkey_from_sg/2]).
 
 :- use_module(library(idlists), [memberchk/2]).
@@ -73,9 +74,17 @@ The abstract domain lattices for nonfailure and covering are:
 
 %------------------------------------------------------------------------%
 
-asub(nf(Tests,Unfold_Tests,Covered,Fails),Tests,Unfold_Tests,Covered,Fails).
+:- export(nfabs_asub/1).
 
-tests(t(InVars,Unif,Arith,Meta),InVars,Unif,Arith,Meta).
+:- regtype nfabs_asub/1.
+
+% TODO: Define
+nfabs_asub(ASub) :-
+    term(ASub).
+
+:- export(asub/5).
+
+asub(nf(Tests,Unfold_Tests,Covered,Fails),Tests,Unfold_Tests,Covered,Fails).
 
 %------------------------------------------------------------------------%
 % nf_call_to_entry(+,+,+,+,+,+,+,-,-)                                    %

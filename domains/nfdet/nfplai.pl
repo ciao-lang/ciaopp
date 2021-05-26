@@ -80,6 +80,9 @@
 %% asub('$bottom','$bottom',_Modes,_NonF):- !.
 %% asub('$bottom',_Types,'$bottom',_NonF):- !.
 %% asub('$bottom',_Types,_Modes,'$bottom'):- !.
+
+:- export(asub/4).
+
 asub(nf(Types,Modes,NonF),Types,Modes,NonF).
 
 %------------------------------------------------------------------------%
@@ -96,7 +99,7 @@ nf_init_abstract_domain([variants,widen]) :-
 %------------------------------------------------------------------------%
 
 nf_call_to_entry(Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo):-
-    asub(Proj,PTypes,PModes,PNonF),
+    nfplai:asub(Proj,PTypes,PModes,PNonF),
     shfr_call_to_entry(Sv,Sg,Hv,Head,K,Fv,PModes,EModes,ExtraInfoModes),
     eterms_call_to_entry(Sv,Sg,Hv,Head,K,Fv,PTypes,ETypes,ExtraInfoTypes),
     ( ETypes = '$bottom' ->
@@ -108,9 +111,9 @@ nf_call_to_entry(Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo):-
           nfabs:nf_unknown_call(Sg,InVars,ENonF0,ENonF)
       ; ENonF0 = ENonF
       ),
-      asub(Entry,ETypes,EModes,ENonF)
+      nfplai:asub(Entry,ETypes,EModes,ENonF)
     ),
-    asub(ExtraInfo,ExtraInfoTypes,ExtraInfoModes,InVars).
+    nfplai:asub(ExtraInfo,ExtraInfoTypes,ExtraInfoModes,InVars).
 
 %------------------------------------------------------------------------%
 % nf_exit_to_prime(+,+,+,+,+,-,-)                                        %
@@ -119,8 +122,8 @@ nf_call_to_entry(Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo):-
 
 nf_exit_to_prime(_Sg,_Hv,_Head,_Sv,'$bottom',_ExtraInfo,'$bottom'):- !.
 nf_exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime):-
-    asub(Exit,ETypes,EModes,ENonF),
-    asub(ExtraInfo,ExtraInfoTypes,ExtraInfoModes,ExtraInfoNonF),
+    nfplai:asub(Exit,ETypes,EModes,ENonF),
+    nfplai:asub(ExtraInfo,ExtraInfoTypes,ExtraInfoModes,ExtraInfoNonF),
     shfr_exit_to_prime(Sg,Hv,Head,Sv,EModes,ExtraInfoModes,PModes),
     eterms_exit_to_prime(Sg,Hv,Head,Sv,ETypes,ExtraInfoTypes,PTypes),
     ( PTypes = '$bottom' ->
@@ -128,7 +131,7 @@ nf_exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime):-
     ; nfabs:nf_exit_to_prime(Sg,Hv,Head,Sv,ENonF,ExtraInfoNonF,PNonF),
       ( PNonF = '$bottom' ->
           Prime = '$bottom'
-      ; asub(Prime,PTypes,PModes,PNonF)
+      ; nfplai:asub(Prime,PTypes,PModes,PNonF)
       )
     ).
 
@@ -139,11 +142,11 @@ nf_exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime):-
 
 nf_project(_Sg,_Vars,_HvFv_u,'$bottom','$bottom'):- !.
 nf_project(Sg,Vars,HvFv_u,ASub,Proj):-
-    asub(ASub,ATypes,AModes,ANonF),
+    nfplai:asub(ASub,ATypes,AModes,ANonF),
     shfr_project(Sg,Vars,HvFv_u,AModes,PModes),
     eterms_project(Sg,Vars,HvFv_u,ATypes,PTypes),
     nfabs:nf_project(Sg,Vars,HvFv_u,ANonF,PNonF),
-    asub(Proj,PTypes,PModes,PNonF).
+    nfplai:asub(Proj,PTypes,PModes,PNonF).
 
 %------------------------------------------------------------------------%
 % nf_extend(+,+,+,+,-)                                                   %
@@ -152,12 +155,12 @@ nf_project(Sg,Vars,HvFv_u,ASub,Proj):-
 
 nf_extend(_Sg,'$bottom',_Sv,_Call,'$bottom'):- !.
 nf_extend(Sg,Prime,Sv,Call,Succ):-
-    asub(Prime,PTypes,PModes,PNonF),
-    asub(Call,CTypes,CModes,CNonF),
+    nfplai:asub(Prime,PTypes,PModes,PNonF),
+    nfplai:asub(Call,CTypes,CModes,CNonF),
     shfr_extend(Sg,PModes,Sv,CModes,SModes),
     eterms_extend(Sg,PTypes,Sv,CTypes,STypes),
     nfabs:nf_extend(Sg,PNonF,Sv,CNonF,SNonF),
-    asub(Succ,STypes,SModes,SNonF).
+    nfplai:asub(Succ,STypes,SModes,SNonF).
 
 nf_needs(clauses_lub) :- !.
 nf_needs(split_combined_domain) :- !.
@@ -174,12 +177,12 @@ nf_needs(X) :-
 nf_widen('$bottom',ASub1,ASub):- !, ASub=ASub1.
 nf_widen(ASub0,'$bottom',ASub):- !, ASub=ASub0.
 nf_widen(ASub0,ASub1,ASub):-
-    asub(ASub0,ATypes0,AModes0,ANonF0),
-    asub(ASub1,ATypes1,AModes1,ANonF1),
+    nfplai:asub(ASub0,ATypes0,AModes0,ANonF0),
+    nfplai:asub(ASub1,ATypes1,AModes1,ANonF1),
     shfr_compute_lub([AModes0,AModes1],AModes),
     eterms_widen(ATypes0,ATypes1,ATypes),
     nfabs:nf_widen(ANonF0,ANonF1,ANonF),
-    asub(ASub,ATypes,AModes,ANonF).
+    nfplai:asub(ASub,ATypes,AModes,ANonF).
 
 %------------------------------------------------------------------------%
 % nf_widencall(+,+,-)                                                    %
@@ -189,11 +192,11 @@ nf_widen(ASub0,ASub1,ASub):-
 nf_widencall('$bottom',ASub1,ASub):- !, ASub=ASub1.
 nf_widencall(ASub0,'$bottom',ASub):- !, ASub=ASub0.
 nf_widencall(ASub0,ASub1,ASub):-
-    asub(ASub0,ATypes0,_AModes0,_ANonF0),
-    asub(ASub1,ATypes1,AModes1,ANonF1),
+    nfplai:asub(ASub0,ATypes0,_AModes0,_ANonF0),
+    nfplai:asub(ASub1,ATypes1,AModes1,ANonF1),
     % assuming _AModes0 =< AModes1 and _ANonF0 =< ANonF1
     eterms_widencall(ATypes0,ATypes1,ATypes),
-    asub(ASub,ATypes,AModes1,ANonF1).
+    nfplai:asub(ASub,ATypes,AModes1,ANonF1).
 
 %------------------------------------------------------------------------%
 % nf_compute_lub(+,-)                                                    %
@@ -205,13 +208,13 @@ nf_compute_lub(ListASub,Lub):-
     shfr_compute_lub(LModes,LubModes),
     eterms_compute_lub(LTypes,LubTypes),
     nfabs:nf_compute_lub(LNonF,LubNonF),
-    asub(Lub,LubTypes,LubModes,LubNonF).
+    nfplai:asub(Lub,LubTypes,LubModes,LubNonF).
 
 split([],[],[],[]).
 split(['$bottom'|ListASub],LTypes,LModes,LNonF):- !,
     split(ListASub,LTypes,LModes,LNonF).
 split([ASub|ListASub],[ATypes|LTypes],[AModes|LModes],[ANonF|LNonF]):-
-    asub(ASub,ATypes,AModes,ANonF),
+    nfplai:asub(ASub,ATypes,AModes,ANonF),
     split(ListASub,LTypes,LModes,LNonF).
 
 nf_split_combined_domain(ListASub,[LTypes,LModes,LNonF],[eterms,shfr,nf]):-
@@ -225,8 +228,8 @@ split_back([],[],[],[]).
 split_back([ASub|ListASub],[ATypes|LTypes],[AModes|LModes],[ASubNonF|LNonF]):-
     ( ATypes == '$bottom' -> ASub = '$bottom'
     ; AModes == '$bottom' -> ASub = '$bottom'
-    ; asub(ASub,ATypes,AModes,ANonF),
-      asub(ASubNonF,_ATypes,_AModes,ANonF)
+    ; nfplai:asub(ASub,ATypes,AModes,ANonF),
+      nfplai:asub(ASubNonF,_ATypes,_AModes,ANonF)
     ),
     split_back(ListASub,LTypes,LModes,LNonF).
 
@@ -237,11 +240,11 @@ split_back([ASub|ListASub],[ATypes|LTypes],[AModes|LModes],[ASubNonF|LNonF]):-
 
 nf_compute_clauses_lub(['$bottom'],_Proj,['$bottom']):- !.
 nf_compute_clauses_lub([ASub],Proj,[Lub]):-
-    asub(ASub,ATypes,AModes,ANonFList),
-    asub(Proj,PTypes,PModes,_PNonFList),
+    nfplai:asub(ASub,ATypes,AModes,ANonFList),
+    nfplai:asub(Proj,PTypes,PModes,_PNonFList),
     compute_modetypes(PTypes,PModes,_Head,ModeTypes),
     nf_compute_covering(ModeTypes,ANonFList,LubNonF),
-    asub(Lub,ATypes,AModes,LubNonF).
+    nfplai:asub(Lub,ATypes,AModes,LubNonF).
 
 compute_modetypes(Types,Modes,Head,MTypes):-
     % shfr_obtain_info(free,_Vars,Modes,FVars), % PLG
@@ -269,12 +272,12 @@ get_mode(_Var,_GVars,in).
 nf_glb('$bottom',_ASub,ASub3) :- !, ASub3='$bottom'.
 nf_glb(_ASub,'$bottom',ASub3) :- !, ASub3='$bottom'.
 nf_glb(ASub0,ASub1,Glb):-
-    asub(ASub0,ATypes0,AModes0,ANonF0),
-    asub(ASub1,ATypes1,AModes1,ANonF1),
+    nfplai:asub(ASub0,ATypes0,AModes0,ANonF0),
+    nfplai:asub(ASub1,ATypes1,AModes1,ANonF1),
     shfr_glb(AModes0,AModes1,GModes),
     eterms_glb(ATypes0,ATypes1,GTypes),
     nfabs:nf_glb(ANonF0,ANonF1,GNonF),
-    asub(Glb,GTypes,GModes,GNonF).
+    nfplai:asub(Glb,GTypes,GModes,GNonF).
 
 %------------------------------------------------------------------------%
 
@@ -287,8 +290,8 @@ nf_eliminate_equivalent(LSucc,LSucc). % TODO: wrong or not needed? (JF)
 
 nf_less_or_equal('$bottom','$bottom'):- !.
 nf_less_or_equal(ASub0,ASub1):-
-    asub(ASub0,ATypes0,AModes0,ANonF0),
-    asub(ASub1,ATypes1,AModes1,ANonF1),
+    nfplai:asub(ASub0,ATypes0,AModes0,ANonF0),
+    nfplai:asub(ASub1,ATypes1,AModes1,ANonF1),
     shfr_less_or_equal(AModes0,AModes1),
     eterms_less_or_equal(ATypes0,ATypes1),
     nfabs:nf_less_or_equal(ANonF0,ANonF1).
@@ -300,8 +303,8 @@ nf_less_or_equal(ASub0,ASub1):-
 
 nf_identical_abstract('$bottom','$bottom'):- !.
 nf_identical_abstract(ASub0,ASub1):-
-    asub(ASub0,ATypes0,AModes0,ANonF0),
-    asub(ASub1,ATypes1,AModes1,ANonF1),
+    nfplai:asub(ASub0,ATypes0,AModes0,ANonF0),
+    nfplai:asub(ASub1,ATypes1,AModes1,ANonF1),
     AModes0 == AModes1,
     eterms_identical_abstract(ATypes0,ATypes1),
     nfabs:nf_identical_abstract(ANonF0,ANonF1).
@@ -313,11 +316,11 @@ nf_identical_abstract(ASub0,ASub1):-
 
 nf_abs_sort('$bottom','$bottom'):- !.
 nf_abs_sort(ASub0,ASub1):-
-    asub(ASub0,ATypes0,AModes0,ANonF0),
+    nfplai:asub(ASub0,ATypes0,AModes0,ANonF0),
     shfr_abs_sort(AModes0,AModes1),
     eterms_abs_sort(ATypes0,ATypes1),
     nfabs:nf_abs_sort(ANonF0,ANonF1),
-    asub(ASub1,ATypes1,AModes1,ANonF1).
+    nfplai:asub(ASub1,ATypes1,AModes1,ANonF1).
 
 %------------------------------------------------------------------------%
 % nf_call_to_success_fact(+,+,+,+,+,+,+,-,-)                               %
@@ -325,13 +328,13 @@ nf_abs_sort(ASub0,ASub1):-
 %-------------------------------------------------------------------------
 
 nf_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ):-
-    asub(Call,CTypes,CModes,CNonF),
-    asub(Proj,PTypes,PModes,PNonF),
+    nfplai:asub(Call,CTypes,CModes,CNonF),
+    nfplai:asub(Proj,PTypes,PModes,PNonF),
     shfr_call_to_success_fact(Sg,Hv,Head,K,Sv,CModes,PModes,RModes,SModes),
     eterms_call_to_success_fact(Sg,Hv,Head,K,Sv,CTypes,PTypes,RTypes,STypes),
     nfabs:nf_call_to_success_fact(Sg,Hv,Head,K,Sv,CNonF,PNonF,RNonF,SNonF),
-    asub(Prime,RTypes,RModes,RNonF),
-    asub(Succ,STypes,SModes,SNonF).
+    nfplai:asub(Prime,RTypes,RModes,RNonF),
+    nfplai:asub(Succ,STypes,SModes,SNonF).
 
 
 %-------------------------------------------------------------------------
@@ -363,9 +366,9 @@ nf_combined_special_builtin0(SgKey,Domains) :-
 %-------------------------------------------------------------------------
 
 nf_success_builtin(Type,_Sv_u,Sg,HvFv_u,Call,Succ):-
-    asub(Call,Types,Modes,CallNonF),
+    nfplai:asub(Call,Types,Modes,CallNonF),
     nfabs:nf_success_builtin(Type,Modes,Sg,HvFv_u,CallNonF,SuccNonF),
-    asub(Succ,Types,Modes,SuccNonF).
+    nfplai:asub(Succ,Types,Modes,SuccNonF).
 
 %-------------------------------------------------------------------------
 % nf_call_to_success_builtin(+,+,+,+,+,-)                                %
@@ -383,11 +386,11 @@ nf_input_interface(InputUser,Kind,StructI,StructO):-
         KModes=Kind, KTypes=Kind, KNonF=Kind
     ; true
     ),
-    asub(StructI,ITypes,IModes,INonF),
+    nfplai:asub(StructI,ITypes,IModes,INonF),
     shfr_input_interface_(InputUser,KModes,IModes,OModes),
     eterms_input_interface_(InputUser,KTypes,ITypes,OTypes),
     nf_input_interface_(InputUser,KNonF,INonF,ONonF),
-    asub(StructO,OTypes,OModes,ONonF).
+    nfplai:asub(StructO,OTypes,OModes,ONonF).
 
 shfr_input_interface_(InputUser,Kind,IModes,OModes):-
     shfr_input_interface(InputUser,Kind,IModes,OModes), !.
@@ -407,11 +410,11 @@ nf_input_interface_(_InputUser,_Kind,INonF,INonF).
 %------------------------------------------------------------------------%
 
 nf_input_user_interface(Struct,Qv,ASub,Sg,MaybeCallASub):-
-    asub(Struct,Types,Modes,NonF),
+    nfplai:asub(Struct,Types,Modes,NonF),
     shfr_input_user_interface(Modes,Qv,AModes,Sg,MaybeCallASub),
     eterms_input_user_interface(Types,Qv,ATypes,Sg,MaybeCallASub),
     nfabs:nf_input_user_interface(NonF,Qv,ANonF,Sg,MaybeCallASub),
-    asub(ASub,ATypes,AModes,ANonF).
+    nfplai:asub(ASub,ATypes,AModes,ANonF).
 
 %------------------------------------------------------------------------%
 % nf_asub_to_native(+,+,+,-,-)                                           %
@@ -420,7 +423,7 @@ nf_input_user_interface(Struct,Qv,ASub,Sg,MaybeCallASub):-
 % Qv should be the goal for comp-props!!!!!
 
 nf_asub_to_native(ASub,Qv,OutFlag,Props,CompProps):-
-    asub(ASub,ATypes,AModes,ANonF),
+    nfplai:asub(ASub,ATypes,AModes,ANonF),
     shfr_asub_to_native(AModes,Qv,OutFlag,Props1,_),
     eterms_asub_to_native(ATypes,Qv,OutFlag,Props2,_),
     nfabs:nf_asub_to_native(ANonF,Qv,CompProps),
@@ -429,15 +432,15 @@ nf_asub_to_native(ASub,Qv,OutFlag,Props,CompProps):-
 :- dom_impl(nf, collect_auxinfo_asub/3).
 :- export(nf_collect_auxinfo_asub/3).
 nf_collect_auxinfo_asub(Struct,Types,Types1) :-
-    asub(Struct,ATypes,_,_),
+    nfplai:asub(Struct,ATypes,_,_),
     eterms_collect_auxinfo_asub(ATypes,Types,Types1).
 
 :- dom_impl(nf, rename_auxinfo_asub/3).
 :- export(nf_rename_auxinfo_asub/3).
 nf_rename_auxinfo_asub(ASub, Dict, RASub) :-
-    asub(ASub,ATypes,AModes,ANonf),
+    nfplai:asub(ASub,ATypes,AModes,ANonf),
     eterms_rename_auxinfo_asub(ATypes, Dict,RATypes),
-    asub(RASub,RATypes,AModes,ANonf).
+    nfplai:asub(RASub,RATypes,AModes,ANonf).
 
 %------------------------------------------------------------------------%
 % nf_unknown_call(+,+,+,-)                                               %
@@ -445,11 +448,11 @@ nf_rename_auxinfo_asub(ASub, Dict, RASub) :-
 %------------------------------------------------------------------------%
 
 nf_unknown_call(Sg,Vars,Call,Succ):-
-    asub(Call,CTypes,CModes,CNonF),
+    nfplai:asub(Call,CTypes,CModes,CNonF),
     shfr_unknown_call(Sg,Vars,CModes,SModes),
     eterms_unknown_call(Sg,Vars,CTypes,STypes),
     nfabs:nf_unknown_call(Sg,Vars,CNonF,SNonF),
-    asub(Succ,STypes,SModes,SNonF).
+    nfplai:asub(Succ,STypes,SModes,SNonF).
 
 %------------------------------------------------------------------------%
 % nf_unknown_entry(+,+,-)                                                %
@@ -460,7 +463,7 @@ nf_unknown_entry(Sg,Vars,Entry):-
     shfr_unknown_entry(Sg,Vars,EModes),
     eterms_unknown_entry(Sg,Vars,ETypes),
     nfabs:nf_unknown_entry(Sg,Vars,ENonF),
-    asub(Entry,ETypes,EModes,ENonF).
+    nfplai:asub(Entry,ETypes,EModes,ENonF).
 
 %------------------------------------------------------------------------%
 % nf_empty_entry(+,+,-)                                                  %
@@ -471,7 +474,7 @@ nf_empty_entry(Sg,Vars,Entry):-
     shfr_empty_entry(Sg,Vars,EModes),
     eterms_empty_entry(Sg,Vars,ETypes),
     nfabs:nf_empty_entry(Sg,Vars,ENonF),
-    asub(Entry,ETypes,EModes,ENonF).
+    nfplai:asub(Entry,ETypes,EModes,ENonF).
 
 %-----------------------------------------------------------------------
 
@@ -480,11 +483,11 @@ nf_dom_statistics(Info):- nfabs_dom_statistics(Info).
 %-----------------------------------------------------------------------
 
 nf_obtain_info(Prop,Vars,ASub0,Info) :- knows_of(Prop,eterms), !,
-    asub(ASub0,ASub,_,_),
+    nfplai:asub(ASub0,ASub,_,_),
     eterms_obtain_info(Prop,Vars,ASub,Info).
 nf_obtain_info(Prop,Vars,ASub0,Info) :- knows_of(Prop,shfr), !,
-    asub(ASub0,_,ASub,_),
+    nfplai:asub(ASub0,_,ASub,_),
     shfr_obtain_info(Prop,Vars,ASub,Info).
 nf_obtain_info(Prop,_Vars,ASub0,Info) :- knows_of(Prop,nf), !,
-    asub(ASub0,_,_,ASub),
+    nfplai:asub(ASub0,_,_,ASub),
     nfabs:nf_asub_to_native(ASub,_,Info).
