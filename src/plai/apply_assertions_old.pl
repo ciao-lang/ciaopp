@@ -261,7 +261,7 @@ trusted(SgKey,_Proj,Sg0,_Sv,AbsInt,_Loc,_Prime):-
                ),
            append(IComp,ISuccS,ISucc),
            assertion_body(Sg,Ip,IC,ISucc,[],Cm,Body)
-       ; ( AbsInt = det ; AbsInt = nf ) ->
+       ; ( AbsInt = det ; AbsInt = nf ; AbsInt = nfdet ) ->
            ( assertion_read(Sg,_M,Status,comp,Body0,_Dict,Source,LB,LE) ->
                assertion_body(Sg,Ip,IC,_,Comp,Cm,Body0)
            ; Comp = []
