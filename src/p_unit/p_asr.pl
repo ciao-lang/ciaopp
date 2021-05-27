@@ -166,7 +166,9 @@ importing libraries @lib{ciaopp/p_unit}, @lib{ciaopp/p_unit/itf_db},
     imports/5,
     meta_args/2,
     dyn_decl/4
-   ]).
+]).
+:- import(c_itf, [mexpand_error/0]). % TODO: export this predicate or promote it
+                                     % internally as module_error, at c_itf
 :- use_module(library(compiler/translation),
         [expand_clause/6, del_goal_trans/1, del_clause_trans/1]).
 :- use_module(library(ctrlcclean), [ctrlc_clean/1]).
@@ -381,6 +383,7 @@ cleanup_pasr :-
 
 there_was_error(yes) :- module_error, !.
 there_was_error(yes) :- module_error(_), !.
+there_was_error(yes) :- mexpand_error, !.
 there_was_error(no).
 
 %% ---------------------------------------------------------------------------
