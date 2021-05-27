@@ -234,66 +234,51 @@ trusted(SgKey,_Proj,Sg0,_Sv,AbsInt,_Loc,_Prime):-
      functor(Sg,F,A),
      trusted_assertion_status(Status),
      varset(Sg,Sv),
-     (
-         (AbsInt = res_plai;AbsInt = res_plai_stprf;AbsInt = sized_types),
-          assertion_read(Sg,_,Status,comp,BodyC,_,Source,_,_),
-          assertion_body(Sg,_,IC,_,IComp,_,BodyC),
-          (
-              % ULQ: The following assertion_body in 'then' can fail
-              % for multiple trust assertions (calling patterns) for
-              % same Sg, since the preceding assertion_read for
-              % 'success' doesn't necessarily link to 'comp'
-              % assertion_read before.  Moved assertion_body/7
-              % literal from 'then' part to 'if' to fix the
-              % bug. Better solution is the linking assertions with
-              % same call pattern with unique assertion id.
-              %
-              % assertion_read(Sg,_,Status,success,BodyS,_,_Source,LB,LE)->
-              % assertion_body(Sg,Ip,IC,ISuccS,_,Cm,BodyS); Ip =
-              % [],ISuccS=[],Cm=[]
-              ( assertion_read(Sg,_,Status,success,BodyS,_,_Source,LB,LE),
-                assertion_body(Sg,Ip,IC,ISuccS,_,Cm,BodyS)
-              )
-          ->
-              true
-          ;
-              Ip = [], ISuccS=[], Cm=[]
-          ),
-          append(IComp,ISuccS,ISucc),
-          assertion_body(Sg,Ip,IC,ISucc,[],Cm,Body)
-     ;
-         ( AbsInt = det ; AbsInt = nf ), % IG: choice points ?
-         ( assertion_read(Sg,_M,Status,comp,Body0,_Dict,Source,LB,LE) ->
-             assertion_body(Sg,Ip,IC,_,Comp,Cm,Body0)
-         ; Comp = []
-         ),
-         ( assertion_read(Sg,_M,Status,success,Body1,_Dict,Source,LB,LE) ->
-             assertion_body(Sg,Ip,IC,IS,_,Cm,Body1)
-         ; IS = []
-         ),
-         ( Comp \= [] ; IS \= [] ),
-         append(Comp,IS,CompIS),
-         assertion_body(Sg,Ip,IC,CompIS,Comp,Cm,Body)
-     % deprecated exit assertions
-       % ; assertion_read(Sg,_M,Status,exit,Body,_Dict,Source,LB,LE)
-     ;  % [IG] done in apply_trust_success
-         current_pp_flag(old_trusts, on),
-         (AbsInt \= res_plai, AbsInt \= res_plai_stprf, AbsInt \= sized_types,
-          AbsInt \= det, AbsInt \= nf),
-          assertion_read(Sg,_M,Status,success,Body,_Dict,Source,LB,LE),
-          ( Status == check ->
-            (
-                current_pp_flag(use_check_assrt,on),
-                type_of_goal(imported,Sg)
-            ;
-                current_pp_flag(use_check_assrt,libraries),
-                type_of_goal(imported,Sg), %PP it's only about imported % IG unnecessary choicepoints?
-                get_module_from_sg(Sg,Module),
-                current_itf(defines_module,Module,Base), % IG unnecessary choicepoints?
-                is_library(Base)
-             )
-          ; true
-          )
+     ( use_check_assrt(Status,Sg),
+       ( ( AbsInt = res_plai ; AbsInt = res_plai_stprf ; AbsInt = sized_types ) ->
+           assertion_read(Sg,_,Status,comp,BodyC,_,Source,_,_),
+           assertion_body(Sg,_,IC,_,IComp,_,BodyC),
+           (
+               % ULQ: The following assertion_body in 'then' can fail
+               % for multiple trust assertions (calling patterns) for
+               % same Sg, since the preceding assertion_read for
+               % 'success' doesn't necessarily link to 'comp'
+               % assertion_read before.  Moved assertion_body/7
+               % literal from 'then' part to 'if' to fix the
+               % bug. Better solution is the linking assertions with
+               % same call pattern with unique assertion id.
+               %
+               % assertion_read(Sg,_,Status,success,BodyS,_,_Source,LB,LE)->
+               % assertion_body(Sg,Ip,IC,ISuccS,_,Cm,BodyS); Ip =
+               % [],ISuccS=[],Cm=[]
+               ( assertion_read(Sg,_,Status,success,BodyS,_,_Source,LB,LE),
+                 assertion_body(Sg,Ip,IC,ISuccS,_,Cm,BodyS)
+               )
+               ->
+                   true
+               ;
+                   Ip = [], ISuccS=[], Cm=[]
+               ),
+           append(IComp,ISuccS,ISucc),
+           assertion_body(Sg,Ip,IC,ISucc,[],Cm,Body)
+       ; ( AbsInt = det ; AbsInt = nf ) ->
+           ( assertion_read(Sg,_M,Status,comp,Body0,_Dict,Source,LB,LE) ->
+               assertion_body(Sg,Ip,IC,_,Comp,Cm,Body0)
+           ; Comp = []
+           ),
+           ( assertion_read(Sg,_M,Status,success,Body1,_Dict,Source,LB,LE) ->
+               assertion_body(Sg,Ip,IC,IS,_,Cm,Body1)
+           ; IS = []
+           ),
+           ( Comp \= [] ; IS \= [] ),
+           append(Comp,IS,CompIS),
+           assertion_body(Sg,Ip,IC,CompIS,Comp,Cm,Body)
+           % deprecated exit assertions
+           % ; assertion_read(Sg,_M,Status,exit,Body,_Dict,Source,LB,LE)
+       ;  % [IG] done in apply_trust_success
+           current_pp_flag(old_trusts, on),
+           assertion_read(Sg,_M,Status,success,Body,_Dict,Source,LB,LE)
+       )
      ;  % [IG] done in apply_trust_calls
          current_pp_flag(old_trusts, on),
          get_call_from_call_assrt(Sg,_,Status,InfoCall,Source,LB,LE),
@@ -328,6 +313,25 @@ trusted(SgKey,_Proj,Sg0,_Sv,AbsInt,_Loc,_Prime):-
      fail.
 trusted(SgKey,Proj,Sg,Sv,AbsInt,Loc,Prime):-
     trusted(SgKey,Proj,Sg,Sv,AbsInt,Loc,Prime).
+
+:- pred use_check_assrt(+Status, +Sg)
+   # "If @var{Status} is @tt{checks}, checks the value of
+     @tt{use_check_assrt} flag to decide whether the assertion should
+     be applied depending on the location of goal @var{Sg}. For other
+     @var{Status} values, succeeds.".
+
+use_check_assrt(Status, Sg) :- Status == check, !,
+    ( current_pp_flag(use_check_assrt,on) ->
+        type_of_goal(imported,Sg), !  % TODO: type_of_goal should not leave chpts in this case
+    ; current_pp_flag(use_check_assrt,libraries) ->
+        type_of_goal(imported,Sg), %PP it's only about imported % IG unnecessary choicepoints?
+        !,  % TODO: type_of_goal should not leave chpts in this case
+        get_module_from_sg(Sg,Module),
+        current_itf(defines_module,Module,Base), % IG unnecessary choicepoints?
+        !,  % TODO: current_itf should not leave chpts in this case
+        is_library(Base)
+    ).
+use_check_assrt(_, _).
 
 look_trust(AbsInt,SgKey,Sg,Sv,Proj,Loc,Prime):-
     do_trust(AbsInt,lt,SgKey,Sg,Sv,Proj,Loc,Prime), !.
