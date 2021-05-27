@@ -10,7 +10,9 @@
     loaded_lib_sources/0,
     cleanup_lib_sources/0,
     % regtypes
-    preprocessing_opts/1
+    preprocessing_opts/1,
+    % for intermod
+    there_was_error/1
 ], [
     assertions,
     basicmodes,

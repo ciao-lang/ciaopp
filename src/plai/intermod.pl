@@ -167,7 +167,7 @@ manual_analyze(AbsInts,FileName,OpenMode):-
 
 valid_mod_analysis(AbsInt) :- var(AbsInt), !,
     throw(error(instantiation_error, valid_mod_analysis/1-1)).
-valid_mod_analysis([]).
+valid_mod_analysis([]) :- !.
 valid_mod_analysis([A|As]):- !,
     valid_mod_analysis(A),
     valid_mod_analysis(As).
@@ -176,6 +176,11 @@ valid_mod_analysis(AbsInt):-
 valid_mod_analysis(AbsInt):-
     message(error0, ['{Not a valid modular analysis: ',~~(AbsInt),'}']),
     fail.
+
+valid_mod_analyses_([]).
+valid_mod_analyses_([A|As]) :-
+    valid_mod_analysis(A),
+    valid_mod_analyses_(As).
 
 :- multifile aidomain/1.  % This predicate is defined in domains.pl.
 
@@ -218,14 +223,15 @@ modular_analyze(AbsInt,TopLevel,Info):-
     modular_analyze([AbsInt],TopLevel,Info).
 modular_analyze(AbsInts,TopLevel,Info):-
     pp_statistics(runtime,[T1,_]),  %% total ellapsed time.
-    valid_mod_analysis(AbsInts), !,
+    valid_mod_analysis(AbsInts),
     pplog(modular, ['{Analyzing with modular_analyze: ',~~(TopLevel)]),
     reset_mem_usage,
     push_prolog_flag(gc,on), % TODO: why?
     set_main_module(TopLevel),
     push_pp_flag(intermod,auto),
     pp_statistics(runtime,[T3,_]),   %% setup time.
-    compute_punit_modules(TopLevel,ModList),
+    compute_punit_modules(TopLevel,ModList,Error),
+    Error = no, !,
     current_pp_flag(global_scheduling,Scheduling),
     setup_scheduling(Scheduling,AbsInts,TopLevel,ModList),
     pp_statistics(runtime,[T4,_]),  %% setup time.
@@ -247,8 +253,8 @@ modular_analyze(AbsInts,TopLevel,Info):-
     add_iterations_info(Info0,Info),
     set_modules_analyzed(ModList),
     pop_pp_flag(intermod),
-    pplog(modular, ['}']),
-    !.
+    pplog(modular, ['}']), !.
+modular_analyze(_,_,[error]).
 
 add_entries_to_registry_all([]).
 add_entries_to_registry_all([AbsInt|AbsInts]) :-
@@ -465,14 +471,15 @@ monolithic_analyze(AbsInt,TopLevel,Info):-
     monolithic_analyze([AbsInt],TopLevel,Info).
 monolithic_analyze(AbsInts,TopLevel,Info):-
     pp_statistics(runtime,[T1,_]),  %% total ellapsed time.
-    valid_mod_analysis(AbsInts), !,
+    valid_mod_analysis(AbsInts),
     cleanup_intermod,
     pplog(modular, ['{Analyzing with monolithic_analyze: ',~~(TopLevel)]),
     reset_mem_usage,
     push_prolog_flag(gc,on), % TODO: why?
     add_main_module(TopLevel),
     push_pp_flag(intermod,auto),
-    compute_punit_modules(TopLevel,_),
+    compute_punit_modules(TopLevel,_,Error),
+    Error = no, !,
     get_punit_modules(ModList), % TODO: count execution time
     ( main_module(MainBase,_) -> true ; fail),
     ( select(MainBase,ModList,M0) -> true ; fail ),
@@ -512,6 +519,7 @@ monolithic_analyze(AbsInts,TopLevel,Info):-
     pop_pp_flag(intermod),
     set_modules_analyzed(ModList),
     pplog(modular, ['}']).
+monolithic_analyze(_,_,[error]).
 
 debug_inc_dump_dir(CurrMod) :-
     dump_dir(DumpDir), !,
@@ -538,14 +546,15 @@ debug_inc_dump_dir(_). % if the dump directory is not set, do not dump
    results of @pred{monolithic_analyze/2}.".
 auto_check(AbsInt,TopLevel):-
     atom(AbsInt),  % Only one analysis domain is considered.
-    valid_mod_analysis(AbsInt), !,
+    valid_mod_analysis(AbsInt),
     cleanup_intermod,
     pplog(modular, ['{Generating check info for program unit: ',~~(TopLevel)]),
     set_main_module(TopLevel),
     push_pp_flag(intermod,auto),
     push_pp_flag(entry_policy,force),
     push_pp_flag(dump_pp,off),
-    compute_punit_modules(TopLevel,_),
+    compute_punit_modules(TopLevel,_,Error),
+    Error = no, !,
     get_punit_modules(ModList),
     retractall_fact(complete_prev(_,_,_,_,_,_,_)),
     push_pp_flag(reuse_fixp_id,on),
@@ -572,6 +581,7 @@ auto_check(AbsInt,TopLevel):-
     pop_pp_flag(entry_policy),
     pop_pp_flag(intermod),
     pplog(modular, ['}']).
+auto_check(_,[error]).
 
 % checking_fixpoint(check_di).
 
@@ -845,7 +855,7 @@ inductive_ctcheck(AbsInt,TopLevel):-
 inductive_ctcheck(AbsInt,TopLevel,[(time,Time),Info],ERR):-
 %       valid_mod_analysis_all(AbsInt), !,
     pplog(modular, ['{Inductive assertions checking in : ',~~(TopLevel)]),
-    compute_punit_modules(TopLevel,_),
+    compute_punit_modules(TopLevel,_,_),
     get_punit_modules(ModList),
     push_pp_flag(intermod, off),
     pp_statistics(runtime,[T1,_]),

@@ -1,4 +1,4 @@
-:- module(ciaoppcl, [main/1], [assertions, datafacts]).
+:- module(ciaoppcl, [main/1], [assertions]).
 
 :- doc(title,"The CiaoPP command-line interface").
 :- doc(author, "The Ciao Development Team").

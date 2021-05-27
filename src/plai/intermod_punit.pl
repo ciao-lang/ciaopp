@@ -1,5 +1,5 @@
 :- module(_,[
-    compute_punit_modules/2,
+    compute_punit_modules/3,
     get_punit_modules/1,
     get_punit_included_files/1,
     get_all_module_cycles/2,
@@ -45,6 +45,7 @@ whether to process the file @bf{again}.
 :- use_module(ciaopp(plai/intermod_db)).
 :- use_module(ciaopp(plai/tarjan), [step2/2]).
 :- use_module(ciaopp(p_unit/itf_db), [current_itf/3]).
+:- use_module(ciaopp(p_unit/p_asr), [there_was_error/1]).
 :- use_module(ciaopp(p_unit/aux_filenames), [
     get_module_filename/3, just_module_name/2, is_library/1, get_loaded_module_name/3]).
 :- use_module(ciaopp(plai/intermod_ops),
@@ -224,7 +225,7 @@ get_cycles([CssId|CssIds],[Cycle|SortedCycles]) :-
 
 %% ********************************************************************
 % TODO: review this doc
-:- pred compute_punit_modules(+TopLevel,-ModList)
+:- pred compute_punit_modules(+TopLevel,-ModList,-Error)
    + (not_fails, is_det)
    # "Obtains the list of modules to analyze. This list is formed by the modules
    which have their .reg file outdated, or if the module is not completely
@@ -239,21 +240,26 @@ get_cycles([CssId|CssIds],[Cycle|SortedCycles]) :-
    graph, and @var{Force} marks those modules which must be completely
    reanalyzed (only useful for the parents of the modules with no reg file).
    ".
-compute_punit_modules(TopLevelFile,ModList) :-
+compute_punit_modules(TopLevelFile,ModList,Error) :-
     retractall_fact(module_to_analyze(_,_)),
     retractall_fact(module_to_analyze_parents(_)),
     absolute_file_name(TopLevelFile,'_opt','.pl','.',AbsFile,AbsBase,_),
     %
     retractall_fact(delay_patch_registry(_)),
     retractall_fact(patched_registry(_)),
-    compute_intermodule_graph(AbsFile),
-    delayed_patch_registry,
-    compute_intermodule_graph_depth(AbsBase),
-    include_parents(AbsBase),
-    ( setof((M,D,F), module_to_analyze_depth(M,D,F), ModList)
-    ; ModList = []),
-    findall(M, intermodular_graph_node(M), AllModList),
-    set_punit_modules(AllModList),
+    compute_intermodule_graph(AbsFile,Error),
+    ( Error = no ->
+        delayed_patch_registry,
+        compute_intermodule_graph_depth(AbsBase),
+        include_parents(AbsBase),
+        ( setof((M,D,F), module_to_analyze_depth(M,D,F), ModList)
+        ; ModList = []),
+        findall(M, intermodular_graph_node(M), AllModList),
+        set_punit_modules(AllModList)
+    ;
+        retractall_fact(delay_patch_registry(_)),
+        retractall_fact(patched_registry(_))
+    ),
     retractall_fact(module_to_analyze(_,_)),
     retractall_fact(module_to_analyze_parents(_)).
 
@@ -279,14 +285,14 @@ module_to_analyze_depth(M,D,F) :-
 :- data module_to_analyze/2.
 :- data module_to_analyze_parents/1.
 
-:- pred compute_intermodule_graph(+AbsFile) + (not_fails, is_det)
+:- pred compute_intermodule_graph(+AbsFile,-Err) + (not_fails, is_det)
    # "Obtains in @pred{intermodule_graph/2} the dependencies among modules of
    the program unit given by the module in file @var{AbsFile} (depending on
    punit_boundary flag, library modules are included or not in the program
    unit). This predicate fills datas @pred{src_changed/1} and
    @pred{src_not_changed/1}, detecting if the analysis result is outdated for
    each module in the intermodular graph.".
-compute_intermodule_graph(AbsFile) :-
+compute_intermodule_graph(AbsFile,E) :-
     path_splitext(AbsFile, AbsBase, _),
     retractall_fact(intermodular_graph_edge(_,_)),
     retractall_fact(intermodular_graph_node(_)),
@@ -300,7 +306,8 @@ compute_intermodule_graph(AbsFile) :-
                            check_stop_one_module(AbsBase),
                            c_itf:false,
                            redo_unchanged_module)
-    ),fail). % TODO: fail or abort?
+    ),fail), % TODO: fail or abort?
+    ( there_was_error(_), E = no -> true ; E = error).
 
 redo_unchanged_module(Base) :-
     % we are here because the itf was up to date and

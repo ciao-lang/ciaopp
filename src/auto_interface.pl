@@ -24,7 +24,7 @@
 :- doc(title, "The CiaoPP high-level interface").
 :- doc(author, "CiaoPP development team").
 
-:- use_module(ciaopp(frontend_driver), [module/1, output/0, output/1]).
+:- use_module(ciaopp(frontend_driver), [module/2, output/0, output/1]).
 :- use_module(ciaopp(analyze_driver), [analyze/1, acheck_summary/1, acheck/0]).
 :- use_module(ciaopp(transform_driver), [transform/1]).
 :- use_module(ciaopp(ciaopp_log), [pplog/2]).
@@ -36,7 +36,7 @@
 
 %% For modular checking
 :- use_module(ciaopp(plai/intermod),
-    [inductive_ctcheck_summary/3, intermod_analyze/2, intermod_ctcheck/2,
+    [inductive_ctcheck_summary/3, intermod_analyze/3, intermod_ctcheck/2,
      valid_mod_analysis/1]).
 
 :- use_module(ciaopp(infer/infer_db),        [domain/1]).
@@ -1202,7 +1202,8 @@ auto_analyze(File, OFile) :-
     with_menu_flags(ana, auto_analyze_(File, OFile)).
 
 auto_analyze_(File, OFile) :-
-    module(File),
+    module(File,Info),
+    fail_if_module_error(Info), !,
     get_menu_flag(ana, inter_ana, AnaKinds),
     anakinds_to_absints(AnaKinds, ana, AbsInts),
     analyze(AbsInts),
@@ -1212,6 +1213,14 @@ auto_analyze_(File, OFile) :-
     %
     do_output(OFile, ana),
     set_last_file(File).
+auto_analyze_(_, _) :-
+    error_message("Analysis aborted.").
+
+fail_if_module_error(Info) :-
+    ( member(error,Info) ->
+        error_message("Compilation errors detected."), fail
+    ; true
+    ).
 
 :- pred auto_check_assert(F)
    # "Check the assertions in file @var{F}, with the current options, giving
@@ -1240,16 +1249,22 @@ auto_check_assert_(File, OFile) :-
     ),
     ( current_pp_flag(interleave_an_check,on), 
       \+ current_pp_flag(intermod, off) -> true % TODO: IG: probably this is not working
-    ; module(TopLevel)
-    ),
-    % Decide domains for the given program (if CTCHECKS is auto) or
-    % just read from menu.
-    get_menu_flag(ana, inter_ana, AnaKinds),
-    ( CTCHECKS == auto -> decide_domains(AnaKinds) ; true ),
-    anakinds_to_absints(AnaKinds, check, AbsInts),
-    % pplog(auto_interface, ['{Analyses selected to check assertions: ',~~(AbsInts), '}']),
-    % Perform analyses
-    exec_analyses_and_acheck(AbsInts, TopLevel, File, OFile).
+      ;
+          module(TopLevel,Info),
+          ( fail_if_module_error(Info) -> true ; Error = yes )
+      ),
+    ( Error == yes ->
+        error_message("Analysis and checking aborted.")
+    ;
+        % Decide domains for the given program (if CTCHECKS is auto) or
+        % just read from menu.
+        get_menu_flag(ana, inter_ana, AnaKinds),
+        ( CTCHECKS == auto -> decide_domains(AnaKinds) ; true ),
+        anakinds_to_absints(AnaKinds, check, AbsInts),
+        % pplog(auto_interface, ['{Analyses selected to check assertions: ',~~(AbsInts), '}']),
+        % Perform analyses
+        exec_analyses_and_acheck(AbsInts, TopLevel, File, OFile)
+    ).
 
 exec_analyses_and_acheck(AbsInts, TopLevel, File, OFile) :-
     get_menu_flag(check, gen_certificate, GENCERT),
@@ -1264,17 +1279,26 @@ exec_analyses_and_acheck(AbsInts, TopLevel, File, OFile) :-
         analyze(AbsInts),
         acheck_summary(AnyError) % TODO: TopLevel vs File?
     ; ( current_pp_flag(interleave_an_check,on) -> % TODO: IG: probably this is not working
-          inductive_ctcheck_summary(AbsInts,TopLevel,AnyError)
-      ; intermod_analyze(AbsInts,TopLevel),
-        intermod_ctcheck(AbsInts,[File]),
-        % errors not propagated to caller (E.g., for command line, etc.)
-        % see decide_summary/1 in analyze_driver
-        AnyError = []
-      )
-    ),
-    gencert_ctchecks(AnyError, File, GENCERT),
-    do_output(OFile, check),
-    set_last_file(File).
+        inductive_ctcheck_summary(AbsInts,TopLevel,AnyError)
+    ;
+        intermod_analyze(AbsInts,TopLevel,Info),
+        ( member(error,Info) ->
+            error_message("Compilation error. Checking aborted."),
+            AnyError = [error]
+        ;
+            intermod_ctcheck(AbsInts,[File]),
+            % errors not propagated to caller (E.g., for command line, etc.)
+            % see decide_summary/1 in analyze_driver
+            AnyError = []
+        ),
+        ( member(error,AnyError) ->
+            true
+        ;
+            gencert_ctchecks(AnyError, File, GENCERT),
+            do_output(OFile, check),
+            set_last_file(File)
+        )
+    )).
 
 analyze_each([]).
 analyze_each([D|Ds]) :-
@@ -1490,7 +1514,8 @@ preferred_ana(ana_det,  det).
 % Auto check certificate
 
 auto_check_certificate(Program) :-
-    module(Program),
+    module(Program,Info),
+    fail_if_module_error(Info), !,
     atom_concat(Program,'.cert',Cert_Name),
     restore(Cert_Name),
     domain(Domain),
@@ -1501,6 +1526,8 @@ auto_check_certificate(Program) :-
           certif_error(X),
           error_message("Certificate and program do not match")),
     ( var(X)-> acheck ; abort).
+auto_check_certificate(_Program) :-
+    error_message("Aborted certificate checking.").
 
 %% *** This is cheating a little bit... GP
 checker(Fixpoint):-
@@ -1522,11 +1549,14 @@ auto_optimize(File) :-
 :- pred auto_optimize(F, OFile)
    # "Same as @pred{auto_optimize/1} but the output file will be @var{OFile}.".
 auto_optimize(File, OFile) :-
-    module(File),
-    get_menu_flag(opt, inter_optimize, P),
-    with_pp_flags([dump_ai = off], exec_optimize_and_output(P, OFile)),
-    set_last_file(File),
-    !.
+    module(File,Info),
+    ( fail_if_module_error(Info) ->
+        get_menu_flag(opt, inter_optimize, P),
+        with_pp_flags([dump_ai = off], exec_optimize_and_output(P, OFile)),
+        set_last_file(File)
+    ;
+        error_message("Optimization aborted.")
+    ), !.
 auto_optimize(File, _) :-
     error_message("INTERNAL ERROR: Unexpected error when executing auto_optimize(~w)", [File]).
 
