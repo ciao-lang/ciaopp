@@ -88,34 +88,43 @@ sharing+freeness info; @var{Nonfailure}, nonfailure info; and
 @var{Determinism}, determinism info.
 
 The abstract domain lattice for nonfailure+determinism, covering and
-mutual exclusion are:
+mutual exclusion are (property - interval describing number of solutions):
 
 @begin{verbatim}
-          nondet
-          /    \\
-         /      \\
-     semidet   multi
-          \\   /
-           \\ /
-           det
-            |
-            |
-          fails
+          nondet [0,inf]
+          /        \\
+         /          \\
+     semidet [0,1]  multi [1,inf]
+        /       \\     /
+       /         \\   /     
+    fails [0,0]   det [1,1]  
+            \\      /
+             \\    /
+          bottom (non reachable)
 @end{verbatim}
 
-These elements come from the combination of those in nf and det
-domains as follows:
+@begin{itemize}
+@item @tt{semidet} = 0 or 1 solutions
+@item @tt{multi} = 1 or more solutions
+@item @tt{det} = 1 solution
+@item @tt{fails} = 0 solutions
+@end{itemize}
 
-@begin{verbatim}
-----------------+---------------------------------
- nf/det         | is_det   possibly_nondet/nondet
-----------------+---------------------------------
- $bottom/fails  | fails    fails
- not_fails      | det      multi
- possibly_fails | semidet  nondet
-----------------+---------------------------------
-@end{verbatim}
 ").
+
+%% The following table explains the properties in this domain w.r.t. the
+%% properties used initially in CiaoPP in nf and det domains:
+%% 
+%% @begin{verbatim}
+%% ----------------+---------------------------------
+%%  nf/det         | is_det   possibly_nondet/nondet
+%%                 | (0 or 1) (top/2 or more)
+%% ----------------+---------------------------------
+%%  $bottom/fails  | fails    fails
+%%  not_fails      | det      multi
+%%  possibly_fails | semidet  nondet
+%% ----------------+---------------------------------
+%% @end{verbatim}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
