@@ -267,7 +267,12 @@ asub_to_props(nfg,_Goal,nf(_Call,_Succ,Fail,Cover),Info):- !,
     Info=[Fail,Cover].
 asub_to_props(detg,_Goal,nf(_Call,_Succ,Det,Mut),Info):- !,
     Info=[Det,Mut].
-asub_to_props(nf,_Goal,nf(_,_,nf(_,_,Cover,Fail)),[Fail,Cover]):-!.
+asub_to_props(nf,_Goal,nf(_,_,nf(_,_,Cover,Fail0)),[Fail,Cover]):-!,
+    ( Fail0 = '$bottom' ->
+        Fail = fails
+    ; Fail0 = Fail
+    ).
+asub_to_props(nf,_Goal,'$bottom',[fails,not_covered]):-!.
 asub_to_props(det,_Goal,det(_,_,det(_,Mut,Det)),[Det,Mut]).
 
 :- if(defined(has_ciaopp_cost)).

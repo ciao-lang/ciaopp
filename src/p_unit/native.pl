@@ -151,6 +151,7 @@ native_property('native_props:covered'(G),covered(G)).
 native_property('native_props:fails'(G),fails(G)).
 native_property('native_props:possibly_fails'(G),possibly_fails(G)).
 native_property('native_props:is_det'(G),is_det(G)).
+native_property('native_props:possibly_nondet'(G),possibly_nondet(G)).
 native_property('native_props:mut_exclusive'(G),mut_exclusive(G)).
 native_property('native_props:non_det'(G),non_det(G)).
 native_property('native_props:not_covered'(G),not_covered(G)).

@@ -203,7 +203,12 @@ nf_widencall(ASub0,ASub1,ASub):-
 % nf_compute_lub(ListASub,Lub)                                           %
 %------------------------------------------------------------------------%
 
-nf_compute_lub(ListASub,Lub):-
+nf_compute_lub(ListASub0,Lub):-
+    filter_non_bottom(ListASub0,ListASub),
+    nf_compute_lub_(ListASub,Lub).
+
+nf_compute_lub_([],'$bottom'):- !.
+nf_compute_lub_(ListASub,Lub):-
     split(ListASub,LTypes,LModes,LNonF),
     shfr_compute_lub(LModes,LubModes),
     eterms_compute_lub(LTypes,LubTypes),
@@ -232,6 +237,12 @@ split_back([ASub|ListASub],[ATypes|LTypes],[AModes|LModes],[ASubNonF|LNonF]):-
       nfplai:asub(ASubNonF,_ATypes,_AModes,ANonF)
     ),
     split_back(ListASub,LTypes,LModes,LNonF).
+
+filter_non_bottom([],[]).
+filter_non_bottom(['$bottom'|L0],L1) :- !,
+    filter_non_bottom(L0,L1).
+filter_non_bottom([ASub|L0],[ASub|L1]) :-
+    filter_non_bottom(L0,L1).
 
 %------------------------------------------------------------------------%
 % nf_compute_clauses_lub(+,-)                                            %

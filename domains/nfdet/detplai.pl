@@ -198,7 +198,12 @@ det_widencall(ASub0,ASub1,ASub):-
 % det_compute_lub(ListASub,Lub)                                           %
 %------------------------------------------------------------------------%
 
-det_compute_lub(ListASub,Lub):-
+det_compute_lub(ListASub0,Lub):-
+    filter_non_bottom(ListASub0,ListASub),
+    det_compute_lub_(ListASub,Lub).
+
+det_compute_lub_([],'$bottom'):- !.
+det_compute_lub_(ListASub,Lub):-
     split(ListASub,LTypes,LModes,LDet),
     shfr_compute_lub(LModes,LubModes),
     eterms_compute_lub(LTypes,LubTypes),
@@ -232,6 +237,12 @@ split_back([ASub|ListASub],[ATypes|LTypes],[AModes|LModes],[ASubDet|LDet]):-
       detplai:asub(ASubDet,_ATypes,_AModes,ADet)
     ),
     split_back(ListASub,LTypes,LModes,LDet).
+
+filter_non_bottom([],[]).
+filter_non_bottom(['$bottom'|L0],L1) :- !,
+    filter_non_bottom(L0,L1).
+filter_non_bottom([ASub|L0],[ASub|L1]) :-
+    filter_non_bottom(L0,L1).
 
 %------------------------------------------------------------------------%
 % det_compute_clauses_lub(+,-)                                           %

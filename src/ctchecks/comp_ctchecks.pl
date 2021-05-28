@@ -95,6 +95,7 @@ select_info(steps_lb,Cost,_Nf,_Det,Cost).
 select_info(steps_o,Cost,_Nf,_Det,Cost).
 select_info(resources,Cost,_Nf,_Det,Cost).
 select_info(nfg,_Cost,Nf,_Det,Nf).
+select_info(nf,_Cost,Nf,_Det,Nf).
 select_info(detg,_Cost,_Nf,Det,Det).
 select_info(det,_Cost,_Nf,Det,Det).
 select_info(res_plai,Cost,_,_,Cost).
@@ -171,8 +172,8 @@ get_nf_info(Goal,Call,Nf):-
     get_info(nonfail,pred,Call,Goal,Nf), !.
 get_nf_info(_Goal,_Call,[]).
 
+%% get_det_info(Goal,Call,Det):-
+    %% get_info(detg,pred,Call,Goal,Det), !.
 get_det_info(Goal,Call,Det):-
-    get_info(detg,pred,Call,Goal,Det), !.
-get_det_info(Goal,Call,Det):-
-    get_info(is_det,pred,Call,Goal,(_,Det)), !.
+    get_info(determinism,pred,Call,Goal,Det), !.
 get_det_info(_Goal,_Call,[]).

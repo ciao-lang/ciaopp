@@ -90,6 +90,10 @@ get_info(nonfail,Pred,Key,Goal,Info):-
     get_info(nfg,Pred,Key,Goal,Info),!.
 get_info(nonfail,Pred,Key,Goal,Info):-   %%% JNL 
     get_info(nf,Pred,Key,Goal,Info).
+get_info(determinism,Pred,Key,Goal,Info):-   %%% JNL
+    get_info(detg,Pred,Key,Goal,Info),!.
+get_info(determinism,Pred,Key,Goal,Info):-
+    get_info(det,Pred,Key,Goal,Info).
 get_info(nf,pred,_Key,Goal,Info):-       %%% JNL 
     current_fact(complete(_,nf,Goal0,_,LPrime,_,_)),
     compute_lub(nf,LPrime,Abs),
@@ -101,6 +105,17 @@ get_info(nf,point,Key,Goal,Info):- !,
         Info = [fails(Goal)]
     ;
         asub_to_native(nf,Asub,Goal,yes,_A,Info) ).
+get_info(det,pred,_Key,Goal,Info):-
+    current_fact(complete(_,det,Goal0,_,LPrime,_,_)),
+    compute_lub(det,LPrime,Abs),
+    variant(Goal,Goal0),
+    asub_to_props(det,Goal,Abs,Info).
+get_info(det,point,Key,Goal,Info):-
+    get_memo_lub(Key,_Vars,det,yes,Asub),
+    ( asub_to_native(nf,Asub,Goal,yes,_A,Info) ->
+        true
+    ; Info = []
+    ).
 get_info(steps_ualb,Pred,Key,Goal,(Sizes,Steps)):- !,
     ( get_info(steps_lb,Pred,Key,Goal,(SizesLb,StepsLb)) ->
         true
