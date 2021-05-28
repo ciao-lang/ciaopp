@@ -141,6 +141,7 @@ doc_internals :=
         'intermod_success'
       ],
       'preprocess_flags',
+      'Debug_plai',
       'incanal'-[
         'incanal_driver',
         'incanal_deletion',
