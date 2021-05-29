@@ -16,7 +16,7 @@
 :- use_module(domain(nfdet/nfplai), [asub/4]).
 :- use_module(domain(nfdet/nfabs), [nfabs_asub/1, asub/5]).
 :- use_module(domain(nfdet/detplai), [asub/4]).
-:- use_module(domain(nfdet/detabs), [detabs_asub/1, asub/4]).
+:- use_module(domain(nfdet/detabs), [detabs_asub/1, asub/5]).
 
 % TODO: Split. Move "internal" common nfdet operations to a new
 % nfdetabs module.
@@ -116,7 +116,7 @@ get_tests_from_asub(ASub,Select,Tests) :-
     ( nfplai:asub(ASub,_,_,NF) ->
         nfabs:asub(NF,T,_,_,_)
     ; detplai:asub(ASub,_,_,Det) ->
-        detabs:asub(Det,T,_,_)
+        detabs:asub(Det,T,_,_,_)
     ; nfdet:asub(ASub,_,_,NF,_),
       nfabs:asub(NF,T,_,_,_)
     ),
@@ -144,7 +144,7 @@ asub_can_fail(_,true).
    : ( detabs_asub(ASub), var(IsDet) )
    => ( detabs_asub(ASub), bool_t(IsDet) ).
 
-asub_is_det(ASub,true) :- detabs:asub(ASub,_,_,is_det), !.
+asub_is_det(ASub,true) :- detabs:asub(ASub,_,_,_,is_det), !.
 asub_is_det(_,false).
 
 :- export(split_self/2).

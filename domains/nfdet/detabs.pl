@@ -1,5 +1,5 @@
 :- module(detabs, [
-    det_call_to_entry/9,
+    det_call_to_entry/10,
     det_exit_to_prime/7,
     det_project/5,
     det_extend/5,
@@ -18,8 +18,7 @@
     det_unknown_call/4,
     det_unknown_entry/3,
     det_empty_entry/3,
-    detabs_dom_statistics/1,
-    det_obtain_info/4
+    detabs_dom_statistics/1
 ], [assertions,regtypes,basicmodes,hiord]).
 
 :- use_module(domain(nfdet/nfsets), [create_minset_and_project/4]).
@@ -36,6 +35,34 @@
 :- use_module(library(hiordlib), [foldr/4]).
 :- use_module(library(sets), [merge/3]).
 
+:- doc(title,"Determinism Abstract Domain").
+:- doc(module,"
+
+This module implements the abstract operations of a determinism domain
+for the PLAI framework of abstract interpretation. Abstract
+substitutions for this domain are a pair of (MutExclusive,Det)
+elements, where MutExclusive is @tt{possibly_not_mut_exclusive},
+@tt{not_mut_exclusive} or @tt{mut_exclusive}; and Det is
+@tt{possibly_nondet}, @tt{non_det} or @tt{det}. Note that the lattice
+for mutual exclusion is analogous to the lattice of determinism, but
+applied to guard tests.
+
+The abstract domain lattices for determinism and mutual exclusion are:
+
+@begin{verbatim}
+
+   possibly_not_mut_exclusive       possibly_nondet
+            /     \\                     /   \\
+           /       \\                   /     \\
+not_mut_exclusive  mut_exclusive   non_det   det
+           \\       /                   \\     /
+            \\     /                     \\   /
+            $bottom                    $bottom
+
+@end{verbatim}
+
+").
+
 %------------------------------------------------------------------------%
 
 :- doc(bug,"Think on an adequate treatment for negation.").
@@ -50,9 +77,9 @@
 detabs_asub(ASub) :-
     term(ASub).
 
-:- export(asub/4).
+:- export(asub/5).
 
-asub(det(Tests,MutExclusive,Det),Tests,MutExclusive,Det).
+asub(det(Tests,Unfold_Tests,MutExclusive,Det),Tests,Unfold_Tests,MutExclusive,Det).
 
 %------------------------------------------------------------------------%
 % det_call_to_entry(+,+,+,+,+,+,+,-,-)                                   %
@@ -61,8 +88,12 @@ asub(det(Tests,MutExclusive,Det),Tests,MutExclusive,Det).
 % Entering a clause: initialize an asub to start gathering the tests of
 % this clause 
 
-det_call_to_entry(_Sv,Sg,_Hv,_Head,_K,_Fv,_Proj,Entry,_Extra):-
-    det_empty_entry(Sg,_Vars,Entry). % TODO: unbound _Vars! use []?
+det_call_to_entry(_Sv,Sg,Hv,Head,_K,_Fv,_Proj,InVars,Entry,_Extra):-
+    det_empty_entry(Sg,Hv,Entry0),
+    asub(Entry0,_Tests,Unfold,MutEx,Det),
+    asub(Entry,Tests,Unfold,MutEx,Det),
+    peel(Sg,Head,Bindings,[]),
+    tests(Tests,InVars,Bindings,[],[]).
 
 %------------------------------------------------------------------------%
 % det_exit_to_prime(+,+,+,+,+,-,-)                                       %
@@ -72,7 +103,7 @@ det_call_to_entry(_Sv,Sg,_Hv,_Head,_K,_Fv,_Proj,Entry,_Extra):-
 % onto the variables of the goal
 
 det_exit_to_prime(Sg,_Hv,Head,_Sv,Exit,GVars,Prime):-
-    asub(Exit,Tests,MutExclusive,Det),
+    asub(Exit,Tests,Unfold,MutExclusive,Det),
     tests(Tests,_InVars,Unif,Arith,Meta),
 %%
 %%      create_unif_tests(Sg,Type,SgInVars,SgEqs),
@@ -87,7 +118,7 @@ det_exit_to_prime(Sg,_Hv,Head,_Sv,Exit,GVars,Prime):-
 %%
     peel(Sg,Head,Bindings,Unif), !,
     tests(PrimeTests,GVars,Bindings,Arith,Meta),
-    asub(Prime,PrimeTests,MutExclusive,Det).
+    asub(Prime,PrimeTests,Unfold,MutExclusive,Det).
 det_exit_to_prime(_Sg,_Hv,_Head,_Sv,_Exit,_Extra,'$bottom').
 
 %% new_tests([],[],[]).
@@ -101,9 +132,9 @@ det_exit_to_prime(_Sg,_Hv,_Head,_Sv,_Exit,_Extra,'$bottom').
 % To project on Vars, leave only tests for Vars
 
 det_project(_Sg,Vars,_HvFv_u,ASub,Proj):-
-    asub(ASub,Tests0,MutExclusive,Det),
+    asub(ASub,Tests0,Unfold,MutExclusive,Det),
     select_tests(Tests0,Vars,TestsProj),
-    asub(Proj,TestsProj,MutExclusive,Det).
+    asub(Proj,TestsProj,Unfold,MutExclusive,Det).
 
 select_tests(Tests,_Vars,Tests).
 
@@ -115,21 +146,74 @@ select_tests(Tests,_Vars,Tests).
 % tests in Prime
 
 det_extend(_Sg,Prime,_Sv,Call,Succ):-
-    asub(Prime,Tests0,MutExclusive0,Det0),
-    asub(Call,Tests1,MutExclusive1,Det1),
-    merge_tests(Tests0,Tests1,Tests),
-    glb_mut_exclusion(MutExclusive0,MutExclusive1,MutExclusive),
-    glb_determinism_1(Det0,Det1,Det),
-    asub(Succ,Tests,MutExclusive,Det).
+    asub(Prime,Tests0,Unfold0,MutExclusive0,Det0),
+    asub(Call,Tests1,Unfold1,_MutExclusive1,Det1),
+    ( Unfold0 == unfold, Tests0 = t(_,_,_,_) ->
+        unfold_tests(Tests0,Tests1,Tests),
+        extend_unfold_tests(Unfold0,Unfold1,Unfold)
+    ; Unfold = not_unfold,
+      Tests = Tests1
+    ),
+    extend_determinism(Det0,Det1,Det),
+    asub(Succ,Tests,Unfold,MutExclusive0,Det).
 
-% b) simple tests, do not collect:
-merge_tests(_Tests0,Tests,Tests).
-% c) collect tests from the body goals
-%% merge_tests(Tests0,Tests1,Tests):-
-%%      append(Tests0,Tests1,Tests).
+%% unfold_tests(Tests0,Tests1,Tests) :-
+    % TODO: enable this version when test unfolding in directly
+    % recursive predicates is solved.
+    %% tests(Tests0,InVars0,Unif0,Arith0,Meta0),
+    %% tests(Tests1,InVars1,Unif1,Arith1,Meta1),
+    %% append(InVars0,InVars1,InVars),
+    %% append(Unif0,Unif1,Unif),
+    %% append(Arith0,Arith1,Arith),
+    %% append(Meta0,Meta1,Meta),
+    %% tests(Tests,InVars,Unif,Arith,Meta).
+% (dummy version)
+unfold_tests(_Tests0,Tests,Tests).
 
-glb_determinism_1(is_det,is_det,is_det):- !.
-glb_determinism_1(_,_,possibly_nondet).
+extend_mut_exclusion('$bottom',_,'$bottom'):-!.
+extend_mut_exclusion(_,'$bottom','$bottom'):-!.
+extend_mut_exclusion(not_mut_exclusive,_,not_mut_exclusive):-!.
+extend_mut_exclusion(_,not_mut_exclusive,not_mut_exclusive):-!.
+extend_mut_exclusion(possibly_not_mut_exclusive,_,possibly_not_mut_exclusive):-!.
+extend_mut_exclusion(_,possibly_not_mut_exclusive,possibly_not_mut_exclusive):-!.
+extend_mut_exclusion(_,_,mut_exclusive).
+
+extend_determinism('$bottom',_,'$bottom'):-!.
+extend_determinism(_,'$bottom','$bottom'):-!.
+extend_determinism(non_det,_,non_det):-!.
+extend_determinism(_,non_det,non_det):-!.
+extend_determinism(possibly_nondet,_,possibly_nondet):-!.
+extend_determinism(_,possibly_nondet,possibly_nondet):-!.
+extend_determinism(_,_,is_det).
+
+extend_unfold_tests(not_unfold, _, not_unfold):-!.
+extend_unfold_tests(_, not_unfold, not_unfold):-!.
+extend_unfold_tests(_,_, unfold).
+
+%------------------------------------------------------------------------%
+% det_widen(+,+,-)                                                       %
+% det_widen(Prime0,Prime1,NewPrime)                                      %
+%------------------------------------------------------------------------%
+
+det_widen(Prime0,Prime1,NewPrime) :-
+    asub(ASub,[],unfold,mut_exclusive,det),
+    foldr(widen,[Prime0,Prime1],ASub,NewPrime).
+
+widen('$bottom',ASub0,ASub0):- !.
+widen(ASub0,'$bottom',ASub0):- !.
+widen(ASub,ASub0,NewASub):-
+    asub(ASub0,Tests0,Unfold0,MutEx0,Det0),
+    asub(ASub,Tests1,Unfold1,MutEx1,Det1),
+    tests_union(Tests1,Tests0,Tests), % Tests=[Tests1|Tests0],
+    ( Det0 = det ->
+        lub_mut_exclusion(MutEx0,MutEx1,MutEx),
+        lub_determinism(Det0,Det1,Det),
+        lub_unfold_tests(Unfold0,Unfold1,Unfold)
+    ; extend_mut_exclusion(MutEx0,MutEx1,MutEx),
+      extend_determinism(Det0,Det1,Det),
+      extend_unfold_tests(Unfold0,Unfold1,Unfold)
+    ),
+    asub(NewASub,Tests,Unfold,MutEx,Det).
 
 %------------------------------------------------------------------------%
 % det_compute_lub(+,-)                                                   %
@@ -139,20 +223,20 @@ glb_determinism_1(_,_,possibly_nondet).
 % is called from the fixpoint)
 
 det_compute_lub(ListASub,Lub):-
-    asub(ASub,[],mut_exclusive,is_det),
+    asub(ASub,[],'$bottom','$bottom','$bottom'),
     foldr(accumulate, ListASub, ASub, Lub).
 
-:- entry accumulate/3.
 % Differs from nf
 accumulate('$bottom',ASub0,ASub0):- !.
+accumulate(ASub0,'$bottom',ASub0):- !.
 accumulate(ASub,ASub0,NewASub):-
-    asub(ASub0,Tests0,MutExclusive0,Det0),
-    asub(ASub,Tests,MutExclusive1,Det1),
-    tests_union(Tests,Tests0,Tests1),
-    lub_mut_exclusion(MutExclusive0,MutExclusive1,MutExclusive),
-    lub_determinism(Det0,Det1,Det),
-    asub(NewASub,Tests1,MutExclusive,Det).
-%
+    asub(ASub0,Tests0,Unfold0,MutExclusive0,Det0),
+    asub(ASub,Tests1,Unfold1,MutExclusive1,Det1),
+    accumulate_mut_exclusion(MutExclusive0,MutExclusive1,MutExclusive),
+    accumulate_determinism(Det0,Det1,Det),
+    accumulate_unfold_tests(Unfold0,Unfold1,Unfold),
+    tests_union(Tests1,Tests0,Tests),
+    asub(NewASub,Tests,Unfold,MutExclusive,Det).
 
 tests_union(Tests,Tests0,Tests1):-
     Tests=[_|_], !,
@@ -165,11 +249,40 @@ tests_union_([T|Ts],Tests0,Tests1) :- memberchk(T,Tests0), !,
 tests_union_([T|Ts],Tests0,[T|Tests1]) :-
     tests_union_(Ts,Tests0,Tests1).
 
-lub_mut_exclusion(mut_exclusive,mut_exclusive,mut_exclusive):- !.
-lub_mut_exclusion(_,_,possibly_not_mut_exclusive).
+accumulate_mut_exclusion(mut_exclusive,_,mut_exclusive):- !.
+accumulate_mut_exclusion(_,mut_exclusive,mut_exclusive):- !.
+accumulate_mut_exclusion(A,B,C):- lub_mut_exclusion(A,B,C).
 
-lub_determinism(is_det,is_det,is_det):- !.
-lub_determinism(_,_,possibly_nondet).
+accumulate_determinism(det,_,det):- !.
+accumulate_determinism(_,det,det):- !.
+accumulate_determinism(A,B,C):- lub_determinism(A,B,C).
+
+accumulate_unfold_tests('$bottom',X,X):-!.
+accumulate_unfold_tests(_,_,not_unfold).
+
+lub_mut_exclusion(A,B,C) :-
+    ( le_mut_exclusion(A,B) ->
+        C = B
+    ; le_mut_exclusion(B,A) ->
+        C = A
+    ; C = possibly_not_mut_exclusive
+    ).
+
+lub_determinism(A,B,C) :-
+    ( le_determinism(A,B) ->
+        C = B
+    ; le_determinism(B,A) ->
+        C = A
+    ; C = possibly_nondet
+    ).
+
+lub_unfold_tests(A,B,C) :-
+    ( le_unfold_tests(A,B) ->
+        C = B
+    ; le_unfold_tests(B,A) ->
+        C = A
+    ; C = not_unfold
+    ).
 
 %------------------------------------------------------------------------%
 % det_compute_mut_exclusion(+,+,-)                                       %
@@ -181,7 +294,7 @@ lub_determinism(_,_,possibly_nondet).
 det_compute_mut_exclusion(ModeTypes,Lub,ASub):-
     % this one is a little tricky: Lub is not a well-formed abstract
     % substitution, it is a collection of tests from compute_lub
-    asub(Lub,TestsList,_MutExclusive,Det0),
+    asub(Lub,TestsList,Unfold,_MutExclusive,Det0),
     % if only one asub, it is always mutually exclusive:
     ( TestsList = t(_,_,_,_) ->
         MutExclusive = mut_exclusive
@@ -194,9 +307,9 @@ det_compute_mut_exclusion(ModeTypes,Lub,ASub):-
     ),
     mut_exclusion_to_determinism(MutExclusive,Det1),
     % Det0 should always be is_det!
-    lub_determinism(Det0,Det1,Det),
+    extend_determinism(Det0,Det1,Det),
     foldr_testlist(TestsList,Tests),
-    asub(ASub,Tests,MutExclusive,Det).
+    asub(ASub,Tests,Unfold,MutExclusive,Det).
 
 
 result_to_mut_exclusion(true,mut_exclusive).
@@ -208,7 +321,7 @@ mut_exclusion_to_determinism(possibly_not_mut_exclusive,possibly_nondet).
 
 foldr_testlist(_TestsList,Tests):-
     det_empty_entry(sg_not_provided,[],Entry),
-    asub(Entry,Tests,_MutExclusive,_Det).
+    asub(Entry,Tests,_Unfold,_MutExclusive,_Det).
 
 % Differs from nf
 
@@ -286,18 +399,38 @@ clause_test_to_minset_test_(Var_list,Unification_Tests,Arithm_Tests,Meta_Tests,C
 det_glb('$bottom',_ASub,ASub3) :- !, ASub3='$bottom'.
 det_glb(_ASub,'$bottom',ASub3) :- !, ASub3='$bottom'.
 det_glb(ASub0,ASub1,Glb):-
-    asub(ASub0,Tests0,MutExclusive0,Det0),
-    asub(ASub1,Tests1,MutExclusive1,Det1),
-    merge_tests(Tests0,Tests1,Tests),
+    asub(ASub0,_Tests0,Unfold0,MutExclusive0,Det0),
+    asub(ASub1,Tests1,Unfold1,MutExclusive1,Det1),
+    %% merge_tests(Tests0,Tests1,Tests),
+    Tests = Tests1,
+    glb_unfold_tests(Unfold0,Unfold1,Unfold),
     glb_mut_exclusion(MutExclusive0,MutExclusive1,MutExclusive),
     glb_determinism(Det0,Det1,Det),
-    asub(Glb,Tests,MutExclusive,Det).
+    asub(Glb,Tests,Unfold,MutExclusive,Det).
 
-glb_mut_exclusion(possibly_not_mut_exclusive,possibly_not_mut_exclusive,possibly_not_mut_exclusive):- !.
-glb_mut_exclusion(_,_,mut_exclusive).
+glb_mut_exclusion(A,B,C) :-
+    ( le_mut_exclusion(A,B) ->
+        C = A
+    ; le_mut_exclusion(B,A) ->
+        C = B
+    ; C = '$bottom'
+    ).
 
-glb_determinism(possibly_nondet,possibly_nondet,possibly_nondet):- !.
-glb_determinism(_,_,is_det).
+glb_determinism(A,B,C) :-
+    ( le_determinism(A,B) ->
+        C = A
+    ; le_determinism(B,A) ->
+        C = B
+    ; C = '$bottom'
+    ).
+
+glb_unfold_tests(A,B,C) :-
+    ( le_unfold_tests(A,B) ->
+        C = A
+    ; le_unfold_tests(B,A) ->
+        C = B
+    ; C = '$bottom'
+    ).
 
 %------------------------------------------------------------------------%
 % det_less_or_equal(+,+)                                                  %
@@ -305,18 +438,23 @@ glb_determinism(_,_,is_det).
 %------------------------------------------------------------------------%
 
 det_less_or_equal(ASub0,ASub1):-
-    asub(ASub0,_Tests0,MutExclusive0,Det0),
-    asub(ASub1,_Tests1,MutExclusive1,Det1),
+    asub(ASub0,_Tests0,Unfold0,MutExclusive0,Det0),
+    asub(ASub1,_Tests1,Unfold1,MutExclusive1,Det1),
     le_mut_exclusion(MutExclusive0,MutExclusive1),
-    le_determinism(Det0,Det1).
+    le_determinism(Det0,Det1),
+    le_unfold_tests(Unfold0,Unfold1).
 
-le_mut_exclusion(mut_exclusive,possibly_not_mut_exclusive).
-le_mut_exclusion(mut_exclusive,mut_exclusive).
-le_mut_exclusion(possibly_not_mut_exclusive,possibly_not_mut_exclusive).
+le_mut_exclusion(A,A) :- !.
+le_mut_exclusion('$bottom',_).
+le_mut_exclusion(_,possibly_not_mut_exclusive).
 
-le_determinism(is_det,possibly_nondet).
-le_determinism(possibly_nondet,possibly_nondet).
-le_determinism(is_det,is_det).
+le_determinism(A,A) :- !.
+le_determinism('$bottom',_).
+le_determinism(_,possibly_nondet).
+
+le_unfold_tests(A,A):- !.
+le_unfold_tests('$bottom',_):-!.
+le_unfold_tests(_,not_unfold).
 
 %------------------------------------------------------------------------%
 % det_identical_abstract(+,+)                                             %
@@ -324,8 +462,8 @@ le_determinism(is_det,is_det).
 %------------------------------------------------------------------------%
 
 det_identical_abstract(ASub0,ASub1):-
-    asub(ASub0,_Tests0,MutExclusive,Det),
-    asub(ASub1,_Tests1,MutExclusive,Det).
+    asub(ASub0,_Tests0,Unfold,MutExclusive,Det),
+    asub(ASub1,_Tests1,Unfold,MutExclusive,Det).
 
 %------------------------------------------------------------------------%
 % det_abs_sort(+,-)                                                           %
@@ -471,15 +609,15 @@ det_success_builtin_(BType, _CallType, _MutExDet, BSg, Call, Succ):-
     det_success_test(BType, NewBSg, Call, Succ).
 
 det_success_test(BType, BSg, Call, Succ):-
-    asub(Call,Tests0,MutExclusive,Det),
+    asub(Call,Tests0,Unfold,MutExclusive,Det),
     tests(Tests0,InVars,Unif0,Arith0,Meta0),
     add_test(BType,BSg,Unif0,Arith0,Meta0,Unif,Arith,Meta),
     tests(Tests,InVars,Unif,Arith,Meta),
-    asub(Succ,Tests,MutExclusive,Det).
+    asub(Succ,Tests,Unfold,MutExclusive,Det).
 
 det_success_negation(Call, Succ):-
-    asub(Call,Tests,MutExclusive,_Det),
-    asub(Succ,Tests,MutExclusive,possibly_nondet).
+    asub(Call,Tests,_Unfold,MutExclusive,_Det),
+    asub(Succ,Tests,not_unfold,MutExclusive,possibly_nondet).
 
 
 add_test(unif,Sg,Unif,Arith,Meta,[Sg|Unif],Arith,Meta).
@@ -493,11 +631,11 @@ is_a_test(Btype):- Btype == aritunif.
 is_a_test(Btype):- Btype == meta.
 
 builtin_trust_to_succ(MutExDet,Call,Succ):-
-    asub(Call,Tests,MutExclusive1,Det1),
+    asub(Call,Tests,_Unfold,MutExclusive1,Det1),
     det_builtin_trust(MutExDet, MutExclusive0, Det0),   
-    glb_mut_exclusion(MutExclusive0,MutExclusive1,MutExclusive),
-    glb_determinism_1(Det0,Det1,Det),
-    asub(Succ,Tests,MutExclusive,Det).
+    extend_mut_exclusion(MutExclusive0,MutExclusive1,MutExclusive),
+    extend_determinism(Det0,Det1,Det),
+    asub(Succ,Tests,not_unfold,MutExclusive,Det).
  
 det_builtin_trust((MutExclusive, Det), MutExclusive, Det).   
 
@@ -514,22 +652,18 @@ det_builtin_trust((MutExclusive, Det), MutExclusive, Det).
 % Something more intelligent should be done with the argument of the props
 % than simply ignore them!!!
 
-det_input_interface(Prop,Kind,SI,SO):-
-    functor(Prop,P,1),
-    det_input_interface_(P,Kind,SI,SO).
-
-det_input_interface_(is_det,perfect,(MutEx,Det0),(MutEx,Det1)):-
+det_input_interface(is_det(_),perfect,(MutEx,Det0),(MutEx,Det1)):-
     myappend(Det0,[is_det],Det1).
-%det_input_interface_(nondet,approx,(MutEx,Det0),(MutEx,Det1)):-
-%       myappend(Det0,[possibly_nondet],Det1).
-%det_input_interface_(possibly_nondet,perfect,(MutEx,Det0),(MutEx,Det1)):-
-%       myappend(Det0,[possibly_nondet],Det1).
-det_input_interface_(mut_exclusive,perfect,(MutEx0,Det),(MutEx1,Det)):-
+det_input_interface(non_det(_),perfect,(MutEx,Det0),(MutEx,Det1)):-
+    myappend(Det0,[non_det],Det1).
+det_input_interface(possibly_nondet(_),perfect,(MutEx,Det0),(MutEx,Det1)):-
+    myappend(Det0,[possibly_nondet],Det1).
+det_input_interface(mut_exclusive(_),perfect,(MutEx0,Det),(MutEx1,Det)):-
     myappend(MutEx0,[mut_exclusive],MutEx1).
-%det_input_interface_(not_mut_exclusive,approx,(MutEx0,Det),(MutEx1,Det)):-
-%       myappend(MutEx0,[possibly_not_mut_exclusive],MutEx1).
-%det_input_interface_(possibly_not_mut_exclusive,perfect,(MutEx0,Det),(MutEx1,Det)):-
-%       myappend(MutEx0,[possibly_not_mut_exclusive],MutEx1).
+det_input_interface(not_mut_exclusive(_),perfect,(MutEx0,Det),(MutEx1,Det)):-
+    myappend(MutEx0,[not_mut_exclusive],MutEx1).
+det_input_interface(possibly_not_mut_exclusive(_),perfect,(MutEx0,Det),(MutEx1,Det)):-
+    myappend(MutEx0,[possibly_not_mut_exclusive],MutEx1).
 
 myappend(Vs,V0,V):-
     var(Vs), !,
@@ -547,11 +681,11 @@ may_be_var(X,X):- ( X=[] ; true ), !.
 det_input_user_interface((MutEx0,Det0),Qv,ASub,_Sg,_MaybeCallASub):-
     may_be_var(MutEx0,MutEx1),
     may_be_var(Det0,Det1),
-    foldr(glb_mut_exclusion, MutEx1, mut_exclusive, MutExclusive),
-    foldr(glb_determinism, Det1, is_det, Det),
+    foldr(glb_mut_exclusion, MutEx1, possibly_not_mut_exclusive, MutExclusive),
+    foldr(glb_determinism, Det1, possibly_nondet, Det),
     det_empty_entry(sg_not_provided,Qv,Entry),
-    asub(Entry,Tests,_MutExclusive,_Det),
-    asub(ASub,Tests,MutExclusive,Det).
+    asub(Entry,Tests,_Unfold,_MutExclusive,_Det),
+    asub(ASub,Tests,not_unfold,MutExclusive,Det).
 
 %------------------------------------------------------------------------%
 % det_asub_to_native(+,+,-)                                              %
@@ -562,9 +696,13 @@ det_input_user_interface((MutEx0,Det0),Qv,ASub,_Sg,_MaybeCallASub):-
 % part of the assertion!!!
 
 det_asub_to_native(ASub,Qv,[PropF,PropC]):-
-    asub(ASub,_Tests,Mutex,Det),
+    asub(ASub,_Tests,_Unfold,Mutex,Det),
     functor(PropF,Det,1),
-    functor(PropC,Mutex,1),
+    ( Mutex = '$bottom' ->
+        Mutex0 = not_mut_exclusive
+    ; Mutex = Mutex0
+    ),
+    functor(PropC,Mutex0,1),
     arg(1,PropF,Qv),
     arg(1,PropC,Qv).
 
@@ -574,8 +712,8 @@ det_asub_to_native(ASub,Qv,[PropF,PropC]):-
 %------------------------------------------------------------------------%
 
 det_unknown_call(_Sg,_Vars,Call,Succ):-
-    asub(Call,Tests,_,_),
-    asub(Succ,Tests,possibly_not_mut_exclusive,possibly_nondet).
+    asub(Call,Tests,_,_,_),
+    asub(Succ,Tests,not_unfold,possibly_not_mut_exclusive,possibly_nondet).
 
 %------------------------------------------------------------------------%
 % det_unknown_entry(+,+,-)                                               %
@@ -592,7 +730,7 @@ det_unknown_entry(Sg,Vars,Entry):-
 
 det_empty_entry(_Sg,Vars,Entry):-
     tests(Tests,Vars,[],[],[]),
-    asub(Entry,Tests,mut_exclusive,is_det).
+    asub(Entry,Tests,unfold,mut_exclusive,is_det).
 
 %-----------------------------------------------------------------------
 
@@ -602,9 +740,3 @@ detabs_dom_statistics([detstatistics([total_preds(Total),
                                       preds_some_variant_det(Det_Variants),
                                       preds_some_variant_mutex(MutEx_Variants)])]) :-
     nfdet_statistics(det, _S, Total, Det_Preds, MutEx_Preds, Det_Variants, MutEx_Variants).
-
-%-----------------------------------------------------------------------
-
-det_obtain_info(_Prop,_Vars,ASub,Info):- 
-    ASub = det(Types, _Modes, det(_Tests,Mutex,Det)),
-    Info = [Types,Mutex,Det].

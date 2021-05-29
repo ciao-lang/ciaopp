@@ -150,7 +150,6 @@ select_tests(Tests,_Vars,Tests).
 % Return back to the calling clause: merge the tests in Call with the
 % tests in Prime
 
-% TODO: Fixed by replacing glb with custom definition. Same for defabs? (VP)
 % Unfold tests if the predicate of the body call has only one clause
 % and only builtin tests are performed in such clause. 
 nf_extend(_Sg,Prime,_Sv,Call,Succ):-
@@ -667,13 +666,13 @@ nf_builtin_trust((Covered, Fails), Covered, Fails).
 
 nf_input_interface(not_fails(_),perfect,(Cov,Fail0),(Cov,Fail1)):-
     myappend(Fail0,[not_fails],Fail1).
-nf_input_interface(fails(_),approx,(Cov,Fail0),(Cov,Fail1)):-
+nf_input_interface(fails(_),perfect,(Cov,Fail0),(Cov,Fail1)):-
     myappend(Fail0,[fails],Fail1).
 nf_input_interface(possibly_fails(_),perfect,(Cov,Fail0),(Cov,Fail1)):-
     myappend(Fail0,[possibly_fails],Fail1).
 nf_input_interface(covered(_),perfect,(Cov0,Fail),(Cov1,Fail)):-
     myappend(Cov0,[covered],Cov1).
-nf_input_interface(not_covered(_),approx,(Cov0,Fail),(Cov1,Fail)):-
+nf_input_interface(not_covered(_),perfect,(Cov0,Fail),(Cov1,Fail)):-
     myappend(Cov0,[not_covered],Cov1).
 nf_input_interface(possibly_not_covered(_),perfect,(Cov0,Fail),(Cov1,Fail)):-
     myappend(Cov0,[possibly_not_covered],Cov1).

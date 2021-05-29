@@ -165,12 +165,12 @@ nfdet_call_to_entry(Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo) :-
     eterms_call_to_entry(Sv,Sg,Hv,Head,K,Fv,PTypes,ETypes,ExtraInfoTypes),
     ( ETypes = '$bottom' ->
         Entry = '$bottom'
-    ; detabs:det_call_to_entry(Sv,Sg,Hv,Head,K,Fv,PDet,EDet,_ExtraDet),
-      % Obtaining invars for nf
+    ; % Obtaining invars for nf
       shfr_obtain_info(free,Sv,PModes,FVars),
       ord_subtract(Sv,FVars,InVarsNf),
       % Obtaining invars for det
       shfr_obtain_info(ground,Sv,PModes,InVarsDet),
+      detabs:det_call_to_entry(Sv,Sg,Hv,Head,K,Fv,PDet,InVarsDet,EDet,_ExtraDet),
       %
       nfabs:nf_call_to_entry(Sv,Sg,Hv,Head,K,Fv,PNonF,InVarsNf,ENonF0,_ExtraNf),
       ( nfabs:possibly_fail_unif_tests(ENonF0,PModes) ->

@@ -273,7 +273,7 @@ asub_to_props(nf,_Goal,nf(_,_,nf(_,_,Cover,Fail0)),[Fail,Cover]):-!,
     ; Fail0 = Fail
     ).
 asub_to_props(nf,_Goal,'$bottom',[fails,not_covered]):-!.
-asub_to_props(det,_Goal,det(_,_,det(_,Mut,Det)),[Det,Mut]).
+asub_to_props(det,_Goal,det(_,_,det(_,_,Mut,Det)),[Det,Mut]).
 
 :- if(defined(has_ciaopp_cost)).
 comp_to_props(An,Goal,Dic,Time,[Comp_Time]):-
@@ -872,9 +872,9 @@ knows_of(X,nf):- knows_of(X,shfr).   % PLG
 knows_of(X,nfg):- nf_info(X).
 % knows_of(X,nfg):- knows_of(X,eterms). % EMM
 % knows_of(X,nfg):- knows_of(X,shfr).   % EMM
+knows_of(X,det):- knows_of(X,eterms). % PLG
+knows_of(X,det):- knows_of(X,shfr).   % PLG
 knows_of(X,det):- det_info(X).
-% knows_of(X,det):- knows_of(X,eterms). % PLG
-% knows_of(X,det):- knows_of(X,shfr).   % PLG
 knows_of(X,detg):- det_info(X).
 knows_of(X,detg):- knows_of(X,eterms).
 knows_of(X,detg):- knows_of(X,shfr).

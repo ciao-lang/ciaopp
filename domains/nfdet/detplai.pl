@@ -64,6 +64,8 @@
 :- use_module(domain(sharefree)).
 :- use_module(domain(nfdet/detabs)).
 
+:- use_module(ciaopp(infer/infer_dom), [knows_of/2]).
+
 :- use_module(library(idlists), [memberchk/2]).
 :- use_module(library(lists), [append/3]).
 % :- use_module(library(sets), [ord_subtract/3]). % Commented out. Aug 24, 2012. Not used anymore -PLG 
@@ -102,8 +104,8 @@ det_call_to_entry(Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo):-
     eterms_call_to_entry(Sv,Sg,Hv,Head,K,Fv,PTypes,ETypes,ExtraInfoTypes),
     ( ETypes = '$bottom' ->
         Entry = '$bottom'
-    ; detabs:det_call_to_entry(Sv,Sg,Hv,Head,K,Fv,PDet,EDet,_Extra),
-      shfr_obtain_info(ground,Sv,PModes,InVars), % Added. Aug 24, 2012 -PLG 
+    ; shfr_obtain_info(ground,Sv,PModes,InVars), % Added. Aug 24, 2012 -PLG
+      detabs:det_call_to_entry(Sv,Sg,Hv,Head,K,Fv,PDet,InVars,EDet,_Extra),
       % shfr_obtain_info(free,Sv,PModes,FVars),  % Commented out. Aug 24, 2012. Not a safe asumption. -PLG 
       % ord_subtract(Sv,FVars,InVars),      % Commented out. Aug 24, 2012 -PLG 
       detplai:asub(Entry,ETypes,EModes,EDet)
@@ -500,8 +502,12 @@ det_dom_statistics(Info):- detabs:detabs_dom_statistics(Info).
 
 %-----------------------------------------------------------------------
 
-det_obtain_info(Prop,Vars,ASub,Info):- detabs:det_obtain_info(Prop,Vars,ASub,Info).
-
-% det_obtain_info(Prop,Vars,ASub,Info) :- !, 
-%       asub_to_info(det,ASub,Vars,_OutputUser,CompProps),
-%       CompProps = Info.
+det_obtain_info(Prop,Vars,ASub0,Info) :- knows_of(Prop,eterms), !,
+    asub(ASub0,ASub,_,_),
+    eterms_obtain_info(Prop,Vars,ASub,Info).
+det_obtain_info(Prop,Vars,ASub0,Info) :- knows_of(Prop,shfr), !,
+    asub(ASub0,_,ASub,_),
+    shfr_obtain_info(Prop,Vars,ASub,Info).
+det_obtain_info(Prop,_Vars,ASub0,Info) :- knows_of(Prop,det), !,
+    asub(ASub0,_,_,ASub),
+    detabs:det_asub_to_native(ASub,_,Info).
