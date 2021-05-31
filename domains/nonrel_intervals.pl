@@ -136,9 +136,9 @@ nonrel_intervals_widen_elem(Bot, W, W) :-
 nonrel_intervals_widen_elem(W, Bot, W) :-
     nonrel_intervals_bot(Bot), !.
 nonrel_intervals_widen_elem(Top, _, Top) :-
-    nonrel_intervals_bot(Top), !.
+    nonrel_intervals_top(Top), !.
 nonrel_intervals_widen_elem(_, Top, Top) :-
-    nonrel_intervals_bot(Top), !.
+    nonrel_intervals_top(Top), !.
 nonrel_intervals_widen_elem(V1, V2, W) :-
     interval_num(V1),
     interval_num(V2), !,
@@ -154,7 +154,7 @@ nonrel_intervals_widen_elem(V1, V2, W) :-
     % if the lower bound lub is smaller than any of lower bounds, widen
     ( ( \+ leq(MinV1, MinLub) ; \+ leq(MinV2, MinLub)) ->
           nonrel_neginf(W0)
-        ;
+    ;
         W0 = MinLub
     ),
     % if the upper bound lub is bigger than any of the upper bounds, widen

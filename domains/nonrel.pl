@@ -519,7 +519,7 @@ nonrel_identical_abstract(ASub1, ASub2) :-
 % reasoning with bottom same as in eterms (this could be dealt with in the
 % fixpoint algorithm)
 nonrel_widen(AbsInt,Asub1,ASub2,WAsub) :- 
-    nonrel_widen(Asub1,AbsInt,ASub2,WAsub).
+    nonrel_widen_(Asub1,AbsInt,ASub2,WAsub).
 
 nonrel_widen_('$bottom',_,'$bottom','$bottom') :- !. % generic
 nonrel_widen_('$bottom',_,Prime,Prime) :- !.         % generic
