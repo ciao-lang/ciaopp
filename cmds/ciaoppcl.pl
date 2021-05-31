@@ -1,5 +1,7 @@
 :- module(ciaoppcl, [main/1], [assertions]).
 
+:- compilation_fact(unified_menu).
+
 :- doc(title,"The CiaoPP command-line interface").
 :- doc(author, "The Ciao Development Team").
 
@@ -295,10 +297,7 @@ ciaopp_cmd(Cmd, Flags) :-
 
 :- export(ciaopp_run/2).
 ciaopp_run(Cmd, Flags) :-
-    ( Cmd = ana(File) -> Cmd0 = ana
-    ; Cmd = check(File) -> Cmd0 = check
-    ; Cmd = opt(File) -> Cmd0 = opt
-    ),
+    clcmd_to_menucmd(Cmd,Cmd0,File),
     ( member(output_file(OFile), Flags) -> true
     ; true % OFile unbound
     ),
@@ -315,6 +314,14 @@ ciaopp_run(Cmd, Flags) :-
     ; true
     ),
     port_call(Port).
+
+clcmd_to_menucmd(opt(File), opt, File).
+clcmd_to_menucmd(ana(File), ana, File).
+:- if(defined(unified_menu)).
+clcmd_to_menucmd(check(File), ana, File).
+:- else.
+clcmd_to_menucmd(check(File), check, File).
+:- endif.
 
 ciaopp_run_with_time_limit(none, Cmd0, File, OFile, GotTimeout) :- !,
     auto_run(Cmd0, File, OFile), GotTimeout = no.
