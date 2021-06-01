@@ -76,6 +76,10 @@ native(not_ground(L)):- vlist(L).
 native(sharing(L)):- list(list(var),L). % Deprecated, assertion normalizer expands to mshare/2 internally
 native(sharing(Xs,Xss)):- list(var,Xs), list(list(var),Xss).
 % computation
+native(det).
+native(semidet).
+native(multi).
+native(nondet).
 native(covered).
 native(fails).
 native(is_det).
@@ -147,6 +151,10 @@ native_property('native_props:mshare'(Xs,Xss),sharing(Xs,Xss)).
 native_property('basic_props:member'(M,L),member(M,L)).
 native_property('term_basic:='(M,L),'='(M,L)).
 % computation
+native_property('native_props:det'(G),det(G)).
+native_property('native_props:multi'(G),multi(G)).
+native_property('native_props:semidet'(G),semidet(G)).
+native_property('native_props:nondet'(G),nondet(G)).
 native_property('native_props:covered'(G),covered(G)).
 native_property('native_props:fails'(G),fails(G)).
 native_property('native_props:possibly_fails'(G),possibly_fails(G)).

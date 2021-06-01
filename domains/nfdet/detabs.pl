@@ -652,11 +652,21 @@ det_builtin_trust((MutExclusive, Det), MutExclusive, Det).
 % Something more intelligent should be done with the argument of the props
 % than simply ignore them!!!
 
+% TODO: legacy, see old_nfdet
 det_input_interface(is_det(_),perfect,(MutEx,Det0),(MutEx,Det1)):-
     myappend(Det0,[is_det],Det1).
 det_input_interface(non_det(_),perfect,(MutEx,Det0),(MutEx,Det1)):-
     myappend(Det0,[non_det],Det1).
 det_input_interface(possibly_nondet(_),perfect,(MutEx,Det0),(MutEx,Det1)):-
+    myappend(Det0,[possibly_nondet],Det1).
+%
+det_input_interface(det(_),perfect,(MutEx,Det0),(MutEx,Det1)):-
+    myappend(Det0,[is_det],Det1).
+det_input_interface(multi(_),perfect,(MutEx,Det0),(MutEx,Det1)):-
+    myappend(Det0,[possibly_nondet],Det1).
+det_input_interface(semidet(_),perfect,(MutEx,Det0),(MutEx,Det1)):-
+    myappend(Det0,[is_det],Det1).
+det_input_interface(nondet(_),perfect,(MutEx,Det0),(MutEx,Det1)):-
     myappend(Det0,[possibly_nondet],Det1).
 det_input_interface(mut_exclusive(_),perfect,(MutEx0,Det),(MutEx1,Det)):-
     myappend(MutEx0,[mut_exclusive],MutEx1).

@@ -664,12 +664,22 @@ nf_builtin_trust((Covered, Fails), Covered, Fails).
 % Something more intelligent should be done with the argument of the props
 % than simply ignore them!!!
 
+% TODO: legacy, see old_nfdet
 nf_input_interface(not_fails(_),perfect,(Cov,Fail0),(Cov,Fail1)):-
     myappend(Fail0,[not_fails],Fail1).
 nf_input_interface(fails(_),perfect,(Cov,Fail0),(Cov,Fail1)):-
     myappend(Fail0,[fails],Fail1).
 nf_input_interface(possibly_fails(_),perfect,(Cov,Fail0),(Cov,Fail1)):-
     myappend(Fail0,[possibly_fails],Fail1).
+%
+nf_input_interface(det(_),perfect,(Cov,Fail0),(Cov,Fail1)):-
+    myappend(Fail0,[not_fails],Fail1).
+nf_input_interface(nondet(_),perfect,(Cov,Fail0),(Cov,Fail1)):-
+    myappend(Fail0,[possibly_fails],Fail1).
+nf_input_interface(semidet(_),perfect,(Cov,Fail0),(Cov,Fail1)):-
+    myappend(Fail0,[possibly_fails],Fail1).
+nf_input_interface(multi(_),perfect,(Cov,Fail0),(Cov,Fail1)):-
+    myappend(Fail0,[not_fails],Fail1).
 nf_input_interface(covered(_),perfect,(Cov0,Fail),(Cov1,Fail)):-
     myappend(Cov0,[covered],Cov1).
 nf_input_interface(not_covered(_),perfect,(Cov0,Fail),(Cov1,Fail)):-
