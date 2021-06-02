@@ -385,8 +385,10 @@ opt_menu_branch(A, B) :-
 
 :- if(defined(unified_menu)).
 :- include(auto_unified_menu).
+ctcheck_menu_name(ana).
 :- else.
 :- include(auto_old_menu).
+ctcheck_menu_name(check).
 :- endif.
 
 guard expert(X) :-
@@ -416,12 +418,12 @@ guard cct_manual(X) :-
 %       ( A1 == naive ->
 %         member(ct_modular=E,X),
 %         ( E == all ->
-%           set_menu_flag(check,ct_ext_policy,registry),
-%           set_menu_flag(check,mnu_modules_to_analyze,all),
-%           set_menu_flag(check,ext_policy,registry)
-%         ; set_menu_flag(check,ct_ext_policy,assertions),
-%           set_menu_flag(check,mnu_modules_to_analyze,current),
-%           set_menu_flag(check,ext_policy,assertions)
+%           set_menu_flag(~ctcheck_menu_name,ct_ext_policy,registry),
+%           set_menu_flag(~ctcheck_menu_name,mnu_modules_to_analyze,all),
+%           set_menu_flag(~ctcheck_menu_name,ext_policy,registry)
+%         ; set_menu_flag(~ctcheck_menu_name,ct_ext_policy,assertions),
+%           set_menu_flag(~ctcheck_menu_name,mnu_modules_to_analyze,current),
+%           set_menu_flag(~ctcheck_menu_name,ext_policy,assertions)
 %         )
 %       ; true
 %       ).
@@ -432,12 +434,12 @@ mod_check(X,X) :-
       member(ct_modular=E,X),
       ( E == all ->
         % set_menu_flag(check,ct_ext_policy,registry),
-        set_menu_flag(check,mnu_modules_to_analyze,all), % TODO: useless if intermod=off! enable it? (JF)
+        set_menu_flag(~ctcheck_menu_name,mnu_modules_to_analyze,all), % TODO: useless if intermod=off! enable it? (JF)
         % set_menu_flag(check,ext_policy,registry),
-        set_menu_flag(check,ct_regen_reg,on)
-      ; % set_menu_flag(check,ct_ext_policy,assertions),
-        set_menu_flag(check,mnu_modules_to_analyze,current)
-        % set_menu_flag(check,ext_policy,assertions)
+        set_menu_flag(~ctcheck_menu_name,ct_regen_reg,on)
+      ; % set_menu_flag(~ctcheck_menu_name,ct_ext_policy,assertions),
+        set_menu_flag(~ctcheck_menu_name,mnu_modules_to_analyze,current)
+        % set_menu_flag(~ctcheck_menu_name,ext_policy,assertions)
       )
     ; true
     ).
@@ -470,25 +472,25 @@ inc_ana(X,X) :-
 post_iter(X,X) :-
     member(ct_mod_iterate=A,X),
     ( A == on ->
-        set_menu_flag(check,ct_ext_policy,registry),
-        set_menu_flag(check,ext_policy,registry),
-        set_menu_flag(check,mnu_modules_to_analyze,all), % TODO: useless if intermod=off! enable it? (JF)
+        set_menu_flag(~ctcheck_menu_name,ct_ext_policy,registry),
+        set_menu_flag(~ctcheck_menu_name,ext_policy,registry),
+        set_menu_flag(~ctcheck_menu_name,mnu_modules_to_analyze,all), % TODO: useless if intermod=off! enable it? (JF)
         member(menu_level=A1,X),
         ( A1 == naive ->  % PP: should be ok in most cases
-            set_menu_flag(check,types,terms)
+            set_menu_flag(~ctcheck_menu_name,types,terms)
         ; true
         )
     ;
-        set_menu_flag(check,ct_ext_policy,assertions),
-        set_menu_flag(check,ext_policy,assertions),
-        set_menu_flag(check,mnu_modules_to_analyze,current)
+        set_menu_flag(~ctcheck_menu_name,ct_ext_policy,assertions),
+        set_menu_flag(~ctcheck_menu_name,ext_policy,assertions),
+        set_menu_flag(~ctcheck_menu_name,mnu_modules_to_analyze,current)
     ).
 
 reg_reg(X,X):-
     member(ct_regen_reg=A,X),
     ( A==on ->
-        set_menu_flag(check,mnu_modules_to_analyze,all),
-        set_menu_flag(check,ext_policy,registry)
+        set_menu_flag(~ctcheck_menu_name,mnu_modules_to_analyze,all),
+        set_menu_flag(~ctcheck_menu_name,ext_policy,registry)
     ; true
     ).
 
@@ -511,7 +513,7 @@ guard cct_mod(X) :-
 %       !,
 %       Y == on.
 % guard cct2(_) :-
-%       get_menu_flag(check, assert_ctcheck, on).
+%       get_menu_flag(~ctcheck_menu_name, assert_ctcheck, on).
 
 % guard cct_mod(X) :-
 %       member(ct_mod_ana=Y, X),
@@ -1119,12 +1121,12 @@ auto_check_assert(File) :-
    # "Same as @pred{auto_check_assrt/1} but the output file will be
       @var{OFile}.".
 auto_check_assert(File, OFile) :-
-    with_menu_flags(check, auto_check_assert_(File, OFile)).
+    with_menu_flags(~ctcheck_menu_name, auto_check_assert_(File, OFile)).
 
 % TODO: load module first in both intermod on and off
 auto_check_assert_(File, OFile) :-
     % Make sure that we enabled ctchecks in the flags
-    get_menu_flag(check, assert_ctcheck, CTCHECKS),
+    get_menu_flag(~ctcheck_menu_name, assert_ctcheck, CTCHECKS),
     ( CTCHECKS == off ->
         error_message("Incompatible flag value: assert_ctcheck = off"), throw(bug)
     ; true
@@ -1146,14 +1148,14 @@ auto_check_assert_(File, OFile) :-
         % just read from menu.
         get_menu_flag(ana, inter_ana, AnaKinds),
         ( CTCHECKS == auto -> decide_domains(AnaKinds) ; true ),
-        anakinds_to_absints(AnaKinds, check, AbsInts),
+        anakinds_to_absints(AnaKinds, ~ctcheck_menu_name, AbsInts),
         % pplog(auto_interface, ['{Analyses selected to check assertions: ',~~(AbsInts), '}']),
         % Perform analyses
         exec_analyses_and_acheck(AbsInts, TopLevel, File, OFile)
     ).
 
 exec_analyses_and_acheck(AbsInts, TopLevel, File, OFile) :-
-    get_menu_flag(check, gen_certificate, GENCERT),
+    get_menu_flag(~ctcheck_menu_name, gen_certificate, GENCERT),
     ( GENCERT == on -> % It was "GENCERT == manual" but this option does not exist
         % TODO: *** This needs to be revised... MH
         set_pp_flag(dump_pred,nodep),
@@ -1205,7 +1207,7 @@ gencert_ctchecks(_,File,GENCERT):-
         pplog(auto_interface, ['{certificate saved in ', time(T), ' msec.}\n}'])
     ; true
     ).
-%       get_menu_flag(check, optim_comp, OPTIMCOMP),
+%       get_menu_flag(~ctcheck_menu_name, optim_comp, OPTIMCOMP),
 %       ( OPTIMCOMP == none ->
 %           decide_output(OFile)
 %       ; optim_comp(OPTIMCOMP)
@@ -1238,7 +1240,7 @@ anakinds_to_absints([_|AnaKinds],Menu,AbsInts):-
 decide_domains(AnaKinds) :-
     ( current_pp_flag(intermod, off) ->
         decide_domains_monolithic(AnaKinds, AnaFlags)
-    ; % TODO: this was enabled only for 'get_menu_flag(check,ct_modular,all)' [IG&JF]
+    ; % TODO: this was enabled only for 'get_menu_flag(~ctcheck_menu_name,ct_modular,all)' [IG&JF]
       decide_domains_intermod(AnaKinds, AnaFlags)
     ),
     select_anaflags(AnaFlags).
@@ -1268,7 +1270,7 @@ decide_domain_intermod(_AnaKind, none).
 % corresponding AbsInt)
 select_anaflags([]).
 select_anaflags([f(AnaKind,AbsInt)|AnaFlags]) :-
-    set_menu_flag(check,AnaKind,AbsInt),
+    set_menu_flag(~ctcheck_menu_name,AnaKind,AbsInt),
     select_anaflags(AnaFlags).
 
 % ---------------------------------------------------------------------------
@@ -1417,7 +1419,7 @@ auto_check_certificate(_Program) :-
 
 %% *** This is cheating a little bit... GP
 checker(Fixpoint):-
-    get_menu_flag(check, reduced_cert, REDCERT),
+    get_menu_flag(~ctcheck_menu_name, reduced_cert, REDCERT),
     ( REDCERT = off ->
         Fixpoint = check_di3
     ; Fixpoint = check_reduc_di
@@ -1630,7 +1632,7 @@ decide_transform(poly) :-
 % ---------------------------------------------------------------------------
 % Auxiliary for modular analysis
 maybe_main(File, MainFile) :-
-    get_menu_flag(check, main_module,Main),
+    get_menu_flag(~ctcheck_menu_name, main_module,Main),
     ( Main = '$default' -> MainFile = File
     ; MainFile = Main
     ).
