@@ -77,11 +77,25 @@
 
 %------------------------------------------------------------------------%
 
+:- export(nf_asub/1).
+
+:- doc(nf_asub(ASub), "@var{ASub} is an abstract substitution term
+   used in nf. It contains types, modes and nonfailure information.").
+
+:- regtype nf_asub(ASub)
+   # "@var{ASub} is an abstract substitution term used in nf.".
+
+nf_asub('$bottom').
+nf_asub(nf(Types,Modes,Nf)) :-
+    term(Types),
+    term(Modes),
+    nfabs_asub(Nf).
+
+:- export(asub/4).
+
 %% asub('$bottom','$bottom',_Modes,_NonF):- !.
 %% asub('$bottom',_Types,'$bottom',_NonF):- !.
 %% asub('$bottom',_Types,_Modes,'$bottom'):- !.
-
-:- export(asub/4).
 
 asub(nf(Types,Modes,NonF),Types,Modes,NonF).
 

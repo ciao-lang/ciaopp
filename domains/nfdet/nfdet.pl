@@ -142,6 +142,22 @@ mutual exclusion are (property - interval describing number of solutions):
 
 %------------------------------------------------------------------------%
 
+:- export(nfdet_asub/1).
+
+:- doc(nfdet_asub(ASub), "@var{ASub} is an abstract substitution term
+   used in nf. It contains types, modes, nonfailure and determinism
+   information.").
+
+:- regtype nfdet_asub(ASub)
+   # "@var{ASub} is an abstract substitution term used in nfdet.".
+
+nfdet_asub('$bottom').
+nfdet_asub(nfdet(Types,Modes,Nf,Det)) :-
+    term(Types),
+    term(Modes),
+    nfabs_asub(Nf),
+    detabs_asub(Det).
+
 :- export(asub/5).
 
 asub(nfdet(Types,Modes,NonF,Det), Types, Modes, NonF, Det).

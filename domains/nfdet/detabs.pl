@@ -27,7 +27,7 @@
 :- use_module(domain(sharefree), [shfr_obtain_info/4]).
 :- use_module(domain(s_eqs), [peel/4]).
 :- use_module(domain(nfdet/nfdet_statistics)).
-:- use_module(domain(nfdet/nfdet_common), [tests/5]).
+:- use_module(domain(nfdet/nfdetabs), [pred_test/1, tests/5]).
 :- use_module(ciaopp(p_unit/program_keys), [predkey_from_sg/2]).
 
 :- use_module(library(idlists), [memberchk/2]).
@@ -71,13 +71,90 @@ not_mut_exclusive  mut_exclusive   non_det   det
 
 :- export(detabs_asub/1).
 
-:- regtype detabs_asub/1.
+:- doc(detabs_asub(ASub), "@var{ASub} is an abstract substitution term
+   used in det.").
 
-% TODO: Define
-detabs_asub(ASub) :-
-    term(ASub).
+:- regtype detabs_asub(ASub)
+   # "@var{ASub} is an abstract substitution term used in det.".
 
-:- export(asub/5).
+detabs_asub(ASub):- detabs_par_asub(clause_test,ASub).
+
+:- doc(detabs_par_asub(TestTyp,ASub), "@var{ASub} is an abstract
+   substitution term used in det with tests of type @var{TestTyp}.").
+
+:- regtype detabs_par_asub(TestTyp,ASub)
+   # "@var{ASub} is an abstract substitution term used in det with
+     tests of type @var{TestTyp}.".
+
+detabs_par_asub(_, '$bottom').
+detabs_par_asub(TestTyp, det(Tests,MutEx,Det)) :-
+    TestTyp(Tests),    
+    mutexclusion_t(MutEx),
+    determinism_t(Det).
+
+:- regtype detabs_pred_asub(ASub)
+   # "@var{ASub} is a compact representation for a set of abstract
+     substitutions corresponding to the clauses of a predicate. It
+     gathers together the clause tests of those abstract substitutions
+     as a list, meaning the disjunction of all of them (named the
+     @tt{predicate test}, which is needed for performing the
+     @tt{mutual exclusion check}).  If the list of tests is empty, it
+     represents an empty set of abstract substitutions.".
+
+detabs_pred_asub(ASub):- detabs_par_asub(pred_test,ASub).
+
+:- regtype mutexclusion_t(Mutex)
+   # "@var{Mutex} represents whether the clause tests of a predicate
+     are pairwise mutually exclusive.".
+
+mutexclusion_t(possibly_not_mut_exclusive).
+mutexclusion_t(mut_exclusive).
+mutexclusion_t(not_mut_exclusive).
+mutexclusion_t('$bottom').
+
+:- regtype determinism_t(Det)
+   # "@var{Det} represents determinism information (for call patterns).
+@begin{itemize}
+@item @tt{is_det}: succeeds at most once or does not terminate. 
+@item @tt{non_det}: succeeds at least twice or does not terminate. 
+@item @tt{possibly_nondet}: succeeds any times or does not terminate. 
+@item @tt{'$bottom'}: unreachable. 
+@end{itemize}
+".
+
+determinism_t(is_det). 
+determinism_t(possibly_nondet).
+determinism_t(non_det).
+determinism_t('$bottom').
+
+:- export(get_tests/2).
+
+:- doc(get_tests(ASub,Tests), "Returns in @var{Tests} the tests in
+   abstract substitution @var{ASub}.").
+
+:- pred get_tests(ASub,Tests)
+   : ( detabs_asub(ASub), var(Tests) )
+   => ( detabs_asub(ASub), pred_test(Tests) )
+   # "@var{Tests} are the tests in abstract substitution @var{ASub}.".
+
+get_tests(ASub,Tests) :-
+       asub(ASub,Tests,_,_,_).
+
+:- export(asub_is_det/1).
+
+:- doc(asub_is_det(ASub), "Succeeds if and only if abstract
+   substitution @var{ASub} represents that the corresponding call
+   pattern succeeds at most once or does not terminate.").
+
+:- pred asub_is_det(ASub)
+   : detabs_asub(ASub)
+   => detabs_asub(ASub)
+   # "Succeeds if and only if abstract substitution @var{ASub}
+   represents that the corresponding call pattern succeeds at most
+   once or does not terminate.".
+
+asub_is_det(ASub) :-
+    asub(ASub,_,_,_,is_det).
 
 asub(det(Tests,Unfold_Tests,MutExclusive,Det),Tests,Unfold_Tests,MutExclusive,Det).
 

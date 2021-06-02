@@ -30,7 +30,7 @@
 :- use_module(domain(sharefree), [shfr_obtain_info/4]).
 :- use_module(domain(s_eqs), [peel/4]).
 :- use_module(domain(nfdet/nfdet_statistics)).
-:- use_module(domain(nfdet/nfdet_common), [tests/5]).
+:- use_module(domain(nfdet/nfdetabs), [pred_test/1, tests/5, unfold_t/1]).
 :- use_module(ciaopp(p_unit/program_keys), [predkey_from_sg/2]).
 
 :- use_module(library(idlists), [memberchk/2]).
@@ -76,15 +76,86 @@ The abstract domain lattices for nonfailure and covering are:
 
 :- export(nfabs_asub/1).
 
-:- regtype nfabs_asub/1.
+:- doc(nfabs_asub(ASub), "@var{ASub} is an abstract substitution term
+   used in nf.").
 
-% TODO: Define
-nfabs_asub(ASub) :-
-    term(ASub).
+:- regtype nfabs_asub(ASub)
+   # "@var{ASub} is an abstract substitution term used in nf.".
 
-:- export(asub/5).
+nfabs_asub(ASub):- nfabs_par_asub(clause_test,ASub).
+
+:- doc(nfabs_par_asub(TestTyp,ASub), "@var{ASub} is an abstract
+   substitution term used in nf with tests of type @var{TestTyp}.").
+
+:- regtype nfabs_par_asub(TestTyp,ASub)
+   # "@var{ASub} is an abstract substitution term used in nf with
+     tests of type @var{TestTyp}.".
+
+nfabs_par_asub(_, '$bottom').
+nfabs_par_asub(TestTyp, nf(Tests,Unfold,Covered,Fails)) :-
+    TestTyp(Tests),    
+    unfold_t(Unfold),
+    covering_t(Covered),
+    nonfailure_t(Fails).
+
+:- regtype nfabs_pred_asub(ASub)
+
+   # "@var{ASub} is a compact representation for a set of abstract
+     substitutions corresponding to (a subset of) clauses of a
+     predicate (the ones that do not fail so far). It gathers together
+     the clause tests of those abstract substitutions as a list,
+     meaning the disjunction of all of them (named the @tt{predicate
+     test}, which is needed for performing the @tt{covering test}).
+     If the list of tests is empty, it represents an empty set of
+     abstract substitutions.".
+
+nfabs_pred_asub(ASub):- nfabs_par_asub(pred_test,ASub).
+
+:- regtype covering_t(Covering)
+   # "@var{Covering} represents covering information for a call pattern.".
+
+covering_t(possibly_not_covered).
+covering_t(covered).
+covering_t(not_covered).
+covering_t('$bottom').
+
+:- regtype nonfailure_t(Nonfailure)
+   # "@var{Nonfailure} represents (non-)failure information for a call pattern.".
+
+nonfailure_t(possibly_fails).
+nonfailure_t(not_fails).
+nonfailure_t(fails).
+nonfailure_t('$bottom').
+
 
 asub(nf(Tests,Unfold_Tests,Covered,Fails),Tests,Unfold_Tests,Covered,Fails).
+
+:- export(get_tests/2).
+
+:- doc(get_tests(ASub,Tests), "Returns in @var{Tests} the tests in
+   abstract substitution @var{ASub}.").
+
+:- pred get_tests(ASub,Tests)
+   : ( nfabs_asub(ASub), var(Tests) )
+   => ( nfabs_asub(ASub), pred_test(Tests) )
+   # "@var{Tests} are the tests in abstract substitution @var{ASub}.".
+
+get_tests(ASub,Tests) :-
+    asub(ASub,Tests,_,_,_).
+
+:- export(asub_can_fail/1).
+
+:- doc(asub_can_fail(ASub), "Succeeds if and only if abstract
+   substitution @var{ASub} represents failure or possible failure.").
+
+:- pred asub_can_fail(ASub)
+   : nfabs_asub(ASub)
+   => nfabs_asub(ASub)
+   # "@var{ASub} represents failure or possible failure.".
+
+asub_can_fail(ASub) :-
+    asub(ASub,_,_,_,Fails),
+    Fails \= not_fails.
 
 %------------------------------------------------------------------------%
 % nf_call_to_entry(+,+,+,+,+,+,+,-,-)                                    %
@@ -229,9 +300,20 @@ widen(ASub,ASub0,NewASub):-
 % Simply put all tests together (this is due to the way this operation
 % is called from the fixpoint)
 
+:- pred nf_compute_lub(ListASub,Lub)
+   : ( list(nfabs_asub,ListASub), var(Lub) )
+   => ( list(nfabs_asub,ListASub), nfabs_par_asub(list(clause_test), Lub))
+   # "Produces in @var{Lub} a compact representation for (a subset of)
+     abstract substitutions in @var{ListASub} (the ones that do not fail
+     so far). It gathers together the clause tests of those abstract
+     substitutions as a list, meaning the disjunction of all of them
+     (i.e., a @tt{predicate test}, which is needed for performing the
+     @tt{covering check}). If the list of tests is empty, it
+     represents an empty set of abstract substitutions.".
+
 nf_compute_lub(ListASub,Lub):-
-    asub(Asub,[],'$bottom','$bottom','$bottom'),
-    foldr(accumulate,ListASub,Asub,Lub).
+     asub(Asub,[],'$bottom','$bottom','$bottom'),
+     foldr(accumulate,ListASub,Asub,Lub).
 
 accumulate('$bottom',ASub0,ASub0):- !.
 accumulate(ASub0,'$bottom',ASub0):- !.

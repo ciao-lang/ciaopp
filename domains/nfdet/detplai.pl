@@ -77,6 +77,21 @@
 
 %------------------------------------------------------------------------%
 
+:- export(det_asub/1).
+
+:- doc(det_asub(ASub), "@var{ASub} is an abstract substitution term
+   used in det. It contains types, modes and determinism
+   information.").
+
+:- regtype det_asub(ASub)
+   # "@var{ASub} is an abstract substitution term used in det.".
+
+det_asub('$bottom').
+det_asub(det(Types,Modes,Det)) :-
+    term(Types),
+    term(Modes),
+    detabs_asub(Det).
+
 %% asub('$bottom','$bottom',_Modes,_Det):- !.
 %% asub('$bottom',_Types,'$bottom',_Det):- !.
 %% asub('$bottom',_Types,_Modes,'$bottom'):- !.
