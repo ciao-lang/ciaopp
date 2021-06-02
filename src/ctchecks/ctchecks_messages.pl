@@ -156,7 +156,7 @@ message_pp_entry(Info,AbsInt,Goal,Head,Calls,Dict_,K,Status):-
     copy_term((Info,Goal,Head,Calls,Dict),(NInfo,NGoal,NHead,NCall,NVsNNs)),
     abs_sort(AbsInt,NInfo,Sorted_Info),
     varset(NGoal,NVars),
-    project(AbsInt,NGoal,NVars,_,Sorted_Info,Proj),
+    project(AbsInt,NGoal,NVars,[],Sorted_Info,Proj),
     output_user_interface(AbsInt,Proj,NVars,Props0),
     list_to_conj(Props0,Props),
     ( knows_of(regtypes,AbsInt) ->
@@ -297,7 +297,7 @@ message_pp_check(Info,AbsInt,Prop,Key,Dict,Status):-
     copy_term((Info,Prop,Dict),(NInfo,NProp,NDict)),
     abs_sort(AbsInt,NInfo,Sorted_Info),
     varset(NProp,NVars),
-    project(AbsInt,NProp,NVars,_,Sorted_Info,Proj),
+    project(AbsInt,NProp,NVars,[],Sorted_Info,Proj),
     output_user_interface(AbsInt,Proj,NVars,Props0),
     list_to_conj(Props0,Props),
     ( knows_of(regtypes,AbsInt) ->

@@ -369,7 +369,7 @@ trans_aux(calls_pp(G),AbsInt,Head,Call,[CInfo]):-!,
     varset(G,Qv),
     adapt_info_to_assrt_head(AbsInt,G,Qv,Call,Head,C1),
     varset(Head,Hv),
-    project(AbsInt,Head,Hv,_,C1,C2),
+    project(AbsInt,Head,Hv,[],C1,C2),
     my_asub_to_info(AbsInt,C2,Qv,CInfo,_Comp).
 trans_aux(success,AbsInt,Head,[complete(G,_C,Ss,_,_)|Completes],SInfoL):-!,  
     collect_success_info(Ss,AbsInt,Head,G,SInfoL1),
@@ -389,7 +389,7 @@ collect_success_info([S|Ss],AbsInt,Head,G,[SInfo|SInfoTail]):-
     varset(G,Qv),
     adapt_info_to_assrt_head(AbsInt,G,Qv,S,Head,S_tmp),
     varset(Head,Hv),
-    project(AbsInt,Head,Hv,_,S_tmp,S1),
+    project(AbsInt,Head,Hv,[],S_tmp,S1),
     my_asub_to_info(AbsInt,S1,Qv,SInfo,_Comp),
     collect_success_info(Ss,AbsInt,Head,G,SInfoTail).
 
