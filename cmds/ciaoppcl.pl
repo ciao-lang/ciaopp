@@ -65,6 +65,7 @@ CiaoPP shell (this is the default behavior):
 :- use_module(ciaopp_batch(ciaopp_worker)).
 :- use_module(ciaopp_actmod, [main/1]).
 :- use_module(ciaopp(frontend_driver), [cache_and_preload_lib_sources/0]).
+:- use_module(library(messages)).
 
 main(Args) :-
     catch(main_(Args), E, (handle_ciaopp_error(E), halt(1))).
@@ -260,6 +261,7 @@ is_flag_value_p(FV, F, V) :- atom_concat(['-p', F, '=', V], FV).
 :- use_module(library(menu/menu_generator), [
     % TODO: at least these operations should be in a separate module (menu_db?)
     get_menu_flags/1,
+    exists_menu_flag/2,
     restore_menu_flags_list/1]).
 :- use_module(ciaopp(ciaopp), [
     set_last_file/1,
@@ -305,8 +307,10 @@ ciaopp_run(Cmd, Flags) :-
     ; Timeout = none % No timeout
     ),
     get_menu_flags(OldMenuFlags),
-    set_flags(Flags, CmdOpt, [], OldFlags), % TODO: add a way to reset flags
-    once_port_reify(ciaopp_run_with_time_limit(Timeout, CmdRun, File, OFile, GotTimeout), Port),
+    set_flags(Flags, CmdOpt, [], OldFlags, FlagErrs), % TODO: add a way to reset flags
+    ( var(FlagErrs) -> FlagErrs = no ; true ),
+    once_port_reify(ciaopp_run_with_time_limit(Timeout, CmdRun, File, OFile, GotTimeout, FlagErrs), Port),
+    ( var(GotTimeout) -> GotTimeout = no ; true ),
     restore_flags(OldFlags),
     restore_menu_flags_list(OldMenuFlags),
     ( GotTimeout = yes ->
@@ -323,11 +327,13 @@ clcmd_to_menucmd(check(File), ana, check, File).
 clcmd_to_menucmd(check(File), check, check, File).
 :- endif.
 
-ciaopp_run_with_time_limit(none, Cmd0, File, OFile, GotTimeout) :- !,
-    auto_run(Cmd0, File, OFile), GotTimeout = no.
-ciaopp_run_with_time_limit(Timeout, Cmd0, File, OFile, GotTimeout) :-
-    call_with_time_limit(Timeout, auto_run(Cmd0, File, OFile), GotTimeout = yes),
-    ( var(GotTimeout) -> GotTimeout = no ; true ).
+ciaopp_run_with_time_limit(_Timeout, _Cmd0, _File, _OFile, _GotTimeout, FlagErrs) :-
+    FlagErrs = yes, !,
+    fail. % there were flag errors % TODO: throw exception? 
+ciaopp_run_with_time_limit(none, Cmd0, File, OFile, _GotTimeout, _FlagErrs) :- !,
+    auto_run(Cmd0, File, OFile).
+ciaopp_run_with_time_limit(Timeout, Cmd0, File, OFile, GotTimeout, _FlagErrs) :-
+    call_with_time_limit(Timeout, auto_run(Cmd0, File, OFile), GotTimeout = yes).
 
 auto_run(Cmd0, File, OFile) :-
     ( Cmd0 = ana -> auto_analyze(File, OFile)
@@ -335,30 +341,31 @@ auto_run(Cmd0, File, OFile) :-
     ; Cmd0 = opt -> auto_optimize(File, OFile)
     ).
 
-% Set context and save previous state in OldFlags
-set_flags([], _Cmd0, OldFlags, OldFlags).
-set_flags([Flag|Flags], Cmd0, OldFlags0, OldFlags) :-
-    set_flag(Flag, Cmd0, OldFlags0, OldFlags1),
-    set_flags(Flags, Cmd0, OldFlags1, OldFlags).
+% Set context and save previous state in OldFlags. Unify FlagErrs on errors
+set_flags([], _Cmd0, OldFlags, OldFlags, _FlagErrs).
+set_flags([Flag|Flags], Cmd0, OldFlags0, OldFlags, FlagErrs) :-
+    set_flag(Flag, Cmd0, OldFlags0, OldFlags1, FlagErrs),
+    set_flags(Flags, Cmd0, OldFlags1, OldFlags, FlagErrs).
 
-set_flag(f(F,V), Cmd0, OldFlags0, OldFlags) :- !,
-    ( set_menu_flag_option(Cmd0, F, V) -> true
-    ; display('Unrecognized flag '), displayq(F), nl
+set_flag(f(F,V), Cmd0, OldFlags0, OldFlags, FlagErrs) :- !,
+    ( exists_menu_flag(Cmd0, F) ->
+        set_menu_flag_option(Cmd0, F, V)
+    ; error_message("Unrecognized flag ~q",[F]), FlagErrs = yes
     ),
     OldFlags = OldFlags0.
-set_flag(opt_suffix(Suff), _Cmd0, OldFlags0, OldFlags) :- !,
+set_flag(opt_suffix(Suff), _Cmd0, OldFlags0, OldFlags, _FlagErrs) :- !,
     opt_suffix(OldSuff,Suff),
     OldFlags = [opt_suffix(OldSuff)|OldFlags0].
-set_flag(cwd(AbsPath), _Cmd0, OldFlags0, OldFlags) :- !,
+set_flag(cwd(AbsPath), _Cmd0, OldFlags0, OldFlags, _FlagErrs) :- !,
     working_directory(OldAbsPath,AbsPath),
     OldFlags = [cwd(OldAbsPath)|OldFlags0].
-set_flag(p(F,V), _Cmd0, OldFlags0, OldFlags) :- !,
+set_flag(p(F,V), _Cmd0, OldFlags0, OldFlags, _FlagErrs) :- !,
     ( current_pp_flag(F, OldV) ->
         set_pp_flag(F, V),
         OldFlags = [p(F,OldV)|OldFlags0]
     ; OldFlags = OldFlags0
     ).
-set_flag(_Flag, _Cmd0, OldFlags, OldFlags).
+set_flag(_Flag, _Cmd0, OldFlags, OldFlags, _FlagErrs).
 
 % Restore saved context
 restore_flags([]).
