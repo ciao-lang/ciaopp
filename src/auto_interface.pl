@@ -410,7 +410,7 @@ guard cct(X) :-
 
 guard cct_manual(X) :-
     member(ctcheck=Y, X),
-    Y == manual.
+    Y == on.
 
 % guard cct1(X) :-
 %       cct(X),
@@ -600,7 +600,7 @@ guard ana_or_check_not_nf_types(X)  :-
 
 guard custo_fixpoint(X) :-
     expert(X),
-    member(menu_fixpo=Y, X), Y == on.
+    member(custo_fixpo=Y, X), Y == on.
 
 guard custo_fixpoint_ana_gc(X)  :-
     member(fixpoint=Y,X),
