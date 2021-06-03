@@ -289,7 +289,20 @@ nfdet_widencall(ASub0,ASub1,ASub):-
 % nfdet_compute_lub(ListASub,Lub)                                        %
 %------------------------------------------------------------------------%
 
-nfdet_compute_lub(ListASub,Lub):-
+nfdet_compute_lub(ListASub0,Lub) :-
+    filter_not_bottom(ListASub0,ListASub),
+    nfdet_compute_lub_(ListASub,Lub).
+
+filter_not_bottom([], []).
+filter_not_bottom([X|Xs], Ys) :-
+    ( X = '$bottom' ->
+        Ys = Zs
+    ; Ys = [X|Zs]
+    ),
+    filter_not_bottom(Xs, Zs).
+
+nfdet_compute_lub_([],'$bottom') :- !.
+nfdet_compute_lub_(ListASub,Lub):-
     split(ListASub,LTypes,LModes,LNonF,LDet),
     shfr_compute_lub(LModes,LubModes),
     eterms_compute_lub(LTypes,LubTypes),
