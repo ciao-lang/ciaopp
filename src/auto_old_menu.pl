@@ -7,7 +7,7 @@ save_cfg, 'Menu Configuration Name' # menu_config_name  - none : show_mcfg.
 all, 'Menu Level'   # menu_level - naive.
 all, 'Action'       # inter_all  - analyze :: all_menu_branch.
 
-check   , 'Analysis Domain' # assert_ctcheck  - auto.
+check   , 'Analysis Domain' # ctcheck  - auto.
 %check(1), 'Modular Analysis'    # ct_mod_ana - curr_mod     <- cct.
 %check   , 'Modular Checking'    # ct_modular - curr_mod :: mod_check  <- cct.
 check   , 'Modules to Check' # ct_modular - curr_mod  :: mod_check  <- cct.
@@ -109,7 +109,7 @@ para     , 'Granularity Analysis'   # para_grain       - none.
 
 % ------------------------------------------------------------
 % fixpoint options
-~mfixpo,'Customize fixpoint'       # menu_fixpo - on     <- expert.
+~mfixpo,'Customize fixpoint'       # custo_fixpo - on     <- expert.
 ~mfixpo,'| Fixpoint Algorithm'     # fixpoint       - plai       <- custo_fixpoint. % TODO: was ana_gto (ana_or_check_not_nf + local_control=off)
 ~mfixpo,'| Widen Call'             # widencall      - com_child  <- custo_fixpoint.
 ~mfixpo,'| Variants'               # variants       - off        <- custo_fixpoint.
@@ -122,7 +122,7 @@ para     , 'Granularity Analysis'   # para_grain       - none.
 % ------------------------------------------------------------
 % output options
 % 0 = naive, 1 = expert
-~moutput(0),'Generate Output'           # menu_output          - on.
+~moutput(0),'Generate Output'           # output          - on.
 ~moutput(0),'| Output Language'         # output_lang          - source <- ana_or_check_output.
 ~moutput(0),'| Include Program Point'   # pp_info              - off    <- ana_or_check_output. % TODO: this option was enabled in opt+para menu, recover if needed
 ~moutput(0),'| Multi-variant Analysis Results' # vers          - off    <- ana_or_check_output. % TODO: this option was enabled in opt+para menu, recover if needed
@@ -130,4 +130,4 @@ para     , 'Granularity Analysis'   # para_grain       - none.
 ~moutput(0),'| Output Types'            # type_output          - all    <- ana_or_check_output.
 ~moutput(1),'| Output Resource'         # output_resources     - functions <- ana_or_check_output.
 ~moutput(1),'| Output Cost'             # cost_analysis_output - all    <- ana_or_check_output.
-~moutput(1),'Dump analysis'             # menu_dump            - off.
+~moutput(1),'Dump analysis'             # dump            - off.

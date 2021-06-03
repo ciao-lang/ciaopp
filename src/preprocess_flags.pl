@@ -251,20 +251,25 @@ pp_flag(menu_config_name, 'Name of the last menu stored configuration.').
 current_pp_flags(  menu_config_name   , none).
 valid_flag_values( menu_config_name   , atom(_)).
 
-pp_flag(menu_output). % only menu
-pp_flag(menu_output, 'Whether to generate output.').
-current_pp_flags(  menu_output   , on).
-valid_flag_values( menu_output   , member(_, [on,off])).
+pp_flag(output). % only menu
+pp_flag(output, 'Whether to generate output.').
+current_pp_flags(  output   , on).
+valid_flag_values( output   , member(_, [on,off])).
 
-pp_flag(menu_dump). % only menu
-pp_flag(menu_dump, 'Whether to dump the analysis (can be restored later).').
-current_pp_flags(  menu_dump   , off).
-valid_flag_values( menu_dump   , member(_, [off,default,incremental])).
+pp_flag(dump). % only menu
+pp_flag(dump, 'Whether to dump the analysis (can be restored later).').
+current_pp_flags(  dump   , off).
+valid_flag_values( dump   , member(_, [off,default,incremental])).
 
-pp_flag(menu_fixpo). % only menu
-pp_flag(menu_fixpo, 'Customize fixpoint.').
-current_pp_flags(  menu_fixpo   , on).
-valid_flag_values( menu_fixpo   , member(_, [on,off])).
+pp_flag(custo_fixpo). % only menu
+pp_flag(custo_fixpo, 'Customize fixpoint.').
+current_pp_flags(  custo_fixpo   , on).
+valid_flag_values( custo_fixpo   , member(_, [on,off])).
+
+pp_flag(dom_sel). % only menu
+pp_flag(dom_sel, 'Analysis domain selection.').
+current_pp_flags(  dom_sel   , auto).
+valid_flag_values( dom_sel   , member(_, [auto,manual])).
 
 pp_flag(main_module). % only menu
 pp_flag(main_module, 'Main module.').
@@ -410,14 +415,10 @@ current_pp_flags(  pcpe_evaltime       , 200   ).
 valid_flag_values( pcpe_evaltime       , nnegint(_)).
 :- endif.
 
-pp_flag(assert_ctcheck).
-pp_flag(assert_ctcheck, 'Decides whether to run compile-time checks and how the analyses to be used are selected. When auto is selected, CiaoPP tries to select automatically the appropriate analyses based on the properties that appear in the assertions to be checked.').
-current_pp_flags(  assert_ctcheck     , auto).
-:- if(defined(unified_menu)).
-valid_flag_values( assert_ctcheck     , member(_, [auto, manual])).
-:- else.
-valid_flag_values( assert_ctcheck     , member(_, [auto, manual, off])).
-:- endif.
+pp_flag(ctcheck). % only for menu
+pp_flag(ctcheck, 'Decides whether to run compile-time checks and how the analyses to be used are selected. When auto is selected, CiaoPP tries to select automatically the appropriate analyses based on the properties that appear in the assertions to be checked.').
+current_pp_flags(  ctcheck     , on).
+valid_flag_values( ctcheck     , member(_, [on, off])).
 
 pp_flag(gen_certificate).
 pp_flag(gen_certificate, 'Generate certificate (for abstraction-carrying code).').

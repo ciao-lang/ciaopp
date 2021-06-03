@@ -165,7 +165,7 @@
 % For this reason guards are like:
 %
 % guard cct(X) :-
-%       member(assert_ctcheck=Y, X),
+%       member(ctcheck=Y, X),
 %       Y == on.
 %
 % (NOTE the == !!!)
@@ -395,7 +395,7 @@ guard expert(X) :-
     member(menu_level=Y, X), Y == expert.
 
 guard cct2(X) :-
-    ( member(assert_ctcheck=Y, X) ->
+    ( member(ctcheck=Y, X) ->
         Y \== off
     ;
         member(inter_all=A, X),
@@ -405,11 +405,11 @@ guard cct2(X) :-
     ).
 
 guard cct(X) :-
-    member(assert_ctcheck=Y, X),
+    member(ctcheck=Y, X),
     Y \== off.
 
 guard cct_manual(X) :-
-    member(assert_ctcheck=Y, X),
+    member(ctcheck=Y, X),
     Y == manual.
 
 % guard cct1(X) :-
@@ -453,7 +453,8 @@ new_mod_ana(X,X) :-
         set_menu_flag(ana,mnu_modules_to_analyze, all),
         set_menu_flag(ana,module_loading, all), % monolithic by default
         set_menu_flag(ana,success_policy, under_all),
-        set_menu_flag(ana,preload_lib_sources, on)
+        set_menu_flag(ana,preload_lib_sources, on),
+        set_menu_flag(ana,output, off)
     ; true ).
 
 inc_ana(X,X) :-
@@ -466,6 +467,14 @@ inc_ana(X,X) :-
         %   of rule are never executed. Rewrite as guards that
         %   restrict fixpoint values instead?
         set_menu_flag(ana,fixpoint,dd)
+    ; true
+    ).
+
+post_ctcheck(X,X) :-
+    member(ctcheck=I,X),
+    ( I == off ->
+        % see comment in inc_ana
+        set_menu_flag(ana,dom_sel,manual)
     ; true
     ).
 
@@ -506,14 +515,14 @@ guard cct_mod(X) :-
     member(ct_modular=Y, X),
     Y == all.
 
-% True if assert_ctcheck is on (has been selected) OR % it has not
+% True if ctcheck is on (has been selected) OR % it has not
 % % been selected (native menu!) and flag value is on.
 % guard cct2(X) :-
-%       member(assert_ctcheck=Y, X),
+%       member(ctcheck=Y, X),
 %       !,
 %       Y == on.
 % guard cct2(_) :-
-%       get_menu_flag(~ctcheck_menu_name, assert_ctcheck, on).
+%       get_menu_flag(~ctcheck_menu_name, ctcheck, on).
 
 % guard cct_mod(X) :-
 %       member(ct_mod_ana=Y, X),
@@ -538,9 +547,17 @@ guard ana_or_check_expert(X) :-
     I == expert,
     ana_or_check(X).
 
+guard dom_manual(X) :-
+    member(dom_sel=I, X),
+    I == manual.
+
 guard ana_or_check_output(X)  :-
     ana_or_check(X),
-    member(menu_output=I, X),
+    member(output=I, X),
+    I == on.
+
+guard output_on(X)  :-
+    member(output=I, X),
     I == on.
 
 guard nf_not_selected(X) :-
@@ -553,6 +570,7 @@ guard nf_not_selected(X) :-
 guard cost_ana(X) :-
     %% expert(X),
     %% ana_or_check(X),
+    dom_manual(X),
     member(ana_cost=I,X),
     I \== none.
 
@@ -570,11 +588,13 @@ guard new_mod_expert(X)  :-
     member(intermod=I, X), I == on.
 
 guard ana_or_check_not_nf_evaltypes(X)  :-
+    dom_manual(X),
     ana_or_check_not_nf(X),
     member(types=Y, X),
     ( Y == eterms ; Y == svterms ). % TODO: ask the domain instead
 
 guard ana_or_check_not_nf_types(X)  :-
+    dom_manual(X),
     ana_or_check_not_nf(X),
     member(types=Y, X), Y \== none.
 
@@ -670,6 +690,7 @@ guard gencert(X) :-
 %         Y == sharefree_clique ).
 
 guard clipre(X)  :-
+    dom_manual(X),
     member(modes=Y, X),
     ( Y == share_clique
     ; Y == sharefree_clique
@@ -1058,7 +1079,7 @@ pop_flags([]).
 % auto_*/? predicates
 do_output(OFile, Menu) :-
     % human-readable output
-    get_menu_flag(Menu,menu_output,Output),
+    get_menu_flag(Menu,output,Output),
     ( Output == on ->
         ( current_pp_flag(intermod,on) ->
             warning_message("Output in source program of intermodular analysis currently not supported")
@@ -1068,7 +1089,7 @@ do_output(OFile, Menu) :-
     ; true
     ),
     % restorable output
-    get_menu_flag(Menu,menu_dump,DOut),
+    get_menu_flag(Menu,dump,DOut),
     ( \+ DOut == off ->
         ( var(OFile) -> curr_file(OFile,_), ! ; true ), % assuming one file
         atom_concat(OFile,'.dump', DumpF),
@@ -1126,9 +1147,9 @@ auto_check_assert(File, OFile) :-
 % TODO: load module first in both intermod on and off
 auto_check_assert_(File, OFile) :-
     % Make sure that we enabled ctchecks in the flags
-    get_menu_flag(~ctcheck_menu_name, assert_ctcheck, CTCHECKS),
+    get_menu_flag(~ctcheck_menu_name, ctcheck, CTCHECKS),
     ( CTCHECKS == off ->
-        error_message("Incompatible flag value: assert_ctcheck = off"), throw(bug)
+        error_message("Incompatible flag value: ctcheck = off"), throw(bug)
     ; true
     ),
     % Select and load TopLevel module (or just File if intermod is off)
