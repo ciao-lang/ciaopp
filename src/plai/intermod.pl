@@ -775,16 +775,20 @@ intermod_ctcheck_(AbsInts,_Modules,one,all) :- !,
 intermod_ctcheck_(AbsInts,Modules,one,curr_mod) :- !,
     modular_ctcheck(Modules,AbsInts).
 
-modular_ctcheck([], _AbsInts).
-modular_ctcheck([Module|Modules], AbsInts) :-
-    module(Module,_LoadInfo),
-    pplog(modular, ['{(intermod) analyzing for ctcheck: ',~~(Module)]),
-    set_local_ana_modules([Module]),
-    analyze1(AbsInts,_Info),
-    pplog(modular, ['}']),!,
-    just_module_name(Module, ModName),
-    simplify_assertions_mods(AbsInts,[ModName]),
-    modular_ctcheck(Modules, AbsInts).
+modular_ctcheck([], _).
+modular_ctcheck([ModulePath|ModulePaths], AbsInts) :-
+    just_module_name(ModulePath, ModName),
+    ( local_ana_module(_, ModName) -> true % already loaded and analyzed module
+    ; module(ModulePath,_LoadInfo),
+      pplog(modular, ['{(intermod) analyzing for ctcheck: ',~~(ModulePath)]),
+      set_local_ana_modules([ModulePath]),
+      % force reanalysis to be able to verify all assertions
+      mark_module_to_reanalyze(ModName,AbsInts),
+      analyze1(AbsInts,_Info), !,
+      pplog(modular, ['}'])
+    ),
+    acheck(AbsInts,[ModName]),
+    modular_ctcheck(ModulePaths, AbsInts).
 
 % -----------------------------------------------------------------------------
 :- pred auto_ctcheck_opt(+AbsInt,+TopLevel)

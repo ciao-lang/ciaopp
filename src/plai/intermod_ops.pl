@@ -293,6 +293,21 @@ mark_callers_registry([(Id,SgCaller,_Caller,Base)|Imdgs],PKey,ParentReg, AbsInt,
     update_mem_usage,
     mark_callers_registry(Imdgs,PKey,ParentReg,AbsInt,CurrModule,NewMark,BasenamesMarked0).
 
+:- export(mark_module_to_reanalyze/2).
+:- pred mark_module_to_reanalyze(+ModName,+AbsInts) + det.
+mark_module_to_reanalyze(ModName,AbsInts) :-
+    current_pp_flag(success_policy,Policy),
+    may_be_improved_mark(Policy,Mark),
+    ( % failure-driven loop
+      current_fact(registry(SgKey,ModName,OldReg), Ref),
+      OldReg = regdata(Id,AbsInt0,Sg,Call,Succ,Spec,ImdgList,Chdg,_OldMark),
+      ( member(AbsInt0, AbsInts) -> true ; fail),
+      erase(Ref), %% remove fact here because AbsInt is checked after obtaining the fact
+        NewReg = regdata(Id,AbsInt0,Sg,Call,Succ,Spec,ImdgList,Chdg,Mark),
+        assertz_fact(registry(SgKey,ModName,NewReg)),
+        fail
+    ; true ).
+
 %% ******************** SPEC ************************************************
 
 :- pred update_spec_info(+File,-Changed) + (not_fails, is_det)

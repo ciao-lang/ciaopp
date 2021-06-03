@@ -449,23 +449,25 @@ check_assertions([], _ModList) :-
 check_assertions(AbsInts, ModList):-
     pplog(ctchecks, ['{Checking assertions ']),
     pp_statistics(runtime,[CTime0,_]),
-    ( ( list(ModList) ->
-        member(Mod,ModList),
-        ( curr_file(File,Mod) -> true ; fail)
-        ;
-            curr_file(File,Mod)
-        ),
-      % failure-driven loop
-      pplog(ctchecks, ['{Checking assertions of\n', File]),
-      perform_pred_ctchecks(AbsInts,[Mod]),
-      perform_pp_ctchecks(AbsInts,[Mod]),
-      pplog(ctchecks, ['}']),
-      fail
+    ( % failure-driven loop
+      enum_file_mod(ModList,File,Mod),
+        pplog(ctchecks, ['{Checking assertions of\n', File]),
+        perform_pred_ctchecks(AbsInts,[Mod]),
+        perform_pp_ctchecks(AbsInts,[Mod]),
+        pplog(ctchecks, ['}']),
+        fail
     ; true),
     pp_statistics(runtime,[CTime1,_]),
     CTime is CTime1 - CTime0,
     pplog(ctchecks, ['{assertions checked in ',time(CTime), ' msec.}']),
     pplog(ctchecks, ['}']).
+
+% enum_file_mod(MaybeModList,Mod,File) :-
+enum_file_mod(all,File,Mod) :- !,
+    curr_file(File,Mod).
+enum_file_mod(ModList,File,Mod) :-
+    member(Mod,ModList),
+    ( curr_file(File,Mod) -> true ; fail ).
 
 %------------------------------------------------------------------------
 perform_pred_ctchecks(AbsInts,ModList) :-

@@ -227,7 +227,7 @@ get_cycles([CssId|CssIds],[Cycle|SortedCycles]) :-
 % TODO: review this doc
 :- pred compute_punit_modules(+TopLevel,-ModList,-Error)
    + (not_fails, is_det)
-   # "Obtains the list of modules to analyze. This list is formed by the modules
+   # "@var{ModList} is the list of modules to analyze. This list is formed by the modules
    which have their .reg file outdated, or if the module is not completely
    analyzed (some of the entries in the .reg file are marked or invalid). For
    those modules which have no .reg file, the @em{parents} of the module are
@@ -341,7 +341,7 @@ outdated_reg(Base,RegFile,RegTime) :-
     !,
     pplog(p_abs, ['{', ~~(RegFile), ' is not up-to-date}']).
 outdated_reg(_Base,RegFile,_RegTime) :-
-    pplog(p_abs, ['{', ~~(RegFile), ' is up-to-date}']).
+    pplog(p_abs, ['{', ~~(RegFile), ' is up-to-date}']), fail.
 
 changed_dep(Base,RegTime) :-
     get_module_filename(pl,Base,PlName),
