@@ -433,13 +433,10 @@ mod_check(X,X) :-
     ( A1 == naive ->
       member(ct_modular=E,X),
       ( E == all ->
-        % set_menu_flag(check,ct_ext_policy,registry),
         set_menu_flag(~ctcheck_menu_name,mnu_modules_to_analyze,all), % TODO: useless if intermod=off! enable it? (JF)
-        % set_menu_flag(check,ext_policy,registry),
-        set_menu_flag(~ctcheck_menu_name,ct_regen_reg,on)
-      ; % set_menu_flag(~ctcheck_menu_name,ct_ext_policy,assertions),
+        set_menu_flag(~ctcheck_menu_name,ct_regen_reg,on) % IG: probably not working
+      ;
         set_menu_flag(~ctcheck_menu_name,mnu_modules_to_analyze,current)
-        % set_menu_flag(~ctcheck_menu_name,ext_policy,assertions)
       )
     ; true
     ).
@@ -568,8 +565,6 @@ guard nf_not_selected(X) :-
     ).
 
 guard cost_ana(X) :-
-    %% expert(X),
-    %% ana_or_check(X),
     dom_manual(X),
     member(ana_cost=I,X),
     I \== none.
@@ -1111,6 +1106,10 @@ auto_analyze(File, OFile) :-
     with_menu_flags(ana, auto_analyze_(File, OFile)).
 
 auto_analyze_(File, OFile) :-
+    get_menu_flag(ana, ctcheck, Check),
+    Check = on, !,
+    auto_check_assert(File, OFile).
+auto_analyze_(File, OFile) :-
     module(File,Info),
     fail_if_module_error(Info), !,
     get_menu_flag(ana, inter_ana, AnaKinds),
@@ -1187,7 +1186,7 @@ exec_analyses_and_acheck(AbsInts, TopLevel, File, OFile) :-
     ( current_pp_flag(intermod, off) ->
         analyze(AbsInts),
         acheck_summary(AnyError) % TODO: TopLevel vs File?
-    ; ( current_pp_flag(interleave_an_check,on) -> % TODO: IG: probably this is not working
+    ; current_pp_flag(interleave_an_check,on) -> % TODO: IG: probably this is not working
         inductive_ctcheck_summary(AbsInts,TopLevel,AnyError)
     ;
         intermod_analyze(AbsInts,TopLevel,Info),
@@ -1199,15 +1198,15 @@ exec_analyses_and_acheck(AbsInts, TopLevel, File, OFile) :-
             % errors not propagated to caller (E.g., for command line, etc.)
             % see decide_summary/1 in analyze_driver
             AnyError = []
-        ),
-        ( member(error,AnyError) ->
-            true
-        ;
-            gencert_ctchecks(AnyError, File, GENCERT),
-            do_output(OFile, check),
-            set_last_file(File)
         )
-    )).
+    ),
+    ( member(error,AnyError) ->
+        true
+    ;
+        gencert_ctchecks(AnyError, File, GENCERT),
+        do_output(OFile, ~ctcheck_menu_name),
+        set_last_file(File)
+    ).
 
 analyze_each([]).
 analyze_each([D|Ds]) :-

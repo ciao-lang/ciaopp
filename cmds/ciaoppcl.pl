@@ -298,8 +298,9 @@ ciaopp_cmd(Cmd, Flags) :-
     ciaopp_run(Cmd, Flags).
 
 :- export(ciaopp_run/2).
-ciaopp_run(Cmd, Flags) :-
-    clcmd_to_menucmd(Cmd,CmdOpt,CmdRun,File),
+ciaopp_run(Cmd, Flags0) :-
+    cmd_alias(Cmd,Cmd0,File,Flags0,Flags, Stop),
+    Stop = no, !,
     ( member(output_file(OFile), Flags) -> true
     ; true % OFile unbound
     ),
@@ -307,9 +308,9 @@ ciaopp_run(Cmd, Flags) :-
     ; Timeout = none % No timeout
     ),
     get_menu_flags(OldMenuFlags),
-    set_flags(Flags, CmdOpt, [], OldFlags, FlagErrs), % TODO: add a way to reset flags
+    set_flags(Flags, Cmd0, [], OldFlags, FlagErrs), % TODO: add a way to reset flags
     ( var(FlagErrs) -> FlagErrs = no ; true ),
-    once_port_reify(ciaopp_run_with_time_limit(Timeout, CmdRun, File, OFile, GotTimeout, FlagErrs), Port),
+    once_port_reify(ciaopp_run_with_time_limit(Timeout, Cmd0, File, OFile, GotTimeout, FlagErrs), Port),
     ( var(GotTimeout) -> GotTimeout = no ; true ),
     restore_flags(OldFlags),
     restore_menu_flags_list(OldMenuFlags),
@@ -318,13 +319,29 @@ ciaopp_run(Cmd, Flags) :-
     ; true
     ),
     port_call(Port).
+ciaopp_run(_, _).
 
-clcmd_to_menucmd(opt(File), opt, opt, File).
-clcmd_to_menucmd(ana(File), ana, ana, File).
+% Expand command into CmdRun and flags
+cmd_alias(opt(File), opt, File, Flags, Flags, no).
+cmd_alias(ana(File), ana, File, Flags0, Flags, no) :-
+    ( member(f(ctcheck,_), Flags0) ->
+        Flags = Flags0
+    ; Flags = [f(ctcheck,off)|Flags0]
+    ).
 :- if(defined(unified_menu)).
-clcmd_to_menucmd(check(File), ana, check, File).
+cmd_alias(check(File), ana, File, Flags0, Flags, Stop) :-
+    ( member(f(ctcheck,off), Flags0) ->
+        warning_message("-V action is incompatible with ctcheck=off"),
+        Stop = yes
+    ; true
+    ),
+    ( member(f(output,_), Flags0) ->
+        Flags = Flags0
+    ; Flags = [f(output,off)|Flags0]
+    ),
+    ( var(Stop) -> Stop = no ; true ).
 :- else.
-clcmd_to_menucmd(check(File), check, check, File).
+cmd_alias(check(File), check, File, Flags, Flags, no).
 :- endif.
 
 ciaopp_run_with_time_limit(_Timeout, _Cmd0, _File, _OFile, _GotTimeout, FlagErrs) :-
@@ -337,7 +354,7 @@ ciaopp_run_with_time_limit(Timeout, Cmd0, File, OFile, GotTimeout, _FlagErrs) :-
 
 auto_run(Cmd0, File, OFile) :-
     ( Cmd0 = ana -> auto_analyze(File, OFile)
-    ; Cmd0 = check -> auto_check_assert(File, OFile)
+    ; Cmd0 = check -> auto_check_assert(File, OFile) % TODO: Needed? (JFMC)
     ; Cmd0 = opt -> auto_optimize(File, OFile)
     ).
 
