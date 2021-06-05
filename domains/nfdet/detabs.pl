@@ -315,8 +315,7 @@ accumulate(ASub,ASub0,NewASub):-
     tests_union(Tests1,Tests0,Tests),
     asub(NewASub,Tests,Unfold,MutExclusive,Det).
 
-tests_union(Tests,Tests0,Tests1):-
-    Tests=[_|_], !,
+tests_union(Tests,Tests0,Tests1):- ( Tests=[_|_] ; Tests = [] ), !,
     tests_union_(Tests,Tests0,Tests1).
 tests_union(Tests,Tests0,[Tests|Tests0]).
 
