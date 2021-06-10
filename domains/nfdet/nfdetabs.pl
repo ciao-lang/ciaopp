@@ -117,6 +117,7 @@ pred_test(Test) :-
 pred_test(Test) :-
     clause_test_disj(Test).
 
+:- export(clause_test_disj/1).
 :- regtype clause_test_disj(Test)
    # "@var{Test} is a list of @tt{clause tests}, representing the
      disjunction of them.".

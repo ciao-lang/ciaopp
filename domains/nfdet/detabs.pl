@@ -27,7 +27,7 @@
 :- use_module(domain(sharefree), [shfr_obtain_info/4]).
 :- use_module(domain(s_eqs), [peel/4]).
 :- use_module(domain(nfdet/nfdet_statistics)).
-:- use_module(domain(nfdet/nfdetabs), [pred_test/1, tests/5]).
+:- use_module(domain(nfdet/nfdetabs), [pred_test/1, tests/5, clause_test/1]).
 :- use_module(ciaopp(p_unit/program_keys), [predkey_from_sg/2]).
 
 :- use_module(library(idlists), [memberchk/2]).
