@@ -88,6 +88,8 @@
    domain @tt{nf}. It contains types, modes and nonfailure information
    of type @tt{NfTyp}.".
 
+:- meta_predicate nf_par_asub(pred(1), ?).
+
 nf_par_asub(_,'$bottom').
 nf_par_asub(NfTyp, nf(Types,Modes,NonFail)) :-
     term(Types),

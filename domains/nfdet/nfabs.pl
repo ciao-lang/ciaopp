@@ -91,6 +91,8 @@ nfabs_asub(ASub):- nfabs_par_asub(clause_test,ASub).
    # "@var{ASub} is an abstract substitution term used in nf with
      tests of type @var{TestTyp}.".
 
+:- meta_predicate nfabs_par_asub(pred(1), ?).
+
 nfabs_par_asub(_, '$bottom').
 nfabs_par_asub(TestTyp, nf(Tests,Unfold,Covered,Fails)) :-
     TestTyp(Tests),    

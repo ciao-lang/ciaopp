@@ -82,9 +82,12 @@ detabs_asub(ASub):- detabs_par_asub(clause_test,ASub).
 :- doc(detabs_par_asub(TestTyp,ASub), "@var{ASub} is an abstract
    substitution term used in det with tests of type @var{TestTyp}.").
 
+
 :- regtype detabs_par_asub(TestTyp,ASub)
    # "@var{ASub} is an abstract substitution term used in det with
      tests of type @var{TestTyp}.".
+
+:- meta_predicate detabs_par_asub(pred(1), ?).
 
 detabs_par_asub(_, '$bottom').
 detabs_par_asub(TestTyp, det(Tests,MutEx,Det)) :-
