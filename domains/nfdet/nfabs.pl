@@ -30,7 +30,7 @@
 :- use_module(domain(sharefree), [shfr_obtain_info/4]).
 :- use_module(domain(s_eqs), [peel/4]).
 :- use_module(domain(nfdet/nfdet_statistics)).
-:- use_module(domain(nfdet/nfdetabs), [pred_test/1, tests/5, unfold_t/1]).
+:- use_module(domain(nfdet/nfdetabs), [pred_test/1, tests/5, unfold_t/1,mode_types/1]).
 :- use_module(ciaopp(p_unit/program_keys), [predkey_from_sg/2]).
 
 :- use_module(library(idlists), [memberchk/2]).
@@ -99,7 +99,6 @@ nfabs_par_asub(TestTyp, nf(Tests,Unfold,Covered,Fails)) :-
     nonfailure_t(Fails).
 
 :- regtype nfabs_pred_asub(ASub)
-
    # "@var{ASub} is a compact representation for a set of abstract
      substitutions corresponding to (a subset of) clauses of a
      predicate (the ones that do not fail so far). It gathers together
@@ -126,7 +125,6 @@ nonfailure_t(possibly_fails).
 nonfailure_t(not_fails).
 nonfailure_t(fails).
 nonfailure_t('$bottom').
-
 
 asub(nf(Tests,Unfold_Tests,Covered,Fails),Tests,Unfold_Tests,Covered,Fails).
 
@@ -166,6 +164,7 @@ asub_can_fail(ASub) :-
 
 nf_call_to_entry(_Sv,Sg,Hv,Head,_K,_Fv,_Proj,InVars,Entry,_Extra):-
     nf_empty_entry(Sg,Hv,Entry0),
+    % TODO: Hv is irrelevant here, as the tests of Entry0 are ignored. 
     asub(Entry0,_Tests,Unfold,Covered,Fails),
     asub(Entry,Tests,Unfold,Covered,Fails),
     peel(Sg,Head,Bindings,[]),
@@ -205,7 +204,8 @@ nf_exit_to_prime(_Sg,_Hv,_Head,_Sv,_Exit,_Extra,'$bottom').
 % nf_project(+,+,+,+,-)                                                  %
 % nf_project(Sg,Vars,HvFv_u,ASub,Proj)                                   %
 %------------------------------------------------------------------------%
-% To project on Vars, leave only tests for Vars
+% TODO: Currently Proj = ASub.
+%       To project on Vars, leave only tests for Vars.
 
 nf_project(_Sg,Vars,_HvFv_u,ASub,Proj):-
     asub(ASub,Tests0,Unfold,Covered,Fails),
@@ -300,16 +300,18 @@ widen(ASub,ASub0,NewASub):-
 % Simply put all tests together (this is due to the way this operation
 % is called from the fixpoint)
 
-:- pred nf_compute_lub(ListASub,Lub)
-   : ( list(nfabs_asub,ListASub), var(Lub) )
-   => ( list(nfabs_asub,ListASub), nfabs_par_asub(list(clause_test), Lub))
-   # "Produces in @var{Lub} a compact representation for (a subset of)
-     abstract substitutions in @var{ListASub} (the ones that do not fail
-     so far). It gathers together the clause tests of those abstract
-     substitutions as a list, meaning the disjunction of all of them
-     (i.e., a @tt{predicate test}, which is needed for performing the
-     @tt{covering check}). If the list of tests is empty, it
-     represents an empty set of abstract substitutions.".
+:- pred nf_compute_lub(ListASub,CASub)
+   : ( list(nfabs_asub,ListASub),
+       var(CASub) )
+   => ( list(nfabs_asub,ListASub),
+        nfabs_par_asub(clause_test_disj,CASub) )
+   # "@var{CASub} is a compact representation for (a subset of)
+     abstract substitutions in @var{ListASub} (the ones that do not
+     fail so far). It gathers together the clause tests of those
+     abstract substitutions as a list, meaning the disjunction of all
+     of them (i.e., a @tt{predicate test}, which is needed for
+     performing the @tt{covering check}). If the list of tests is
+     empty, it represents an empty set of abstract substitutions.".
 
 nf_compute_lub(ListASub,Lub):-
      asub(Asub,[],'$bottom','$bottom','$bottom'),
@@ -383,6 +385,13 @@ lub_unfold_tests(A,B,C) :-
 %------------------------------------------------------------------------%
 % New operation, has to be called from fixpoint when all clauses of a 
 % predicate have been traversed: compute covering information
+
+:- pred nf_compute_covering(ModeTypes,CAsub,ASub)
+   :  ( mode_types(ModeTypes), nfabs_pred_asub(CAsub), var(ASub) )
+   => ( mode_types(ModeTypes), nfabs_pred_asub(CAsub), nfabs_pred_asub(ASub) )
+
+   # "@var{ASub} represents covering and failure information resulting
+     from performing the covering check over @var{CAsub}. ".
 
 nf_compute_covering(ModeTypes,Lub,ASub):-
     % this one is a little tricky: Lub is not a well-formed abstract

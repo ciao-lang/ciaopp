@@ -108,13 +108,20 @@ tests(t(InVars,Unif,Arith,Meta),InVars,Unif,Arith,Meta).
 
 :- regtype pred_test(Test)
    # "@var{Test} represents a predicate test, i.e., either a single
-     @tt{clause test}, or a list of @tt{clause tests}, representing
-     the disjunction of a set of clause tests. It is needed for
-     performing the covering and mutual exclusion checks.".
+   @tt{clause test}, or a list of @tt{clause tests}, representing the
+   disjunction of them. It is needed for performing the covering and
+   mutual exclusion checks.".
 
 pred_test(Test) :-
     clause_test(Test).
 pred_test(Test) :-
+    clause_test_disj(Test).
+
+:- regtype clause_test_disj(Test)
+   # "@var{Test} is a list of @tt{clause tests}, representing the
+     disjunction of them.".
+
+clause_test_disj(Test) :-
     list(clause_test, Test).
 
 :- export(unfold_t/1).
@@ -124,3 +131,12 @@ pred_test(Test) :-
 unfold_t(unfold).
 unfold_t(not_unfold).
 unfold_t('$bottom').
+
+:- export(mode_types/1).
+
+:- regtype mode_types(ModeTypes)
+   # "@var{ModeTypes} is a compact representation of the modes
+     (@tt{in}/@tt{out}) and (regular) types for a predicate.".
+
+mode_types(ModeTypes):- term(ModeTypes).
+

@@ -27,7 +27,7 @@
     nf_empty_entry/3,
     nf_dom_statistics/1,
     nf_obtain_info/4
-], [assertions,regtypes,basicmodes]).
+], [assertions,regtypes,basicmodes,hiord]).
 
 :- include(ciaopp(plai/plai_domain)).
 :- dom_def(nf).
@@ -77,25 +77,61 @@
 
 %------------------------------------------------------------------------%
 
+:- export(nf_par_asub/2).
+
+:- doc(nf_par_asub(NfTyp,ASub), "@var{ASub} is an abstract substitution
+   term used in the combined domain @tt{nf}. It contains types, modes
+   and nonfailure information of type @tt{NfTyp}.").
+
+:- regtype nf_par_asub(NfTyp,ASub)
+   # "@var{ASub} is an abstract substitution term used in the combined
+   domain @tt{nf}. It contains types, modes and nonfailure information
+   of type @tt{NfTyp}.".
+
+nf_par_asub(_,'$bottom').
+nf_par_asub(NfTyp, nf(Types,Modes,NonFail)) :-
+    term(Types),
+    term(Modes),
+    NfTyp(NonFail).
+
 :- export(nf_asub/1).
 
 :- doc(nf_asub(ASub), "@var{ASub} is an abstract substitution term
-   used in nf. It contains types, modes and nonfailure information.").
+   used in the combined domain @tt{nf}. It contains types, modes and
+   nonfailure information.").
 
 :- regtype nf_asub(ASub)
-   # "@var{ASub} is an abstract substitution term used in nf.".
+   # "@var{ASub} is an abstract substitution term used in the combined
+     domain @tt{nf}. It contains types, modes and nonfailure
+     information.".
 
-nf_asub('$bottom').
-nf_asub(nf(Types,Modes,Nf)) :-
-    term(Types),
-    term(Modes),
-    nfabs_asub(Nf).
+nf_asub(ASub):- nf_par_asub(nfabs_asub,ASub).
 
-:- export(asub/4).
+:- export(nf_pred_asub/1).
+
+:- regtype nf_pred_asub(ASub)
+
+   # "@var{ASub} is a compact representation for a set of abstract
+     substitutions used in the combined domain @tt{nf}. Each of the
+     substitutions in that set has the same modes and types. However,
+     the nonfailure information gathers together the clause tests of
+     those abstract substitutions as a list, meaning the disjunction
+     of all of them (named a @tt{predicate test}, which is needed for
+     performing the @tt{covering check}).".
+
+nf_pred_asub(ASub):- nf_par_asub(nfabs_pred_asub,ASub).
+
+:- export(nf_pred_asub_sl/1).
+
+:- regtype nf_pred_asub_sl/1.
+
+nf_pred_asub_sl([Asub]):- nf_pred_asub(Asub).
 
 %% asub('$bottom','$bottom',_Modes,_NonF):- !.
 %% asub('$bottom',_Types,'$bottom',_NonF):- !.
 %% asub('$bottom',_Types,_Modes,'$bottom'):- !.
+
+:- export(asub/4).
 
 asub(nf(Types,Modes,NonF),Types,Modes,NonF).
 
@@ -262,6 +298,19 @@ filter_non_bottom([ASub|L0],[ASub|L1]) :-
 % nf_compute_clauses_lub(+,-)                                            %
 % nf_compute_clauses_lub(ListASub,Lub)                                   %
 %------------------------------------------------------------------------%
+
+:- pred nf_compute_clauses_lub(ASubL,Proj,LubL)
+   :  (nf_pred_asub_sl(ASubL), nf_asub(Proj), var(LubL))
+   => (nf_pred_asub_sl(ASubL), nf_asub(Proj), nf_pred_asub_sl(LubL))
+   # "Performs the covering check that decides if the predicate test
+   encoded in @var{ASubL} covers the types/modes represented in
+   @var{Proj}. The predicate test is a conjunction of clause tests
+   (corresponding to those clauses that do not fail so far).  The
+   modes/types, taken from @var{Proj}, corresponds to the parent goal,
+   i.e., the one that unifies with the heads the clauses whose tests
+   are represented in @var{ASubL}. The covering and nonfailure
+   information derived from the covering check is represented in
+   @var{LubL}".
 
 nf_compute_clauses_lub(['$bottom'],_Proj,['$bottom']):- !.
 nf_compute_clauses_lub([ASub],Proj,[Lub]):-
