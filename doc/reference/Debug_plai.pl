@@ -72,6 +72,10 @@ activate it in the command line:
 $ ciaopp -A <file> -ftrace_fixp=trace
 @end{verbatim}
 
+Additionally, if the flag @tt{timestamp_trace} is set to @tt{on} (can only be
+set in the @tt{ciaopp} toplevel) a timestamp is printed when tracing. This can
+help finding perfomance issues.
+
 @section{Activate run-time checks}
 
 Go to any module, add @tt{:- use_package(rtchecks).} and recompile by
