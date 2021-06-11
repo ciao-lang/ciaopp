@@ -81,7 +81,7 @@ analysis @cite{determinacy-ngc09,determ-lopstr04}. The @tt{detg} and
 @tt{det} implementations reused most of the code of @tt{nfg} and
 @tt{nf} respectively.
 
-Abstract operations of this @{nfdet} domain are a tuple of
+Abstract operations of this @tt{nfdet} domain are a tuple of
 @tt{(@var{Types},@var{SharingFreeness},@var{Nonfailure},@var{Determinism})}
 elements, where @var{Types} carries types info, @var{SharingFreeness},
 sharing+freeness info; @var{Nonfailure}, nonfailure info; and

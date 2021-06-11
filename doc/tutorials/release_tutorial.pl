@@ -1069,7 +1069,7 @@ tests may be eliminated and invariants extracted automatically from
 loops, resulting generally in lower overheads and in several cases in
 increased speedups. We consider automatic parallelization of a program
 for matrix multiplication using the same analysis and parallelization
-algorithms as the @tt{ qsort} example used in
+algorithms as the @tt{qsort} example used in
 Section @ref{Parallelization}.
 
 ").
