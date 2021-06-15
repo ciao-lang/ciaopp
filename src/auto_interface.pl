@@ -1323,11 +1323,9 @@ decide_domain_monolithic(_AnaKind, none).
 needed_to_prove_prop(M, AbsInt, A) :-
     ( % failure-driven loop
       get_one_prop(M, Prop),
-      functor(Prop, FProp, AProp),
-      PropKey = FProp/AProp,
-      \+ prop_covered(PropKey, _),
+      \+ prop_covered(Prop, _),
         ( needed_to_prove(A, AbsInt, Prop) ->
-            set_prop_covered(PropKey, AbsInt)
+            set_prop_covered(Prop, AbsInt)
         ; true
         ),
         fail
