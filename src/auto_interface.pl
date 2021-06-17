@@ -901,7 +901,8 @@ exec_auto(check_assertions, F) :- !,
     auto_check_assert(F).
 exec_auto(check_certificate, F) :- !,
     auto_check_certificate(F).
-exec_auto(analyze_check, _) :- !.
+exec_auto(analyze_check, F) :- !,
+    auto_analyze(F).
 exec_auto(none, _) :- !.
 exec_auto(U, _F) :-
     error_message("Unknown option ~w while executing customize_and_preprocess", [U]).
