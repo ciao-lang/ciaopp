@@ -276,7 +276,7 @@ is_flag_value_p(FV, F, V) :- atom_concat(['-p', F, '=', V], FV).
     restore_menu_config/1,
     set_menu_flag/3,
     get_menu_flag/3]).
-:- use_module(ciaopp(preprocess_flags), [current_pp_flag/2]).
+:- use_module(ciaopp(preprocess_flags), [current_pp_flag/2,valid_flag_values/2]).
 :- use_module(library(system), [working_directory/2]).
 :- use_module(library(timeout), [call_with_time_limit/3]). % TODO: experimental!
 :- use_module(library(port_reify), [once_port_reify/2, port_call/1]).
@@ -323,26 +323,43 @@ ciaopp_run(_, _).
 
 % Expand command into CmdRun and flags
 cmd_alias(opt(File), opt, File, Flags, Flags, no).
+cmd_alias(ana(File), ana, File, Flags0, Flags, Stop) :-
+    member(f(ctcheck,on), Flags0), !,
+    cmd_alias(check(File), ana, File, Flags0, Flags, Stop).
 cmd_alias(ana(File), ana, File, Flags0, Flags, no) :-
-    ( member(f(ctcheck,_), Flags0) ->
-        Flags = Flags0
-    ; Flags = [f(ctcheck,off)|Flags0]
-    ).
+    ( member(f(dom_sel,V),Flags0) ->
+        ( V = auto ->
+            warning_message("Automatic domain selection is not valid if only analyzing. The default domains will be run.")
+            % Stop = yes ?
+        ;   true ),
+        Flags1 = Flags0
+    ;   Flags1 = [f(dom_sel,manual)|Flags0]
+    ),
+    ( member(f(ctcheck,_), Flags0) -> Flags=Flags1 ; Flags = [f(ctcheck,off)|Flags1]).
 :- if(defined(unified_menu)).
-cmd_alias(check(File), ana, File, Flags0, Flags, Stop) :-
-    ( member(f(ctcheck,off), Flags0) ->
+cmd_alias(check(File), ana, File, Fs0, Flags, Stop) :-
+    ( member(f(ctcheck,off), Fs0) ->
         warning_message("-V action is incompatible with ctcheck=off"),
         Stop = yes
     ; true
     ),
-    ( member(f(output,_), Flags0) ->
-        Flags = Flags0
-    ; Flags = [f(output,off)|Flags0]
-    ),
+    ( member(f(output,_), Fs0) -> Fs1 = Fs0 ; Fs1 = [f(output,off)|Fs0] ),
+    auto_include_dom_sel(Fs1, Flags),
     ( var(Stop) -> Stop = no ; true ).
 :- else.
 cmd_alias(check(File), check, File, Flags, Flags, no).
 :- endif.
+
+auto_include_dom_sel(Flags0, Flags) :-
+    member(f(dom_sel,_), Flags0), !, % if defined by the user, do nothing
+    Flags = Flags0.
+auto_include_dom_sel(Flags0, Flags) :-
+    valid_flag_values(inter_ana, sublist2(_,AnaKinds)),
+    ( (member(Ana,AnaKinds), member(f(Ana,_),Flags0)) ->
+        Flags = [f(dom_sel,manual)|Flags0]
+    ;
+        Flags = Flags0
+    ).
 
 ciaopp_run_with_time_limit(_Timeout, _Cmd0, _File, _OFile, _GotTimeout, FlagErrs) :-
     FlagErrs = yes, !,
@@ -454,4 +471,3 @@ ciaopp_toplevel(Opts2) :-
 handle_ciaopp_error(E) :-
     default_error_message(E),
     fail. % TODO: fail, abort or true?
-
