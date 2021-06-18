@@ -816,10 +816,10 @@ current_pp_flags(  prog_lang          , ciao).
 valid_flag_values( prog_lang          , member(_,Langs)) :-
     setof(L, supported_language(L), Langs).
 
-pp_flag(global_scheduling).
-pp_flag(global_scheduling, 'Global scheduling policy to be used in intermodular analysis.').
-current_pp_flags(  global_scheduling  , naive_bottom_up).
-valid_flag_values( global_scheduling  , member(_, [depth_first,
+pp_flag(intermod_scheduling).
+pp_flag(intermod_scheduling, 'Global scheduling policy to be used in intermodular analysis.').
+current_pp_flags(  intermod_scheduling  , naive_bottom_up).
+valid_flag_values( intermod_scheduling  , member(_, [depth_first,
     abs_depth_first, naive_top_down, naive_bottom_up, 
     top_down_preanalysis, bottom_up_preanalysis])).
 

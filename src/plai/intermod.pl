@@ -99,7 +99,7 @@ Global compilation options of intermodular analysis are available in
 
 %%------------------------------------------------------------------
 :- multifile dump_flags_list/2.
-dump_flags_list(intermod, [entry_policy,global_scheduling,punit_boundary]).
+dump_flags_list(intermod, [entry_policy,intermod_scheduling,punit_boundary]).
 
 %%------------------------------------------------------------------
 
@@ -217,7 +217,7 @@ intermod_analyze_(Mods,Ext,Load,_AbsInt,_TopLevel,_Info):-
    # "Performs the analysis of the program unit for which @var{Module} is
    the top-level module in the @var{AbsInt} abstract domain using an
    @em{automatic} global scheduling. The global scheduling to be
-   used is determined by the 'global_scheduling' preprocessing flag.".
+   used is determined by the 'intermod_scheduling' preprocessing flag.".
 modular_analyze(AbsInt,TopLevel,Info):-
     atom(AbsInt),!,
     modular_analyze([AbsInt],TopLevel,Info).
@@ -232,7 +232,7 @@ modular_analyze(AbsInts,TopLevel,Info):-
     pp_statistics(runtime,[T3,_]),   %% setup time.
     compute_punit_modules(TopLevel,ModList,Error),
     Error = no, !,
-    current_pp_flag(global_scheduling,Scheduling),
+    current_pp_flag(intermod_scheduling,Scheduling),
     setup_scheduling(Scheduling,AbsInts,TopLevel,ModList),
     pp_statistics(runtime,[T4,_]),  %% setup time.
     SetupTime is T4 - T3,
