@@ -1200,7 +1200,8 @@ auto_check_assert_(File, OFile) :-
         % Decide domains for the given program (if CTCHECKS is auto) or
         % just read from menu.
         get_menu_flag(ana, inter_ana, AnaKinds),
-        ( CTCHECKS == auto -> decide_domains(AnaKinds) ; true ),
+        get_menu_flag(~ctcheck_menu_name, dom_sel, DomSel),
+        ( DomSel == auto -> decide_domains(AnaKinds) ; true ),
         anakinds_to_absints(AnaKinds, ~ctcheck_menu_name, AbsInts),
         % pplog(auto_interface, ['{Analyses selected to check assertions: ',~~(AbsInts), '}']),
         % Perform analyses

@@ -416,7 +416,7 @@ valid_flag_values( pcpe_evaltime       , nnegint(_)).
 :- endif.
 
 pp_flag(ctcheck). % only for menu
-pp_flag(ctcheck, 'Decides whether to run compile-time checks and how the analyses to be used are selected. When auto is selected, CiaoPP tries to select automatically the appropriate analyses based on the properties that appear in the assertions to be checked.').
+pp_flag(ctcheck, 'Decides whether to run compile-time checks.').
 current_pp_flags(  ctcheck     , on).
 valid_flag_values( ctcheck     , member(_, [on, off])).
 
