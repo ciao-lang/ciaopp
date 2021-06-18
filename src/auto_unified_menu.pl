@@ -8,7 +8,7 @@ all, 'Menu level'   # menu_level - naive.
 all, 'Action'       # inter_all  - analyze_check :: all_menu_branch.
 
 ~munified(0), 'CTCheck assertions' # ctcheck  - on :: post_ctcheck.
-~munified(0), '| Modules to check' # ct_modular - curr_mod  :: mod_check  <- cct_manual.
+~munified(0), '| Modules to check' # ct_modular - curr_mod  :: post_mod_check  <- cct_manual.
 ~munified(0), '| Predicate-level checks'   # pred_ctchecks      - on   <- cct_manual.
 ~munified(0), '| Program point checks'     # pp_ctchecks        - on  <- cct_manual.
 ~munified(1), '| Multivariant checks'   # multivariant_ctchecks - off  <- cct_manual.
@@ -23,8 +23,8 @@ all, 'Action'       # inter_all  - analyze_check :: all_menu_branch.
 ~munified(0), 'Domain selection' # dom_sel          - auto   .
 ~munified(0), '| Aliasing/Modes' # modes            - shfr   <- dom_manual.
 ~munified(0), '| Shape/Types'    # types            - eterms <- dom_manual.
-~munified(1), '  | Type precision'       # type_precision   - all <- ana_or_check_not_nf_types.
-~munified(1), '  | Eval types'           # type_eval        - off <- ana_or_check_not_nf_evaltypes.
+~munified(1), '  | Type precision'       # type_precision   - all <- types_prec_guard.
+~munified(1), '  | Eval types'           # type_eval        - off <- eval_types_guard.
 ~munified(0), '  | Widening sharing'     # clique_widen     - off       <- clipre.
 ~munified(1), '  | Type of widening'     # clique_widen_type- cautious  <- clipre.
 ~munified(1), '  | Upper bound threshold'# clique_widen_ub  - 200       <- clipre.
@@ -41,13 +41,13 @@ all, 'Action'       # inter_all  - analyze_check :: all_menu_branch.
 ~munified(1), '| Cost'          # para_cost        - both      <- para_c1.
 :- endif.
 
-~munified(1), 'Analysis entry'         # entry_point      - entry_calls <- expert.
+~munified(1), 'Analysis entry'         # entry_point      - entry_calls.
 
 % ------------------------------------------------------------
 % modularity options
-~munified(0), 'Incremental'                  # incremental - off :: inc_ana.
+~munified(0), 'Incremental'                  # incremental - off :: post_inc_ana.
 % curated modular analysis flags
-~munified(0), 'Intermodular'                 # intermod       - off :: new_mod_ana.
+~munified(0), 'Intermodular'                 # intermod       - off :: post_mod_ana.
 ~munified(0), '| Entry module'               # entry_policy   - top_level <- new_mod.
 ~munified(0), '| Module loading'             # module_loading - all  <- new_mod.
 ~munified(1), '| Success policy'             # success_policy - under_all <- new_mod.
@@ -56,7 +56,7 @@ all, 'Action'       # inter_all  - analyze_check :: all_menu_branch.
 
 % ------------------------------------------------------------
 % fixpoint options
-~munified(0), 'Customize fixpoint'       # custo_fixpo     - on     <- expert.
+~munified(1), 'Customize fixpoint'       # custo_fixpo     - on.
 ~munified(0), '| Fixpoint algorithm'     # fixpoint       - plai       <- custo_fixpoint. % TODO: was ana_gto (ana_or_check_not_nf + local_control=off)
 ~munified(1), '| Widen call'             # widencall      - com_child  <- custo_fixpoint.
 ~munified(1), '| Variants'               # variants       - off        <- custo_fixpoint.

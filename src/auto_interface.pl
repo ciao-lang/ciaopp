@@ -391,9 +391,11 @@ ctcheck_menu_name(ana).
 ctcheck_menu_name(check).
 :- endif.
 
+% to be removed when old_menu is removed
 guard expert(X) :-
     member(menu_level=Y, X), Y == expert.
 
+% to be removed when old_menu is removed
 guard cct2(X) :-
     ( member(ctcheck=Y, X) ->
         Y \== off
@@ -404,6 +406,7 @@ guard cct2(X) :-
         A1 == naive
     ).
 
+% to be removed when old_menu is removed
 guard cct(X) :-
     member(ctcheck=Y, X),
     Y \== off.
@@ -428,7 +431,7 @@ guard cct_manual(X) :-
 %       ; true
 %       ).
 
-mod_check(X,X) :-
+post_mod_check(X,X) :-
     member(menu_level=A1,X),
     ( A1 == naive ->
       member(ct_modular=E,X),
@@ -441,7 +444,7 @@ mod_check(X,X) :-
     ; true
     ).
 
-new_mod_ana(X,X) :-
+post_mod_ana(X,X) :-
     member(intermod=I,X),
     ( I == on ->
         set_menu_flag(ana,ext_policy,registry),
@@ -454,7 +457,7 @@ new_mod_ana(X,X) :-
         set_menu_flag(ana,output, off)
     ; true ).
 
-inc_ana(X,X) :-
+post_inc_ana(X,X) :-
     member(incremental=I,X),
     ( I == on ->
         % TODO: this does not seem to be working in the playground
@@ -475,6 +478,7 @@ post_ctcheck(X,X) :-
     ; true
     ).
 
+% to be removed when old_menu is removed
 post_iter(X,X) :-
     member(ct_mod_iterate=A,X),
     ( A == on ->
@@ -492,6 +496,7 @@ post_iter(X,X) :-
         set_menu_flag(~ctcheck_menu_name,mnu_modules_to_analyze,current)
     ).
 
+% to be removed when old_menu is removed
 reg_reg(X,X):-
     member(ct_regen_reg=A,X),
     ( A==on ->
@@ -500,6 +505,7 @@ reg_reg(X,X):-
     ; true
     ).
 
+% to be removed when old_menu is removed
 guard cct_mod_reg(X) :-
     cct_mod(X),
     member(ct_ext_policy=Y, X),
@@ -507,6 +513,7 @@ guard cct_mod_reg(X) :-
     member(ct_mod_iterate=Y1, X),
     Y1 == on.
 
+% to be removed when old_menu is removed
 guard cct_mod(X) :-
     cct(X),
     member(ct_modular=Y, X),
@@ -529,6 +536,7 @@ guard cct_mod(X) :-
 %       ; true
 %       ).
 
+% to be removed when old_menu is removed
 guard ana_or_check(X)  :-
     member(inter_all=I, X),
     (
@@ -539,6 +547,7 @@ guard ana_or_check(X)  :-
         I == analyze
     ).
 
+% to be removed when old_menu is removed
 guard ana_or_check_expert(X) :-
     member(menu_level=I, X),
     I == expert,
@@ -548,15 +557,18 @@ guard dom_manual(X) :-
     member(dom_sel=I, X),
     I == manual.
 
+% to be removed when old_menu is removed
 guard ana_or_check_output(X)  :-
     ana_or_check(X),
     member(output=I, X),
     I == on.
 
+% to be removed when old_menu is removed
 guard output_on(X)  :-
     member(output=I, X),
     I == on.
 
+% to be removed when old_menu is removed
 guard nf_not_selected(X) :-
     ( member(ana_nf=NF, X) ->
         NF == none
@@ -569,6 +581,7 @@ guard cost_ana(X) :-
     member(ana_cost=I,X),
     I \== none.
 
+% to be removed when old_menu is removed
 % Almost everything have this preconditions
 ana_or_check_not_nf(X)  :-
     ana_or_check(X),
@@ -582,12 +595,26 @@ guard new_mod_expert(X)  :-
     expert(X),
     member(intermod=I, X), I == on.
 
+% IG: in the old menu this option was available for all types domains. However,
+% the flag is only implemented for terms.
+guard types_prec_guard(X) :-
+    dom_manual(X),
+    member(types=Y, X),
+    ( Y == terms ). % Y \= none
+
+guard eval_types_guard(X) :-
+    dom_manual(X),
+    member(types=Y, X),
+    ( Y == eterms ; Y == svterms ). % TODO: ask the domain instead
+
+% to be removed when old_menu is removed
 guard ana_or_check_not_nf_evaltypes(X)  :-
     dom_manual(X),
     ana_or_check_not_nf(X),
     member(types=Y, X),
     ( Y == eterms ; Y == svterms ). % TODO: ask the domain instead
 
+% to be removed when old_menu is removed
 guard ana_or_check_not_nf_types(X)  :-
     dom_manual(X),
     ana_or_check_not_nf(X),
@@ -619,6 +646,7 @@ guard custo_fixpoint_ana_lc(X)  :-
     member(modes=M, X), M \== none.
 
 :- if(defined(has_ciaopp_extra)).
+% to be removed when old_menu is removed
 guard paral(X) :-
     member(inter_all=I, X),
     member(inter_optimize=I2, X),
@@ -626,11 +654,13 @@ guard paral(X) :-
     I2 == parallelize.
 :- endif.
 
+% to be removed when old_menu is removed
 guard ana_or_check_or_paral(X) :- ana_or_check(X).
 :- if(defined(has_ciaopp_extra)).
 guard ana_or_check_or_paral(X) :- paral(X).
 :- endif.
 
+% to be removed when old_menu is removed
 guard ana_or_check_or_paral_uoudg(X) :-
     ana_or_check(X).
 :- if(defined(has_ciaopp_extra)).
@@ -640,6 +670,7 @@ guard ana_or_check_or_paral_uoudg(X) :-
     (Y == uoudg).  %  ; Y == uudg ; Y == disjwait).
 :- endif.
 
+% to be removed when old_menu is removed
 guard ana_or_check_or_paral_gr(X) :-
     ana_or_check(X).
 :- if(defined(has_ciaopp_extra)).
@@ -672,6 +703,7 @@ guard spec_pif(X)  :-
     member(spec_poly=Y, X),
     Y \== off.
 
+% to be removed when old_menu is removed
 guard gencert(X) :-
     member(gen_certificate=Y, X),
     Y == on.
