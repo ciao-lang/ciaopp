@@ -365,7 +365,7 @@ set_flags([Flag|Flags], Cmd0, OldFlags0, OldFlags, FlagErrs) :-
     set_flags(Flags, Cmd0, OldFlags1, OldFlags, FlagErrs).
 
 set_flag(f(F,V), Cmd0, OldFlags0, OldFlags, FlagErrs) :- !,
-    ( exists_menu_flag(Cmd0, F) ->
+    ( (exists_menu_flag(Cmd0, F) ; F = menu_config_name ; F = menu_last_config) ->
         set_menu_flag_option(Cmd0, F, V)
     ; error_message("Unrecognized flag ~q",[F]), FlagErrs = yes
     ),
