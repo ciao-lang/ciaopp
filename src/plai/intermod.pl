@@ -5,16 +5,16 @@
         intermod_analyze/2,
         intermod_analyze/3,
         intermod_ctcheck/2,
-        auto_transform/3,
-        auto_simp_libs/2,
-        auto_simp_libs/3,
+        intermod_transform/3, % not used elsewhere
+        intermod_simp_libs/2, % not used elsewhere
+        intermod_simp_libs/3, % not used elsewhere
         % scenario 5
         inductive_ctcheck/2,
         inductive_ctcheck/4,
         inductive_ctcheck_summary/3,
         % scenario 3
-        auto_ctcheck_opt/2,
-        auto_ctcheck_opt/3
+        intermod_ctcheck_opt/2, % not used elsewhere
+        intermod_ctcheck_opt/3  % not used elsewhere
     ],[assertions, basicmodes, nativeprops, fsyntax]).
 
 :- use_package(dynamic). % TODO: use datafacts? dynamic is here only for asserta/1, retract/1 and the 'dead-code' part
@@ -539,12 +539,13 @@ debug_inc_dump_dir(_). % if the dump directory is not set, do not dump
 %% ********************************************************************
 %%    registry must have reached a fixpoint!!!!!!!
 % NOT reviewed by IG
-:- pred auto_check(+AbsInt,+TopLevel) # "After using @pred{modular_analyze/2},
+% not exported and not used
+:- pred intermod_check_certificate(+AbsInt,+TopLevel) # "After using @pred{modular_analyze/2},
    this predicate allows checking the results of the analysis. Generates
    internal (@code{complete/7}) information for all the modules in the program
    unit @var{TopLevel}, and stores it in memory in order to compare it with the
    results of @pred{monolithic_analyze/2}.".
-auto_check(AbsInt,TopLevel):-
+intermod_check_certificate(AbsInt,TopLevel):-
     atom(AbsInt),  % Only one analysis domain is considered.
     valid_mod_analysis(AbsInt),
     cleanup_intermod,
@@ -559,7 +560,7 @@ auto_check(AbsInt,TopLevel):-
     retractall_fact(complete_prev(_,_,_,_,_,_,_)),
     push_pp_flag(reuse_fixp_id,on),
     fixpo_ops:reset_previous_analysis(AbsInt),
-    auto_check_modules(AbsInt,ModList), %% reanalyzes all modules' entries.
+    intermod_check_certificate_modules(AbsInt,ModList), %% reanalyzes all modules' entries.
     %%
     %% Checking that completes are equal to those computed with monolithic_analyze.
     module(ModList),
@@ -581,16 +582,16 @@ auto_check(AbsInt,TopLevel):-
     pop_pp_flag(entry_policy),
     pop_pp_flag(intermod),
     pplog(modular, ['}']).
-auto_check(_,[error]).
+intermod_check_certificate(_,[error]).
 
 % checking_fixpoint(check_di).
 
-auto_check_modules(_AbsInt,[]).
-auto_check_modules(AbsInt,[M|Ms]):-
-    auto_check_one_module(AbsInt,M),
-    auto_check_modules(AbsInt,Ms).
+intermod_check_certificate_modules(_AbsInt,[]).
+intermod_check_certificate_modules(AbsInt,[M|Ms]):-
+    intermod_check_certificate_one_module(AbsInt,M),
+    intermod_check_certificate_modules(AbsInt,Ms).
 
-auto_check_one_module(AbsInt,File):-
+intermod_check_certificate_one_module(AbsInt,File):-
     absolute_file_name(File, '_opt', '.pl', '.', _, BaseAbs, _),
     just_module_name(BaseAbs,Module),
     pplog(modular, ['{generating check info for module: ',~~(BaseAbs)]),
@@ -624,24 +625,24 @@ filter_completes(_AbsInt,_Module).
 %% Modular program transformations (for specialization)
 %% ******************************************************************
 % NOT reviewed by IG
-:- pred auto_transform(+AbsInt,+Trans,+TopLevel)
+:- pred intermod_transform(+AbsInt,+Trans,+TopLevel)
 # "Performs transformation @var{Trans} of the program unit which has
   @var{TopLevel} as top-level module, using @var{AbsInt} to get
   information about the program.".
-auto_transform(AbsInt,Trans,TopLevel):-
-    auto_transform_(AbsInt,Trans,TopLevel,_Info).
+intermod_transform(AbsInt,Trans,TopLevel):-
+    intermod_transform_(AbsInt,Trans,TopLevel,_Info).
 
-auto_transform_(AbsInt,Trans,TopLevel,Info):-
+intermod_transform_(AbsInt,Trans,TopLevel,Info):-
     valid_transformation(Trans), !,
     cleanup_intermod,
-    pplog(modular, ['{Transforming with auto_transform: ',~~(TopLevel)]),
+    pplog(modular, ['{Transforming with intermod_transform: ',~~(TopLevel)]),
     set_main_module(TopLevel),
     push_pp_flag(intermod,auto),
     push_pp_flag(entry_policy,force),
     %%
     get_all_module_cycles(TopLevel,CycleList),
     pp_statistics(runtime,[T1,_]),
-    auto_transform_cycles(CycleList,AbsInt,Trans),
+    intermod_transform_cycles(CycleList,AbsInt,Trans),
     pp_statistics(runtime,[T2,_]),
     global_time_ellapsed(T2,T1,Ellapsed),
     Info = [time(Ellapsed,[(transform,Ellapsed)])],
@@ -663,10 +664,10 @@ valid_transformation(Trans):-
 
 %% ---------------------------------------------------------------------------
 
-auto_transform_cycles([], _AbsInt,_Trans) :- !.
-auto_transform_cycles([Cycle|CycleList], AbsInt,Trans):-
+intermod_transform_cycles([], _AbsInt,_Trans) :- !.
+intermod_transform_cycles([Cycle|CycleList], AbsInt,Trans):-
     transform_one_cycle(AbsInt,Trans,Cycle),
-    auto_transform_cycles(CycleList,AbsInt,Trans).
+    intermod_transform_cycles(CycleList,AbsInt,Trans).
 
 transform_one_cycle(AbsInt,Trans,[Base]):- !,
     transform_one_module(AbsInt,Trans,Base,_Changed).
@@ -727,7 +728,7 @@ transform_(Trans,AbsInt,Cls,Ds,BaseAbs,Changed):-
 
 %%This pred has been taken and adapted from driver.pl.
 simpspec_(vers,_AbsInt,_Cls,_Ds,_NewCls,_NewDs):- !,
-    message(inform, ['{vers not implemented yet in auto_transform/4}']),
+    message(inform, ['{vers not implemented yet in intermod_transform/4}']),
     fail.
 simpspec_(codegen,AbsInt,Cls,Ds,NewCls,NewDs):- !,
     ( current_pp_flag(local_control,off) ->
@@ -791,22 +792,22 @@ modular_ctcheck([ModulePath|ModulePaths], AbsInts) :-
     modular_ctcheck(ModulePaths, AbsInts).
 
 % -----------------------------------------------------------------------------
-:- pred auto_ctcheck_opt(+AbsInt,+TopLevel)
+:- pred intermod_ctcheck_opt(+AbsInt,+TopLevel)
 # "Performs CT assertion checking of the program unit which has
   @var{TopLevel} as a top-level module, using @var{AbsInt} to get
   information about the program (exploits order of the modules).".
 % NOT reviewed by IG
-:- doc(bug,"auto_ctcheck_opt/2-3 does modify the source code of
+:- doc(bug,"intermod_ctcheck_opt/2-3 does modify the source code of
     program modules.  This issue can only be solved when _opt.pl
     files are handled properly.").
 
-auto_ctcheck_opt(AbsInt, TopLevel) :-
-    auto_ctcheck_opt(AbsInt, TopLevel,_Info).
+intermod_ctcheck_opt(AbsInt, TopLevel) :-
+    intermod_ctcheck_opt(AbsInt, TopLevel,_Info).
 
-auto_ctcheck_opt(AbsInt, TopLevel, [(time,Time),Info]) :-
+intermod_ctcheck_opt(AbsInt, TopLevel, [(time,Time),Info]) :-
     valid_mod_analysis(AbsInt),!,
     cleanup_intermod,
-    pplog(modular, ['{Modular-based assertion checking with auto_ctcheck_opt: ',~~(TopLevel)]),
+    pplog(modular, ['{Modular-based assertion checking with intermod_ctcheck_opt: ',~~(TopLevel)]),
 %jcf%   copy_sources,
     push_pp_flag(intermod,auto),
     push_pp_flag(entry_policy,force),
@@ -816,15 +817,15 @@ auto_ctcheck_opt(AbsInt, TopLevel, [(time,Time),Info]) :-
     set_main_module(CopyTopLevel),
     get_all_module_cycles(CopyTopLevel, ModuleLList),
     append(ModuleLList, ModuleList),
-    auto_ctcheck_opt_(ModuleList, AbsInt, TopLevel, Info),
+    intermod_ctcheck_opt_(ModuleList, AbsInt, TopLevel, Info),
     pop_pp_flag(entry_policy),
     pop_pp_flag(intermod),
     pp_statistics(runtime,[T2,_]),
     Time is T2 - T1,
     pplog(modular, ['}']).
 
-auto_ctcheck_opt_([], _AbsInt, _TopModule, assert_count([])).
-auto_ctcheck_opt_([Module|Modules], AbsInt, TopModule, assert_count(Info)) :-
+intermod_ctcheck_opt_([], _AbsInt, _TopModule, assert_count([])).
+intermod_ctcheck_opt_([Module|Modules], AbsInt, TopModule, assert_count(Info)) :-
 %       absolute_file_name(FileName, '_opt', '.pl', '.', _, Base, _),
     module(Module,_LoadInfo),
     pplog(modular, ['{Analyzing for auto_ctcheck: ',~~(Module)]),
@@ -845,7 +846,7 @@ auto_ctcheck_opt_([Module|Modules], AbsInt, TopModule, assert_count(Info)) :-
       delete_file(Module_ast)
     ; true
     ),
-    auto_ctcheck_opt_(Modules, AbsInt, TopModule, assert_count(Info2)),
+    intermod_ctcheck_opt_(Modules, AbsInt, TopModule, assert_count(Info2)),
     combine_info(Info1, Info2, Info).
 
 % -----------------------------------------------------------------------------
@@ -1000,21 +1001,21 @@ delete_files_type_(Dir,Ext,[File|Files]):-
 %% dead-code elimination for libraries.
 %% ******************************************************************
 % NOT reviewed by IG
-:- doc(bug,"The code for auto_simp_libs/2-3 is still under rough
+:- doc(bug,"The code for intermod_simp_libs/2-3 is still under rough
     development.").
 
-:- pred auto_simp_libs(+TopLevel,+Dir)
+:- pred intermod_simp_libs(+TopLevel,+Dir)
 # "Generates a copy of the program represented by @var{TopLevel} and
    the libraries used (except those in @tt{engine}) in @var{Dir}, and
    removes dead-code from both user modules and libraries.".
 
-auto_simp_libs(TopLevel,Dir0):-
-    auto_simp_libs(TopLevel,Dir0,_Info).
+intermod_simp_libs(TopLevel,Dir0):-
+    intermod_simp_libs(TopLevel,Dir0,_Info).
 
-auto_simp_libs(TopLevel,Dir,Info):-
+intermod_simp_libs(TopLevel,Dir,Info):-
     cleanup_intermod,
     file_exists(Dir), !,
-    pplog(modular, ['{Processing with auto_simp_libs: ',~~(TopLevel)]),
+    pplog(modular, ['{Processing with intermod_simp_libs: ',~~(TopLevel)]),
     set_main_module(TopLevel),
     pplog(modular, ['{Removing all files in ',~~(Dir),'}']),
     push_pp_flag(intermod,auto),
@@ -1037,7 +1038,7 @@ auto_simp_libs(TopLevel,Dir,Info):-
     cleanup_itf_cache,
     modular_analyze(pdb,NewTopLevel,Info0),
     %           monolithic_analyze(pdb,NewTopLevel),
-    auto_transform_(pdb,simp,NewTopLevel,Info1),
+    intermod_transform_(pdb,simp,NewTopLevel,Info1),
     append(Info0,Info1,Info),
     retract(library_directory(Dir)),
     retract(file_search_path(engine,DirEngine)),
@@ -1045,7 +1046,7 @@ auto_simp_libs(TopLevel,Dir,Info):-
     pop_pp_flag(entry_policy),
     pop_pp_flag(intermod),
     pplog(modular, ['}']).
-auto_simp_libs(_TopLevel,Dir,_Info):-
+intermod_simp_libs(_TopLevel,Dir,_Info):-
     pplog(modular, ['Directory does not exist: ',~~(Dir)]).
 
 copy_modules([],_,[]).
