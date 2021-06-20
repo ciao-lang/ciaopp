@@ -356,11 +356,15 @@ menu_default(para, ana_nf, nf). % TODO: was nfg (NFGRAPH-based)
 :- endif.
 
 all_tr(optimize, opt).
+:- if(defined(unified_menu)).
+all_tr(analyze_check, ana). % for unified menu
+:- else.
 all_tr(analyze, ana).
 all_tr(check_assertions, check).
-all_tr(analyze_check, ana). % for unified menu
+:- endif.
 all_tr(A, A).
 
+% NOTE: requires nondet for offline menu generation
 all_menu_branch(A, B) :-
     member(inter_all=Br, A),
     member(menu_level=L, A),
@@ -1357,11 +1361,9 @@ decide_domain_monolithic(_AnaKind, none).
 needed_to_prove_prop(M, AbsInt, A) :-
     ( % failure-driven loop
       get_one_prop(M, Prop),
-      functor(Prop, FProp, AProp),
-      PropKey = FProp/AProp,
-      \+ prop_covered(PropKey, _),
+      \+ prop_covered(Prop, _),
         ( needed_to_prove(A, AbsInt, Prop) ->
-            set_prop_covered(PropKey, AbsInt)
+            set_prop_covered(Prop, AbsInt)
         ; true
         ),
         fail
