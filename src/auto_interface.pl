@@ -356,15 +356,11 @@ menu_default(para, ana_nf, nf). % TODO: was nfg (NFGRAPH-based)
 :- endif.
 
 all_tr(optimize, opt).
-:- if(defined(unified_menu)).
-all_tr(analyze_check, ana). % for unified menu
-:- else.
 all_tr(analyze, ana).
 all_tr(check_assertions, check).
-:- endif.
+all_tr(analyze_check, ana). % for unified menu
 all_tr(A, A).
 
-% NOTE: requires nondet for offline menu generation
 all_menu_branch(A, B) :-
     member(inter_all=Br, A),
     member(menu_level=L, A),
@@ -1335,16 +1331,17 @@ select_anaflags([f(AnaKind,AbsInt)|AnaFlags]) :-
 % Decide necessary domains from assertions to be checked
 
 cleanup_decide_domains :-
-    retractall_fact(prop_covered(_,_)).
+    retractall_fact(prop_covered(_,_,_)).
 
-:- data prop_covered/2.
-% Cache to store whether a (native) property was already covered in
+:- data prop_covered/3.
+% prop_covered(F,A,AbsInt):
+% Cache to store whether a (native) property F/A was already covered in
 % previously selected domains AbsInt. E.g., if shfr covers groundness,
 % do not run eterms/nf (they also know about groundess).
-set_prop_covered(Prop,AbsInt) :-
-    ( prop_covered(Prop, _) ->
+set_prop_covered(PropF, PropA, AbsInt) :-
+    ( prop_covered(PropF, PropA, _) ->
         true
-    ; assertz_fact(prop_covered(Prop,AbsInt))
+    ; assertz_fact(prop_covered(PropF, PropA, AbsInt))
     ).
 
 % Decide the domain AbsInt necessary to analyze the existing
@@ -1358,20 +1355,20 @@ decide_domain_monolithic(AnaKind, AbsInt) :-
     AbsInt = AbsInt0.
 decide_domain_monolithic(_AnaKind, none).
 
-needed_to_prove_prop(M, AbsInt, A) :-
-    ( % failure-driven loop
+needed_to_prove_prop(M, AbsInt, AnaKind) :-
+    ( % (failure-driven loop)
       get_one_prop(M, Prop),
-      \+ prop_covered(Prop, _),
-        ( needed_to_prove(A, AbsInt, Prop) ->
-            set_prop_covered(Prop, AbsInt)
+      functor(Prop, PropF, PropA),
+      \+ prop_covered(PropF, PropA, _),
+        ( needed_to_prove(AnaKind, AbsInt, Prop) ->
+            set_prop_covered(PropF, PropA, AbsInt)
         ; true
         ),
         fail
     ; true
     ),
-    ( prop_covered(_,AbsInt) -> true
-    ; fail % fail if the domain is not necessary
-    ).
+    % Check if the domain is needed for some prop
+    ( prop_covered(_,_,AbsInt) -> true ; fail ).
 
 % Enumerate all native props Prop (see prop_to_native/2) from check
 % assertions of module M
