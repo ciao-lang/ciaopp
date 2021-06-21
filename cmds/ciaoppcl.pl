@@ -68,7 +68,11 @@ CiaoPP shell (this is the default behavior):
 :- use_module(library(messages)).
 
 main(Args) :-
-    catch(main_(Args), E, (handle_ciaopp_error(E), halt(1))).
+    catch(main_(Args), E, handle_ciaopp_error(E)).
+
+handle_ciaopp_error(E) :-
+    ciaopp_error_message(E),
+    halt(1).
 
 main_(['--worker', ID]) :- % Worker mode (internal for ciaopp-batch)
     !,
@@ -117,7 +121,8 @@ usage_message(
     --cwd Dir
             Switch to the selected directory
     --timeout Timeout 
-            Execute with a timeout limit (ms)
+            Execute with a timeout limit (ms).
+            Default is 0 (no timeout).
 
     Action must be one of the following:
     -Q      runs the interactive (text-based) menu for
@@ -305,19 +310,16 @@ ciaopp_run(Cmd, Flags0) :-
     ; true % OFile unbound
     ),
     ( member(timeout(Timeout), Flags) -> true
-    ; Timeout = none % No timeout
+    ; Timeout = 0 % No timeout
     ),
     get_menu_flags(OldMenuFlags),
     set_flags(Flags, Cmd0, [], OldFlags, FlagErrs), % TODO: add a way to reset flags
-    ( var(FlagErrs) -> FlagErrs = no ; true ),
-    once_port_reify(ciaopp_run_with_time_limit(Timeout, Cmd0, File, OFile, GotTimeout, FlagErrs), Port),
-    ( var(GotTimeout) -> GotTimeout = no ; true ),
+    ( var(FlagErrs) ->
+        once_port_reify(ciaopp_run_with_time_limit(Timeout, Cmd0, File, OFile), Port)
+    ; once_port_reify(throw(ciaopp_error(flag_errs)), Port)
+    ),
     restore_flags(OldFlags),
     restore_menu_flags_list(OldMenuFlags),
-    ( GotTimeout = yes ->
-        display(user_error, '{ERROR: timeout}'), nl(user_error)
-    ; true
-    ),
     port_call(Port).
 ciaopp_run(_, _).
 
@@ -361,13 +363,10 @@ auto_include_dom_sel(Flags0, Flags) :-
         Flags = Flags0
     ).
 
-ciaopp_run_with_time_limit(_Timeout, _Cmd0, _File, _OFile, _GotTimeout, FlagErrs) :-
-    FlagErrs = yes, !,
-    fail. % there were flag errors % TODO: throw exception? 
-ciaopp_run_with_time_limit(none, Cmd0, File, OFile, _GotTimeout, _FlagErrs) :- !,
+ciaopp_run_with_time_limit(0, Cmd0, File, OFile) :- !,
     auto_run(Cmd0, File, OFile).
-ciaopp_run_with_time_limit(Timeout, Cmd0, File, OFile, GotTimeout, _FlagErrs) :-
-    call_with_time_limit(Timeout, auto_run(Cmd0, File, OFile), GotTimeout = yes).
+ciaopp_run_with_time_limit(Timeout, Cmd0, File, OFile) :-
+    call_with_time_limit(Timeout, auto_run(Cmd0, File, OFile), throw(ciaopp_error(timeout))).
 
 auto_run(Cmd0, File, OFile) :-
     ( Cmd0 = ana -> auto_analyze(File, OFile)
@@ -461,13 +460,15 @@ ciaopp_toplevel(Opts2) :-
     toplevel:toplevel(Opts).
 
 % ===========================================================================
-:- doc(section, "Handle errors").
+:- doc(section, "CiaoPP error messages").
 
 :- use_module(library(errhandle), [default_error_message/1]).
 %:- use_module(library(messages), [error_message/2]).
 
-% handle_ciaopp_error(ciaopp_error(Format, Args)) :- !, % TODO: use
+% ciaopp_error_message(ciaopp_error_msg(Format, Args)) :- !, % TODO: use?
 %       error_message(Format, Args).
-handle_ciaopp_error(E) :-
-    default_error_message(E),
-    fail. % TODO: fail, abort or true?
+ciaopp_error_message(ciaopp_error(flag_errs)) :- !. % (message already shown)
+ciaopp_error_message(ciaopp_error(timeout)) :- !,
+    display(user_error, '{ERROR: timeout}'), nl(user_error).
+ciaopp_error_message(E) :-
+    default_error_message(E).
