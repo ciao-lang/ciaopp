@@ -1284,7 +1284,7 @@ read_and_show(_).
 %% ---------------------------------------------------------------------------
 
 read_asr_file(AsrName, Verb) :-
-    catch(open(AsrName, read, Stream), _, fail),
+    catch(open(AsrName, read, Stream), error(_,_), fail),
     (
         asr_version(V),
         read(Stream, v(V)),
@@ -1392,7 +1392,7 @@ write_asr_header(S) :-
     display(S, ' .\n').
 
 open_asr_to_write(AsrName, Stream, CI) :-
-    ( catch(open(AsrName, write, Stream), _, fail) ->
+    ( catch(open(AsrName, write, Stream), error(_,_), fail) ->
         current_output(CI),
         set_output(Stream)
     ).

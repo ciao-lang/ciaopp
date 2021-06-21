@@ -465,7 +465,7 @@ execute_builtin(Sg,Call,Eqs):-
 % RH:   replace catch by intercept because intercept does 
 %       not handle anymore exceptions 
 %       intercept(Goal,_Any,fail).
-    catch(Goal,_Any,fail).
+    catch(Goal,error(_,_),fail). % TODO: not for all errors?!
 
 %       on_exception(_,call(Goal),fail).
 

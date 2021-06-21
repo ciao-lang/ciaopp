@@ -317,7 +317,7 @@ ensure_lib_sources_loaded :-
     % Check if they were already loaded
     \+ loaded_lib_sources, !,
     ensure_datadir('ciaopp_lib_cache', Dir),
-    catch(load_lib_sources(Dir), _, true).
+    catch(load_lib_sources(Dir), error(_,_), true).
     % TODO: warn if not defined??
     % TODO: call command to generate them if not defined??
 ensure_lib_sources_loaded.
