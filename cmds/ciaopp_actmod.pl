@@ -25,7 +25,10 @@
 :- use_module(ciaopp(transform_driver), []).
 :- use_module(ciaopp(auto_interface), []). % TODO: needed?
 %
-:- use_module(ciaoppcl, [short_usage_message/0, parse_opts/3, ciaopp_run/2]).
+:- use_module(ciaoppcl, [
+    short_usage_message/0, parse_opts/3, ciaopp_run/2,
+    ciaopp_error_message/1
+]).
 %
 :- use_module(engine(stream_basic)).
 :- use_module(engine(io_basic)).
@@ -36,6 +39,8 @@
 
 :- dist_node.
 
+% TODO: ciaopp-client.bash does not pass the process error code correctly
+
 :- suspendable(cmdrun(json)).
 cmdrun(Args) :-
     io_once_port_reify(cmdrun_(Args), Port, OutString, ErrString),
@@ -43,7 +48,11 @@ cmdrun(Args) :-
     port_call(Port),
     set_buf('console', Result).
 
-cmdrun_(Args0) :-
+% TODO: propagate exceptions through actmod
+cmdrun_(Args) :-
+    catch(cmdrun__(Args), E, ciaopp_error_message(E)).
+
+cmdrun__(Args0) :-
     get_atmlist(Args0, Args), !,
     ( parse_opts(Args, Cmd, Flags),
       ( var(Cmd) -> Cmd = help ; true ), % (default)
@@ -51,7 +60,7 @@ cmdrun_(Args0) :-
         true
     ; display(user_error, '{ERROR: unexpected failure}'), nl(user_error)
     ).
-cmdrun_(_) :-
+cmdrun__(_) :-
     display(user_error, '{ERROR: Unrecognized argument list}'), nl(user_error).
 
 ciaopp_cmd(help, _Flags) :- !,

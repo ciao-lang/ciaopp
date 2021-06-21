@@ -67,6 +67,10 @@ CiaoPP shell (this is the default behavior):
 :- use_module(ciaopp(frontend_driver), [cache_and_preload_lib_sources/0]).
 :- use_module(library(messages)).
 
+main(['--worker', ID]) :- !, % Worker mode (internal for ciaopp-batch)
+    ciaopp_worker:start_worker(ID).
+main(['--actmod'|Args]) :- !, % Actmod mode (see 'service' entry in Manifest)
+    ciaopp_actmod:main(Args).
 main(Args) :-
     catch(main_(Args), E, handle_ciaopp_error(E)).
 
@@ -74,12 +78,6 @@ handle_ciaopp_error(E) :-
     ciaopp_error_message(E),
     halt(1).
 
-main_(['--worker', ID]) :- % Worker mode (internal for ciaopp-batch)
-    !,
-    ciaopp_worker:start_worker(ID).
-main_(['--actmod'|Args]) :- % Actmod mode (see 'service' entry in Manifest)
-    !,
-    ciaopp_actmod:main(Args).
 main_(['--gen-lib-cache']) :- !,
     cache_and_preload_lib_sources.
 main_(Args) :-
@@ -465,6 +463,7 @@ ciaopp_toplevel(Opts2) :-
 :- use_module(library(errhandle), [default_error_message/1]).
 %:- use_module(library(messages), [error_message/2]).
 
+:- export(ciaopp_error_message/1). % (exported actmod)
 % ciaopp_error_message(ciaopp_error_msg(Format, Args)) :- !, % TODO: use?
 %       error_message(Format, Args).
 ciaopp_error_message(ciaopp_error(flag_errs)) :- !. % (message already shown)
