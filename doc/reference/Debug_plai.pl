@@ -106,7 +106,7 @@ you find that an assertion does not hold in run-time, please open an issue.
 For this, it is recommended to deactivate run-time checks, as the debugger shows
 also the code for RT checking.
 
-Write @tt{:- use_package(debug).} in @tt{src/plai/fixpoint_options.pl} and
+Write @tt{:- use_package(trace).} in @tt{src/plai/fixpoint_options.pl} and
 recompile:
 
 @begin{verbatim}

@@ -1335,17 +1335,16 @@ select_anaflags([f(AnaKind,AbsInt)|AnaFlags]) :-
 % Decide necessary domains from assertions to be checked
 
 cleanup_decide_domains :-
-    retractall_fact(prop_covered(_,_,_)).
+    retractall_fact(prop_covered(_,_)).
 
-:- data prop_covered/3.
-% prop_covered(F,A,AbsInt):
-% Cache to store whether a (native) property F/A was already covered in
+:- data prop_covered/2.
+% Cache to store whether a (native) property was already covered in
 % previously selected domains AbsInt. E.g., if shfr covers groundness,
 % do not run eterms/nf (they also know about groundess).
-set_prop_covered(PropF, PropA, AbsInt) :-
-    ( prop_covered(PropF, PropA, _) ->
+set_prop_covered(Prop,AbsInt) :-
+    ( prop_covered(Prop, _) ->
         true
-    ; assertz_fact(prop_covered(PropF, PropA, AbsInt))
+    ; assertz_fact(prop_covered(Prop,AbsInt))
     ).
 
 % Decide the domain AbsInt necessary to analyze the existing
@@ -1359,20 +1358,20 @@ decide_domain_monolithic(AnaKind, AbsInt) :-
     AbsInt = AbsInt0.
 decide_domain_monolithic(_AnaKind, none).
 
-needed_to_prove_prop(M, AbsInt, AnaKind) :-
-    ( % (failure-driven loop)
+needed_to_prove_prop(M, AbsInt, A) :-
+    ( % failure-driven loop
       get_one_prop(M, Prop),
-      functor(Prop, PropF, PropA),
-      \+ prop_covered(PropF, PropA, _),
-        ( needed_to_prove(AnaKind, AbsInt, Prop) ->
-            set_prop_covered(PropF, PropA, AbsInt)
+      \+ prop_covered(Prop, _),
+        ( needed_to_prove(A, AbsInt, Prop) ->
+            set_prop_covered(Prop, AbsInt)
         ; true
         ),
         fail
     ; true
     ),
-    % Check if the domain is needed for some prop
-    ( prop_covered(_,_,AbsInt) -> true ; fail ).
+    ( prop_covered(_,AbsInt) -> true
+    ; fail % fail if the domain is not necessary
+    ).
 
 % Enumerate all native props Prop (see prop_to_native/2) from check
 % assertions of module M
