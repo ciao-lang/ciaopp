@@ -128,7 +128,8 @@ remove_dead_code(Cls0,Ds0,Cls,Ds) :-
     ),
     maplist(to_keypair,Cls1,Ds1,ClDs1),
     findall(Domain,domain_uses_memo_lub(Domain),Domains),
-    partition(used_clause(Domains),ClDs1,ClDs,RemovedDs),
+    partition(used_clause(Domains),ClDs1,ClDs2,RemovedDs),
+    maplist(prune_clause(Domains),ClDs2,ClDs),
     maplist(to_keypair,Cls,Ds,ClDs),
     ( Removed1 = [], RemovedDs = [] ->
         true
@@ -281,10 +282,10 @@ used_clause(Domains,Cl-_) :-
     is_clause(Cl,_,Body,Key),
     ( Body = true:_, current_pp_flag(fact_info,off) ->
         ( domain(nf) ->  % Only nf stores entries for facts by default.
-            used_clause_(Key,nf)
+            reachable_clause(Key,nf)
         ; true
         )
-    ; maplist(used_clause_(Key),Domains)
+    ; maplist(reachable_clause(Key),Domains)
     ).
 
 % A clause is reachable iff:
@@ -303,13 +304,43 @@ used_clause(Domains,Cl-_) :-
 % p(a) :- true($bottom), q, true($bottom).
 %
 % q :- true(not_fails), true, true(not_fails).
-used_clause_(Key,Domain) :-
-    get_memo_lub(Key,_Vars,Domain,_Lub,ASub),
-    ASub \== '$bottom'.
-used_clause_(Key0,Domain) :-
+reachable_clause(Key, Domain) :-
+    reachable_point(Key, Domain).
+reachable_clause(Key0,Domain) :-
     atom_concat(Key0,'/1',Key),
+    reachable_point(Key, Domain).
+
+reachable_point(Key,Domain) :-
     get_memo_lub(Key,_Vars,Domain,_Lub,ASub),
     ASub \== '$bottom'.
+
+% ------------------------------------------------------------------------
+%! ## Clause pruning
+%
+% Predicates to remove unreachable program points in clauses using
+% information inferred by other domains. Avoids failure of cost
+% analyses when analyzing failing clauses, for which no types/modes
+% info is inferred after the point of failure.
+%
+
+:- use_module(library(formulae), [conj_to_list/2, list_to_conj/2]).
+
+prune_clause(Domains, Cl0-Ds, Cl-Ds) :-
+    is_clause(Cl0, Head, Body0, Key),
+    conj_to_list(Body0, LBody0),
+    prune_clause_(LBody0, Domains, LBody),
+    list_to_conj(LBody, Body),
+    is_clause(Cl, Head, Body, Key).
+
+% If a program point is not reachable, the following program points
+% will not be reachable, so we can prune the clause.
+
+prune_clause_([], _, []) :- !.
+prune_clause_([Lit|LCl0], Domains, [Lit|LCl]) :-
+    Lit = _:LitKey,
+    maplist(reachable_point(LitKey), Domains), !,
+    prune_clause_(LCl0, Domains, LCl).
+prune_clause_(_, _, []).
 
 % ---------------------------------------------------------------------------
 % First entry point: collect mode info in the database
