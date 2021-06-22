@@ -1,12 +1,10 @@
 #!/bin/bash
 
-# Client for ciaopp_daemon via HTTP
+# Client for ciaopp_actmod via HTTP
 #
 # Usage: ciaopp-client <ARGS>
 
 # TODO:
-#  - When ciaopp_daemon stops, /tmp/ciaopp_daemon.pid needs to be removed manually
-#    
 #  - Missing 100 Continue response, temporarily fixed with the "-H 'Expect:'" option
 #    See https://stackoverflow.com/questions/30179476/where-is-a-delay-in-an-http-post-coming-from
 #  - debug with '--trace - --trace-time' options in curl
@@ -34,22 +32,22 @@ function esc_arg {
 }
 
 server=http://localhost:8000
-daemon=ciaopp_actmod
+actmod=ciaopp_actmod
 
 # Encode arguments extended with '--cwd'
 cwd=`pwd -P`
 args=`args_to_json --cwd "$cwd" "$@"`
-url=$server/$daemon
+url=$server/$actmod
 
 # Try 5 times before we have a good answer
 for try in 1 2 3 4 5; do
     out=$(curl -s -H 'Expect:' -X POST \
-               -F 'cmd='"$daemon"'.cmdrun' \
+               -F 'cmd='"$actmod"'.cmdrun' \
                -F 'data={"args":['"$args"']}' \
                "$url")
     if [ ${PIPESTATUS[0]} == 7 ]; then
         cat <<EOF 1>&2
-ERROR: Could not connect to $daemon through the Ciao server
+ERROR: Could not connect to $actmod through the Ciao server
 
 Please start it with \`ciao-serve' or \`M-x ciao-server-start' in emacs.
 EOF
