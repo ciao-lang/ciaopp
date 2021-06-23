@@ -909,7 +909,7 @@ valid_flag_values( oo_types_dyn_info  , member(_, [off,on])).
 :- endif.
 
 pp_flag(fact_info).
-pp_flag(fact_info, 'When this flag is set to on, program-point analysis info in facts is stored and output.').
+pp_flag(fact_info, 'When this flag is set to on, program-point analysis info in facts is stored.').
 current_pp_flags(  fact_info  , off).
 valid_flag_values( fact_info  , member(_, [off,on])).
 

@@ -56,11 +56,12 @@ all, 'Action'       # inter_all  - analyze_check :: all_menu_branch.
 
 % ------------------------------------------------------------
 % fixpoint options
-~munified(1), 'Customize fixpoint'       # custo_fixpo     - on.
+~munified(1), 'Customize fixpoint'       # custo_fixpo    - on.
 ~munified(0), '| Fixpoint algorithm'     # fixpoint       - plai       <- custo_fixpoint. % TODO: was ana_gto (ana_or_check_not_nf + local_control=off)
 ~munified(1), '| Widen call'             # widencall      - com_child  <- custo_fixpoint.
 ~munified(1), '| Variants'               # variants       - off        <- custo_fixpoint.
 ~munified(1), '| Multivariant success'   # multi_success  - off        <- custo_fixpoint. % TODO: this option was enabled in opt+para menu, recover if needed
+~munified(1), '| PP info of facts'       # fact_info      - off        <- custo_fixpoint.
 ~munified(1), '| Trace'                  # trace_fixp     - no         <- custo_fixpoint.
 % TODO: only for fixpo_di?
 ~munified(1), '| Local control'          # local_control  - off        <- custo_fixpoint_ana_lc. % (ana_or_check + types!=none&modes!=none)
