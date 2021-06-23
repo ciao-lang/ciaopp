@@ -1,4 +1,4 @@
-:- module(assrt_ctchecks_pp, [ctcheck_pp/2, pp_compile_time_prog_types/3], [assertions]).
+:- module(ctchecks_pp, [ctcheck_pp/2], [assertions]).
 
 :- use_module(library(lists), [member/2]).
 :- use_module(library(formulae), [list_to_conj/2]).
@@ -23,17 +23,7 @@
 %% :- use_module(spec(abs_exec), [cond/4]).
 
 % Own library
-:- use_module(ciaopp(ctchecks/assrt_ctchecks_common), 
-    [
-%%        num_var_in_goal/4,
-      get_calls_assertion/4,
-      get_entry_assertion/4,
-      pp_check/2,
-      synt_compose_disj/3,
-      synt_compose_conj/3,
-      synt_compose_list/3
-%%        statically_comp/4
-    ]).
+:- use_module(ciaopp(ctchecks/ctchecks_pp_common)).
 :- use_module(ciaopp(ctchecks/ctchecks_messages), 
     [ 
       message_pp_calls/8,
@@ -61,15 +51,15 @@ ctcheck_pp(AbsInts,ModList) :-
     ; % ModList = all, % IG: sanity check
         program(Cls,Ds)
     ),
-    pp_compile_time_prog_types(Cls,Ds,AbsInts).
+    pp_ctcheck_cls(Cls,Ds,AbsInts).
 
-pp_compile_time_prog_types([],[],_).
+pp_ctcheck_cls([],[],_).
 % Directives do not have program points                       %
-pp_compile_time_prog_types([directive(_Dir):_Id|Cs],[_D|Ds],AbsInts):- !,
-    pp_compile_time_prog_types(Cs,Ds,AbsInts).
-pp_compile_time_prog_types([clause(H,Body):Clid|Cs],[D|Ds],AbsInts):-
+pp_ctcheck_cls([directive(_Dir):_Id|Cs],[_D|Ds],AbsInts):- !,
+    pp_ctcheck_cls(Cs,Ds,AbsInts).
+pp_ctcheck_cls([clause(H,Body):Clid|Cs],[D|Ds],AbsInts):-
     pp_compile_time_check_types(Body,H,Clid,D,AbsInts),
-    pp_compile_time_prog_types(Cs,Ds,AbsInts).
+    pp_ctcheck_cls(Cs,Ds,AbsInts).
 
 % call type incompatible with head of the clause
 pp_compile_time_check_types(Body,H,Clid,dic(Vars,Names),[Types,_]):-

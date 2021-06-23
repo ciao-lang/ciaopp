@@ -1,4 +1,4 @@
-:- module(assrt_ctchecks_common, [
+:- module(ctchecks_pp_common, [
     check_type_calls/2,
     get_assertions/3,
     get_calls_assertion/4,

@@ -383,7 +383,7 @@ handle_eqs(An):-
 :- use_module(ciaopp(p_unit/itf_db), [curr_file/2]).
 
 :- use_module(ciaopp(ctchecks/ctchecks_pred), [simplify_assertions_mods/2]).
-:- use_module(ciaopp(ctchecks/assrt_ctchecks_pp), [ctcheck_pp/2]).
+:- use_module(ciaopp(ctchecks/ctchecks_pp), [ctcheck_pp/2]).
 :- use_module(ciaopp(ctchecks/ctchecks_pred_messages), [init_ctcheck_sum/0, 
     is_any_false/1, is_any_check/1]).
 
