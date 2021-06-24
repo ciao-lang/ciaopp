@@ -205,10 +205,11 @@ Version 1.3 (2019/11/3, 11:16:23 CEST)
              * Using `p_unit/program_keys.pl' for the keys of ciaopp.
 
 Version 1.2 (2006/1/3, 11:16:23 CEST)
-     New version
+     Check point
 
 Version 1.0 (2001/11/7, 19:5:57 CET)
-     New version
+     Major code reorganization from CiaoPP 0.8. Moved to repo system.
+     See 0.8 manual for changelog prior to 1.0 (covers 1999-2000).
 
 References
 **********
