@@ -24,14 +24,7 @@
 
 % Own library
 :- use_module(ciaopp(ctchecks/ctchecks_pp_common)).
-:- use_module(ciaopp(ctchecks/ctchecks_messages), 
-    [ 
-      message_pp_calls/8,
-      message_pp_entry/8,
-      message_pp_success/9,
-      message_pp_check/6,
-      message_clause_incompatible/5
-    ]).
+:- use_module(ciaopp(ctchecks/ctchecks_pp_messages)).
 :- use_module(ciaopp(ctchecks/preproc_errors), [preproc_warning/2]).
 :- use_module(ciaopp(ctchecks/diagnosis/diag), [how/6]).
 

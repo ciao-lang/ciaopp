@@ -291,7 +291,7 @@ find_tab_x(['$dom'(Dom,Res,Rules)|Rs],Tab,MaxTab,['$dom'(Dom,Res,Rules,Tab)|RsT]
 find_max(A,B,C) :- A > B, !, C = A.
 find_max(_,B,B).
 
-% a bit different from that in ctchecks_messages.pl
+% a bit different from that in ctchecks_pp_messages.pl
 filter_required_rules([typedef(::=(T,_))|Ds],Rs,RsOut):-
     ( functor(G,T,1), prop_to_native(G,regtype(_Prop)) % not inferred
     ; equiv_type(T,_)               % an equivalent type will be shown 

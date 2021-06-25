@@ -592,7 +592,7 @@ which produces the first of them, as shown:
 @begin{verbatim}
 WARNING (preproc_errors): (lns 5-8) goal qsort2:partition(L,L1,X,L2) at literal 1 does not succeed!
 
-WARNING (ctchecks_messages): (lns 11-12) the head of clause 'qsort2:partition/4/2' is incompatible with its call type
+WARNING (ctchecks_pp_messages): (lns 11-12) the head of clause 'qsort2:partition/4/2' is incompatible with its call type
      Head:      qsort2:partition([e|R],C,[E|Left1],Right)
      Call Type: qsort2:partition(basic_props:list(num),term,num,term)
 
@@ -623,7 +623,7 @@ third arguments in reversed order -- @bf{the correct call is
 After correcting this bug, we proceed to perform another round of
 compile-time checking, which continues producing the following message:
 @begin{verbatim}
-WARNING (ctchecks_messages): (lns 11-12) the head of clause 'qsort2:partition/4/2' is incompatible with its call type
+WARNING (ctchecks_pp_messages): (lns 11-12) the head of clause 'qsort2:partition/4/2' is incompatible with its call type
      Head:      qsort2:partition([e|R],C,[E|Left1],Right)
      Call Type: qsort2:partition(basic_props:list(num),term,num,term)
 @end{verbatim}

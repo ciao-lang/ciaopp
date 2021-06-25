@@ -1,4 +1,4 @@
-:- module(ctchecks_messages, [
+:- module(ctchecks_pp_messages, [
     message_pp_calls/8,
     message_pp_entry/8,
     message_pp_success/9,
@@ -115,10 +115,10 @@ message_pp_calls(Info,AbsInt,Goal,Head,Calls,Dict,K,Status):-
 %pp%        get_clkey(F,A,C,ClId),
 %pp%        clause_locator(ClId,LC),
 %pp%    ( knows_of(regtypes,AbsInt)
-%pp%    -> ctchecks_messages:inline_types(TProps),
+%pp%    -> ctchecks_pp_messages:inline_types(TProps),
 %pp%       escapify(TGoal,TGoalEsc),
 %pp%       typeslib:pretty_type_lit_rules(TGoalEsc,P_Info,_Types,Rules),
-%pp%       ctchecks_messages:filter_required_rules(Rules,ReqRules,FormRules),
+%pp%       ctchecks_pp_messages:filter_required_rules(Rules,ReqRules,FormRules),
 %pp%       W1='',
 %pp%       ( ReqRules = [] -> W2='' ; W2=' with:' )
 %pp%     ; ReqRules=[Props],
@@ -168,10 +168,10 @@ message_pp_entry(Info,AbsInt,Goal,Head,Calls,Dict_,K,Status):-
     get_clkey(F,A,C,ClId),
     maybe_clause_locator(ClId,LC),
     ( knows_of(regtypes,AbsInt) ->
-        ctchecks_messages:inline_types(TProps),
+        ctchecks_pp_messages:inline_types(TProps),
         escapify(TGoal,TGoalEsc),
         typeslib:pretty_type_lit_rules(TGoalEsc,P_Info,_Types,Rules),
-        ctchecks_messages:filter_required_rules(Rules,ReqRules,FormRules),
+        ctchecks_pp_messages:filter_required_rules(Rules,ReqRules,FormRules),
         W1='',
         ( ReqRules = [] -> W2='' ; W2=' with:' )
     ;
@@ -255,10 +255,10 @@ message_pp_success(Info,AbsInt,Goal,Head,Calls,Succ,Dict,K,Status):-
 %pp%        get_clkey(F,A,C,ClId),
 %pp%        clause_locator(ClId,LC),
 %pp%    ( knows_of(regtypes,AbsInt)
-%pp%    -> ctchecks_messages:inline_types(TProps),
+%pp%    -> ctchecks_pp_messages:inline_types(TProps),
 %pp%       escapify(TGoal,TGoalEsc),
 %pp%       typeslib:pretty_type_lit_rules(TGoalEsc,P_Info,_Types,Rules),
-%pp%       ctchecks_messages:filter_required_rules(Rules,ReqRules,FormRules),
+%pp%       ctchecks_pp_messages:filter_required_rules(Rules,ReqRules,FormRules),
 %pp%       W1='',
 %pp%       ( ReqRules = [] -> W2='' ; W2=' with:' )
 %pp%     ; ReqRules=[Props0],
@@ -311,18 +311,18 @@ message_pp_check(Info,AbsInt,Prop,Key,Dict,Status):-
     maybe_clause_locator(ClId,LC),
     ( knows_of(regtypes,AbsInt) ->
         varset(TProps,TVars),
-        ctchecks_messages:inline_types(TProps),
+        ctchecks_pp_messages:inline_types(TProps),
         TGoal =.. [f|TVars],
         escapify(TGoal,TGoalEsc),
         typeslib:pretty_type_lit_rules(TGoalEsc,_P_Info,_Types1,Rules1),
 %          typeslib:pretty_type_lit_rules(TGoal,_P_Info,_Types1,Rules1),
-        ctchecks_messages:filter_required_rules(Rules1,ReqRules1,FormRules1),
+        ctchecks_pp_messages:filter_required_rules(Rules1,ReqRules1,FormRules1),
         ( ReqRules1 = [] -> W2='' ; W2=' with:' ),
         % varset(TProp,RVars),
         inline_types2(TProp,RVars),
         RGoal =.. [f|RVars],
         typeslib:pretty_type_lit_rules(RGoal,_R_Info,_Types2,Rules2),
-        ctchecks_messages:filter_required_rules(Rules2,ReqRules2,FormRules2),
+        ctchecks_pp_messages:filter_required_rules(Rules2,ReqRules2,FormRules2),
         ( ReqRules2 = [] -> W4='' ; W4=' with:' )
     ;
         ReqRules1=[''],
@@ -363,9 +363,9 @@ message_clause_incompatible(Clid,Types,H,Vars,Names):-
     functor(TGoal,N,A),
     get_completes_lub(Key,TGoal,Types,yes,Call0,_Succ0),
     output_user_interface(Types,Call0,Vars,Props),
-    ctchecks_messages:inline_types(Props),
+    ctchecks_pp_messages:inline_types(Props),
     typeslib:pretty_type_lit_rules(TGoal,P_Call,_TSymbols,Rules0),
-    ctchecks_messages:filter_required_rules(Rules0,Rules,Forms),
+    ctchecks_pp_messages:filter_required_rules(Rules0,Rules,Forms),
     copy_term((H,Vars),(NH,NVars)),
     infer_unify_vars(NVars,Names),
     maybe_clause_locator(Clid,LC),
@@ -394,13 +394,13 @@ infer_unify_vars0([V=N|VNs]):-
 inline_types([]).
 inline_types([Prop|Props]):- !,
     denorm_goal_prop(Prop,P,P),
-    ctchecks_messages:inline_types(Props).
+    ctchecks_pp_messages:inline_types(Props).
 inline_types((Prop;Props)):- !,
-    ctchecks_messages:inline_types(Prop),
-    ctchecks_messages:inline_types(Props).
+    ctchecks_pp_messages:inline_types(Prop),
+    ctchecks_pp_messages:inline_types(Props).
 inline_types((Prop,Props)):- !,
-    ctchecks_messages:inline_types(Prop),
-    ctchecks_messages:inline_types(Props).
+    ctchecks_pp_messages:inline_types(Prop),
+    ctchecks_pp_messages:inline_types(Props).
 inline_types(Prop):-
     denorm_goal_prop(Prop,P,P).
 
@@ -422,10 +422,11 @@ inline_types2(Prop,[P]):-
     copy_term(Prop,InProp),
     denorm_goal_prop(InProp,P,P).
 
-filter_required_rules([typedef(::=(T,_))|Ds],Rs,Fs) :- functor(G,T,1), type(G), !,  % not inferred
-    ctchecks_messages:filter_required_rules(Ds,Rs,Fs).
+filter_required_rules([typedef(::=(T,_))|Ds],Rs,Fs) :-
+    functor(G,T,1), type(G), !,  % not inferred
+    ctchecks_pp_messages:filter_required_rules(Ds,Rs,Fs).
 filter_required_rules([typedef(::=(T,D))|Ds],[T,D|Rs],"~n"||"    ~w ::= ~w"||Fs) :-
-    ctchecks_messages:filter_required_rules(Ds,Rs,Fs).
+    ctchecks_pp_messages:filter_required_rules(Ds,Rs,Fs).
 filter_required_rules([],[],[]).
 
 % only user types (not inferred!)
