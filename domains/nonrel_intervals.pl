@@ -1,4 +1,4 @@
-% File included in nonrel.pl
+% (included file)
 
 :- use_module(library(terms_vars), [varset/2]).
 :- use_module(ciaopp(preprocess_flags), [push_pp_flag/2]).
