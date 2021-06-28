@@ -99,7 +99,7 @@
 % The following predicates are implemented in nonrel_intervals.pl
 % TODO: This should be done with traits
 
-:- export(nonrel_init_abstract_domain/2).
+%:- export(nonrel_init_abstract_domain/2).
 :- doc(doinclude, nonrel_init_abstract_domain/2).
 :- pred nonrel_init_abstract_domain(AbsInt, PushedFlags) #
    "Initializes abstract domain @var{AbsInt}. Tells the list of
@@ -120,7 +120,8 @@
    variable in the abstract domain.@begin{alert}This predicate needs
    to be implemented by the user.@end{alert}".
 
-:- export(nonrel_amgu/5).
+%:- export(nonrel_amgu/5).
+:- doc(doinclude, nonrel_amgu/5).
 :- pred nonrel_amgu(+AbsInt, +Term1,+Term2,+ASub0,-NASub) #
    "@var{NASub} is the abstract unification of @var{Term1} and
    @var{Term2}, with @var{ASub0} an abstract substitution that
@@ -157,7 +158,8 @@
 :- doc(section, "Generic functionality for non-relational domains").
 %-----------------------------------------------------------------------
 
-:- export(nonrel_unknown_entry/4).
+%:- export(nonrel_unknown_entry/4).
+:- doc(doinclude, nonrel_unknown_entry/4).
 :- pred nonrel_unknown_entry(+AbsInt,+Sg,+Vars,-Call) : atm * cgoal * list * term
     #"Gives the ``top'' value for a given set of variables @var{Vars},
     resulting in abstract constraint @var{Call}.".
@@ -196,7 +198,8 @@ nonrel_empty_entry(AbsInt,Vars,Entry) :-
     nonrel_var(AbsInt,VarValue),
     nonrel_create_asub(Vars,VarValue,Entry).
 
-:- export(nonrel_abs_sort/2).
+%:- export(nonrel_abs_sort/2).
+:- doc(doinclude, nonrel_abs_sort/2).
 :- pred nonrel_abs_sort(+Asub,-Asub_s): term * term
     # "It sorts the set of @var{X}/@var{Values} in @var{Asub} obtaining
       @var{Asub_s}".
@@ -205,7 +208,8 @@ nonrel_abs_sort('$bottom','$bottom'):- !. % TODO: this clause should be generic
 nonrel_abs_sort(Asub,Asub_s):-
     sort(Asub,Asub_s).
 
-:- export(nonrel_project/3).
+%:- export(nonrel_project/3).
+:- doc(doinclude, nonrel_project/3).
 :- pred nonrel_project(+Asub,+Vars,-Proj): term * list * term # 
     "@var{Proj} is the result of eliminating from @var{Asub} all
       @var{X}/@var{Value} such that @var{X} is not in @var{Vars}".
@@ -227,7 +231,8 @@ project_aux([Var|Vs],[V2/Val|ASub],[V2/Val|Proj]) :-
 project_aux([Var|Vs], [_|ASub], NASub0) :-
     project_aux([Var|Vs], ASub, NASub0).
 
-:- export(nonrel_call_to_entry/10).
+%:- export(nonrel_call_to_entry/10).
+:- doc(doinclude, nonrel_call_to_entry/10).
 :- pred nonrel_call_to_entry(+AbsInt,+Sv,+Sg,+Hv,+Head,+K,+Fv,+Proj,-Entry,-ExtraInfo)
     : atm * list * cgoal * list * cgoal * term * list * term * term * term
 
@@ -282,7 +287,8 @@ insert_values_asub([V|Vs], [X/Val|ASub], AbsElem, [V/AbsElem|NASub0]) :-
 insert_values_asub(Vs, [X/Val|ASub], AbsElem, [X/Val|NASub0]) :-
     insert_values_asub(Vs, ASub, AbsElem, NASub0).
 
-:- export(nonrel_exit_to_prime/8).
+%:- export(nonrel_exit_to_prime/8).
+:- doc(doinclude, nonrel_exit_to_prime/8).
 :- pred nonrel_exit_to_prime(+AbsInt,+Sg,+Hv,+Head,+Sv,+Exit,-ExtraInfo,-Prime)
     : atm * list * list * cgoal * cgoal * term * term * term # 
  "".
@@ -312,7 +318,8 @@ nonrel_exit_to_prime(AbsInt,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime):-
         Prime = Prime0
     ).
 
-:- export(nonrel_compute_lub/3).
+%:- export(nonrel_compute_lub/3).
+:- doc(doinclude, nonrel_compute_lub/3).
 :- pred nonrel_compute_lub(+AbsInt,+ListASub,-Lub) : atm * list * term
     #"@var{Lub} is the @em{least upper bound} of the list of abstract
      substitutions @var{ListASub}.".
@@ -342,7 +349,8 @@ compute_lub_pair([X/Vx|ASub1],[Y/Vy|ASub2],AbsInt,[X/Lub|ASubLub]):-
 compute_lub_pair(_,_,_,_):-
     throw(error(variable_mismatch, nonrel_compute_lub/3)).
 
-:- export(nonrel_extend/5).
+%:- export(nonrel_extend/5).
+:- doc(doinclude, nonrel_extend/5).
 :- pred nonrel_extend(+AbsInt,+Prime,Sv,+Call,-Succ)
     : atm * term * list * term * term.
 nonrel_extend(_,'$bottom',_Sv,_Call,Succ):- !, % generic
@@ -370,7 +378,8 @@ nonrel_extend_([X1/V1|ASub1], [X2/V2|ASub2], AbsInt, Succ) :-  % generic
         Succ = [X2/V2|RSucc]
     ).
 
-:- export(nonrel_call_to_success_fact/10).
+%:- export(nonrel_call_to_success_fact/10).
+:- doc(doinclude, nonrel_call_to_success_fact/10).
 :- pred nonrel_call_to_success_fact(+AbsInt,+Sg,+Hv,+Head,+K,+Sv,+Call,+Proj,-Prime,-Succ)
     : atm * cgoal * list * cgoal * list * term * term * term * term * term 
     #"Specialized version of @pred{call_to_entry/9} + @pred{exit_to_prime/7}
@@ -385,7 +394,8 @@ nonrel_call_to_success_fact(AbsInt,Sg,Hv,Head,_K,Sv,Call,Proj,Prime,Succ) :-
     nonrel_project(Tmp,Sv,Prime),
     nonrel_extend(AbsInt,Prime,Sv,Call,Succ).
 
-:- export(nonrel_special_builtin/5).
+%:- export(nonrel_special_builtin/5).
+:- doc(doinclude, nonrel_special_builtin/5).
 :- pred nonrel_special_builtin(+AbsInt,+SgKey,+Sg,-Type,-Condvars)
     : atm * predname * cgoal * atm * term
     #"@begin{alert}This predicate needs to be implemented by the
@@ -398,13 +408,15 @@ nonrel_special_builtin(_,'true/0',_,_,_) :- !.
 nonrel_special_builtin(AbsInt,SgKey,Sg,Type,Condvars) :-
     nonrel_special_builtin0(AbsInt,SgKey,Sg,Type,Condvars).
 
-:- export(nonrel_success_builtin/5).
+%:- export(nonrel_success_builtin/5).
+:- doc(doinclude, nonrel_success_builtin/5).
 :- pred nonrel_success_builtin(+AbsInt,+Type,+Condv,+Call,-Succ)
     : atm * atm * term * term * term
     #"Obtains the success for some particular builtins.".
 nonrel_success_builtin(_,_,_,_,_). % TODO: not finished, Succ is unbound (JF)
 
-:- export(nonrel_call_to_success_builtin/7).
+%:- export(nonrel_call_to_success_builtin/7).
+:- doc(doinclude, nonrel_call_to_success_builtin/7).
 :- pred nonrel_call_to_success_builtin(+AbsInt,+SgKey,+Sg,+Sv,+Call,+Proj,-Succ)
     : atm * predname * cgoal * list * term * term * term
     #"Handles those builtins for which computing @var{Proj} is easier than
@@ -430,7 +442,8 @@ nonrel_call_to_success_builtin_('==/2',AbsInt,'=='(X,Y),_Sv,Call,_Proj,Succ) :- 
 nonrel_call_to_success_builtin_(SgKey,AbsInt,Sg,Sv,Call,Proj,Succ) :-
     nonrel_call_to_success_builtin0(AbsInt,SgKey,Sg,Sv,Call,Proj,Succ).
 
-:- export(nonrel_input_user_interface/4).
+%:- export(nonrel_input_user_interface/4).
+:- doc(doinclude, nonrel_input_user_interface/4).
 :- pred nonrel_input_user_interface(+AbsInt,+InputUser,+Qv,+ASub)
     #"Obtains the abstract substitution from the native properties
  found in the user supplied info.".
@@ -439,7 +452,8 @@ nonrel_input_user_interface(AbsInt,_,Qv,ASub) :-
     nonrel_create_asub(Qv,T,ASub).
 % TODO: Currently it is implemented as by "abstracting" the user input as top
 
-:- export(nonrel_input_interface/5).
+%:- export(nonrel_input_interface/5).
+:- doc(doinclude, nonrel_input_interface/5).
 :- pred nonrel_input_interface(+AbsInt,+Prop,?Kind,+Struc0,+Struc1)
 # "Adds native property @var{Prop} to the structure accumulating the
     properties relevant to this domain.".
@@ -450,7 +464,8 @@ nonrel_input_user_interface(AbsInt,_,Qv,ASub) :-
 % implemented by the user).
 nonrel_input_interface(_AbsInt,_Prop,_Kind,_Struct0,_Struct1). % TODO: not finished
 
-:- export(nonrel_asub_to_native/6).
+%:- export(nonrel_asub_to_native/6).
+:- doc(doinclude, nonrel_asub_to_native/6).
 :- pred nonrel_asub_to_native(+AbsInt,+ASub,+Qv,+OutFlag,-ASub_user,-Comps) : 
    atm * term * term * term * term * term
    #"It translates an internal abstract constraint into something
@@ -460,7 +475,8 @@ nonrel_asub_to_native(_AbsInt,_Qv,_,ASub,ASub,[]).
 % [IG] for now we output the raw internal representation. This predicate could
 % be "overwritten by the developer of the domain."
 
-:- export(nonrel_unknown_call/5).
+%:- export(nonrel_unknown_call/5).
+:- doc(doinclude, nonrel_unknown_call/5).
 :- pred nonrel_unknown_call(+AbsInt,+Sg,+Vars,+Call,-Succ)
     : atm * cgoal * list * term * term
     #"Gives the ``top'' value for the variables involved in a literal whose
@@ -469,7 +485,8 @@ nonrel_unknown_call(AbsInt,_Sg,Vars,Call,Succ):-
     nonrel_top(AbsInt,Top),
     insert_values_asub(Vars,Call,Top,Succ).
 
-:- export(nonrel_less_or_equal/3).
+%:- export(nonrel_less_or_equal/3).
+:- doc(doinclude, nonrel_less_or_equal/3).
 :- pred nonrel_less_or_equal(+AbsInt,+ASub0,+ASub1): atm * term * term # 
 "Succeeds if @var{ASub1} is more general or equal to @var{ASub0}.
 it is assumed the two abstract substitutions are defined on the same variables".
@@ -485,7 +502,8 @@ nonrel_less_or_equal_([X/Value0|Rest0],AbsInt,[Y/Value1|Rest1]):-
 nonrel_less_or_equal_(_,_,_):-
     throw(error(variable_mismatch, nonrel_less_or_equal/2)).
 
-:- export(nonrel_glb/4).
+%:- export(nonrel_glb/4).
+:- doc(doinclude, nonrel_glb/4).
 :- pred nonrel_glb(+AbsInt,+ASub0,+ASub1,-Glb): atm * list * list * var 
     #"@var{Glb} is the great lower bound of @var{ASub0} and @var{ASub1}, two
     substitutions that describe the same set of variables.".
@@ -506,14 +524,16 @@ nonrel_glb_([X/Value1|ASub0],[Y/Value2|ASub1], AbsInt,[X/NValue|Glb]) :-
 nonrel_glb_(_,_,_,_) :-
     throw(error(variable_mismatch, nonrel_glb/3)).
 
-:- export(nonrel_identical_abstract/2).
+%:- export(nonrel_identical_abstract/2).
+:- doc(doinclude, nonrel_identical_abstract/2).
 % Note: [IG] When checking identical projs (i.e. Sg+Proj) the heads are already
 % unified in domains.pl
 :- pred nonrel_identical_abstract(+ASub1, +ASub2).
 nonrel_identical_abstract(ASub1, ASub2) :-
     ASub1 == ASub2.
 
-:- export(nonrel_widen/4).
+%:- export(nonrel_widen/4).
+:- doc(doinclude, nonrel_widen/4).
 % Assuming that both abstract substitutions are sorted.
 :- pred nonrel_widen(+AbsInt,+Asub1,+ASub2,-WAsub).
 % reasoning with bottom same as in eterms (this could be dealt with in the
@@ -532,7 +552,8 @@ nonrel_widen_([X/V1|ASub1],AbsInt,[Y/V2|ASub2],[X/VW|WAsub]) :-
 nonrel_widen_(_,_,_,_):-
     throw(error(variable_mismatch, nonrel_widen/3)).
 
-:- export(nonrel_widencall/4).
+%:- export(nonrel_widencall/4).
+:- doc(doinclude, nonrel_widencall/4).
 :- pred nonrel_widencall(+AbsInt,+Asub1,+ASub2,-WAsub).
 nonrel_widencall(AbsInt,Asub1,ASub2,WAsub) :-
     nonrel_widen_(Asub1,AbsInt,ASub2,WAsub).
@@ -599,52 +620,76 @@ nonrel_call_to_success_builtin0(nonrel_intervals,SgKey,Sg,Sv,Call,Proj,Succ) :- 
 :- dom_impl(nonrel_intervals, unknown_entry/3).
 :- dom_impl(nonrel_intervals, empty_entry/3).
 
-:- export(nonrel_intervals_needs/1).
+%:- export(nonrel_intervals_needs/1).
+:- doc(doinclude, nonrel_intervals_needs/1).
 nonrel_intervals_needs(widen).
 
-:- export(nonrel_intervals_init_abstract_domain/1).
+%:- export(nonrel_intervals_init_abstract_domain/1).
+:- doc(doinclude, nonrel_intervals_init_abstract_domain/1).
 nonrel_intervals_init_abstract_domain(PushedFlags) :- nonrel_init_abstract_domain(nonrel_intervals, PushedFlags).
-:- export(nonrel_intervals_amgu/4).
+%:- export(nonrel_intervals_amgu/4).
+:- doc(doinclude, nonrel_intervals_amgu/4).
 nonrel_intervals_amgu(Sg,Head,ASub,NewASub) :- nonrel_amgu(nonrel_intervals,Sg,Head,ASub,NewASub).
-:- export(nonrel_intervals_call_to_entry/9).
+%:- export(nonrel_intervals_call_to_entry/9).
+:- doc(doinclude, nonrel_intervals_call_to_entry/9).
 nonrel_intervals_call_to_entry(Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo) :- nonrel_call_to_entry(nonrel_intervals,Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo).
-:- export(nonrel_intervals_exit_to_prime/7).
+%:- export(nonrel_intervals_exit_to_prime/7).
+:- doc(doinclude, nonrel_intervals_exit_to_prime/7).
 nonrel_intervals_exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime) :- nonrel_exit_to_prime(nonrel_intervals,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime).
-:- export(nonrel_intervals_project/5).
+%:- export(nonrel_intervals_project/5).
+:- doc(doinclude, nonrel_intervals_project/5).
 nonrel_intervals_project(_Sg,Vars,_HvFv,ASub,Proj) :- nonrel_project(ASub,Vars,Proj).
-:- export(nonrel_intervals_widencall/3).
+%:- export(nonrel_intervals_widencall/3).
+:- doc(doinclude, nonrel_intervals_widencall/3).
 nonrel_intervals_widencall(Prime0,Prime1,NewPrime) :- nonrel_widencall(nonrel_intervals,Prime0,Prime1,NewPrime).
-:- export(nonrel_intervals_widen/3).
+%:- export(nonrel_intervals_widen/3).
+:- doc(doinclude, nonrel_intervals_widen/3).
 nonrel_intervals_widen(Prime0,Prime1,NewPrime) :- nonrel_widen(nonrel_intervals,Prime0,Prime1,NewPrime).
-:- export(nonrel_intervals_compute_lub/2).
+%:- export(nonrel_intervals_compute_lub/2).
+:- doc(doinclude, nonrel_intervals_compute_lub/2).
 nonrel_intervals_compute_lub(ListASub,LubASub) :- nonrel_compute_lub(nonrel_intervals,ListASub,LubASub).
-:- export(nonrel_intervals_identical_abstract/2).
+%:- export(nonrel_intervals_identical_abstract/2).
+:- doc(doinclude, nonrel_intervals_identical_abstract/2).
 nonrel_intervals_identical_abstract(ASub1, ASub2) :- nonrel_identical_abstract(ASub1, ASub2).
-:- export(nonrel_intervals_abs_sort/2).
+%:- export(nonrel_intervals_abs_sort/2).
+:- doc(doinclude, nonrel_intervals_abs_sort/2).
 nonrel_intervals_abs_sort(ASub,ASub_s) :- nonrel_abs_sort(ASub,ASub_s).
-:- export(nonrel_intervals_extend/5).
+%:- export(nonrel_intervals_extend/5).
+:- doc(doinclude, nonrel_intervals_extend/5).
 nonrel_intervals_extend(_Sg,Prime,Sv,Call,Succ) :- nonrel_extend(nonrel_intervals,Prime,Sv,Call,Succ).
-:- export(nonrel_intervals_less_or_equal/2).
+%:- export(nonrel_intervals_less_or_equal/2).
+:- doc(doinclude, nonrel_intervals_less_or_equal/2).
 nonrel_intervals_less_or_equal(ASub0,ASub1) :- nonrel_less_or_equal(nonrel_intervals,ASub0,ASub1).
-:- export(nonrel_intervals_glb/3).
+%:- export(nonrel_intervals_glb/3).
+:- doc(doinclude, nonrel_intervals_glb/3).
 nonrel_intervals_glb(ASub0,ASub1,ASub) :- nonrel_glb(nonrel_intervals,ASub0,ASub1,ASub).
-:- export(nonrel_intervals_call_to_success_fact/9).
+%:- export(nonrel_intervals_call_to_success_fact/9).
+:- doc(doinclude, nonrel_intervals_call_to_success_fact/9).
 nonrel_intervals_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ) :- nonrel_call_to_success_fact(nonrel_intervals,Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ).
-:- export(nonrel_intervals_special_builtin/5).
+%:- export(nonrel_intervals_special_builtin/5).
+:- doc(doinclude, nonrel_intervals_special_builtin/5).
 nonrel_intervals_special_builtin(SgKey,Sg,_Subgoal,Type,Condvars) :- nonrel_special_builtin(nonrel_intervals,SgKey,Sg,Type,Condvars).
-:- export(nonrel_intervals_success_builtin/6).
+%:- export(nonrel_intervals_success_builtin/6).
+:- doc(doinclude, nonrel_intervals_success_builtin/6).
 nonrel_intervals_success_builtin(Type,_Sv_uns,Condvars,_HvFv_u,Call,Succ) :- nonrel_success_builtin(nonrel_intervals,Type,Condvars,Call,Succ).
-:- export(nonrel_intervals_call_to_success_builtin/6).
+%:- export(nonrel_intervals_call_to_success_builtin/6).
+:- doc(doinclude, nonrel_intervals_call_to_success_builtin/6).
 nonrel_intervals_call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,Succ) :- nonrel_call_to_success_builtin(nonrel_intervals,SgKey,Sg,Sv,Call,Proj,Succ).
-:- export(nonrel_intervals_input_interface/4).
+%:- export(nonrel_intervals_input_interface/4).
+:- doc(doinclude, nonrel_intervals_input_interface/4).
 nonrel_intervals_input_interface(InputUser,Kind,Struct0,Struct1) :- nonrel_input_interface(nonrel_intervals,InputUser,Kind,Struct0,Struct1).
-:- export(nonrel_intervals_input_user_interface/5).
+%:- export(nonrel_intervals_input_user_interface/5).
+:- doc(doinclude, nonrel_intervals_input_user_interface/5).
 nonrel_intervals_input_user_interface(InputUser,Qv,ASub,_Sg,_MaybeCallASub) :- nonrel_input_user_interface(nonrel_intervals,InputUser,Qv,ASub).
-:- export(nonrel_intervals_asub_to_native/5).
+%:- export(nonrel_intervals_asub_to_native/5).
+:- doc(doinclude, nonrel_intervals_asub_to_native/5).
 nonrel_intervals_asub_to_native(ASub,Qv,OutFlag,OutputUser,Comps) :- nonrel_asub_to_native(nonrel_intervals,ASub,Qv,OutFlag,OutputUser,Comps).
-:- export(nonrel_intervals_unknown_call/4).
+%:- export(nonrel_intervals_unknown_call/4).
+:- doc(doinclude, nonrel_intervals_unknown_call/4).
 nonrel_intervals_unknown_call(Sg,Vars,Call,Succ) :- nonrel_unknown_call(nonrel_intervals,Sg,Vars,Call,Succ).
-:- export(nonrel_intervals_unknown_entry/3).
+%:- export(nonrel_intervals_unknown_entry/3).
+:- doc(doinclude, nonrel_intervals_unknown_entry/3).
 nonrel_intervals_unknown_entry(Sg,Qv,Call) :- nonrel_unknown_entry(nonrel_intervals,Sg,Qv,Call).
-:- export(nonrel_intervals_empty_entry/3).
+%:- export(nonrel_intervals_empty_entry/3).
+:- doc(doinclude, nonrel_intervals_empty_entry/3).
 nonrel_intervals_empty_entry(Sg,Qv,Call) :- nonrel_unknown_entry(nonrel_intervals,Sg,Qv,Call).
