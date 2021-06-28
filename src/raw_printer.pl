@@ -69,6 +69,7 @@ to avoid recomputation), but it not implemented yet.").
     [decode_litkey/5, decode_clkey/4, get_predkey/3]).
 :- use_module(spec(s_simpspec), [make_atom/2]).
 :- use_module(ciaopp(p_unit), [program/2]).
+:- use_module(ciaopp(p_unit/itf_db), [current_itf/3]).
 :- use_module(ciaopp(p_unit/clause_db), [source_clause/3]).
 
 :- set_prolog_flag(write_strings, on).
@@ -211,6 +212,7 @@ raw_output(S) :-
     output_directives(S),
     findall((RFlag, X), trans_clause(_, RFlag, X), Clauses),
     output_raw_clauses(Clauses, S),
+    output_raw_impl_defined(S),
     write_raw_types(S).
 
 output_directives(S) :-
@@ -297,3 +299,18 @@ bind_vars([true(A,B,Vars)|Xs], Vars, [true(A,B)|Ys]) :-
 list_to_clause_body([X], (X)) :- !.
 list_to_clause_body([X|Xs], (X,Ys)) :-
     list_to_clause_body(Xs, Ys).
+
+:- doc(section, "@tt{impl_defined/1} predicates").
+
+output_raw_impl_defined(S) :-
+    ( % failure-driven loop
+      current_itf(impl_defines,Goal,_M),
+        functor(Goal,F,A),
+        get_predkey(F,A,PredKey),
+        output_raw_inferred_assertions(PredKey,S),
+        portray_clause(S, ':-'(impl_defined(F/A))),
+        nl(S),
+        fail
+    ;
+        true
+    ).

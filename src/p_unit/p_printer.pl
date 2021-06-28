@@ -17,12 +17,10 @@
 :- use_module(library(aggregates)).
 
 :- use_module(ciaopp(preprocess_flags)).
-:- use_module(ciaopp(p_unit), [get_comment/1]).
-:- use_module(ciaopp(p_unit), [
-    pr_key_get/1,
-    get_commented_assertion/2,
-    get_assertion/2]).
-:- use_module(ciaopp(p_unit), [get_output_operator/3]).
+:- use_module(ciaopp(p_unit),
+              [get_comment/1, pr_key_get/1, get_commented_assertion/2,
+               get_assertion/2, get_output_operator/3]).
+:- use_module(ciaopp(p_unit/program_keys), [predkey_from_sg/2]).
 
 :- use_module(ciaopp(frontend_driver), [check_global_props/2]). % TODO: move this pred somewhere else
 :- use_module(library(assertions/assrt_lib), [assertion_body/7]).
@@ -33,7 +31,7 @@
     transform_head/3,
     transform_body/3,
     transform_assrt_body/3]).
-:- use_module(ciaopp(p_unit/itf_db), [curr_file/2]).
+:- use_module(ciaopp(p_unit/itf_db), [curr_file/2, current_itf/3]).
 
 :- use_module(engine(runtime_control), [push_prolog_flag/2, pop_prolog_flag/1]). % TODO: find a better solution
 
@@ -59,8 +57,17 @@ print_program_(S) :-
     ( curr_file(_,M) -> true ; true ), % TODO: base mod for unexpand, allow many for multiple output
     % print the clauses and its assertions in the proper order
     ( % (failure-driven loop)
-      pr_key_get(PrKey),
-        print_from_prkey(S, M, PrKey),
+      pr_key_get(Goal), % TODO: wrong name in pr_key_get
+        print_from_prkey(S, M, Goal),
+        fail
+    ; true
+    ),
+    % impl_defined predicates do not have clauses, and thus are not enumerated
+    % by pr_key_get/1, because it is added by p_unit:add_clause/3. Why not
+    % enumerate using itf_db?
+    ( % (failure-driven loop)
+      current_itf(impl_defines,Goal,M),
+        print_from_prkey(S, M, Goal),
         fail
     ; true
     ),
@@ -129,15 +136,15 @@ special_directive_(module).
 
 :- export(get_filtered_assertions/2).
 % Enumerate all (filtered) assertions
-get_filtered_assertions(Key, AsFiltered) :-
-    get_all_assertions(Key, As),
+get_filtered_assertions(Goal, AsFiltered) :-
+    get_all_assertions(Goal, As),
     ( current_pp_flag(output_show_tautologies, off) ->
         filter_tautologies(As, AsFiltered)
     ; As = AsFiltered 
     ).
 
-get_all_assertions(ClKey, AssList) :-
-    findall(Ass, get_assertion(ClKey, Ass), AssList).
+get_all_assertions(Goal, AsrList) :-
+    findall(Asr, get_assertion(Goal, Asr), AsrList).
 
 % TODO: wrong name and probabily not the best idea (calls indicate reachability?)
 filter_tautologies( [], [] ).

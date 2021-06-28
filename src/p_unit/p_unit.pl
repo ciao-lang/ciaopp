@@ -142,9 +142,10 @@
 %% ---------------------------------------------------------------------------
 
 :- pred preprocessing_unit(Fs,Ms,E)
-    :  list(Fs,filename) => (list(moddesc,Ms), switch(E))
+   :  list(filename,Fs) => (list(moddesc,Ms), switch(E))
     # "Loads the preprocessing unit of @var{Fs} defining @var{Ms}.".
-:- pred preprocessing_unit(F,M,E) : filename(F) => ( moddesc(M), switch(E) )
+:- pred preprocessing_unit(F,M,E)
+   : filename(F) => ( moddesc(M), switch(E) )
     # "Loads the preprocessing unit of @var{F} defining @var{M}.".
 
 preprocessing_unit(Fs,Ms,E):- Fs=[_|_], !,
@@ -255,7 +256,7 @@ filtered_program_clauses(Mods,P,D) :-
              P0),
     split1(P0,P,D).
 
-:- pred filtered_source_clause(+list,-,-,-).
+:- pred filtered_source_clause(+list,-,?,-).
 filtered_source_clause(Mods,Key,clause(H,B),Dict) :-
     current_fact(source_clause(Key,clause(H,B),Dict)),
     functor(H,F,A),
@@ -266,7 +267,7 @@ filtered_source_clause(Mods,Key,clause(H,B),Dict) :-
 :- use_module(ciaopp(p_unit/itf_db), [current_itf/3]).
 
 :- export(get_pred_mod_defined/2).
-:- pred get_pred_mod_defined(+Sg,-Mod) + non_det
+:- pred get_pred_mod_defined(+Sg,-Mod) + nondet
    #"Returns the module where a predicate given by goal @var{Sg} is defined. If
     the @var{Sg} is multifile, the modules where it is defined are enumerated.".
 get_pred_mod_defined(Sg,Mod) :-
@@ -409,7 +410,7 @@ atom_concat_with_underscore(L, L).
 
 %% ---------------------------------------------------------------------------
 
-:- pred entry_assertion(Goal,Call,Name) :: cgoal(Goal)
+:- pred entry_assertion(Goal,Call,Name) => cgoal(Goal)
     # "There is an entry assertion for @var{Goal} with call
        pattern @var{Call}, uniquely identifiable by @var{Name}.".
 entry_assertion(Goal,Call,Name):-
@@ -578,20 +579,20 @@ type_of_directive(Type,Body):-
 
 % TODO: merge with itf_db?
 
-:- use_module(ciaopp(p_unit/program_keys), [predkey/1]).
 :- use_module(ciaopp(p_unit/unexpand), [add_head_unexpanded_data/1]).
 :- use_module(ciaopp(p_unit/itf_db), [assert_itf/5]).
 
 :- data pr_key/1.
 
-:- pred pr_key_clean # "Removes all information about predicate order.".
+:- pred pr_key_clean + det # "Removes all information about predicate order.".
 pr_key_clean :-
     retractall_fact(pr_key(_)).
 
-:- pred pr_key_get(K) => predkey(K) # "Current predicate keys".
+:- pred pr_key_get(K) => cgoal(K) + multi # "Current predicate keys".
+% it was predkey
 pr_key_get(K) :- pr_key(K).
 
-:- pred pr_key_add(K) => predkey(K) # "Add a predicate key (once)".
+:- pred pr_key_add(K) => cgoal(K) + det # "Add a predicate key (once)".
 pr_key_add(K) :-
     ( pr_key(K) -> true
     ; assertz_fact(pr_key(K))
@@ -607,7 +608,7 @@ generate_pr_key(Cl) :-
 generate_pr_key(_). % TODO: not for directives
 
 % TODO: used only in some transformations, check again
-:- pred add_defined_pred(ClKey, M) : (term(ClKey), atm(M))
+:- pred add_defined_pred(ClKey, M) : (term(ClKey), atm(M)) + det
    # "Add the necessary data in itf_db (and @pred{pr_key/1}) to define the
    predicate @var{ClKey} in the module @var{M}.".
 add_defined_pred(Key, M) :-
@@ -618,12 +619,12 @@ add_defined_pred(Key, M) :-
     assertz_fact(pr_key(Key)).
 add_defined_pred(_, _).
  
-:- pred new_predicate(+F,+A,-NewF)
+:- pred new_predicate(+F,+A,-NewF) + det
     # "Checks wether there is a predicate @var{F}/@var{A} in the
        program and returns @var{NewF} so that there is no predicate
        @var{NewF}/@var{A} in the program.".
 new_predicate(F,A,NewF):-
-    curr_module(M),
+    curr_module(M), % TODO: choicepoints?
     new_predicate_name(F,F,A,0,NewF),
     assert_itf(defined,M,NewF,A,_).
     
@@ -727,7 +728,8 @@ enum_regtype(Goal, NProp) :-
     ; NProp=NProp0
     ).
 
-:- pred prop_to_native(+Prop,-NProp) => cgoal * native_prop_term
+% TODO: original success is commented (wrong)
+:- pred prop_to_native(+Prop,-NProp) % => cgoal * native_prop_term
    # "Obtain the native property (lit) @var{NProp} that corresponds to
    the (lit) @var{Prop} user predicate.".
 
@@ -747,7 +749,8 @@ prop_to_native_(Prop,NProp):-
 prop_to_native_(Prop,NProp):-
     native_property(Prop,NProp). % builtin tables
 
-:- pred native_to_prop(+NProp,-Prop) => native_prop_term * cgoal
+% TODO: original success is commented (wrong)
+:- pred native_to_prop(+NProp,-Prop) % => native_prop_term * cgoal
    # "Obtain the user predicate (lit) @var{Prop} that corresponds to
    the native property (lit) @var{NProp}.".
 
@@ -763,7 +766,7 @@ native_to_prop(NProp2,Prop) :-
 
 %% ---------------------------------------------------------------------------
 
-:- pred native_to_props_visible(Props,Goals) :: list(cgoal) * list(cgoal)
+:- pred native_to_props_visible(Props,Goals) => list(cgoal) * list(cgoal)
     # "Maps native @var{Props} into their corresponding @var{Goals}
       visible in the current module.".
 native_to_props_visible([],[]).
@@ -893,7 +896,11 @@ add_output_package(A) :-
 add_output_operator(A, B, C) :-
     asserta_fact(pl_output_op(A, B, C)). % TODO: why not assertz_fact? (JF)
 
-:- pred get_output_operator(Pred, Type, OP) : (int(Prec),atm(Type),atm_or_atm_list(OP))
+% TODO: review old assertion:
+%% :- pred get_output_operator(Pred, Type, OP) : (int(Pred),atm(Type),atm_or_atm_list(OP))
+%%    # "Enumerate output operators (same arguments as in @pred{op/3}).".
+
+:- pred get_output_operator(Pred, Type, OP) => int * atm * atm_or_atm_list
    # "Enumerate output operators (same arguments as in @pred{op/3}).".
 
 get_output_operator(A,B,C) :-
@@ -904,7 +911,8 @@ get_output_operator(A,B,C) :-
 % Note: this is a simplified version for the current uses (see older
 %   version in Attic/ for more potential features)
 
-:- pred comment_db(Comment) : string(Comment)
+:- pred comment_db(Comment) : string(Comment) + no_rtcheck
+   % IG: force no rtcheck because it is a data
    # "Text comments, added at the beginning of the module output".
 
 :- data comment_db/1.
