@@ -51,7 +51,7 @@
 :- use_module(domain(deftypes)).
 % ===========================================================================
 :- doc(section, "Numeric domains").
-:- use_module(domain(nonrel)). % intervals domain % [IG] new, simplified nonrelational domain
+:- use_module(domain(nonrel_intervals)). % interval domain [IG]
 :- if(defined(has_ciao_ppl)).
 :- use_module(domain(polyhedra)).
 :- endif.

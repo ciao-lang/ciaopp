@@ -44,7 +44,7 @@ doc_domain(lsign). % :- dom_def(lsign).
 doc_domain(lsigndiff). % :- dom_def(difflsign).
 doc_domain(detplai). % :- dom_def(det).
 doc_domain(nfplai). % :- dom_def(nf).
-doc_domain(nonrel). % :- dom_def(nonrel_intervals).
+doc_domain(nonrel_intervals). % :- dom_def(nonrel_intervals).
 doc_domain(pd). % :- dom_def(pd).
 doc_domain(pdb). % :- dom_def(pdb).
 doc_domain(polyhedra). % :- dom_def(polyhedra).
