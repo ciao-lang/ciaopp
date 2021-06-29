@@ -468,7 +468,7 @@ as follows:
 The same approach can be used if the predicates are written in, e.g.,
 an external language such as, e.g., C or Java. Finally, assertions
 with a @tt{check} prefix 
-are the ones used to specify the @em{ intended} semantics of the
+are the ones used to specify the @em{intended} semantics of the
 program, which can then be used in debugging and/or validation, 
 as we will see later in this section.
 Interestingly, this
@@ -728,15 +728,15 @@ Note that though the predicate @tt{partition} may fail in general, in
 the context of the current program it can be proved not to fail
 (assertion @tt{A6}).
 However, it was not possible to prove statically assertion @tt{A2},
-which has remained with @tt{ check} status.
+which has remained with @tt{check} status.
 Note also that @tt{A2}
 has been simplified, and this is because the mode analysis has
-determined that on success the second argument of @tt{ qsort} is
+determined that on success the second argument of @tt{qsort} is
 ground, and thus this does not have to be checked at run-time.  On the
 other hand the analyses used in our session (types, modes,
 non-failure, determinism, and upper-bound cost analysis) do not
-provide enough information to prove that the output of @tt{ qsort} is
-a @em{ sorted} list of numbers, since this is not a native property of
+provide enough information to prove that the output of @tt{qsort} is
+a @em{sorted} list of numbers, since this is not a native property of
 the analyses being used. While this property could be captured by
 including a more refined domain (such as constrained types), it is
 interesting to see what happens with the analyses selected for the
@@ -744,7 +744,7 @@ example.
 
 @footnote{Note that while property @tt{sorted_num_list}
   cannot be proved with only (over approximations) of mode and regular
-  type information, it may be possible to prove that it does @em{ not}
+  type information, it may be possible to prove that it does @em{not}
   hold (an example of how properties which are not natively understood
   by the analysis can also be useful for detecting bugs at
   compile-time): while the regular type analysis cannot capture
@@ -797,7 +797,7 @@ L = [2,1] ?
 @end{verbatim}
 Clearly, there is a problem with @tt{qsort}, since @tt{[2,1]} is not
 the result of ordering @tt{[1,2]} in ascending order. This is a (now,
-run-time, or @em{ concrete}) incorrectness symptom, which can be used
+run-time, or @em{concrete}) incorrectness symptom, which can be used
 as the starting point of diagnosis. The result of such diagnosis
 should indicate that the call to @tt{append} (where @tt{R1} and
 @tt{R2} have been swapped) is the cause of the error and that the
@@ -883,10 +883,11 @@ on comp nrev:nrev(A,B) :
 [generic_comp] : covered,is_det,mut_exclusive,not_fails,steps_lb(0.5*exp(length(A),2)+1.5*length(A)+1),steps_ub(0.5*exp(length(A),2)+1.5*length(A)+1),[A:(name57,rt103),B:(name59,rt102)]
 @end{verbatim}
 
-This message states that @tt{nrev} will take at least @math{0.5*(length(A))^2 +
-1.5*length(A) + 1} resolution steps (which is the cost analysis output, as in
-the previous example), while the assertion requires that the worst case cost of
-@tt{nrev} be linear on @math{length(A)} (the size of the input argument).
+This message states that @tt{nrev} will take at least
+@math{0.5*(length(A))^2 + 1.5*length(A) + 1} resolution steps (which
+is the cost analysis output, as in the previous example), while the
+assertion requires that the worst case cost of @tt{nrev} be linear on
+@math{length(A)} (the size of the input argument).
 
 If the programmer adds now the following ``check'' assertion:
 
@@ -1101,7 +1102,7 @@ the recursive clause of @tt{multiply} (these tests essentially check
 that the arrays do not contain pointers that point in such a way that
 would make the @tt{vmul} and @tt{multiply} calls be dependent). 
 However, abstract multiple
-specialization generates four versions of the predicate @tt{ multiply}
+specialization generates four versions of the predicate @tt{multiply}
 which correspond to the different ways this predicate may be called
 (basically, depending on whether the tests succeed or not). Of these
 four variants, the most optimized one is:
@@ -1556,7 +1557,7 @@ partition_o3_4([E|R],C,Left,[E|Right1],_1,_2) :-
     E>=C, partition_o3_4(R,C,Left,Right1,_1,_3), _2 is _3+1.
 @end{verbatim}
 
-is the transformed version of @tt{ partition/4}, which \"on the fly\"
+is the transformed version of @tt{partition/4}, which \"on the fly\"
 computes the sizes of its third and fourth arguments (the
 automatically generated variables @tt{_1} and @tt{_2} represent
 these sizes respectively) @cite{termsize-iclp95}.

@@ -44,8 +44,8 @@
 %% :- doc(bug,"2. Should not prepare info for imported: since it does not go
 %%      out, some not required types might go out anyway...").
 :- doc(bug,"3. This occurs when transforming info for output:
-    {WARNING (lsign): not normalised program: goal
-       'sqr:.=.'(_269,_272*_272) wrt head 'sqr:.=.'(_479,_480)}").
+    @{WARNING (lsign): not normalised program: goal
+       'sqr:.=.'(_269,_272*_272) wrt head 'sqr:.=.'(_479,_480)@}").
 :- doc(bug,"4. To reduce type simplification, we are asserting tmp_*_info
     when lub required. Instead, we should first do all the lubs (memo_lub,
     complete_lub) and then use them for asub_to_info (thus, avoiding yet

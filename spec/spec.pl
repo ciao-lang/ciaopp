@@ -23,8 +23,8 @@
 :- doc(bug,"4. Have to incorporate the reorganization of the and-or
        graph in the presence of meta-predicates. This will probably
        do with the following problem:
-       {ERROR (plai_errors): Acc without Complete: 
-              mmatrix_parallelized:multiply/3/2/4,15}").
+       @{ERROR (plai_errors): Acc without Complete: 
+              mmatrix_parallelized:multiply/3/2/4,15@}").
 :- doc(bug,"5. Seems to be the same as the one
        above. Specialization of parallelized programs does not work.").
 
