@@ -12,6 +12,7 @@ create_ciaopp_config :-
     HasBundles = [
         ciaopp_cost,
         ciaopp_extra,
+        ciaopp_fpnum,
         ciaopp_llvm,
         ciaopp_java,
         ciao_ppl,

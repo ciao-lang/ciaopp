@@ -6,6 +6,7 @@ depends([
     ciao_ppl-[optional], % (optional for polyhedra, numerical constraints, etc.)
     ciao_gsl-[optional], % TODO: remove once ciaopp dep is explicit
     ciaopp_llvm-[optional], % TODO: remove once ciaopp dep is explicit
+    ciaopp_fpnum-[optional], % TODO: remove once ciaopp dep is explicit
     davinci-[optional] % (for interactive trace)
 ]).
 

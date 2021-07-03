@@ -52,6 +52,9 @@
 % ===========================================================================
 :- doc(section, "Numeric domains").
 :- use_module(domain(nonrel_intervals)). % interval domain [IG]
+:- if(defined(has_ciaopp_fpnum)).
+:- use_module(domain(nonrel_fintervals)). % floating-point interval domain [DJ]
+:- endif.
 :- if(defined(has_ciao_ppl)).
 :- use_module(domain(polyhedra)).
 :- endif.

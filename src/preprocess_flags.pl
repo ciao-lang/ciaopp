@@ -1128,6 +1128,9 @@ numericanalysis(none).
 :- if(defined(has_ciao_ppl)).
 numericanalysis(polyhedra).
 :- endif.
+:- if(defined(has_ciaopp_fpnum)).
+numericanalysis(nonrel_finterval).
+:- endif.
 numericanalysis(lsign).
 
 the_same_as(X, P) :-
