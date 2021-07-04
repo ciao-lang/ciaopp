@@ -11,6 +11,10 @@
 :- use_module(library(lists), [append/3]).
 %:- use_module(library(write), [numbervars/3]).
 
+% (debug)
+%:- use_module(library(streams)).
+%:- use_module(library(write)).
+
 % ---------------------------------------------------------------------------
 
 :- data dom_def/2.
@@ -34,6 +38,8 @@ treat_sent(end_of_file, Cs2, Mod) :- !,
     clean_db_pass1(Mod),
     % TODO: This should be automatic
     append(Cs, [end_of_file], Cs2). % (allow other translations)
+%treat_sent(X, _, _) :- X = (:- _),
+%    display(x(X)), nl, fail.
 treat_sent((:- dom_def(AbsInt)), C2, M) :- !,
     assertz_fact(dom_def(AbsInt,M)),
     C2 = aidomain(AbsInt).
@@ -65,6 +71,33 @@ treat_sent((:- dom_impl(AbsInt,Spec,from(MAbsIntB))), C2, _M) :- nonvar(Spec), n
       MB = MAbsIntB, AbsIntB = MAbsIntB
     ),
     emit_dom_impl0(AbsInt,Spec,AbsIntB,MB,C2).
+% TODO: (experimental)
+% I.e., <<AbsInt1>>_Op1(<<AbsInt2>, As1) :- !, <<AbsInt2>>_Op2(As2).
+treat_sent((:- dom_deriv_hook(AbsInt1,Head1,AbsInt2,Head2)), C2, _M) :- !,
+    Head1 =.. [Op1|As1],
+    Head2 =.. [Op2|As2],
+    atom_concat(AbsInt1,'_',AbsInt1b), atom_concat(AbsInt1b,Op1,AbsIntOp1),
+    atom_concat(AbsInt2,'_',AbsInt2b), atom_concat(AbsInt2b,Op2,AbsIntOp2),
+    H =.. [AbsIntOp1, AbsInt2|As1],
+    B =.. [AbsIntOp2|As2],
+    C2 = [(H :- !, B)].
+    %writeq(C2), nl.
+% TODO: (experimental)
+% I.e., :- dom_impl(AbsInt1, Op1F/Op1A).
+%       <<AbsInt1>>_Op1(<<AbsInt2>, As1) :- !, <<AbsInt2>>_Op2(As2).
+treat_sent((:- dom_impl_deriv(AbsInt1,Head1,AbsInt2,Head2)), C2, M) :- !,
+    Head1 =.. [Op1|As1],
+    Head2 =.. [Op2|As2],
+    atom_concat(AbsInt1,'_',AbsInt1b), atom_concat(AbsInt1b,Op1,AbsIntOp1),
+    atom_concat(AbsInt2,'_',AbsInt2b), atom_concat(AbsInt2b,Op2,AbsIntOp2),
+    H =.. [AbsIntOp1|As1],
+    B =.. [AbsIntOp2|As2],
+    C2 = [(H :- !, B)|C3],
+    %writeq(C2), nl,
+    %
+    functor(Head1,Op1F,Op1A),
+    Spec = Op1F/Op1A,
+    emit_dom_impl0(AbsInt1,Spec,AbsInt1,M,C3).
 
 emit_sents(Mod,Cs) :- % TODO: complete
     % Add default definitions
