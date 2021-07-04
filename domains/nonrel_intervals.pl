@@ -14,15 +14,12 @@
    @end{note}
 ").
 
-:- include(.(nonrel_base)). % (derive nonrel domain)
-
-% ---------------------------------------------------------------------------
 % impl domain
-
+:- include(domain(nonrel_base)). % (derive nonrel domain)
 :- include(ciaopp(plai/plai_domain)).
 :- dom_def(nonrel_intervals).
 
-% (operations expected by nonrel_base that nonrel_intervals must implement)
+% (operations expected by nonrel_base that this domain must implement)
 % E.g., nonrel_init_abstract_domain(nonrel_intervals, PushedFlags) :- !, nonrel_intervals_init_abstract_domain0(PushedFlags).
 %
 :- dom_deriv_hook(nonrel, init_abstract_domain(PushedFlags), nonrel_intervals, init_abstract_domain0(PushedFlags)).
@@ -41,7 +38,7 @@
 :- dom_impl(nonrel_intervals, needs/1).
 nonrel_intervals_needs(widen).
 
-% (operations expected by a domain that nonrel_intervals takes from nonrel)
+% (domain operations derived from nonrel)
 % E.g., :- dom_impl(nonrel_intervals, init_abstract_domain/1).
 %       nonrel_intervals_init_abstract_domain(PushedFlags) :- nonrel_init_abstract_domain(nonrel_intervals, PushedFlags).
 :- dom_impl_deriv(nonrel_intervals, init_abstract_domain(PushedFlags), nonrel, init_abstract_domain(nonrel_intervals, PushedFlags)).
