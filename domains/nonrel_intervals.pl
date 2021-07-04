@@ -25,7 +25,7 @@
 :- dom_deriv_hook(nonrel, top(X), nonrel_intervals, top(X)).
 :- dom_deriv_hook(nonrel, bot(X), nonrel_intervals, bot(X)).
 :- dom_deriv_hook(nonrel, var(X), nonrel_intervals, var(X)).
-:- dom_deriv_hook(nonrel, amgu(T1,T2,ASub0,NASub), nonrel_intervals, amgu0(T1,T2,ASub0,NASub)).
+:- dom_deriv_hook(nonrel, amgu(T1,T2,ASub0,NASub), nonrel_intervals, amgu(T1,T2,ASub0,NASub)). % TODO: make nonrel_base call the domain operation instead?
 :- dom_deriv_hook(nonrel, less_or_equal_elem(E1,E2), nonrel_intervals, less_or_equal_elem(E1,E2)).
 :- dom_deriv_hook(nonrel, compute_glb_elem(E1,E2,EG), nonrel_intervals, compute_glb_elem(E1,E2,EG)).
 :- dom_deriv_hook(nonrel, compute_lub_elem(E1,E2,EL), nonrel_intervals, compute_lub_elem(E1,E2,EL)).
@@ -37,7 +37,6 @@
 % (domain operations derived from nonrel)
 % E.g., :- dom_impl(nonrel_intervals, OP_F/OP_A).
 %       nonrel_intervals_OP(Arg) :- nonrel_OP(nonrel_intervals, Arg).
-:- dom_impl_deriv(nonrel_intervals, amgu(Sg,Head,ASub,NewASub), nonrel, amgu(nonrel_intervals,Sg,Head,ASub,NewASub)).
 :- dom_impl_deriv(nonrel_intervals, call_to_entry(Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo), nonrel, call_to_entry(nonrel_intervals,Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo)).
 :- dom_impl_deriv(nonrel_intervals, exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime), nonrel, exit_to_prime(nonrel_intervals,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime)).
 :- dom_impl_deriv(nonrel_intervals, project(_Sg,Vars,_HvFv,ASub,Proj), nonrel, project(ASub,Vars,Proj)).
@@ -124,32 +123,33 @@ nonrel_neginf('$ninf').
 % correct value....
 nonrel_intervals_var('$top').
 
-nonrel_intervals_amgu0(T1,T2,ASub0,NASub) :-
+:- dom_impl(nonrel_intervals, amgu/4).
+nonrel_intervals_amgu(T1,T2,ASub0,NASub) :-
     var(T1),var(T2), !,
     nonrel_get_value_asub(ASub0,T1,Value1),
     nonrel_get_value_asub(ASub0,T2,Value2),
     nonrel_intervals_compute_glb_elem(Value1,Value2,Glb), % TODO: missing bottom case!
     nonrel_replace_value_asub(ASub0,T1,Glb,ASub1),
     nonrel_replace_value_asub(ASub1,T2,Glb,NASub).
-nonrel_intervals_amgu0(T1,T2,ASub0,NASub) :-
+nonrel_intervals_amgu(T1,T2,ASub0,NASub) :-
     var(T2), !,
-    nonrel_intervals_amgu0(T2,T1,ASub0,NASub).
-nonrel_intervals_amgu0(T1,T2,ASub0,NASub) :-
+    nonrel_intervals_amgu(T2,T1,ASub0,NASub).
+nonrel_intervals_amgu(T1,T2,ASub0,NASub) :-
     var(T1), !,
     nonrel_intervals_abstract_term(T2,ASub0,NVal),
     nonrel_replace_value_asub(ASub0,T1,NVal,NASub).
-nonrel_intervals_amgu0(T1,T2,ASub0,NASub) :-
+nonrel_intervals_amgu(T1,T2,ASub0,NASub) :-
     functor(T1,F,A),
     functor(T2,F,A), !,
     T1 =.. [F|Args1],
     T2 =.. [F|Args2],
     nonrel_intervals_amgu_args(Args1,Args2,ASub0, NASub).
-nonrel_intervals_amgu0(_T1,_T2,_ASub1,ASub2) :-
+nonrel_intervals_amgu(_T1,_T2,_ASub1,ASub2) :-
     nonrel_intervals_bot(ASub2).
 
 nonrel_intervals_amgu_args([],[],ASub, ASub).
 nonrel_intervals_amgu_args([A1|As1],[A2|As2],ASub0, NASub) :-
-    nonrel_intervals_amgu0(A1,A2,ASub0,ASub1),
+    nonrel_intervals_amgu(A1,A2,ASub0,ASub1),
     nonrel_intervals_amgu_args(As1,As2,ASub1, NASub).
 
 :- pred nonrel_intervals_abstract_term(+T,+ASubT,-ASub) #"Abstracts term @var{T} possibly
@@ -407,7 +407,7 @@ nonrel_intervals_call_to_success_builtin0('is/2','is'(X,Y),_Sv,Call,_Proj,Succ):
         nonrel_intervals_compute_glb_elem(NVal0,Val0,NVal),
         nonrel_replace_value_asub(Call,X,NVal,Succ)
     ;
-        nonrel_intervals_amgu0(X,Y,Call,Succ)
+        nonrel_intervals_amgu(X,Y,Call,Succ)
     ).
 
 nonrel_is_abs_operate(X, _Call, NVal) :-
@@ -436,10 +436,10 @@ nonrel_is_abs_operate(/(X,Y), Call, NVal) :-
 % ---------------------------------------------------------------------------
 :- doc(section, "Tests").
 
-:- test nonrel_intervals_amgu0(T1,T2,ASub0,NASub)
+:- test nonrel_intervals_amgu(T1,T2,ASub0,NASub)
     : (T1 = p(X), T2 = p(Y), ASub0 = [X/i(3,3), Y/'$top'])
     => (NASub = [X/i(3,3),Y/i(3,3)]).
-:- test nonrel_intervals_amgu0(T1,T2,ASub0,NASub)
+:- test nonrel_intervals_amgu(T1,T2,ASub0,NASub)
     : (T1 = p(3,Y), T2 = p(X,4), ASub0 = [X/'$top', Y/'$top'])
     => (NASub = [X/i(3,3),Y/i(4,4)]).
 

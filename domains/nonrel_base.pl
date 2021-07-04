@@ -15,7 +15,7 @@
 :- discontiguous(nonrel_top/2).
 :- discontiguous(nonrel_bot/2).
 :- discontiguous(nonrel_var/2).
-:- discontiguous(nonrel_amgu/5).
+:- discontiguous(nonrel_amgu/5). % TODO: make nonrel_base call the domain operation instead?
 :- discontiguous(nonrel_less_or_equal_elem/3).
 :- discontiguous(nonrel_compute_glb_elem/4).
 :- discontiguous(nonrel_compute_lub_elem/4).
