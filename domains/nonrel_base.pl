@@ -12,7 +12,6 @@
 % (Predicates to be implemented by the domain extending this base)
 
 % TODO: discontiguous is not needed unless we do traits
-:- discontiguous(nonrel_init_abstract_domain/2).
 :- discontiguous(nonrel_top/2).
 :- discontiguous(nonrel_bot/2).
 :- discontiguous(nonrel_var/2).
@@ -24,12 +23,6 @@
 %:- discontiguous(nonrel_input_interface/5).
 :- discontiguous(nonrel_special_builtin0/5).
 :- discontiguous(nonrel_call_to_success_builtin0/7).
-
-%:- export(nonrel_init_abstract_domain/2).
-:- doc(doinclude, nonrel_init_abstract_domain/2).
-:- pred nonrel_init_abstract_domain(AbsInt, PushedFlags) #
-   "Initializes abstract domain @var{AbsInt}. Tells the list of
-   modified (pushed) PP flags to pop afterwards.".
 
 :- doc(doinclude, nonrel_top/2).
 :- pred nonrel_top(AbsInt, X) # "@var{X} is the representation of

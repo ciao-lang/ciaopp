@@ -12,7 +12,7 @@
 :- doc(stability, devel).
 
 :- doc(module, "
-   This source offers a base domain to implement @em{(non-relational)
+   This source offers a base domain to implement @em{non-relational
    abstract domains}. To use this interface, you must implement the
    basic lattice operations marked explicitly as \"implement in
    derived domain\". The more complex operations of CiaoPP's standard
@@ -36,15 +36,8 @@
 @end{verbatim}
    @end{alert}
 
-   @begin{alert}
-     @bf{Warning}: The domains that can take advantage of this module
-     are required to be non-relational. This limitation may be lifted in
-     the future.
-   @end{alert}
-
    The predicates to be implemented are:
    @begin{itemize}
-   @item @pred{nonrel_init_abstract_domain/2},
    @item @pred{nonrel_top/2},
    @item @pred{nonrel_bot/2}, 
    @item @pred{nonrel_var/2}, 
@@ -83,7 +76,6 @@
 
 :- include(.(nonrel_base)).
 
-:- impl_defined([nonrel_init_abstract_domain/2]).
 :- impl_defined([nonrel_top/2]).
 :- impl_defined([nonrel_bot/2]).
 :- impl_defined([nonrel_var/2]).

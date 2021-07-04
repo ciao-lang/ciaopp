@@ -20,9 +20,8 @@
 :- dom_def(nonrel_intervals).
 
 % (operations expected by nonrel_base that this domain must implement)
-% E.g., nonrel_init_abstract_domain(nonrel_intervals, PushedFlags) :- !, nonrel_intervals_init_abstract_domain0(PushedFlags).
+% E.g., nonrel_OP(nonrel_intervals, Arg) :- !, nonrel_intervals_OP(Arg).
 %
-:- dom_deriv_hook(nonrel, init_abstract_domain(PushedFlags), nonrel_intervals, init_abstract_domain0(PushedFlags)).
 :- dom_deriv_hook(nonrel, top(X), nonrel_intervals, top(X)).
 :- dom_deriv_hook(nonrel, bot(X), nonrel_intervals, bot(X)).
 :- dom_deriv_hook(nonrel, var(X), nonrel_intervals, var(X)).
@@ -35,13 +34,9 @@
 :- dom_deriv_hook(nonrel, special_builtin0(SgKey,Sg,Type,Condvars), nonrel_intervals, special_builtin0(SgKey,Sg,Type,Condvars)).
 :- dom_deriv_hook(nonrel, call_to_success_builtin0(SgKey,Sg,Sv,Call,Proj,Succ), nonrel_intervals, call_to_success_builtin0(SgKey,Sg,Sv,Call,Proj,Succ)).
 
-:- dom_impl(nonrel_intervals, needs/1).
-nonrel_intervals_needs(widen).
-
 % (domain operations derived from nonrel)
-% E.g., :- dom_impl(nonrel_intervals, init_abstract_domain/1).
-%       nonrel_intervals_init_abstract_domain(PushedFlags) :- nonrel_init_abstract_domain(nonrel_intervals, PushedFlags).
-:- dom_impl_deriv(nonrel_intervals, init_abstract_domain(PushedFlags), nonrel, init_abstract_domain(nonrel_intervals, PushedFlags)).
+% E.g., :- dom_impl(nonrel_intervals, OP_F/OP_A).
+%       nonrel_intervals_OP(Arg) :- nonrel_OP(nonrel_intervals, Arg).
 :- dom_impl_deriv(nonrel_intervals, amgu(Sg,Head,ASub,NewASub), nonrel, amgu(nonrel_intervals,Sg,Head,ASub,NewASub)).
 :- dom_impl_deriv(nonrel_intervals, call_to_entry(Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo), nonrel, call_to_entry(nonrel_intervals,Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo)).
 :- dom_impl_deriv(nonrel_intervals, exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime), nonrel, exit_to_prime(nonrel_intervals,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime)).
@@ -70,7 +65,11 @@ nonrel_intervals_needs(widen).
 :- use_module(library(terms_vars), [varset/2]).
 :- use_module(ciaopp(preprocess_flags), [push_pp_flag/2]).
 
-nonrel_intervals_init_abstract_domain0([widen]) :- push_pp_flag(widen,on).
+:- dom_impl(nonrel_intervals, needs/1).
+nonrel_intervals_needs(widen).
+
+:- dom_impl(nonrel_intervals, init_abstract_domain/1).
+nonrel_intervals_init_abstract_domain([widen]) :- push_pp_flag(widen,on).
 
 :- prop interval_avalue/1.
 :- doc(interval_avalue/1, "Data structure of the substitution that the intervals
