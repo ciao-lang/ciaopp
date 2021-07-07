@@ -269,15 +269,15 @@ compute_lub_pair([X/Vx|ASub1],[Y/Vy|ASub2],AbsInt,[X/Lub|ASubLub]):-
 compute_lub_pair(_,_,_,_):-
     throw(error(variable_mismatch, nonrel_compute_lub/3)).
 
-%:- export(nonrel_extend/5).
-:- doc(doinclude, nonrel_extend/5).
-:- pred nonrel_extend(+AbsInt,+Prime,Sv,+Call,-Succ)
-    : atm * term * list * term * term.
-nonrel_extend(_,'$bottom',_Sv,_Call,Succ):- !, % generic
+%:- export(nonrel_extend/6).
+:- doc(doinclude, nonrel_extend/6).
+:- pred nonrel_extend(+AbsInt,+Sg,+Prime,Sv,+Call,-Succ)
+    : atm * term * term * list * term * term.
+nonrel_extend(_,_Sg,'$bottom',_Sv,_Call,Succ):- !, % generic
     Succ = '$bottom'.
-nonrel_extend(_,_Prime,[],Call,Succ):- !,      % generic
+nonrel_extend(_,_Sg,_Prime,[],Call,Succ):- !,      % generic
     Call = Succ.
-nonrel_extend(AbsInt,Prime_u,_Sv,Call_u,Succ) :-
+nonrel_extend(AbsInt,_Sg,Prime_u,_Sv,Call_u,Succ) :-
     % TODO: unnecessary sort?
     nonrel_abs_sort(Prime_u, Prime),
     nonrel_abs_sort(Call_u, Call),
@@ -312,7 +312,7 @@ nonrel_call_to_success_fact(AbsInt,Sg,Hv,Head,_K,Sv,Call,Proj,Prime,Succ) :-
     insert_values_asub(Hv,Proj,Top,Call0),
     nonrel_amgu(AbsInt,Sg,Head,Call0,Tmp),
     nonrel_project_(Tmp,Sv,Prime),
-    nonrel_extend(AbsInt,Prime,Sv,Call,Succ).
+    nonrel_extend(AbsInt,Sg,Prime,Sv,Call,Succ).
 
 %:- export(nonrel_special_builtin/5).
 :- doc(doinclude, nonrel_special_builtin/5).
