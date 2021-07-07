@@ -39,7 +39,7 @@
 %       nonrel_intervals_OP(Arg) :- nonrel_OP(nonrel_intervals, Arg).
 :- dom_impl_deriv(nonrel_intervals, call_to_entry(Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo), nonrel, call_to_entry(nonrel_intervals,Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo)).
 :- dom_impl_deriv(nonrel_intervals, exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime), nonrel, exit_to_prime(nonrel_intervals,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime)).
-:- dom_impl_deriv(nonrel_intervals, project(_Sg,Vars,_HvFv,ASub,Proj), nonrel, project(ASub,Vars,Proj)).
+:- dom_impl_deriv(nonrel_intervals, project(Sg,Vars,HvFv,ASub,Proj), nonrel, project(Sg,Vars,HvFv,ASub,Proj)).
 :- dom_impl_deriv(nonrel_intervals, widencall(Prime0,Prime1,NewPrime), nonrel, widencall(nonrel_intervals,Prime0,Prime1,NewPrime)).
 :- dom_impl_deriv(nonrel_intervals, widen(Prime0,Prime1,NewPrime), nonrel, widen(nonrel_intervals,Prime0,Prime1,NewPrime)).
 :- dom_impl_deriv(nonrel_intervals, compute_lub(ListASub,LubASub), nonrel, compute_lub(nonrel_intervals,ListASub,LubASub)).

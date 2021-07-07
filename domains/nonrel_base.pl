@@ -124,14 +124,18 @@ nonrel_abs_sort('$bottom','$bottom'):- !. % TODO: this clause should be generic
 nonrel_abs_sort(Asub,Asub_s):-
     sort(Asub,Asub_s).
 
-%:- export(nonrel_project/3).
-:- doc(doinclude, nonrel_project/3).
-:- pred nonrel_project(+Asub,+Vars,-Proj): term * list * term # 
-    "@var{Proj} is the result of eliminating from @var{Asub} all
+%:- export(nonrel_project/5).
+:- doc(doinclude, nonrel_project/5).
+:- pred nonrel_project(+Sg,+Vars,+HvFv_u,+ASub,-Proj)
+   : term * list * list * term * term
+   # "@var{Proj} is the result of eliminating from @var{ASub} all
       @var{X}/@var{Value} such that @var{X} is not in @var{Vars}".
-nonrel_project('$bottom',_,Proj) :- !, 
+nonrel_project(_Sg,Vars,_HvFv_u,ASub,Proj) :- 
+    nonrel_project_(ASub,Vars,Proj).
+
+nonrel_project_('$bottom',_Vars,Proj) :- !, 
     Proj = '$bottom'.
-nonrel_project(ASub,Vars,Proj) :- 
+nonrel_project_(ASub,Vars,Proj) :- 
     project_aux(Vars,ASub,Proj).
 
 :- pred project_aux(+Vars,+ASub,-Proj): list * list * term # 
@@ -181,7 +185,7 @@ nonrel_call_to_entry(AbsInt,_Sv,Sg,Hv,Head,_K,Fv,Proj,Entry,Proj) :-
     insert_values_asub(Hv,Proj,Top,Call0), % Add variables of the clause head
     nonrel_amgu(AbsInt,Sg,Head,Call0,Call),       % Unify clauses
     merge(Hv,Fv,HvFv),
-    nonrel_project(Call,HvFv,Entry0),      % Project to the variables in the clause
+    nonrel_project_(Call,HvFv,Entry0),      % Project to the variables in the clause
     nonrel_bot(AbsInt,Bot),
     ( member(_/Bot, Entry0) ->
         Entry = Bot
@@ -211,7 +215,7 @@ insert_values_asub(Vs, [X/Val|ASub], AbsElem, [X/Val|NASub0]) :-
 nonrel_exit_to_prime(_,_Sg,_Hv,_Head,_Sv,'$bottom',_Flag,Prime) :- !, % generic
     Prime = '$bottom'.
 nonrel_exit_to_prime(_,Sg,Hv,Head,_Sv,Exit,yes,Prime):- !, % generic
-    nonrel_project(Exit,Hv,BPrime),
+    nonrel_project_(Exit,Hv,BPrime),
     copy_term((Head,BPrime),(NewTerm,NewPrime)),
     Sg = NewTerm,
     nonrel_abs_sort(NewPrime,Prime).        
@@ -222,11 +226,11 @@ nonrel_exit_to_prime(AbsInt,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime):-
     ;
         Proj = ExtraInfo
     ),
-    nonrel_project(Exit,Hv,BPrime),
+    nonrel_project_(Exit,Hv,BPrime),
     merge(BPrime,Proj,TPrime),
     % need to add variables here, merge substitutions?
     nonrel_amgu(AbsInt,Head,Sg,TPrime,NewTempPrime),
-    nonrel_project(NewTempPrime,Sv,Prime0),
+    nonrel_project_(NewTempPrime,Sv,Prime0),
     nonrel_bot(AbsInt,Bot),
     ( member(_/Bot, Prime0) ->
         Prime = Bot
@@ -307,7 +311,7 @@ nonrel_call_to_success_fact(AbsInt,Sg,Hv,Head,_K,Sv,Call,Proj,Prime,Succ) :-
     nonrel_top(AbsInt,Top),
     insert_values_asub(Hv,Proj,Top,Call0),
     nonrel_amgu(AbsInt,Sg,Head,Call0,Tmp),
-    nonrel_project(Tmp,Sv,Prime),
+    nonrel_project_(Tmp,Sv,Prime),
     nonrel_extend(AbsInt,Prime,Sv,Call,Succ).
 
 %:- export(nonrel_special_builtin/5).
