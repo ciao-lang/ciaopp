@@ -11,6 +11,8 @@
 %-----------------------------------------------------------------------
 % (Predicates to be implemented by the domain extending this base)
 
+% TODO: use a dedicated 'interval' trait?
+
 % TODO: discontiguous is not needed unless we do traits
 :- discontiguous(nonrel_top/2).
 :- discontiguous(nonrel_bot/2).
@@ -68,8 +70,6 @@
 :- pred nonrel_widen_elem(+AbsInt,+E1,+E2,EW) #"
    @var{EW} is the @em{widening} of @var{E1} and @var{E2}.
    @begin{alert}(implement in derived domain)@end{alert}".
-
-% TODO: redefine code above as traits to avoid duplicated code below
 
 %-----------------------------------------------------------------------
 % :- doc(section, "Generic functionality for non-relational domains").

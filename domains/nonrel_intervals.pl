@@ -15,24 +15,24 @@
 ").
 
 % impl domain
+:- include(library(traits/traits_ops)).
 :- include(domain(nonrel_base)). % (derive nonrel domain)
 :- include(ciaopp(plai/plai_domain)).
 :- dom_def(nonrel_intervals).
 
 % (operations expected by nonrel_base that this domain must implement)
 % E.g., nonrel_OP(nonrel_intervals, Arg) :- !, nonrel_intervals_OP(Arg).
-%
-:- dom_deriv_hook(nonrel, top(X), nonrel_intervals, top(X)).
-:- dom_deriv_hook(nonrel, bot(X), nonrel_intervals, bot(X)).
-:- dom_deriv_hook(nonrel, var(X), nonrel_intervals, var(X)).
-:- dom_deriv_hook(nonrel, amgu(T1,T2,ASub0,NASub), nonrel_intervals, amgu(T1,T2,ASub0,NASub)). % TODO: make nonrel_base call the domain operation instead?
-:- dom_deriv_hook(nonrel, less_or_equal_elem(E1,E2), nonrel_intervals, less_or_equal_elem(E1,E2)).
-:- dom_deriv_hook(nonrel, compute_glb_elem(E1,E2,EG), nonrel_intervals, compute_glb_elem(E1,E2,EG)).
-:- dom_deriv_hook(nonrel, compute_lub_elem(E1,E2,EL), nonrel_intervals, compute_lub_elem(E1,E2,EL)).
-:- dom_deriv_hook(nonrel, widen_elem(E1,E2,EW), nonrel_intervals, widen_elem(E1,E2,EW)).
-% :- dom_deriv_hook(nonrel, input_interface(Prop,Kind,Struct0,Struct1), nonrel_intervals, input_interface0(Prop,Kind,Struct0,Struct1)).
-:- dom_deriv_hook(nonrel, special_builtin0(SgKey,Sg,Type,Condvars), nonrel_intervals, special_builtin0(SgKey,Sg,Type,Condvars)).
-:- dom_deriv_hook(nonrel, call_to_success_builtin0(SgKey,Sg,Sv,Call,Proj,Succ), nonrel_intervals, call_to_success_builtin0(SgKey,Sg,Sv,Call,Proj,Succ)).
+:- dom_deriv_hook((nonrel_intervals as nonrel), top/1).
+:- dom_deriv_hook((nonrel_intervals as nonrel), bot/1).
+:- dom_deriv_hook((nonrel_intervals as nonrel), var/1).
+:- dom_deriv_hook((nonrel_intervals as nonrel), amgu/4). % TODO: make nonrel_base call the domain operation instead?
+:- dom_deriv_hook((nonrel_intervals as nonrel), less_or_equal_elem/2).
+:- dom_deriv_hook((nonrel_intervals as nonrel), compute_glb_elem/3).
+:- dom_deriv_hook((nonrel_intervals as nonrel), compute_lub_elem/3).
+:- dom_deriv_hook((nonrel_intervals as nonrel), widen_elem/3).
+% :- dom_deriv_hook((nonrel_intervals as nonrel), input_interface0/4).
+:- dom_deriv_hook((nonrel_intervals as nonrel), special_builtin0/4).
+:- dom_deriv_hook((nonrel_intervals as nonrel), call_to_success_builtin0/6).
 
 % (domain operations derived from nonrel)
 % E.g., :- dom_impl(nonrel_intervals, OP_F/OP_A).

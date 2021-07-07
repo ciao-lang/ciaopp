@@ -72,14 +72,15 @@ treat_sent((:- dom_impl(AbsInt,Spec,from(MAbsIntB))), C2, _M) :- nonvar(Spec), n
     ),
     emit_dom_impl0(AbsInt,Spec,AbsIntB,MB,C2).
 % TODO: (experimental)
-% I.e., <<AbsInt1>>_Op1(<<AbsInt2>, As1) :- !, <<AbsInt2>>_Op2(As2).
-treat_sent((:- dom_deriv_hook(AbsInt1,Head1,AbsInt2,Head2)), C2, _M) :- !,
-    Head1 =.. [Op1|As1],
-    Head2 =.. [Op2|As2],
-    atom_concat(AbsInt1,'_',AbsInt1b), atom_concat(AbsInt1b,Op1,AbsIntOp1),
-    atom_concat(AbsInt2,'_',AbsInt2b), atom_concat(AbsInt2b,Op2,AbsIntOp2),
-    H =.. [AbsIntOp1, AbsInt2|As1],
-    B =.. [AbsIntOp2|As2],
+% I.e., <<Trait>>_Op1(<<AbsInt2>, As1) :- !, <<AbsInt2>>_Op2(As2).
+treat_sent((:- dom_deriv_hook(as(AbsInt,Trait),Spec)), C2, _M) :- nonvar(Spec), Spec = _/_, !,
+    Spec = OpName/A,
+    functor(Op, OpName, A),
+    Op =.. [_|As],
+    atom_concat(Trait,'_',Traitb), atom_concat(Traitb,OpName,TraitOpName),
+    atom_concat(AbsInt,'_',AbsIntb), atom_concat(AbsIntb,OpName,AbsIntOpName),
+    H =.. [TraitOpName, AbsInt|As],
+    B =.. [AbsIntOpName|As],
     C2 = [(H :- !, B)].
     %writeq(C2), nl.
 % TODO: (experimental)
