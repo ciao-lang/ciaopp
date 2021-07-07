@@ -49,7 +49,7 @@
 :- dom_impl_deriv(nonrel_intervals, less_or_equal(ASub0,ASub1), nonrel, less_or_equal(nonrel_intervals,ASub0,ASub1)).
 :- dom_impl_deriv(nonrel_intervals, glb(ASub0,ASub1,ASub), nonrel, glb(nonrel_intervals,ASub0,ASub1,ASub)).
 :- dom_impl_deriv(nonrel_intervals, call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ), nonrel, call_to_success_fact(nonrel_intervals,Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ)).
-:- dom_impl_deriv(nonrel_intervals, special_builtin(SgKey,Sg,_Subgoal,Type,Condvars), nonrel, special_builtin(nonrel_intervals,SgKey,Sg,Type,Condvars)).
+:- dom_impl_deriv(nonrel_intervals, special_builtin(SgKey,Sg,Subgoal,Type,Condvars), nonrel, special_builtin(nonrel_intervals,SgKey,Sg,Subgoal,Type,Condvars)).
 :- dom_impl_deriv(nonrel_intervals, success_builtin(Type,_Sv_uns,Condvars,_HvFv_u,Call,Succ), nonrel, success_builtin(nonrel_intervals,Type,Condvars,Call,Succ)).
 :- dom_impl_deriv(nonrel_intervals, call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,Succ), nonrel, call_to_success_builtin(nonrel_intervals,SgKey,Sg,Sv,Call,Proj,Succ)).
 :- dom_impl_deriv(nonrel_intervals, input_interface(InputUser,Kind,Struct0,Struct1), nonrel, input_interface(nonrel_intervals,InputUser,Kind,Struct0,Struct1)).

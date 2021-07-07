@@ -314,18 +314,18 @@ nonrel_call_to_success_fact(AbsInt,Sg,Hv,Head,_K,Sv,Call,Proj,Prime,Succ) :-
     nonrel_project_(Tmp,Sv,Prime),
     nonrel_extend(AbsInt,Sg,Prime,Sv,Call,Succ).
 
-%:- export(nonrel_special_builtin/5).
-:- doc(doinclude, nonrel_special_builtin/5).
-:- pred nonrel_special_builtin(+AbsInt,+SgKey,+Sg,-Type,-Condvars)
-    : atm * predname * cgoal * atm * term
+%:- export(nonrel_special_builtin/6).
+:- doc(doinclude, nonrel_special_builtin/6).
+:- pred nonrel_special_builtin(+AbsInt,+SgKey,+Sg,+Subgoal,-Type,-Condvars)
+    : atm * predname * cgoal * cgoal * atm * term
     #"@begin{alert}This predicate needs to be implemented by the
     user.@end{alert}".
-nonrel_special_builtin(_,'=/2',_,_,_) :- !.
-nonrel_special_builtin(_,'==/2',_,_,_) :- !.
-nonrel_special_builtin(_,'true/0',_,_,_) :- !.
+nonrel_special_builtin(_,'=/2',_,_,_,_) :- !.
+nonrel_special_builtin(_,'==/2',_,_,_,_) :- !.
+nonrel_special_builtin(_,'true/0',_,_,_,_) :- !.
 % true/0 is necessary but it does not need a specific implementation in
 % "call_to_success_builtin", it is included in the fixpoints
-nonrel_special_builtin(AbsInt,SgKey,Sg,Type,Condvars) :-
+nonrel_special_builtin(AbsInt,SgKey,Sg,_Subgoal,Type,Condvars) :-
     nonrel_special_builtin0(AbsInt,SgKey,Sg,Type,Condvars).
 
 %:- export(nonrel_success_builtin/5).
