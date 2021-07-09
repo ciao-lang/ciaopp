@@ -50,7 +50,7 @@
 :- dom_impl_deriv(nonrel_intervals, glb(ASub0,ASub1,ASub), nonrel, glb(nonrel_intervals,ASub0,ASub1,ASub)).
 :- dom_impl_deriv(nonrel_intervals, call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ), nonrel, call_to_success_fact(nonrel_intervals,Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ)).
 :- dom_impl_deriv(nonrel_intervals, special_builtin(SgKey,Sg,Subgoal,Type,Condvars), nonrel, special_builtin(nonrel_intervals,SgKey,Sg,Subgoal,Type,Condvars)).
-:- dom_impl_deriv(nonrel_intervals, success_builtin(Type,_Sv_uns,Condvars,_HvFv_u,Call,Succ), nonrel, success_builtin(nonrel_intervals,Type,Condvars,Call,Succ)).
+:- dom_impl_deriv(nonrel_intervals, success_builtin(Type,Sv_uns,Condvars,HvFv_u,Call,Succ), nonrel, success_builtin(nonrel_intervals,Type,Sv_uns,Condvars,HvFv_u,Call,Succ)).
 :- dom_impl_deriv(nonrel_intervals, call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,Succ), nonrel, call_to_success_builtin(nonrel_intervals,SgKey,Sg,Sv,Call,Proj,Succ)).
 :- dom_impl_deriv(nonrel_intervals, input_interface(InputUser,Kind,Struct0,Struct1), nonrel, input_interface(nonrel_intervals,InputUser,Kind,Struct0,Struct1)).
 :- dom_impl_deriv(nonrel_intervals, input_user_interface(InputUser,Qv,ASub,_Sg,_MaybeCallASub), nonrel, input_user_interface(nonrel_intervals,InputUser,Qv,ASub)).
@@ -157,10 +157,10 @@ nonrel_intervals_amgu_args([A1|As1],[A2|As2],ASub0, NASub) :-
       current abstract state for term T.".
 % if it is a number, generate the interval
 nonrel_intervals_abstract_term(X,_ASub,i(X,X)) :-
-    num(X), !.
+    number(X), !. % TODO: only integers?
 % if it is a variable, return the abstraction in the substitution
 nonrel_intervals_abstract_term(Var,ASub,Value) :-  % This is generic
-       nonrel_get_value_asub(ASub, Var, Value), !.
+    nonrel_get_value_asub(ASub, Var, Value), !.
 nonrel_intervals_abstract_term(_,_,Top) :-
     nonrel_intervals_top(Top).
 

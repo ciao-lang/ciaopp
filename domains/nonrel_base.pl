@@ -328,12 +328,12 @@ nonrel_special_builtin(_,'true/0',_,_,_,_) :- !.
 nonrel_special_builtin(AbsInt,SgKey,Sg,_Subgoal,Type,Condvars) :-
     nonrel_special_builtin0(AbsInt,SgKey,Sg,Type,Condvars).
 
-%:- export(nonrel_success_builtin/5).
-:- doc(doinclude, nonrel_success_builtin/5).
-:- pred nonrel_success_builtin(+AbsInt,+Type,+Condv,+Call,-Succ)
-    : atm * atm * term * term * term
+%:- export(nonrel_success_builtin/7).
+:- doc(doinclude, nonrel_success_builtin/7).
+:- pred nonrel_success_builtin(+AbsInt,+Sv_uns,+Type,+Condv,+HvFv_u,+Call,-Succ)
+    : atm * term * atm * term * term * term * term
     #"Obtains the success for some particular builtins.".
-nonrel_success_builtin(_,_,_,_,_). % TODO: not finished, Succ is unbound (JF)
+nonrel_success_builtin(_,_,_,_,_,_,_). % TODO: not finished, Succ is unbound (JF)
 
 %:- export(nonrel_call_to_success_builtin/7).
 :- doc(doinclude, nonrel_call_to_success_builtin/7).
