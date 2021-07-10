@@ -107,10 +107,10 @@ nonrel_get_value_asub([Var/Val|ASub],V1,Value) :-
     ).
 
 % ---------------------------------------------------------------------------
-:- pred nonrel_empty_entry(+AbsInt,+Vars,-Entry) : atm * list * term
+:- pred nonrel_empty_entry(+AbsInt,+Sg,+Vars,-Entry) : atm * cgoal * list * term
     #"Obtains the abstraction of a substitution in which all variables
       @var{Vars} are unbound: free and unaliased.".
-nonrel_empty_entry(AbsInt,Vars,Entry) :-
+nonrel_empty_entry(AbsInt,_Sg,Vars,Entry) :-
     nonrel_var(AbsInt,VarValue),
     nonrel_create_asub(Vars,VarValue,Entry).
 

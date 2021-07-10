@@ -57,7 +57,7 @@
 :- dom_impl_deriv(nonrel_intervals, asub_to_native(ASub,Qv,OutFlag,OutputUser,Comps), nonrel, asub_to_native(nonrel_intervals,ASub,Qv,OutFlag,OutputUser,Comps)).
 :- dom_impl_deriv(nonrel_intervals, unknown_call(Sg,Vars,Call,Succ), nonrel, unknown_call(nonrel_intervals,Sg,Vars,Call,Succ)).
 :- dom_impl_deriv(nonrel_intervals, unknown_entry(Sg,Qv,Call), nonrel, unknown_entry(nonrel_intervals,Sg,Qv,Call)).
-:- dom_impl_deriv(nonrel_intervals, empty_entry(Sg,Qv,Call), nonrel, unknown_entry(nonrel_intervals,Sg,Qv,Call)).
+:- dom_impl_deriv(nonrel_intervals, empty_entry(Sg,Qv,Call), nonrel, empty_entry(nonrel_intervals,Sg,Qv,Call)).
 
 % ---------------------------------------------------------------------------
 
