@@ -43,8 +43,8 @@
 :- dom_impl_deriv(nonrel_intervals, widencall(Prime0,Prime1,NewPrime), nonrel, widencall(nonrel_intervals,Prime0,Prime1,NewPrime)).
 :- dom_impl_deriv(nonrel_intervals, widen(Prime0,Prime1,NewPrime), nonrel, widen(nonrel_intervals,Prime0,Prime1,NewPrime)).
 :- dom_impl_deriv(nonrel_intervals, compute_lub(ListASub,LubASub), nonrel, compute_lub(nonrel_intervals,ListASub,LubASub)).
-:- dom_impl_deriv(nonrel_intervals, identical_abstract(ASub1, ASub2), nonrel, identical_abstract(ASub1, ASub2)).
-:- dom_impl_deriv(nonrel_intervals, abs_sort(ASub,ASub_s), nonrel, abs_sort(ASub,ASub_s)).
+:- dom_impl_deriv(nonrel_intervals, identical_abstract(ASub1, ASub2), nonrel, identical_abstract(ASub1, ASub2)). % (noself)
+:- dom_impl_deriv(nonrel_intervals, abs_sort(ASub,ASub_s), nonrel, abs_sort(ASub,ASub_s)). % (noself)
 :- dom_impl_deriv(nonrel_intervals, extend(Sg,Prime,Sv,Call,Succ), nonrel, extend(nonrel_intervals,Sg,Prime,Sv,Call,Succ)).
 :- dom_impl_deriv(nonrel_intervals, less_or_equal(ASub0,ASub1), nonrel, less_or_equal(nonrel_intervals,ASub0,ASub1)).
 :- dom_impl_deriv(nonrel_intervals, glb(ASub0,ASub1,ASub), nonrel, glb(nonrel_intervals,ASub0,ASub1,ASub)).
