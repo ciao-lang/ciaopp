@@ -74,7 +74,9 @@
    @end{note}
 ").
 
-:- include(.(nonrel_base)).
+:- include(library(traits/traits_ops)).
+:- include(ciaopp(plai/plai_domain)).
+:- include(domain(nonrel_base)).
 
 :- impl_defined([nonrel_top/2]).
 :- impl_defined([nonrel_bot/2]).
