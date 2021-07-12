@@ -16,48 +16,23 @@
 
 % impl domain
 :- include(library(traits/traits_ops)).
-:- include(domain(nonrel_base)). % (derive nonrel domain)
 :- include(ciaopp(plai/plai_domain)).
-:- dom_def(nonrel_intervals).
+:- include(domain(nonrel_base)).
+:- dom_def(nonrel_intervals < nonrel).
 
 % (operations expected by nonrel_base that this domain must implement)
 % E.g., nonrel_OP(nonrel_intervals, Arg) :- !, nonrel_intervals_OP(Arg).
 :- dom_deriv_hook((nonrel_intervals as nonrel), top/1).
 :- dom_deriv_hook((nonrel_intervals as nonrel), bot/1).
 :- dom_deriv_hook((nonrel_intervals as nonrel), var/1).
-:- dom_deriv_hook((nonrel_intervals as nonrel), amgu/4). % TODO: make nonrel_base call the domain operation instead?
 :- dom_deriv_hook((nonrel_intervals as nonrel), less_or_equal_elem/2).
 :- dom_deriv_hook((nonrel_intervals as nonrel), compute_glb_elem/3).
 :- dom_deriv_hook((nonrel_intervals as nonrel), compute_lub_elem/3).
 :- dom_deriv_hook((nonrel_intervals as nonrel), widen_elem/3).
 % :- dom_deriv_hook((nonrel_intervals as nonrel), input_interface0/4).
+:- dom_deriv_hook((nonrel_intervals as nonrel), amgu/4). % TODO: make nonrel_base call the domain operation instead?
 :- dom_deriv_hook((nonrel_intervals as nonrel), special_builtin0/4).
 :- dom_deriv_hook((nonrel_intervals as nonrel), call_to_success_builtin0/6).
-
-% (domain operations derived from nonrel)
-% E.g., :- dom_impl(nonrel_intervals, OP_F/OP_A).
-%       nonrel_intervals_OP(Arg) :- nonrel_OP(nonrel_intervals, Arg).
-:- dom_impl_deriv(nonrel_intervals, call_to_entry(Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo), nonrel, call_to_entry(nonrel_intervals,Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo)).
-:- dom_impl_deriv(nonrel_intervals, exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime), nonrel, exit_to_prime(nonrel_intervals,Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime)).
-:- dom_impl_deriv(nonrel_intervals, project(Sg,Vars,HvFv,ASub,Proj), nonrel, project(Sg,Vars,HvFv,ASub,Proj)). % (noself)
-:- dom_impl_deriv(nonrel_intervals, widencall(Prime0,Prime1,NewPrime), nonrel, widencall(nonrel_intervals,Prime0,Prime1,NewPrime)).
-:- dom_impl_deriv(nonrel_intervals, widen(Prime0,Prime1,NewPrime), nonrel, widen(nonrel_intervals,Prime0,Prime1,NewPrime)).
-:- dom_impl_deriv(nonrel_intervals, compute_lub(ListASub,LubASub), nonrel, compute_lub(nonrel_intervals,ListASub,LubASub)).
-:- dom_impl_deriv(nonrel_intervals, identical_abstract(ASub1, ASub2), nonrel, identical_abstract(ASub1, ASub2)). % (noself)
-:- dom_impl_deriv(nonrel_intervals, abs_sort(ASub,ASub_s), nonrel, abs_sort(ASub,ASub_s)). % (noself)
-:- dom_impl_deriv(nonrel_intervals, extend(Sg,Prime,Sv,Call,Succ), nonrel, extend(nonrel_intervals,Sg,Prime,Sv,Call,Succ)).
-:- dom_impl_deriv(nonrel_intervals, less_or_equal(ASub0,ASub1), nonrel, less_or_equal(nonrel_intervals,ASub0,ASub1)).
-:- dom_impl_deriv(nonrel_intervals, glb(ASub0,ASub1,ASub), nonrel, glb(nonrel_intervals,ASub0,ASub1,ASub)).
-:- dom_impl_deriv(nonrel_intervals, call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ), nonrel, call_to_success_fact(nonrel_intervals,Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ)).
-:- dom_impl_deriv(nonrel_intervals, special_builtin(SgKey,Sg,Subgoal,Type,Condvars), nonrel, special_builtin(nonrel_intervals,SgKey,Sg,Subgoal,Type,Condvars)).
-:- dom_impl_deriv(nonrel_intervals, success_builtin(Type,Sv_uns,Condvars,HvFv_u,Call,Succ), nonrel, success_builtin(nonrel_intervals,Type,Sv_uns,Condvars,HvFv_u,Call,Succ)).
-:- dom_impl_deriv(nonrel_intervals, call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,Succ), nonrel, call_to_success_builtin(nonrel_intervals,SgKey,Sg,Sv,Call,Proj,Succ)).
-:- dom_impl_deriv(nonrel_intervals, input_interface(InputUser,Kind,Struct0,Struct1), nonrel, input_interface(nonrel_intervals,InputUser,Kind,Struct0,Struct1)).
-:- dom_impl_deriv(nonrel_intervals, input_user_interface(InputUser,Qv,ASub,_Sg,_MaybeCallASub), nonrel, input_user_interface(nonrel_intervals,InputUser,Qv,ASub)).
-:- dom_impl_deriv(nonrel_intervals, asub_to_native(ASub,Qv,OutFlag,OutputUser,Comps), nonrel, asub_to_native(nonrel_intervals,ASub,Qv,OutFlag,OutputUser,Comps)).
-:- dom_impl_deriv(nonrel_intervals, unknown_call(Sg,Vars,Call,Succ), nonrel, unknown_call(nonrel_intervals,Sg,Vars,Call,Succ)).
-:- dom_impl_deriv(nonrel_intervals, unknown_entry(Sg,Qv,Call), nonrel, unknown_entry(nonrel_intervals,Sg,Qv,Call)).
-:- dom_impl_deriv(nonrel_intervals, empty_entry(Sg,Qv,Call), nonrel, empty_entry(nonrel_intervals,Sg,Qv,Call)).
 
 % ---------------------------------------------------------------------------
 

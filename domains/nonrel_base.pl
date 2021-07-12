@@ -17,12 +17,12 @@
 :- discontiguous(nonrel_top/2).
 :- discontiguous(nonrel_bot/2).
 :- discontiguous(nonrel_var/2).
-:- discontiguous(nonrel_amgu/5). % TODO: make nonrel_base call the domain operation instead?
 :- discontiguous(nonrel_less_or_equal_elem/3).
 :- discontiguous(nonrel_compute_glb_elem/4).
 :- discontiguous(nonrel_compute_lub_elem/4).
 :- discontiguous(nonrel_widen_elem/4).
 %:- discontiguous(nonrel_input_interface/5).
+:- discontiguous(nonrel_amgu/5). % TODO: make nonrel_base call the domain operation instead?
 :- discontiguous(nonrel_special_builtin0/5).
 :- discontiguous(nonrel_call_to_success_builtin0/7).
 
@@ -40,16 +40,6 @@
 :- pred nonrel_var(AbsInt, X) # "@var{X} is the abstraction of a free
    variable in the abstract domain.
    @begin{alert}(implement in derived domain)@end{alert}".
-
-%:- export(nonrel_amgu/5).
-:- doc(doinclude, nonrel_amgu/5).
-:- pred nonrel_amgu(+AbsInt, +Term1,+Term2,+ASub0,-NASub) #
-   "@var{NASub} is the abstract unification of @var{Term1} and
-   @var{Term2}, with @var{ASub0} an abstract substitution that
-   represents the state of both terms.
-   @begin{alert}(implement in derived domain)@end{alert}".
-% TODO: The abstract unification could be simplified even more if domains are
-% non relational
 
 :- doc(doinclude, nonrel_less_or_equal_elem/3).
 :- pred nonrel_less_or_equal_elem(+AbsInt,+E1,+E2) #"
@@ -72,7 +62,45 @@
    @begin{alert}(implement in derived domain)@end{alert}".
 
 %-----------------------------------------------------------------------
+
+%:- export(nonrel_amgu/5).
+:- doc(doinclude, nonrel_amgu/5).
+:- pred nonrel_amgu(+AbsInt, +Term1,+Term2,+ASub0,-NASub) #
+   "@var{NASub} is the abstract unification of @var{Term1} and
+   @var{Term2}, with @var{ASub0} an abstract substitution that
+   represents the state of both terms.
+   @begin{alert}(implement in derived domain)@end{alert}".
+% TODO: The abstract unification could be simplified even more if domains are
+% non relational
+
+% TODO: :- pred nonrel_special_builtin0(AbsInt,SgKey,Sg,Type,Condvars)
+
+% TODO: :- pred nonrel_call_to_success_builtin0(AbsInt,SgKey,Sg,Sv,Call,Proj,Succ).
+
+%-----------------------------------------------------------------------
 % :- doc(section, "Generic functionality for non-relational domains").
+
+:- dom_base_deriv(nonrel, call_to_entry/9, []).
+:- dom_base_deriv(nonrel, exit_to_prime/7, []).
+:- dom_base_deriv(nonrel, project/5, [noself]).
+:- dom_base_deriv(nonrel, widencall/3, []).
+:- dom_base_deriv(nonrel, widen/3, []).
+:- dom_base_deriv(nonrel, compute_lub/2, []).
+:- dom_base_deriv(nonrel, identical_abstract/2, [noself]).
+:- dom_base_deriv(nonrel, abs_sort/2, [noself]).
+:- dom_base_deriv(nonrel, extend/5, []).
+:- dom_base_deriv(nonrel, less_or_equal/2, []).
+:- dom_base_deriv(nonrel, glb/3, []).
+:- dom_base_deriv(nonrel, call_to_success_fact/9, []).
+:- dom_base_deriv(nonrel, special_builtin/5, []).
+:- dom_base_deriv(nonrel, success_builtin/6, []).
+:- dom_base_deriv(nonrel, call_to_success_builtin/6, []).
+:- dom_base_deriv(nonrel, input_interface/4, []).
+:- dom_base_deriv(nonrel, input_user_interface/5, []).
+:- dom_base_deriv(nonrel, asub_to_native/5, []).
+:- dom_base_deriv(nonrel, unknown_call/4, []).
+:- dom_base_deriv(nonrel, unknown_entry/3, []).
+:- dom_base_deriv(nonrel, empty_entry/3, []).
 
 %:- export(nonrel_unknown_entry/4).
 :- doc(doinclude, nonrel_unknown_entry/4).
@@ -362,12 +390,12 @@ nonrel_call_to_success_builtin_('==/2',AbsInt,'=='(X,Y),_Sv,Call,_Proj,Succ) :- 
 nonrel_call_to_success_builtin_(SgKey,AbsInt,Sg,Sv,Call,Proj,Succ) :-
     nonrel_call_to_success_builtin0(AbsInt,SgKey,Sg,Sv,Call,Proj,Succ).
 
-%:- export(nonrel_input_user_interface/4).
-:- doc(doinclude, nonrel_input_user_interface/4).
-:- pred nonrel_input_user_interface(+AbsInt,+InputUser,+Qv,+ASub)
+%:- export(nonrel_input_user_interface/6).
+:- doc(doinclude, nonrel_input_user_interface/6).
+:- pred nonrel_input_user_interface(+AbsInt,+InputUser,+Qv,+ASub,+Sg,+MaybeCallASub)
     #"Obtains the abstract substitution from the native properties
  found in the user supplied info.".
-nonrel_input_user_interface(AbsInt,_,Qv,ASub) :-
+nonrel_input_user_interface(AbsInt,_,Qv,ASub,_Sg,_MaybeCallASub) :-
     nonrel_top(AbsInt,T),
     nonrel_create_asub(Qv,T,ASub).
 % TODO: Currently it is implemented as by "abstracting" the user input as top
