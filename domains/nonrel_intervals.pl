@@ -39,22 +39,22 @@ interval_avalue(i(X,Y)) :-
 
 :- prop limit_point/1.
 limit_point(X) :- num(X).
-limit_point(X) :- nonrel_inf(X).
-limit_point(X) :- nonrel_neginf(X).
+limit_point(X) :- inf(X).
+limit_point(X) :- neginf(X).
 
 interval_num(i(X,X)) :- number(X).
 
 interval_avalue_get_min(i(Min, _),Min) :- !.
 interval_avalue_get_min(I, Min) :-
     nonrel_intervals_top(I), !,
-    nonrel_neginf(Min).
+    neginf(Min).
 interval_avalue_get_min(_, Min) :-
     nonrel_intervals_bot(Min).
 
 interval_avalue_get_max(i(_, Max),Max) :- !.
 interval_avalue_get_max(I, Max) :-
     nonrel_intervals_top(I), !,
-    nonrel_inf(Max).
+    inf(Max).
 interval_avalue_get_max(_, Max) :-
     nonrel_intervals_bot(Max).
 
@@ -66,8 +66,8 @@ nonrel_intervals_top('$top').
 :- dom_impl((nonrel_intervals as nonrel), bot/1).
 nonrel_intervals_bot('$bottom').
 
-nonrel_inf('$inf').
-nonrel_neginf('$ninf').
+inf('$inf').
+neginf('$ninf').
 
 % TODO: [IG] This looks ugly... This is the abstraction of a free
 % variable. It is needed for the predicate "nonrel_empty_entry", that
@@ -77,10 +77,10 @@ nonrel_neginf('$ninf').
 :- dom_impl((nonrel_intervals as nonrel), var/1).
 nonrel_intervals_var('$top').
 
-leq(_, I) :- nonrel_inf(I), !.
-leq(I, _) :- nonrel_inf(I), !, fail.
-leq(NInf, _) :- nonrel_neginf(NInf), !.
-leq(_, NInf) :- nonrel_neginf(NInf), !, fail.
+leq(_, I) :- inf(I), !.
+leq(I, _) :- inf(I), !, fail.
+leq(NInf, _) :- neginf(NInf), !.
+leq(_, NInf) :- neginf(NInf), !, fail.
 leq(N1, N2) :-
     N1 =< N2.
 
@@ -136,21 +136,21 @@ nonrel_intervals_widen_elem(V1, V2, W) :-
     interval_avalue_get_max(V2,MaxV2),
     % if the lower bound lub is smaller than any of lower bounds, widen
     ( ( \+ leq(MinV1, MinLub) ; \+ leq(MinV2, MinLub)) ->
-          nonrel_neginf(W0)
+          neginf(W0)
     ;
         W0 = MinLub
     ),
     % if the upper bound lub is bigger than any of the upper bounds, widen
     ( ( \+ leq(MaxLub, MaxV1) ; \+ leq(MaxLub, MaxV2) ) ->
-        nonrel_inf(W1)
+        inf(W1)
     ;
         W1 = MaxLub
     ),
     simplify_elem(i(W0, W1), W).
 
 simplify_elem(i(NInf, Inf), Top) :-
-    nonrel_neginf(NInf),
-    nonrel_inf(Inf), !,
+    neginf(NInf),
+    inf(Inf), !,
     nonrel_intervals_top(Top).
 simplify_elem(E, E).
 
@@ -158,7 +158,7 @@ max(N0,N1,N0) :- leq(N1, N0), !.
 max(_,N1,N1).
 
 max_list(L, X) :-
-    nonrel_neginf(Min),
+    neginf(Min),
     max_list_(L, Min, X).
 
 max_list_([], X, X).
@@ -170,7 +170,7 @@ min(N0,N1,N1) :- leq(N1, N0), !.
 min(N0,_,N0).
 
 min_list(L, X) :-
-    nonrel_inf(Max),
+    inf(Max),
     min_list_(L, Max, X).
 
 min_list_([], X, X).
@@ -179,24 +179,24 @@ min_list_([X|Xs], Min0, Min) :-
     min_list_(Xs, Min1, Min).
 
 add_intervals(i(V0,V1), i(W0,W1), i(N0, N1)) :-
-    ( max(V1,W1,Inf), nonrel_inf(Inf) ->
+    ( max(V1,W1,Inf), inf(Inf) ->
         N1 = Inf
     ;
         N1 is V1 + W1
     ),
-    ( min(V0,W0,NInf), nonrel_neginf(NInf) ->
+    ( min(V0,W0,NInf), neginf(NInf) ->
         N0 = NInf
     ;
         N0 is V0 + W0
     ).
 
 substract_intervals(i(V0,V1), i(W0,W1), i(N0, N1)) :-
-    ( max(V1,W1,Inf), nonrel_inf(Inf) ->
+    ( max(V1,W1,Inf), inf(Inf) ->
         N1 = Inf
     ;
         N1 is V1 - W1
     ),
-    ( min(V0,W0,NInf), nonrel_neginf(NInf) ->
+    ( min(V0,W0,NInf), neginf(NInf) ->
         N0 = NInf
     ;
         N0 is V0 - W0
