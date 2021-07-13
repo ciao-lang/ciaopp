@@ -20,7 +20,7 @@
 :- include(library(traits/traits_ops)).
 :- include(ciaopp(plai/plai_domain)).
 :- include(domain(nonrel_base)).
-:- dom_def(nonrel_intervals < nonrel).
+:- dom_def(_, [deriv(nonrel)]).
 
 % ---------------------------------------------------------------------------
 :- doc(section, "Value lattice").
@@ -60,10 +60,10 @@ interval_avalue_get_max(_, Max) :-
 
 % ---------------------------------------------------------------------------
 
-:- dom_impl((nonrel_intervals as nonrel), top/1).
+:- dom_impl((_ as nonrel), top/1).
 nonrel_intervals_top('$top').
 
-:- dom_impl((nonrel_intervals as nonrel), bot/1).
+:- dom_impl((_ as nonrel), bot/1).
 nonrel_intervals_bot('$bottom').
 
 inf('$inf').
@@ -74,7 +74,7 @@ neginf('$ninf').
 % obtains the abstraction of a substitution in which all variables are
 % unbound (free and unaliased). At this point we do not have an
 % abstraction predicate, that would generate the correct value...
-:- dom_impl((nonrel_intervals as nonrel), var/1).
+:- dom_impl((_ as nonrel), var/1).
 nonrel_intervals_var('$top').
 
 leq(_, I) :- inf(I), !.
@@ -84,14 +84,14 @@ leq(_, NInf) :- neginf(NInf), !, fail.
 leq(N1, N2) :-
     N1 =< N2.
 
-:- dom_impl((nonrel_intervals as nonrel), less_or_equal_elem/2).
+:- dom_impl((_ as nonrel), less_or_equal_elem/2).
 nonrel_intervals_less_or_equal_elem(_,Top) :- nonrel_intervals_top(Top), !.
 nonrel_intervals_less_or_equal_elem(Bot,_) :- nonrel_intervals_bot(Bot), !.
 nonrel_intervals_less_or_equal_elem(i(N0,N1),i(T0,T1)) :-
     leq(N0, T0),
     leq(N1, T1).
 
-:- dom_impl((nonrel_intervals as nonrel), compute_glb_elem/3).
+:- dom_impl((_ as nonrel), compute_glb_elem/3).
 nonrel_intervals_compute_glb_elem(X, Top, X) :- nonrel_intervals_top(Top), !.
 nonrel_intervals_compute_glb_elem(Top, X, X) :- nonrel_intervals_top(Top), !.
 nonrel_intervals_compute_glb_elem(i(N0,N1), i(T0,T1), i(G0,G1)) :-
@@ -101,7 +101,7 @@ nonrel_intervals_compute_glb_elem(i(N0,N1), i(T0,T1), i(G0,G1)) :-
 nonrel_intervals_compute_glb_elem(_, _, B) :-
     nonrel_intervals_bot(B).
 
-:- dom_impl((nonrel_intervals as nonrel), compute_lub_elem/3).
+:- dom_impl((_ as nonrel), compute_lub_elem/3).
 nonrel_intervals_compute_lub_elem(Top, _, Top) :-  nonrel_intervals_top(Top), !.
 nonrel_intervals_compute_lub_elem(_, Top, Top) :-  nonrel_intervals_top(Top), !.
 nonrel_intervals_compute_lub_elem(Bot, X, X) :-  nonrel_intervals_top(Bot), !.
@@ -111,7 +111,7 @@ nonrel_intervals_compute_lub_elem(i(N0,N1), i(T0,T1), I) :-
     max(N1,T1,G1),
     simplify_elem(i(G0,G1), I).
 
-:- dom_impl((nonrel_intervals as nonrel), widen_elem/3).
+:- dom_impl((_ as nonrel), widen_elem/3).
 :- pred nonrel_intervals_widen_elem(+V1,+V2,-W) : (interval_avalue(V1), interval_avalue(V2))
     => interval_avalue(W).
 nonrel_intervals_widen_elem(Bot, W, W) :-
@@ -260,10 +260,10 @@ div_num(V0, V1, NV) :-
 :- use_module(library(terms_vars), [varset/2]).
 :- use_module(ciaopp(preprocess_flags), [push_pp_flag/2]).
 
-:- dom_impl(nonrel_intervals, needs/1).
+:- dom_impl(_, needs/1).
 nonrel_intervals_needs(widen).
 
-:- dom_impl(nonrel_intervals, init_abstract_domain/1).
+:- dom_impl(_, init_abstract_domain/1).
 nonrel_intervals_init_abstract_domain([widen]) :- push_pp_flag(widen,on).
 
 % input interface predicates (to translate properties in assertions to
@@ -271,7 +271,7 @@ nonrel_intervals_init_abstract_domain([widen]) :- push_pp_flag(widen,on).
 
 % TODO: reuse the syntax of the assertions used in polyhedra?
 
-% :- dom_impl((nonrel_intervals as nonrel), input_interface0/4).
+% :- dom_impl((_ as nonrel), input_interface0/4).
 % We are going to build a term that will be processed later by calling the body
 % of a clause containing builtins equivalent to the constraints found.
 nonrel_intervals_input_interface0(constraint(ListCs),_Kind,Struct0,Struct1) :-
@@ -288,8 +288,8 @@ process_list_constraints([C|Cs], Struct, _Struct1) :-
 % ---------------------------------------------------------------------------
 :- doc(section, "amgu and builtin operations").
 
-:- dom_impl((nonrel_intervals as nonrel), amgu/4). % TODO: make nonrel_base call the domain operation instead?
-:- dom_impl(nonrel_intervals, amgu/4).
+:- dom_impl((_ as nonrel), amgu/4). % TODO: make nonrel_base call the domain operation instead?
+:- dom_impl(_, amgu/4).
 nonrel_intervals_amgu(T1,T2,ASub0,NASub) :-
     var(T1),var(T2), !,
     nonrel_get_value_asub(ASub0,T1,Value1),
@@ -330,7 +330,7 @@ nonrel_intervals_abstract_term(Var,ASub,Value) :-  % This is generic
 nonrel_intervals_abstract_term(_,_,Top) :-
     nonrel_intervals_top(Top).
 
-:- dom_impl((nonrel_intervals as nonrel), special_builtin0/4).
+:- dom_impl((_ as nonrel), special_builtin0/4).
 % Note: the following are specific for intervals domain 
 % TODO: unbound Type and Condvars? (JF)
 nonrel_intervals_special_builtin0('>/2',_,_,_).
@@ -340,7 +340,7 @@ nonrel_intervals_special_builtin0('=</2',_,_,_).
 nonrel_intervals_special_builtin0('is/2',_,_,_).
 % nonrel_intervals_special_builtin0('nnegint/1',_,_,_).
 
-:- dom_impl((nonrel_intervals as nonrel), call_to_success_builtin0/6).
+:- dom_impl((_ as nonrel), call_to_success_builtin0/6).
 nonrel_intervals_call_to_success_builtin0('=</2','=<'(X,Y),_Sv,Call,_Proj,Succ):-
     nonrel_intervals_abstract_term(X,Call,ValX),
     nonrel_intervals_abstract_term(Y,Call,ValY),

@@ -41,10 +41,12 @@ treat_sent(end_of_file, Cs2, Mod) :- !,
     clean_db_pass1(Mod),
     % TODO: This should be automatic
     append(Cs, [end_of_file], Cs2). % (allow other translations)
-treat_sent((:- dom_def(AbsInt < BaseDom)), C2, M) :- !,
+treat_sent((:- dom_def(AbsInt, [deriv(BaseDom)])), C2, M) :- !,
+    ensure_impl(AbsInt, M), 
     assertz_fact(dom_def(AbsInt,BaseDom,M)), % TODO: basedom hardwired
     C2 = aidomain(AbsInt).
 treat_sent((:- dom_def(AbsInt)), C2, M) :- !,
+    ensure_impl(AbsInt, M), 
     assertz_fact(dom_def(AbsInt,basedom,M)), % TODO: basedom hardwired
     C2 = aidomain(AbsInt).
 treat_sent((:- dom_itf), C2, M) :- !,
@@ -71,7 +73,11 @@ treat_sent((:- dom_op(Spec)), Cs, M) :- nonvar(Spec), Spec = F/A, !,
     Cs = [(:- discontiguous(Fm/A1)), (:- multifile(Fm/A1))].
 % TODO: (experimental, merge)
 % I.e., <<Trait>>_Op(<<AbsInt>, As) :- !, <<AbsInt>>_Op(As).
-treat_sent((:- dom_impl(QAbsInt,Spec)), C2, _M) :- nonvar(QAbsInt), QAbsInt = as(AbsInt,Trait), nonvar(Spec), Spec = _/_, !,
+treat_sent((:- dom_impl(QAbsInt,Spec)), C2, M) :-
+    nonvar(QAbsInt), QAbsInt = as(AbsInt,Trait),
+    nonvar(Spec), Spec = _/_,
+    !,
+    ensure_impl(AbsInt, M), 
     Spec = OpName/A,
     functor(Op, OpName, A),
     Op =.. [_|As],
@@ -82,14 +88,20 @@ treat_sent((:- dom_impl(QAbsInt,Spec)), C2, _M) :- nonvar(QAbsInt), QAbsInt = as
     C2 = [(H :- !, B)].
     %writeq(C2), nl.
 treat_sent((:- dom_impl(AbsInt,Spec)), C2, M) :- nonvar(Spec), Spec = _/_, !,
+    ensure_impl(AbsInt, M),
     emit_dom_impl(AbsInt,Spec,[noself],M,C2).
 treat_sent((:- dom_impl(AbsInt,Spec,from(MAbsIntB))), C2, M) :- nonvar(Spec), nonvar(MAbsIntB), Spec = _/_, !,
+    ensure_impl(AbsInt, M),
     ( MAbsIntB = MB:AbsIntB -> % different module name
         true
     ; % same module name
       MB = MAbsIntB, AbsIntB = MAbsIntB
     ),
     emit_dom_impl(AbsInt,Spec,[noself,from(MB,AbsIntB)],M,C2).
+
+% Instantiate anonymous (var) AbsInt to M
+ensure_impl(AbsInt, M) :- var(AbsInt), !, AbsInt = M. 
+ensure_impl(_AbsInt, _M).
 
 emit_sents(Mod,Cs) :- % TODO: complete; add only if not defined!!
     % Add default definitions
