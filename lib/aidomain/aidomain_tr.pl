@@ -8,12 +8,12 @@
 
 :- use_module(engine(messages_basic), [message/2]).
 :- use_module(library(aggregates), [findall/3]).
-:- use_module(library(lists), [append/3]).
+:- use_module(library(lists), [append/3, select/3]).
 %:- use_module(library(write), [numbervars/3]).
 
 % (debug)
-:- use_module(library(streams)).
-:- use_module(library(write)).
+%:- use_module(library(streams)).
+%:- use_module(library(write)).
 
 % ---------------------------------------------------------------------------
 
@@ -74,36 +74,24 @@ treat_sent((:- dom_op(Spec)), Cs, M) :- nonvar(Spec), Spec = F/A, !,
     A1 is A+1,
     mprefix(F, Fm),
     Cs = [(:- discontiguous(Fm/A1)), (:- multifile(Fm/A1))].
-% TODO: (experimental, merge)
-% I.e., <<Trait>>_Op(<<AbsInt>, As) :- !, <<AbsInt>>_Op(As).
-treat_sent((:- dom_impl(QAbsInt,Spec)), C2, M) :-
-    nonvar(QAbsInt), QAbsInt = as(AbsInt,Trait),
-    nonvar(Spec), Spec = _/_,
-    !,
-    ensure_impl(AbsInt, M), 
-    Spec = OpName/A,
-    functor(Op, OpName, A),
-    Op =.. [_|As],
-    atom_concat(Trait,'_',Traitb), atom_concat(Traitb,OpName,TraitOpName),
-    atom_concat(AbsInt,'_',AbsIntb), atom_concat(AbsIntb,OpName,AbsIntOpName),
-    H =.. [TraitOpName, AbsInt|As],
-    B =.. [AbsIntOpName|As],
-    C2 = [(H :- !, B)].
-    %writeq(C2), nl.
 treat_sent((:- dom_impl(AbsInt,Spec)), C2, M) :- !,
     treat_sent((:- dom_impl(AbsInt,Spec,[])), C2, M).
-treat_sent((:- dom_impl(AbsInt,Spec,Props)), C2, M) :- nonvar(Spec), Spec = _/_, !,
+treat_sent((:- dom_impl(QAbsInt,Spec,Props)), C2, M) :- nonvar(Spec), Spec = _/_, !,
+    ( nonvar(QAbsInt), QAbsInt = as(AbsInt,Trait) ->
+        true
+    ; AbsInt = QAbsInt, Trait = aidom % TODO: hardwired
+    ),
     ensure_impl(AbsInt, M),
-    ( member(from(MAbsIntB), Props), nonvar(MAbsIntB) -> 
+    ( select(from(MAbsIntB), Props, Props1), nonvar(MAbsIntB) -> 
         ( MAbsIntB = MB:AbsIntB -> % different module name
             true
         ; % same module name
           MB = MAbsIntB, AbsIntB = MAbsIntB
         ),
-        Props2 = [from(MB,AbsIntB)]
+        Props2 = [from(MB,AbsIntB)|Props1]
     ; Props2 = Props
     ),
-    emit_dom_impl(AbsInt,Spec,[noself|Props2],M,C2).
+    emit_dom_impl(AbsInt,Trait,Spec,[noself|Props2],M,C2).
 
 % Instantiate anonymous (var) AbsInt to M
 ensure_impl(AbsInt, M) :- var(AbsInt), !, AbsInt = M. 
@@ -145,7 +133,7 @@ base_meth(BaseDom, M, Meth) :-
 
 emit_meths([],_Impl,_M,Cs,Cs).
 emit_meths([m(Spec,Props)|Meths],Impl,M,Cs,Cs0) :-
-    emit_dom_impl(Impl,Spec,Props,M,C),
+    emit_dom_impl(Impl,aidom,Spec,Props,M,C),
     Cs = [C|Cs1],
     emit_meths(Meths,Impl,M,Cs1,Cs0).
 
@@ -164,7 +152,11 @@ emit_imeths([m(F/A)|Meths],Cs,Cs0) :-
 mprefix(F, Fm) :-
     atom_concat('aidom.', F, Fm).
 
-emit_dom_impl(AbsInt,Spec,Props,M,C2) :-
+tprefix(AbsIntB, OpName, ImplN) :-
+    atom_concat('_', OpName, ImplN0),
+    atom_concat(AbsIntB, ImplN0, ImplN).
+
+emit_dom_impl(AbsInt,aidom,Spec,Props,M,C2) :- !,
     ( member(from(MB,AbsIntB), Props) -> true
     ; MB = M, AbsIntB = AbsInt
     ),
@@ -172,8 +164,10 @@ emit_dom_impl(AbsInt,Spec,Props,M,C2) :-
     Spec = OpName/A,
     functor(Op, OpName, A),
     Op =.. [_|As],
-    atom_concat('_', OpName, ImplN0),
-    atom_concat(AbsIntB, ImplN0, ImplN),
+    ( member(noq, Props) -> % Do not qualify
+        ImplN = OpName
+    ; tprefix(AbsIntB, OpName, ImplN)
+    ),
     ( member(noself, Props) -> % (do not pass AbsInt)
         B =.. [ImplN|As]
     ; B =.. [ImplN,AbsInt|As] % (pass AbsInt)
@@ -181,6 +175,25 @@ emit_dom_impl(AbsInt,Spec,Props,M,C2) :-
     mprefix(OpName, OpNameM),
     H =.. [OpNameM,AbsInt|As],
     C2 = (H :- !, MB:B).
+emit_dom_impl(AbsInt,Trait,Spec,Props,M,C2) :-
+    ( member(from(MB,AbsIntB), Props) -> true
+    ; MB = M, AbsIntB = AbsInt
+    ),
+    Spec = OpName/A,
+    functor(Op, OpName, A),
+    Op =.. [_|As],
+    ( member(noq, Props) -> % Do not qualify
+        ImplN = OpName
+    ; tprefix(AbsIntB, OpName, ImplN)
+    ),
+    ( member(noself, Props) -> % (do not pass AbsInt)
+        B =.. [ImplN|As]
+    ; B =.. [ImplN,AbsInt|As] % (pass AbsInt)
+    ),
+    tprefix(Trait, OpName, TraitOpName),
+    H =.. [TraitOpName, AbsInt|As],
+    C2 = [(H :- !, MB:B)].
+    %writeq(C2), nl.
 
 % err(wrong_impl(C)) :-
 %       message(error, ['Wrong dom_impl: ', ~~(C)]),
