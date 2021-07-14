@@ -25,7 +25,7 @@
 :- dom_impl(sharefree_clique, special_builtin/5).
 :- dom_impl(sharefree_clique, success_builtin/6).
 :- dom_impl(sharefree_clique, call_to_success_builtin/6).
-:- dom_impl(sharefree_clique, obtain_info/4, from(sharefree:shfr)).
+:- dom_impl(sharefree_clique, obtain_info/4, [from(sharefree:shfr)]).
 :- dom_impl(sharefree_clique, input_interface/4).
 :- dom_impl(sharefree_clique, input_user_interface/5).
 :- dom_impl(sharefree_clique, asub_to_native/5).

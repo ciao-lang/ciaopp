@@ -10,8 +10,8 @@
     sharefree_amgu_augment_asub/3]).
 :- include(ciaopp(plai/plai_domain)).
 :- dom_def(shfr).
-:- dom_impl(shfr, amgu/4, from(sharefree_amgu)).
-:- dom_impl(shfr, augment_asub/3, from(sharefree_amgu)).
+:- dom_impl(shfr, amgu/4, [from(sharefree_amgu)]).
+:- dom_impl(shfr, augment_asub/3, [from(sharefree_amgu)]).
 :- dom_impl(shfr, call_to_entry/9).
 :- dom_impl(shfr, exit_to_prime/7).
 :- dom_impl(shfr, project/5).

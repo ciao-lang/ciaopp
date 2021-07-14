@@ -41,9 +41,12 @@ treat_sent(end_of_file, Cs2, Mod) :- !,
     clean_db_pass1(Mod),
     % TODO: This should be automatic
     append(Cs, [end_of_file], Cs2). % (allow other translations)
-treat_sent((:- dom_def(AbsInt, [deriv(BaseDom)])), C2, M) :- !,
+treat_sent((:- dom_def(AbsInt, Props)), C2, M) :- !,
     ensure_impl(AbsInt, M), 
-    assertz_fact(dom_def(AbsInt,BaseDom,M)), % TODO: basedom hardwired
+    ( member(deriv(BaseDom), Props) -> true
+    ; BaseDom = basedom % TODO: basedom hardwired
+    ),
+    assertz_fact(dom_def(AbsInt,BaseDom,M)),
     C2 = aidomain(AbsInt).
 treat_sent((:- dom_def(AbsInt)), C2, M) :- !,
     ensure_impl(AbsInt, M), 
@@ -87,17 +90,20 @@ treat_sent((:- dom_impl(QAbsInt,Spec)), C2, M) :-
     B =.. [AbsIntOpName|As],
     C2 = [(H :- !, B)].
     %writeq(C2), nl.
-treat_sent((:- dom_impl(AbsInt,Spec)), C2, M) :- nonvar(Spec), Spec = _/_, !,
+treat_sent((:- dom_impl(AbsInt,Spec)), C2, M) :- !,
+    treat_sent((:- dom_impl(AbsInt,Spec,[])), C2, M).
+treat_sent((:- dom_impl(AbsInt,Spec,Props)), C2, M) :- nonvar(Spec), Spec = _/_, !,
     ensure_impl(AbsInt, M),
-    emit_dom_impl(AbsInt,Spec,[noself],M,C2).
-treat_sent((:- dom_impl(AbsInt,Spec,from(MAbsIntB))), C2, M) :- nonvar(Spec), nonvar(MAbsIntB), Spec = _/_, !,
-    ensure_impl(AbsInt, M),
-    ( MAbsIntB = MB:AbsIntB -> % different module name
-        true
-    ; % same module name
-      MB = MAbsIntB, AbsIntB = MAbsIntB
+    ( member(from(MAbsIntB), Props), nonvar(MAbsIntB) -> 
+        ( MAbsIntB = MB:AbsIntB -> % different module name
+            true
+        ; % same module name
+          MB = MAbsIntB, AbsIntB = MAbsIntB
+        ),
+        Props2 = [from(MB,AbsIntB)]
+    ; Props2 = Props
     ),
-    emit_dom_impl(AbsInt,Spec,[noself,from(MB,AbsIntB)],M,C2).
+    emit_dom_impl(AbsInt,Spec,[noself|Props2],M,C2).
 
 % Instantiate anonymous (var) AbsInt to M
 ensure_impl(AbsInt, M) :- var(AbsInt), !, AbsInt = M. 

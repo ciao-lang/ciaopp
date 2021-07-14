@@ -11,9 +11,9 @@
     share_amgu_augment_two_asub/3]).
 :- include(ciaopp(plai/plai_domain)).
 :- dom_def(share).
-:- dom_impl(share, amgu/4, from(sharing_amgu:share_amgu)).
-:- dom_impl(share, augment_asub/3, from(sharing_amgu:share_amgu)).
-:- dom_impl(share, augment_two_asub/3, from(sharing_amgu:share_amgu)).
+:- dom_impl(share, amgu/4, [from(sharing_amgu:share_amgu)]).
+:- dom_impl(share, augment_asub/3, [from(sharing_amgu:share_amgu)]).
+:- dom_impl(share, augment_two_asub/3, [from(sharing_amgu:share_amgu)]).
 :- dom_impl(share, call_to_entry/9).
 :- dom_impl(share, exit_to_prime/7).
 :- dom_impl(share, project/5).

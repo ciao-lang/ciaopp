@@ -21,23 +21,23 @@
 :- dom_impl(sharefree_amgu, augment_asub/3).
 :- dom_impl(sharefree_amgu, call_to_entry/9).
 :- dom_impl(sharefree_amgu, exit_to_prime/7).
-:- dom_impl(sharefree_amgu, project/5, from(sharefree:shfr)).
-:- dom_impl(sharefree_amgu, compute_lub/2, from(sharefree:shfr)).
-:- dom_impl(sharefree_amgu, abs_sort/2, from(sharefree:shfr)).
-:- dom_impl(sharefree_amgu, extend/5, from(sharefree:shfr)).
-:- dom_impl(sharefree_amgu, less_or_equal/2, from(sharefree:shfr)).
-:- dom_impl(sharefree_amgu, glb/3, from(sharefree:shfr)).
+:- dom_impl(sharefree_amgu, project/5, [from(sharefree:shfr)]).
+:- dom_impl(sharefree_amgu, compute_lub/2, [from(sharefree:shfr)]).
+:- dom_impl(sharefree_amgu, abs_sort/2, [from(sharefree:shfr)]).
+:- dom_impl(sharefree_amgu, extend/5, [from(sharefree:shfr)]).
+:- dom_impl(sharefree_amgu, less_or_equal/2, [from(sharefree:shfr)]).
+:- dom_impl(sharefree_amgu, glb/3, [from(sharefree:shfr)]).
 :- dom_impl(sharefree_amgu, call_to_success_fact/9).
 :- dom_impl(sharefree_amgu, special_builtin/5).
 :- dom_impl(sharefree_amgu, success_builtin/6).
 :- dom_impl(sharefree_amgu, call_to_success_builtin/6).
-:- dom_impl(sharefree_amgu, obtain_info/4, from(sharefree:shfr)).
-:- dom_impl(sharefree_amgu, input_interface/4, from(sharefree:shfr)).
-:- dom_impl(sharefree_amgu, input_user_interface/5, from(sharefree:shfr)).
-:- dom_impl(sharefree_amgu, asub_to_native/5, from(sharefree:shfr)).
-:- dom_impl(sharefree_amgu, unknown_call/4, from(sharefree:shfr)).
-:- dom_impl(sharefree_amgu, unknown_entry/3, from(sharefree:shfr)).
-:- dom_impl(sharefree_amgu, empty_entry/3, from(sharefree:shfr)).
+:- dom_impl(sharefree_amgu, obtain_info/4, [from(sharefree:shfr)]).
+:- dom_impl(sharefree_amgu, input_interface/4, [from(sharefree:shfr)]).
+:- dom_impl(sharefree_amgu, input_user_interface/5, [from(sharefree:shfr)]).
+:- dom_impl(sharefree_amgu, asub_to_native/5, [from(sharefree:shfr)]).
+:- dom_impl(sharefree_amgu, unknown_call/4, [from(sharefree:shfr)]).
+:- dom_impl(sharefree_amgu, unknown_entry/3, [from(sharefree:shfr)]).
+:- dom_impl(sharefree_amgu, empty_entry/3, [from(sharefree:shfr)]).
 
 %------------------------------------------------------------------------%
 % This file implements the same domain-dependent abstract functions than |

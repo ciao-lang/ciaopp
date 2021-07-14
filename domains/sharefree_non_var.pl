@@ -16,22 +16,22 @@
 :- dom_def(shfrnv).
 :- dom_impl(shfrnv, call_to_entry/9).
 :- dom_impl(shfrnv, exit_to_prime/7).
-:- dom_impl(shfrnv, project/5, from(sharefree:shfr)).
+:- dom_impl(shfrnv, project/5, [from(sharefree:shfr)]).
 :- dom_impl(shfrnv, compute_lub/2).
-:- dom_impl(shfrnv, abs_sort/2, from(sharefree:shfr)).
+:- dom_impl(shfrnv, abs_sort/2, [from(sharefree:shfr)]).
 :- dom_impl(shfrnv, extend/5).
 :- dom_impl(shfrnv, less_or_equal/2).
 :- dom_impl(shfrnv, glb/3).
 :- dom_impl(shfrnv, call_to_success_fact/9).
-:- dom_impl(shfrnv, special_builtin/5, from(sharefree:shfr)).
+:- dom_impl(shfrnv, special_builtin/5, [from(sharefree:shfr)]).
 :- dom_impl(shfrnv, success_builtin/6).
 :- dom_impl(shfrnv, call_to_success_builtin/6).
 :- dom_impl(shfrnv, input_interface/4).
 :- dom_impl(shfrnv, input_user_interface/5).
 :- dom_impl(shfrnv, asub_to_native/5).
-:- dom_impl(shfrnv, unknown_call/4, from(sharefree:shfr)).
-:- dom_impl(shfrnv, unknown_entry/3, from(sharefree:shfr)).
-:- dom_impl(shfrnv, empty_entry/3, from(sharefree:shfr)).
+:- dom_impl(shfrnv, unknown_call/4, [from(sharefree:shfr)]).
+:- dom_impl(shfrnv, unknown_entry/3, [from(sharefree:shfr)]).
+:- dom_impl(shfrnv, empty_entry/3, [from(sharefree:shfr)]).
 %
 % :- dom_impl(shfrnv, propagate_downwards_closed(ASub1,ASub2,ASub), downwards_closed(ASub1,ASub2,ASub)).
 % :- dom_impl(shfrnv, del_real_conjoin(ASub1,ASub2,ASub), real_conjoin(ASub1,ASub2,ASub)).
@@ -39,7 +39,7 @@
 % :- dom_impl(shfrnv, more_instantiate(ASub1,ASub2), more_instantiate(ASub1,ASub2)).
 % :- dom_impl(shfrnv, convex_hull(Old,New,Hull), convex_hull(Old,New,Hull)).
 % :- dom_impl(shfrnv, compute_lub_el(ASub1,ASub2,ASub), compute_lub_el(ASub1,ASub2,ASub)).
-% :- dom_impl(shfrnv, extend_free(ASub1,Vars,ASub), extend_free(ASub1,Vars,ASub), from(sharefree:shfr)).
+% :- dom_impl(shfrnv, extend_free(ASub1,Vars,ASub), extend_free(ASub1,Vars,ASub), [from(sharefree:shfr)]).
 % :- dom_impl(shfrnv, del_check_cond(Cond,ASub,Sv,Flag,WConds), check_cond(Cond,ASub,Sv,Flag,WConds)).
 % :- dom_impl(shfrnv, del_impose_cond(LCond,Sv,ASub,LASub), impose_cond(LCond,Sv,ASub,LASub)).
 %

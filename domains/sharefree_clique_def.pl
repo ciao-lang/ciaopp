@@ -22,7 +22,7 @@
 :- dom_impl(sharefree_clique_def, call_to_success_fact/9).
 :- dom_impl(sharefree_clique_def, special_builtin/5).
 :- dom_impl(sharefree_clique_def, body_succ_builtin/8).
-:- dom_impl(sharefree_clique_def, input_interface/4, from(sharefree_clique)).
+:- dom_impl(sharefree_clique_def, input_interface/4, [from(sharefree_clique)]).
 :- dom_impl(sharefree_clique_def, input_user_interface/5).
 :- dom_impl(sharefree_clique_def, asub_to_native/5).
 :- dom_impl(sharefree_clique_def, unknown_call/4).
