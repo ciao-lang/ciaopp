@@ -16,7 +16,7 @@
 % TODO: discontiguous is not needed unless we do traits
 :- discontiguous(nonrel_top/2).
 :- discontiguous(nonrel_bot/2).
-:- discontiguous(nonrel_var/2).
+:- discontiguous(nonrel_var_elem/2).
 :- discontiguous(nonrel_less_or_equal_elem/3).
 :- discontiguous(nonrel_compute_glb_elem/4).
 :- discontiguous(nonrel_compute_lub_elem/4).
@@ -36,8 +36,8 @@
    ``bot'' in the abstract domain.
    @begin{alert}(implement in derived domain)@end{alert}".
 
-:- doc(doinclude, nonrel_var/2).
-:- pred nonrel_var(AbsInt, X) # "@var{X} is the abstraction of a free
+:- doc(doinclude, nonrel_var_elem/2).
+:- pred nonrel_var_elem(AbsInt, X) # "@var{X} is the abstraction of a free
    variable in the abstract domain.
    @begin{alert}(implement in derived domain)@end{alert}".
 
@@ -139,7 +139,7 @@ nonrel_get_value_asub([Var/Val|ASub],V1,Value) :-
     #"Obtains the abstraction of a substitution in which all variables
       @var{Vars} are unbound: free and unaliased.".
 nonrel_empty_entry(AbsInt,_Sg,Vars,Entry) :-
-    nonrel_var(AbsInt,VarValue),
+    nonrel_var_elem(AbsInt,VarValue),
     nonrel_create_asub(Vars,VarValue,Entry).
 
 %:- export(nonrel_abs_sort/2).

@@ -31,8 +31,8 @@
 :- prop interval_avalue/1.
 :- doc(interval_avalue/1, "Data structure of the substitution that the intervals
     domain keeps for each variable in the program.").
-interval_avalue(X) :- nonrel_intervals_bot(X).
-interval_avalue(X) :- nonrel_intervals_top(X).
+interval_avalue(X) :- bot(X).
+interval_avalue(X) :- top(X).
 interval_avalue(i(X,Y)) :-
     limit_point(X),
     limit_point(Y).
@@ -45,26 +45,24 @@ limit_point(X) :- neginf(X).
 interval_num(i(X,X)) :- number(X).
 
 interval_avalue_get_min(i(Min, _),Min) :- !.
-interval_avalue_get_min(I, Min) :-
-    nonrel_intervals_top(I), !,
+interval_avalue_get_min(I, Min) :- top(I), !,
     neginf(Min).
 interval_avalue_get_min(_, Min) :-
-    nonrel_intervals_bot(Min).
+    bot(Min).
 
 interval_avalue_get_max(i(_, Max),Max) :- !.
-interval_avalue_get_max(I, Max) :-
-    nonrel_intervals_top(I), !,
+interval_avalue_get_max(I, Max) :- top(I), !,
     inf(Max).
 interval_avalue_get_max(_, Max) :-
-    nonrel_intervals_bot(Max).
+    bot(Max).
 
 % ---------------------------------------------------------------------------
 
-:- dom_impl((_ as nonrel), top/1).
-nonrel_intervals_top('$top').
+:- dom_impl((_ as nonrel), top/1, [noq]).
+top('$top').
 
-:- dom_impl((_ as nonrel), bot/1).
-nonrel_intervals_bot('$bottom').
+:- dom_impl((_ as nonrel), bot/1, [noq]).
+bot('$bottom').
 
 inf('$inf').
 neginf('$ninf').
@@ -74,8 +72,8 @@ neginf('$ninf').
 % obtains the abstraction of a substitution in which all variables are
 % unbound (free and unaliased). At this point we do not have an
 % abstraction predicate, that would generate the correct value...
-:- dom_impl((_ as nonrel), var/1).
-nonrel_intervals_var('$top').
+:- dom_impl((_ as nonrel), var_elem/1, [noq]).
+var_elem('$top').
 
 leq(_, I) :- inf(I), !.
 leq(I, _) :- inf(I), !, fail.
@@ -84,50 +82,46 @@ leq(_, NInf) :- neginf(NInf), !, fail.
 leq(N1, N2) :-
     N1 =< N2.
 
-:- dom_impl((_ as nonrel), less_or_equal_elem/2).
-nonrel_intervals_less_or_equal_elem(_,Top) :- nonrel_intervals_top(Top), !.
-nonrel_intervals_less_or_equal_elem(Bot,_) :- nonrel_intervals_bot(Bot), !.
-nonrel_intervals_less_or_equal_elem(i(N0,N1),i(T0,T1)) :-
+:- dom_impl((_ as nonrel), less_or_equal_elem/2, [noq]).
+less_or_equal_elem(_,Top) :- top(Top), !.
+less_or_equal_elem(Bot,_) :- bot(Bot), !.
+less_or_equal_elem(i(N0,N1),i(T0,T1)) :-
     leq(N0, T0),
     leq(N1, T1).
 
-:- dom_impl((_ as nonrel), compute_glb_elem/3).
-nonrel_intervals_compute_glb_elem(X, Top, X) :- nonrel_intervals_top(Top), !.
-nonrel_intervals_compute_glb_elem(Top, X, X) :- nonrel_intervals_top(Top), !.
-nonrel_intervals_compute_glb_elem(i(N0,N1), i(T0,T1), i(G0,G1)) :-
+:- dom_impl((_ as nonrel), compute_glb_elem/3, [noq]).
+compute_glb_elem(X, Top, X) :- top(Top), !.
+compute_glb_elem(Top, X, X) :- top(Top), !.
+compute_glb_elem(i(N0,N1), i(T0,T1), i(G0,G1)) :-
     max(N0,T0,G0),
     min(N1,T1,G1),
     leq(G0, G1), !.
-nonrel_intervals_compute_glb_elem(_, _, B) :-
-    nonrel_intervals_bot(B).
+compute_glb_elem(_, _, B) :-
+    bot(B).
 
-:- dom_impl((_ as nonrel), compute_lub_elem/3).
-nonrel_intervals_compute_lub_elem(Top, _, Top) :-  nonrel_intervals_top(Top), !.
-nonrel_intervals_compute_lub_elem(_, Top, Top) :-  nonrel_intervals_top(Top), !.
-nonrel_intervals_compute_lub_elem(Bot, X, X) :-  nonrel_intervals_top(Bot), !.
-nonrel_intervals_compute_lub_elem(X, Bot, X) :-  nonrel_intervals_top(Bot), !.
-nonrel_intervals_compute_lub_elem(i(N0,N1), i(T0,T1), I) :-
+:- dom_impl((_ as nonrel), compute_lub_elem/3, [noq]).
+compute_lub_elem(Top, _, Top) :-  top(Top), !.
+compute_lub_elem(_, Top, Top) :-  top(Top), !.
+compute_lub_elem(Bot, X, X) :-  top(Bot), !.
+compute_lub_elem(X, Bot, X) :-  top(Bot), !.
+compute_lub_elem(i(N0,N1), i(T0,T1), I) :-
     min(N0,T0,G0),
     max(N1,T1,G1),
     simplify_elem(i(G0,G1), I).
 
-:- dom_impl((_ as nonrel), widen_elem/3).
-:- pred nonrel_intervals_widen_elem(+V1,+V2,-W) : (interval_avalue(V1), interval_avalue(V2))
+:- dom_impl((_ as nonrel), widen_elem/3, [noq]).
+:- pred widen_elem(+V1,+V2,-W) : (interval_avalue(V1), interval_avalue(V2))
     => interval_avalue(W).
-nonrel_intervals_widen_elem(Bot, W, W) :-
-    nonrel_intervals_bot(Bot), !.
-nonrel_intervals_widen_elem(W, Bot, W) :-
-    nonrel_intervals_bot(Bot), !.
-nonrel_intervals_widen_elem(Top, _, Top) :-
-    nonrel_intervals_top(Top), !.
-nonrel_intervals_widen_elem(_, Top, Top) :-
-    nonrel_intervals_top(Top), !.
-nonrel_intervals_widen_elem(V1, V2, W) :-
+widen_elem(Bot, W, W) :- bot(Bot), !.
+widen_elem(W, Bot, W) :- bot(Bot), !.
+widen_elem(Top, _, Top) :- top(Top), !.
+widen_elem(_, Top, Top) :- top(Top), !.
+widen_elem(V1, V2, W) :-
     interval_num(V1),
     interval_num(V2), !,
-    nonrel_intervals_compute_lub_elem(V1,V2,W).
-nonrel_intervals_widen_elem(V1, V2, W) :-
-    nonrel_intervals_compute_lub_elem(V1,V2,Lub),
+    compute_lub_elem(V1,V2,W).
+widen_elem(V1, V2, W) :-
+    compute_lub_elem(V1,V2,Lub),
     interval_avalue_get_min(Lub,MinLub),
     interval_avalue_get_max(Lub,MaxLub),
     interval_avalue_get_min(V1,MinV1),
@@ -137,21 +131,19 @@ nonrel_intervals_widen_elem(V1, V2, W) :-
     % if the lower bound lub is smaller than any of lower bounds, widen
     ( ( \+ leq(MinV1, MinLub) ; \+ leq(MinV2, MinLub)) ->
           neginf(W0)
-    ;
-        W0 = MinLub
+    ; W0 = MinLub
     ),
     % if the upper bound lub is bigger than any of the upper bounds, widen
     ( ( \+ leq(MaxLub, MaxV1) ; \+ leq(MaxLub, MaxV2) ) ->
         inf(W1)
-    ;
-        W1 = MaxLub
+    ; W1 = MaxLub
     ),
     simplify_elem(i(W0, W1), W).
 
 simplify_elem(i(NInf, Inf), Top) :-
     neginf(NInf),
     inf(Inf), !,
-    nonrel_intervals_top(Top).
+    top(Top).
 simplify_elem(E, E).
 
 max(N0,N1,N0) :- leq(N1, N0), !.
@@ -181,25 +173,21 @@ min_list_([X|Xs], Min0, Min) :-
 add_intervals(i(V0,V1), i(W0,W1), i(N0, N1)) :-
     ( max(V1,W1,Inf), inf(Inf) ->
         N1 = Inf
-    ;
-        N1 is V1 + W1
+    ; N1 is V1 + W1
     ),
     ( min(V0,W0,NInf), neginf(NInf) ->
         N0 = NInf
-    ;
-        N0 is V0 + W0
+    ; N0 is V0 + W0
     ).
 
 substract_intervals(i(V0,V1), i(W0,W1), i(N0, N1)) :-
     ( max(V1,W1,Inf), inf(Inf) ->
         N1 = Inf
-    ;
-        N1 is V1 - W1
+    ; N1 is V1 - W1
     ),
     ( min(V0,W0,NInf), neginf(NInf) ->
         N0 = NInf
-    ;
-        N0 is V0 - W0
+    ; N0 is V0 - W0
     ).
 
 multiply_intervals(i(V0,V1), i(W0,W1), i(N0, N1)) :-
@@ -212,7 +200,7 @@ multiply_intervals(i(V0,V1), i(W0,W1), i(N0, N1)) :-
     max_list(L, N1).
 
 mult_num(V0, V1, V0) :-
-    (nonrel_intervals_bot(V0) ; nonrel_intervals_bot(V1)), !.
+    (bot(V0) ; bot(V1)), !.
 mult_num(V0, V1, 0) :-
     (V0 = 0 ; V1 = 0), !.
 mult_num('$inf', V, '$inf') :- leq(0, V), !.
@@ -227,11 +215,11 @@ mult_num(V0, V1, NV) :-
     NV is V0 * V1.
 % divisor is 0
 divide_intervals(_, i(0,0), NVal) :- !,
-    nonrel_intervals_bot(NVal).
+    bot(NVal).
 % divisor contains 0
 divide_intervals(_, i(W0,W1), Top) :-
     leq(W0, 0), leq(W1, 0), !,
-    nonrel_intervals_top(Top).
+    top(Top).
 divide_intervals(i(V0,V1), i(W0,W1), i(N0,N1)) :-
     div_num(V0,W0,A),
     div_num(V0,W1,B),
@@ -242,9 +230,9 @@ divide_intervals(i(V0,V1), i(W0,W1), i(N0,N1)) :-
     max_list(L, N1).
 
 div_num(V0, V1, V0) :-
-    (nonrel_intervals_bot(V0) ; nonrel_intervals_bot(V1)), !.
+    (bot(V0) ; bot(V1)), !.
 div_num(_, 0, Bot) :- !,
-    nonrel_intervals_bot(Bot).
+    bot(Bot).
 div_num('$inf', V, '$inf') :- leq(0, V), !.
 div_num('$inf', V, '$ninf') :- leq(V, 0), !.
 div_num(_, '$inf', 0) :- !.
@@ -260,27 +248,27 @@ div_num(V0, V1, NV) :-
 :- use_module(library(terms_vars), [varset/2]).
 :- use_module(ciaopp(preprocess_flags), [push_pp_flag/2]).
 
-:- dom_impl(_, needs/1).
-nonrel_intervals_needs(widen).
+:- dom_impl(_, needs/1, [noq]).
+needs(widen).
 
-:- dom_impl(_, init_abstract_domain/1).
-nonrel_intervals_init_abstract_domain([widen]) :- push_pp_flag(widen,on).
+:- dom_impl(_, init_abstract_domain/1, [noq]).
+init_abstract_domain([widen]) :- push_pp_flag(widen,on).
 
 % input interface predicates (to translate properties in assertions to
 % their representation in the domain)
 
 % TODO: reuse the syntax of the assertions used in polyhedra?
 
-% :- dom_impl((_ as nonrel), input_interface0/4).
+% :- dom_impl((_ as nonrel), input_interface0/4, [noq]).
 % We are going to build a term that will be processed later by calling the body
 % of a clause containing builtins equivalent to the constraints found.
-nonrel_intervals_input_interface0(constraint(ListCs),_Kind,Struct0,Struct1) :-
+input_interface0(constraint(ListCs),_Kind,Struct0,Struct1) :-
     process_list_constraints(ListCs, Struct0, Struct1).
 
 process_list_constraints([], Struct, Struct).
 process_list_constraints([C|Cs], Struct, _Struct1) :-
     varset(C,Vs),
-    nonrel_intervals_top(T),
+    top(T),
     nonrel_create_asub(Vs,T,_ASub),
     % TODO: use call_to_success_builtin and abs operate to process the constraints.
     process_list_constraints(Cs, Struct, _Struct1).
@@ -288,154 +276,147 @@ process_list_constraints([C|Cs], Struct, _Struct1) :-
 % ---------------------------------------------------------------------------
 :- doc(section, "amgu and builtin operations").
 
-:- dom_impl((_ as nonrel), amgu/4). % TODO: make nonrel_base call the domain operation instead?
-:- dom_impl(_, amgu/4).
-nonrel_intervals_amgu(T1,T2,ASub0,NASub) :-
-    var(T1),var(T2), !,
+:- dom_impl((_ as nonrel), amgu/4, [noq]). % TODO: make nonrel_base call the domain operation instead?
+:- dom_impl(_, amgu/4, [noq]).
+amgu(T1,T2,ASub0,NASub) :- var(T1), var(T2), !,
     nonrel_get_value_asub(ASub0,T1,Value1),
     nonrel_get_value_asub(ASub0,T2,Value2),
-    nonrel_intervals_compute_glb_elem(Value1,Value2,Glb), % TODO: missing bottom case!
+    compute_glb_elem(Value1,Value2,Glb), % TODO: missing bottom case!
     nonrel_replace_value_asub(ASub0,T1,Glb,ASub1),
     nonrel_replace_value_asub(ASub1,T2,Glb,NASub).
-nonrel_intervals_amgu(T1,T2,ASub0,NASub) :-
-    var(T2), !,
-    nonrel_intervals_amgu(T2,T1,ASub0,NASub).
-nonrel_intervals_amgu(T1,T2,ASub0,NASub) :-
-    var(T1), !,
-    nonrel_intervals_abstract_term(T2,ASub0,NVal),
+amgu(T1,T2,ASub0,NASub) :- var(T2), !,
+    amgu(T2,T1,ASub0,NASub).
+amgu(T1,T2,ASub0,NASub) :- var(T1), !,
+    abstract_term(T2,ASub0,NVal),
     nonrel_replace_value_asub(ASub0,T1,NVal,NASub).
-nonrel_intervals_amgu(T1,T2,ASub0,NASub) :-
+amgu(T1,T2,ASub0,NASub) :-
     functor(T1,F,A),
     functor(T2,F,A), !,
     T1 =.. [F|Args1],
     T2 =.. [F|Args2],
-    nonrel_intervals_amgu_args(Args1,Args2,ASub0, NASub).
-nonrel_intervals_amgu(_T1,_T2,_ASub1,ASub2) :-
-    nonrel_intervals_bot(ASub2).
+    amgu_args(Args1,Args2,ASub0, NASub).
+amgu(_T1,_T2,_ASub1,ASub2) :-
+    bot(ASub2).
 
-nonrel_intervals_amgu_args([],[],ASub, ASub).
-nonrel_intervals_amgu_args([A1|As1],[A2|As2],ASub0, NASub) :-
-    nonrel_intervals_amgu(A1,A2,ASub0,ASub1),
-    nonrel_intervals_amgu_args(As1,As2,ASub1, NASub).
+amgu_args([],[],ASub, ASub).
+amgu_args([A1|As1],[A2|As2],ASub0, NASub) :-
+    amgu(A1,A2,ASub0,ASub1),
+    amgu_args(As1,As2,ASub1, NASub).
 
-:- pred nonrel_intervals_abstract_term(+T,+ASubT,-ASub) #"Abstracts term @var{T} possibly
+:- pred abstract_term(+T,+ASubT,-ASub) #"Abstracts term @var{T} possibly
     using information in the abstract substitution @var{ASubT} that describes a
       current abstract state for term T.".
 % if it is a number, generate the interval
-nonrel_intervals_abstract_term(X,_ASub,i(X,X)) :-
+abstract_term(X,_ASub,i(X,X)) :-
     number(X), !. % TODO: only integers?
 % if it is a variable, return the abstraction in the substitution
-nonrel_intervals_abstract_term(Var,ASub,Value) :-  % This is generic
+abstract_term(Var,ASub,Value) :-  % This is generic
     nonrel_get_value_asub(ASub, Var, Value), !.
-nonrel_intervals_abstract_term(_,_,Top) :-
-    nonrel_intervals_top(Top).
+abstract_term(_,_,Top) :-
+    top(Top).
 
-:- dom_impl((_ as nonrel), special_builtin0/4).
+:- dom_impl((_ as nonrel), special_builtin0/4, [noq]).
 % Note: the following are specific for intervals domain 
 % TODO: unbound Type and Condvars? (JF)
-nonrel_intervals_special_builtin0('>/2',_,_,_).
-nonrel_intervals_special_builtin0('>=/2',_,_,_).
-nonrel_intervals_special_builtin0('</2',_,_,_).
-nonrel_intervals_special_builtin0('=</2',_,_,_).
-nonrel_intervals_special_builtin0('is/2',_,_,_).
-% nonrel_intervals_special_builtin0('nnegint/1',_,_,_).
+special_builtin0('>/2',_,_,_).
+special_builtin0('>=/2',_,_,_).
+special_builtin0('</2',_,_,_).
+special_builtin0('=</2',_,_,_).
+special_builtin0('is/2',_,_,_).
+% special_builtin0('nnegint/1',_,_,_).
 
-:- dom_impl((_ as nonrel), call_to_success_builtin0/6).
-nonrel_intervals_call_to_success_builtin0('=</2','=<'(X,Y),_Sv,Call,_Proj,Succ):-
-    nonrel_intervals_abstract_term(X,Call,ValX),
-    nonrel_intervals_abstract_term(Y,Call,ValY),
-    nonrel_intervals_compute_glb_elem(ValX,ValY,Glb),
-    ( nonrel_intervals_bot(Glb) ->    % intervals are disjoint
-        ( nonrel_intervals_less_or_equal_elem(ValX, ValY) ->
+:- dom_impl((_ as nonrel), call_to_success_builtin0/6, [noq]).
+call_to_success_builtin0('=</2','=<'(X,Y),_Sv,Call,_Proj,Succ):-
+    abstract_term(X,Call,ValX),
+    abstract_term(Y,Call,ValY),
+    compute_glb_elem(ValX,ValY,Glb),
+    ( bot(Glb) ->    % intervals are disjoint
+        ( less_or_equal_elem(ValX, ValY) ->
             Succ = Call
-        ;  
-            Succ = Glb
+        ; Succ = Glb
         )
-    ;
-        % TODO: This could be written easier with functional notation
-        interval_avalue_get_max(ValX,MaxX),
-        interval_avalue_get_max(ValY,MaxY),
-        interval_avalue_get_min(ValX,MinX),
-        interval_avalue_get_min(ValY,MinY),
-        min(MaxX,MaxY,X1),
-        max(MinX, MinY, Y0),
-        NValX0 = i(MinX, X1),
-        NValY0 = i(Y0, MaxY),
-        simplify_elem(NValX0, NValX),
-        simplify_elem(NValY0, NValY),
-        nonrel_replace_value_asub(Call,X,NValX,Succ0),
-        nonrel_replace_value_asub(Succ0,Y,NValY,Succ)
+    ; % TODO: This could be written easier with functional notation
+      interval_avalue_get_max(ValX,MaxX),
+      interval_avalue_get_max(ValY,MaxY),
+      interval_avalue_get_min(ValX,MinX),
+      interval_avalue_get_min(ValY,MinY),
+      min(MaxX,MaxY,X1),
+      max(MinX, MinY, Y0),
+      NValX0 = i(MinX, X1),
+      NValY0 = i(Y0, MaxY),
+      simplify_elem(NValX0, NValX),
+      simplify_elem(NValY0, NValY),
+      nonrel_replace_value_asub(Call,X,NValX,Succ0),
+      nonrel_replace_value_asub(Succ0,Y,NValY,Succ)
     ).
-nonrel_intervals_call_to_success_builtin0('>=/2','>='(X,Y),Sv,Call,Proj,Succ):-
-    nonrel_intervals_call_to_success_builtin0('=</2','=<'(Y,X),Sv,Call,Proj,Succ).
+call_to_success_builtin0('>=/2','>='(X,Y),Sv,Call,Proj,Succ):-
+    call_to_success_builtin0('=</2','=<'(Y,X),Sv,Call,Proj,Succ).
 % For this example domain we over-approximate > and < as >= and =< respectively
-nonrel_intervals_call_to_success_builtin0('>/2','>'(X,Y),Sv,Call,Proj,Succ):-
-    nonrel_intervals_call_to_success_builtin0('>=/2','>='(X,Y),Sv,Call,Proj,Succ).
-nonrel_intervals_call_to_success_builtin0('</2','<'(X,Y),Sv,Call,Proj,Succ):-
-    nonrel_intervals_call_to_success_builtin0('=</2','=<'(X,Y),Sv,Call,Proj,Succ).
+call_to_success_builtin0('>/2','>'(X,Y),Sv,Call,Proj,Succ):-
+    call_to_success_builtin0('>=/2','>='(X,Y),Sv,Call,Proj,Succ).
+call_to_success_builtin0('</2','<'(X,Y),Sv,Call,Proj,Succ):-
+    call_to_success_builtin0('=</2','=<'(X,Y),Sv,Call,Proj,Succ).
 %
-nonrel_intervals_call_to_success_builtin0('is/2','is'(X,Y),_Sv,Call,_Proj,Succ):-
-    ( nonrel_is_abs_operate(Y,Call,NVal0) ->
+call_to_success_builtin0('is/2','is'(X,Y),_Sv,Call,_Proj,Succ):-
+    ( abs_arith_eval(Y,Call,NVal0) ->
         nonrel_get_value_asub(Call,X,Val0),
-        nonrel_intervals_compute_glb_elem(NVal0,Val0,NVal),
+        compute_glb_elem(NVal0,Val0,NVal),
         nonrel_replace_value_asub(Call,X,NVal,Succ)
-    ;
-        nonrel_intervals_amgu(X,Y,Call,Succ)
+    ; % TODO: incorrect?
+      amgu(X,Y,Call,Succ)
     ).
 
-nonrel_is_abs_operate(X, _Call, NVal) :-
-    num(X), !,
+abs_arith_eval(X, _Call, NVal) :- number(X), !,
     NVal = i(X,X).
-nonrel_is_abs_operate(X, Call, Val) :-
-    var(X), !,
+abs_arith_eval(X, Call, Val) :- var(X), !,
     nonrel_get_value_asub(Call, X, Val).
-nonrel_is_abs_operate(+(X,Y), Call, NVal) :-
-    nonrel_is_abs_operate(X,Call,NXVal),
-    nonrel_is_abs_operate(Y,Call,NYVal),
+abs_arith_eval(+(X,Y), Call, NVal) :-
+    abs_arith_eval(X,Call,NXVal),
+    abs_arith_eval(Y,Call,NYVal),
     add_intervals(NXVal, NYVal, NVal).
-nonrel_is_abs_operate(-(X,Y), Call, NVal) :-
-    nonrel_is_abs_operate(X,Call,NXVal),
-    nonrel_is_abs_operate(Y,Call,NYVal),
+abs_arith_eval(-(X,Y), Call, NVal) :-
+    abs_arith_eval(X,Call,NXVal),
+    abs_arith_eval(Y,Call,NYVal),
     substract_intervals(NXVal, NYVal, NVal).
-nonrel_is_abs_operate(*(X,Y), Call, NVal) :-
-    nonrel_is_abs_operate(X,Call,NXVal),
-    nonrel_is_abs_operate(Y,Call,NYVal),
+abs_arith_eval(*(X,Y), Call, NVal) :-
+    abs_arith_eval(X,Call,NXVal),
+    abs_arith_eval(Y,Call,NYVal),
     multiply_intervals(NXVal, NYVal, NVal).
-nonrel_is_abs_operate(/(X,Y), Call, NVal) :-
-    nonrel_is_abs_operate(X,Call,NXVal),
-    nonrel_is_abs_operate(Y,Call,NYVal),
+abs_arith_eval(/(X,Y), Call, NVal) :-
+    abs_arith_eval(X,Call,NXVal),
+    abs_arith_eval(Y,Call,NYVal),
     divide_intervals(NXVal, NYVal, NVal).
 
 % ---------------------------------------------------------------------------
 :- doc(section, "Tests").
 
-:- test nonrel_intervals_amgu(T1,T2,ASub0,NASub)
+:- test amgu(T1,T2,ASub0,NASub)
     : (T1 = p(X), T2 = p(Y), ASub0 = [X/i(3,3), Y/'$top'])
     => (NASub = [X/i(3,3),Y/i(3,3)]).
-:- test nonrel_intervals_amgu(T1,T2,ASub0,NASub)
+:- test amgu(T1,T2,ASub0,NASub)
     : (T1 = p(3,Y), T2 = p(X,4), ASub0 = [X/'$top', Y/'$top'])
     => (NASub = [X/i(3,3),Y/i(4,4)]).
 
-:- test nonrel_intervals_widen_elem(V1, V2, W)
+:- test widen_elem(V1, V2, W)
     : ( V1 = i(2,3), V2 = '$bottom' )
     =>( W = i(2,3) ).
-:- test nonrel_intervals_widen_elem(V1, V2, W)
+:- test widen_elem(V1, V2, W)
     : ( V1 = i(2,3), V2 = i(2,3) )
     =>( W = i(2,3) ). 
-:- test nonrel_intervals_widen_elem(V1, V2, W)
+:- test widen_elem(V1, V2, W)
     : ( V1 = i(2,3), V2 = i(2,4) )
     =>( W = i(2,'$inf') ).
-:- test nonrel_intervals_widen_elem(V1, V2, W)
+:- test widen_elem(V1, V2, W)
     : ( V1 = i(2,3), V2 = i(1,3) )
     =>( W = i('$ninf',3) ).
-:- test nonrel_intervals_widen_elem(V1, V2, W)
+:- test widen_elem(V1, V2, W)
     : ( V1 = i(2,4), V2 = i(1,3) )
     =>( W = '$top' ).
-:- test nonrel_intervals_widen_elem(V1, V2, W)
+:- test widen_elem(V1, V2, W)
     : ( V1 = i(2,2), V2 = i(4,4) )
     =>( W = i(2,4) ).
 % % TODO: this test should not work (not implemented)
-% :- test nonrel_intervals_widen_elem(V1, V2, W)
+% :- test widen_elem(V1, V2, W)
 %         : ( V1 = i(1,2), V2 = i(2,3) )
 %         =>( W = i(1,'$inf') ).
 % we go to -inf/inf i

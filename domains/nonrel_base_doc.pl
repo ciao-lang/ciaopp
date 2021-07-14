@@ -40,7 +40,7 @@
    @begin{itemize}
    @item @pred{nonrel_top/2},
    @item @pred{nonrel_bot/2}, 
-   @item @pred{nonrel_var/2}, 
+   @item @pred{nonrel_var_elem/2}, 
    @item @pred{nonrel_amgu/5}, (domain operation)
    @item @pred{nonrel_less_or_equal_elem/3}, 
    @item @pred{nonrel_compute_glb_elem/4},
@@ -80,7 +80,7 @@
 
 :- impl_defined([nonrel_top/2]).
 :- impl_defined([nonrel_bot/2]).
-:- impl_defined([nonrel_var/2]).
+:- impl_defined([nonrel_var_elem/2]).
 :- impl_defined([nonrel_amgu/5]).
 :- impl_defined([nonrel_less_or_equal_elem/3]).
 :- impl_defined([nonrel_compute_glb_elem/4]).
