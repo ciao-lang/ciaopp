@@ -358,31 +358,29 @@ call_to_success_builtin0('</2','<'(X,Y),Sv,Call,Proj,Succ):-
     call_to_success_builtin0('=</2','=<'(X,Y),Sv,Call,Proj,Succ).
 %
 call_to_success_builtin0('is/2','is'(X,Y),_Sv,Call,_Proj,Succ):-
-    ( abs_arith_eval(Y,Call,NVal0) ->
-        nonrel_get_value_asub(Call,X,Val0),
-        compute_glb_elem(NVal0,Val0,NVal),
-        nonrel_replace_value_asub(Call,X,NVal,Succ)
-    ; % TODO: incorrect?
-      amgu(X,Y,Call,Succ)
-    ).
+    ( abs_arith_eval(Y,Call,NVal0) -> true ; top(NVal0) ),
+    nonrel_get_value_asub(Call,X,Val0),
+    compute_glb_elem(NVal0,Val0,NVal),
+    nonrel_replace_value_asub(Call,X,NVal,Succ).
 
+% TODO: be more precise when arith is unknown (e.g., it can be num,int,flt,etc.)
 abs_arith_eval(X, _Call, NVal) :- number(X), !,
     NVal = i(X,X).
 abs_arith_eval(X, Call, Val) :- var(X), !,
     nonrel_get_value_asub(Call, X, Val).
-abs_arith_eval(+(X,Y), Call, NVal) :-
+abs_arith_eval(+(X,Y), Call, NVal) :- !,
     abs_arith_eval(X,Call,NXVal),
     abs_arith_eval(Y,Call,NYVal),
     add_intervals(NXVal, NYVal, NVal).
-abs_arith_eval(-(X,Y), Call, NVal) :-
+abs_arith_eval(-(X,Y), Call, NVal) :- !,
     abs_arith_eval(X,Call,NXVal),
     abs_arith_eval(Y,Call,NYVal),
     substract_intervals(NXVal, NYVal, NVal).
-abs_arith_eval(*(X,Y), Call, NVal) :-
+abs_arith_eval(*(X,Y), Call, NVal) :- !,
     abs_arith_eval(X,Call,NXVal),
     abs_arith_eval(Y,Call,NYVal),
     multiply_intervals(NXVal, NYVal, NVal).
-abs_arith_eval(/(X,Y), Call, NVal) :-
+abs_arith_eval(/(X,Y), Call, NVal) :- !,
     abs_arith_eval(X,Call,NXVal),
     abs_arith_eval(Y,Call,NYVal),
     divide_intervals(NXVal, NYVal, NVal).
