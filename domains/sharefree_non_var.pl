@@ -89,14 +89,14 @@
       ord_test_member/3
     ]).
 :- use_module(library(terms_vars), [varset/2, varset0/2, varset_in_args/2]).
-:- use_module(domain(sharing),
-    [ project_share/3,
-      share_less_or_equal/2,
-      share_project/5,
-      % TODO: move to other shared module?
-      script_p_star/3,
-      script_p/3
-    ]).
+:- use_module(domain(sharing), [
+    project_share/3,
+    share_less_or_equal/2,
+    share_project/5,
+    % TODO: move to other shared module?
+    script_p_star/3,
+    script_p/3
+]).
 :- use_module(domain(sharefree),
     [ shfr_asub_to_native/5,
       shfr_input_interface/4,

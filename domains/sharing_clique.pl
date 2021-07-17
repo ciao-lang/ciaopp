@@ -108,7 +108,13 @@
     [split_list_of_lists_singleton/3,
      share_clique_1_normalize/4]).
 
-:- use_module(domain(sharing)).
+:- use_module(domain(sharing), [
+    share_project/5,
+    share_input_user_interface/5,
+    share_input_interface/4,
+    share_empty_entry/3,
+    share_special_builtin/5
+]).
 :- use_module(domain(share_clique_aux)).
 :- use_module(domain(share_amgu_aux)).
 :- use_module(domain(share_aux), [if_not_nil/4,handle_each_indep/4]).

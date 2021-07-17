@@ -71,10 +71,12 @@
 
 :- use_module(ciaopp(preprocess_flags), [current_pp_flag/2]).
 :- use_module(domain(s_eqs), [apply/1, keys_and_values/3]).
-:- use_module(domain(sharing), 
-    [ share_input_interface/4, share_input_user_interface/5,
-      share_project/5, share_abs_sort/2
-    ]).
+:- use_module(domain(sharing), [
+    share_input_interface/4,
+    share_input_user_interface/5,
+    share_project/5,
+    share_abs_sort/2
+]).
 %
 :- use_module(library(idlists), [memberchk/2, union_idlists/3]).
 :- use_module(library(lists), [member/2, append/3, list_to_list_of_lists/2, union/3]).

@@ -5,34 +5,16 @@
 :- doc(author, "Maria Garcia de la Banda").
 :- doc(author, "Francisco Bueno").
 
+:- include(ciaopp(plai/plai_domain)).
+:- dom_def(share, [default]).
+
 :- use_module(domain(sharing_amgu), [
     share_amgu_amgu/4,
     share_amgu_augment_asub/3,
     share_amgu_augment_two_asub/3]).
-:- include(ciaopp(plai/plai_domain)).
-:- dom_def(share).
-:- dom_impl(share, amgu/4, [from(sharing_amgu:share_amgu)]).
-:- dom_impl(share, augment_asub/3, [from(sharing_amgu:share_amgu)]).
-:- dom_impl(share, augment_two_asub/3, [from(sharing_amgu:share_amgu)]).
-:- dom_impl(share, call_to_entry/9).
-:- dom_impl(share, exit_to_prime/7).
-:- dom_impl(share, project/5).
-:- dom_impl(share, compute_lub/2).
-:- dom_impl(share, abs_sort/2).
-:- dom_impl(share, extend/5).
-:- dom_impl(share, less_or_equal/2).
-:- dom_impl(share, glb/3).
-:- dom_impl(share, call_to_success_fact/9).
-:- dom_impl(share, special_builtin/5).
-:- dom_impl(share, success_builtin/6).
-:- dom_impl(share, call_to_success_builtin/6).
-:- dom_impl(share, input_interface/4).
-:- dom_impl(share, input_user_interface/5).
-:- dom_impl(share, asub_to_native/5).
-:- dom_impl(share, unknown_call/4).
-:- dom_impl(share, unknown_entry/3).
-:- dom_impl(share, empty_entry/3).
-% :- dom_impl(share, compute_lub_el(ASub1,ASub2,ASub), lub(ASub1,ASub2,ASub)).
+:- dom_impl(_, amgu/4, [from(sharing_amgu:share_amgu)]).
+:- dom_impl(_, augment_asub/3, [from(sharing_amgu:share_amgu)]).
+:- dom_impl(_, augment_two_asub/3, [from(sharing_amgu:share_amgu)]).
 
 %------------------------------------------------------------------------%
 %                    Meanning of the Program Variables                   %
@@ -113,6 +95,7 @@ absu(_). % TODO: define properly for this domain
 %------------------------------------------------------------------------%
 
 :- export(share_project/5).    
+:- dom_impl(_, project/5).
 share_project(_,_,_,'$bottom','$bottom'):- !.
 share_project(_Sg,Vars,_HvFv_u,ASub,Proj) :-
     project_share(Vars,ASub,Proj).
@@ -174,6 +157,7 @@ project_share1(yes,Proj1,NewVars,Ls,[Proj1|Proj]):-
 %-------------------------------------------------------------------------
 
 :- export(share_call_to_entry/9).
+:- dom_impl(_, call_to_entry/9).
 share_call_to_entry(_Sv,Sg,_Hv,Head,_K,Fv,Proj,Entry,ExtraInfo) :-
     variant(Sg,Head),!,
     ExtraInfo = yes,
@@ -227,6 +211,7 @@ share_call_to_entry(Sv,Sg,Hv,Head,_K,Fv,Proj,Entry,ExtraInfo) :-
 %-------------------------------------------------------------------------
 
 :- export(share_exit_to_prime/7).
+:- dom_impl(_, exit_to_prime/7).
 share_exit_to_prime(_Sg,_Hv,_Head,_Sv,'$bottom',_Flag,'$bottom') :- !.
 share_exit_to_prime(Sg,Hv,Head,_Sv,Exit,Flag,Prime):-  
     Flag == yes, !,
@@ -269,6 +254,7 @@ share_exit_to_prime(Sg,Hv,Head,Sv,Exit,(Gv,NewBinds,NewProj,Partition),Prime):-
 %-------------------------------------------------------------------------
 
 :- export(share_abs_sort/2).       
+:- dom_impl(_, abs_sort/2).
 share_abs_sort('$bottom','$bottom'):- !.
 share_abs_sort(ASub,ASub_s):-
     sort_list_of_lists(ASub,ASub_s).
@@ -286,12 +272,14 @@ share_abs_sort(ASub,ASub_s):-
 %------------------------------------------------------------------------%
 
 :- export(share_compute_lub/2).
+:- dom_impl(_, compute_lub/2).
 share_compute_lub([ASub1,ASub2|Rest],Lub) :-
     share_lub(ASub1,ASub2,ASub3),
     share_compute_lub([ASub3|Rest],Lub).
 share_compute_lub([ASub],ASub).
 
 :- export(share_lub/3).      
+% :- dom_impl(_, compute_lub_el(ASub1,ASub2,ASub), lub(ASub1,ASub2,ASub)).
 share_lub(ASub1,ASub2,ASub3):-
     ASub1 == ASub2,!,
     ASub3 = ASub2.
@@ -310,6 +298,7 @@ merge_subst(Xss,Yss,Zss) :-
 %------------------------------------------------------------------------%
 
 :- export(share_glb/3).      
+:- dom_impl(_, glb/3).
 share_glb('$bottom',_ASub,ASub3) :- !, ASub3='$bottom'.
 share_glb(_ASub,'$bottom',ASub3) :- !, ASub3='$bottom'.
 share_glb(ASub0,ASub1,Glb):-
@@ -332,6 +321,7 @@ share_glb(ASub0,ASub1,Glb):-
 %------------------------------------------------------------------------%
 
 :- export(share_extend/5).     
+:- dom_impl(_, extend/5).
 share_extend(_Sg,'$bottom',_Hv,_Call,Succ):- !,
     Succ = '$bottom'.
 share_extend(_Sg,_Prime,[],Call,Succ):- !,
@@ -350,6 +340,7 @@ share_extend(_Sg,Prime,Sv,Call,Succ) :-
 %------------------------------------------------------------------------%
 
 :- export(share_call_to_success_fact/9).
+:- dom_impl(_, call_to_success_fact/9).
 share_call_to_success_fact(_Sg,[],_Head,_K,Sv,Call,_,[],Succ) :- !,
     ord_split_lists_from_list(Sv,Call,_Intersect,Succ).
 share_call_to_success_fact(Sg,Hv,Head,_K,Sv,Call,Proj,Prime,Succ) :-
@@ -688,11 +679,13 @@ prune_success([Xs|Xss],Prime,Sv,Call,Succ) :-
 %-------------------------------------------------------------------------
 
 :- export(share_unknown_entry/3).
+:- dom_impl(_, unknown_entry/3).
 share_unknown_entry(_Sg,Qv,Call):-
     powerset(Qv,Call_u),
     sort_list_of_lists(Call_u,Call).
 
 :- export(share_empty_entry/3).
+:- dom_impl(_, empty_entry/3).
 :- pred share_empty_entry(+Sg,+Vars,-Entry): cgoal * list * absu # "Gives the
 ""empty"" value in this domain for a given set of variables
 @var{Vars}, resulting in the abstract substitution @var{Entry}. I.e.,
@@ -720,6 +713,7 @@ share_empty_entry(_Sg,Vars,Entry):-
 %------------------------------------------------------------------------%
 
 :- export(share_asub_to_native/5). 
+:- dom_impl(_, asub_to_native/5).
 share_asub_to_native('$bottom',_Qv,_OutFlag,_ASub_user,_Comps):- !, fail.
 share_asub_to_native(Succ,Qv,_OutFlag,Info,[]):-
     if_not_nil(Succ,sharing(Succ),Info,Info0),
@@ -736,6 +730,7 @@ share_asub_to_native(Succ,Qv,_OutFlag,Info,[]):-
 %------------------------------------------------------------------------%
 
 :- export(share_input_user_interface/5).  
+:- dom_impl(_, input_user_interface/5).
 share_input_user_interface((Gv0,Sh0,Indep0),Qv,Call,_Sg,_MaybeCallASub):-
     may_be_var(Gv0,Gv),
     may_be_var(Sh0,ASub0),
@@ -749,6 +744,7 @@ share_input_user_interface((Gv0,Sh0,Indep0),Qv,Call,_Sg,_MaybeCallASub):-
     handle_each_indep(Indep,share,ASub,Call).
 
 :- export(share_input_interface/4).  
+:- dom_impl(_, input_interface/4).
 share_input_interface(ground(X),perfect,(Gv0,Sh,I),(Gv,Sh,I)):-
     varset(X,Vs),
     myappend(Gv0,Vs,Gv).
@@ -795,6 +791,7 @@ may_be_var(X,X):- ( X=[] ; true ), !.
 %-------------------------------------------------------------------------
 
 :- export(share_unknown_call/4).
+:- dom_impl(_, unknown_call/4).
 share_unknown_call(_Sg,_Vars,'$bottom','$bottom') :- !.
 share_unknown_call(_Sg,_Vars,[],[]) :- !.
 share_unknown_call(_Sg,Vars,[C|Call],Succ) :-
@@ -809,6 +806,7 @@ share_unknown_call(_Sg,Vars,[C|Call],Succ) :-
 %------------------------------------------------------------------------%
 
 :- export(share_less_or_equal/2).
+:- dom_impl(_, less_or_equal/2).
 share_less_or_equal('$bottom',_ASub):- !.
 share_less_or_equal(ASub0,ASub1):-
     ASub0 == ASub1, !.
@@ -838,6 +836,7 @@ share_less_or_equal(ASub0,ASub1):-
 %-------------------------------------------------------------------------
 
 :- export(share_special_builtin/5).
+:- dom_impl(_, special_builtin/5).
 %-------------------------------------------------------------------------
 % metacuts
 %% share_special_builtin('CHOICE IDIOM/1',_,_,ground,_).
@@ -1009,6 +1008,7 @@ share_not_that_special_builtin('sort/2').
 %-------------------------------------------------------------------------
 
 :- export(share_success_builtin/6).
+:- dom_impl(_, success_builtin/6).
 share_success_builtin(ground,Sv_u,_,_,Call,Succ):-
     sort(Sv_u,Sv),
     ord_split_lists_from_list(Sv,Call,_Intersect,Succ).
@@ -1102,6 +1102,7 @@ share_success_builtin(var,_Sv,_Condvars,_,_Call,'$bottom').
 %-------------------------------------------------------------------------
 
 :- export(share_call_to_success_builtin/6).
+:- dom_impl(_, call_to_success_builtin/6).
 share_call_to_success_builtin('=/2','='(X,Y),Sv,Call,Proj,Succ):-
     copy_term(X,Xterm),
     copy_term(Y,Yterm),

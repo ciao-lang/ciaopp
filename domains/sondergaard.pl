@@ -50,10 +50,10 @@
 :- dom_impl(son, empty_entry/3).
 % :- dom_impl(son, compute_lub_el(ASub1,ASub2,ASub), lub(ASub1,ASub2,ASub)).
 
-:- use_module(domain(sharing), 
-    [ share_input_interface/4,
-      share_input_user_interface/5
-    ]).
+:- use_module(domain(sharing), [
+    share_input_interface/4,
+    share_input_user_interface/5
+]).
 :- use_module(domain(s_grshfr), [new1_gvars/4]).
 :- use_module(domain(share_aux), [if_not_nil/4,append_dl/3,handle_each_indep/4]).
 

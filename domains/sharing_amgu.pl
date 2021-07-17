@@ -58,7 +58,22 @@
 
 :- use_module(library(lists), [list_to_list_of_lists/2, append/3]).
 :- use_module(library(terms_check), [variant/2]).
-:- use_module(domain(sharing)).
+:- use_module(domain(sharing), [
+    share_abs_sort/2,
+    share_extend/5,
+    share_project/5,
+    share_special_builtin/5,
+    share_success_builtin/6,
+    share_compute_lub/2,
+    share_less_or_equal/2,
+    share_glb/3,
+    share_input_interface/4,
+    share_input_user_interface/5,
+    share_asub_to_native/5,
+    share_unknown_call/4,
+    share_unknown_entry/3,
+    share_empty_entry/3
+]).
 :- use_module(domain(share_amgu_aux)).
 
 %------------------------------------------------------------------------%

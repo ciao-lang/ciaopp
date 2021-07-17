@@ -23,13 +23,15 @@
 :- data dom_itf/1.
 % (experimental)
 :- data dom_base_deriv/5.
+:- data dom_default/2.
 
 clean_db_pass1(Mod) :-
     retractall_fact(dom_def(_,_,Mod)),
     retractall_fact(dom_base(_,_,Mod)),
     retractall_fact(dom_op(_,_,Mod)),
     retractall_fact(dom_itf(Mod)),
-    retractall_fact(dom_base_deriv(_,_,_,_,Mod)).
+    retractall_fact(dom_base_deriv(_,_,_,_,Mod)),
+    retractall_fact(dom_default(_,Mod)).
 
 % ---------------------------------------------------------------------------
 
@@ -47,11 +49,14 @@ treat_sent((:- dom_def(AbsInt, Props)), C2, M) :- !,
     ; BaseDom = basedom % TODO: basedom hardwired
     ),
     assertz_fact(dom_def(AbsInt,BaseDom,M)),
+    ( member(default, Props) -> % TODO: better way? contexts?
+        retractall_fact(dom_default(_,M)),
+        assertz_fact(dom_default(AbsInt,M))
+    ; true
+    ),
     C2 = aidomain(AbsInt).
 treat_sent((:- dom_def(AbsInt)), C2, M) :- !,
-    ensure_impl(AbsInt, M), 
-    assertz_fact(dom_def(AbsInt,basedom,M)), % TODO: basedom hardwired
-    C2 = aidomain(AbsInt).
+    treat_sent((:- dom_def(AbsInt, [])), C2, M).
 treat_sent((:- dom_itf), C2, M) :- !,
     C2 = [],
     assertz_fact(dom_itf(M)).
@@ -93,8 +98,11 @@ treat_sent((:- dom_impl(QAbsInt,Spec,Props)), C2, M) :- nonvar(Spec), Spec = _/_
     ),
     emit_dom_impl(AbsInt,Trait,Spec,[noself|Props2],M,C2).
 
-% Instantiate anonymous (var) AbsInt to M
-ensure_impl(AbsInt, M) :- var(AbsInt), !, AbsInt = M. 
+% Instantiate anonymous (var) AbsInt to M (or the dom_def marked as 'default')
+ensure_impl(AbsInt, M) :- var(AbsInt), !,
+    ( dom_default(AbsInt0, M) -> AbsInt = AbsInt0
+    ; AbsInt = M
+    ). 
 ensure_impl(_AbsInt, _M).
 
 emit_sents(Mod,Cs) :- % TODO: complete; add only if not defined!!

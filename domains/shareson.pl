@@ -41,7 +41,21 @@
 :- dom_impl(shareson, unknown_entry/3).
 :- dom_impl(shareson, empty_entry/3).
 
-:- use_module(domain(sharing)).
+:- use_module(domain(sharing), [
+    share_call_to_entry/9,
+    share_exit_to_prime/7,
+    share_extend/5,
+    share_call_to_prime_fact/6,
+    share_special_builtin/5,
+    share_unknown_call/4,
+    share_unknown_entry/3,
+    share_empty_entry/3,
+    share_project/5,
+    share_lub/3,
+    share_abs_sort/2,
+    share_input_user_interface/5,
+    share_less_or_equal/2
+]).
 :- use_module(domain(sondergaard)).
 :- use_module(domain(s_grshfr), [projected_gvars/3]).
 :- use_module(domain(share_aux), [if_not_nil/4]).

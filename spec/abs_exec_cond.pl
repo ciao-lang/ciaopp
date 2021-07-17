@@ -24,8 +24,11 @@
 :- use_module(ciaopp(plai/domains), 
     [ concrete/4, less_or_equal_proj/5, abs_sort/3, project/6,
       identical_abstract/3, project/5 ]).
-:- use_module(domain(sharing),
-              [share_project/5,share_less_or_equal/2, share_input_interface/4]).
+:- use_module(domain(sharing), [
+    share_project/5,
+    share_less_or_equal/2,
+    share_input_interface/4
+]).
 :- use_module(domain(s_grshfr), 
     [ change_values_if_differ/5, member_value_freeness/3, projected_gvars/3,
         var_value/3 ]).
