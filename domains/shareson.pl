@@ -73,7 +73,7 @@
 % Function: combined analysis using the Sondergaard and the Sharing      %
 %           domain                                                       %
 %------------------------------------------------------------------------%
-%                    Meanning of the Program Variables                   %
+%                    Meaning of the Program Variables                    %
 %                                                                        %
 %  _son    : Suffix added to abstract subsitutions (Prime,Exit,Proj,...) %
 %            for the part corresponding to Sondergaard domain            %

@@ -80,7 +80,7 @@
 %        programmer: M. Garcia de la Banda                               %
 %                                                                        %
 %------------------------------------------------------------------------%
-%                    Meanning of the Program Variables                   %
+%                    Meaning of the Program Variables                    %
 %                                                                        %
 %  AbsInt  : identifier of the abstract interpreter being used           %
 %  Sg      : Subgoal being analysed                                      %

@@ -72,7 +72,7 @@ depth_k(K):- current_pp_flag(depth,K).
 %------------------------------------------------------------------------%
 
 %------------------------------------------------------------------------%
-%                    Meanning of the Program Variables                   %
+%                    Meaning of the Program Variables                    %
 %                                                                        %
 % ASub   : abstract substitution. It is a set of sets, each element      %
 %          being a set of elements with the form p(X,Path)               %

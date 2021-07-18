@@ -53,7 +53,7 @@
 %% shfrnv_real_conjoin(_,_,_).
 
 %------------------------------------------------------------------------%
-%                    Meanning of the Program Variables                   %
+%                    Meaning of the Program Variables                    %
 %                                                                        %
 % _sh      : suffix indicating the sharing component                     %
 % _fr      : suffix indicating the freeness component                    %

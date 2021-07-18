@@ -91,7 +91,7 @@
 %------------------------------------------------------------------------%
 
 %------------------------------------------------------------------------%
-%                    Meanning of the Program Variables                   %
+%                    Meaning of the Program Variables                    %
 %                                                                        %
 % _sh      : suffix indicating the sharing component                     %
 % _gr      : suffix indicating the groundness component                  %

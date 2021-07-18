@@ -17,7 +17,7 @@
 :- dom_impl(_, augment_two_asub/3, [from(sharing_amgu:share_amgu)]).
 
 %------------------------------------------------------------------------%
-%                    Meanning of the Program Variables                   %
+%                    Meaning of the Program Variables                    %
 %                                                                        %
 % BPrime   : similar to the abstract prime constraint: abstract          %
 %            subtitution obtained after the analysis of the clause being %

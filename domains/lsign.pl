@@ -111,7 +111,7 @@
 %           (not sure about eq+ and eqx, might be the other way around)  %
 %                                                                        %
 %------------------------------------------------------------------------%
-%                    Meanning of the Program Variables                   %
+%                    Meaning of the Program Variables                    %
 %                                                                        %
 % Sign     : sign of a particular coefficient. It is an element of       %
 %            {+,-,0,t} (positive, negative, zero, top).                  %
