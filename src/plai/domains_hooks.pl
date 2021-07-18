@@ -38,7 +38,7 @@
 :- endif.
 % ===========================================================================
 :- doc(section, "Structure domains"). % TODO: shape also?
-:- use_module(domain(aeq_top)).
+:- use_module(domain(aeq), []).
 :- use_module(domain(depthk)).
 :- use_module(domain(top_path_sharing)).
 % ===========================================================================

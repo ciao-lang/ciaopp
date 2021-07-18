@@ -31,7 +31,7 @@ doc_domains := part_domains-(~findall(X,doc_domain(X))).
 
 % All available domains
 % TODO: Synchronize automatically; Do "M-x ciao-grep-root" with ":- dom_def(" to find all definitons.
-doc_domain(aeq_top). % :- dom_def(aeq).
+doc_domain(aeq). % :- dom_def(aeq).
 doc_domain(def). % :- dom_def(def).
 doc_domain(deftypes). % :- dom_def(deftypes).
 doc_domain(depthk). % :- dom_def(depthk).

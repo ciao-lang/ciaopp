@@ -1,8 +1,6 @@
-/*             Copyright (C)1990-91-92-93-94-95 UPM-CLIP                */
-/*                          1994-1995 Katholieke Universiteit Leuven.        */
+:- module(aeq, [], [datafacts]).
 
-% This file contains the auxiliary procedures for the
-% abstract equation systems analyser developed at KULeuven
+:- use_package(hiord). % TODO: See success_builtin(aeq_comparison,...)! Do in other way?
 
 %------------------------------------------------------------------------%
 % This file was initially implemented by KULeuven. It has been modified 
@@ -11,7 +9,641 @@
 % PLAI, and to add the abstract functions required for dynamic scheduling
 %------------------------------------------------------------------------%
 
-:- use_package(datafacts).
+:- include(ciaopp(plai/plai_domain)).
+:- dom_def(aeq, [default]).
+
+% :- dom_impl(_, propagate_downwards_closed(ASub1,ASub2,ASub), downwards_closed(ASub1,ASub2,ASub)).
+% :- dom_impl(_, del_real_conjoin(ASub1,ASub2,ASub), real_conjoin(ASub1,ASub2,ASub)).
+% :- dom_impl(_, del_hash(ASub,Vars,N), hash(ASub,Vars,N)).
+% :- dom_impl(_, more_instantiate(ASub1,ASub2), more_instantiate(ASub1,ASub2)).
+% :- dom_impl(_, convex_hull(Old,New,Hull), convex_hull(Old,New,Hull)).
+% :- dom_impl(_, compute_lub_el(ASub1,ASub2,ASub), lub(ASub1,ASub2,ASub)).
+% :- dom_impl(_, extend_free(ASub1,Vars,ASub), extend_free(ASub1,Vars,ASub)).
+% :- dom_impl(_, del_check_cond(Cond,ASub,Sv,Flag,WConds), check_cond(Cond,ASub,Sv,Flag,WConds)).
+% :- dom_impl(_, del_impose_cond(LCond,Sv,ASub,LASub), impose_cond(LCond,Sv,ASub,LASub)).
+%
+%% aeq_check_cond(_,_,_,_,_). 
+%% aeq_convex_hull(_,_,_).
+%% aeq_downwards_closed(_,_,_).
+%% aeq_extend_free(_,_,_).
+%% aeq_hash(_,_,_).       
+%% aeq_impose_cond(_,_,_,_).
+%% aeq_lub(_,_,_).        
+%% aeq_more_instantiate(_,_). 
+%% aeq_real_conjoin(_,_,_).
+
+:- use_module(engine(io_basic)).
+
+:- use_module(ciaopp(preprocess_flags), [current_pp_flag/2]).
+:- use_module(domain(s_eqs), [apply/1, keys_and_values/3]).
+:- use_module(domain(sharing), [
+    share_input_interface/4,
+    share_input_user_interface/5,
+    share_project/5,
+    share_abs_sort/2
+]).
+%
+:- use_module(library(idlists), [memberchk/2, union_idlists/3]).
+:- use_module(library(lists), [member/2, append/3, list_to_list_of_lists/2, union/3]).
+:- use_module(library(llists), [flatten/2]).
+:- use_module(library(keys), [key_lookup/4]).
+:- use_module(library(messages)).
+:- use_module(library(sets), 
+    [ insert/3, merge/3, ord_intersect/2, ord_subtract/3 ]).
+:- use_module(library(sort)).
+:- use_module(library(terms_check), [variant/2]).
+:- use_module(library(terms_vars), [varset/2]).
+
+% This file contains the domain dependent abstract functions for the
+% abstract equation systems analyser developed at KULeuven,
+% auxiliary procedures are defined in aeq_aux.pl
+
+:- use_module(library(arrays)).
+:- use_module(library(bitcodesets)).
+
+:- use_module(ciaopp(pool)).
+
+% NOTE: The _b.pl versions in 0.8 have been ported here. These are
+% reduced.  The original versions had possibilities for combining
+% pair-sharing and other features...
+
+%------------------------------------------------------------------------%
+% This file was initially implemented by KULeuven. It has been modified 
+% by Maria Garcia de la Banda in 1996 in order to include comments (so
+% that future modifications become easier), to tailor it more closely to
+% PLAI, and to add the abstract functions required for dynamic scheduling
+%------------------------------------------------------------------------%
+% _ec:    suffix indicating "external code" (lists of variables, lists of
+%         list of variables, terms, etc).
+% _ic:    suffix indicating "internal code" (bit codes, lists of bitcodes,
+%          extendable arrays with logarithmic access, etc)
+% AVar:   Number which identifies an abstract variable. In _ic, the bitcode
+%         is used.
+% AnnSet: Annotation set representing the different annotations that can
+%         be associated to an abstract variable. There exists 4 different
+%         AnnSet for set sharing ({a,l,f,ng},{a,nl,f,ng},{a,l,nf,ng}, and 
+%         {a,nl,nf,ng}), and 2 for pair sharing ({a,nl,f,g},{a,nl,nf,g})
+% Ann:    list of elements of the form AVar-A, where A is in some AnnSet.
+%         In the _ic, a bitvector array is used.
+% Shr:    Represents either set sharing (list of lists of variables in _ec,
+%         and list of bitcodes in _ic) or pair sharing (in _ec pairs of 
+%         variables, in _ic ps(Lin,Sh) where Lin is the bitcode of the set 
+%         of nonlinears and Sh is the list of bitcodes of the pairs).
+% ATerm:  either and abstract variable (i.e., @(AVar)) or a term formed by
+%         abstract variables. 
+% Depth:  Positive number representing the depth of the ATerms. The default
+%         is 1. The depth can be controled at each unification step (default)
+%          or only during call_to_entry.
+% Eqs:    Set of elements of the form X = ATerm.
+% 
+% ASub:   Abstract substitution. The external form is aeqs(Eqs, Ann, Shr),
+%         the internal form is aeqs(Eqs,Ann,Shr,ASubVars,PossibleNonGround)
+%------------------------------------------------------------------------%
+
+
+%------------------------------------------------------------------------%
+%------------------------------------------------------------------------%
+%                      ABSTRACT Call To Entry
+%------------------------------------------------------------------------%
+%------------------------------------------------------------------------%
+
+%% :- mode call_to_entry(+,+,+,+,+,+,+,-,-) .
+:- dom_impl(_, call_to_entry/9, [noq]).
+call_to_entry(_Sv,_Sg,_Hv,_Head,_K,_Fv,'$bottom','$bottom',_ExtraInfo) :- !.
+call_to_entry(_Sv,Sg,_Hv,Head,_K,Fv,Proj,Entry,Flag) :- 
+    variant(Sg,Head),!,
+    Flag = yes,
+    copy_term((Sg,Proj),(NewTerm,NewProj)),
+    Head = NewTerm,
+    (aeq_current_sharing(pair) ->
+      aeq_init_new_varsPS(Fv,0,NewProj,Entry_u)
+    ; aeq_init_new_vars(Fv,0,NewProj,Entry_u)),
+    abs_sort(Entry_u,Entry).
+call_to_entry(_Sv,Sgoal,Hv,Head,_K,Fvars,Proj,Entry,no):-
+    union_idlists( Hv, Fvars, Vars ),
+    aeq_parameter_passing_proj( Sgoal = Head,Vars,Proj,Init_aeqs),
+    aeq_solve( Init_aeqs, Entry ).
+
+%------------------------------------------------------------------------------
+
+%% :- mode exit_to_prime(+,+,+,+,+,+,-) .
+:- dom_impl(_, exit_to_prime/7, [noq]).
+exit_to_prime(_,_,_,_,'$bottom',_,'$bottom') :- !.
+exit_to_prime(Sg,Hv,Head,_,Exit,yes,Prime) :- !,
+    project(Sg,Hv,not_provided_HvFv_u,Exit,BetaPrime),
+    copy_term((Head,BetaPrime),(NewTerm,Prime_u)),
+    Sg = NewTerm,
+    abs_sort(Prime_u,Prime).
+exit_to_prime(Sg,_,Head,Sv,Exit,_,Prime) :-
+    aeq_parameter_passing_proj(Sg=Head, Sv, Exit, Init_aeqs),
+    aeq_solve(Init_aeqs, Prime) .
+
+%------------------------------------------------------------------------------
+
+%% REMARK : %%
+%% The first version imposes the depth-bound if the `type' of
+%% depth-bound is `project'; it is called by the framework on
+%% procedure-entry  (see file fixpoint.pl).
+%% This is one way to ensure termination of the analysis and
+%% reduce the number of call specifications.
+
+%% :- mode project(+,+,+,+,-) .
+:- dom_impl(_, project/5, [noq]).
+project(_Sg, _Vars, _HvFv_u, '$bottom', '$bottom') :- !.
+project(_Sg, Vars, _HvFv_u, ASub, ASub_proj) :-
+    aeq_project_nb(Vars, ASub, ASub_proj_tmp),
+    aeq_impose_depth_bound_proj(ASub_proj_tmp, ASub_proj).
+
+%  (tested alternative but less efficient code)
+%       aeq_depth_bound(Depth,Type),
+%       aeq_impose_depth_bound_proj( Type, Depth, ASub_proj_tmp, ASub_proj ) .
+
+%% REMARK : %%
+%% The second version does not impose the depth-bound and should only be
+%% called by some other domain dependent operations.
+
+%% %% :- mode aeq_project2(+,+,-) .
+%% aeq_project2('$bottom',_Vars,'$bottom') :- !.
+%% aeq_project2(ASub, Vars, ASub_proj ) :-
+%%      aeq_project_nb(Vars, ASub, ASub_proj ) .
+
+%------------------------------------------------------------------------------
+
+%% :- mode compute_lub(+,-) .
+:- dom_impl(_, compute_lub/2, [noq]).
+compute_lub([],'$bottom') :- !.
+compute_lub([ASub|ListASub],LubASub) :-
+    compute_lub_(ListASub,ASub,LubASub) .
+
+%% :- mode compute_lub(+,+,-) .
+compute_lub_([],LubAccum,LubAccum) .
+compute_lub_([ASub|ListASub],LubSoFar,LubASub) :-
+    aeq_lub(ASub,LubSoFar,LubAccum),
+    compute_lub_(ListASub,LubAccum,LubASub) .
+    
+%------------------------------------------------------------------------------
+
+%% :- mode identical_abstract(+,+) .
+:- dom_impl(_, identical_abstract/2, [noq]).
+identical_abstract('$bottom', '$bottom') :- !.
+identical_abstract(ASub1,ASub2) :-
+    aeq_identical_nb(ASub1,ASub2) .
+
+%------------------------------------------------------------------------------
+
+%% :- mode aeq_less_or_equal(+,+).
+:- dom_impl(_, less_or_equal/2, [noq]).
+less_or_equal('$bottom',_ASub) :- !.
+less_or_equal(ASub1,ASub2) :-
+    aeq_leq_nb(ASub1,ASub2) .
+
+% ---------------------------------------------------------------------------
+
+:- use_module(ciaopp(plai/plai_errors), [compiler_error/1]).
+
+:- dom_impl(_, glb/3, [noq]).
+glb(_ASub0,_ASub1,_ASub) :- compiler_error(op_not_implemented(glb)), fail.
+
+% ---------------------------------------------------------------------------
+
+:- use_module(ciaopp(plai/domains), [absub_eliminate_equivalent/3]).
+
+:- dom_impl(_, eliminate_equivalent/2, [noq]).
+eliminate_equivalent(TmpLSucc,LSucc) :- absub_eliminate_equivalent(TmpLSucc,aeq,LSucc).
+
+%------------------------------------------------------------------------------
+
+%% :- mode abs_sort(+,-) .
+:- dom_impl(_, abs_sort/2, [noq]).
+abs_sort('$bottom','$bottom').
+abs_sort(ac(Asub_u,Fg),ac(Asub,Fg)) :-
+    abs_sort(Asub_u,Asub).
+abs_sort(d(aeqs(Eqs,Ann,Shr,AVars,NGrAVars),Del),d(aeqs(Eqs_s,Ann,Shr,AVars,NGrAVars),Del)) :-
+    mysort(Eqs,Eqs_s) .
+abs_sort(aeqs(Eqs,Ann,Shr,AVars,NGrAVars),aeqs(Eqs_s,Ann,Shr,AVars,NGrAVars)) :-
+    mysort(Eqs,Eqs_s) .
+
+:- use_module(library(write)).
+:- use_module(library(streams)).
+
+mysort(A,B) :-
+    ( var(A) -> A=[] ; true ),  % TODO: make sure that A is a list (JF)
+    sort(A,B).
+
+%------------------------------------------------------------------------------
+
+%% :- mode extend(+,+,+,+,-) .
+:- dom_impl(_, extend/5, [noq]).
+extend(_Sg, '$bottom', _Sv, _Call, '$bottom') :- !.
+extend(_Sg, Prime, _Sv, Call, Succ) :-
+    aeq_union(Prime, Call, AEqs_union),
+    aeq_solve(AEqs_union, Succ).
+
+%------------------------------------------------------------------------------
+
+%% %% :- mode aeq_real_conjoin(+,+,-) .
+%% aeq_real_conjoin(_, '$bottom', '$bottom') :- !.
+%% aeq_real_conjoin('$bottom', _Call,'$bottom') :- !.
+%% aeq_real_conjoin( Prime, Call, Succ) :-
+%%      aeq_union( Prime, Call, AEqs_union),
+%%      aeq_solve( AEqs_union, Succ ) .
+
+%------------------------------------------------------------------------------
+
+%%  REMARK %% : never used in local version of the PLAI system !!!
+
+%% :- mode call_to_success_fact(+,+,+,+,+,+,+,-,-) .
+:- dom_impl(_, call_to_success_fact/9, [noq]).
+call_to_success_fact(_Sg,_Hv,_Head,_K,_Sv,_Call,'$bottom','$bottom','$bottom') :- !.
+call_to_success_fact(Sgoal,Hv,Head,_K,_Sv,_Call,Proj_aeqs,Prime_aeqs,_Succ) :-
+    aeq_parameter_passing_rem( Sgoal = Head, Hv, Proj_aeqs, Init_aeqs),
+    aeq_solve( Init_aeqs, Prime_aeqs ) .
+
+%       aeq_parameter_passing_rem( Sgoal = Head, Hv, Call, Init_aeqs),
+%       aeq_solve( Init_aeqs, Succ ),
+%       aeq_project2( Succ, _Sv, Prime_aeqs ) .
+
+%------------------------------------------------------------------------------
+
+%% :- mode special_builtin(+,+,+,-,-) .
+
+%%  special_builtin(Sg_key, Sg, Subgoal, Type, InfoSg)
+
+%%  Determines Type and InfoSg based on Sg_key and Sg
+%%  REMARK %% : not all builtins are recognized yet; as a result, precision
+%%              may be lost.
+
+:- dom_impl(_, special_builtin/5, [noq]).
+special_builtin( 'fail/0',    _Sg,_Subgoal, aeq_fail, _) .
+special_builtin( 'false/0',   _Sg,_Subgoal, aeq_fail, _) .
+   
+special_builtin( '</2',       Sg,_Subgoal, aeq_comparison, Sg ) . 
+special_builtin( '=</2',      Sg,_Subgoal, aeq_comparison, Sg ) . 
+special_builtin( '>/2',       Sg,_Subgoal, aeq_comparison, Sg ) . 
+special_builtin( '>=/2',      Sg,_Subgoal, aeq_comparison, Sg ) .
+special_builtin( '=:=/2',     Sg,_Subgoal, aeq_comparison, Sg ) .
+% SICStus3 (ISO)
+special_builtin( '=\\=/2',    Sg,_Subgoal, aeq_comparison, Sg ) .
+% SICStus2.x
+% special_builtin( '=\=/2',   Sg,_Subgoal, aeq_comparison, Sg ) .
+
+special_builtin( '@</2',      _Sg,_Subgoal, aeq_unchanged, _) . 
+special_builtin( '@=</2',     _Sg,_Subgoal, aeq_unchanged, _) . 
+special_builtin( '@>/2',      _Sg,_Subgoal, aeq_unchanged, _) . 
+special_builtin( '@>=/2',     _Sg,_Subgoal, aeq_unchanged, _) .
+
+special_builtin( '==/2',   L == R,   _, '=/2',  L = R ) :-
+    ( atomic(L) ; atomic(R) ), ! .
+special_builtin( '==/2',      _Sg,_Subgoal, aeq_unchanged, _) .
+% SICStus3 (ISO)
+special_builtin( '\\==/2',     Sg,_Subgoal, '\\==/2',   Sg  ) .
+% SICStus2.x
+% special_builtin( '\==/2',    Sg,_Subgoal, '\==/2',    Sg  ) .
+% SICStus3 (ISO)
+special_builtin( 'dif/2',      dif(X,Y), _, '\\==/2',   X \== Y  ) .
+% SICStus2.x
+% special_builtin( 'dif/2',    dif(X,Y), _, '\==/2',    X \== Y  ) .
+
+special_builtin( 'repeat/0',  _Sg,_Subgoal, aeq_unchanged, _) .   
+special_builtin( 'true/0',    _Sg,_Subgoal, aeq_unchanged, _) .   
+special_builtin( '!/0',       _Sg,_Subgoal, aeq_unchanged, _) .   
+special_builtin( 'nl/0',      _Sg,_Subgoal, aeq_unchanged, _) .   
+special_builtin( 'ttynl/0',   _Sg,_Subgoal, aeq_unchanged, _) .   
+special_builtin( 'write/1',   _Sg,_Subgoal, aeq_unchanged, _) .   
+special_builtin( 'ttyput/1',  _Sg,_Subgoal, aeq_unchanged, _) .   
+special_builtin( 'display/1', _Sg,_Subgoal, aeq_unchanged, _) .
+special_builtin( 'print/1',   _Sg,_Subgoal, aeq_unchanged, _) .
+
+special_builtin( '=/2',           Sg,_Subgoal, '=/2', Sg).
+
+special_builtin( 'is/2',       Sg,_Subgoal, aeq_is, Sg) .
+special_builtin( 'var/1',      Sg,_Subgoal, aeq_var, Sg) . % needed?
+special_builtin( 'free/1',      Sg,_Subgoal, aeq_var, Sg) .
+special_builtin( 'nonvar/1',   Sg,_Subgoal, aeq_nonvar, Sg) . % needed?
+special_builtin( 'not_free/1',   Sg,_Subgoal, aeq_nonvar, Sg) .
+
+special_builtin( 'atomic/1',     atomic(X), _, aeq_cond_ground, atomic(X)-Vars ):- % REMARK :
+    varset(X,Vars).
+special_builtin( 'atom/1',       atom(X), _, aeq_cond_ground, atom(X)-Vars ) :- % these could be made
+    varset(X,Vars).
+special_builtin( 'float/1',      float(X), _, aeq_cond_ground, float(X)-Vars ) :- % more precise, detecting
+    varset(X,Vars).
+special_builtin( 'integer/1',    integer(X), _, aeq_cond_ground, integer(X)-Vars ) :- % failure at compile-time
+    varset(X,Vars).
+special_builtin( 'ground/1',     ground(X), _, aeq_cond_ground, ground(X)-Vars ) :- % in some cases.
+    varset(X,Vars).
+special_builtin( 'number/1',     number(X), _, aeq_cond_ground, number(X)-Vars ):- 
+    varset(X,Vars).
+special_builtin( 'nl/1',         nl(X), _, aeq_cond_ground, nl(X)-Vars ):- 
+    varset(X,Vars).
+special_builtin( 'write/2',      write(X,_), _, aeq_cond_ground, write(X)-Vars ):- 
+    varset(X,Vars).
+special_builtin( '$getch/2',     Sg,_Subgoal, aeq_ground, Sg ) .  
+special_builtin( 'get_code/1',       Sg,_Subgoal, aeq_ground, Sg ) .
+special_builtin( '$getch0/2',    Sg,_Subgoal, aeq_ground, Sg ) .
+special_builtin( 'statistics/2', Sg,_Subgoal, aeq_ground, Sg ) .
+special_builtin( 'current_op/3', Sg,_Subgoal, aeq_ground, Sg ) .
+special_builtin( 'recorda/3',    Sg,_Subgoal, aeq_ground, Arg3 ) :-
+    arg( 3, Sg, Arg3 ).
+
+special_builtin( 'erase/1',        Sg,_Subgoal, aeq_cond_ground, Sg - [Arg1]) :-
+    arg( 1, Sg, Arg1 ) .
+special_builtin( 'tab/1',          Sg,_Subgoal, aeq_cond_ground, Sg - [Arg1]) :-
+    arg( 1, Sg, Arg1 ) .
+special_builtin( '$skip/1',        Sg,_Subgoal, aeq_cond_ground, Sg - [Arg1]) :-
+    arg( 1, Sg, Arg1 ) .
+special_builtin( '$prompt/2',      Sg,_Subgoal, aeq_cond_ground, Sg - [Arg2]) :-
+    arg( 2, Sg, Arg2 ) .
+special_builtin( 'numbervars/3',   Sg,_Subgoal, aeq_cond_ground, Sg - [Arg2]) :-
+    arg( 2, Sg, Arg2 ) .
+special_builtin( '$number_chars/2',Sg,_Subgoal, aeq_cond_ground, Sg - Args) :-
+    Sg =.. [_F|Args] .
+special_builtin( '$atom_chars/2',  Sg,_Subgoal, aeq_cond_ground, Sg - Args) :-
+    Sg =.. [_F|Args] .
+special_builtin( '$prolog_radix/2',Sg,_Subgoal, aeq_cond_ground, Sg - Args) :-
+    Sg =.. [_F|Args] .
+special_builtin( 'name/2',         Sg,_Subgoal, aeq_cond_ground, Sg - Args) :-
+    Sg =.. [_F|Args] .
+special_builtin( 'compare/3',         Sg,_Subgoal, aeq_compare, Sg ) .
+
+special_builtin( 'read/1',     Sg,_Subgoal, aeq_top, Sg ) .
+special_builtin( 'arg/3',      Sg,_Subgoal, aeq_arg, Sg ) .
+special_builtin( 'functor/3', functor(T,F,A), _, Type, Eq ) :-
+    ( var( T ), !, 
+      ( nonvar(F), nonvar(A), !,
+        ( atom(F), integer(A), functor(NV_T,F,A), !, NV_T =.. [F|Args],
+          Type = 'aeq_functor_=/2', Eq = ( T=NV_T, Args )
+        ; Type = aeq_fail )
+      ; Type = aeq_functor, Eq = functor(T,F,A) )
+                            % T is var, F or A are unsufficiently instantiated
+                            % at analysis time 
+    ; functor(T,NV_F,NV_A),
+      Type = '=/2', Eq = ( (NV_F,NV_A)=(F,A) ) ) .
+special_builtin( '=../2', L =.. R, _, Type, Eq ) :-
+    ( var( L ), !,
+      ( nonvar(R), !, 
+        ( R = [F|Args], !,
+            ( atom( F), finiteclosedlist( Args ), !, NV_L =.. R, 
+              Type = '=/2', Eq = ( L=NV_L )
+            ; number(F), Args==[], !, NV_L =.. R, 
+              Type = '=/2', Eq = ( L=NV_L )                  
+            ; var(F), anylist( Args ), !,
+              Type = 'aeq_=..', Eq = (L =.. R)
+                            % L is var, R unsufficiently instantiated
+                            % list of at least one element at analysis time
+            ; Type = aeq_fail )
+        ; Type = aeq_fail )
+      ; Type = 'aeq_=..', Eq = (L =.. R) )
+                            % L, R vars at analysis time
+    ; L =.. NV_R ,
+      Type = '=/2', Eq = ( NV_R=R )) .
+special_builtin( 'sort/2', Sg,_Subgoal, aeq_sort, Sg ) .
+% TODO: not needed now? (JF)
+%special_builtin( Key,   _Sg,_Subgoal, _, _) :-
+%    aeq_warning( builtin_undef, Key ), fail .
+
+%------------------------------------------------------------------------------
+
+%% :- mode success_builtin(+,+,+,+,+,-) .
+
+%%  success_builtin(Type,Sv_uns,Info_sg,HvFv_u,Call,Succ).
+
+%%  Abstract interpretation of builtins
+%%  (note: direct computation, not via projection and extension)
+%%  REMARK %% : not all builtins are recognized yet; as a result, precision
+%%              may be lost.
+%%  REMARK %% : the Succ should be bounded; if necessary, use a call to
+%%              aeq_impose_depth_bound/2
+
+:- dom_impl(_, success_builtin/6, [noq]).
+success_builtin( _Type,             _Sv_uns, _Info,_,'$bottom','$bottom'):- !.
+success_builtin( aeq_fail,          _Sv_uns, _Info,_,_Call,'$bottom') .
+success_builtin( aeq_unchanged,     _Sv_uns, _Info,_, Call, Call) .
+success_builtin( '=/2',             _Sv_uns,    Sg,_, Call, Succ):-
+    aeq_add_equation( Sg, Call, Init_aeqs),
+    aeq_solve( Init_aeqs, Succ ) .
+% SICStus3 (ISO)
+success_builtin( '\\==/2',          _Sv_uns, Left \== Right, _, Call, Succ):-
+% SICStus2.x
+% success_builtin( '\==/2',         _Sv_uns, Left \== Right, _, Call, Succ):-
+    get_Eqs_aeqs( Call, Eqs_sf),
+    aeq_substitute( Left, Eqs_sf, ALeft ),
+    aeq_substitute( Right, Eqs_sf, ARight ),
+    ( ALeft == ARight, !, Succ = '$bottom'
+    ; Call = Succ
+    ) .
+success_builtin( aeq_is,            _Sv_uns, Left is Expr, _, Call, Succ):-
+    ( aeq_instantiated_Expr( Expr, Call, AVarExpr_ic, A_Expr ),
+      aeq_var_or_number( Left, Call, AVarleft_ic ), !,
+      ( % REMARK :
+        % AVarExpr_ic == 0, !, numeric expression that can be evaluated ;
+        % Value is A_Expr,     but this may lead to an infinite loop
+        %                      because the domain becomes infinite
+        number(A_Expr), !,
+        aeq_add_equation( Left = A_Expr, Call, Init_aeqs),
+        aeq_solve( Init_aeqs, Succ )
+      ; bitset_union( AVarExpr_ic, AVarleft_ic, AVars_ic ),
+        aeq_make_ground( AVars_ic, Call, Succ)
+      )
+    ; Succ = '$bottom'
+    ) .
+success_builtin( aeq_var,           _Sv_uns, free(Term), _, Call, Succ):- % TODO: was var(Term) (JF)
+    get_Eqs_aeqs( Call, Eqs_sf),
+    aeq_substitute( Term, Eqs_sf, ATerm ),
+    ( compound_aeqs( Call, ATerm ), !, Succ = '$bottom'
+    ; aeq_make_free( ATerm, Call, Succ)
+    ) .
+success_builtin( aeq_nonvar,        _Sv_uns, not_free(Term), _, Call, Succ):- % TODO: was nonvar(Term) (JF)
+    get_Eqs_aeqs( Call, Eqs_sf),
+    aeq_substitute( Term, Eqs_sf, ATerm ),
+    ( free_aeqs( Call, ATerm ), !, Succ = '$bottom'
+    ; Call = Succ   % REMARK : if the annotation mapping included 'c' (compound-
+                    % ness information), we could do something more here.
+    ) .
+success_builtin( aeq_ground,        _Sv_uns,        Sg, _, Call, Succ):-
+    get_Eqs_aeqs( Call, Eqs_sf),
+    avariables_ic_subst( Sg, Eqs_sf, AVars_ic ),
+    aeq_make_ground( AVars_ic, Call, Succ) .
+success_builtin( aeq_compare,       _Sv_uns, compare(X,_Y,_Z), _, Call, Succ):-
+    get_Eqs_aeqs( Call, Eqs_sf),
+    avariables_ic_subst( X, Eqs_sf, AVars_ic ),
+    aeq_make_ground( AVars_ic, Call, Succ) .
+success_builtin( aeq_comparison,    _Sv_uns, Sg, _, Call, Succ):-
+    Sg =.. [Op,Arg1,Arg2],
+    ( aeq_instantiated_Expr( Arg1, Call, AVars1_ic, A_Arg1 ),
+      aeq_instantiated_Expr( Arg2, Call, AVars2_ic, A_Arg2 ), !,
+      ( number(A_Arg1), number(A_Arg2), !,
+        ( A_Sg =.. [Op,A_Arg1,A_Arg2], call(A_Sg), !,
+          Call = Succ
+        ; Succ = '$bottom'
+        )
+      ; bitset_union( AVars1_ic, AVars2_ic, AVars_ic ),
+        aeq_make_ground( AVars_ic, Call, Succ)
+      )
+    ; Succ = '$bottom'
+    ) .
+%% % OLD
+%%      get_Eqs_aeqs( Call, Eqs_sf),
+%%      aeq_substitute( (Arg1,Arg2), Eqs_sf, (A_Arg1,A_Arg2) ),
+%%      ( free_aeqs( Call, A_Arg1 ), !, Succ = '$bottom'
+%%      ; free_aeqs( Call, A_Arg2 ), !, Succ = '$bottom'
+%%      ; number(A_Arg1), number(A_Arg2), !,
+%%        ( A_Sg =.. [Op,A_Arg1,A_Arg2], call(A_Sg), !,
+%%          Call = Succ
+%%        ; Succ = '$bottom'
+%%        )
+%%      ; avarORnumber_aeqs( A_Arg1, AVars1_ic ),
+%%        avarORnumber_aeqs( A_Arg2, AVars2_ic ), !,
+%%        bitset_union( AVars1_ic, AVars2_ic, AVars_ic ),
+%%        aeq_make_ground( AVars_ic, Call, Succ)
+%%      ; Succ = '$bottom'
+%%      ) .
+success_builtin( aeq_cond_ground,   _Sv_uns, Sg - Varlist, _, Call, Succ):-
+    get_Eqs_aeqs( Call, Eqs_sf),
+    aeq_substitute( Varlist, Eqs_sf, A_Varlist ),
+    ( free_aeqs_list( A_Varlist, Call ), !, Succ = '$bottom'
+    ;
+      avariables_ic_subst( Sg, Eqs_sf, AVars_ic ),
+      aeq_make_ground( AVars_ic, Call, Succ)
+    ) .
+success_builtin( aeq_arg,   Sv_uns, Sg, _, Call, Succ):- Sg = arg(Nb,Term,Arg),
+    get_Eqs_aeqs( Call, Eqs_sf),
+    aeq_substitute( arg(Nb,Term,Arg), Eqs_sf, arg(A_Nb,A_Term,A_Arg) ),
+    ( free_aeqs( Call, A_Term ), !, Succ = '$bottom'
+    ; free_aeqs( Call, A_Nb ), !, Succ = '$bottom'
+    ; integer(A_Nb), \+(A_Term = '@'(_)), !,
+      ( arg(A_Nb,A_Term,A_Term_Arg), !,
+        aeq_add_equation( A_Term_Arg = A_Arg, Call, Init_aeqs),
+        aeq_solve( Init_aeqs, Succ )
+      ; Succ = '$bottom'
+      )
+    ; avarORnumber_aeqs(A_Nb, A_Nb_ic), !,
+      aeq_make_ground( A_Nb_ic, Call, Succ_Sofar),
+      ( A_Term == A_Arg, !, Succ = '$bottom'
+      ; ( A_Term='@'(_) ; \+ aeq_pair_sharing ), !,
+        aeq_jacobs_langen_variant( A_Term, A_Arg, 'arg', Succ_Sofar, Succ)
+      ; A_Arg = '@'(_), aeq_pair_sharing, !,
+        aeq_jacobs_langen_variant( A_Arg, A_Term, 'arg', Succ_Sofar, Succ)
+      ; aeq_warning( builtin_undef, aeq_arg ),
+        unknown_call(Sg,Sv_uns,Succ_Sofar,Succ)
+      )
+    ; Succ = '$bottom'
+    ) .
+success_builtin( 'aeq_=..', _Sv_uns,    Sg, _, Call, Succ):- 
+    get_Eqs_aeqs( Call, Eqs_sf),
+    aeq_substitute( Sg, Eqs_sf, A_L =.. A_R ),
+    ( free_aeqs( Call, A_L ), free_aeqs( Call, A_R ), !,
+      Succ = '$bottom'
+    ; A_L='@'(_), !,
+      aeq_jacobs_langen_variant( A_L, A_R, '=..', Call, Succ)
+    ; A_L =.. L_A_L,
+      aeq_add_equation( L_A_L = A_R, Call, Init_aeqs),
+      aeq_solve( Init_aeqs, Succ)
+    ) .
+success_builtin( aeq_sort,  Sv_uns,    Sg, _, Call, Succ):- 
+    get_Eqs_aeqs( Call, Eqs_sf),
+    aeq_substitute( Sg, Eqs_sf, sort(A_L,A_R) ),
+    ( free_aeqs( Call, A_L ), !,
+      Succ = '$bottom'
+    ; A_R = '@'(_), !,
+      aeq_jacobs_langen_variant( A_R, A_L, '=..', Call, Succ)
+      %% REMARK : switched arguments because A_R will often be free
+    ; aeq_warning( builtin_undef, aeq_sort ),
+      unknown_call(Sg,Sv_uns,Call,Succ)
+    ) .
+success_builtin( 'aeq_functor_=/2', _Sv_uns, ( Eq, Vars ), _, Call, Succ):- 
+    aeq_parameter_passing_rem( Eq, Vars, Call, Init_aeqs),
+    aeq_solve( Init_aeqs, Succ ) .
+success_builtin( aeq_functor,       _Sv_uns, functor(T,F,A), _, Call, Succ):- 
+    get_Eqs_aeqs( Call, Eqs_sf),
+    aeq_substitute( functor(T,F,A), Eqs_sf, functor(A_T,A_F,A_A) ),
+    ( aeq_functor_succ(A_T, A_F, A_A, Call, Succ), !
+    ; Succ = '$bottom'
+    ) .
+success_builtin( aeq_top,           Sv_uns,         Sg, _, Call, Succ):-
+    unknown_call(Sg,Sv_uns,Call,Succ) .
+
+%------------------------------------------------------------------------------
+
+%% :- mode input_user_interface(+,+,-,+,+).
+:- dom_impl(_, input_user_interface/5, [noq]).
+input_user_interface(InputUser,Qv,ASub,_Sg,_MaybeCallASub):-
+    input_user_interface_(InputUser,Qv,ASub).
+
+input_user_interface_(InputUser,_Qv,ASub):-
+    member(aeqs(X,Y,Z),InputUser), !,
+    aeq_extern_to_intern(X,Y,Z,ASub).
+input_user_interface_(InputUser,Qv,ASub):-
+    aeq_input_to_extern(InputUser,Qv,X,Y,Z),
+    aeq_extern_to_intern(X,Y,Z,ASub).
+
+:- dom_impl(_, input_interface/4, [noq]).
+input_interface(Info,Kind,(Sh0,Eqs,Lv,Fv),(Sh,Eqs,Lv,Fv)):-
+    share_input_interface(Info,Kind,Sh0,Sh), !.
+input_interface(instance(X,T),perfect,(Sh,Eqs0,Lv,Fv),(Sh,Eqs,Lv,Fv)):-
+    var(X),
+    myappend(Eqs0,X=T,Eqs).
+input_interface(free(X),perfect,(Sh,Eqs,Lv,Fv0),(Sh,Eqs,Lv,Fv)):-
+    var(X),
+    myappend(Fv0,X,Fv).
+
+%% son_input_interface(linear(X),perfect,(Sh,Eqs,Lv0,Fv),(Sh,Eqs,Lv,Fv)):-
+%%      varset(X,Xs),
+%%      may_be_var(Lv0),
+%%      append(Lv0,Xs,Lv).
+
+myappend(Vs0,V,Vs):-
+    var(Vs0), !,
+    Vs=[V].
+myappend(Vs,V,[V|Vs]).
+
+% may_be_var(X):- ( X=[] ; true ), !.
+
+%------------------------------------------------------------------------------
+
+%% :- mode asub_to_native(+,+,+,-,-).
+:- dom_impl(_, asub_to_native/5, [noq]).
+asub_to_native(ASub,_Qv,_OutFlag,OutputUser,[]) :-
+    asub_to_native_(ASub,OutputUser).
+
+asub_to_native_(ASub,OutputUser):-
+    aeq_intern_to_extern(ASub,Extern),
+    aeq_extern_to_output(Extern,OutputUser).
+
+%------------------------------------------------------------------------------
+
+%% :- mode unknown_call(+,+,+,-).
+:- dom_impl(_, unknown_call/4, [noq]).
+unknown_call(_Sg,_Vars_uns,'$bottom','$bottom') :- ! .
+unknown_call(Sg,Vars_uns,Call,Succ) :-
+    mysort(Vars_uns, Vars),
+    aeq_top(Vars, Top_aeqs),
+    extend(Sg, Top_aeqs, not_provided_Sv, Call, Succ).
+
+%------------------------------------------------------------------------------
+
+%% :- mode unknown_entry(+,+,-).
+:- dom_impl(_, unknown_entry/3, [noq]).
+unknown_entry(_Sg, QVars, Top_aeqs) :-
+    aeq_top(QVars, Top_aeqs).
+
+%% :- mode empty_entry(+,+,-).
+:- dom_impl(_, empty_entry/3, [noq]).
+empty_entry(_Sg, QVars, ASub) :-
+    list_to_list_of_lists(QVars,Sh),
+    share_input_interface(sharing(Sh),_Kind,_Sh0,ShInfo),
+    input_user_interface_((ShInfo,[],[],QVars),QVars,ASub).
+
+%------------------------------------------------------------------------------
+%   NOT NEEDED ?!
+% :- mode open_output(+,+,-).
+% open_output(aeq,_Vers,_InStream,OutStream) :-
+%       open( aeq_output, write, OutStream ) .
+%
+
+% ===========================================================================
+%! # Auxiliary procedures (previously aeq_aux.pl)
+
 :- use_module(library(lists), [member/2]).
 :- use_module(domain(share_aux), [if_not_nil/4]).
 
@@ -25,9 +657,9 @@
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
 
-:- push_prolog_flag(multi_arity_warnings,off).
-
-:- data aeq_current_sharing/1, aeq_current_bound/2.
+% TODO: export?
+:- data aeq_current_sharing/1.
+:- data aeq_current_bound/2.
 
 % aeq_allowed_sharing(set).
 % aeq_allowed_sharing(pair).
@@ -79,7 +711,7 @@ current_bound(D,project):-
 %%      retract_fact(aeq_current_sharing(_)),
 %%      asserta_fact(aeq_current_sharing(Shr)).
 
-% This used to work... 8-(
+% TODO: This used to work... 8-(
 aeq_pair_sharing:- fail.
 
 %------------------------------------------------------------------------%
@@ -126,7 +758,7 @@ aeq_error(bad_entry,_):-
 %------------------------------------------------------------------------%
 
 avar_ic('@'(AVar),AVar_ic) :- 
-    AVar_ic is 1 << AVar .          
+    AVar_ic is 10-10+1 << AVar .          
 
 %------------------------------------------------------------------------%
 % avariables_ic_subst(+,+,-)
@@ -137,31 +769,31 @@ avar_ic('@'(AVar),AVar_ic) :-
 % the bitcode of those abstract variables is added (union) to AVarSet_ic.
 %------------------------------------------------------------------------%
 avariables_ic_subst(Term,Eqs_sf,AVarSet_ic) :-
-    avariables_ic_subst(Term,Eqs_sf,0,AVarSet_ic).
+    avariables_ic_subst_(Term,Eqs_sf,0,AVarSet_ic).
 
-avariables_ic_subst(Term,Eqs_sf,SoFar,AVarSet_ic) :-
+avariables_ic_subst_(Term,Eqs_sf,SoFar,AVarSet_ic) :-
     var(Term),!,
     member_key(Term,Eqs_sf,ATerm),
     avariables_ic(ATerm, AVar_ic),
     AVarSet_ic is AVar_ic \/ SoFar.
-avariables_ic_subst(Term,_Eqs_sf,AVarSet_ic,AVarSet_ic) :-
+avariables_ic_subst_(Term,_Eqs_sf,AVarSet_ic,AVarSet_ic) :-
     atomic(Term),!.
-avariables_ic_subst('@'(Num),_Eqs_sf,SoFar,AVarSet_ic) :- !,
-    Num_ic is 1 << Num,
+avariables_ic_subst_('@'(Num),_Eqs_sf,SoFar,AVarSet_ic) :- !,
+    Num_ic is 11-11+1 << Num,
     AVarSet_ic is Num_ic \/ SoFar.
-avariables_ic_subst([H|T],Eqs_sf,SoFar,VarSet_ic) :- !,
-    avariables_ic_subst(H,Eqs_sf,SoFar,Accum),
-    avariables_ic_subst(T,Eqs_sf,Accum,VarSet_ic).
-avariables_ic_subst(Term,Eqs_sf,SoFar,VarSet_ic) :-
+avariables_ic_subst_([H|T],Eqs_sf,SoFar,VarSet_ic) :- !,
+    avariables_ic_subst_(H,Eqs_sf,SoFar,Accum),
+    avariables_ic_subst_(T,Eqs_sf,Accum,VarSet_ic).
+avariables_ic_subst_(Term,Eqs_sf,SoFar,VarSet_ic) :-
     functor(Term,_,Arity),
-    avariables_ic_subst(Arity,Term,Eqs_sf,SoFar,VarSet_ic).
+    avariables_ic_subst__(Arity,Term,Eqs_sf,SoFar,VarSet_ic).
 
-avariables_ic_subst(0,_,_,AVarSet_ic,AVarSet_ic):- !.
-avariables_ic_subst(Arity,Term,Eqs_sf,SoFar,AVarSet_ic):-
+avariables_ic_subst__(0,_,_,AVarSet_ic,AVarSet_ic):- !.
+avariables_ic_subst__(Arity,Term,Eqs_sf,SoFar,AVarSet_ic):-
     arg(Arity,Term,Arg),
-    avariables_ic_subst(Arg,Eqs_sf,SoFar,SoFar0),
+    avariables_ic_subst_(Arg,Eqs_sf,SoFar,SoFar0),
     Arity0 is Arity - 1,
-    avariables_ic_subst(Arity0,Term,Eqs_sf,SoFar0,AVarSet_ic).
+    avariables_ic_subst__(Arity0,Term,Eqs_sf,SoFar0,AVarSet_ic).
 
 member_key(X,[Y=A|_],A) :- 
     X == Y, !.
@@ -176,26 +808,26 @@ member_key(X,[_|Ys],A) :-
 % (union) to AVarSet_ic.
 %------------------------------------------------------------------------%
 avariables_ic(Term,AVarSet_ic) :-
-    avariables_ic(Term,0,AVarSet_ic).
+    avariables_ic_(Term,0,AVarSet_ic).
 
-avariables_ic(Term,AVarSet_ic,AVarSet_ic) :-
+avariables_ic_(Term,AVarSet_ic,AVarSet_ic) :-
     (atomic(Term) ; var(Term)), !.
-avariables_ic('@'(Num),SoFar,AVarSet_ic) :- !,
-    Num_ic is 1 << Num,
+avariables_ic_('@'(Num),SoFar,AVarSet_ic) :- !,
+    Num_ic is 12-12+1 << Num,
     AVarSet_ic is Num_ic \/ SoFar.
-avariables_ic([H|T],SoFar,VarSet_ic) :- !,
-    avariables_ic(H,SoFar,Accum),
-    avariables_ic(T,Accum,VarSet_ic).
-avariables_ic(Term,SoFar,AVarSet_ic) :-
+avariables_ic_([H|T],SoFar,VarSet_ic) :- !,
+    avariables_ic_(H,SoFar,Accum),
+    avariables_ic_(T,Accum,VarSet_ic).
+avariables_ic_(Term,SoFar,AVarSet_ic) :-
     functor(Term,_,Arity),
-    avariables_ic(Arity,Term,SoFar,AVarSet_ic).
+    avariables_ic__(Arity,Term,SoFar,AVarSet_ic).
 
-avariables_ic(0,_,AVarSet_ic,AVarSet_ic):- !.
-avariables_ic(Arity,Term,SoFar,AVarSet_ic):-
+avariables_ic__(0,_,AVarSet_ic,AVarSet_ic):- !.
+avariables_ic__(Arity,Term,SoFar,AVarSet_ic):-
     arg(Arity,Term,Arg),
-    avariables_ic(Arg,SoFar,SoFar0),
+    avariables_ic_(Arg,SoFar,SoFar0),
     Arity0 is Arity - 1,
-    avariables_ic(Arity0,Term,SoFar0,AVarSet_ic).
+    avariables_ic__(Arity0,Term,SoFar0,AVarSet_ic).
 
 %------------------------------------------------------------------------%
 % avariables_ec(+,-)
@@ -205,26 +837,26 @@ avariables_ic(Arity,Term,SoFar,AVarSet_ic):-
 % which is finally sorted.
 %------------------------------------------------------------------------%
 avariables_ec(Term,AVarSet_ec) :-
-    avariables_ec(Term,AVarSet_ec_u,[]),
-    sort(AVarSet_ec_u,AVarSet_ec).
+    avariables_ec_(Term,AVarSet_ec_u,[]),
+    mysort(AVarSet_ec_u,AVarSet_ec).
 
-avariables_ec(Term,AVarSet_ec,Tail) :-
+avariables_ec_(Term,AVarSet_ec,Tail) :-
     (atomic(Term) ; var(Term)), !,
     AVarSet_ec = Tail.
-avariables_ec('@'(AVar_ec),[AVar_ec|Tail],Tail) :- !.
-avariables_ec([H|T],AVarSet_ec,Tail) :- !,
-    avariables_ec(H,AVarSet_ec,Tail1),
-    avariables_ec(T,Tail1,Tail).
-avariables_ec(Term,AVarSet_ec,Tail) :-
+avariables_ec_('@'(AVar_ec),[AVar_ec|Tail],Tail) :- !.
+avariables_ec_([H|T],AVarSet_ec,Tail) :- !,
+    avariables_ec_(H,AVarSet_ec,Tail1),
+    avariables_ec_(T,Tail1,Tail).
+avariables_ec_(Term,AVarSet_ec,Tail) :-
     functor(Term,_,Arity),
-    avariables_ec(Arity,Term,AVarSet_ec,Tail).
+    avariables_ec__(Arity,Term,AVarSet_ec,Tail).
 
-avariables_ec(0,_,AVarSet_ec,AVarSet_ec):- !.
-avariables_ec(Arity,Term,AVarSet_ec,Tail):-
+avariables_ec__(0,_,AVarSet_ec,AVarSet_ec):- !.
+avariables_ec__(Arity,Term,AVarSet_ec,Tail):-
     arg(Arity,Term,Arg),
-    avariables_ec(Arg,AVarSet_ec,Tail1),
+    avariables_ec_(Arg,AVarSet_ec,Tail1),
     Arity0 is Arity - 1,
-    avariables_ec(Arity0,Term,Tail1,Tail).
+    avariables_ec__(Arity0,Term,Tail1,Tail).
                             
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
@@ -243,7 +875,7 @@ avariables_ec(Arity,Term,AVarSet_ec,Tail):-
 %------------------------------------------------------------------------%
 
 aeq_input_to_extern((Sh,Eqs_u,Lin_u,Free_u),Qv,AEqs,Ann,Shr):-
-    sort(Eqs_u,Eqs),
+    mysort(Eqs_u,Eqs),
     eqs_ranges(Qv,Eqs,Terms,Vars,[],AVarSet),
     copy_term(t(Terms,AVarSet),t(ATerms,AtVarSet)),
     aeq_unify_avar(AtVarSet,0),
@@ -266,12 +898,12 @@ aeq_input_to_extern((Sh,Eqs_u,Lin_u,Free_u),Qv,AEqs,Ann,Shr):-
     ord_subtract(Qv,Vars_sh,Gv),
     aeq_input_to_annot(Gv,Pairs,g,Ann1,Ann2),
 %
-    sort(Lin_u,Lin),
+    mysort(Lin_u,Lin),
     ord_subtract(Vars_sh,Lin,Vars_a0),
-    sort(Free_u,Free),
+    mysort(Free_u,Free),
     ord_subtract(Vars_a0,Free,Vars_a),
     aeq_input_to_annot(Vars_a,Pairs,a,Ann2,[]),
-    sort(Ann_u,Ann).
+    mysort(Ann_u,Ann).
        
 eqs_ranges([X|Dom],Eqs,[Term|Terms],[Vars0|Vars],VarSet0,VarSet):-
     key_lookup(X,Eqs,Term,Eqs0), !,
@@ -296,6 +928,7 @@ aeq_unify_num([],_N).
 aeq_input_to_annot(List,Pairs,Flag,Ann,TailAnn):-
     copy_term(t(List,Pairs),t(List0,Pairs0)),
     apply(Pairs0),
+    ( var(List0) -> List0 = [] ; true ), % TODO: make sure that List0 is a list (JF)
     flatten(List0,List1),
     aeq_annotations(List1,Flag,Ann,TailAnn).
 
@@ -339,7 +972,7 @@ aeq_intern_to_extern(aeqs(Eqs_ec,Ann_ic,Shr_ic,_,_),
     sort_sh_ex(Shr_ec0,Shr_ec).
 
 sort_sh_ex(ps(X_u,Y_u),ps(X,Y)):- !,
-    sort(X_u,X),
+    mysort(X_u,X),
     share_abs_sort(Y_u,Y).
 sort_sh_ex(X_u,X):- 
     share_abs_sort(X_u,X).
@@ -365,12 +998,12 @@ aeq_extern_to_output(aeqs(AEqs,Ann,Shr),OutputUser):- !,
     ann_to_output(Ann0,F_u,G_u,L_u,NG_u,NF_u,Dic),
     key_rename_eqs(AEqs0,Dic,Eqs_u),
     key_rename_list_of_lists(Shr0,Dic,Share_u),
-    sort(F_u,F),
-    sort(G_u,G),
-    sort(L_u,L),
-    sort(NG_u,NG),
-    sort(NF_u,NF),
-    sort(Eqs_u,Eqs),
+    mysort(F_u,F),
+    mysort(G_u,G),
+    mysort(L_u,L),
+    mysort(NG_u,NG),
+    mysort(NF_u,NF),
+    mysort(Eqs_u,Eqs),
     share_abs_sort(Share_u,Share),
     support_user_interface([ground(G),sharing(Share),free(F),linear(L),
                             not_ground(NG),not_free(NF)],OutputUser0),
@@ -522,18 +1155,18 @@ encode_and_check_shr([H|T],AVarSet_ic,Shr_ic,Sofar,NonGr) :-
 %------------------------------------------------------------------------%
 encode_and_check_annP(Ann_ec,AVarSet_ic,NonGr_ic,Ann_ic,InShr_i,InShr_o) :-
     new_array(Array),
-    encode_and_check_annP(Ann_ec,AVarSet_ic,NonGr_ic,0,Array,Ann_ic,InShr_i,InShr_o).
+    encode_and_check_annP_(Ann_ec,AVarSet_ic,NonGr_ic,0,Array,Ann_ic,InShr_i,InShr_o).
 
-encode_and_check_annP([],AVarSet_ic,_NonGr_ic,Annted,Array,Array,InShr,InShr) :-
+encode_and_check_annP_([],AVarSet_ic,_NonGr_ic,Annted,Array,Array,InShr,InShr) :-
     (AVarSet_ic =  Annted ->
         true
     ; aeq_error(bad_entry,_)).
-encode_and_check_annP([AVar - H |T],AVarSet_ic,NonGr_ic,Annted_i,Array_i,Array_o,InShr_i,InShr_o) :-
-    AVar_ic is 1 << AVar,
+encode_and_check_annP_([AVar - H |T],AVarSet_ic,NonGr_ic,Annted_i,Array_i,Array_o,InShr_i,InShr_o) :-
+    AVar_ic is 13-13+1 << AVar,
     check_ann(H,AVar_ic,AVarSet_ic,NonGr_ic,InShr_i,InShr_m),
     aset(AVar,Array_i,H,Array_m),
     bitset_union(AVar_ic,Annted_i,Annted_o),
-    encode_and_check_annP(T,AVarSet_ic,NonGr_ic,Annted_o,Array_m,Array_o,InShr_m,InShr_o) .
+    encode_and_check_annP_(T,AVarSet_ic,NonGr_ic,Annted_o,Array_m,Array_o,InShr_m,InShr_o) .
 
 %------------------------------------------------------------------------%
 % encode_and_check_ann(+,+,+,-)
@@ -543,18 +1176,18 @@ encode_and_check_annP([AVar - H |T],AVarSet_ic,NonGr_ic,Annted_i,Array_i,Array_o
 %------------------------------------------------------------------------%
 encode_and_check_ann(Ann_ec,AVarSet_ic,NonGr_ic,Ann_ic) :-
     new_array(Array),
-    encode_and_check_ann(Ann_ec,AVarSet_ic,NonGr_ic,0,Array,Ann_ic).
+    encode_and_check_ann_(Ann_ec,AVarSet_ic,NonGr_ic,0,Array,Ann_ic).
 
-encode_and_check_ann([],AVarSet_ic,_NonGr_ic,Annted,Array,Array) :-
+encode_and_check_ann_([],AVarSet_ic,_NonGr_ic,Annted,Array,Array) :-
     (AVarSet_ic = Annted ->
         true
     ; aeq_error(bad_entry,_)).
-encode_and_check_ann([AVar - H |T],AVarSet_ic,NonGr_ic,Annted_i,Array_i,Array_o) :-
-    AVar_ic is 1 << AVar,
+encode_and_check_ann_([AVar - H |T],AVarSet_ic,NonGr_ic,Annted_i,Array_i,Array_o) :-
+    AVar_ic is 14-14+1 << AVar,
     check_ann(H,AVar_ic,AVarSet_ic,NonGr_ic,0,_),
     aset(AVar,Array_i,H,Array_m),
     bitset_union(AVar_ic,Annted_i,Annted_o),
-    encode_and_check_ann(T,AVarSet_ic,NonGr_ic,Annted_o,Array_m,Array_o) .
+    encode_and_check_ann_(T,AVarSet_ic,NonGr_ic,Annted_o,Array_m,Array_o) .
 
 %------------------------------------------------------------------------%
 % check_ann(+,+,+,+,+,-)
@@ -605,14 +1238,14 @@ check_ann(_,_,_,_,_,_):-
 aeq_add_pairs([],ExShr,ExShr) .
 aeq_add_pairs([_],ExShr,ExShr) :- ! .
 aeq_add_pairs([H | T],ExShr_i,ExShr_o) :-
-    aeq_add_pairs(T,H,ExShr_i,ExShr_m),
+    aeq_add_pairs_(T,H,ExShr_i,ExShr_m),
     aeq_add_pairs(T,ExShr_m,ExShr_o) .
 
-aeq_add_pairs([],_H,ExShr_u,ExShr) :-
-    sort(ExShr_u,ExShr).
-aeq_add_pairs([T1|T2],H,ExShr_i,ExShr_o) :-
+aeq_add_pairs_([],_H,ExShr_u,ExShr) :-
+    mysort(ExShr_u,ExShr).
+aeq_add_pairs_([T1|T2],H,ExShr_i,ExShr_o) :-
     set_to_bitcode([T1,H],T1_H_ic),
-    aeq_add_pairs(T2,H,[T1_H_ic|ExShr_i],ExShr_o) .
+    aeq_add_pairs_(T2,H,[T1_H_ic|ExShr_i],ExShr_o) .
 
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
@@ -946,7 +1579,7 @@ ann_non_ground(ngf).
 %% ann_non_free(lnf).
 %% ann_non_free(g).
 
-ann_linear(AVar_ec,Ann) :-
+ann_linear_(AVar_ec,Ann) :-
     aref(AVar_ec,Ann,Item),
     ann_linear(Item).
 
@@ -1009,28 +1642,29 @@ ann_remove_non_ground(nf,nf).
 get_ann_aterm(aeqs(_,Ann,Shr,_,_),ATerm,AnnT):-
     ( ATerm = '@'(N) ->
         aref(N,Ann,AnnT)
-    ; get_ann_aterm(ATerm,Ann,Shr,LFlag,0,_,LAnn,[]),
-      sort(LAnn,LAnn_s),
-      aeq_decide_ann(LFlag,LAnn_s,AnnT)).
+    ; get_ann_aterm_(ATerm,Ann,Shr,LFlag,0,_,LAnn,[]),
+      mysort(LAnn,LAnn_s),
+      aeq_decide_ann(LFlag,LAnn_s,AnnT)
+    ).
 
-get_ann_aterm(aeqs(_,Ann,Shr,_,_),ATerm,LAnn_s,AnnT):-
+get_ann_aterm4(aeqs(_,Ann,Shr,_,_),ATerm,LAnn_s,AnnT):-
     ( ATerm = '@'(N) ->
         aref(N,Ann,AnnT),
         LAnn = [AnnT]
-    ; get_ann_aterm(ATerm,Ann,Shr,LFlag,0,_,LAnn,[]),
-      sort(LAnn,LAnn_s),
-      aeq_decide_ann(LFlag,LAnn_s,AnnT)).
+    ; get_ann_aterm_(ATerm,Ann,Shr,LFlag,0,_,LAnn,[]),
+      mysort(LAnn,LAnn_s),
+      aeq_decide_ann(LFlag,LAnn_s,AnnT)
+    ).
 
-
-get_ann_aterm(ATerm,_,_,_,AVars0,AVars,LAnn0,LAnn):-
+get_ann_aterm_(ATerm,_,_,_,AVars0,AVars,LAnn0,LAnn):-
     atomic(ATerm),!,
     AVars0 = AVars,
     LAnn0 = [g|LAnn].
-get_ann_aterm([H|T],Ann,Shr,L,AVars0,AVars,LAnn0,LAnn) :- !,
-    get_ann_aterm(H,Ann,Shr,L,AVars0,AVars1,LAnn0,LAnn1),
-    get_ann_aterm(T,Ann,Shr,L,AVars1,AVars,LAnn1,LAnn).
-get_ann_aterm('@'(AVar_ec),Ann,Shr,L,AVars0,AVars,[Item|LAnn],LAnn) :- !,
-    AVar_ic is 1 << AVar_ec,
+get_ann_aterm_([H|T],Ann,Shr,L,AVars0,AVars,LAnn0,LAnn) :- !,
+    get_ann_aterm_(H,Ann,Shr,L,AVars0,AVars1,LAnn0,LAnn1),
+    get_ann_aterm_(T,Ann,Shr,L,AVars1,AVars,LAnn1,LAnn).
+get_ann_aterm_('@'(AVar_ec),Ann,Shr,L,AVars0,AVars,[Item|LAnn],LAnn) :- !,
+    AVar_ic is 15-15+1 << AVar_ec,
     bitset_union(AVar_ic,AVars0,AVars),
     aref(AVar_ec,Ann,Item),
     ( (L == nl ; ann_non_linear(Item)) ->
@@ -1038,16 +1672,16 @@ get_ann_aterm('@'(AVar_ec),Ann,Shr,L,AVars0,AVars,[Item|LAnn],LAnn) :- !,
     ;  ( (bitset_member(AVar_ic,AVars0); share_shr(Shr,AVar_ic,AVars0)) -> 
               L = nl
        ; true)).
-get_ann_aterm(ATerm,Ann,Shr,L,AVars0,AVars,LAnn0,LAnn) :-
+get_ann_aterm_(ATerm,Ann,Shr,L,AVars0,AVars,LAnn0,LAnn) :-
     functor(ATerm,_,Arity),
-    get_ann_aterm(Arity,ATerm,Ann,Shr,L,AVars0,AVars,LAnn0,LAnn).
+    get_ann_aterm__(Arity,ATerm,Ann,Shr,L,AVars0,AVars,LAnn0,LAnn).
 
-get_ann_aterm(0,_,_,_,_,AVars,AVars,LAnn,LAnn):- !.
-get_ann_aterm(Arity,ATerm,Ann,Shr,L,AVars0,AVars,LAnn0,LAnn) :-
+get_ann_aterm__(0,_,_,_,_,AVars,AVars,LAnn,LAnn):- !.
+get_ann_aterm__(Arity,ATerm,Ann,Shr,L,AVars0,AVars,LAnn0,LAnn) :-
     arg(Arity,ATerm,Arg),
-    get_ann_aterm(Arg,Ann,Shr,L,AVars0,AVars1,LAnn0,LAnn1),
+    get_ann_aterm_(Arg,Ann,Shr,L,AVars0,AVars1,LAnn0,LAnn1),
     Arity0 is Arity - 1,
-    get_ann_aterm(Arity0,ATerm,Ann,Shr,L,AVars1,AVars,LAnn1,LAnn).
+    get_ann_aterm__(Arity0,ATerm,Ann,Shr,L,AVars1,AVars,LAnn1,LAnn).
 
 aeq_decide_ann(l,LAnn,AnnT):- !,
     ( LAnn = [g] ->
@@ -1103,7 +1737,7 @@ ground_aeqs(aeqs(_,_,_,_,NGrAVars),ATerm) :-
 % Succeeds if ATerm is either a variable which is ground or not a variable.
 %------------------------------------------------------------------------%
 compound_aeqs(aeqs(_,_,_,_,NGrAVars),'@'(AVar_ec)) :- !,
-    AVar_ic is 1 << AVar_ec, 
+    AVar_ic is 16-16+1 << AVar_ec, 
     bitset_intersect(AVar_ic,NGrAVars,0) .
 compound_aeqs(_AEqs,_ATerm) .
 
@@ -1148,35 +1782,35 @@ share_aeqs_ic(aeqs(_,_,Shr,_,NGrAVars),AVarsATerm_ic,AVar_ic) :-
 %       linear and does not share with any other var in ATerm.
 %------------------------------------------------------------------------%
 linear_aeqs(AEqs,ATerm) :-
-    linear_aeqs(ATerm,AEqs,0,_) .
+    linear_aeqs_(ATerm,AEqs,0,_) .
 
-linear_aeqs(ATerm,_AEqs,AVars_SoFar,AVars_SoFar) :-
+linear_aeqs_(ATerm,_AEqs,AVars_SoFar,AVars_SoFar) :-
     atomic(ATerm),!.
-linear_aeqs([H|T],AEqs,AVars_in,AVars_out) :- !,
-    linear_aeqs(H,AEqs,AVars_in,Accum),
-    linear_aeqs(T,AEqs,Accum,AVars_out).
-linear_aeqs('@'(AVar_ec),aeqs(_,Ann,Shr,_,NGrAVars),AVars_SoFar,AVars) :- !,
-    AVar_ic is 1 << AVar_ec,
+linear_aeqs_([H|T],AEqs,AVars_in,AVars_out) :- !,
+    linear_aeqs_(H,AEqs,AVars_in,Accum),
+    linear_aeqs_(T,AEqs,Accum,AVars_out).
+linear_aeqs_('@'(AVar_ec),aeqs(_,Ann,Shr,_,NGrAVars),AVars_SoFar,AVars) :- !,
+    AVar_ic is 17-17+1 << AVar_ec,
     ( bitset_member(AVar_ic,NGrAVars) ->   % var is possibly non-ground
         not_bitset_member(AVar_ic,AVars_SoFar),
         (  Shr = ps(InShr,ExShr) ->
             \+ bitset_member(AVar_ic,InShr),
             \+ share_shr(ExShr,AVar_ic,AVars_SoFar)
-        ; ann_linear(AVar_ec,Ann),
+        ; ann_linear_(AVar_ec,Ann),
           \+ share_shr(Shr,AVar_ic,AVars_SoFar)
        ),
         bitset_union(AVar_ic,AVars_SoFar,AVars)
     ; AVars = AVars_SoFar).
-linear_aeqs(ATerm,AEqs,AVars_in,AVars_out) :-
+linear_aeqs_(ATerm,AEqs,AVars_in,AVars_out) :-
     functor(ATerm,_,Arity),
-    linear_aeqs(Arity,ATerm,AEqs,AVars_in,AVars_out).
+    linear_aeqs__(Arity,ATerm,AEqs,AVars_in,AVars_out).
 
-linear_aeqs(0,_,_,AVars,AVars):- !.
-linear_aeqs(Arity,ATerm,AEqs,AVars_in,AVars_out) :-
+linear_aeqs__(0,_,_,AVars,AVars):- !.
+linear_aeqs__(Arity,ATerm,AEqs,AVars_in,AVars_out) :-
     arg(Arity,ATerm,Arg),
-    linear_aeqs(Arg,AEqs,AVars_in,AVars_m),
+    linear_aeqs_(Arg,AEqs,AVars_in,AVars_m),
     Arity0 is Arity - 1,
-    linear_aeqs(Arity0,ATerm,AEqs,AVars_m,AVars_out).
+    linear_aeqs__(Arity0,ATerm,AEqs,AVars_m,AVars_out).
 
 %------------------------------------------------------------------------%
 % ground_ann(+,+) 
@@ -1391,17 +2025,17 @@ aeq_project_vars(AVars_p,Eqs_p,AEqs,aeqs(Eqs_p,Ann_p,Shr_p,AVars_p,NGrAVars_p)):
 %------------------------------------------------------------------------%
 aeq_project_eqs([],_,[],0) :- ! .
 aeq_project_eqs(Vars,Eqs,Eqs_proj,AVars_proj) :-
-    aeq_project_eqs(Eqs,Vars,Eqs_proj,0,AVars_proj) .
+    aeq_project_eqs_(Eqs,Vars,Eqs_proj,0,AVars_proj) .
 
-aeq_project_eqs([],_,[],AVars_proj,AVars_proj).
-aeq_project_eqs([CVar = ATerm|Eqs],Vars,Eqs_proj,AVars_proj_i,AVars_proj_o) :-
+aeq_project_eqs_([],_,[],AVars_proj,AVars_proj).
+aeq_project_eqs_([CVar = ATerm|Eqs],Vars,Eqs_proj,AVars_proj_i,AVars_proj_o) :-
     ( memberchk(CVar,Vars) ->
         Eqs_proj = [CVar = ATerm|Eqs0_proj],
         avariables_ic(ATerm,AVars_ATerm),
         AVars_proj_m is AVars_proj_i \/ AVars_ATerm 
     ;   Eqs_proj = Eqs0_proj,
         AVars_proj_m = AVars_proj_i),
-    aeq_project_eqs(Eqs,Vars,Eqs0_proj,AVars_proj_m,AVars_proj_o).
+    aeq_project_eqs_(Eqs,Vars,Eqs0_proj,AVars_proj_m,AVars_proj_o).
 
 %------------------------------------------------------------------------%
 % aeq_project_shrP(+,+,-)
@@ -1430,7 +2064,7 @@ aeq_project_shr_nnP([SG|Shr],AVars_proj,Shr_proj) :-
 aeq_project_shr(_Shr,0,[]) :- ! .
 aeq_project_shr(Shr,AVars_proj,Shr_proj) :-
     aeq_project_shr_nn(Shr,AVars_proj,Shr_proj_u),
-    sort(Shr_proj_u,Shr_proj).
+    mysort(Shr_proj_u,Shr_proj).
 
 aeq_project_shr_nn([],_,[]).
 aeq_project_shr_nn([SG|Shr],AVars_proj,Shr_proj) :- 
@@ -1462,17 +2096,17 @@ aeq_impose_depth_bound(AEqs_i,AEqs_o) :-
     current_bound(Depth,Type),
     ((Type == project ; aeq_bounded(AEqs_i,Depth)) ->
         AEqs_o = AEqs_i
-    ; aeq_impose_depth_bound(AEqs_i,Depth,AEqs_o)) .    %,! .
+    ; aeq_impose_depth_bound_(AEqs_i,Depth,AEqs_o)) .    %,! .
 %%         current_bound(Depth,_),
 %%         aeq_impose_depth_bound(AEqs_i,Depth,AEqs_o).
 
-aeq_impose_depth_bound(AEqs_i,Depth,aeqs(Eqs,Ann,Shr,AVars,NGrAVars)) :-
+aeq_impose_depth_bound_(AEqs_i,Depth,aeqs(Eqs,Ann,Shr,AVars,NGrAVars)) :-
     AEqs_i = aeqs(Eqs_i,_,Shr_i,_,NGrAVars_i),
     new_array(Ann_i), new_array(ASGs_i),
     aeq_depth_eqs_ann(Eqs_i,AEqs_i,Depth,Eqs,
                     info(Ann_i,0,0,[],ASGs_i,0),
                     info(Ann,AVars,_,_,ASGs_o,NLVars_o)),
-    aeq_lub_shr(Shr_i,ASGs_o,NGrAVars_i,NLVars_o,Shr),
+    aeq_lub_shr5(Shr_i,ASGs_o,NGrAVars_i,NLVars_o,Shr),
     aeq_det_ngroundvars(Shr,Ann,NGrAVars).
 
 %------------------------------------------------------------------------%
@@ -1502,7 +2136,7 @@ term_depth(Term,AEqs,0,'@'(Var_ec_i),
 %               Bound == 0 
     get_ann_aterm(AEqs,Term,Ann_T),
     aset(Var_ec_i,Ann_i,Ann_T,Ann_o),
-    Var_ic_i is 1 << Var_ec_i,
+    Var_ic_i is 18-18+1 << Var_ec_i,
     bitset_union(AVars_i,Var_ic_i,AVars_o),
     (ann_non_linear(Ann_T),!,bitset_union(NLVars_i,Var_ic_i,NLVars_o)
     ; NLVars_i = NLVars_o),
@@ -1520,7 +2154,7 @@ term_depth(T_Compound,AEqs,_Bound,'@'(Var_ec),
        ; Var_ec = Var_ec_i,
       get_ann_aterm(AEqs,T_Compound,Ann_T),
       aset(Var_ec_i,Ann_i,Ann_T,Ann_o),
-      Var_ic_i is 1 << Var_ec_i,
+      Var_ic_i is 19-19+1 << Var_ec_i,
       bitset_union(AVars_i,Var_ic_i,AVars_o),
       (ann_non_linear(Ann_T),!,bitset_union(NLVars_i,Var_ic_i,NLVars_o)
     ; NLVars_i = NLVars_o),
@@ -1536,7 +2170,7 @@ term_depth(Term,AEqs,_Bound,'@'(Var_ec_i),
     ground_aeqs(AEqs,Term),!,
 %               Term is ground
     aset(Var_ec_i,Ann_i,g,Ann_o),
-    Var_ic_i is 1 << Var_ec_i,
+    Var_ic_i is 20-20+1 << Var_ec_i,
     bitset_union(AVars_i,Var_ic_i,AVars_o),
     Var_ec_o is Var_ec_i + 1,
     avariables_ec(Term,Avars_T_ec),
@@ -1558,7 +2192,7 @@ term_depth(T_Compound,AEqs,_Bound,'@'(Var_ec),
     ; Var_ec = Var_ec_i,
     get_ann_aterm(AEqs,T_Compound,Ann_T),
     aset(Var_ec_i,Ann_i,Ann_T,Ann_o),
-    Var_ic_i is 1 << Var_ec_i,
+    Var_ic_i is 21-21+1 << Var_ec_i,
     bitset_union(AVars_i,Var_ic_i,AVars_o),
     (ann_non_linear(Ann_T),!,bitset_union(NLVars_i,Var_ic_i,NLVars_o)
     ; NLVars_i = NLVars_o),
@@ -1594,24 +2228,24 @@ aeq_det_ngroundvars(Shr,_Ann,NGrAVars) :-
 %-------------------------------------------------------------------------
 aeq_det_ngroundvars_array(array($(A0,A1,A2,A3),Size),NGrAVars) :-
     N is Size-2,
-    aeq_det_ngroundvars_array(0,N,0,A0,0,L1),
-    aeq_det_ngroundvars_array(1,N,0,A1,L1,L2),
-    aeq_det_ngroundvars_array(2,N,0,A2,L2,L3),
-    aeq_det_ngroundvars_array(3,N,0,A3,L3,NGrAVars).
+    aeq_det_ngroundvars_array_(0,N,0,A0,0,L1),
+    aeq_det_ngroundvars_array_(1,N,0,A1,L1,L2),
+    aeq_det_ngroundvars_array_(2,N,0,A2,L2,L3),
+    aeq_det_ngroundvars_array_(3,N,0,A3,L3,NGrAVars).
 
-aeq_det_ngroundvars_array(_K,_N,_M,$,L,L) :- ! .
-aeq_det_ngroundvars_array(K,0,M,Val,Lin,Lout) :- !,
+aeq_det_ngroundvars_array_(_K,_N,_M,$,L,L) :- ! .
+aeq_det_ngroundvars_array_(K,0,M,Val,Lin,Lout) :- !,
     (Val = g ->
         Lout = Lin
-    ; N is K+M,N_ic is 1 << N,
+    ; N is K+M,N_ic is 22-22+1 << N,
       bitset_union(N_ic,Lin,Lout)).
-aeq_det_ngroundvars_array(K,N,M,$(A0,A1,A2,A3),Lin,Lout):-
+aeq_det_ngroundvars_array_(K,N,M,$(A0,A1,A2,A3),Lin,Lout):-
     N1 is N-2,
     M1 is (K+M)<<2,
-    aeq_det_ngroundvars_array(0,N1,M1,A0,Lin,L0),
-    aeq_det_ngroundvars_array(1,N1,M1,A1,L0,L1),
-    aeq_det_ngroundvars_array(2,N1,M1,A2,L1,L2),
-    aeq_det_ngroundvars_array(3,N1,M1,A3,L2,Lout).
+    aeq_det_ngroundvars_array_(0,N1,M1,A0,Lin,L0),
+    aeq_det_ngroundvars_array_(1,N1,M1,A1,L0,L1),
+    aeq_det_ngroundvars_array_(2,N1,M1,A2,L1,L2),
+    aeq_det_ngroundvars_array_(3,N1,M1,A3,L2,Lout).
 
 
 %-------------------------------------------------------------------------
@@ -1621,9 +2255,9 @@ aeq_impose_depth_bound_proj(AEqs_i,AEqs_o) :-
     current_bound(Depth,Type),
     ((Type == solve ; aeq_bounded(AEqs_i,Depth)),!,
          AEqs_o = AEqs_i
-    ; aeq_impose_depth_bound(AEqs_i,Depth,AEqs_o)) .
+    ; aeq_impose_depth_bound_(AEqs_i,Depth,AEqs_o)) .
 %%      current_bound(Depth,_),
-%%      aeq_impose_depth_bound(AEqs_i,Depth,AEqs_o).
+%%      aeq_impose_depth_bound_(AEqs_i,Depth,AEqs_o).
 
     aeq_bounded(AEqs_i,Depth) :-
             AEqs_i = aeqs(Eqs,_,_,_,_),
@@ -1672,8 +2306,8 @@ aeq_impose_depth_bound_proj(AEqs_i,AEqs_o) :-
 aeq_lub(AEqs,'$bottom',AEqs) :- ! .
 aeq_lub('$bottom',AEqs,AEqs) :- !.
 aeq_lub(AEqs1,AEqs2,aeqs(Eqs,Ann,Shr,AVars,NGrAVars)) :-
-    AEqs1 = aeqs(Eqs1,_,Shr1,_,NGr1),sort(Eqs1,Eqs1_s),
-    AEqs2 = aeqs(Eqs2,_,Shr2,_,NGr2),sort(Eqs2,Eqs2_s),
+    AEqs1 = aeqs(Eqs1,_,Shr1,_,NGr1),mysort(Eqs1,Eqs1_s),
+    AEqs2 = aeqs(Eqs2,_,Shr2,_,NGr2),mysort(Eqs2,Eqs2_s),
     new_array(Ann_i), 
     new_array(ASGs1_i),new_array(ASGs2_i),
     aeq_lub_eqs_ann(Eqs1_s,AEqs1,Eqs2_s,AEqs2,Eqs,
@@ -1719,16 +2353,16 @@ term_lub(T1,AEqs1,T2,AEqs2,'@'(Tlub_ec),Ann_lub_i,Ann_lub_o,
             ; Ann_lub_i = ann_lub(Ann_i,AVars_i,Tlub_ec,NLin_i),
               Ann_lub_o = ann_lub(Ann_o,AVars_o,VN_o,NLin_o),
               aeq_lub_ann(T1,AEqs1,T2,AEqs2,Tlub_ec,Ann_i,Ann_o,Item),
-              Tlub_ic is 1 << Tlub_ec,
+              Tlub_ic is 23-23+1 << Tlub_ec,
               bitset_union(AVars_i,Tlub_ic,AVars_o),
               (ann_non_linear(Item),!,bitset_union(NLin_i,Tlub_ic,NLin_o)
               ; NLin_i = NLin_o),
               VN_o is Tlub_ec + 1,
               Sigma_o = [(T1,T2) - Tlub_ec | Sigma_i ],
-              update_asgs(T1,T2,Tlub_ic,ASGs_i,ASGs_o)
+              update_asgs5(T1,T2,Tlub_ic,ASGs_i,ASGs_o)
             ) .
 
-    update_asgs(T1,T2,Var_ic,(ASGs1_i,ASGs2_i),(ASGs1_o,ASGs2_o)) :-
+    update_asgs5(T1,T2,Var_ic,(ASGs1_i,ASGs2_i),(ASGs1_o,ASGs2_o)) :-
             avariables_ec(T1,Avars1_ec),
             avariables_ec(T2,Avars2_ec),
             update_asgs_list(Avars1_ec,Var_ic,ASGs1_i,ASGs1_o),
@@ -1748,7 +2382,7 @@ aeq_lub_shr(Shr1,Shr2,(ASGs1_i,ASGs2_i),NGr1,NGr2,NLin,Shr) :-
       aeq_lub_shr_accS(Shr2,ASGs2_i,Sofar,Shr)
     ) .
 
-aeq_lub_shr(Shr,ASGs_i,NGr,NLin,Shr_o) :-
+aeq_lub_shr5(Shr,ASGs_i,NGr,NLin,Shr_o) :-
     (aeq_current_sharing(pair),!,
       aeq_lub_shr_accP(Shr,ASGs_i,NGr,ps(NLin,[]),Shr_o)
     ; aeq_lub_shr_accS(Shr,ASGs_i,[],Shr_o)
@@ -1773,14 +2407,14 @@ aeq_lub_shr(Shr,ASGs_i,NGr,NLin,Shr_o) :-
     aeq_add_cartprod_Gr([],_ASGs_lic,PS,PS) .
     aeq_add_cartprod_Gr([NGr_ec|T],ASGs_lic,PS_i,PS_o) :-
             aref(NGr_ec,ASGs_lic,NGr_ASG_lic),
-            aeq_add_cartprod_Gr(NGr_ASG_lic,PS_i,PS_m),
+            aeq_add_cartprod_Gr_(NGr_ASG_lic,PS_i,PS_m),
             aeq_add_cartprod_Gr(T,ASGs_lic,PS_m,PS_o) .
 
-            aeq_add_cartprod_Gr([],PS,PS) .
-            aeq_add_cartprod_Gr([_],PS,PS) :- !.
-            aeq_add_cartprod_Gr([NGr_ic|T],PS_i,PS_o) :-
+            aeq_add_cartprod_Gr_([],PS,PS) .
+            aeq_add_cartprod_Gr_([_],PS,PS) :- !.
+            aeq_add_cartprod_Gr_([NGr_ic|T],PS_i,PS_o) :-
                     aeq_add_cartprod_Gr2(T,NGr_ic,PS_i,PS_m),
-                    aeq_add_cartprod_Gr(T,PS_m,PS_o) .
+                    aeq_add_cartprod_Gr_(T,PS_m,PS_o) .
 
             aeq_add_cartprod_Gr2([],_NGr_ic,PS,PS) .
             aeq_add_cartprod_Gr2([H_ic|T],NGr_ic,ps(I,E),ps(I_o,E_o)) :- !,
@@ -1791,16 +2425,16 @@ aeq_lub_shr(Shr,ASGs_i,NGr,NLin,Shr_o) :-
     aeq_add_cartprod_In([],_ASGs_lic,PS,PS) .
     aeq_add_cartprod_In([InS_ec|T],ASGs_lic,PS_i,PS_o) :-
             aref(InS_ec,ASGs_lic,InS_ASG_lic),
-            aeq_add_cartprod_In(InS_ASG_lic,PS_i,PS_m),
+            aeq_add_cartprod_In_(InS_ASG_lic,PS_i,PS_m),
             aeq_add_cartprod_In(T,ASGs_lic,PS_m,PS_o) .
 
-            aeq_add_cartprod_In([],PS,PS) .
-            aeq_add_cartprod_In([InS_ic],ps(I,E),ps(I_o,E)) :- !,
+            aeq_add_cartprod_In_([],PS,PS) .
+            aeq_add_cartprod_In_([InS_ic],ps(I,E),ps(I_o,E)) :- !,
                      bitset_union(InS_ic,I,I_o) .
-            aeq_add_cartprod_In([InS_ic|T],ps(I,E),PS_o) :-
+            aeq_add_cartprod_In_([InS_ic|T],ps(I,E),PS_o) :-
                     bitset_union(InS_ic,I,I_m),
                     aeq_add_cartprod_Gr2(T,InS_ic,ps(I_m,E),PS_m),
-                    aeq_add_cartprod_In(T,PS_m,PS_o) .
+                    aeq_add_cartprod_In_(T,PS_m,PS_o) .
 
     aeq_add_cartprod_Ex([],_ASGs_lic,PS,PS) .
     aeq_add_cartprod_Ex([[E1_ec,E2_ec]|T],ASGs_lic,PS_i,PS_o) :-
@@ -1844,7 +2478,7 @@ aeq_lub_shr(Shr,ASGs_i,NGr,NLin,Shr_o) :-
 % the renaming in the array ASGs_i, and finally checks the sharing.
 %-------------------------------------------------------------------------
 aeq_identical_nb(aeqs(Eqs1,Ann1,Shr1,AVars_ic,_),aeqs(Eqs2,Ann2,Shr2,_,_)) :-
-    sort(Eqs1,Eqs1_s),sort(Eqs2,Eqs2_s),sort_sh(Shr2,Shr2_s),
+    mysort(Eqs1,Eqs1_s),mysort(Eqs2,Eqs2_s),sort_sh(Shr2,Shr2_s),
     ( Eqs1_s == Eqs2_s ->
         sort_sh(Shr1,Shr2_s),
         bitcode_to_set(AVars_ic,SetVars),
@@ -1857,9 +2491,9 @@ aeq_identical_nb(aeqs(Eqs1,Ann1,Shr1,AVars_ic,_),aeqs(Eqs2,Ann2,Shr2,_,_)) :-
 
 sort_sh(ps(X,Y_u),Sort):- !,
     Sort = ps(X,Y),
-    sort(Y_u,Y).
+    mysort(Y_u,Y).
 sort_sh(X_u,X):- 
-    sort(X_u,X).
+    mysort(X_u,X).
 
 aeq_iden_ann([],_,_).
 aeq_iden_ann([Var_ec|SetVars],Ann1,Ann2):-
@@ -1891,7 +2525,7 @@ avar_renaming('@'(T1_ec),Ann1,T2,Ann2,Sigma_i,Sigma_o,ASGs_i,ASGs_o) :- !,
          aref(T1_ec,Ann1,A),
          aref(T2_ec,Ann2,A),
          aset(T2_ec,Sigma_i,T1_ec,Sigma_o),
-         T2_ic is 1 << T2_ec,
+         T2_ic is 24-24+1 << T2_ec,
          update_asgs_list([T1_ec],T2_ic,ASGs_i,ASGs_o)
      ; T2_sigma == T1_ec, Sigma_i = Sigma_o,ASGs_i = ASGs_o).
 avar_renaming([],_Ann1,[],_Ann2,Sigma,Sigma,ASGs,ASGs) :- ! .
@@ -1900,15 +2534,15 @@ avar_renaming([H1|T1],Ann1,[H2|T2],Ann2,Sigma_i,Sigma_o,ASGs_i,ASGs_o) :- !,
     avar_renaming(T1,Ann1,T2,Ann2,Sigma_new,Sigma_o,ASGs_new,ASGs_o).
 avar_renaming(T1,Ann1,T2,Ann2,Sigma_i,Sigma_o,ASGs_i,ASGs_o) :-
     functor(T2,Func,Arity),functor(T1,Func,Arity),
-    avar_renaming(Arity,T1,Ann1,T2,Ann2,Sigma_i,Sigma_o,ASGs_i,ASGs_o).
+    avar_renaming_(Arity,T1,Ann1,T2,Ann2,Sigma_i,Sigma_o,ASGs_i,ASGs_o).
 
-avar_renaming(0,_,_,_,_,Sigma,Sigma,ASGs,ASGs):- !.
-avar_renaming(Arity,T1,Ann1,T2,Ann2,Sigma_i,Sigma_o,ASGs_i,ASGs_o):-
+avar_renaming_(0,_,_,_,_,Sigma,Sigma,ASGs,ASGs):- !.
+avar_renaming_(Arity,T1,Ann1,T2,Ann2,Sigma_i,Sigma_o,ASGs_i,ASGs_o):-
     arg(Arity,T1,Arg1),
     arg(Arity,T2,Arg2),
     avar_renaming(Arg1,Ann1,Arg2,Ann2,Sigma_i,Sigma_m,ASGs_i,ASGs_m),
     Arity0 is Arity - 1,
-    avar_renaming(Arity0,T1,Ann1,T2,Ann2,Sigma_m,Sigma_o,ASGs_m,ASGs_o).
+    avar_renaming_(Arity0,T1,Ann1,T2,Ann2,Sigma_m,Sigma_o,ASGs_m,ASGs_o).
 
 %-------------------------------------------------------------------------
 % shr_rename(+,+,-)
@@ -1921,7 +2555,7 @@ shr_rename([],_ASGs_array,[]) .
 shr_rename([SG |Tail],ASGs_array,[SG_ren |Tail_ren]) :-
     bitcode_to_set(SG,SG_ec),
     union_asgs(SG_ec,ASGs_array,0,SG_ren),
-    shr_rename(Tail,ASGs_array,Tail_ren) .
+    shr_rename(Tail,ASGs_array,Tail_ren).
 shr_rename(ps(InS,ExS),ASGs_array,ps(InS_ren,ExS_ren)) :- 
     bitcode_to_set(InS,InS_ec),
     union_asgs(InS_ec,ASGs_array,0,InS_ren),
@@ -1961,7 +2595,7 @@ shr_rename(ps(InS,ExS),ASGs_array,ps(InS_ren,ExS_ren)) :-
 aeq_leq_nb(AEqs1,AEqs2) :-
     AEqs1 = aeqs(Eqs1,_,Shr1,_,_),
     AEqs2 = aeqs(Eqs2,_,Shr2,_,_),
-    sort(Eqs1,Eqs1_s),sort(Eqs2,Eqs2_s),
+    mysort(Eqs1,Eqs1_s),mysort(Eqs2,Eqs2_s),
     new_array(Sigma_i),new_array(ASGs_i),
     aeq_leq_eqs_ann(Eqs1_s,AEqs1,Eqs2_s,AEqs2,Sigma_i,ASGs_i,ASGs_o),
     aeq_leq_shr(Shr1,Shr2,ASGs_o).
@@ -1985,15 +2619,15 @@ can_be_mapped(T1,AEqs1,'@'(T2_ec),AEqs2,Sigma_i,Sigma_o,ASGs_i,ASGs_o) :- !,
        Sigma_i = Sigma_o,ASGs_i = ASGs_o ) .
 can_be_mapped(T1,AEqs1,T2,AEqs2,Sigma_i,Sigma_o,ASGs_i,ASGs_o) :-
     functor(T2,Func,Arity),functor(T1,Func,Arity),
-    can_be_mapped(Arity,T1,AEqs1,T2,AEqs2,Sigma_i,Sigma_o,ASGs_i,ASGs_o).
+    can_be_mapped_(Arity,T1,AEqs1,T2,AEqs2,Sigma_i,Sigma_o,ASGs_i,ASGs_o).
 
-can_be_mapped(0,_,_,_,_,Sigma,Sigma,ASGs,ASGs):- !.
-can_be_mapped(Arity,T1,AEqs1,T2,AEqs2,Sigma_i,Sigma_o,ASGs_i,ASGs_o):-
+can_be_mapped_(0,_,_,_,_,Sigma,Sigma,ASGs,ASGs):- !.
+can_be_mapped_(Arity,T1,AEqs1,T2,AEqs2,Sigma_i,Sigma_o,ASGs_i,ASGs_o):-
     arg(Arity,T1,Arg1),
     arg(Arity,T2,Arg2),
     can_be_mapped(Arg1,AEqs1,Arg2,AEqs2,Sigma_i,Sigma_m,ASGs_i,ASGs_m),
     Arity0 is Arity - 1,
-    can_be_mapped(Arity0,T1,AEqs1,T2,AEqs2,Sigma_m,Sigma_o,ASGs_m,ASGs_o).
+    can_be_mapped_(Arity0,T1,AEqs1,T2,AEqs2,Sigma_m,Sigma_o,ASGs_m,ASGs_o).
 
 %-------------------------------------------------------------------------
 % aeq_leq_ann(+,+,+,+)
@@ -2033,7 +2667,7 @@ aeq_leq_shr(ps(In1,Ex1),ps(In2,Ex2),ASGs_array) :-
 %-------------------------------------------------------------------------
 update_asgs(T1,'@'(T2),ASGs_i,ASGs_o) :-
     avariables_ec(T1,Avars_ec),
-    T2_ic is 1 << T2,
+    T2_ic is 25-25+1 << T2,
     update_asgs_list(Avars_ec,T2_ic,ASGs_i,ASGs_o) .
 
 update_asgs_list([],_T2_ic,ASGs,ASGs) .
@@ -2118,7 +2752,7 @@ aeq_init_new_varsPS([CVar|CVars],Nb_i,aeqs(Eqs_i,Ann_i,Shr,AVars_i,NGrAVars_i),A
 % represented by the bitsetcode AVars_ic.
 %-------------------------------------------------------------------------
 aeq_select_unused_var(Nb,AVars_ic,Nb_ec,Nb_ic) :-
-    Var_ic is 1 << Nb,
+    Var_ic is 26-26+1 << Nb,
     (bitset_member(Var_ic,AVars_ic) ->
       Nb_new is Nb + 1,
       aeq_select_unused_var(Nb_new,AVars_ic,Nb_ec,Nb_ic)
@@ -2335,8 +2969,8 @@ aeq_sondergaard(A,T,T_ic,AEqs,
               ; PShr_o = ps(A_ic,E)
              )
             ; (linear_aeqs(AEqs,T),!,
-                aeq_add_cartprod_In(NGrT_lic,ps(0,E),PShr_o)
-              ; aeq_add_cartprod_In(NGrT_lic,ps(A_ic,E),PShr_o)
+                aeq_add_cartprod_In_(NGrT_lic,ps(0,E),PShr_o)
+              ; aeq_add_cartprod_In_(NGrT_lic,ps(A_ic,E),PShr_o)
              )
             ) .
 
@@ -2381,7 +3015,7 @@ aeq_jacobs_langen(_A,_T,_T_ic,_AEqs,'$bottom') .
               Shr_o = Delta_Bar
             ; (free_aeqs(AEqs,A) ; free_aeqs(AEqs,T)),!,
 %                 single_set_closure(Delta_A,Delta_T,Delta_Bar,Shr_oo), % us_l
-              sort(Delta_Bar,Delta_Bar_s),                          % s_l
+              mysort(Delta_Bar,Delta_Bar_s),                          % s_l
               single_set_closure(Delta_A,Delta_T,Delta_Bar_s,Shr_oo),       % s_l
 %                 sort_btree(Delta_Bar,Delta_Bar_s),                    % b_t
 %                 single_set_closure(Delta_A,Delta_T,Delta_Bar_s),      % b_t
@@ -2407,7 +3041,7 @@ aeq_jacobs_langen(_A,_T,_T_ic,_AEqs,'$bottom') .
                 full_set_closure(Delta_A,S_A) 
              ),
 %                 single_set_closure(S_A,S_T,Delta_Bar,Shr_oo), % us_l
-              sort(Delta_Bar,Delta_Bar_s),                  % s_l
+              mysort(Delta_Bar,Delta_Bar_s),                  % s_l
               single_set_closure(S_A,S_T,Delta_Bar_s,Shr_oo),       % s_l
 %                 sort_btree(Delta_Bar,Delta_Bar_s),            % b_t
 %                 single_set_closure(S_A,S_T,Delta_Bar_s),      % b_t
@@ -2424,13 +3058,13 @@ aeq_jacobs_langen(_A,_T,_T_ic,_AEqs,'$bottom') .
 
     full_set_closure(Shr_set,Closure) :-
             make_oel(Shr_set,Closure,End),
-            full_set_closure(Closure,End,Closure,End,[]) .
+            full_set_closure_(Closure,End,Closure,End,[]) .
 
-    full_set_closure(Shr_set,End,_Closure,CEnd,CEnd) :-
+    full_set_closure_(Shr_set,End,_Closure,CEnd,CEnd) :-
             Shr_set == End,! .
-    full_set_closure([H|T],End,Closure,SofarEnd,CEnd) :-
+    full_set_closure_([H|T],End,Closure,SofarEnd,CEnd) :-
             bitset_union_closure(T,SofarEnd,H,Closure,SofarEnd,SofarNewEnd),
-            full_set_closure(T,End,Closure,SofarNewEnd,CEnd) .
+            full_set_closure_(T,End,Closure,SofarNewEnd,CEnd) .
 
     bitset_union_closure(T,End,_H,_Closure,SEnd,SEnd) :-
             T == End,! .
@@ -2484,9 +3118,9 @@ ann_jacobs_langen(Ann_i,info(A,T,T_ic,AEqs,AVars_o,NGrAVars_o),Ann_o):-
     A = '@'(A_ec),
     AEqs = aeqs(_,Ann,Shr,_,_),
     aref(A_ec,Ann,ItemA),
-    get_ann_aterm(AEqs,T,LAnn,ItemT),
+    get_ann_aterm4(AEqs,T,LAnn,ItemT),
     ann_conj(ItemT,ItemA,ItemAT),
-    A_ic is 1 << A_ec,
+    A_ic is 27-27+1 << A_ec,
     ann_get_coupled_strongly(Shr,A_ic,CoupA,StrCoupA),
     ann_get_coupled_strongly(Shr,T_ic,CoupT,StrCoupT),
     ann_jacobs_langen0(Ann_i,info(ItemA,A_ic,T,T_ic,ItemT,ItemAT,CoupA,StrCoupA,CoupT,StrCoupT,LAnn,AVars_o,NGrAVars_o),Ann_o).
@@ -2500,7 +3134,7 @@ ann_jacobs_langen0(array($(A0,A1,A2,A3),Size),Info,array($(L0,L1,L2,L3),Size)) :
 
 ann_solve(_K,_N,_M,$,_Info,$) :- ! .
 ann_solve(K,0,M,Item_i,info(ItemA,A_ic,T,T_ic,ItemT,ItemAT,CoupA,StrCoupA,CoupT,StrCoupT,LAnn,AVars_ic,NGrAVars),Item_o) :- !,
-    N is K+M,N_ic is 1 << N,
+    N is K+M,N_ic is 28-28+1 << N,
     ( bitset_member(N_ic,NGrAVars) -> % (1)
          ( (ItemA = f, Item_i = f, bitset_member(N_ic,StrCoupA)) ->
              Item_o = ItemAT % (1.1)
@@ -2711,7 +3345,7 @@ aeq_add_equation_proj(Eq,CVars,AEqs,
     AEqs = aeqs(SF,_,_,_,_),
     aeq_substitute(Eq,SF,AEq),
     avariables_ic(AEq,Avars_AEq),
-    aeq_project_eqs(SF,CVars,P_SF,Avars_AEq,AVars_o),
+    aeq_project_eqs_(SF,CVars,P_SF,Avars_AEq,AVars_o),
     aeq_project_vars(AVars_o,_,AEqs,aeqs(_,Ann_o,Shr_o,AVars_o,NGrAVars_o)).
 
 aeq_add_equation_rem(Eq,CVars,aeqs(SF,Ann,Shr,AVars,NGrAVars),
@@ -2728,7 +3362,7 @@ aeq_project_eqs_rm([CVar = ATerm|Eqs],Vars,AVars_proj) :-
     aeq_project_eqs_rm(Eqs,Vars,Tail) .
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%  aux. proc. for the   `aeq_extend'  domain-dep. operation
+%%  aux. proc. for the   `aeq_extend/5'  domain-dep. operation
 %%%%%%%%%%%%
 
 aeq_union(aeqs(Eqs_pr,Ann_pr,Shr_pr,AVars_pr,NGrAVars_pr),
@@ -2740,9 +3374,8 @@ aeq_union(aeqs(Eqs_pr,Ann_pr,Shr_pr,AVars_pr,NGrAVars_pr),
                     AVars_un,Ann_un,0,Ren_array_i,Ren_array_o),
     eqs_rename(Eqs_pr,Eqs_cl,Ren_array_o,Eqs_ren-End),
     (aeq_current_sharing(pair) ->
-      shr_renameP(Shr_pr,Ren_array_o,Shr_cl,Shr_un,
-                            NGrAVars_pr,NGrAVars_cl,NGrAVars_un)
-    ; shr_rename(Shr_pr,Ren_array_o,Shr_cl,Shr_un,NGrAVars_cl,NGrAVars_un)
+      shr_renameP(Shr_pr,Ren_array_o,Shr_cl,Shr_un,NGrAVars_pr,NGrAVars_cl,NGrAVars_un)
+    ; shr_rename6(Shr_pr,Ren_array_o,Shr_cl,Shr_un,NGrAVars_cl,NGrAVars_un)
     ) .
 
     renaming_apart([],_Ann_pr,AVars,Ann,
@@ -2793,22 +3426,21 @@ aeq_union(aeqs(Eqs_pr,Ann_pr,Shr_pr,AVars_pr,NGrAVars_pr),
             bitcode_to_set(NGrAVars_pr,NGrAVars_pr_ec),
             union_asgs(NGrAVars_pr_ec,Ren_array,0,NGrAVars_pr_ren),
             bitset_union(NGrAVars_pr_ren,NGrAVars_cl,NGrAVars_un),
-            shr_rename(E_pr,Ren_array,E_cl,E_un) .
+            shr_rename4(E_pr,Ren_array,E_cl,E_un) .
 
-    shr_rename([],_Ren_array,Shr,Shr) .
-    shr_rename([SG |Tail],Ren_array,Shr_Sofar,[SG_ren |Tail_ren]) :-
+    shr_rename4([],_Ren_array,Shr,Shr) .
+    shr_rename4([SG |Tail],Ren_array,Shr_Sofar,[SG_ren |Tail_ren]) :-
             bitcode_to_set(SG,SG_ec),
             union_asgs(SG_ec,Ren_array,0,SG_ren),
-            shr_rename(Tail,Ren_array,Shr_Sofar,Tail_ren) .
+            shr_rename4(Tail,Ren_array,Shr_Sofar,Tail_ren) .
 
-    shr_rename([],_Ren_array,Shr,Shr,NGrAVars,NGrAVars) .
-    shr_rename([SG |Tail],Ren_array,Shr_Sofar,[SG_ren |Tail_ren],
+    shr_rename6([],_Ren_array,Shr,Shr,NGrAVars,NGrAVars) .
+    shr_rename6([SG |Tail],Ren_array,Shr_Sofar,[SG_ren |Tail_ren],
                     NGrAVars_i,NGrAVars_o) :-
             bitcode_to_set(SG,SG_ec),
             union_asgs(SG_ec,Ren_array,0,SG_ren),
             bitset_union(SG_ren,NGrAVars_i,NGrAVars_new),
-            shr_rename(Tail,Ren_array,Shr_Sofar,Tail_ren,
-                    NGrAVars_new,NGrAVars_o) .
+            shr_rename6(Tail,Ren_array,Shr_Sofar,Tail_ren,NGrAVars_new,NGrAVars_o) .
 
 
 %------------------------------------------------------------------------%
@@ -2819,13 +3451,14 @@ aeq_union(aeqs(Eqs_pr,Ann_pr,Shr_pr,AVars_pr,NGrAVars_pr),
 %------------------------------------------------------------------------%
 aeq_top(CVars,TopAEqs) :-
     new_array(Ann),
-    (aeq_current_sharing(pair) ->
-      aeq_topP(CVars,0,aeqs([],Ann,ps(0,[]),0,0),TopAEqs)
-    ; aeq_top(CVars,0,aeqs([],Ann,[],0,0),TopAEqs)) .
+    ( aeq_current_sharing(pair) ->
+        aeq_topP(CVars,0,aeqs([],Ann,ps(0,[]),0,0),TopAEqs)
+    ; aeq_top_(CVars,0,aeqs([],Ann,[],0,0),TopAEqs)
+    ).
 
 aeq_topP([],_Nb,TopAEqs,TopAEqs) .
 aeq_topP([CVar|CVars],Nb,aeqs(Eqs,Ann_i,Shr_i,AVars_i,NGrAVars_i),TopAEqs) :-
-    Nb_ic is 1 << Nb,
+    Nb_ic is 29-29+1 << Nb,
     bitset_union(AVars_i,Nb_ic,AVars),
     bitset_union(NGrAVars_i,Nb_ic,NGrAVars),
     top_shrP(Shr_i,Nb_ic,AVars_i,Shr),
@@ -2834,16 +3467,15 @@ aeq_topP([CVar|CVars],Nb,aeqs(Eqs,Ann_i,Shr_i,AVars_i,NGrAVars_i),TopAEqs) :-
     aeq_topP(CVars,NewNb,
             aeqs([CVar='@'(Nb)|Eqs],Ann,Shr,AVars,NGrAVars),TopAEqs) .
 
-aeq_top([],_Nb,TopAEqs,TopAEqs) .
-aeq_top([CVar|CVars],Nb,aeqs(Eqs,Ann_i,Shr_i,AVars_i,NGrAVars_i),TopAEqs) :-
-    Nb_ic is 1 << Nb,
+aeq_top_([],_Nb,TopAEqs,TopAEqs) .
+aeq_top_([CVar|CVars],Nb,aeqs(Eqs,Ann_i,Shr_i,AVars_i,NGrAVars_i),TopAEqs) :-
+    Nb_ic is 30-30+1 << Nb,
     bitset_union(AVars_i,Nb_ic,AVars),
     bitset_union(NGrAVars_i,Nb_ic,NGrAVars),
     top_shr(Shr_i,Nb_ic,[ Nb_ic| Shr_i],Shr),
     aset(Nb,Ann_i,a,Ann),
     NewNb is Nb + 1,
-    aeq_top(CVars,NewNb,
-            aeqs([CVar='@'(Nb)|Eqs],Ann,Shr,AVars,NGrAVars),TopAEqs) .
+    aeq_top_(CVars,NewNb,aeqs([CVar='@'(Nb)|Eqs],Ann,Shr,AVars,NGrAVars),TopAEqs) .
 
 
 top_shrP(ps(I_i,E_i),Nb_ic,AVars_i,ps(I_e,E_e)) :-
@@ -3018,7 +3650,7 @@ aeq_jacobs_langen_variant(A,T,Variant,AEqs,
             ; Variant == '=..',
               (free_aeqs(AEqs,A) ; free_aeqs(AEqs,T)),!,
 %                 single_set_closure(Delta_A,Delta_T,Delta_Bar,Shr_o)   % us_l
-              sort(Delta_Bar,Delta_Bar_s),                          % s_l
+              mysort(Delta_Bar,Delta_Bar_s),                          % s_l
               single_set_closure(Delta_A,Delta_T,Delta_Bar_s,Shr_o) % s_l
 %                 sort_btree(Delta_Bar,Delta_Bar_s),                    % b_t
 %                 single_set_closure(Delta_A,Delta_T,Delta_Bar_s),      % b_t
@@ -3042,7 +3674,7 @@ aeq_jacobs_langen_variant(A,T,Variant,AEqs,
               ; full_set_closure(Delta_T,S_T),
                 full_set_closure(Delta_A,S_A) 
              ),
-              sort(Delta_Bar,Delta_Bar_s),          % s_l
+              mysort(Delta_Bar,Delta_Bar_s),          % s_l
 %                 sort_btree(Delta_Bar,Delta_Bar_s),            % b_t
 %                 ss_list_to_23(Delta_Bar,Delta_Bar_s), % 23_t
               (Variant == 'arg',!,
@@ -3073,24 +3705,24 @@ aeq_jacobs_langen_variant(A,T,Variant,AEqs,
 %% :- mode  ann_free_vars(+,-) .
 ann_free_vars(array($(A0,A1,A2,A3),Size),Freevars) :-
     N is Size-2,
-    ann_free_vars(0,N,0,A0,0,F1),
-    ann_free_vars(1,N,0,A1,F1,F2),
-    ann_free_vars(2,N,0,A2,F2,F3),
-    ann_free_vars(3,N,0,A3,F3,Freevars).
+    ann_free_vars_(0,N,0,A0,0,F1),
+    ann_free_vars_(1,N,0,A1,F1,F2),
+    ann_free_vars_(2,N,0,A2,F2,F3),
+    ann_free_vars_(3,N,0,A3,F3,Freevars).
 
-    ann_free_vars(_K,_N,_M,$,Freevars,Freevars) :- ! .
-    ann_free_vars(K,0,M,f,F_in,F_out) :-
-            N is K+M,N_ic is 1 << N,
+    ann_free_vars_(_K,_N,_M,$,Freevars,Freevars) :- ! .
+    ann_free_vars_(K,0,M,f,F_in,F_out) :-
+            N is K+M,N_ic is 31-31+1 << N,
             bitset_union(F_in,N_ic,F_out),! .
-    ann_free_vars(_K,0,_M,_Item,Freevars,Freevars) :- ! .
-    ann_free_vars(K,N,M,$(A0,A1,A2,A3),F_in,F_out) :-
+    ann_free_vars_(_K,0,_M,_Item,Freevars,Freevars) :- ! .
+    ann_free_vars_(K,N,M,$(A0,A1,A2,A3),F_in,F_out) :-
             N>0,
             N1 is N-2,
             M1 is (K+M)<<2,
-            ann_free_vars(0,N1,M1,A0,F_in,F1),
-            ann_free_vars(1,N1,M1,A1,F1,F2),
-            ann_free_vars(2,N1,M1,A2,F2,F3),
-            ann_free_vars(3,N1,M1,A3,F3,F_out).
+            ann_free_vars_(0,N1,M1,A0,F_in,F1),
+            ann_free_vars_(1,N1,M1,A1,F1,F2),
+            ann_free_vars_(2,N1,M1,A2,F2,F3),
+            ann_free_vars_(3,N1,M1,A3,F3,F_out).
 
 %% %% :- mode  aeq_partition_shr(+,+,-,-,-,-) .
 %% aeq_partition_shr([],_Freevars,[],0,[],End-End) :- ! .
@@ -3165,7 +3797,7 @@ ann_free_vars(array($(A0,A1,A2,A3),Size),Freevars) :-
 %% % it will contain the set of abtsractions under which the goal is woken.
 %% %-------------------------------------------------------------------------
 %% aeq_check_cond(Conds,AEqs,Sv,Flag,WConds):-
-%%      aeq_abs_sort(AEqs,AEqs_s),
+%%      abs_sort(AEqs,AEqs_s),
 %%      aeq_check_cond(Conds,AEqs_s,Sv,[],Flag,[],WConds).
 %% 
 %% %-------------------------------------------------------------------------
@@ -3410,7 +4042,7 @@ ann_free_vars(array($(A0,A1,A2,A3),Size),Freevars) :-
 %% myspy.
 %% 
 %% my_print_aeqs(AEqs):-
-%%      aeq_abs_sort(AEqs,AEqs_s), aeq_intern_to_extern(AEqs_s,AEqsN),
+%%      abs_sort(AEqs,AEqs_s), aeq_intern_to_extern(AEqs_s,AEqsN),
 %%      write(AEqsN),nl.
 
 %% aeq_more_instantiate([],_,[],_,_).
@@ -3781,4 +4413,4 @@ proj_subarray_to_array(K, N, M, $(A0,A1,A2,A3), AVars, $(L0,L1,L2,L3) ) :-
     proj_subarray_to_array(2, N1, M1, A2, AVars, L2),
     proj_subarray_to_array(3, N1, M1, A3, AVars, L3).
 
-:- pop_prolog_flag(multi_arity_warnings).
+
