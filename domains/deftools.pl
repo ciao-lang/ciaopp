@@ -34,7 +34,6 @@
 
 :- use_module(ciaopp(p_unit), [language/1]).
 
-:- use_module(domain(delaytools), [lsign_non_linear/1]).
 :- use_module(domain(s_grshfr), [merge_no_supersets/3]).
 
 :- push_prolog_flag(multi_arity_warnings,off).
@@ -149,6 +148,9 @@ find_type0(X,Type):-
     number(X),!,
     Type = num.
 find_type0(_,herb).
+
+% :- use_module(domain(delaytools), [lsign_non_linear/1]).
+lsign_non_linear(_). % TODO: copy definition from lsign.pl?
 
 %-------------------------------------------------------------------------
 % def_abstract_var(+,+,+,+,-)                                            %
