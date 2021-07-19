@@ -23,6 +23,7 @@
     ], [assertions]).
 
 :- doc(title, "lsign domain").
+% (search "LSign DOMAIN" in this module for documentation)
 
 :- include(ciaopp(plai/plai_domain)).
 :- dom_def(lsign).

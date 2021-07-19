@@ -109,9 +109,6 @@
 
 :- use_module(ciaopp(plai/apply_assertions_old), [apply_trusted0/7]).
 
-% DTM: types for assertions
-:- use_module(domain(gr), [extrainfo/1]).
-
 :- use_module(library(messages)).
 :- use_module(library(aggregates), [setof/3]).
 :- use_module(library(terms_vars), [varset/2]).
@@ -133,6 +130,9 @@ absu([Elem|Absu]):-
 absu_elem(Var:Type):-
     var(Var),
     pure_type_term(Type).
+
+:- regtype extrainfo(_).
+extrainfo(_). % TODO: define
 
 %------------------------------------------------------------------%
 
