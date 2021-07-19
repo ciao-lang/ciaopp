@@ -48,7 +48,7 @@
 :- use_module(domain(eterms)).
 :- use_module(domain(etermsvar)).
 :- use_module(domain(svterms)).
-:- use_module(domain(deftypes)).
+:- use_module(domain(deftypes), []).
 % ===========================================================================
 :- doc(section, "Numeric domains").
 :- use_module(domain(nonrel_intervals)). % interval domain [IG]
