@@ -17,7 +17,7 @@
 % ===========================================================================
 :- doc(section, "Groundness and sharing").
 :- use_module(domain(gr)).
-:- use_module(domain(def)).
+:- use_module(domain(def), []).
 :- use_module(domain(sharing), []).
 :- use_module(domain(sharefree)).
 :- use_module(domain(sharefree_non_var)).

@@ -1,27 +1,24 @@
-/*             Copyright (C)1990-94 UPM-CLIP                            */
+:- module(def, [], [assertions, datafacts]).
 
-:- module(def,
-    [ def_asub_to_native/5, 
-      def_call_to_entry/9,
-      def_call_to_success_fact/9,
-      def_compute_lub/2,
-      def_compute_lub_el/3,
-      def_exit_to_prime/7,
-      def_extend/5,
-      def_glb/3,      
-      def_input_user_interface/5,  
-      def_input_interface/4,  
-      def_less_or_equal/2,
-      def_project/5,
-      def_handle_bottom_project/3,  % JN needed by sharedef.pl
-      def_abs_sort/2,       
-      def_special_builtin/5,
-      def_success_builtin/6,
-      def_unknown_call/4,
-      def_unknown_entry/3,
-      def_empty_entry/3
-    ],
-    [assertions, datafacts]).
+:- export(def_asub_to_native/5). 
+:- export(def_call_to_entry/9).
+:- export(def_call_to_success_fact/9).
+:- export(def_compute_lub/2).
+:- export(def_compute_lub_el/3).
+:- export(def_exit_to_prime/7).
+:- export(def_extend/5).
+:- export(def_glb/3).      
+:- export(def_input_user_interface/5).  
+:- export(def_input_interface/4).  
+:- export(def_less_or_equal/2).
+:- export(def_project/5).
+:- export(def_handle_bottom_project/3).  % JN needed by sharedef.pl
+:- export(def_abs_sort/2).       
+:- export(def_special_builtin/5).
+:- export(def_success_builtin/6).
+:- export(def_unknown_call/4).
+:- export(def_unknown_entry/3).
+:- export(def_empty_entry/3).
 
 :- include(ciaopp(plai/plai_domain)).
 :- dom_def(def).
@@ -42,24 +39,12 @@
 :- dom_impl(def, unknown_call/4).
 :- dom_impl(def, unknown_entry/3).
 :- dom_impl(def, empty_entry/3).
-% :- dom_impl(def, propagate_downwards_closed(ASub1,ASub2,ASub), downwards_closed(ASub1,ASub2,ASub)).
-% :- dom_impl(def, del_real_conjoin(ASub1,ASub2,ASub), real_conjoin(ASub1,ASub2,ASub)).
-% :- dom_impl(def, del_hash(ASub,Vars,N), hash(ASub,Vars,N)).
-% :- dom_impl(def, more_instantiate(ASub1,ASub2), less_or_equal(ASub2,ASub1)).
-% :- dom_impl(def, convex_hull(Old,_,Old)).
-% :- dom_impl(def, compute_lub_el(ASub1,ASub2,ASub), compute_lub_el(ASub1,ASub2,ASub)).
-% :- dom_impl(def, del_check_cond(Cond,ASub,Sv,Flag,WConds), check_cond(Cond,ASub,Sv,Flag,WConds)).
-% :- dom_impl(def, del_impose_cond(LCond,Sv,ASub,LASub), impose_cond(LCond,Sv,ASub,LASub)).
-%
-%% def_check_cond(_,_,_,_,_). 
-%% def_downwards_closed(_,_,_).
-%% def_hash(_,_,_).
-%% def_impose_cond(_,_,_,_).
-%% def_real_conjoin(_,_,_).
+
 % TODO: body_succ_builtin/9: (old comment) these do not have special(_), so ok: AbsInt \== def, AbsInt \== fr, AbsInt \== frdef
 
 %% :- doc(bug,"1. length/2 is not working properly.").
 
+/*             Copyright (C)1990-94 UPM-CLIP                            */
 % -------------------------------------------------------------------------------
 % Note: This file contains the definiteness abstract domain and abstract
 %       functions for CLP languages by
@@ -264,6 +249,7 @@ def_compute_lub([Constr1,Constr2|Xs],Lub):-
     def_compute_lub_el(Constr1,Constr2,LubConstr),
     def_compute_lub([LubConstr|Xs],Lub).
 
+% :- dom_impl(def, compute_lub_el(ASub1,ASub2,ASub), compute_lub_el(ASub1,ASub2,ASub)).
 def_compute_lub_el('$bottom',Constr,Constr):- !.
 def_compute_lub_el(a(G1,S1),a(G2,S2),a(LubG,LubS)):- !,
     ord_intersection(G1,G2,LubG),
@@ -804,6 +790,7 @@ def_each_subset0([_|SS1],S0):-
 %% % groundness from ACns2 to ACns1. An then propagate it back.
 %% %-------------------------------------------------------------------------
 %% 
+%% :- dom_impl(def, propagate_downwards_closed(ASub1,ASub2,ASub), downwards_closed(ASub1,ASub2,ASub)).
 %% def_downwards_closed(a(G1,D1),a(G2,D2),ACns):- 
 %%      merge(G1,G2,G),
 %%      def_conjunct_constr(a(G,[]),a(G1,D1),Temp),
@@ -867,3 +854,15 @@ def_each_subset0([_|SS1],S0):-
 %%      def_conjunct_constr(a(Gr,[]),a(GOld,SSOld),ASub),
 %%      def_conjunct_constr(ASub,a(GOld,SSOld),Conj).
 
+% :- dom_impl(def, more_instantiate(ASub1,ASub2), less_or_equal(ASub2,ASub1)).
+% :- dom_impl(def, convex_hull(Old,_,Old)).
+%
+% :- dom_impl(def, del_check_cond(Cond,ASub,Sv,Flag,WConds), check_cond(Cond,ASub,Sv,Flag,WConds)).
+%% def_check_cond(_,_,_,_,_). 
+%% def_downwards_closed(_,_,_).
+%% :- dom_impl(def, del_hash(ASub,Vars,N), hash(ASub,Vars,N)).
+%% def_hash(_,_,_).
+% :- dom_impl(def, del_impose_cond(LCond,Sv,ASub,LASub), impose_cond(LCond,Sv,ASub,LASub)).
+%% def_impose_cond(_,_,_,_).
+%% :- dom_impl(def, del_real_conjoin(ASub1,ASub2,ASub), real_conjoin(ASub1,ASub2,ASub)).
+%% def_real_conjoin(_,_,_).

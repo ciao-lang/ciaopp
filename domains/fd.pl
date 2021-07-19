@@ -44,7 +44,23 @@
 :- dom_impl(frdef, unknown_entry/3).
 :- dom_impl(frdef, empty_entry/3).
 
-:- use_module(domain(def)).
+:- use_module(domain(def), [
+    def_call_to_entry/9,
+    def_exit_to_prime/7,
+    def_project/5,
+    def_compute_lub/2,
+    def_abs_sort/2,
+    def_extend/5,
+    def_call_to_success_fact/9,
+    def_special_builtin/5,
+    def_success_builtin/6,
+    def_input_user_interface/5,
+    def_input_interface/4,
+    def_asub_to_native/5,
+    def_unknown_call/4,
+    def_unknown_entry/3,
+    def_less_or_equal/2
+]).
 :- use_module(domain(fr_sets)).
 :- use_module(domain(fr_shared)).
 :- use_module(domain(fr_top), [fr_special_builtin/5]).

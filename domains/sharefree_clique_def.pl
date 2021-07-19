@@ -4,9 +4,6 @@
 :- doc(author, "Jorge Navas").
 % Copyright (C) 2004-2019 The Ciao Development Team
 
-:- use_module(domain(sharefree_clique), [
-    sharefree_clique_input_interface/4
-   ]).
 :- include(ciaopp(plai/plai_domain)).
 :- dom_def(sharefree_clique_def).
 :- dom_impl(sharefree_clique_def, call_to_entry/9).
@@ -82,12 +79,24 @@
     sharefree_clique_less_or_equal/2,
     sharefree_clique_call_to_success_fact/9,
     sharefree_clique_compute_lub_el/3,
+    sharefree_clique_input_interface/4,
     sharefree_clique_input_user_interface/5,
     sharefree_clique_unknown_call/4,
     sharefree_clique_empty_entry/3,
     sharefree_clique_special_builtin/5
    ]).
-:- use_module(domain(def)).
+:- use_module(domain(def), [
+    def_call_to_entry/9,
+    def_exit_to_prime/7,
+    def_extend/5,
+    def_project/5,
+    def_abs_sort/2,
+    def_glb/3,
+    def_call_to_success_fact/9,
+    def_compute_lub_el/3,
+    def_unknown_entry/3,
+    def_special_builtin/5
+]).
 
 :- use_module(library(messages), [warning_message/1, warning_message/2]).
 
