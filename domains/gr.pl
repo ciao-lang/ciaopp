@@ -1,27 +1,4 @@
-:- module(gr,[
-    gr_call_to_entry/9,
-    gr_exit_to_prime/7,
-    gr_project/5,
-    gr_extend/5,
-    gr_compute_lub/2,
-    gr_glb/3,
-    gr_less_or_equal/2,
-    %gr_compute_lub_el/3,
-    %gr_extend_free/3,
-    gr_abs_sort/2,
-    gr_call_to_success_fact/9,
-    gr_special_builtin/5,
-    gr_success_builtin/6,
-    gr_call_to_success_builtin/6,
-    gr_input_interface/4,
-    gr_input_user_interface/5,
-    gr_asub_to_native/5,
-    %gr_output_interface/2,
-    gr_unknown_call/4,
-    gr_unknown_entry/3,
-    gr_empty_entry/3,
-    extrainfo/1
-   ], [assertions,regtypes,basicmodes,datafacts,nativeprops]).
+:- module(gr, [], [assertions,regtypes,basicmodes,datafacts,nativeprops]).
 
 :- doc(title,"Simple groundness abstract domain").
 :- doc(author, "Claudio Vaucheret").
@@ -82,29 +59,6 @@ The abstract domain lattice is:
 % introduced for a variable, but unnecessary code for handling 'ng'
 % varibles might remain.
 
-:- include(ciaopp(plai/plai_domain)).
-:- dom_def(gr).
-:- dom_impl(gr, call_to_entry/9).
-:- dom_impl(gr, exit_to_prime/7).
-:- dom_impl(gr, project/5).
-:- dom_impl(gr, compute_lub/2).
-:- dom_impl(gr, abs_sort/2).
-:- dom_impl(gr, extend/5).
-:- dom_impl(gr, less_or_equal/2).
-:- dom_impl(gr, glb/3).
-:- dom_impl(gr, call_to_success_fact/9).
-:- dom_impl(gr, special_builtin/5).
-:- dom_impl(gr, success_builtin/6).
-:- dom_impl(gr, call_to_success_builtin/6).
-:- dom_impl(gr, input_interface/4).
-:- dom_impl(gr, input_user_interface/5).
-:- dom_impl(gr, asub_to_native/5).
-:- dom_impl(gr, unknown_call/4).
-:- dom_impl(gr, unknown_entry/3).
-:- dom_impl(gr, empty_entry/3).
-% :- dom_impl(gr, compute_lub_el(ASub1,ASub2,ASub), compute_lub_el(ASub1,ASub2,ASub)).
-% :- dom_impl(gr, extend_free(ASub1,Vars,ASub), extend_free(ASub1,Vars,ASub)).
-
 :- use_module(engine(io_basic)).
 :- use_module(library(messages), [warning_message/2]).
 :- use_module(library(sort)).
@@ -112,23 +66,26 @@ The abstract domain lattice is:
 :- use_module(library(terms_check), [variant/2]).
 :- use_module(library(sets), [merge/3, ord_subtract/3]).
 
-:- doc(doinclude,gr_asub/1).
-:- doc(doinclude,gr_asub_elem/1).
+:- include(ciaopp(plai/plai_domain)).
+:- dom_def(gr, [default]).
+
+:- doc(doinclude,asub/1).
+:- doc(doinclude,asub_elem/1).
 :- doc(doinclude,gr_mode/1).
-:- doc(doinclude,gr_extrainfo/1).
+:- doc(doinclude,extrainfo/1).
 :- doc(doinclude,binds/1).
 :- doc(doinclude,binding/1).
 
 % :- compilation_fact(check_wellformed_asub).
 :- if(defined(check_wellformed_asub)).
-:- prop gr_asub(A)
+:- prop asub(A)
    # "@var{A} is a well-formed abstract substitution of the gr domain.".
-gr_asub('$bottom').
-gr_asub([]).
-gr_asub([A/M|Asub]):- 
-    gr_asub_elem(A/M),
+asub('$bottom').
+asub([]).
+asub([A/M|Asub]):- 
+    asub_elem(A/M),
     not_unified(Asub,A),
-    gr_asub(Asub).
+    asub(Asub).
 
 :- prop not_unified/2
    #"This property may be violated if the domain operations are called with
@@ -142,17 +99,17 @@ not_unified([V/_|R],A) :-
     not_unified(R,A).
 
 :- else.
-:- prop gr_asub(A)
+:- prop asub(A)
    # "@var{A} is a well-formed abstract substitution of the gr domain.".
-gr_asub('$bottom').
-gr_asub([]).
-gr_asub([E|Asub]):- % cheaper check
-    gr_asub_elem(E),
-    gr_asub(Asub).
+asub('$bottom').
+asub([]).
+asub([E|Asub]):- % cheaper check
+    asub_elem(E),
+    asub(Asub).
 :- endif.
 
-:- prop gr_asub_elem(E) # "@var{E} is a single substitution".
-gr_asub_elem(Var/Mode):-
+:- prop asub_elem(E) # "@var{E} is a single substitution".
+asub_elem(Var/Mode):-
     var(Var),
     gr_mode(Mode).
 
@@ -161,14 +118,10 @@ gr_mode(g).
 gr_mode(ng).
 gr_mode(any).
 
-:- prop extrainfo(E).
-extrainfo(E) :-
-    gr_extrainfo(E).
-
-:- prop gr_extrainfo(E) # "@var{E} is a par (gr_asub,binds)".
-gr_extrainfo(yes).
-gr_extrainfo((A,B)):-
-    gr_asub(A),
+:- prop extrainfo(E) # "@var{E} is a par (asub,binds)".
+extrainfo(yes).
+extrainfo((A,B)):-
+    asub(A),
     binds(B).
 
 :- prop binds(B) # "@var{B} is a list of bindings".
@@ -182,55 +135,58 @@ binding((X,Term,Vars)):-
     list(Vars).
 
 %-----------------------------------------------------------------------
-% gr_unknown_entry(+,+,-)                                              |
-% gr_unknown_entry(Sg,Qv,Call)                                         |
+% unknown_entry(+,+,-)                                                 |
+% unknown_entry(Sg,Qv,Call)                                            |
 % The top value is  X/any forall X in the set of variables             |
 %-----------------------------------------------------------------------
-:- pred gr_unknown_entry(+Sg,+Qv,-Call)
-   : cgoal * list * term => gr_asub(Call) + (not_fails, is_det)
+:- dom_impl(_, unknown_entry/3, [noq]).
+:- pred unknown_entry(+Sg,+Qv,-Call)
+   : cgoal * list * term => asub(Call) + (not_fails, is_det)
    #"Gives the ``top'' value for the variables involved in a literal whose
    definition is not present, and adds this top value to Call. In this domain
    the top value is X/any forall X in the set of variables".
-gr_unknown_entry(_Sg,Qv,Call):-
-    gr_create_values(Qv,Call,any).
+unknown_entry(_Sg,Qv,Call):-
+    create_values(Qv,Call,any).
 
 %-----------------------------------------------------------------------
-% gr_create_values(+,-,+)                                              |
+% create_values(+,-,+)                                                 |
 % create_values(Vars,Asub,Value)                                       |
 % Forall X in Vars, X/Value is in Asub                                 |
 %-----------------------------------------------------------------------
-:- pred gr_create_values(+Vars,-Asub,+Value)
-   : list * term * gr_mode => gr_asub(Asub) + (not_fails, is_det)
+:- pred create_values(+Vars,-Asub,+Value)
+   : list * term * gr_mode => asub(Asub) + (not_fails, is_det)
    #"Forall @var{X} in @var{Vars}, @var{X}/@var{Value} is in @var{Asub}".
-gr_create_values([],[],_Value).
-gr_create_values([X|Xs],[X/Value|New],Value):-
-    gr_create_values(Xs,New,Value).
+create_values([],[],_Value).
+create_values([X|Xs],[X/Value|New],Value):-
+    create_values(Xs,New,Value).
 
-:- pred gr_empty_entry(+Sg,+Vars,-Entry)
-   : cgoal * list * term => gr_asub(Entry) + (not_fails, is_det)
+:- dom_impl(_, empty_entry/3, [noq]).
+:- pred empty_entry(+Sg,+Vars,-Entry)
+   : cgoal * list * term => asub(Entry) + (not_fails, is_det)
    # "Gives the ``empty'' value in this domain for a given set of variables
    @var{Vars}, resulting in the abstract substitution @var{Entry}. I.e., obtains
    the abstraction of a substitution in which all variables @var{Vars} are
    unbound: free and unaliased. In this domain the empty value is equivalent to
    the unknown value".
-gr_empty_entry(Sg,Vars,Entry):- 
-    gr_unknown_entry(Sg,Vars,Entry).
+empty_entry(Sg,Vars,Entry):- 
+    unknown_entry(Sg,Vars,Entry).
 
 %-------------------------------------------------------------------------
 %-------------------------------------------------------------------------
 %                      ABSTRACT SORT
 %-------------------------------------------------------------------------
 %-------------------------------------------------------------------------
-% gr_abs_sort(+,-)                                                         |
-% gr_abs_sort(Asub,Asub_s)                                                 |
-% it sorts the set of X/Value in Asub obtaining Asub_s.                |
+% abs_sort(+,-)                                                          |
+% abs_sort(Asub,Asub_s)                                                  |
+% it sorts the set of X/Value in Asub obtaining Asub_s.                  |
 %-------------------------------------------------------------------------
-:- pred gr_abs_sort(+Asub,-Asub_s) : gr_asub(Asub) => gr_asub(Asub_s)
+:- dom_impl(_, abs_sort/2, [noq]).
+:- pred abs_sort(+Asub,-Asub_s) : asub(Asub) => asub(Asub_s)
    + (not_fails, is_det)
    #"It sorts the set of @var{X}/@var{Value} in @var{Asub} obtaining
      @var{Asub_s}".
-gr_abs_sort('$bottom','$bottom'):- !.
-gr_abs_sort(Asub,Asub_s):-
+abs_sort('$bottom','$bottom'):- !.
+abs_sort(Asub,Asub_s):-
     sort(Asub,Asub_s).
 
 %------------------------------------------------------------------------%
@@ -238,23 +194,24 @@ gr_abs_sort(Asub,Asub_s):-
 %                      ABSTRACT PROJECTION
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% gr_project(+,+,+,+,?)                                                  %
-% gr_project(Sg,Vars,HvFv_u,ASub,Proj)                                   %
+% project(+,+,+,+,?)                                                     %
+% project(Sg,Vars,HvFv_u,ASub,Proj)                                      %
 % Proj is the result of                                                  %
 % eliminating from ASub all X/Value such that X not in Vars              %
 %------------------------------------------------------------------------%
-:- pred gr_project(+Sg,+Vars,+HvFv_u,+Asub,?Proj)
-   : term * list * term * gr_asub * term => gr_asub(Proj)
+:- dom_impl(_, project/5, [noq]).
+:- pred project(+Sg,+Vars,+HvFv_u,+Asub,?Proj)
+   : term * list * term * asub * term => asub(Proj)
    + (not_fails, is_det)
    #"@var{Proj} is the result of eliminating from @var{Asub} all
     @var{X}/@var{Value} such that @var{X} is not in @var{Vars}. @var{HvFv_u} may
     be a list or '@tt{not_provided_HvFv_u}'.
 
     This predicate may be used with @var{Proj} instantiated, see
-    gr_call_to_success_builtin. ".
-gr_project(_Sg,_Vars,_HvFv_u,'$bottom',Proj) :- !,
+    call_to_success_builtin/6. ".
+project(_Sg,_Vars,_HvFv_u,'$bottom',Proj) :- !,
     Proj = '$bottom'.
-gr_project(_Sg,Vars,_HvFv_u,ASub,Proj) :- 
+project(_Sg,Vars,_HvFv_u,ASub,Proj) :- 
     project_aux(Vars,ASub,Proj).
 
 %------------------------------------------------------------------------%
@@ -264,7 +221,7 @@ gr_project(_Sg,Vars,_HvFv_u,ASub,Proj) :-
 % such that the variable is not an element of the first argument         %
 %------------------------------------------------------------------------%
 :- pred project_aux(+Vars,+ListValues,?Proj)
-   : list * list * term => gr_asub(Proj)
+   : list * list * term => asub(Proj)
    #"Eliminates from each list in the second argument any variable/value such
     that the variable is not an element of @var{Vars}".
 project_aux([],_,Proj):- !,
@@ -286,8 +243,8 @@ project_aux_(>,Head1,Tail1,_,[Head2/Val|Tail2],Proj) :-
 % ABSTRACT Call To Entry
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% gr_call_to_entry(+,+,+,+,+,+,+,-,-)                                    %
-% gr_call_to_entry(Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo)              %
+% call_to_entry(+,+,+,+,+,+,+,-,-)                                       %
+% call_to_entry(Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo)                 %
 % It obtains the abstract substitution (Entry) which results from adding % 
 % the abstraction of the Sg = Head to Proj, later projecting the         %
 % resulting substitution onto Hv. This is done as follows:               %
@@ -302,9 +259,10 @@ project_aux_(>,Head1,Tail1,_,[Head2/Val|Tail2],Proj) :-
 % - projects Temp3 onto Hv + Fv obtaining Entry                          %
 %------------------------------------------------------------------------%
 
-:- pred gr_call_to_entry(+Sv,+Sg,+Hv,+Head,+K,+Fv,+Proj,-Entry,-ExtraInfo)
-   : ( list(Sv), cgoal(Sg), list(Hv), cgoal(Head), term(K), list(Fv), gr_asub(Proj)) % cheaper properties
-   => (gr_asub(Entry), gr_extrainfo(ExtraInfo)) + (not_fails, is_det)
+:- dom_impl(_, call_to_entry/9, [noq]).
+:- pred call_to_entry(+Sv,+Sg,+Hv,+Head,+K,+Fv,+Proj,-Entry,-ExtraInfo)
+   : ( list(Sv), cgoal(Sg), list(Hv), cgoal(Head), term(K), list(Fv), asub(Proj)) % cheaper properties
+   => (asub(Entry), extrainfo(ExtraInfo)) + (not_fails, is_det)
    #"
 It obtains the abstract substitution @var{Entry} which results from
 adding the abstraction of the @var{Sg} = @var{Head} to @var{Proj},
@@ -336,23 +294,23 @@ The meaning of the variables is
 @end{itemize}
 ".
 
-gr_call_to_entry(_Sv,Sg,_Hv,Head,_K,Fv,Proj,Entry,Flag):-
+call_to_entry(_Sv,Sg,_Hv,Head,_K,Fv,Proj,Entry,Flag):-
     variant(Sg,Head),!,
     Flag = yes,
     copy_term((Sg,Proj),(NewTerm,NewProj)),
     Head = NewTerm,
-    gr_abs_sort(NewProj,Projsorted),
+    abs_sort(NewProj,Projsorted),
     gr_change_values_insert(Fv,Projsorted,Entry,any).       
-gr_call_to_entry(_,_,[],_Head,_K,Fv,_Proj,Entry,no):- !,
+call_to_entry(_,_,[],_Head,_K,Fv,_Proj,Entry,no):- !,
     gr_change_values_insert(Fv,[],Entry,any). % (*)
-gr_call_to_entry(Sv,Sg,Hv,Head,_K,Fv,Proj,Entry,ExtraInfo):-
+call_to_entry(Sv,Sg,Hv,Head,_K,Fv,Proj,Entry,ExtraInfo):-
     gr_simplify_equations(Sg,Head,Binds),
     gr_change_values_insert(Hv,Proj,Temp1,any),
     abs_gunify(Temp1,Binds,Temp2,NewBinds),
     gr_change_values_insert(Fv,Temp2,Temp3,any),
     merge(Hv,Fv,HvFv),
-    gr_project(Sg,HvFv,not_provided_HvFv_u,Temp3,Entry),
-    gr_project(Sg,Sv,not_provided_HvFv_u,Temp3,NewProj),
+    project(Sg,HvFv,not_provided_HvFv_u,Temp3,Entry),
+    project(Sg,Sv,not_provided_HvFv_u,Temp3,NewProj),
     ExtraInfo= (NewProj,NewBinds),!.
 % (*) See why it is not ng in comment below the lattice sketch
 
@@ -361,8 +319,8 @@ gr_call_to_entry(Sv,Sg,Hv,Head,_K,Fv,Proj,Entry,ExtraInfo):-
 %                      ABSTRACT Exit To Prime
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% gr_exit_to_prime(+,+,+,+,+,-,-)                                        %
-% gr_exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime)                   %
+% exit_to_prime(+,+,+,+,+,-,-)                                           %
+% exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime)                      %
 % It computes the prime abstract substitution Prime, i.e.  the result of %
 % going from the abstract substitution over the head variables (Exit), to%
 % the abstract substitution over the variables in the subgoal. It will:  %
@@ -373,9 +331,10 @@ gr_call_to_entry(Sv,Sg,Hv,Head,_K,Fv,Proj,Entry,ExtraInfo):-
 % * Otherwise:                                                           %
 %------------------------------------------------------------------------%
 
-:- pred gr_exit_to_prime(+Sg,+Hv,+Head,+Sv,+Exit,?ExtraInfo,-Prime)
-   : term * list * cgoal * cgoal * gr_asub * term * term
-   => ( gr_extrainfo(ExtraInfo), gr_asub(Prime))
+:- dom_impl(_, exit_to_prime/7, [noq]).
+:- pred exit_to_prime(+Sg,+Hv,+Head,+Sv,+Exit,?ExtraInfo,-Prime)
+   : term * list * cgoal * cgoal * asub * term * term
+   => ( extrainfo(ExtraInfo), asub(Prime))
    #"
 It computes the prime abstract substitution @var{Prime}, i.e.  the result of 
  going from the abstract substitution over the head variables @var{Exit}, to
@@ -396,29 +355,29 @@ renaming Exit                                            %
 @end{itemize}
 ".
 
-gr_exit_to_prime(_Sg,_Hv,_Head,_Sv,'$bottom',_Flag,Prime) :- !,
+exit_to_prime(_Sg,_Hv,_Head,_Sv,'$bottom',_Flag,Prime) :- !,
     Prime = '$bottom'.
-gr_exit_to_prime(Sg,Hv,Head,_Sv,Exit,yes,Prime):- !,
-    gr_project(Sg,Hv,not_provided_HvFv_u,Exit,BPrime),
+exit_to_prime(Sg,Hv,Head,_Sv,Exit,yes,Prime):- !,
+    project(Sg,Hv,not_provided_HvFv_u,Exit,BPrime),
     copy_term((Head,BPrime),(NewTerm,NewPrime)),
     Sg = NewTerm,
-    gr_abs_sort(NewPrime,Prime).    
-gr_exit_to_prime(_Sg,[],_Head,Sv,_Exit,_ExtraInfo,Prime):- !,
-    gr_create_values(Sv,Prime,g).
-gr_exit_to_prime(Sg,Hv,_Head,Sv,Exit,ExtraInfo,Prime):-
+    abs_sort(NewPrime,Prime).    
+exit_to_prime(_Sg,[],_Head,Sv,_Exit,_ExtraInfo,Prime):- !,
+    create_values(Sv,Prime,g).
+exit_to_prime(Sg,Hv,_Head,Sv,Exit,ExtraInfo,Prime):-
     ExtraInfo = (Proj,Binds),
-    gr_project(Sg,Hv,not_provided_HvFv_u,Exit,BPrime),
+    project(Sg,Hv,not_provided_HvFv_u,Exit,BPrime),
     merge(Proj,BPrime,TempPrime),
     abs_gunify(TempPrime,Binds,NewTempPrime,_),
-    gr_project(Sg,Sv,not_provided_HvFv_u,NewTempPrime,Prime),!.
+    project(Sg,Sv,not_provided_HvFv_u,NewTempPrime,Prime),!.
 
 %-------------------------------------------------------------------------
 %-------------------------------------------------------------------------
 %                      ABSTRACT LUB
 %-------------------------------------------------------------------------
 %------------------------------------------------------------------------%
-% gr_compute_lub(+,-)                                                    %
-% gr_compute_lub(ListASub,Lub)                                           %
+% compute_lub(+,-)                                                       %
+% compute_lub(ListASub,Lub)                                              %
 % It computes the lub of a set of Asub. For each two abstract            %
 % substitutions ASub1 and ASub2 in ListASub, obtaining the lub is just   %
 % foreach X/Value1 in ASub1 and X/Value2 in ASub2:                       %
@@ -426,10 +385,10 @@ gr_exit_to_prime(Sg,Hv,_Head,Sv,Exit,ExtraInfo,Prime):-
 %    - otherwise, X/any in Lub                                           %
 %------------------------------------------------------------------------%
 
-:- pred gr_compute_lub(+ListASub,-Lub)
-   : list(gr_asub, ListASub) => gr_asub(Lub) + (not_fails, is_det)
-   #"
-It computes the least upper bound of a set of abstract substitutions. 
+:- dom_impl(_, compute_lub/2, [noq]).
+:- pred compute_lub(+ListASub,-Lub)
+   : list(asub, ListASub) => asub(Lub) + (not_fails, is_det)
+   #"It computes the least upper bound of a set of abstract substitutions. 
 For each two abstract substitutions @var{ASub1} and @var{ASub2} in @var{ListASub}, 
 obtaining the lub is just:    
 
@@ -439,15 +398,15 @@ obtaining the lub is just:
    @item otherwise, X/any in Lub                                           
 @end{itemize}
 ".
-gr_compute_lub([X],X):- !.
-gr_compute_lub([ASub1,ASub2|Xs],Lub):-
-    gr_compute_lub_el(ASub1,ASub2,ASubLub),
-    gr_compute_lub([ASubLub|Xs],Lub).
+compute_lub([X],X):- !.
+compute_lub([ASub1,ASub2|Xs],Lub):-
+    compute_lub_el(ASub1,ASub2,ASubLub),
+    compute_lub([ASubLub|Xs],Lub).
 
-:- pred gr_compute_lub_el(+ASub1,+ASub2,-Lub)
-   : gr_asub * gr_asub * term => gr_asub(Lub) + (not_fails, is_det)
-   #"
-For each two abstract substitutions @var{ASub1} and @var{ASub2} 
+% :- dom_impl(_, compute_lub_el(ASub1,ASub2,ASub), compute_lub_el(ASub1,ASub2,ASub)).
+:- pred compute_lub_el(+ASub1,+ASub2,-Lub)
+   : asub * asub * term => asub(Lub) + (not_fails, is_det)
+   #"For each two abstract substitutions @var{ASub1} and @var{ASub2} 
 obtaining the least upper bound is just:    
  foreach X/Value1 in @var{ASub1} and X/Value2 in @var{ASub2}:   
 @begin{itemize}                    
@@ -456,9 +415,9 @@ obtaining the least upper bound is just:
 @end{itemize}
 ".
 
-gr_compute_lub_el('$bottom',ASub,ASub):- !.
-gr_compute_lub_el(ASub,'$bottom',ASub):- !.
-gr_compute_lub_el(ASub1,ASub2,Lub):- 
+compute_lub_el('$bottom',ASub,ASub):- !.
+compute_lub_el(ASub,'$bottom',ASub):- !.
+compute_lub_el(ASub1,ASub2,Lub):- 
     compute_lub_gr(ASub1,ASub2,Lub).
 
 compute_lub_gr(ASub1,ASub2,Lub):- 
@@ -476,23 +435,24 @@ compute_lub_gr([X/_|ASub1],[X/_|ASub2],[X/any|Lub_Cont]):-
 %                      ABSTRACT Extend
 %-------------------------------------------------------------------------
 %------------------------------------------------------------------------%
-% gr_extend(+,+,+,+,-)                                                   %
-% gr_extend(Sg,Prime,Sv,Call,Succ)                                       %
+% extend(+,+,+,+,-)                                                      %
+% extend(Sg,Prime,Sv,Call,Succ)                                          %
 % If Prime = bottom, Succ = bottom. If Sv = [], Call = Succ.             %
 % Otherwise, Succ is computed updating the values of Call with those in  %
 % Prime                                                                  %
 %------------------------------------------------------------------------%
 
-:- pred gr_extend(+Sg,+Prime,+Sv,+Call,-Succ)
-   : term * gr_asub * list * gr_asub * term => gr_asub(Succ) + (not_fails, is_det)
+:- dom_impl(_, extend/5, [noq]).
+:- pred extend(+Sg,+Prime,+Sv,+Call,-Succ)
+   : term * asub * list * asub * term => asub(Succ) + (not_fails, is_det)
    #"If @var{Prime} = '$bottom', @var{Succ} = '$bottom'. If @var{Sv} = [],
    @var{Call} = @var{Succ}. Otherwise, @var{Succ} is computed updating the
    values of @var{Call} with those in @var{Prime}".
-gr_extend(_Sg,'$bottom',_Sv,_Call,Succ):- !,
+extend(_Sg,'$bottom',_Sv,_Call,Succ):- !,
     Succ = '$bottom'.
-gr_extend(_Sg,_Prime,[],Call,Succ):- !,
+extend(_Sg,_Prime,[],Call,Succ):- !,
     Call = Succ.
-gr_extend(_Sg,Prime,_Sv,Call,Succ):-
+extend(_Sg,Prime,_Sv,Call,Succ):-
     update_Call(Call,Prime,Succ).
 
 update_Call([],_,[]) :- !.
@@ -514,29 +474,30 @@ update_Call_(<,ElemC,Call,ElemP,Prime,[ElemC|Succ]):-
 % Specialized version of call_to_entry + exit_to_prime + extend for facts%
 %-------------------------------------------------------------------------
 
-:- pred gr_call_to_success_fact(+Sg,+Hv,+Head,+K,+Sv,+Call,+Proj,-Prime,-Succ)
-   : cgoal * list * cgoal * term * list * gr_asub * gr_asub * term * term
-   => ( gr_asub(Prime), gr_asub(Succ) ) + (not_fails, is_det)
+:- dom_impl(_, call_to_success_fact/9, [noq]).
+:- pred call_to_success_fact(+Sg,+Hv,+Head,+K,+Sv,+Call,+Proj,-Prime,-Succ)
+   : cgoal * list * cgoal * term * list * asub * asub * term * term
+   => ( asub(Prime), asub(Succ) ) + (not_fails, is_det)
    #"Specialized version of call_to_entry + exit_to_prime + extend for facts".
 
-gr_call_to_success_fact(Sg,[],_Head,_K,Sv,Call,_Proj,Prime,Succ) :- !,
-    gr_create_values(Sv,Prime,g),
-    gr_extend(Sg,Prime,Sv,Call,Succ).       
-gr_call_to_success_fact(Sg,Hv,Head,_K,Sv,Call,Proj,Prime,Succ):-
+call_to_success_fact(Sg,[],_Head,_K,Sv,Call,_Proj,Prime,Succ) :- !,
+    create_values(Sv,Prime,g),
+    extend(Sg,Prime,Sv,Call,Succ).       
+call_to_success_fact(Sg,Hv,Head,_K,Sv,Call,Proj,Prime,Succ):-
     gr_simplify_equations(Sg,Head,Binds),!,
     gr_change_values_insert(Hv,Proj,Temp1,any),
     abs_gunify(Temp1,Binds,Temp2,_NewBinds),
-    gr_project(Sg,Sv,not_provided_HvFv_u,Temp2,Prime),
-    gr_extend(Sg,Prime,Sv,Call,Succ).
-gr_call_to_success_fact(_Sg,_Hv,_Head,_K,_Sv,_Call,_Proj,'$bottom','$bottom').
+    project(Sg,Sv,not_provided_HvFv_u,Temp2,Prime),
+    extend(Sg,Prime,Sv,Call,Succ).
+call_to_success_fact(_Sg,_Hv,_Head,_K,_Sv,_Call,_Proj,'$bottom','$bottom').
 
 %------------------------------------------------------------------------%
 %                         HANDLING BUILTINS                              %
 %------------------------------------------------------------------------%
 
 %-------------------------------------------------------------------------
-% gr_special_builtin(+,+,+,-,-)                                          |
-% gr_special_builtin(SgKey,Sg,Subgoal,Type,Condvars)                     |
+% special_builtin(+,+,+,-,-)                                             |
+% special_builtin(SgKey,Sg,Subgoal,Type,Condvars)                        |
 % Satisfied if the builtin does not need a very complex action. It       |
 % divides builtins into groups determined by the flag returned in the    |
 % second argument + some special handling for some builtins:             |
@@ -556,7 +517,8 @@ gr_call_to_success_fact(_Sg,_Hv,_Head,_K,_Sv,_Call,_Proj,'$bottom','$bottom').
 
 %-------------------------------------------------------------------------
 
-:- pred gr_special_builtin(+Pred,+Sg,+Subgoal,?Type,-Condvars)
+:- dom_impl(_, special_builtin/5, [noq]).
+:- pred special_builtin(+Pred,+Sg,+Subgoal,?Type,-Condvars)
    : term * cgoal * term * term * term
    #" Satisfied if the builtin does not need a very complex action. It       
  divides builtins into groups determined by the flag returned in the    
@@ -576,197 +538,197 @@ gr_call_to_success_fact(_Sg,_Hv,_Head,_K,_Sv,_Call,_Proj,'$bottom','$bottom').
 @end{enumerate}
 ".
 
-gr_special_builtin('CHOICE IDIOM/1',_,_,new_ground,_).
-gr_special_builtin('$metachoice/1',_,_,new_ground,_).
-gr_special_builtin('current_atom/1',_,_,new_ground,_).
-gr_special_builtin('current_input/1',_,_,new_ground,_).
-gr_special_builtin('current_module/1',_,_,new_ground,_).
-gr_special_builtin('current_output/1',_,_,new_ground,_).
-gr_special_builtin('current_op/3',_,_,new_ground,_).
-gr_special_builtin('depth/1',_,_,new_ground,_).
-gr_special_builtin('get_code/1',_,_,new_ground,_).
-gr_special_builtin('get1_code/1',_,_,new_ground,_).
-gr_special_builtin('seeing/1',_,_,new_ground,_).
-gr_special_builtin('telling/1',_,_,new_ground,_).
-gr_special_builtin('statistics/2',_,_,new_ground,_).
-gr_special_builtin(':/2',(prolog:'$metachoice'(_)),_,new_ground,_).
+special_builtin('CHOICE IDIOM/1',_,_,new_ground,_).
+special_builtin('$metachoice/1',_,_,new_ground,_).
+special_builtin('current_atom/1',_,_,new_ground,_).
+special_builtin('current_input/1',_,_,new_ground,_).
+special_builtin('current_module/1',_,_,new_ground,_).
+special_builtin('current_output/1',_,_,new_ground,_).
+special_builtin('current_op/3',_,_,new_ground,_).
+special_builtin('depth/1',_,_,new_ground,_).
+special_builtin('get_code/1',_,_,new_ground,_).
+special_builtin('get1_code/1',_,_,new_ground,_).
+special_builtin('seeing/1',_,_,new_ground,_).
+special_builtin('telling/1',_,_,new_ground,_).
+special_builtin('statistics/2',_,_,new_ground,_).
+special_builtin(':/2',(prolog:'$metachoice'(_)),_,new_ground,_).
 
-gr_special_builtin('CUT IDIOM/1',_,_,old_ground,_).
-gr_special_builtin('$metacut/1',_,_,old_ground,_).
-gr_special_builtin(':/2',(prolog:'$metacut'(_)),_,old_ground,_).
-gr_special_builtin('op/3',_,_,old_ground,_).
-gr_special_builtin('save_event_trace/1',_,_,old_ground,_).
-gr_special_builtin('close/1',_,_,old_ground,_).
+special_builtin('CUT IDIOM/1',_,_,old_ground,_).
+special_builtin('$metacut/1',_,_,old_ground,_).
+special_builtin(':/2',(prolog:'$metacut'(_)),_,old_ground,_).
+special_builtin('op/3',_,_,old_ground,_).
+special_builtin('save_event_trace/1',_,_,old_ground,_).
+special_builtin('close/1',_,_,old_ground,_).
 
-gr_special_builtin('abort/0',_,_,bottom,_).
-gr_special_builtin('fail/0',_,_,bottom,_).
-gr_special_builtin('false/0',_,_,bottom,_).
-gr_special_builtin('halt/0',_,_,bottom,_).
+special_builtin('abort/0',_,_,bottom,_).
+special_builtin('fail/0',_,_,bottom,_).
+special_builtin('false/0',_,_,bottom,_).
+special_builtin('halt/0',_,_,bottom,_).
 
-gr_special_builtin('!/0',_,_,unchanged,_).
-gr_special_builtin('assert/1',_,_,unchanged,_).
-gr_special_builtin('asserta/1',_,_,unchanged,_).
-gr_special_builtin('assertz/1',_,_,unchanged,_).
-gr_special_builtin('debug/0',_,_,unchanged,_).
-gr_special_builtin('debugging/0',_,_,unchanged,_).
-gr_special_builtin('dif/2',_,_,unchanged,_).
-gr_special_builtin('display/1',_,_,unchanged,_).
-gr_special_builtin('flush_output/0',_,_,unchanged,_).
-gr_special_builtin('garbage_collect/0',_,_,unchanged,_).
-gr_special_builtin('gc/0',_,_,unchanged,_).
-gr_special_builtin('listing/0',_,_,unchanged,_).
-gr_special_builtin('listing/1',_,_,unchanged,_).
-gr_special_builtin('nl/0',_,_,unchanged,_).
-gr_special_builtin('nogc/0',_,_,unchanged,_).
-gr_special_builtin('not/1',_,_,unchanged,_).
-gr_special_builtin('print/1',_,_,unchanged,_).
-gr_special_builtin('repeat/0',_,_,unchanged,_).
-gr_special_builtin('start_event_trace/0',_,_,unchanged,_).
-gr_special_builtin('stop_event_trace/0',_,_,unchanged,_).
-gr_special_builtin('seen/0',_,_,unchanged,_).
-gr_special_builtin('told/0',_,_,unchanged,_).
-gr_special_builtin('true/0',_,_,unchanged,_).
-gr_special_builtin('ttyflush/0',_,_,unchanged,_).
-gr_special_builtin('otherwise/0',_,_,unchanged,_).
-gr_special_builtin('ttynl/0',_,_,unchanged,_).
-gr_special_builtin('write/1',_,_,unchanged,_).
-gr_special_builtin('writeq/1',_,_,unchanged,_).
+special_builtin('!/0',_,_,unchanged,_).
+special_builtin('assert/1',_,_,unchanged,_).
+special_builtin('asserta/1',_,_,unchanged,_).
+special_builtin('assertz/1',_,_,unchanged,_).
+special_builtin('debug/0',_,_,unchanged,_).
+special_builtin('debugging/0',_,_,unchanged,_).
+special_builtin('dif/2',_,_,unchanged,_).
+special_builtin('display/1',_,_,unchanged,_).
+special_builtin('flush_output/0',_,_,unchanged,_).
+special_builtin('garbage_collect/0',_,_,unchanged,_).
+special_builtin('gc/0',_,_,unchanged,_).
+special_builtin('listing/0',_,_,unchanged,_).
+special_builtin('listing/1',_,_,unchanged,_).
+special_builtin('nl/0',_,_,unchanged,_).
+special_builtin('nogc/0',_,_,unchanged,_).
+special_builtin('not/1',_,_,unchanged,_).
+special_builtin('print/1',_,_,unchanged,_).
+special_builtin('repeat/0',_,_,unchanged,_).
+special_builtin('start_event_trace/0',_,_,unchanged,_).
+special_builtin('stop_event_trace/0',_,_,unchanged,_).
+special_builtin('seen/0',_,_,unchanged,_).
+special_builtin('told/0',_,_,unchanged,_).
+special_builtin('true/0',_,_,unchanged,_).
+special_builtin('ttyflush/0',_,_,unchanged,_).
+special_builtin('otherwise/0',_,_,unchanged,_).
+special_builtin('ttynl/0',_,_,unchanged,_).
+special_builtin('write/1',_,_,unchanged,_).
+special_builtin('writeq/1',_,_,unchanged,_).
 
 
 % SICStus3 (ISO)
-gr_special_builtin('\\+/1',_,_,unchanged,_).
-gr_special_builtin('\\==/2',_,_,unchanged,_).
+special_builtin('\\+/1',_,_,unchanged,_).
+special_builtin('\\==/2',_,_,unchanged,_).
 % SICStus2.x
-% gr_special_builtin('\+/1',_,_,unchanged,_).
-% gr_special_builtin('\==/2',_,_,unchanged,_).
-gr_special_builtin('@>=/2',_,_,unchanged,_).
-gr_special_builtin('@=</2',_,_,unchanged,_).
-gr_special_builtin('@>/2',_,_,unchanged,_).
-gr_special_builtin('@</2',_,_,unchanged,_).
+% special_builtin('\+/1',_,_,unchanged,_).
+% special_builtin('\==/2',_,_,unchanged,_).
+special_builtin('@>=/2',_,_,unchanged,_).
+special_builtin('@=</2',_,_,unchanged,_).
+special_builtin('@>/2',_,_,unchanged,_).
+special_builtin('@</2',_,_,unchanged,_).
 %-------------------------------------------------------------------------
-% gr_special_builtin('read/1',_,_,all_nonfree,_).     ask to Paco
-% gr_special_builtin('read/2',read(X,Y),_,read2,p(X,Y)).  ask to Paco
+% special_builtin('read/1',_,_,all_nonfree,_).     ask to Paco
+% special_builtin('read/2',read(X,Y),_,read2,p(X,Y)).  ask to Paco
 %-------------------------------------------------------------------------
-gr_special_builtin('atom/1',_,_,old_ground,_).
-gr_special_builtin('atomic/1',_,_,old_ground,_).
-gr_special_builtin('ensure_loaded/1',_,_,old_ground,_).
-gr_special_builtin('erase/1',_,_,old_ground,_).
-gr_special_builtin('float/1',_,_,old_ground,_).
-gr_special_builtin('flush_output/1',_,_,old_ground,_).
-gr_special_builtin('integer/1',_,_,old_ground,_).
-gr_special_builtin('number/1',_,_,old_ground,_).
-gr_special_builtin('nl/1',_,_,old_ground,_).
-gr_special_builtin('put_code/1',_,_,old_ground,_).
-gr_special_builtin('put_code/2',_,_,old_ground,_).
-gr_special_builtin('see/1',_,_,old_ground,_).
-gr_special_builtin('tell/1',_,_,old_ground,_).
-gr_special_builtin('tab/1',_,_,old_ground,_).
-gr_special_builtin('tab/2',_,_,old_ground,_).
-gr_special_builtin('ttyput/1',_,_,old_ground,_).
-gr_special_builtin('=:=/2',_,_,old_ground,_).
-gr_special_builtin('>=/2',_,_,old_ground,_).
-gr_special_builtin('>/2',_,_,old_ground,_).
-gr_special_builtin('</2',_,_,old_ground,_).
-gr_special_builtin('=</2',_,_,old_ground,_).
+special_builtin('atom/1',_,_,old_ground,_).
+special_builtin('atomic/1',_,_,old_ground,_).
+special_builtin('ensure_loaded/1',_,_,old_ground,_).
+special_builtin('erase/1',_,_,old_ground,_).
+special_builtin('float/1',_,_,old_ground,_).
+special_builtin('flush_output/1',_,_,old_ground,_).
+special_builtin('integer/1',_,_,old_ground,_).
+special_builtin('number/1',_,_,old_ground,_).
+special_builtin('nl/1',_,_,old_ground,_).
+special_builtin('put_code/1',_,_,old_ground,_).
+special_builtin('put_code/2',_,_,old_ground,_).
+special_builtin('see/1',_,_,old_ground,_).
+special_builtin('tell/1',_,_,old_ground,_).
+special_builtin('tab/1',_,_,old_ground,_).
+special_builtin('tab/2',_,_,old_ground,_).
+special_builtin('ttyput/1',_,_,old_ground,_).
+special_builtin('=:=/2',_,_,old_ground,_).
+special_builtin('>=/2',_,_,old_ground,_).
+special_builtin('>/2',_,_,old_ground,_).
+special_builtin('</2',_,_,old_ground,_).
+special_builtin('=</2',_,_,old_ground,_).
 % SICStus3 (ISO)
-gr_special_builtin('=\\=/2',_,_,old_ground,_).
+special_builtin('=\\=/2',_,_,old_ground,_).
 % SICStus2.x
 % gr_special_builtin('=\=/2',_,_,old_ground,_).
-gr_special_builtin('ground/1',_,_,old_ground,_).
+special_builtin('ground/1',_,_,old_ground,_).
 %-------------------------------------------------------------------------
-gr_special_builtin('absolute_file_name/2',absolute_file_name(X,Y),_,old_new_ground,(OldG,NewG)):-
+special_builtin('absolute_file_name/2',absolute_file_name(X,Y),_,old_new_ground,(OldG,NewG)):-
     varset(X,OldG),
     varset(Y,NewG).
-gr_special_builtin('get_code/2',get_code(X,Y),_,old_new_ground,(OldG,NewG)):-
+special_builtin('get_code/2',get_code(X,Y),_,old_new_ground,(OldG,NewG)):-
     varset(X,OldG),
     varset(Y,NewG).
-gr_special_builtin('get1_code/2',get1_code(X,Y),_,old_new_ground,(OldG,NewG)):-
+special_builtin('get1_code/2',get1_code(X,Y),_,old_new_ground,(OldG,NewG)):-
     varset(X,OldG),
     varset(Y,NewG).
-gr_special_builtin('is/2',is(X,Y),_,old_new_ground,(OldG,NewG)):-
+special_builtin('is/2',is(X,Y),_,old_new_ground,(OldG,NewG)):-
     varset(X,NewG),
     varset(Y,OldG).
-gr_special_builtin('open/3',open(X,Y,Z),_,old_new_ground,(OldG,NewG)):-
+special_builtin('open/3',open(X,Y,Z),_,old_new_ground,(OldG,NewG)):-
     varset(p(X,Y),OldG),
     varset(Z,NewG).
-gr_special_builtin('format/2',format(X,_Y),_,old_new_ground,(OldG,[])):-
+special_builtin('format/2',format(X,_Y),_,old_new_ground,(OldG,[])):-
     varset(X,OldG).
-gr_special_builtin('format/3',format(X,Y,_Z),_,old_new_ground,(OldG,[])):-
+special_builtin('format/3',format(X,Y,_Z),_,old_new_ground,(OldG,[])):-
     varset(p(X,Y),OldG).
-gr_special_builtin('predicate_property/2',predicate_property(_X,Y),_,old_new_ground,
+special_builtin('predicate_property/2',predicate_property(_X,Y),_,old_new_ground,
                                                                     ([],NewG)):-
     varset(Y,NewG).
-gr_special_builtin('print/2',print(X,_Y),_,old_new_ground,(OldG,[])):-
+special_builtin('print/2',print(X,_Y),_,old_new_ground,(OldG,[])):-
     varset(X,OldG).
-gr_special_builtin('prolog_flag/2',prolog_flag(X,Y),_,old_new_ground,(OldG,NewG)):-
+special_builtin('prolog_flag/2',prolog_flag(X,Y),_,old_new_ground,(OldG,NewG)):-
     varset(X,OldG),
     varset(Y,NewG).
-gr_special_builtin('prolog_flag/3',prolog_flag(X,Y,Z),_,old_new_ground,(OldG,NewG)):-
+special_builtin('prolog_flag/3',prolog_flag(X,Y,Z),_,old_new_ground,(OldG,NewG)):-
     varset(X,OldG),
     varset(f(Y,Z),NewG).
-gr_special_builtin('write/2',write(X,_Y),_,old_new_ground,(OldG,[])):-
+special_builtin('write/2',write(X,_Y),_,old_new_ground,(OldG,[])):-
     varset(X,OldG).
 %-------------------------------------------------------------------------
-gr_special_builtin('assert/2',assert(_X,Y),_,some,Vars):-
+special_builtin('assert/2',assert(_X,Y),_,some,Vars):-
     varset(Y,Vars).
-gr_special_builtin('assertz/2',assertz(_X,Y),_,some,Vars):-
+special_builtin('assertz/2',assertz(_X,Y),_,some,Vars):-
     varset(Y,Vars).
-gr_special_builtin('asserta/2',asserta(_X,Y),_,some,Vars):-
+special_builtin('asserta/2',asserta(_X,Y),_,some,Vars):-
     varset(Y,Vars).
-gr_special_builtin('recorda/3',recorda(_X,_Y,Z),_,some,Vars):-
+special_builtin('recorda/3',recorda(_X,_Y,Z),_,some,Vars):-
     varset(Z,Vars).
-gr_special_builtin('recordz/3',recordz(_X,_Y,Z),_,some,Vars):-
+special_builtin('recordz/3',recordz(_X,_Y,Z),_,some,Vars):-
     varset(Z,Vars).
 %%%%%%%%%% arg/3
-gr_special_builtin('arg/3',arg(X,Y,Z),_,arg,p(X,Y,Z)).
+special_builtin('arg/3',arg(X,Y,Z),_,arg,p(X,Y,Z)).
 %%%%%%%%%% expand_term/2
-gr_special_builtin('expand_term/2',expand_term(X,Y),_,exp,p(X,Y)).
+special_builtin('expand_term/2',expand_term(X,Y),_,exp,p(X,Y)).
 %%%%%%%%%% =../2
-gr_special_builtin('=../2','=..'(X,Y),_,'=../2',p(X,Y)).
+special_builtin('=../2','=..'(X,Y),_,'=../2',p(X,Y)).
 %%%%%%%%%% recorded/3
-gr_special_builtin('recorded/3',recorded(_X,Y,Z),_,recorded,p(Y,Z)).
-gr_special_builtin('retract/1',retract(X),_,recorded,p(X,a)).
-gr_special_builtin('retractall/1',retractall(X),_,recorded,p(X,a)).
+special_builtin('recorded/3',recorded(_X,Y,Z),_,recorded,p(Y,Z)).
+special_builtin('retract/1',retract(X),_,recorded,p(X,a)).
+special_builtin('retractall/1',retractall(X),_,recorded,p(X,a)).
 %%%%%%%%%% copy_term
-gr_special_builtin('copy_term/2',copy_term(X,Y),_,copy_term,p(X,Y)).
+special_builtin('copy_term/2',copy_term(X,Y),_,copy_term,p(X,Y)).
 %%%%%%%%%% current_key/2
-gr_special_builtin('current_key/2',current_key(X,_Y),_,'current_key/2',p(X)).
+special_builtin('current_key/2',current_key(X,_Y),_,'current_key/2',p(X)).
 %%%%%%%%%% current_predicate/2
-gr_special_builtin('current_predicate/2',current_predicate(X,Y),_,
+special_builtin('current_predicate/2',current_predicate(X,Y),_,
                                            'current_predicate/2',p(X,Y)).
 %%%%%%%%%% functor/3
-gr_special_builtin('functor/3',functor(X,Y,Z),_,'functor/3',p(X,Y,Z)).
+special_builtin('functor/3',functor(X,Y,Z),_,'functor/3',p(X,Y,Z)).
 %%%%%%%%%% name/2
-gr_special_builtin('name/2',name(X,Y),_,'name/2',p(X,Y)).
+special_builtin('name/2',name(X,Y),_,'name/2',p(X,Y)).
 %%%%%%%%%% nonvar/1
-gr_special_builtin('nonvar/1',_,_,unchanged,_).  % needed?
-gr_special_builtin('not_free/1',_,_,unchanged,_).  % ask to Paco
+special_builtin('nonvar/1',_,_,unchanged,_).  % needed?
+special_builtin('not_free/1',_,_,unchanged,_).  % ask to Paco
 %%%%%%%%%% numbervars/3
-gr_special_builtin('numbervars/3',numbervars(X,Y,Z),_,'numbervars/3',p(X,Y,Z)).
+special_builtin('numbervars/3',numbervars(X,Y,Z),_,'numbervars/3',p(X,Y,Z)).
 %%%%%%%%%% compare/3
-gr_special_builtin('compare/3',compare(X,_Y,_Z),_,'compare/3',p(X)).
+special_builtin('compare/3',compare(X,_Y,_Z),_,'compare/3',p(X)).
 %%%%%%%%%% indep/2
-gr_special_builtin('indep/2',_,_,unchanged,_).  % ask to Paco
+special_builtin('indep/2',_,_,unchanged,_).  % ask to Paco
 %%%%%%%%%% length/2
-gr_special_builtin('length/2',_,_,unchanged,_).  % ask to Paco
+special_builtin('length/2',_,_,unchanged,_).  % ask to Paco
 %%%%%%%%%% var/1
-gr_special_builtin('var/1',_,_,unchanged,_).  % needed?
-gr_special_builtin('free/1',_,_,unchanged,_).  % ask to Paco
+special_builtin('var/1',_,_,unchanged,_).  % needed?
+special_builtin('free/1',_,_,unchanged,_).  % ask to Paco
 %%%%%%%%%% indep/1
-gr_special_builtin('indep/1',_,_,unchanged,_).  % ask to Paco
+special_builtin('indep/1',_,_,unchanged,_).  % ask to Paco
 %%%%%%%%%% others
-gr_special_builtin(Key,_Goal,_,special(Key),[]):-
-    gr_very_special_builtin(Key).
+special_builtin(Key,_Goal,_,special(Key),[]):-
+    very_special_builtin(Key).
 
-gr_very_special_builtin('==/2').
-gr_very_special_builtin('=/2').
-gr_very_special_builtin('C/3').
-%gr_very_special_builtin('keysort/2').
-%gr_very_special_builtin('sort/2').
+very_special_builtin('==/2').
+very_special_builtin('=/2').
+very_special_builtin('C/3').
+%very_special_builtin('keysort/2').
+%very_special_builtin('sort/2').
 
 %-------------------------------------------------------------------------
-% gr_success_builtin(+,+,+,+,+,-)                                        |
-% gr_success_builtin(Type,Sv_u,Condv,HvFv_u,Call,Succ)                   |
+% success_builtin(+,+,+,+,+,-)                                           |
+% success_builtin(Type,Sv_u,Condv,HvFv_u,Call,Succ)                      |
 % Obtains the success for some particular builtins:                      |
 %  * If Type = new_ground, it updates Call making all vars in Sv_u ground|
 %  * If Type = bottom, Succ = '$bottom'                                  |
@@ -781,10 +743,10 @@ gr_very_special_builtin('C/3').
 %    Succ is computed                                                    |
 %-------------------------------------------------------------------------
 
-:- pred gr_success_builtin(+Type,+Sv_u,?Condv,+HvFv_u,+Call,-Succ)
-   : atm * list * term * list * gr_asub * term => gr_asub(Succ)
-   #"
-Obtains the success for some particular builtins:
+:- dom_impl(_, success_builtin/6, [noq]).
+:- pred success_builtin(+Type,+Sv_u,?Condv,+HvFv_u,+Call,-Succ)
+   : atm * list * term * list * asub * term => asub(Succ)
+   #"Obtains the success for some particular builtins:
 @begin{itemize}
 @item  If Type = new_ground, it updates Call making all vars in Sv_u ground
 @item If Type = bottom, Succ = '$bottom'                                  
@@ -801,33 +763,33 @@ Obtains the success for some particular builtins:
 ".
 
 % TODO: Missing cuts in all the following clauses
-gr_success_builtin(new_ground,Sv_u,_,_,Call,Succ):-
+success_builtin(new_ground,Sv_u,_,_,Call,Succ):-
     sort(Sv_u,Sv),
     gr_change_values_insert(Sv,Call,Succ,g).
 %
-gr_success_builtin(bottom,_,_,_,_,'$bottom').
+success_builtin(bottom,_,_,_,_,'$bottom').
 %
-gr_success_builtin(unchanged,_,_,_,Succ,Succ).
+success_builtin(unchanged,_,_,_,Succ,Succ).
 %
-gr_success_builtin(some,_Sv,NewGr_u,_,Call,Succ):-
+success_builtin(some,_Sv,NewGr_u,_,Call,Succ):-
     sort(NewGr_u,NewGr),
     gr_change_values_insert(NewGr,Call,Succ,g).
 %
-gr_success_builtin(old_ground,Sv_u,_,_,Call,Succ):-
+success_builtin(old_ground,Sv_u,_,_,Call,Succ):-
     sort(Sv_u,Sv),
     gr_values_notequal(Sv,Call,ng),!,
     gr_change_values_insert(Sv,Call,Succ,g).
-gr_success_builtin(old_ground,_,_,_,_,'$bottom').
+success_builtin(old_ground,_,_,_,_,'$bottom').
 %
-gr_success_builtin(old_new_ground,_,(OldG_u,NewG_u),_,Call,Succ):-
+success_builtin(old_new_ground,_,(OldG_u,NewG_u),_,Call,Succ):-
     sort(OldG_u,OldG),
     gr_values_notequal(OldG,Call,ng),!,
     gr_change_values_insert(OldG,Call,TempSucc,g),  
     sort(NewG_u,NewG),
     gr_change_values_insert(NewG,TempSucc,Succ,g).
-gr_success_builtin(old_new_ground,_,_,_,_,'$bottom').
+success_builtin(old_new_ground,_,_,_,_,'$bottom').
 %
-gr_success_builtin(arg,_,Sg0,_,Call,Succ):- Sg0=p(X,Y,Z),
+success_builtin(arg,_,Sg0,_,Call,Succ):- Sg0=p(X,Y,Z),
     varset(X,OldG),
     gr_values_notequal(OldG,Call,ng),!,  
     gr_change_values_insert(OldG,Call,NCall,g),
@@ -835,108 +797,139 @@ gr_success_builtin(arg,_,Sg0,_,Call,Succ):- Sg0=p(X,Y,Z),
     Head = p(f(A,_B),A),
     varset(Sg,Sv),
     varset(Head,Hv),
-    gr_project(Sg,Sv,not_provided_HvFv_u,NCall,Proj),
-    gr_call_to_success_fact(Sg,Hv,Head,not_provided,Sv,NCall,Proj,_,Succ). % TODO: add some ClauseKey?
-gr_success_builtin(arg,_,_,_,_,'$bottom').
+    project(Sg,Sv,not_provided_HvFv_u,NCall,Proj),
+    call_to_success_fact(Sg,Hv,Head,not_provided,Sv,NCall,Proj,_,Succ). % TODO: add some ClauseKey?
+success_builtin(arg,_,_,_,_,'$bottom').
 %
-gr_success_builtin(exp,_,Sg,_,Call,Succ):-
+success_builtin(exp,_,Sg,_,Call,Succ):-
     Head = p(A,f(A,_B)),
     varset(Sg,Sv),
     varset(Head,Hv),
-    gr_project(Sg,Sv,not_provided_HvFv_u,Call,Proj),
-    gr_call_to_success_fact(Sg,Hv,Head,not_provided,Sv,Call,Proj,_,Succ). % TODO: add some ClauseKey?
-gr_success_builtin(exp,_,_,_,_,'$bottom').
+    project(Sg,Sv,not_provided_HvFv_u,Call,Proj),
+    call_to_success_fact(Sg,Hv,Head,not_provided,Sv,Call,Proj,_,Succ). % TODO: add some ClauseKey?
+success_builtin(exp,_,_,_,_,'$bottom').
 %
-gr_success_builtin('=../2',_,p(X,Y),_,Call,Succ):-
+success_builtin('=../2',_,p(X,Y),_,Call,Succ):-
     varset(X,Varsx),
     gr_values_equal(Varsx,Call,g),!,
     varset(Y,VarsY),
     gr_change_values_insert(VarsY,Call,Succ,g).
-gr_success_builtin('=../2',_,p(X,Y),_,Call,Succ):-
+success_builtin('=../2',_,p(X,Y),_,Call,Succ):-
     varset(Y,VarsY),
     gr_values_equal(VarsY,Call,g),!,
     varset(X,VarsX),
     gr_change_values_insert(VarsX,Call,Succ,g).
-gr_success_builtin('=../2',_,_,_,Succ,Succ). 
+success_builtin('=../2',_,_,_,Succ,Succ). 
 %
-gr_success_builtin(recorded,_,p(_Y,Z),_,Call,Succ):-
+success_builtin(recorded,_,p(_Y,Z),_,Call,Succ):-
     varset(Z,NewGr),
     gr_change_values_insert(NewGr,Call,Succ,g).
 %
-gr_success_builtin(copy_term,_,Sg,_,Call,Succ):- Sg=p(X,Y),
+success_builtin(copy_term,_,Sg,_,Call,Succ):- Sg=p(X,Y),
     varset(X,VarsX),
-    gr_project(Sg,VarsX,not_provided_HvFv_u,Call,ProjectedX),
+    project(Sg,VarsX,not_provided_HvFv_u,Call,ProjectedX),
     copy_term((X,ProjectedX),(NewX,NewProjectedX)),
-    gr_abs_sort(NewProjectedX,ProjectedNewX),
+    abs_sort(NewProjectedX,ProjectedNewX),
     varset(NewX,VarsNewX),
     varset(Y,VarsY),
     merge(VarsNewX,VarsY,TempSv),
-    gr_project(Sg,VarsY,not_provided_HvFv_u,Call,ProjectedY),
+    project(Sg,VarsY,not_provided_HvFv_u,Call,ProjectedY),
     merge(ProjectedY,ProjectedNewX,TempAbs),
     merge(ProjectedNewX,Call,TempCall),
-    gr_call_to_success_builtin('=/2','='(NewX,Y),TempSv,
-                TempCall,TempAbs,Temp_success),
-
+    call_to_success_builtin('=/2','='(NewX,Y),TempSv, TempCall,TempAbs,Temp_success),
     collect_vars_gr(Call,VarsCall),
-    gr_project(Sg,VarsCall,not_provided_HvFv_u,Temp_success,Succ).
+    project(Sg,VarsCall,not_provided_HvFv_u,Temp_success,Succ).
 %
-gr_success_builtin('current_key/2',_,p(X),_,Call,Succ):-
+success_builtin('current_key/2',_,p(X),_,Call,Succ):-
     varset(X,NewG),
     gr_change_values_insert(NewG,Call,Succ,g).
 %
-gr_success_builtin('current_predicate/2',_,p(X,_Y),_,Call,Succ):- !,
+success_builtin('current_predicate/2',_,p(X,_Y),_,Call,Succ):- !,
     varset(X,NewG),
     gr_change_values_insert(NewG,Call,Succ,g).
 %
-gr_success_builtin('functor/3',_,p(X,Y,Z),_,Call,Succ):-
+success_builtin('functor/3',_,p(X,Y,Z),_,Call,Succ):-
     varset(X,OldG),
     gr_values_equal(OldG,Call,g),!,
     varset([Y,Z],NewGr),    
     gr_change_values_insert(NewGr,Call,Succ,g).
-gr_success_builtin('functor/3',_,_,_,Succ,Succ).
+success_builtin('functor/3',_,_,_,Succ,Succ).
 %
-gr_success_builtin('name/2',_,p(X,Y),_,Call,Succ):-
+success_builtin('name/2',_,p(X,Y),_,Call,Succ):-
     varset(X,OldG),
     gr_values_notequal(OldG,Call,ng),!,
     varset(Y,NewG),
     gr_change_values_insert(NewG,Call,Succ,g).
-gr_success_builtin('name/2',_,p(X,Y),_,Call,Succ):-
+success_builtin('name/2',_,p(X,Y),_,Call,Succ):-
     varset(Y,OldG),
     gr_values_notequal(OldG,Call,ng),!,
     varset(X,NewG),
     gr_change_values_insert(NewG,Call,Succ,g).
-gr_success_builtin('name/2',_,_,_,_,'$bottom').
+success_builtin('name/2',_,_,_,_,'$bottom').
 %
-gr_success_builtin('numbervars/3',_,p(X,Y,Z),_,Call,Succ):-
+success_builtin('numbervars/3',_,p(X,Y,Z),_,Call,Succ):-
     varset(Y,OldG),
     gr_values_notequal(OldG,Call,ng),!,
     varset(p(X,Z),NewG),
     gr_change_values_insert(NewG,Call,Succ,g).
-gr_success_builtin('numbervars/3',_,_,_,_,'$bottom').
+success_builtin('numbervars/3',_,_,_,_,'$bottom').
 %
-gr_success_builtin('compare/3',_,p(X),_,Call,Succ):- 
+success_builtin('compare/3',_,p(X),_,Call,Succ):- 
     atom(X),!,
     Succ = Call.
-gr_success_builtin('compare/3',_,p(X),_,Call,Succ):- 
+success_builtin('compare/3',_,p(X),_,Call,Succ):- 
     var(X),!,
     gr_change_values_insert([X],Call,Succ,g).
-gr_success_builtin('compare/3',_,_,_,_,'$bottom').
+success_builtin('compare/3',_,_,_,_,'$bottom').
 %
-%gr_success_builtin(bag,_,(_From,_On,nofail),_,'$bottom',Succ):-
+%success_builtin(bag,_,(_From,_On,nofail),_,'$bottom',Succ):-
 %
-gr_success_builtin(Key,_,_,_,Succ,Succ):-
-         warning_message("the builtin key ~q is not defined",[Key]).
+success_builtin(Key,_,_,_,Succ,Succ):-
+    warning_message("the builtin key ~q is not defined",[Key]).
 
 %-------------------------------------------------------------------------
-% gr_call_to_success_builtin(+,+,+,+,+,-)                                %
-% gr_call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,Succ)                 %
+% call_to_success_builtin(+,+,+,+,+,-)                                   %
+% call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,Succ)                    %
 % Handles those builtins for which computing Proj is easier than Succ    %
 %-------------------------------------------------------------------------
-:- pred gr_call_to_success_builtin(+SgKey,+Sg,+Sv,+Call,+Proj,-Succ)
-   : atm * cgoal * list * gr_asub * gr_asub * term
-   => gr_asub(Succ) + (not_fails, is_det)
+:- dom_impl(_, call_to_success_builtin/6, [noq]).
+:- pred call_to_success_builtin(+SgKey,+Sg,+Sv,+Call,+Proj,-Succ)
+   : atm * cgoal * list * asub * asub * term
+   => asub(Succ) + (not_fails, is_det)
    #"Handles those builtins for which computing @var{Proj} is easier than
     @var{Succ}".
+
+call_to_success_builtin('==/2',Sg,Sv,Call,Proj,Succ):- Sg='=='(X,Y),
+    gr_simplify_equations(X,Y,Binds),
+    project(Sg,Sv,not_provided_HvFv_u,Call,Proj),
+    gr_comp(Binds,Proj,Exit),!,
+    extend(Sg,Exit,Sv,Call,Succ).
+call_to_success_builtin('==/2',_,_,_call,_,'$bottom').
+%
+call_to_success_builtin('=/2','='(X,_Y),Sv,Call,Proj,Succ):-
+    varset(X,VarsX), 
+    gr_values_equal(VarsX,Proj,g), !,
+    ord_subtract(Sv,VarsX,VarsY),
+    gr_change_values_insert(VarsY,Call,Succ,g).
+%
+call_to_success_builtin('=/2','='(_X,Y),Sv,Call,Proj,Succ):-
+    varset(Y,VarsY), 
+    gr_values_equal(VarsY,Proj,g), !,
+    ord_subtract(Sv,VarsY,VarsX),
+    gr_change_values_insert(VarsX,Call,Succ,g).
+call_to_success_builtin('=/2','='(X,Y),Sv,Call,Proj,Succ):-
+    copy_term(X,Xterm),
+    copy_term(Y,Yterm),
+    Xterm = Yterm,!,
+    varset(Xterm,Vars),
+    call_to_success_fact('='(X,Y),Vars,'='(Xterm,Xterm),not_provided,Sv,Call,Proj,_Prime,Succ). % TODO: add some ClauseKey?
+call_to_success_builtin('=/2',_,_,_call,_,'$bottom').
+%
+call_to_success_builtin('C/3','C'(X,Y,Z),Sv,Call,Proj,Succ):- !,
+    call_to_success_builtin('=/2','='(X,[Y|Z]),Sv,Call,Proj,Succ).
+%
+call_to_success_builtin('keysort/2',keysort(X,Y),Sv,Call,Proj,Succ):-
+    call_to_success_builtin('sort/2',sort(X,Y),Sv,Call,Proj,Succ).
 
 gr_comp([],Proj,Proj).
 gr_comp([(X,Term,_Tv)|Binds],Proj,Exit):-
@@ -952,71 +945,41 @@ gr_comp([(X,_,Tv)|Binds],Proj,Exit):-
     ),
     gr_comp(Binds,Proj1,Exit).
 
-gr_call_to_success_builtin('==/2',Sg,Sv,Call,Proj,Succ):- Sg='=='(X,Y),
-    gr_simplify_equations(X,Y,Binds),
-    gr_project(Sg,Sv,not_provided_HvFv_u,Call,Proj),
-    gr_comp(Binds,Proj,Exit),!,
-    gr_extend(Sg,Exit,Sv,Call,Succ).
-gr_call_to_success_builtin('==/2',_,_,_call,_,'$bottom').
-%
-gr_call_to_success_builtin('=/2','='(X,_Y),Sv,Call,Proj,Succ):-
-    varset(X,VarsX), 
-    gr_values_equal(VarsX,Proj,g), !,
-    ord_subtract(Sv,VarsX,VarsY),
-    gr_change_values_insert(VarsY,Call,Succ,g).
-%
-gr_call_to_success_builtin('=/2','='(_X,Y),Sv,Call,Proj,Succ):-
-    varset(Y,VarsY), 
-    gr_values_equal(VarsY,Proj,g), !,
-    ord_subtract(Sv,VarsY,VarsX),
-    gr_change_values_insert(VarsX,Call,Succ,g).
-gr_call_to_success_builtin('=/2','='(X,Y),Sv,Call,Proj,Succ):-
-    copy_term(X,Xterm),
-    copy_term(Y,Yterm),
-    Xterm = Yterm,!,
-    varset(Xterm,Vars),
-    gr_call_to_success_fact('='(X,Y),Vars,'='(Xterm,Xterm),not_provided,Sv,Call,Proj,_Prime,Succ). % TODO: add some ClauseKey?
-gr_call_to_success_builtin('=/2',_,_,_call,_,'$bottom').
-%
-gr_call_to_success_builtin('C/3','C'(X,Y,Z),Sv,Call,Proj,Succ):- !,
-    gr_call_to_success_builtin('=/2','='(X,[Y|Z]),Sv,Call,Proj,Succ).
-%
-gr_call_to_success_builtin('keysort/2',keysort(X,Y),Sv,Call,Proj,Succ):-
-    gr_call_to_success_builtin('sort/2',sort(X,Y),Sv,Call,Proj,Succ).
-
 %------------------------------------------------------------------------%
-% gr_input_user_interface(+,+,-,+,+)                                     %
-% gr_input_user_interface(InputUser,Qv,ASub,Sg,MaybeCallASub)            %
+% input_user_interface(+,+,-,+,+)                                        %
+% input_user_interface(InputUser,Qv,ASub,Sg,MaybeCallASub)               %
 % Obtaining the abstract substitution for gr from the user supplied      %
 %------------------------------------------------------------------------%
 
-:- pred gr_input_user_interface(?InputUser,+Qv,-ASub,+Sg,+MaybeCallASub)
+:- dom_impl(_, input_user_interface/5, [noq]).
+:- pred input_user_interface(?InputUser,+Qv,-ASub,+Sg,+MaybeCallASub)
    : term * list * term * term * term
-   => gr_asub(ASub) + (not_fails, is_det)
+   => asub(ASub) + (not_fails, is_det)
    #"Obtains the abstract substitution for gr from the native properties found
    in the user supplied info.".
-gr_input_user_interface((Gv_u,Ng_u),Qv,ASub,_Sg,_MaybeCallASub):-
+input_user_interface((Gv_u,Ng_u),Qv,ASub,_Sg,_MaybeCallASub):-
     may_be_var(Gv_u,Gv),
     may_be_var(Ng_u,Ng),
     merge(Gv,Ng,Infv),
     ord_subtract(Qv,Infv,AnyV),
-    gr_create_values(Gv,Temp1,g),
+    create_values(Gv,Temp1,g),
     gr_change_values_insert(Ng,Temp1,Temp2,any), % (*)
     gr_change_values_insert(AnyV,Temp2,ASub,any).
 % (*) See why it is not ng in comment below the lattice sketch
 
-:- pred gr_input_interface(+Prop,?Kind,?Struc0,?Struc1)
+:- dom_impl(_, input_interface/4, [noq]).
+:- pred input_interface(+Prop,?Kind,?Struc0,?Struc1)
    # "Adds native property @var{Prop} to the structure accumulating the
    properties relevant to this domain, namely: ground/1, free/1, and
    not_ground/1.".
-%gr_input_interface(regtype(gnd(X)),K,S0,S1) :-
-%        gr_input_interface(ground(X),K,S0,S1).
-gr_input_interface(ground(X),perfect,(Gv0,NGv),(Gv,NGv)):-
+%input_interface(regtype(gnd(X)),K,S0,S1) :-
+%    input_interface(ground(X),K,S0,S1).
+input_interface(ground(X),perfect,(Gv0,NGv),(Gv,NGv)):-
     varset(X,Vs),
     myappend(Gv0,Vs,Gv).
-gr_input_interface(free(X),approx,Struct0,Struct):-
-    gr_input_interface(not_ground(X),_Any,Struct0,Struct).
-gr_input_interface(not_ground(X),approx,(Gv,NGv0),(Gv,NGv)):- % (*)
+input_interface(free(X),approx,Struct0,Struct):-
+    input_interface(not_ground(X),_Any,Struct0,Struct).
+input_interface(not_ground(X),approx,(Gv,NGv0),(Gv,NGv)):- % (*)
     varset(X,Vs),
     myappend(Vs,NGv0,NGv).
 % (*) See why it is 'approx' and not 'perfect' in the comment below
@@ -1031,18 +994,19 @@ myappend(Vs,V0,V):-
 may_be_var(X,X):- ( X=[] ; true ), !.
 
 %------------------------------------------------------------------------%
-% gr_asub_to_native(+,+,+,-,-)                                           %
-% gr_asub_to_native(ASub,Qv,OutFlag,ASub_user,Comps)                     %
+% asub_to_native(+,+,+,-,-)                                           %
+% asub_to_native(ASub,Qv,OutFlag,ASub_user,Comps)                     %
 % The user friendly format consists in extracting the ground variables   %
 % and the nonground variables                                            %
 %------------------------------------------------------------------------%
 
-:- pred gr_asub_to_native(+ASub,+Qv,+OutFlag,-ASub_user,-Comps)
-   : gr_asub * list * term * term * term
+:- dom_impl(_, asub_to_native/5, [noq]).
+:- pred asub_to_native(+ASub,+Qv,+OutFlag,-ASub_user,-Comps)
+   : asub * list * term * term * term
    #"The user friendly format consists in extracting the ground variables
    and the nonground variables".
 
-gr_asub_to_native(Abs,_Qv,_OutFlag,ASub_user,[]):-
+asub_to_native(Abs,_Qv,_OutFlag,ASub_user,[]):-
     member_value_gr(Abs,Gv,g),
     member_value_gr(Abs,NGv,ng),
     ( Gv=[] -> ASub_user=ASub_user0 ; ASub_user=[ground(Gv)|ASub_user0] ),
@@ -1060,96 +1024,100 @@ member_value_gr([_|Rest],RestV,Value):-
     member_value_gr(Rest,RestV,Value).
 
 %% %------------------------------------------------------------------------%
-%% % gr_output_interface(+,-)                                             %
-%% % gr_output_interface(ASub,Output)                                     %
+%% % output_interface(+,-)                                                  %
+%% % output_interface(ASub,Output)                                          %
 %% % The readible format still close to the internal formal is identical    %
 %% %-------------------------------------------------------------------------
 %% 
-%% :- pred gr_output_interface(+ASub,-Output): gr_asub * gr_asub # 
+%% :- pred output_interface(+ASub,-Output): asub * asub # 
 %% "The readible format still close to the internal formal is identical".
 %%  
-%% gr_output_interface(Output,Output).
+%% output_interface(Output,Output).
 
 %------------------------------------------------------------------------%
-% gr_unknown_call(+,+,+,-)                                               %
-% gr_unknown_call(Sg,Vars,Call,Succ)                                     %
+% unknown_call(+,+,+,-)                                                  %
+% unknown_call(Sg,Vars,Call,Succ)                                        %
 % Gives the "top" value for the variables involved in a                  %
 % literal whose definition is not present, and adds this top value to    %
 % Call                                                                   %
 %------------------------------------------------------------------------%
 
-:- pred gr_unknown_call(+Sg,+Vars,+Call,-Succ)
-   : cgoal * list * gr_asub * term => gr_asub(Succ) + (not_fails, is_det)
+:- dom_impl(_, unknown_call/4, [noq]).
+:- pred unknown_call(+Sg,+Vars,+Call,-Succ)
+   : cgoal * list * asub * term => asub(Succ) + (not_fails, is_det)
    #"Gives the ``top'' value for the variables involved in a literal whose
    definition is not present, and adds this top value to @var{Call}".
-gr_unknown_call(_Sg,Vars,Call,Succ):-
+unknown_call(_Sg,Vars,Call,Succ):-
     gr_change_values_insert(Vars,Call,Succ,any).
 
 %------------------------------------------------------------------------%
-% gr_less_or_equal(+,+)                                                  %
-% gr_less_or_equal(ASub0,ASub1)                                          %
+% less_or_equal(+,+)                                                     %
+% less_or_equal(ASub0,ASub1)                                             %
 % Succeeds if ASub1 is more general or equal to ASub0                    %
 %------------------------------------------------------------------------%
 
 % it's assumed the two abstract        
 % substitutions are defined on the same variables 
 
-:- pred gr_less_or_equal(+ASub0,+ASub1)
-   : gr_asub * gr_asub + (not_fails, is_det)
-   #"Succeeds if @var{ASub1} is more general or equal to @var{ASub0}. it's
+:- dom_impl(_, less_or_equal/2, [noq]).
+:- pred less_or_equal(+ASub0,+ASub1)
+   : asub * asub + (not_fails, is_det)
+   # "Succeeds if @var{ASub1} is more general or equal to @var{ASub0}. it's
    assumed the two abstract substitutions are defined on the same variables".
 
-gr_less_or_equal('$bottom',_) :- !.
-gr_less_or_equal(ASub0,ASub1):-
-    gr_less_or_equal_(ASub0,ASub1).
+less_or_equal('$bottom',_) :- !.
+less_or_equal(ASub0,ASub1):-
+    less_or_equal_(ASub0,ASub1).
 
-gr_less_or_equal_([],[]).
-gr_less_or_equal_([X/Value0|Rest0],[X/Value1|Rest1]):-
-    gr_less_or_equal_el(Value0,Value1),
-    gr_less_or_equal_(Rest0,Rest1).
+less_or_equal_([],[]).
+less_or_equal_([X/Value0|Rest0],[X/Value1|Rest1]):-
+    less_or_equal_el(Value0,Value1),
+    less_or_equal_(Rest0,Rest1).
 
-gr_less_or_equal_el(g,g) :- !.
-gr_less_or_equal_el(g,any).
-gr_less_or_equal_el(ng,ng) :- !.
-gr_less_or_equal_el(ng,any).
-gr_less_or_equal_el(any,any).
+less_or_equal_el(g,g) :- !.
+less_or_equal_el(g,any).
+less_or_equal_el(ng,ng) :- !.
+less_or_equal_el(ng,any).
+less_or_equal_el(any,any).
 
 %------------------------------------------------------------------------%
-% gr_glb(+,+,-)                                                          %
-% gr_glb(ASub0,ASub1,Glb)                                                %
+% glb(+,+,-)                                                             %
+% glb(ASub0,ASub1,Glb)                                                   %
 %------------------------------------------------------------------------%
 
-:- pred gr_glb(+ASub0,+ASub1,-Glb): gr_asub * gr_asub * term
-   => gr_asub(Glb) + (not_fails, is_det)
+:- dom_impl(_, glb/3, [noq]).
+:- pred glb(+ASub0,+ASub1,-Glb): asub * asub * term
+   => asub(Glb) + (not_fails, is_det)
    #"@var{Glb} is the great lower bound of @var{ASub0} and @var{ASub1}".
-gr_glb('$bottom',_ASub,ASub3) :- !, ASub3='$bottom'.
-gr_glb(_ASub,'$bottom',ASub3) :- !, ASub3='$bottom'.
-gr_glb(ASub0,ASub1,Glb):-
+glb('$bottom',_ASub,ASub3) :- !, ASub3='$bottom'.
+glb(_ASub,'$bottom',ASub3) :- !, ASub3='$bottom'.
+glb(ASub0,ASub1,Glb):-
     ASub0 == ASub1,!,
     Glb = ASub1.
-gr_glb(ASub0,ASub1,Glb):-
-    gr_glb_(ASub0,ASub1,Glb),!.
-gr_glb(_,_,'$bottom').
+glb(ASub0,ASub1,Glb):-
+    glb_(ASub0,ASub1,Glb),!.
+glb(_,_,'$bottom').
 
-gr_glb_([],[],[]).
-gr_glb_([Xv|ASub0],[Yv|ASub1],[Xv|Glb]):-
+glb_([],[],[]).
+glb_([Xv|ASub0],[Yv|ASub1],[Xv|Glb]):-
     Xv == Yv,!,
-    gr_glb_(ASub0,ASub1,Glb).
-gr_glb_([X/any|ASub0],[X/Value|ASub1],[X/Value|Glb]):-
+    glb_(ASub0,ASub1,Glb).
+glb_([X/any|ASub0],[X/Value|ASub1],[X/Value|Glb]):-
     !,
-    gr_glb_(ASub0,ASub1,Glb).
-gr_glb_([X/Value|ASub0],[X/any|ASub1],[X/Value|Glb]):-
+    glb_(ASub0,ASub1,Glb).
+glb_([X/Value|ASub0],[X/any|ASub1],[X/Value|Glb]):-
     !,
-    gr_glb_(ASub0,ASub1,Glb).
+    glb_(ASub0,ASub1,Glb).
 
 %% %-------------------------------------------------------------------------
-%% % gr_extend_free(+,+,-)
-%% % gr_extend_free(ASub,Vars,NewASub)
+%% % extend_free(+,+,-)
+%% % extend_free(ASub,Vars,NewASub)
 %% %-------------------------------------------------------------------------
 %% 
-%% :- pred gr_extend_free(+ASub,+Vars,-NewASub): gr_asub * list * gr_asub.
+% :- dom_impl(_, extend_free(ASub1,Vars,ASub), extend_free(ASub1,Vars,ASub)).
+%% :- pred extend_free(+ASub,+Vars,-NewASub): asub * list * asub.
 %% 
-%% gr_extend_free(ASub,Vars,NewASub):-
+%% extend_free(ASub,Vars,NewASub):-
 %%      gr_change_values_insert(Vars,ASub,NewASub,ng).
 
 %-------------------------------------------------------------------------
@@ -1204,7 +1172,7 @@ gr_free_peel_args(N1,N,Term1,Term2,Binds,Rest) :-
 %-------------------------------------------------------------------------
 gr_change_values_insert([],Fr,Fr,_):- !.
 gr_change_values_insert(Vars,[],NewFr,Value):- !,
-    gr_create_values(Vars,NewFr,Value).
+    create_values(Vars,NewFr,Value).
 gr_change_values_insert([X|Xs],[Y/Val|Fr],NewFr,Value):- 
     compare(D,Y,X),
     gr_change_values_insert_(D,Y/Val,Fr,X,Xs,NewFr,Value).
@@ -1217,7 +1185,7 @@ gr_change_values_insert_(>,Elem,Fr,X,Xs,[X/Value|NewFr],Value):-
     gr_change_values_insert(Xs,[Elem|Fr],NewFr,Value).
 gr_change_values_insert_(<,Elem,[],X,Xs,NewFr,Value):- !,
     NewFr = [Elem,X/Value|RestFr],
-    gr_create_values(Xs,RestFr,Value).
+    create_values(Xs,RestFr,Value).
 gr_change_values_insert_(<,Elem,Fr,X,Xs,[Elem|NewFr],Value):-
     gr_change_values_insert([X|Xs],Fr,NewFr,Value).
 
