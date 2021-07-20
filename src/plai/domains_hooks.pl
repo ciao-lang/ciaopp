@@ -6,8 +6,8 @@
 
 % ===========================================================================
 :- doc(section, "Reachability domains"). % TODO: for partial evaluation
-:- use_module(domain(pd)).
-:- use_module(domain(pdb)).
+:- use_module(domain(pd), []).
+:- use_module(domain(pdb), []).
 % ===========================================================================
 :- doc(section, "Constraint domains").
 :- use_module(domain(fr_top)).
