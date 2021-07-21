@@ -112,6 +112,7 @@ ptypes_rename_auxinfo_asub(Calls,Dict,RenCalls) :- terms_rename_auxinfo_asub(Cal
 :- dom_impl(ptypes, widencall/3).
 :- export(ptypes_widencall/3).
 ptypes_widencall(Prime0,Prime1,Result):-
+%    ptypes_widen(Prime0,Prime1,Result). % TODO: termsd.pl uses this; which is better?
     ( terms_less_or_equal(Prime1,Prime0) ->
         Result = Prime0
     ; terms_compute_lub_el(Prime0,Prime1,Prime),
