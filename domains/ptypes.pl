@@ -45,6 +45,10 @@ ptypes_abs_sort(ASub,ASub_s) :- terms_abs_sort(ASub,ASub_s).
 :- export(ptypes_extend/5).
 ptypes_extend(Sg,Prime,Sv,Call,Succ) :- terms_extend(Sg,Prime,Sv,Call,Succ).
 
+:- dom_impl(ptypes, project/5).
+:- export(ptypes_project/5).
+ptypes_project(Sg,Vars,HvFv_u,Asub,Proj) :- terms_project(Sg,Vars,HvFv_u,Asub,Proj).
+
 :- dom_impl(ptypes, less_or_equal/2).
 :- export(ptypes_less_or_equal/2).
 ptypes_less_or_equal(ASub0,ASub1) :- terms_less_or_equal(ASub0,ASub1).
@@ -101,6 +105,10 @@ ptypes_empty_entry(Sg,Qv,Call) :- terms_empty_entry(Sg,Qv,Call).
 :- export(ptypes_collect_auxinfo_asub/3).
 ptypes_collect_auxinfo_asub(ASub,Types0,Types) :- terms_collect_auxinfo_asub(ASub,Types0,Types).
 
+:- dom_impl(ptypes, rename_auxinfo_asub/3).
+:- export(ptypes_rename_auxinfo_asub/3).
+ptypes_rename_auxinfo_asub(Calls,Dict,RenCalls) :- terms_rename_auxinfo_asub(Calls,Dict,RenCalls).
+
 :- dom_impl(ptypes, widencall/3).
 :- export(ptypes_widencall/3).
 ptypes_widencall(Prime0,Prime1,Result):-
@@ -131,5 +139,3 @@ henten([],[],[]).
 henten([X:T1|Prime0],[X:T2|Prime],[X:T|NewPrime]):-
     hentenwid(T1,T2,T),
     henten(Prime0,Prime,NewPrime).
-
-% :- dom_impl(ptypes, rename_auxinfo_asub/3). % TODO: missing, why?

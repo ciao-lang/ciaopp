@@ -44,7 +44,7 @@
 % ===========================================================================
 :- doc(section, "Type domains"). % TODO: shape/structure?
 :- use_module(domain(termsd)).
-:- use_module(domain(ptypes)).
+:- use_module(domain(ptypes), []).
 :- use_module(domain(eterms)).
 :- use_module(domain(etermsvar)).
 :- use_module(domain(svterms)).
