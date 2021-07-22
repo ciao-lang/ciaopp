@@ -11,31 +11,7 @@
 :- use_module(domain(ppl_interface)).
 
 :- include(ciaopp(plai/plai_domain)).
-:- dom_def(polyhedra).
-:- dom_impl(polyhedra, init_abstract_domain/1).
-:- dom_impl(polyhedra, call_to_entry/9).
-:- dom_impl(polyhedra, exit_to_prime/7).
-:- dom_impl(polyhedra, project/5).
-:- dom_impl(polyhedra, widencall/3).
-:- dom_impl(polyhedra, needs/1).
-:- dom_impl(polyhedra, widen/3).
-:- dom_impl(polyhedra, compute_lub/2).
-:- dom_impl(polyhedra, identical_abstract/2).
-:- dom_impl(polyhedra, abs_sort/2).
-:- dom_impl(polyhedra, extend/5).
-:- dom_impl(polyhedra, less_or_equal/2).
-:- dom_impl(polyhedra, glb/3).
-:- dom_impl(polyhedra, eliminate_equivalent/2).
-:- dom_impl(polyhedra, call_to_success_fact/9).
-:- dom_impl(polyhedra, special_builtin/5).
-:- dom_impl(polyhedra, success_builtin/6).
-:- dom_impl(polyhedra, call_to_success_builtin/6).
-:- dom_impl(polyhedra, input_interface/4).
-:- dom_impl(polyhedra, input_user_interface/5).
-:- dom_impl(polyhedra, asub_to_native/5).
-:- dom_impl(polyhedra, unknown_call/4).
-:- dom_impl(polyhedra, unknown_entry/3).
-:- dom_impl(polyhedra, empty_entry/3).
+:- dom_def(polyhedra, [default]).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % TODO: WARNING
@@ -76,18 +52,14 @@ polyhedra_finalize :- true. % TODO: do nothing (debug)
 
 :- use_module(ciaopp(preprocess_flags), [push_pp_flag/2]).
 
-:- export(polyhedra_init_abstract_domain/1).
-polyhedra_init_abstract_domain([widen]) :- 
+:- dom_impl(polyhedra, init_abstract_domain/1, [noq]).
+init_abstract_domain([widen]) :- 
     push_pp_flag(widen,on).
 
 %-------------------------------------------------------------------------
-%-------------------------------------------------------------------------
-%                      ABSTRACT SORT
-%-------------------------------------------------------------------------
-%-------------------------------------------------------------------------
-:- export(polyhedra_abs_sort/2).
-polyhedra_abs_sort('$bottom','$bottom'):-!.
-polyhedra_abs_sort(ASub1,ASub2):-
+:- dom_impl(polyhedra, abs_sort/2, [noq]).
+abs_sort('$bottom','$bottom'):-!.
+abs_sort(ASub1,ASub2):-
     polyhedra_initialize,
     polyhedra_sort_(ASub1,ASub2),
     polyhedra_finalize.
@@ -95,45 +67,38 @@ polyhedra_abs_sort(ASub1,ASub2):-
 polyhedra_sort_(ASub,ASub_Sorted):-
     ASub = (Poly,Vars),!,
     sort(Vars,Sorted_Vars),
-    (Sorted_Vars==Vars ->
-     ASub_Sorted = ASub;
-        
-    ppl_Polyhedron_get_minimized_constraints(Poly,Cons_Sys),
-    dim2var(Cons_Sys,Vars,Renum_Cons_Sys),
-    dim2var(Renum_Cons_Sys,Sorted_Vars,Cons_Sys2),
-    ppl_Polyhedron_space_dimension(Poly,Dims),
-    ppl_new_NNC_Polyhedron_from_space_dimension(Dims,universe,New_Poly),
-    ppl_Polyhedron_add_constraints(New_Poly,Cons_Sys2),
-    ASub_Sorted = (New_Poly,Sorted_Vars)
+    ( Sorted_Vars==Vars ->
+        ASub_Sorted = ASub
+    ; ppl_Polyhedron_get_minimized_constraints(Poly,Cons_Sys),
+      dim2var(Cons_Sys,Vars,Renum_Cons_Sys),
+      dim2var(Renum_Cons_Sys,Sorted_Vars,Cons_Sys2),
+      ppl_Polyhedron_space_dimension(Poly,Dims),
+      ppl_new_NNC_Polyhedron_from_space_dimension(Dims,universe,New_Poly),
+      ppl_Polyhedron_add_constraints(New_Poly,Cons_Sys2),
+      ASub_Sorted = (New_Poly,Sorted_Vars)
     ).
 polyhedra_sort_(X,X).
 
-:- export(polyhedra_eliminate_equivalent/2).
-polyhedra_eliminate_equivalent(ASub1,ASub2):-
-    polyhedra_abs_sort(ASub1,ASub2).
+:- dom_impl(polyhedra, eliminate_equivalent/2, [noq]).
+eliminate_equivalent(ASub1,ASub2):-
+    abs_sort(ASub1,ASub2).
 
 %-------------------------------------------------------------------------
-%-------------------------------------------------------------------------
-%                      ABSTRACT IDENTICAL
-%-------------------------------------------------------------------------
-%------------------------------------------------------------------------%
-:- export(polyhedra_identical_abstract/2).
-polyhedra_identical_abstract('$bottom','$bottom'):-!.
-polyhedra_identical_abstract(ASub1,ASub2):-
+:- dom_impl(polyhedra, identical_abstract/2, [noq]).
+identical_abstract('$bottom','$bottom'):-!.
+identical_abstract(ASub1,ASub2):-
     polyhedra_initialize,
-    polyhedra_identical_abstract_(ASub1,ASub2),     
+    identical_abstract_(ASub1,ASub2),     
     polyhedra_finalize.
 
-polyhedra_identical_abstract_(ASub1,_ASub2):-
+identical_abstract_(ASub1,_ASub2):-
     ASub1 = (Poly1,_Vars1),
     ppl_Polyhedron_is_empty(Poly1),!.
-
-polyhedra_identical_abstract_(ASub1,ASub2):-
+identical_abstract_(ASub1,ASub2):-
     ASub1 = (Poly1,Vars1),
     ASub2 = (Poly2,Vars2),
     Vars1 == Vars2,
     ppl_Polyhedron_equals_Polyhedron(Poly1,Poly2).
-
 
 %-------------------------------------------------------------------------
 %-------------------------------------------------------------------------
@@ -144,26 +109,26 @@ polyhedra_identical_abstract_(ASub1,ASub2):-
 %------------------------------------------------------------------------%
 
 % widening requires Dim0 = Dim1
-:- export(polyhedra_widencall/3).
-polyhedra_widencall('$bottom',ASub2,ASub2):-!.
-polyhedra_widencall(ASub1,'$bottom',ASub1):-!.
-polyhedra_widencall(ASub1,ASub2,New_ASub):- 
+:- dom_impl(polyhedra, widencall/3, [noq]).
+widencall('$bottom',ASub2,ASub2):-!.
+widencall(ASub1,'$bottom',ASub1):-!.
+widencall(ASub1,ASub2,New_ASub):- 
     polyhedra_initialize,
     match_dimensions(ASub1,ASub2,New_ASub1,New_ASub2),
     New_ASub1 = (Poly1,Vars),
     New_ASub2 = (Poly2,Vars),
-    polyhedra_widencall_(Poly1,Poly2,Poly_Widen),           
+    widencall_(Poly1,Poly2,Poly_Widen),           
     New_ASub = (Poly_Widen,Vars),
     polyhedra_finalize.
     
 % Poly1 is more recent than Poly0, thus matching the usual order
 % for widenings
 % Remember (PPL 0.7 bug) that contains(A,B)=true if B<=A -> A contains B
-polyhedra_widencall_(Poly0,Poly1,Poly_Widen):- 
+widencall_(Poly0,Poly1,Poly_Widen):- 
     ppl_Polyhedron_contains_Polyhedron(Poly0,Poly1),!,
     ppl_new_NNC_Polyhedron_from_NNC_Polyhedron(Poly0,New_Poly),
     Poly_Widen = New_Poly.
-polyhedra_widencall_(Poly0,Poly1,Poly_Widen):- 
+widencall_(Poly0,Poly1,Poly_Widen):- 
     ppl_new_NNC_Polyhedron_from_NNC_Polyhedron(Poly0,New_Poly),
     % TODO: call minimize after assign
     ppl_Polyhedron_poly_hull_assign(New_Poly,Poly1),
@@ -171,19 +136,16 @@ polyhedra_widencall_(Poly0,Poly1,Poly_Widen):-
     ppl_Polyhedron_BHRZ03_widening_assign(New_Poly,Poly0),  
     Poly_Widen = New_Poly.
 
-polyhedra_needs(widen).
+:- dom_impl(polyhedra, needs/1, [noq]).
+needs(widen).
 
-:- export(polyhedra_widen/3).
-polyhedra_widen(Prime0,Prime1,New_Prime):- 
-    polyhedra_widencall(Prime0,Prime1,New_Prime).
+:- dom_impl(polyhedra, widen/3, [noq]).
+widen(Prime0,Prime1,New_Prime):- 
+    widencall(Prime0,Prime1,New_Prime).
 
 %-------------------------------------------------------------------------
-%-------------------------------------------------------------------------
-%                      ABSTRACT LESS OR EQUAL
-%-------------------------------------------------------------------------
-%------------------------------------------------------------------------%
-:- export(polyhedra_less_or_equal/2).
-polyhedra_less_or_equal(ASub1,ASub2):-
+:- dom_impl(polyhedra, less_or_equal/2, [noq]).
+less_or_equal(ASub1,ASub2):-
     polyhedra_initialize,
     ASub1 = (Poly1,Vars),
     ASub2 = (Poly2,Vars),
@@ -191,50 +153,41 @@ polyhedra_less_or_equal(ASub1,ASub2):-
     polyhedra_finalize.
 
 %-------------------------------------------------------------------------
-%-------------------------------------------------------------------------
-%                      ABSTRACT LUB
-%-------------------------------------------------------------------------
-%------------------------------------------------------------------------%
-:- export(polyhedra_compute_lub/2).
-polyhedra_compute_lub(ASubList,Lub):-
+:- dom_impl(polyhedra, compute_lub/2, [noq]).
+compute_lub(ASubList,Lub):-
     polyhedra_initialize,
-    polyhedra_compute_lub_(ASubList,Lub),
+    compute_lub_(ASubList,Lub),
     polyhedra_finalize.
 
-polyhedra_compute_lub_('$bottom','$bottom').
-polyhedra_compute_lub_([ASub1],ASub1).
-polyhedra_compute_lub_([E1,E2|Rest],Lub):-
-    polyhedra_compute_lub_el(E1,E2,PartialLub),
-    polyhedra_compute_lub_([PartialLub|Rest],Lub).
+compute_lub_('$bottom','$bottom').
+compute_lub_([ASub1],ASub1).
+compute_lub_([E1,E2|Rest],Lub):-
+    compute_lub_el(E1,E2,PartialLub),
+    compute_lub_([PartialLub|Rest],Lub).
 
-polyhedra_compute_lub_el(ASub1,'$bottom',ASub1):- !.
-polyhedra_compute_lub_el('$bottom',ASub2,ASub2):- !.
-polyhedra_compute_lub_el(ASub1,ASub2,Lub):-
+compute_lub_el(ASub1,'$bottom',ASub1):- !.
+compute_lub_el('$bottom',ASub2,ASub2):- !.
+compute_lub_el(ASub1,ASub2,Lub):-
     match_dimensions(ASub1,ASub2,New_ASub1,New_ASub2),
     New_ASub1 = (Poly1,Vars),
     New_ASub2 = (Poly2,Vars),
     % TODO: call minimize after assign
     ppl_Polyhedron_poly_hull_assign(Poly1,Poly2),!,
     Lub = (Poly1,Vars).
-polyhedra_compute_lub_el(_ASub1,_ASub2,'$bottom').
+compute_lub_el(_ASub1,_ASub2,'$bottom').
 
-
 %-------------------------------------------------------------------------
-%-------------------------------------------------------------------------
-%                      ABSTRACT GLB
-%-------------------------------------------------------------------------
-%------------------------------------------------------------------------%
-:- export(polyhedra_glb/3).
-polyhedra_glb('$bottom',_ASub,ASub3) :- !, ASub3='$bottom'.
-polyhedra_glb(_ASub,'$bottom',ASub3) :- !, ASub3='$bottom'.
-polyhedra_glb(ASub1,ASub2,Glb):-
+:- dom_impl(polyhedra, glb/3, [noq]).
+glb('$bottom',_ASub,ASub3) :- !, ASub3='$bottom'.
+glb(_ASub,'$bottom',ASub3) :- !, ASub3='$bottom'.
+glb(ASub1,ASub2,Glb):-
     polyhedra_initialize,
-    polyhedra_glb_(ASub1,ASub2,Glb),
+    glb_(ASub1,ASub2,Glb),
     polyhedra_finalize.
 
-polyhedra_glb_(('$bottom',_),_ASub2,'$bottom'):- !.     
-polyhedra_glb_(_ASub1,('$bottom',_),'$bottom'):- !.     
-polyhedra_glb_(ASub1,ASub2,Glb):-
+glb_(('$bottom',_),_ASub2,'$bottom'):- !.     
+glb_(_ASub1,('$bottom',_),'$bottom'):- !.     
+glb_(ASub1,ASub2,Glb):-
     match_dimensions(ASub1,ASub2,New_ASub1,New_ASub2),
     New_ASub1 = (Poly1,Vars),
     New_ASub2 = (Poly2,Vars),
@@ -243,18 +196,14 @@ polyhedra_glb_(ASub1,ASub2,Glb):-
     Glb = (Poly1,Vars).
 
 %------------------------------------------------------------------------%
-%------------------------------------------------------------------------%
-%                      ABSTRACT PROJECTION
-%------------------------------------------------------------------------%
-%------------------------------------------------------------------------%
-:- export(polyhedra_project/5).
-polyhedra_project(_Sg,Vars,_HvFv_u,ASub,Proj):-
+:- dom_impl(polyhedra, project/5, [noq]).
+project(_Sg,Vars,_HvFv_u,ASub,Proj):-
     polyhedra_initialize,
-    polyhedra_project_(ASub,Vars,Proj),
+    project_(ASub,Vars,Proj),
     polyhedra_finalize.
 
-polyhedra_project_('$bottom',_,'$bottom'):- !.
-polyhedra_project_(ASub,Vars,Proj):-
+project_('$bottom',_,'$bottom'):- !.
+project_(ASub,Vars,Proj):-
     ASub = (Poly,Poly_Vars),
     ppl_new_NNC_Polyhedron_from_NNC_Polyhedron(Poly,Poly_Proj),
     project_on_dimensions(Poly_Proj,0,Poly_Vars,Vars),
@@ -269,54 +218,25 @@ project_on_dimensions( Poly,Dim,[_Var|Rest_Var],Vars):-
     ppl_Polyhedron_remove_space_dimensions(Poly,['$VAR'(Dim)]),
     project_on_dimensions(Poly,Dim,Rest_Var,Vars).
 
-
 %-------------------------------------------------------------------------
-%-------------------------------------------------------------------------
-%                      ABSTRACT Extend
-%-------------------------------------------------------------------------
-%------------------------------------------------------------------------%
-:- export(polyhedra_extend/5).
-polyhedra_extend(_Sg,Prime,Sv,Call,Success):-
+:- dom_impl(polyhedra, extend/5, [noq]).
+extend(_Sg,Prime,Sv,Call,Success):-
     polyhedra_initialize,
-    polyhedra_extend_(Prime,Sv,Call,Success),
+    extend_(Prime,Sv,Call,Success),
     polyhedra_finalize.
 
-polyhedra_extend_('$bottom',_Sv,_Call,'$bottom').
-polyhedra_extend_(Prime,Sv,Call,Success):- 
+extend_('$bottom',_Sv,_Call,'$bottom').
+extend_(Prime,Sv,Call,Success):- 
     polyhedra_merge(Call,Prime,Sv,Success).
 
-%:- export(test_polyhedra_extend/0).
-test_polyhedra_extend:-
+%------------------------------------------------------------------------%
+:- dom_impl(_, call_to_entry/9, [noq]).
+call_to_entry(Sv,Sg,Hv,Head,_K,Fv,Proj,Entry,ExtraInfo):-
     polyhedra_initialize,
-    % call
-    %ppl_new_Polyhedron_from_space_dimension(nnc,6,universe,Poly1),
-    ppl_new_NNC_Polyhedron_from_space_dimension(6,universe,Poly1),
-    ppl_Polyhedron_add_constraints(Poly1,
-    ['$VAR'(5)=<3*'$VAR'(1),'$VAR'(5)=<4*'$VAR'(2),'$VAR'(5)>2*'$VAR'(4)]),
-    Vars_Call = [[_1,_2],[_3],[_4],[_5,_6,_7,_8],[_9],[_10]],
-    ASub_Call = (Poly1,Vars_Call),
-    % prime
-    ppl_new_NNC_Polyhedron_from_space_dimension(2,universe,Poly2),
-    Vars_Prime = [[_3,_4,_9],[_5,_6,_7,_8]],
-    ASub_Prime = (Poly2,Vars_Prime),
-
-    Sv = [_1,_2,_3,_4,_5,_6,_7,_8,_9],
-    polyhedra_extend(not_provided_Sg,ASub_Prime,Sv,ASub_Call,ASub_Success),
-    print_absu(ASub_Success),
+    call_to_entry_(Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo),
     polyhedra_finalize.
 
-%------------------------------------------------------------------------%
-%------------------------------------------------------------------------%
-%                    ABSTRACT Call To Entry
-%------------------------------------------------------------------------%
-%------------------------------------------------------------------------%
-:- export(polyhedra_call_to_entry/9).
-polyhedra_call_to_entry(Sv,Sg,Hv,Head,_K,Fv,Proj,Entry,ExtraInfo):-
-    polyhedra_initialize,
-    polyhedra_call_to_entry_(Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo),
-    polyhedra_finalize.
-
-polyhedra_call_to_entry_(_Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo):-
+call_to_entry_(_Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo):-
     Proj=(Poly1,Vars),
     ppl_new_NNC_Polyhedron_from_NNC_Polyhedron(Poly1,Poly2),
     Temp1=(Poly2,Vars),
@@ -324,128 +244,69 @@ polyhedra_call_to_entry_(_Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo):-
     polyhedra_add_dimensions(Temp1,HvFv,Temp2),
     polyhedra_simplify_equations(Sg,Head,Binds),
     abs_gunify(Temp2,Binds,Upd_Proj,_NewBinds),
-    polyhedra_project_(Upd_Proj,HvFv,Entry),
+    project_(Upd_Proj,HvFv,Entry),
     ExtraInfo = (Upd_Proj,HvFv).
 
 %-------------------------------------------------------------------------
-%-------------------------------------------------------------------------
-%                      ABSTRACT Exit To Prime
-%------------------------------------------------------------------------%
-%------------------------------------------------------------------------%
-:- export(polyhedra_exit_to_prime/7).
-polyhedra_exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime):-
+:- dom_impl(polyhedra, exit_to_prime/7, [noq]).
+exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime):-
     polyhedra_initialize,
-    polyhedra_exit_to_prime_(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime),
+    exit_to_prime_(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime),
     polyhedra_finalize.
 
-polyhedra_exit_to_prime_(_Sg,_Hv,_Head,_Sv,'$bottom',_ExtraInfo,'$bottom'):-
+exit_to_prime_(_Sg,_Hv,_Head,_Sv,'$bottom',_ExtraInfo,'$bottom'):-
     !.
-polyhedra_exit_to_prime_(_Sg,_Hv,_Head,Sv,Exit,ExtraInfo,Prime):-
+exit_to_prime_(_Sg,_Hv,_Head,Sv,Exit,ExtraInfo,Prime):-
     ExtraInfo = (Upd_Proj,HvFv),
     polyhedra_merge(Upd_Proj,Exit,HvFv,Tmp),
-    polyhedra_project_(Tmp,Sv,Prime),
+    project_(Tmp,Sv,Prime),
     polyhedra_delete_polyhedron(Tmp).
 
-
-%:- export(test_polyhedra_exit_to_prime/0).
-test_polyhedra_exit_to_prime:-
-    polyhedra_initialize,
-    % proj
-    ppl_new_NNC_Polyhedron_from_space_dimension(5,universe,Poly1),
-    ppl_Polyhedron_add_constraints(Poly1,['$VAR'(2)>'$VAR'(0)]),
-    Upd_Proj = (Poly1,[[_Sv1],[_Sv2,_Hv1],[_Sv3,_Sv4,_Hv2],[_Sv5],[_Fv1]]),
-    %exit
-    ppl_new_NNC_Polyhedron_from_space_dimension(1,universe,Poly2),
-    ppl_Polyhedron_add_constraints(Poly2,
-                                  ['$VAR'(0)=7]),
-    Exit = (Poly2,[[_Hv1,_Hv2]]),
-    Hv =   [_Hv1,_Hv2],
-    Sv=    [_Sv1,_Sv2,_Sv3,_Sv4,_Sv5],
-    ord_union(Hv,[_Fv1],HvFv),
-    ExtraInfo = (Upd_Proj,HvFv),
-    polyhedra_exit_to_prime(_Sg,Hv,_Head,Sv,Exit,ExtraInfo,Prime),
-    print_absu(Prime),
-    polyhedra_finalize.
-
-test2(0).
-test2(X):-
-    test_polyhedra_exit_to_prime,
-    X1 is X-1,
-    test2(X1).
-
-%------------------------------------------------------------------------%
-%------------------------------------------------------------------------%
-%                   ABSTRACT Call to Success Fact                        %
-%------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
 % Specialized version of call_to_entry + exit_to_prime + extend for facts%
 %-------------------------------------------------------------------------
-:- export(polyhedra_call_to_success_fact/9).
-polyhedra_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ):-
+:- dom_impl(polyhedra, call_to_success_fact/9, [noq]).
+call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ):-
     polyhedra_initialize,
-    polyhedra_call_to_success_fact_(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ),
+    call_to_success_fact_(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ),
     polyhedra_finalize.
 
-polyhedra_call_to_success_fact_(Sg,Hv,Head,_K,Sv,Call,Proj,Prime,Succ):-
+call_to_success_fact_(Sg,Hv,Head,_K,Sv,Call,Proj,Prime,Succ):-
     Proj = (Poly1,Vars),
     ppl_new_NNC_Polyhedron_from_NNC_Polyhedron(Poly1,Poly2),
     New_Proj = (Poly2,Vars),
     polyhedra_add_dimensions(New_Proj,Hv,Temp1),
     polyhedra_simplify_equations(Sg,Head,Binds),
     abs_gunify(Temp1,Binds,Entry,_NewBinds),
-    polyhedra_project_(Entry,Sv,Prime),
-    polyhedra_extend_(Prime,Sv,Call,Succ).
-
-%:- export(test_polyhedra_call_to_success_fact/0).
-test_polyhedra_call_to_success_fact:-
-    polyhedra_initialize,
-    Sv1 = '$VAR'(0),
-    ppl_new_NNC_Polyhedron_from_space_dimension(3,universe,Poly1),
-    ppl_Polyhedron_add_constraint(Poly1,Sv1 >= 0),
-    ASub1 = (Poly1,[[_Sv1],[_Sv2],[_Sv3]]),
-    Sg = p(_Sv1,7),
-    Sv = [_Sv1],
-    Hv = [_Hv1],
-    Head = p(4,_Hv1),
-    Call=ASub1,
-    polyhedra_project(not_provided_Sg,Sv,not_provided_HvFv_u,Call,Proj),
-    %
-    polyhedra_call_to_entry(_Sv,Sg,Hv,Head,not_provided,[_Fv1],Proj,Entry,EI), % TODO: add some ClauseKey?
-    Entry = Exit,
-    polyhedra_exit_to_prime(_Sg,_Hv,_Head,Sv,Exit,EI,Prime),
-    polyhedra_extend(not_provided_Sg,Prime,Sv,Call,Succ1),
-    polyhedra_call_to_success_fact(Sg,Hv,Head,not_provided,Sv,Call,Proj,_Prime,Succ2), % TODO: add some ClauseKey?
-    polyhedra_identical_abstract(Succ1,Succ2),
-    polyhedra_finalize.
-
+    project_(Entry,Sv,Prime),
+    extend_(Prime,Sv,Call,Succ).
 
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
 %                Unknow & Empty Entry,Unknow Call                        %
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-:- export(polyhedra_unknown_entry/3).
-polyhedra_unknown_entry(_Sg,Vars,Entry):- 
+:- dom_impl(polyhedra, unknown_entry/3, [noq]).
+unknown_entry(_Sg,Vars,Entry):- 
     polyhedra_initialize,
     polyhedra_get_empty_Asub(Empty),
     polyhedra_add_dimensions(Empty,Vars,Entry),
     polyhedra_finalize.
 
-:- export(polyhedra_empty_entry/3).
-polyhedra_empty_entry(Sg,Vars,Entry):- 
+:- dom_impl(polyhedra, empty_entry/3, [noq]).
+empty_entry(Sg,Vars,Entry):- 
     polyhedra_initialize,
-    polyhedra_unknown_entry(Sg,Vars,Entry),
+    unknown_entry(Sg,Vars,Entry),
     polyhedra_finalize.
 
 % The unknown call might only impose more constraints on Vars, so Call is
 % a valid approximation for Succ, even for those dimensions that could be
 % instantiated as non-numeric values in the unknown call
-:- export(polyhedra_unknown_call/4).
-polyhedra_unknown_call(_Sg,_Vars,Call,Succ):-
+:- dom_impl(polyhedra, unknown_call/4, [noq]).
+unknown_call(_Sg,_Vars,Call,Succ):-
     polyhedra_initialize,
     Succ = Call,
     polyhedra_finalize.
-
 
 %------------------------------------------------------------------------%
 %                         HANDLING BUILTINS                              %
@@ -456,26 +317,21 @@ polyhedra_unknown_call(_Sg,_Vars,Call,Succ):-
 %                          Special Builtin
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-:- export(polyhedra_special_builtin/5).
-polyhedra_special_builtin(SgKey,Sg,Subgoal,Type,Condvars):-
-    polyhedra_initialize,
-    polyhedra_special_builtin_(SgKey,Sg,Subgoal,Type,Condvars),
-    polyhedra_finalize.
-
-polyhedra_special_builtin_('=/2',=(X,Y),_,unification,Condvars):-
+:- dom_impl(polyhedra, special_builtin/5, [noq]).
+special_builtin('=/2',=(X,Y),_,unification,Condvars):-
     Condvars = (X,Y).       
-polyhedra_special_builtin_('is/2',is(X,Y),_,constraint,Condvars):-
+special_builtin('is/2',is(X,Y),_,constraint,Condvars):-
     Condvars = '='(X,Y).    
-polyhedra_special_builtin_('=</2',Sg,_,constraint,Condvars):-
+special_builtin('=</2',Sg,_,constraint,Condvars):-
     Condvars = Sg.  
-polyhedra_special_builtin_('>=/2',Sg,_,constraint,Condvars):-
+special_builtin('>=/2',Sg,_,constraint,Condvars):-
     Condvars = Sg.  
-polyhedra_special_builtin_('</2',Sg,_,constraint,Condvars):-
+special_builtin('</2',Sg,_,constraint,Condvars):-
     Condvars = Sg.  
-polyhedra_special_builtin_('>/2',Sg,_,constraint,Condvars):-
+special_builtin('>/2',Sg,_,constraint,Condvars):-
     Condvars = Sg.  
-polyhedra_special_builtin_('true/0',_,_,unchanged,_).
-polyhedra_special_builtin_('read:read/1',_,_,unchanged,_).
+special_builtin('true/0',_,_,unchanged,_).
+special_builtin('read:read/1',_,_,unchanged,_).
 
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
@@ -485,33 +341,33 @@ polyhedra_special_builtin_('read:read/1',_,_,unchanged,_).
     
 % We only pay attention to the subset [=,<,>,>=,=<] if they relate linear
 % equations.
-:- export(polyhedra_success_builtin/6).
-polyhedra_success_builtin(Type,Sv,Condv,_HvFv_u,Call,New_Succ):-
+:- dom_impl(polyhedra, success_builtin/6, [noq]).
+success_builtin(Type,Sv,Condv,_HvFv_u,Call,New_Succ):-
     polyhedra_initialize,
-    polyhedra_success_builtin0(Type,Sv,Condv,Call,New_Succ),
+    success_builtin0(Type,Sv,Condv,Call,New_Succ),
     polyhedra_finalize.
 
-polyhedra_success_builtin0(Type,Sv,Condv,Call,New_Succ):-
-    polyhedra_success_builtin_(Type,Sv,Condv,Call,Succ),
+success_builtin0(Type,Sv,Condv,Call,New_Succ):-
+    success_builtin_(Type,Sv,Condv,Call,Succ),
     Succ = (Poly,_Vars),
     (ppl_Polyhedron_is_empty(Poly) ->
      New_Succ = '$bottom';
      New_Succ = Succ
     ).
 
-polyhedra_success_builtin_(unchanged,_,_,Call,Succ):-
+success_builtin_(unchanged,_,_,Call,Succ):-
     Call = Succ.
-polyhedra_success_builtin_(unification,_Sv,Condv,Call,Succ):-
+success_builtin_(unification,_Sv,Condv,Call,Succ):-
     Condv = (Term1,Term2),
     polyhedra_simplify_equations(Term1,Term2,Binds),
     abs_gunify(Call,Binds,Succ,_NewBinds).
-polyhedra_success_builtin_(constraint,_Sv,Condv,Call,Succ):-
+success_builtin_(constraint,_Sv,Condv,Call,Succ):-
     Call = (Poly1,Vars),
     dim2var_constraint(Condv,Vars,Condv_As_PPL_Cons),!,
     ppl_new_NNC_Polyhedron_from_NNC_Polyhedron(Poly1,Poly2),
     ppl_Polyhedron_add_constraint(Poly2,Condv_As_PPL_Cons),
     Succ = (Poly2,Vars).
-polyhedra_success_builtin_(constraint,_Sv,_Condv,Call,Succ):-
+success_builtin_(constraint,_Sv,_Condv,Call,Succ):-
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%%%%%%%% Remove all variables implied
     Call = Succ.
@@ -520,13 +376,13 @@ polyhedra_success_builtin_(constraint,_Sv,_Condv,Call,Succ):-
 %                       Call to Success Builtin
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-:- export(polyhedra_call_to_success_builtin/6).
-polyhedra_call_to_success_builtin(SgKey,Sh,Sv,Call,Proj,Succ):-
+:- dom_impl(polyhedra, call_to_success_builtin/6, [noq]).
+call_to_success_builtin(SgKey,Sh,Sv,Call,Proj,Succ):-
     polyhedra_initialize,
-    polyhedra_call_to_success_builtin_(SgKey,Sh,Sv,Call,Proj,Succ),
+    call_to_success_builtin_(SgKey,Sh,Sv,Call,Proj,Succ),
     polyhedra_finalize.
 
-polyhedra_call_to_success_builtin_(_SgKey,_Sh,_Sv,Call,_Proj,Succ):-
+call_to_success_builtin_(_SgKey,_Sh,_Sv,Call,_Proj,Succ):-
     Call = Succ.
 
 %-------------------------------------------------------------------------
@@ -535,8 +391,8 @@ polyhedra_call_to_success_builtin_(_SgKey,_Sh,_Sv,Call,_Proj,Succ):-
 %-------------------------------------------------------------------------
 %-------------------------------------------------------------------------
 
-:- export(polyhedra_input_user_interface/5).
-polyhedra_input_user_interface(Cons_Sys,Qv,New_ASub,_Sg,_MaybeCallASub):-
+:- dom_impl(polyhedra, input_user_interface/5, [noq]).
+input_user_interface(Cons_Sys,Qv,New_ASub,_Sg,_MaybeCallASub):-
     polyhedra_initialize,
     length(Qv,Dims),
     ppl_new_NNC_Polyhedron_from_space_dimension(Dims,universe,Poly),
@@ -546,27 +402,25 @@ polyhedra_input_user_interface(Cons_Sys,Qv,New_ASub,_Sg,_MaybeCallASub):-
 
 input2builtin([],ASub,ASub).
 input2builtin([=(A,B)|Rest_Cons],ASub,New_ASub):- !,
-    polyhedra_success_builtin0(unification,_,(A,B),ASub,ASub1),
+    success_builtin0(unification,_,(A,B),ASub,ASub1),
     input2builtin(Rest_Cons,ASub1,New_ASub).
 % it can only be < ,>, >=, =< as filtered by constraint/1
 input2builtin([In_Equality|Rest_Cons],ASub,New_ASub):-
-    polyhedra_success_builtin0(constraint,_,In_Equality,ASub,ASub1),
+    success_builtin0(constraint,_,In_Equality,ASub,ASub1),
     input2builtin(Rest_Cons,ASub1,New_ASub).
     
-
-:- export(polyhedra_input_interface/4).
-polyhedra_input_interface(InputUser,_Kind,Old_Cons_Sys,New_Cons_sys):-
+:- dom_impl(polyhedra, input_interface/4, [noq]).
+input_interface(InputUser,_Kind,Old_Cons_Sys,New_Cons_sys):-
     polyhedra_initialize,
-    polyhedra_input_interface_(InputUser,_Kind,Old_Cons_Sys,New_Cons_sys),
+    input_interface_(InputUser,_Kind,Old_Cons_Sys,New_Cons_sys),
     polyhedra_finalize.
 
-polyhedra_input_interface_(constraint(Cons_Sys),perfect,
-                        Old_Cons_Sys,New_Cons_Sys):-
+input_interface_(constraint(Cons_Sys),perfect,Old_Cons_Sys,New_Cons_Sys):-
     append(Old_Cons_Sys,Cons_Sys,New_Cons_Sys). 
 
-:- export(polyhedra_asub_to_native/5).
-polyhedra_asub_to_native('$bottom',_Qv,_OutFlag,'$bottom',[]) :- !.
-polyhedra_asub_to_native(ASub1,_Qv,_OutFlag,[Output],[]):-
+:- dom_impl(polyhedra, asub_to_native/5, [noq]).
+asub_to_native('$bottom',_Qv,_OutFlag,'$bottom',[]) :- !.
+asub_to_native(ASub1,_Qv,_OutFlag,[Output],[]):-
     polyhedra_initialize,
     ASub1 = (Poly,Vars),
     ppl_Polyhedron_get_minimized_constraints(Poly,Cons_Sys),
@@ -658,8 +512,8 @@ match_dimensions(ASub1,ASub2,New_ASub1,New_ASub2):-
     ASub1 = (_Poly1,Vars1),
     ASub2 = (_Poly2,Vars2),
     ord_intersection(Vars1,Vars2,Vars),
-    polyhedra_project_(ASub1,Vars,New_ASub1),
-    polyhedra_project_(ASub2,Vars,New_ASub2).
+    project_(ASub1,Vars,New_ASub1),
+    project_(ASub2,Vars,New_ASub2).
 
 % This is complicated; comment!
 polyhedra_merge(Old_ASub,New_ASub,Init_Vars_New,Merge):-
@@ -677,7 +531,7 @@ polyhedra_merge(Old_ASub,New_ASub,Init_Vars_New,Merge):-
 % as reference
 polyhedra_merge_poly(ASub1,ASub2):-
     ASub2=( Poly2,Vars2),
-    polyhedra_project_(ASub1,Vars2,New_ASub1),
+    project_(ASub1,Vars2,New_ASub1),
     New_ASub1=(Poly1,Vars2),
     ppl_Polyhedron_get_minimized_constraints(Poly1,Cons_Sys1),      
     ppl_Polyhedron_add_constraints(Poly2,Cons_Sys1).        
@@ -740,10 +594,7 @@ polyhedra_free_peel_args(N1,N,Term1,Term2,Binds,Rest) :-
     polyhedra_free_peel_args(N2,N,Term1,Term2,Rest1,Rest).
 
 %-------------------------------------------------------------------------
-%-------------------------------------------------------------------------
-%                     ABSTRACT UNIFICATION
-%-------------------------------------------------------------------------
-%-------------------------------------------------------------------------
+% ABSTRACT UNIFICATION
 
 abs_gunify(Proj,Binds,NewProj,NewBinds):-
     ab_unify(Binds,Proj,Proj1,Binds1),
@@ -802,7 +653,7 @@ polyhedra_remove_nonint_dims(ASub,Invalid_Dim,New_ASub):-
     dim2var_list_var(Invalid_Dims,Vars,Named_Invalid_Dims),
     sort(Named_Invalid_Dims,Sorted_Invalid_Dims),
     ord_subtract(Vars,Sorted_Invalid_Dims,Valid_Dims),
-    polyhedra_project_(ASub,Valid_Dims,New_ASub).
+    project_(ASub,Valid_Dims,New_ASub).
 
 polyhedra_find_nonint_dims(ASub,Start,Invalid_Dims):-
     ASub = (Poly,Vars),
@@ -823,34 +674,8 @@ find_nonint_dims([Dim|Rest_Dim],Poly,[Var|Rest_Vars],Vars,Result):-
 find_nonint_dims([Dim|Rest_Dim],Poly,[_|Rest_Vars],Vars,Result):-
     find_nonint_dims([Dim|Rest_Dim],Poly,Rest_Vars,Vars,Result).
 
-%:- export(test_polyhedra_remove_nonint_dims/0).
-test_polyhedra_remove_nonint_dims:-
-    polyhedra_initialize,
-    ppl_new_NNC_Polyhedron_from_space_dimension(6,universe,Poly1),
-    ppl_Polyhedron_add_constraints(Poly1,
-          ['$VAR'(3)='$VAR'(1),'$VAR'(2)='$VAR'(1),'$VAR'(5)=<'$VAR'(0)] ),
-    ASub = (Poly1,[[_1],[_2],[_3],[_4],[_5],[_6]]), 
-    polyhedra_remove_nonint_dims(ASub,_3,New_ASub), 
-    print_absu(New_ASub),
-    polyhedra_finalize.
-
-%:- export(test_ab_unify/0).
-test_ab_unify:-
-    polyhedra_initialize,
-    ppl_new_NNC_Polyhedron_from_space_dimension(6,universe,Poly1),
-    ppl_Polyhedron_add_constraints(Poly1,
-        ['$VAR'(3) =< 3 *'$VAR'(1),'$VAR'(2) ='$VAR'(3)+'$VAR'(4)]),
-    ASub1 = (Poly1,[[_1,_4],[_3,_5],[_7],[_8],[_9,_11],[_Hv1]]),
-    polyhedra_simplify_equations((_1,_3,_7,_9),(a,5,_Hv1,_Hv1),Binds),
-    abs_gunify(ASub1,Binds,ASub2,_New_Binds),
-    print_absu(ASub2),
-    polyhedra_finalize.
-
 %-------------------------------------------------------------------------
-%-------------------------------------------------------------------------
-%                     CONSTRAINT MANIPULATION/ TYPE CHECKER
-%-------------------------------------------------------------------------
-%-------------------------------------------------------------------------
+% CONSTRAINT MANIPULATION/ TYPE CHECKER
 
 dim2var_var(Var,Vars_Or_ASub,Renamed_Var):-
     var(Var),!,
@@ -919,3 +744,98 @@ dim2var_constraint_system([_Cons|Rest],Vars,Rest_New_Cons):-
 dim2var(Cons_Sys,Vars,Renamed_Cons_Sys):-
     dim2var_constraint_system(Cons_Sys,Vars,Renamed_Cons_Sys).
 
+% ===========================================================================
+% (Tests)
+
+% TODO: move to polyhedra.test.pl module (reduce space) and turn into unit tests
+
+% %:- export(test_extend/0).
+% test_extend:-
+%     polyhedra_initialize,
+%     % call
+%     %ppl_new_Polyhedron_from_space_dimension(nnc,6,universe,Poly1),
+%     ppl_new_NNC_Polyhedron_from_space_dimension(6,universe,Poly1),
+%     ppl_Polyhedron_add_constraints(Poly1,
+%     ['$VAR'(5)=<3*'$VAR'(1),'$VAR'(5)=<4*'$VAR'(2),'$VAR'(5)>2*'$VAR'(4)]),
+%     Vars_Call = [[_1,_2],[_3],[_4],[_5,_6,_7,_8],[_9],[_10]],
+%     ASub_Call = (Poly1,Vars_Call),
+%     % prime
+%     ppl_new_NNC_Polyhedron_from_space_dimension(2,universe,Poly2),
+%     Vars_Prime = [[_3,_4,_9],[_5,_6,_7,_8]],
+%     ASub_Prime = (Poly2,Vars_Prime),
+% 
+%     Sv = [_1,_2,_3,_4,_5,_6,_7,_8,_9],
+%     extend(not_provided_Sg,ASub_Prime,Sv,ASub_Call,ASub_Success),
+%     print_absu(ASub_Success),
+%     polyhedra_finalize.
+% 
+% %:- export(test_polyhedra_exit_to_prime/0).
+% test_polyhedra_exit_to_prime:-
+%     polyhedra_initialize,
+%     % proj
+%     ppl_new_NNC_Polyhedron_from_space_dimension(5,universe,Poly1),
+%     ppl_Polyhedron_add_constraints(Poly1,['$VAR'(2)>'$VAR'(0)]),
+%     Upd_Proj = (Poly1,[[_Sv1],[_Sv2,_Hv1],[_Sv3,_Sv4,_Hv2],[_Sv5],[_Fv1]]),
+%     %exit
+%     ppl_new_NNC_Polyhedron_from_space_dimension(1,universe,Poly2),
+%     ppl_Polyhedron_add_constraints(Poly2,
+%                                   ['$VAR'(0)=7]),
+%     Exit = (Poly2,[[_Hv1,_Hv2]]),
+%     Hv =   [_Hv1,_Hv2],
+%     Sv=    [_Sv1,_Sv2,_Sv3,_Sv4,_Sv5],
+%     ord_union(Hv,[_Fv1],HvFv),
+%     ExtraInfo = (Upd_Proj,HvFv),
+%     exit_to_prime(_Sg,Hv,_Head,Sv,Exit,ExtraInfo,Prime),
+%     print_absu(Prime),
+%     polyhedra_finalize.
+% 
+% test2(0).
+% test2(X):-
+%     test_polyhedra_exit_to_prime,
+%     X1 is X-1,
+%     test2(X1).
+% 
+% %:- export(test_polyhedra_call_to_success_fact/0).
+% test_polyhedra_call_to_success_fact:-
+%     polyhedra_initialize,
+%     Sv1 = '$VAR'(0),
+%     ppl_new_NNC_Polyhedron_from_space_dimension(3,universe,Poly1),
+%     ppl_Polyhedron_add_constraint(Poly1,Sv1 >= 0),
+%     ASub1 = (Poly1,[[_Sv1],[_Sv2],[_Sv3]]),
+%     Sg = p(_Sv1,7),
+%     Sv = [_Sv1],
+%     Hv = [_Hv1],
+%     Head = p(4,_Hv1),
+%     Call=ASub1,
+%     project(not_provided_Sg,Sv,not_provided_HvFv_u,Call,Proj),
+%     %
+%     call_to_entry(_Sv,Sg,Hv,Head,not_provided,[_Fv1],Proj,Entry,EI), % TODO: add some ClauseKey?
+%     Entry = Exit,
+%     exit_to_prime(_Sg,_Hv,_Head,Sv,Exit,EI,Prime),
+%     extend(not_provided_Sg,Prime,Sv,Call,Succ1), % TODO: use extend_??? (otherwise ppl is deinitialized in the middle)
+%     call_to_success_fact(Sg,Hv,Head,not_provided,Sv,Call,Proj,_Prime,Succ2), % TODO: add some ClauseKey?
+%     identical_abstract(Succ1,Succ2),
+%     polyhedra_finalize.
+% 
+% %:- export(test_polyhedra_remove_nonint_dims/0).
+% test_polyhedra_remove_nonint_dims:-
+%     polyhedra_initialize,
+%     ppl_new_NNC_Polyhedron_from_space_dimension(6,universe,Poly1),
+%     ppl_Polyhedron_add_constraints(Poly1,
+%           ['$VAR'(3)='$VAR'(1),'$VAR'(2)='$VAR'(1),'$VAR'(5)=<'$VAR'(0)] ),
+%     ASub = (Poly1,[[_1],[_2],[_3],[_4],[_5],[_6]]), 
+%     polyhedra_remove_nonint_dims(ASub,_3,New_ASub), 
+%     print_absu(New_ASub),
+%     polyhedra_finalize.
+% 
+% %:- export(test_ab_unify/0).
+% test_ab_unify:-
+%     polyhedra_initialize,
+%     ppl_new_NNC_Polyhedron_from_space_dimension(6,universe,Poly1),
+%     ppl_Polyhedron_add_constraints(Poly1,
+%         ['$VAR'(3) =< 3 *'$VAR'(1),'$VAR'(2) ='$VAR'(3)+'$VAR'(4)]),
+%     ASub1 = (Poly1,[[_1,_4],[_3,_5],[_7],[_8],[_9,_11],[_Hv1]]),
+%     polyhedra_simplify_equations((_1,_3,_7,_9),(a,5,_Hv1,_Hv1),Binds),
+%     abs_gunify(ASub1,Binds,ASub2,_New_Binds),
+%     print_absu(ASub2),
+%     polyhedra_finalize.
