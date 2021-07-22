@@ -178,15 +178,15 @@ cond(polyhedra_constraint,AbsInt,Goal,Info) :-
     AbsInt = polyhedra,
     Info = (_Addr, Vars),
     Goal = 'native_props:constraint'(Cons_Sys),
-    polyhedra_input_user_interface(Cons_Sys, Vars, GoalASub, Goal, no), % TODO: check that last 2 args are OK
-    polyhedra_less_or_equal(Info, GoalASub).
+    polyhedra:input_user_interface(Cons_Sys, Vars, GoalASub, Goal, no), % TODO: check that last 2 args are OK
+    polyhedra:less_or_equal(Info, GoalASub).
 :- endif.
 
 :- if(defined(has_ciao_ppl)).
 % TODO: move above, make it modular, etc.
 :- use_module(domain(polyhedra), [
-    polyhedra_input_user_interface/5,
-    polyhedra_less_or_equal/2
+    input_user_interface/5,
+    less_or_equal/2
 ]).
 :- endif.
 

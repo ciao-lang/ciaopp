@@ -144,6 +144,7 @@ widen(Prime0,Prime1,New_Prime):-
     widencall(Prime0,Prime1,New_Prime).
 
 %-------------------------------------------------------------------------
+:- export(less_or_equal/2). % (for abs_exec_cond)
 :- dom_impl(polyhedra, less_or_equal/2, [noq]).
 less_or_equal(ASub1,ASub2):-
     polyhedra_initialize,
@@ -391,6 +392,7 @@ call_to_success_builtin_(_SgKey,_Sh,_Sv,Call,_Proj,Succ):-
 %-------------------------------------------------------------------------
 %-------------------------------------------------------------------------
 
+:- export(input_user_interface/5). % (for abs_exec_cond)
 :- dom_impl(polyhedra, input_user_interface/5, [noq]).
 input_user_interface(Cons_Sys,Qv,New_ASub,_Sg,_MaybeCallASub):-
     polyhedra_initialize,

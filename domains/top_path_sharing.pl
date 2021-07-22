@@ -1074,6 +1074,7 @@ can_be_ground1(=,_X,P,Occ,_G,OldG):-
 
 :- push_prolog_flag(multi_arity_warnings,off).
 
+:- export(path_to_shfr/3).
 path_to_shfr(ASub,Sh,Fr):-
     path_to_shfr0(ASub,Sh0,Fr0,[],[]),
     sort_list_of_lists(Sh0,Sh),
