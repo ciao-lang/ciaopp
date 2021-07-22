@@ -1,51 +1,24 @@
-:- module(depthk,
-    [ depthk_call_to_entry/9, 
-      depthk_call_to_success_builtin/6, 
-      depthk_call_to_success_fact/9,
-      depthk_compute_lub/2,
-      depthk_glb/3,
-      depthk_eliminate_equivalent/2,
-      depthk_abs_subset/2,
-      depthk_exit_to_prime/7,
-      depthk_extend/5,    
-      depthk_identical_abstract/2, 
-      depthk_input_user_interface/5,
-      depthk_input_interface/4,
-      depthk_less_or_equal/2,  
-      depthk_asub_to_native/5, 
-      depthk_project/5,   
-      depthk_abs_sort/2,      
-      depthk_special_builtin/5,  
-      depthk_success_builtin/6,
-      depthk_unknown_call/4, 
-      depthk_unknown_entry/3,  
-      depthk_empty_entry/3
-    ],
-    [ assertions ] ).
+:- module(depthk, [], [assertions]).
+
+% -------------------------------------------------------------------------
+%
+% Programmer: Francisco Bueno
+% Date:       February 1, 1995
+%
+% -------------------------------------------------------------------------
+% MODULE: "depthk": the depth-k domain 
+% -----------------------------------------------------------------------
+% substitutions are (sorted) lists of unification equations - X=term
+% memo lists of substitutions not singletons (lub as disjunction)
+% lub as disjunction selected with a flag - real lub not yet implemented!
+% -----------------------------------------------------------------------+
+
+:- doc(bug,"tried to keep ""project"" reasonable but it seems wrong!").
+
+% -----------------------------------------------------------------------
 
 :- include(ciaopp(plai/plai_domain)).
-:- dom_def(depthk).
-:- dom_impl(depthk, call_to_entry/9).
-:- dom_impl(depthk, exit_to_prime/7).
-:- dom_impl(depthk, project/5).
-:- dom_impl(depthk, compute_lub/2).
-:- dom_impl(depthk, identical_abstract/2).
-:- dom_impl(depthk, abs_sort/2).
-:- dom_impl(depthk, extend/5).
-:- dom_impl(depthk, less_or_equal/2).
-:- dom_impl(depthk, glb/3).
-:- dom_impl(depthk, eliminate_equivalent/2).
-:- dom_impl(depthk, abs_subset/2).
-:- dom_impl(depthk, call_to_success_fact/9).
-:- dom_impl(depthk, special_builtin/5).
-:- dom_impl(depthk, success_builtin/6).
-:- dom_impl(depthk, call_to_success_builtin/6).
-:- dom_impl(depthk, input_interface/4).
-:- dom_impl(depthk, input_user_interface/5).
-:- dom_impl(depthk, asub_to_native/5).
-:- dom_impl(depthk, unknown_call/4).
-:- dom_impl(depthk, unknown_entry/3).
-:- dom_impl(depthk, empty_entry/3).
+:- dom_def(depthk, [default]).
 
 :- use_module(ciaopp(preprocess_flags), [current_pp_flag/2]).
 :- use_module(domain(s_eqs), 
@@ -66,49 +39,33 @@
 
 depth_k(K):- current_pp_flag(depth,K).
 
-% -------------------------------------------------------------------------
-%
-% Programmer: Francisco Bueno
-% Date:       February 1, 1995
-%
-% -------------------------------------------------------------------------
-% MODULE: "depthk": the depth-k domain 
-% -----------------------------------------------------------------------
-% substitutions are (sorted) lists of unification equations - X=term
-% memo lists of substitutions not singletons (lub as disjunction)
-% lub as disjunction selected with a flag - real lub not yet implemented!
-% -----------------------------------------------------------------------+
-
-:- doc(bug,"tried to keep ""project"" reasonable but it seems wrong!").
-
-% -----------------------------------------------------------------------
-
 %------------------------------------------------------------------------%
 %                      ABSTRACT Call To Entry
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% depthk_call_to_entry(+,+,+,+,+,+,+,-,-)                                %
-% depthk_call_to_entry(Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo)          %
+% call_to_entry(+,+,+,+,+,+,+,-,-)                                       %
+% call_to_entry(Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo)                 %
 %------------------------------------------------------------------------%
 
-depthk_call_to_entry(_Sv,Sg,_Hv,Head,_K,Fv,Proj,Entry,Flag):- 
+:- dom_impl(_, call_to_entry/9, [noq]).
+call_to_entry(_Sv,Sg,_Hv,Head,_K,Fv,Proj,Entry,Flag):- 
     variant(Sg,Head),!,
     Flag = yes,
     copy_term((Sg,Proj),(NewTerm,NewProj_u)),
     Head = NewTerm,
-    depthk_abs_sort(NewProj_u,NewProj),
+    abs_sort(NewProj_u,NewProj),
     variables_are_variables(Fv,Free),
     merge(Free,NewProj,Entry).
-depthk_call_to_entry(_Sv,_Sg,[],_Head,_K,Fv,_Proj,Entry,no):- !,
+call_to_entry(_Sv,_Sg,[],_Head,_K,Fv,_Proj,Entry,no):- !,
     variables_are_variables(Fv,Entry).
-depthk_call_to_entry(_Sv,Sg,Hv,Head,_K,Fv,Proj,Entry,Unifiers):-
+call_to_entry(_Sv,Sg,Hv,Head,_K,Fv,Proj,Entry,Unifiers):-
     peel(Head,Sg,Unifiers,[]),
     depthk_unify(Unifiers,Proj,Entry0), !,
     depthk_bu_project(Entry0,Hv,Entry1),
-    depthk_abs_sort(Entry1,Entry2),
+    abs_sort(Entry1,Entry2),
     variables_are_variables(Fv,Tmp),
     merge(Tmp,Entry2,Entry).
-depthk_call_to_entry(_Sv,_Sg,_Hv,_Head,_K,_Fv,_Proj,'$bottom',no).
+call_to_entry(_Sv,_Sg,_Hv,_Head,_K,_Fv,_Proj,'$bottom',no).
 
 variables_are_variables([V|Fv],[V=_|ASub]):-
     variables_are_variables(Fv,ASub).
@@ -119,8 +76,8 @@ variables_are_variables([],[]).
 %                      ABSTRACT Exit To Prime
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% depthk_exit_to_prime(+,+,+,+,+,-,-)                                    %
-% depthk_exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime)               %
+% exit_to_prime(+,+,+,+,+,-,-)                                           %
+% exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime)                      %
 % It computes the prime abstract substitution Prime, i.e.  the result of %
 % going from the abstract substitution over the head variables (Exit), to%
 % the abstract substitution over the variables in the subgoal. It will:  %
@@ -134,39 +91,41 @@ variables_are_variables([],[]).
 %      * then project (closing) over Sv obtaining Prime                  %
 %------------------------------------------------------------------------%
 
-depthk_exit_to_prime(_Sg,_Hv,_Head,_Sv,'$bottom',_Flag,Prime) :- !,
+:- dom_impl(_, exit_to_prime/7, [noq]).
+exit_to_prime(_Sg,_Hv,_Head,_Sv,'$bottom',_Flag,Prime) :- !,
     Prime = '$bottom'.
-depthk_exit_to_prime(Sg,Hv,Head,_Sv,Exit,yes,Prime):- !,
-    depthk_project(Sg,Hv,not_provided_HvFv_u,Exit,BPrime),
+exit_to_prime(Sg,Hv,Head,_Sv,Exit,yes,Prime):- !,
+    project(Sg,Hv,not_provided_HvFv_u,Exit,BPrime),
     copy_term((Head,BPrime),(NewTerm,NewPrime)),
     Sg = NewTerm,
-    depthk_abs_sort(NewPrime,Prime).        
-depthk_exit_to_prime(_Sg,[],_Head,_Sv,_Exit,_ExtraInfo,Prime):- !,
+    abs_sort(NewPrime,Prime).        
+exit_to_prime(_Sg,[],_Head,_Sv,_Exit,_ExtraInfo,Prime):- !,
     Prime = [].
-depthk_exit_to_prime(_Sg,_Hv,_Head,Sv,Exit,Unifiers,Prime):-
+exit_to_prime(_Sg,_Hv,_Head,Sv,Exit,Unifiers,Prime):-
     depthk_unify(Unifiers,Exit,Prime0),
     depthk_bu_project(Prime0,Sv,Prime1),
-    depthk_abs_sort(Prime1,Prime).
+    abs_sort(Prime1,Prime).
 
 %-------------------------------------------------------------------------
 %-------------------------------------------------------------------------
 %                      ABSTRACT Extend
 %-------------------------------------------------------------------------
 %------------------------------------------------------------------------%
-% depthk_extend(+,+,+,+,-)                                               %
-% depthk_extend(Sg,Prime,Sv,Call,Succ)                                   %
+% extend(+,+,+,+,-)                                                      %
+% extend(Sg,Prime,Sv,Call,Succ)                                          %
 % If Prime = bottom, Succ = bottom. If Sv = [], Call = Succ. Otherwise,  %
 % just add to Prime equs. for variables in Call and not in Prime.        %
 %------------------------------------------------------------------------%
 
-depthk_extend(_Sg,'$bottom',_Sv,_Call,Succ):- !,
+:- dom_impl(_, extend/5, [noq]).
+extend(_Sg,'$bottom',_Sv,_Call,Succ):- !,
     Succ = '$bottom'.
-depthk_extend(_Sg,_Prime,[],Call,Succ):- !,
+extend(_Sg,_Prime,[],Call,Succ):- !,
     Call = Succ.
-depthk_extend(Sg,Prime,Sv,Call,Succ):-
+extend(Sg,Prime,Sv,Call,Succ):-
     variables_are_variables(Cv,Call),
     ord_subtract(Cv,Sv,Nv),
-    depthk_project(Sg,Nv,not_provided_HvFv_u,Call,Succ0),
+    project(Sg,Nv,not_provided_HvFv_u,Call,Succ0),
     merge(Succ0,Prime,Succ).
 
 %------------------------------------------------------------------------%
@@ -174,15 +133,16 @@ depthk_extend(Sg,Prime,Sv,Call,Succ):-
 %                      ABSTRACT PROJECTION
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% depthk_project(+,+,+,+,-)                                              %
-% depthk_project(Sg,Vars,HvFv_u,ASub,Proj)                               %
+% project(+,+,+,+,-)                                                     %
+% project(Sg,Vars,HvFv_u,ASub,Proj)                                      %
 % Leave in Proj only equs. related to Vars                               %
 %------------------------------------------------------------------------%
 
-depthk_project(_,_,_,'$bottom',Proj):- !,
+:- dom_impl(_, project/5, [noq]).
+project(_,_,_,'$bottom',Proj):- !,
     Proj = '$bottom'.
-depthk_project(_Sg,[],_HvFv_u,_ASub,[]):- !.
-depthk_project(_Sg,Vars,_HvFv_u,ASub,Proj):-
+project(_Sg,[],_HvFv_u,_ASub,[]):- !.
+project(_Sg,Vars,_HvFv_u,ASub,Proj):-
     discriminate_equs(ASub,Vars,Proj,_,_).
 
 %-------------------------------------------------------------------------
@@ -190,13 +150,14 @@ depthk_project(_Sg,Vars,_HvFv_u,ASub,Proj):-
 %                      ABSTRACT SORT
 %-------------------------------------------------------------------------
 %-------------------------------------------------------------------------
-% depthk_abs_sort(+,-)                                                       %
-% depthk_abs_sort(Asub_u,Asub)                                               %
+% abs_sort(+,-)                                                              %
+% abs_sort(Asub_u,Asub)                                                      %
 % Sorts the list of equs.                                                %
 %-------------------------------------------------------------------------
 
-depthk_abs_sort('$bottom','$bottom'):- !.
-depthk_abs_sort(ASub_u,ASub):-
+:- dom_impl(_, abs_sort/2, [noq]).
+abs_sort('$bottom','$bottom'):- !.
+abs_sort(ASub_u,ASub):-
     sort(ASub_u,ASub).
 
 %------------------------------------------------------------------------%
@@ -205,19 +166,20 @@ depthk_abs_sort(ASub_u,ASub):-
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
 %-------------------------------------------------------------------------
-% depthk_compute_lub(+,-)                                                %
-% depthk_compute_lub(ListASub,Lub)                                       %
+% compute_lub(+,-)                                                       %
+% compute_lub(ListASub,Lub)                                              %
 %-------------------------------------------------------------------------
 
-depthk_compute_lub([ASub],Lub):- !,
+:- dom_impl(_, compute_lub/2, [noq]).
+compute_lub([ASub],Lub):- !,
     Lub = ASub.
-depthk_compute_lub([ASub1,ASub2|ListASub],Lub):-
-    depthk_compute_lub_(ASub1,ASub2,Lub0),
-    depthk_compute_lub([Lub0|ListASub],Lub).
+compute_lub([ASub1,ASub2|ListASub],Lub):-
+    compute_lub_(ASub1,ASub2,Lub0),
+    compute_lub([Lub0|ListASub],Lub).
 
-depthk_compute_lub_('$bottom',ASub,Lub):- !, Lub = ASub.
-depthk_compute_lub_(ASub,'$bottom',Lub):- !, Lub = ASub.
-depthk_compute_lub_(ASub1,ASub2,Lub):-
+compute_lub_('$bottom',ASub,Lub):- !, Lub = ASub.
+compute_lub_(ASub,'$bottom',Lub):- !, Lub = ASub.
+compute_lub_(ASub1,ASub2,Lub):-
     lub_each_eq(ASub1,ASub2,Lub).
 
 lub_each_eq([],[],[]).
@@ -226,13 +188,14 @@ lub_each_eq([X=T1|ASub1],[X=T2|ASub2],[X=T|Lub]):-
     lub_each_eq(ASub1,ASub2,Lub).
 
 %-------------------------------------------------------------------------
-% depthk_glb(+,-)                                                        %
-% depthk_glb(ASub1,ASub2)                                                %
+% glb(+,-)                                                               %
+% glb(ASub1,ASub2)                                                       %
 %-------------------------------------------------------------------------
 
-depthk_glb('$bottom',_ASub,ASub3) :- !, ASub3='$bottom'.
-depthk_glb(_ASub,'$bottom',ASub3) :- !, ASub3='$bottom'.
-depthk_glb(ASub1,ASub2,Glb):-
+:- dom_impl(_, glb/3, [noq]).
+glb('$bottom',_ASub,ASub3) :- !, ASub3='$bottom'.
+glb(_ASub,'$bottom',ASub3) :- !, ASub3='$bottom'.
+glb(ASub1,ASub2,Glb):-
     glb_each_eq(ASub1,ASub2,Glb).
 
 glb_each_eq([],[],[]).
@@ -244,17 +207,19 @@ glb_each_eq([X=T1|ASub1],[X=T2|ASub2],[X=T|Lub]):-
 
 :- use_module(ciaopp(plai/domains), [absub_eliminate_equivalent/3]).
 
-depthk_eliminate_equivalent(TmpLSucc,LSucc) :- absub_eliminate_equivalent(TmpLSucc,depthk,LSucc).
+:- dom_impl(_, eliminate_equivalent/2, [noq]).
+eliminate_equivalent(TmpLSucc,LSucc) :- absub_eliminate_equivalent(TmpLSucc,depthk,LSucc).
 
 %------------------------------------------------------------------------%
 
-depthk_abs_subset(LASub1,LASub2) :- absub_is_subset(LASub1,LASub2), !. % TODO: added cut (absub_is_subset/2 leaves choicepoints)
+:- dom_impl(_, abs_subset/2, [noq]).
+abs_subset(LASub1,LASub2) :- absub_is_subset(LASub1,LASub2), !. % TODO: added cut (absub_is_subset/2 leaves choicepoints)
 
 % TODO: leaves choicepoints!
 absub_is_subset([],_LASub2).
 absub_is_subset([Sub1|Subs1],LASub2) :-
     member(ASub2,LASub2),
-    depthk_identical_abstract(Sub1,ASub2),
+    identical_abstract(Sub1,ASub2),
 % OR:
 %       absub_fixpoint_covered(depthk,Sub1,ASub2),
     absub_is_subset(Subs1,LASub2).
@@ -267,24 +232,26 @@ absub_is_subset([Sub1|Subs1],LASub2) :-
 % Specialized version of call_to_entry + exit_to_prime + extend for facts%
 %-------------------------------------------------------------------------
 
-depthk_call_to_success_fact(Sg,_Hv,Head,_K,Sv,Call,Proj,Prime,Succ):-
+:- dom_impl(_, call_to_success_fact/9, [noq]).
+call_to_success_fact(Sg,_Hv,Head,_K,Sv,Call,Proj,Prime,Succ):-
     peel(Head,Sg,Unifiers,[]),
     depthk_unify(Unifiers,Proj,Entry0), !,
     depthk_bu_project(Entry0,Sv,Prime1),
-    depthk_abs_sort(Prime1,Prime),
-    depthk_extend(Sg,Prime,Sv,Call,Succ).
-depthk_call_to_success_fact(_Sg,_Hv,_Head,_K,_Sv,_Call,_Proj,'$bottom','$bottom').
+    abs_sort(Prime1,Prime),
+    extend(Sg,Prime,Sv,Call,Succ).
+call_to_success_fact(_Sg,_Hv,_Head,_K,_Sv,_Call,_Proj,'$bottom','$bottom').
 
 %------------------------------------------------------------------------%
-% depthk_identical_abstract(+,+)                                         %
-% depthk_identical_abstract(ASub1,ASub2)                                 %
+% identical_abstract(+,+)                                                %
+% identical_abstract(ASub1,ASub2)                                        %
 % Succeeds if abstract substitutions ASub1 and ASub2 are defined on the  %
 % same variables and are equivalent                                      %
 %------------------------------------------------------------------------%
 
 %% care with top variables, which can be shared between the two substs.!!
 
-depthk_identical_abstract(ASub1,ASub2):-
+:- dom_impl(_, identical_abstract/2, [noq]).
+identical_abstract(ASub1,ASub2):-
     variables_are_variables(V1,ASub1),
     \+ \+ (
     numbervars(V1,0,M),
@@ -295,52 +262,57 @@ depthk_identical_abstract(ASub1,ASub2):-
     T1==T2 ).
 
 %------------------------------------------------------------------------%
-% depthk_less_or_equal(+,+)                                              %
-% depthk_less_or_equal(ASub0,ASub1)                                      %
+% less_or_equal(+,+)                                                     %
+% less_or_equal(ASub0,ASub1)                                             %
 %------------------------------------------------------------------------%
 
-depthk_less_or_equal('$bottom',_).
-depthk_less_or_equal(ASub0,ASub1):-
-    less_or_equal(ASub0,ASub1).
+:- dom_impl(_, less_or_equal/2, [noq]).
+less_or_equal('$bottom',_).
+less_or_equal(ASub0,ASub1):-
+    less_or_equal_(ASub0,ASub1).
 
-less_or_equal([],[]).
-less_or_equal([X=T1|ASub1],[X=T2|ASub2]):-
+less_or_equal_([],[]).
+less_or_equal_([X=T1|ASub1],[X=T2|ASub2]):-
     instance(T1,T2),
-    less_or_equal(ASub1,ASub2).
+    less_or_equal_(ASub1,ASub2).
 
 %-------------------------------------------------------------------------
-% depthk_unknown_call(+,+,+,-)                                           |
-% depthk_unknown_call(Sg,Qv,Call,Succ)                                   |
+% unknown_call(+,+,+,-)                                                  |
+% unknown_call(Sg,Qv,Call,Succ)                                          |
 %-------------------------------------------------------------------------
 
-depthk_unknown_call(_Sg,Qv,Call,Succ):-
+:- dom_impl(_, unknown_call/4, [noq]).
+unknown_call(_Sg,Qv,Call,Succ):-
     subtract_keys(Call,Qv,Succ0),
     variables_are_variables(Qv,Succ1),
     merge(Succ0,Succ1,Succ).
 
 %-------------------------------------------------------------------------
-% depthk_unknown_entry(+,+,-)                                            |
-% depthk_unknown_entry(Sg,Qv,Call)                                       |
+% unknown_entry(+,+,-)                                                   |
+% unknown_entry(Sg,Qv,Call)                                              |
 %-------------------------------------------------------------------------
 
-depthk_unknown_entry(_Sg,Qv,Call):-
+:- dom_impl(_, unknown_entry/3, [noq]).
+unknown_entry(_Sg,Qv,Call):-
     variables_are_variables(Qv,Call).
 
-depthk_empty_entry(Sg,Qv,Call):-
-    depthk_unknown_entry(Sg,Qv,Call).
+:- dom_impl(_, empty_entry/3, [noq]).
+empty_entry(Sg,Qv,Call):-
+    unknown_entry(Sg,Qv,Call).
 
 %-------------------------------------------------------------------------
 %                      USER INTERFACE
 %-------------------------------------------------------------------------
 
 %------------------------------------------------------------------------%
-% depthk_input_user_interface(+,+,-,+,+)                                 %
-% depthk_input_user_interface(InputUser,Qv,ASub,Sg,MaybeCallASub)        %
+% input_user_interface(+,+,-,+,+)                                        %
+% input_user_interface(InputUser,Qv,ASub,Sg,MaybeCallASub)               %
 % Obtaining the abstract substitution for Depthk from the user supplied  %
 % information                                                            %
 %------------------------------------------------------------------------%
 
-depthk_input_user_interface(Info,Qv,Call,_Sg,_MaybeCallASub):-
+:- dom_impl(_, input_user_interface/5, [noq]).
+input_user_interface(Info,Qv,Call,_Sg,_MaybeCallASub):-
     may_be_var(Info),
     sort(Info,Eqs),
     eqs_ranges(Qv,Eqs,Terms,_Vars,[],_AVarSet),
@@ -348,7 +320,8 @@ depthk_input_user_interface(Info,Qv,Call,_Sg,_MaybeCallASub):-
     depth_k(K),
     check_equs(AEqs,K,[],Call).
 
-depthk_input_interface(instance(X,T),perfect,Eqs0,Eqs):-
+:- dom_impl(_, input_interface/4, [noq]).
+input_interface(instance(X,T),perfect,Eqs0,Eqs):-
     var(X),
     myappend(Eqs0,X=T,Eqs).
 
@@ -360,17 +333,18 @@ myappend(Vs,V,[V|Vs]).
 may_be_var(X):- ( X=[] ; true ), !.
 
 %-------------------------------------------------------------------------
-% depthk_asub_to_native(+,+,+,-,-)
-% depthk_asub_to_native(ASub,Qv,OutFlag,Info,Comps)
+% asub_to_native(+,+,+,-,-)       
+% asub_to_native(ASub,Qv,OutFlag,Info,Comps)
 %-------------------------------------------------------------------------
 
-depthk_asub_to_native(ASub,_Qv,_OutFlag,OutputUser,[]) :-
-    depthk_asub_to_native_(ASub,OutputUser).
+:- dom_impl(_, asub_to_native/5, [noq]).
+asub_to_native(ASub,_Qv,_OutFlag,OutputUser,[]) :-
+    asub_to_native_(ASub,OutputUser).
 
-depthk_asub_to_native_([],[]).
-depthk_asub_to_native_([X=T|ASub],Info):-
+asub_to_native_([],[]).
+asub_to_native_([X=T|ASub],Info):-
     accumulate(X,T,Info0,Info),
-    depthk_asub_to_native_(ASub,Info0).
+    asub_to_native_(ASub,Info0).
 
 accumulate(_,T,Info0,Info):-
     var(T), !,
@@ -381,51 +355,52 @@ accumulate(X,T,Info,[instance(X,T)|Info]).
 %                         HANDLING BUILTINS                              %
 %------------------------------------------------------------------------%
 
-depthk_special_builtin('!/0',(!),_,nochange,[]).
+:- dom_impl(_, special_builtin/5, [noq]).
+special_builtin('!/0',(!),_,nochange,[]).
 % SICStus3 (ISO)
-depthk_special_builtin('=\\=/2',(_ =\= _),_,nochange,[]).
+special_builtin('=\\=/2',(_ =\= _),_,nochange,[]).
 % SICStus2.x
-% depthk_special_builtin('=\=/2',(_ =\= _),_,nochange,[]).
-depthk_special_builtin('=<'/2,'=<'(_,_),_,nochange,[]).
-depthk_special_builtin('@=<'/2,'@=<'(_,_),_,nochange,[]).
-depthk_special_builtin('@>'/2,'@>'(_,_),_,nochange,[]).
-depthk_special_builtin('@>='/2,'@>='(_,_),_,nochange,[]).
-depthk_special_builtin('@<'/2,'@<'(_,_),_,nochange,[]).
-depthk_special_builtin('>'/2,'>'(_,_),_,nochange,[]).
-depthk_special_builtin('>='/2,'>='(_,_),_,nochange,[]).
+% special_builtin('=\=/2',(_ =\= _),_,nochange,[]).
+special_builtin('=<'/2,'=<'(_,_),_,nochange,[]).
+special_builtin('@=<'/2,'@=<'(_,_),_,nochange,[]).
+special_builtin('@>'/2,'@>'(_,_),_,nochange,[]).
+special_builtin('@>='/2,'@>='(_,_),_,nochange,[]).
+special_builtin('@<'/2,'@<'(_,_),_,nochange,[]).
+special_builtin('>'/2,'>'(_,_),_,nochange,[]).
+special_builtin('>='/2,'>='(_,_),_,nochange,[]).
 % SICStus3 (ISO)
-depthk_special_builtin('\\==/2',(_ \== _),_,nochange,[]).
+special_builtin('\\==/2',(_ \== _),_,nochange,[]).
 % SICStus2.x
-% depthk_special_builtin('\==/2',(_ \== _),_,nochange,[]).
-depthk_special_builtin('<'/2,'<'(_,_),_,nochange,[]).
-depthk_special_builtin('$metachoice'/1,'$metachoice'(_),_,nochange,[]).
-depthk_special_builtin('$metacut'/1,'$metacut'(_),_,nochange,[]).
-%depthk_special_builtin('arg/3',arg(_,_,_),_,nochange,[]).
-depthk_special_builtin('atom/2',atom(_),_,nochange,[]).
-depthk_special_builtin('atomic/2',atomic(_),_,nochange,[]).
-depthk_special_builtin('format/2',format(_,_),_,nochange,[]).
-depthk_special_builtin('format/3',format(_,_,_),_,nochange,[]).
-%depthk_special_builtin('functor/3',functor(_,_,_),_,nochange,[]).
-depthk_special_builtin('ground/1',ground(_),_,nochange,[]).
-depthk_special_builtin('integer/1',integer(_),_,nochange,[]).
-depthk_special_builtin('instance/2',instance(X,Y),_,instance,(X,Y)).
-depthk_special_builtin('is/2',is(_,_),_,nochange,[]).
-depthk_special_builtin('length/2',length(_,_),_,nochange,[]).
-depthk_special_builtin('nl/1',nl(_),_,nochange,[]).
-depthk_special_builtin('nonvar/1',nonvar(_),_,nochange,[]). % needed?
-depthk_special_builtin('not_free/1',nonvar(_),_,nochange,[]).
-depthk_special_builtin('number/1',number(_),_,nochange,[]).
-depthk_special_builtin('statistics/2',statistics(_,_),_,nochange,[]).
-depthk_special_builtin('var/1',var(_),_,nochange,[]). % needed?
-depthk_special_builtin('free/1',var(_),_,nochange,[]).
-depthk_special_builtin('write/1',write(_),_,nochange,[]).      
-depthk_special_builtin('write/2',write(_,_),_,nochange,[]).
-depthk_special_builtin('write_canonical/1',write_canonical(_),_,nochange,[]).
-depthk_special_builtin('write_canonical/2',write_canonical(_,_),_,nochange,[]).
-depthk_special_builtin('writeq/1',writeq(_),_,nochange,[]).
-depthk_special_builtin('writeq/2',writeq(_,_),_,nochange,[]).
-depthk_special_builtin(_Key,Builtin,_,nochange,[]):- functor(Builtin,_,0).
-depthk_special_builtin(Key,_Builtin,_,special(Key),[]):- 
+% special_builtin('\==/2',(_ \== _),_,nochange,[]).
+special_builtin('<'/2,'<'(_,_),_,nochange,[]).
+special_builtin('$metachoice'/1,'$metachoice'(_),_,nochange,[]).
+special_builtin('$metacut'/1,'$metacut'(_),_,nochange,[]).
+%special_builtin('arg/3',arg(_,_,_),_,nochange,[]).
+special_builtin('atom/2',atom(_),_,nochange,[]).
+special_builtin('atomic/2',atomic(_),_,nochange,[]).
+special_builtin('format/2',format(_,_),_,nochange,[]).
+special_builtin('format/3',format(_,_,_),_,nochange,[]).
+%special_builtin('functor/3',functor(_,_,_),_,nochange,[]).
+special_builtin('ground/1',ground(_),_,nochange,[]).
+special_builtin('integer/1',integer(_),_,nochange,[]).
+special_builtin('instance/2',instance(X,Y),_,instance,(X,Y)).
+special_builtin('is/2',is(_,_),_,nochange,[]).
+special_builtin('length/2',length(_,_),_,nochange,[]).
+special_builtin('nl/1',nl(_),_,nochange,[]).
+special_builtin('nonvar/1',nonvar(_),_,nochange,[]). % needed?
+special_builtin('not_free/1',nonvar(_),_,nochange,[]).
+special_builtin('number/1',number(_),_,nochange,[]).
+special_builtin('statistics/2',statistics(_,_),_,nochange,[]).
+special_builtin('var/1',var(_),_,nochange,[]). % needed?
+special_builtin('free/1',var(_),_,nochange,[]).
+special_builtin('write/1',write(_),_,nochange,[]).      
+special_builtin('write/2',write(_,_),_,nochange,[]).
+special_builtin('write_canonical/1',write_canonical(_),_,nochange,[]).
+special_builtin('write_canonical/2',write_canonical(_,_),_,nochange,[]).
+special_builtin('writeq/1',writeq(_),_,nochange,[]).
+special_builtin('writeq/2',writeq(_,_),_,nochange,[]).
+special_builtin(_Key,Builtin,_,nochange,[]):- functor(Builtin,_,0).
+special_builtin(Key,_Builtin,_,special(Key),[]):- 
     very_special_builtin(Key).
 
 very_special_builtin('=../2').
@@ -434,39 +409,40 @@ very_special_builtin('functor/3').
 very_special_builtin('is/2').
 very_special_builtin('name/2').
 
-depthk_success_builtin(nochange,_Sv_uns,[],_,Call,Call).
-depthk_success_builtin(instance,_Sv_uns,(X,Y),_,Call,Succ):-
+:- dom_impl(_, success_builtin/6, [noq]).
+success_builtin(nochange,_Sv_uns,[],_,Call,Call).
+success_builtin(instance,_Sv_uns,(X,Y),_,Call,Succ):-
     var(X), !,
     discriminate_equs(Call,[X],[X=T],NonRelated,_Renamings),
     ( most_general_instance(T,Y,NewT)
     -> merge_eqs([X=NewT],NonRelated,Succ)
      ; Succ='$bottom'
     ).
-depthk_success_builtin(instance,_Sv_uns,_Args,_,Call,Call).
+success_builtin(instance,_Sv_uns,_Args,_,Call,Call).
 
-depthk_call_to_success_builtin(_SgKey,Sg,Sv,Call,_Proj,Succ):-
-    depthk_call_to_prime_builtin(Sg,Sv,Call,Prime0),
+:- dom_impl(_, call_to_success_builtin/6, [noq]).
+call_to_success_builtin(_SgKey,Sg,Sv,Call,_Proj,Succ):-
+    call_to_prime_builtin(Sg,Sv,Call,Prime0),
     varset(Prime0,Vars),
     ord_subtract(Sv,Vars,Vars0),
-    depthk_project(Sg,Vars0,not_provided_HvFv_u,Call,Prime1),
+    project(Sg,Vars0,not_provided_HvFv_u,Call,Prime1),
     merge_eqs(Prime0,Prime1,Prime),
-    depthk_extend(Sg,Prime,Sv,Call,Succ), !.
-depthk_call_to_success_builtin(_SgKey,_Sg,_Sv,_Call,_Proj,'$bottom').
+    extend(Sg,Prime,Sv,Call,Succ), !.
+call_to_success_builtin(_SgKey,_Sg,_Sv,_Call,_Proj,'$bottom').
 
-depthk_call_to_prime_builtin(Sg,Sv,Call,Prime):-
+call_to_prime_builtin(Sg,Sv,Call,Prime):-
     execute_builtin(Sg,Call,Eqs), !,
     depthk_bu_unify(Eqs,Sv,[],Prime).
-depthk_call_to_prime_builtin(Sg,Sv,_Call,Prime):-
+call_to_prime_builtin(Sg,Sv,_Call,Prime):-
     depthk_abstract_builtin(Sg,Sv,Prime).
 
 execute_builtin(Sg,Call,Eqs):-
     build_call(Sg,Call,Goal,Eqs),
-
+    %
 % RH:   replace catch by intercept because intercept does 
 %       not handle anymore exceptions 
 %       intercept(Goal,_Any,fail).
     catch(Goal,error(_,_),fail). % TODO: not for all errors?!
-
 %       on_exception(_,call(Goal),fail).
 
 build_call('=..'(X,Y),Call,'=..'(A,Y0),[X=A]):-
@@ -493,7 +469,7 @@ build_a_copy(Y,Call,Y0):-
     copy_term(Y,Y0),
     varset(Y,YVars),
     varset(Y0,YVars0),
-    depthk_project(not_provided_Sg,YVars,not_provided_HvFv_u,Call,ProjY),
+    project(not_provided_Sg,YVars,not_provided_HvFv_u,Call,ProjY),
     rename_domain(YVars,YVars0,ProjY,ProjY0),
     apply(ProjY0).
 
@@ -517,7 +493,7 @@ rename_domain([],[],[],[]).
 depthk_bu_unify(Eqs,Vars,Proj,ASub):-
     unify_eqs(Eqs,Unifiers),
     depthk_unify(Unifiers,Proj,ASub0),
-    depthk_project(not_provided_Sg,Vars,not_provided_HvFv_u,ASub0,ASub).
+    project(not_provided_Sg,Vars,not_provided_HvFv_u,ASub0,ASub).
 
 unify_eqs([X=Y|Eqs],Unifiers):-
     peel(X,Y,Unifiers,Tail),
@@ -811,10 +787,10 @@ check_depth_args(N,K,Term,NewTerm):-
 
 %% two lists of substs. identical - same trick as in "sem"
 
-%% depthk_identical_interpretations('$bottom','$bottom'):- !.
-%% depthk_identical_interpretations('$bottom',_I):- !, fail.
-%% depthk_identical_interpretations(_I,'$bottom'):- !, fail.
-%% depthk_identical_interpretations(I0,I1):-
+%% identical_interpretations('$bottom','$bottom'):- !.
+%% identical_interpretations('$bottom',_I):- !, fail.
+%% identical_interpretations(_I,'$bottom'):- !, fail.
+%% identical_interpretations(I0,I1):-
 %%      length(I0,L),
 %%      length(I1,L).
 
@@ -830,10 +806,10 @@ depthk_abstract_builtin(Builtin,Sv,I):-
 %%  can not be expressed here!!!!!!!!!!
 
 builtin_depthk((!),_Sv,[]).
-builtin_depthk('='(X,Y),Sv,I):-          depthk_bu_unify([X=Y],Sv,[],I).
-builtin_depthk('=..'(_,Y),Sv,I):-        depthk_bu_unify([Y=[_|_]],Sv,[],I).
-builtin_depthk('=:='(X,Y),Sv,I):-        depthk_bu_unify([X=Y],Sv,[],I).
-builtin_depthk('=='(X,Y),Sv,I):-         depthk_bu_unify([X=Y],Sv,[],I).
+builtin_depthk('='(X,Y),Sv,I) :- depthk_bu_unify([X=Y],Sv,[],I).
+builtin_depthk('=..'(_,Y),Sv,I) :- depthk_bu_unify([Y=[_|_]],Sv,[],I).
+builtin_depthk('=:='(X,Y),Sv,I) :- depthk_bu_unify([X=Y],Sv,[],I).
+builtin_depthk('=='(X,Y),Sv,I) :- depthk_bu_unify([X=Y],Sv,[],I).
 builtin_depthk((_ =\= _),_Sv,[]).
 builtin_depthk('=<'(_,_),_Sv,[]).
 builtin_depthk('@=<'(_,_),_Sv,[]).
@@ -846,7 +822,7 @@ builtin_depthk((_ \== _),_Sv,[]).
 builtin_depthk('<'(_,_),_Sv,[]).
 builtin_depthk('$metachoice'(_),_Sv,[]).
 builtin_depthk('$metacut'(_),_Sv,[]).
-builtin_depthk('C'(X,Y,Z),Sv,I):-        depthk_bu_unify([X=[Y|Z]],Sv,[],I).
+builtin_depthk('C'(X,Y,Z),Sv,I) :- depthk_bu_unify([X=[Y|Z]],Sv,[],I).
 builtin_depthk(arg(_,_,_),_Sv,[]).
 builtin_depthk(atom(_),_Sv,[]).
 builtin_depthk(atomic(_),_Sv,[]).
@@ -863,7 +839,7 @@ builtin_depthk(name(_,_),_Sv,[]).
 builtin_depthk(nl(_),_Sv,[]).
 builtin_depthk(nonvar(_),_Sv,[]).
 builtin_depthk(number(_),_Sv,[]).
-builtin_depthk(numbervars(X,Y,_),Sv,I):- depthk_bu_unify([X=Y],Sv,[],I).
+builtin_depthk(numbervars(X,Y,_),Sv,I) :- depthk_bu_unify([X=Y],Sv,[],I).
 builtin_depthk(statistics(_,_),_Sv,[]).
 builtin_depthk(true,_Sv,[]).
 builtin_depthk(var(_),_Sv,[]).
@@ -873,4 +849,4 @@ builtin_depthk(write_canonical(_),_Sv,[]).
 builtin_depthk(write_canonical(_,_),_Sv,[]).
 builtin_depthk(writeq(_),_Sv,[]).
 builtin_depthk(writeq(_,_),_Sv,[]).
-builtin_depthk(Builtin,_Sv,[]):-          functor(Builtin,_,0).
+builtin_depthk(Builtin,_Sv,[]) :- functor(Builtin,_,0).

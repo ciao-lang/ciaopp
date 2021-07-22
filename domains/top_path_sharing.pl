@@ -1,48 +1,29 @@
+:- module(top_path_sharing, [], [assertions]).
+
+%------------------------------------------------------------------------%
+%                                                                        %
+%                          started: 10 May 1994                          %
+%        programmers: F. Bueno and M. Garcia de la Banda                 %
+%                                                                        %
+%------------------------------------------------------------------------%
 /*             Copyright (C)1990-94 UPM-CLIP                            */
-:- module(top_path_sharing,
-    [ path_init_abstract_domain/1,
-      path_call_to_entry/9,
-      path_call_to_success_fact/9,
-      path_compute_lub/2, 
-      path_exit_to_prime/7,
-      path_extend/5,      
-      path_input_user_interface/5,
-      path_input_interface/4,
-      path_less_or_equal/2,
-      path_glb/3,
-      path_asub_to_native/5,  
-      path_project/5,     
-      path_abs_sort/2,        
-      path_special_builtin/5,
-      path_success_builtin/6,
-      path_unknown_call/4,
-      path_unknown_entry/3,
-      path_empty_entry/3,
-    %
-      path_to_shfr/3
-    ],
-    [ assertions ] ).
+
+%------------------------------------------------------------------------%
+%                    Meaning of the Program Variables                    %
+%                                                                        %
+% ASub   : abstract substitution. It is a set of sets, each element      %
+%          being a set of elements with the form p(X,Path)               %
+%          Path is a list                                                %
+%------------------------------------------------------------------------%
+
+:- doc(bug,"Don't know how to do a topmost. This affects correctness
+    of unknown_entry/3, unknown_call/4, and input_interface/4.").
+:- doc(bug,"Don't know how to treat different paths, e.g.: A=f(_),
+    A=g(_,_). This is related to the topmost (how many paths does A have?)
+    and affects correctness of compute_lub.").
 
 :- include(ciaopp(plai/plai_domain)).
-:- dom_def(path).
-:- dom_impl(path, init_abstract_domain/1).
-:- dom_impl(path, call_to_entry/9).
-:- dom_impl(path, exit_to_prime/7).
-:- dom_impl(path, project/5).
-:- dom_impl(path, compute_lub/2).
-:- dom_impl(path, abs_sort/2).
-:- dom_impl(path, extend/5).
-:- dom_impl(path, less_or_equal/2).
-:- dom_impl(path, glb/3).
-:- dom_impl(path, call_to_success_fact/9).
-:- dom_impl(path, special_builtin/5).
-:- dom_impl(path, success_builtin/6).
-:- dom_impl(path, input_interface/4).
-:- dom_impl(path, input_user_interface/5).
-:- dom_impl(path, asub_to_native/5).
-:- dom_impl(path, unknown_call/4).
-:- dom_impl(path, unknown_entry/3).
-:- dom_impl(path, empty_entry/3).
+:- dom_def(path, [default]).
 
 :- use_module(ciaopp(preprocess_flags), [current_pp_flag/2]).
 :- use_module(domain(s_eqs), [keys_and_values/3, simplify_equations/3]).
@@ -64,31 +45,12 @@
 
 depth_k(K):- current_pp_flag(depth,K).
 
-%------------------------------------------------------------------------%
-%                                                                        %
-%                          started: 10 May 1994                          %
-%        programmers: F. Bueno and M. Garcia de la Banda                 %
-%                                                                        %
-%------------------------------------------------------------------------%
-
-%------------------------------------------------------------------------%
-%                    Meaning of the Program Variables                    %
-%                                                                        %
-% ASub   : abstract substitution. It is a set of sets, each element      %
-%          being a set of elements with the form p(X,Path)               %
-%          Path is a list                                                %
-%------------------------------------------------------------------------%
-
-:- doc(bug,"Don't know how to do a topmost. This affects correctness
-    of path_unknown_entry, path_unknown_call, and input_interface.").
-:- doc(bug,"Don't know how to treat different paths, e.g.: A=f(_),
-    A=g(_,_). This is related to the topmost (how many paths does A have?)
-    and affects correctness of compute_lub.").
-
 % ---------------------------------------------------------------------------
 
 :- use_module(ciaopp(preprocess_flags), [push_pp_flag/2]).
-path_init_abstract_domain([variants,multi_success]) :-
+
+:- dom_impl(_, init_abstract_domain/1, [noq]).
+init_abstract_domain([variants,multi_success]) :-
     push_pp_flag(variants,off),
     push_pp_flag(multi_success,on).
 
@@ -97,10 +59,11 @@ path_init_abstract_domain([variants,multi_success]) :-
 %                      ABSTRACT Call To Entry
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% path_call_to_entry(+,+,+,+,+,+,+,-,-)                                  %
-% path_call_to_entry(Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo)            %
+% call_to_entry(+,+,+,+,+,+,+,-,-)                                       %
+% call_to_entry(Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo)                 %
 %------------------------------------------------------------------------%
-path_call_to_entry(_Sv,Sg,_Hv,Head,_K,Fv,Proj,Entry,Flag):- 
+:- dom_impl(_, call_to_entry/9, [noq]).
+call_to_entry(_Sv,Sg,_Hv,Head,_K,Fv,Proj,Entry,Flag):- 
     variant(Sg,Head),!,
     Flag = yes,
     copy_term((Sg,Proj),(NewTerm,NewProj_u)),
@@ -108,15 +71,15 @@ path_call_to_entry(_Sv,Sg,_Hv,Head,_K,Fv,Proj,Entry,Flag):-
     sort_list_of_lists(NewProj_u,NewProj),
     list_to_free_abstraction(Fv,Free),
     merge(Free,NewProj,Entry).
-path_call_to_entry(_Sv,_Sg,[],_Head,_K,Fv,_Proj,Entry,no):- !,
+call_to_entry(_Sv,_Sg,[],_Head,_K,Fv,_Proj,Entry,no):- !,
     list_to_free_abstraction(Fv,Entry).
-path_call_to_entry(_Sv,Sg,Hv,Head,_K,Fv,Proj,Entry,ExtraInfo):-
+call_to_entry(_Sv,Sg,Hv,Head,_K,Fv,Proj,Entry,ExtraInfo):-
     simplify_equations(Sg,Head,Binds),
     list_to_free_abstraction(Hv,TmpASub),
     merge(TmpASub,Proj,NewProj),
     mge(Binds,NewProj,TotalASub),
-%       path_project(Sg,Hv,not_provided_HvFv_u,TotalASub,TmpEntry),
-    path_project(Sg,Hv,not_provided_HvFv_u,TotalASub,TmpEntry0),
+%       project(Sg,Hv,not_provided_HvFv_u,TotalASub,TmpEntry),
+    project(Sg,Hv,not_provided_HvFv_u,TotalASub,TmpEntry0),
     path_transitive_closure(TmpEntry0,TmpEntry_u),
     sort_list_of_lists(TmpEntry_u,TmpEntry),
     list_to_free_abstraction(Fv,TmpFv),
@@ -138,8 +101,8 @@ path_transitive_closure(ASub0,ASub):-
 %                      ABSTRACT Exit To Prime
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% path_exit_to_prime(+,+,+,+,+,-,-)                                      %
-% path_exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime)                 %
+% exit_to_prime(+,+,+,+,+,-,-)                                           %
+% exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime)                      %
 % It computes the prime abstract substitution Prime, i.e.  the result of %
 % going from the abstract substitution over the head variables (Exit), to%
 % the abstract substitution over the variables in the subgoal. It will:  %
@@ -153,42 +116,44 @@ path_transitive_closure(ASub0,ASub):-
 %      * then call mge/3 with the bindings obtained in call_to_entry     %
 %      * project over Sv obtaining Prime                                 %
 %------------------------------------------------------------------------%
-path_exit_to_prime(_Sg,_Hv,_Head,_Sv,'$bottom',_Flag,Prime) :- !,
+:- dom_impl(_, exit_to_prime/7, [noq]).
+exit_to_prime(_Sg,_Hv,_Head,_Sv,'$bottom',_Flag,Prime) :- !,
     Prime = '$bottom'.
-path_exit_to_prime(Sg,Hv,Head,_Sv,Exit,yes,Prime):- !,
-    path_project(Sg,Hv,not_provided_HvFv_u,Exit,BPrime),
+exit_to_prime(Sg,Hv,Head,_Sv,Exit,yes,Prime):- !,
+    project(Sg,Hv,not_provided_HvFv_u,Exit,BPrime),
     copy_term((Head,BPrime),(NewTerm,NewPrime)),
     Sg = NewTerm,
     sort_list_of_lists(NewPrime,Prime).     
-path_exit_to_prime(_Sg,[],_Head,_Sv,_Exit,_ExtraInfo,Prime):- !,
+exit_to_prime(_Sg,[],_Head,_Sv,_Exit,_ExtraInfo,Prime):- !,
     Prime = [].
-path_exit_to_prime(Sg,Hv,_Head,Sv,Exit,ExtraInfo,Prime):-
+exit_to_prime(Sg,Hv,_Head,Sv,Exit,ExtraInfo,Prime):-
     ExtraInfo = (_Binds,TotalASub),
     varset(Exit,NonGrExit),
     ord_subtract(Hv,NonGrExit,NewGr),
     ord_split_paths_from_list(NewGr,TotalASub,_,Disjoint),          
-    path_extend(Sg,Exit,Hv,Disjoint,TmpPrime),
-    path_project(Sg,Sv,not_provided_HvFv_u,TmpPrime,Prime).
+    extend(Sg,Exit,Hv,Disjoint,TmpPrime),
+    project(Sg,Sv,not_provided_HvFv_u,TmpPrime,Prime).
 %% 
 %% 
 %%      merge(Disjoint,Exit,TmpASub),
 %%      mge(Binds,TmpASub,TmpPrime),
-%%      path_project(Sg,Sv,not_provided_HvFv_u,TmpPrime,Prime).
+%%      project(Sg,Sv,not_provided_HvFv_u,TmpPrime,Prime).
 
 %-------------------------------------------------------------------------
 %-------------------------------------------------------------------------
 %                      ABSTRACT Extend
 %-------------------------------------------------------------------------
 %------------------------------------------------------------------------%
-% path_extend(+,+,+,+,-)                                                 %
-% path_extend(Sg,Prime,Sv,Call,Succ)                                     %
+% extend(+,+,+,+,-)                                                      %
+% extend(Sg,Prime,Sv,Call,Succ)                                          %
 % If Prime = bottom, Succ = bottom. If Sv = [], Call = Succ.             %
 %------------------------------------------------------------------------%
-path_extend(_Sg,'$bottom',_Sv,_Call,Succ):- !,
+:- dom_impl(_, extend/5, [noq]).
+extend(_Sg,'$bottom',_Sv,_Call,Succ):- !,
     Succ = '$bottom'.
-path_extend(_Sg,_Prime,[],Call,Succ):- !,
+extend(_Sg,_Prime,[],Call,Succ):- !,
     Call = Succ.
-path_extend(_Sg,Prime,Sv,Call,Succ):-
+extend(_Sg,Prime,Sv,Call,Succ):-
     depth_k(K),
 %       depth_k(K0), K is K0+1,
     ord_split_paths_from_list(Sv,Call,Int,Disjoint),        
@@ -249,21 +214,22 @@ path_add_suffix([p(X,P)|Occ],Su,K,[p(X,PSu)|NewOcc]):-
 %                      ABSTRACT PROJECTION
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% path_project(+,+,+,+,-)                                                %
-% path_project(Sg,Vars,HvFv_u,ASub,Proj)                                 %
+% project(+,+,+,+,-)                                                     %
+% project(Sg,Vars,HvFv_u,ASub,Proj)                                      %
 %------------------------------------------------------------------------%
-path_project(_,_,_,'$bottom',Proj):- !,
+:- dom_impl(_, project/5, [noq]).
+project(_,_,_,'$bottom',Proj):- !,
     Proj = '$bottom'.
-path_project(_Sg,[],_HvFv_u,_ASub,[]):- !.
-path_project(_Sg,Vars,_HvFv_u,ASub,Entry):-
-    path_project1(ASub,Vars,TmpEntry),
+project(_Sg,[],_HvFv_u,_ASub,[]):- !.
+project(_Sg,Vars,_HvFv_u,ASub,Entry):-
+    project1(ASub,Vars,TmpEntry),
     sort(TmpEntry,Entry).
 
-path_project1([],_Vars,[]).
-path_project1([Xs|ASub],Vars,Entry):-
+project1([],_Vars,[]).
+project1([Xs|ASub],Vars,Entry):-
     restrict(Xs,Vars,Set),
     decide_project(Set,Entry,NewEntry),
-    path_project1(ASub,Vars,NewEntry).
+    project1(ASub,Vars,NewEntry).
 
 decide_project([],Entry,Entry):- !.
 decide_project(Set,[Set|Entry],Entry).
@@ -273,13 +239,14 @@ decide_project(Set,[Set|Entry],Entry).
 %                      ABSTRACT SORT
 %-------------------------------------------------------------------------
 %-------------------------------------------------------------------------
-% path_abs_sort(+,-)                                                         %
-% path_abs_sort(Asub_u,Asub)                                                 %
+% abs_sort(+,-)                                                          %
+% abs_sort(Asub_u,Asub)                                                  %
 % Sorts the set of sets of elements in ASub_u yielding ASub.             %
 %-------------------------------------------------------------------------
 
-path_abs_sort('$bottom','$bottom'):- !.
-path_abs_sort(ASub_u,ASub):-
+:- dom_impl(_, abs_sort/2, [noq]).
+abs_sort('$bottom','$bottom'):- !.
+abs_sort(ASub_u,ASub):-
     sort_list_of_lists(ASub_u,ASub).
 
 %------------------------------------------------------------------------%
@@ -294,16 +261,17 @@ path_abs_sort(ASub_u,ASub):-
 % in share, it calls share_compute_lub/2.                                %
 %-------------------------------------------------------------------------
 
-% doesn't work! 
-%% path_compute_lub(ListASub,Lub):-
+:- dom_impl(_, compute_lub/2, [noq]).
+% TODO: doesn't work!
+%% compute_lub(ListASub,Lub):-
 %%      share_compute_lub(ListASub,Lub).
-path_compute_lub([],[]).
-path_compute_lub([ASub|ListASub],Lub):-
-    path_compute_lub_(ASub,Lub,Lub0),
-    path_compute_lub(ListASub,Lub0).
+compute_lub([],[]).
+compute_lub([ASub|ListASub],Lub):-
+    compute_lub_(ASub,Lub,Lub0),
+    compute_lub(ListASub,Lub0).
 
-path_compute_lub_('$bottom',Lub,Lub):- !.
-path_compute_lub_(ASub,[ASub|Lub],Lub).
+compute_lub_('$bottom',Lub,Lub):- !.
+compute_lub_(ASub,[ASub|Lub],Lub).
 
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
@@ -312,43 +280,47 @@ path_compute_lub_(ASub,[ASub|Lub],Lub).
 %------------------------------------------------------------------------%
 % Specialized version of call_to_entry + exit_to_prime + extend for facts%
 %-------------------------------------------------------------------------
-path_call_to_success_fact(_Sg,_Hv,_Head,_K,_Sv,_Call,_Proj,'$bottom','$bottom') :- !.
-path_call_to_success_fact(_Sg,[],_Head,_K,Sv,Call,_Proj,Prime,Succ) :- !,
+:- dom_impl(_, call_to_success_fact/9, [noq]).
+call_to_success_fact(_Sg,_Hv,_Head,_K,_Sv,_Call,_Proj,'$bottom','$bottom') :- !.
+call_to_success_fact(_Sg,[],_Head,_K,Sv,Call,_Proj,Prime,Succ) :- !,
     ord_split_paths_from_list(Sv,Call,_,Succ),
     Prime = [].
-path_call_to_success_fact(Sg,Hv,Head,_K,Sv,Call,Proj,Prime,Succ) :-
+call_to_success_fact(Sg,Hv,Head,_K,Sv,Call,Proj,Prime,Succ) :-
     simplify_equations(Sg,Head,Binds),
     list_to_free_abstraction(Hv,TmpASub),
     merge(TmpASub,Proj,NewProj),
     mge(Binds,NewProj,TmpSucc),
     varset(Call,Vars),
-%       path_project(Sg,Vars,not_provided_HvFv_u,TmpSucc,Succ),
-    path_project(Sg,Vars,not_provided_HvFv_u,TmpSucc,Succ0),
+%       project(Sg,Vars,not_provided_HvFv_u,TmpSucc,Succ),
+    project(Sg,Vars,not_provided_HvFv_u,TmpSucc,Succ0),
     path_transitive_closure(Succ0,Succ),
-    path_project(Sg,Sv,not_provided_HvFv_u,Succ,Prime).
+    project(Sg,Sv,not_provided_HvFv_u,Succ,Prime).
 
 %-------------------------------------------------------------------------
-% path_unknown_call(+,+,+,-)                                               |
-% path_unknown_call(Sg,Qv,Call,Succ)                                        |
+% unknown_call(+,+,+,-)                                                  |
+% unknown_call(Sg,Qv,Call,Succ)                                          |
 %-------------------------------------------------------------------------
 % This is clearly wrong!!!!
 
-path_unknown_call(_Sg,_Qv,Call,Call).
+:- dom_impl(_, unknown_call/4, [noq]).
+unknown_call(_Sg,_Qv,Call,Call).
 
 %-------------------------------------------------------------------------
-% path_unknown_entry(+,+,-)                                              |
-% path_unknown_entry(Sg,Qv,Call)                                         |
+% unknown_entry(+,+,-)                                                   |
+% unknown_entry(Sg,Qv,Call)                                              |
 %-------------------------------------------------------------------------
 % This is clearly wrong!!!!
 
-path_unknown_entry(Sg,Qv,Call):-
-    path_empty_entry(Sg,Qv,Call).
+:- dom_impl(_, unknown_entry/3, [noq]).
+unknown_entry(_Sg,Qv,Call):-
+    list_to_free_abstraction(Qv,Call).
 
 %-------------------------------------------------------------------------
-% path_empty_entry(+,+,-)                                                |
-% path_empty_entry(Sg,Qv,Call)                                           |
+% empty_entry(+,+,-)                                                     |
+% empty_entry(Sg,Qv,Call)                                                |
 %-------------------------------------------------------------------------
-path_empty_entry(_Sg,Qv,Call):-
+:- dom_impl(_, empty_entry/3, [noq]).
+empty_entry(_Sg,Qv,Call):-
     list_to_free_abstraction(Qv,Call).
 
 %-------------------------------------------------------------------------
@@ -357,21 +329,23 @@ path_empty_entry(_Sg,Qv,Call):-
 %-------------------------------------------------------------------------
 
 %------------------------------------------------------------------------%
-% path_input_user_interface(+,+,-,+,+)                                   %
-% path_input_user_interface(InputUser,Qv,ASub,Sg,MaybeCallASub)          %
+% input_user_interface(+,+,-,+,+)                                        %
+% input_user_interface(InputUser,Qv,ASub,Sg,MaybeCallASub)               %
 % Obtaining the abstract substitution for Path from the user supplied    %
 % information                                                            %
 %------------------------------------------------------------------------%
 % For now, only either ground or free variables are accepted
 % should use sharing, and do a topmost for the rest of Qv
 
-path_input_user_interface((_Sh,Fr),_Qv,Call,_Sg,_MaybeCallASub):-
+:- dom_impl(_, input_user_interface/5, [noq]).
+input_user_interface((_Sh,Fr),_Qv,Call,_Sg,_MaybeCallASub):-
     may_be_var(Fr),
     list_to_free_abstraction(Fr,Call).
 
-%% path_input_interface(Info,Kind,(Sh0,Fr),(Sh,Fr)):-
+%% input_interface(Info,Kind,(Sh0,Fr),(Sh,Fr)):-
 %%      share_input_interface(Info,Kind,Sh0,Sh), !.
-path_input_interface(free(X),perfect,(Sh,Fr0),(Sh,Fr)):-
+:- dom_impl(_, input_interface/4, [noq]).
+input_interface(free(X),perfect,(Sh,Fr0),(Sh,Fr)):-
     var(X),
     myinsert(Fr0,X,Fr).
 
@@ -384,14 +358,15 @@ myinsert(Fr0,X,Fr):-
 may_be_var(X):- ( X=[] ; true ), !.
 
 %------------------------------------------------------------------------%
-% path_asub_to_native(+,+,+,-,-)                                         %
-% path_asub_to_native(ASub,Qv,OutFlag,ASub_user,Comps)                   %
+% asub_to_native(+,+,+,-,-)                                              %
+% asub_to_native(ASub,Qv,OutFlag,ASub_user,Comps)                        %
 %------------------------------------------------------------------------%
 
-%% path_asub_to_native('$bottom',_Qv,_OutFlag,[],[]):- !.
-%% path_asub_to_native(ASub,_Qv,_OutFlag,ASub,[]).
-
-path_asub_to_native(ASub,Qv,_OutFlag,ASub_user,[]):-
+:- dom_impl(_, asub_to_native/5, [noq]).
+%% asub_to_native('$bottom',_Qv,_OutFlag,[],[]):- !.
+%% asub_to_native(ASub,_Qv,_OutFlag,ASub,[]).
+%
+asub_to_native(ASub,Qv,_OutFlag,ASub_user,[]):-
     path_vars(ASub,NonGv,[]),
     subtract(Qv,NonGv,Gv),
     member_value_path(ASub,Fv,[]),
@@ -455,26 +430,28 @@ eqs_to_univ([X=Y|Eqs],[X=..Y|Univ]):-
 eqs_to_univ([],[]).
 
 %------------------------------------------------------------------------%
-% path_less_or_equal(+,+)                                                %
-% path_less_or_equal(ASub0,ASub1)                                        %
+% less_or_equal(+,+)                                                     %
+% less_or_equal(ASub0,ASub1)                                             %
 %------------------------------------------------------------------------%
 
-path_less_or_equal(ASub,ASub):-
+:- dom_impl(_, less_or_equal/2, [noq]).
+less_or_equal(ASub,ASub):-
     throw(unimplemented(path_less_or_equal/2)).
 
 %------------------------------------------------------------------------%
 
 :- use_module(ciaopp(plai/plai_errors), [compiler_error/1]).
 
-path_glb(_ASub0,_ASub1,_ASub) :- compiler_error(op_not_implemented(glb)), fail.
+:- dom_impl(_, glb/3, [noq]).
+glb(_ASub0,_ASub1,_ASub) :- compiler_error(op_not_implemented(glb)), fail.
 
 %------------------------------------------------------------------------%
 %                         HANDLING BUILTINS                              %
 %------------------------------------------------------------------------%
 
 %-------------------------------------------------------------------------
-% path_special_builtin(+,+,+,-,-)                                        |
-% path_special_builtin(SgKey,Sg,Subgoal,Type,Condvars)                   |
+% special_builtin(+,+,+,-,-)                                             |
+% special_builtin(SgKey,Sg,Subgoal,Type,Condvars)                        |
 % Satisfied if the builtin does not need a very complex action. It       |
 % divides builtins into groups determined by the flag returned in the    |
 % second argument + some special handling for some builtins:             |
@@ -493,154 +470,154 @@ path_glb(_ASub0,_ASub1,_ASub) :- compiler_error(op_not_implemented(glb)), fail.
 % (6) Sgkey, special handling of some particular builtins                |
 %-------------------------------------------------------------------------
 
-path_special_builtin('CHOICE IDIOM/1',_,_,new_ground,_).
-path_special_builtin('$metachoice/1',_,_,new_ground,_).
-path_special_builtin('current_atom/1',_,_,new_ground,_).
-path_special_builtin('current_input/1',_,_,new_ground,_).
-path_special_builtin('current_module/1',_,_,new_ground,_).
-path_special_builtin('current_output/1',_,_,new_ground,_).
-path_special_builtin('current_op/3',_,_,new_ground,_).
-path_special_builtin('depth/1',_,_,new_ground,_).
-path_special_builtin('get_code/1',_,_,new_ground,_).
-path_special_builtin('get1_code/1',_,_,new_ground,_).
-path_special_builtin('seeing/1',_,_,new_ground,_).
-path_special_builtin('telling/1',_,_,new_ground,_).
-path_special_builtin('statistics/2',_,_,new_ground,_).
-path_special_builtin(':/2',(prolog:'$metachoice'(_)),_,new_ground,_).
-%-------------------------------------------------------------------------
-path_special_builtin('CUT IDIOM/1',_,_,old_ground,_).
-path_special_builtin('$metacut/1',_,_,old_ground,_).
-path_special_builtin(':/2',(prolog:'$metacut'(_)),_,old_ground,_).
-path_special_builtin('op/3',_,_,old_ground,_).
-path_special_builtin('save_event_trace/1',_,_,old_ground,_).
-path_special_builtin('close/1',_,_,old_ground,_).
-%-------------------------------------------------------------------------
-path_special_builtin('atom/1',_,_,old_ground,_).
-path_special_builtin('atomic/1',_,_,old_ground,_).
-path_special_builtin('ensure_loaded/1',_,_,old_ground,_).
-path_special_builtin('erase/1',_,_,old_ground,_).
-path_special_builtin('float/1',_,_,old_ground,_).
-path_special_builtin('flush_output/1',_,_,old_ground,_).
-path_special_builtin('integer/1',_,_,old_ground,_).
-path_special_builtin('number/1',_,_,old_ground,_).
-path_special_builtin('nl/1',_,_,old_ground,_).
-path_special_builtin('put_code/1',_,_,old_ground,_).
-path_special_builtin('put_code/2',_,_,old_ground,_).
-path_special_builtin('see/1',_,_,old_ground,_).
-path_special_builtin('tell/1',_,_,old_ground,_).
-path_special_builtin('tab/1',_,_,old_ground,_).
-path_special_builtin('tab/2',_,_,old_ground,_).
-path_special_builtin('ttyput/1',_,_,old_ground,_).
-path_special_builtin('=:=/2',_,_,old_ground,_).
-path_special_builtin('>=/2',_,_,old_ground,_).
-path_special_builtin('>/2',_,_,old_ground,_).
-path_special_builtin('</2',_,_,old_ground,_).
-path_special_builtin('=</2',_,_,old_ground,_).
+:- dom_impl(_, special_builtin/5, [noq]).
+special_builtin('CHOICE IDIOM/1',_,_,new_ground,_).
+special_builtin('$metachoice/1',_,_,new_ground,_).
+special_builtin('current_atom/1',_,_,new_ground,_).
+special_builtin('current_input/1',_,_,new_ground,_).
+special_builtin('current_module/1',_,_,new_ground,_).
+special_builtin('current_output/1',_,_,new_ground,_).
+special_builtin('current_op/3',_,_,new_ground,_).
+special_builtin('depth/1',_,_,new_ground,_).
+special_builtin('get_code/1',_,_,new_ground,_).
+special_builtin('get1_code/1',_,_,new_ground,_).
+special_builtin('seeing/1',_,_,new_ground,_).
+special_builtin('telling/1',_,_,new_ground,_).
+special_builtin('statistics/2',_,_,new_ground,_).
+special_builtin(':/2',(prolog:'$metachoice'(_)),_,new_ground,_).
+%
+special_builtin('CUT IDIOM/1',_,_,old_ground,_).
+special_builtin('$metacut/1',_,_,old_ground,_).
+special_builtin(':/2',(prolog:'$metacut'(_)),_,old_ground,_).
+special_builtin('op/3',_,_,old_ground,_).
+special_builtin('save_event_trace/1',_,_,old_ground,_).
+special_builtin('close/1',_,_,old_ground,_).
+%
+special_builtin('atom/1',_,_,old_ground,_).
+special_builtin('atomic/1',_,_,old_ground,_).
+special_builtin('ensure_loaded/1',_,_,old_ground,_).
+special_builtin('erase/1',_,_,old_ground,_).
+special_builtin('float/1',_,_,old_ground,_).
+special_builtin('flush_output/1',_,_,old_ground,_).
+special_builtin('integer/1',_,_,old_ground,_).
+special_builtin('number/1',_,_,old_ground,_).
+special_builtin('nl/1',_,_,old_ground,_).
+special_builtin('put_code/1',_,_,old_ground,_).
+special_builtin('put_code/2',_,_,old_ground,_).
+special_builtin('see/1',_,_,old_ground,_).
+special_builtin('tell/1',_,_,old_ground,_).
+special_builtin('tab/1',_,_,old_ground,_).
+special_builtin('tab/2',_,_,old_ground,_).
+special_builtin('ttyput/1',_,_,old_ground,_).
+special_builtin('=:=/2',_,_,old_ground,_).
+special_builtin('>=/2',_,_,old_ground,_).
+special_builtin('>/2',_,_,old_ground,_).
+special_builtin('</2',_,_,old_ground,_).
+special_builtin('=</2',_,_,old_ground,_).
 % SICStus3 (ISO)
-path_special_builtin('=\\=/2',_,_,old_ground,_).
+special_builtin('=\\=/2',_,_,old_ground,_).
 % SICStus2.x
-% path_special_builtin('=\=/2',_,_,old_ground,_).
-path_special_builtin('ground/1',_,_,old_ground,_).
-%-------------------------------------------------------------------------
-path_special_builtin('absolute_file_name/2',absolute_file_name(X,Y),
+% special_builtin('=\=/2',_,_,old_ground,_).
+special_builtin('ground/1',_,_,old_ground,_).
+%
+special_builtin('absolute_file_name/2',absolute_file_name(X,Y),
                                        _,old_new_ground,(OldG,NewG)):-
     varset(X,OldG),
     varset(Y,NewG).
-path_special_builtin('get_code/2',get_code(X,Y),_,old_new_ground,(OldG,NewG)):-
+special_builtin('get_code/2',get_code(X,Y),_,old_new_ground,(OldG,NewG)):-
     varset(X,OldG),
     varset(Y,NewG).
-path_special_builtin('get1_code/2',get1_code(X,Y),_,old_new_ground,(OldG,NewG)):-
+special_builtin('get1_code/2',get1_code(X,Y),_,old_new_ground,(OldG,NewG)):-
     varset(X,OldG),
     varset(Y,NewG).
-path_special_builtin('is/2',is(X,Y),_,old_new_ground,(OldG,NewG)):-
+special_builtin('is/2',is(X,Y),_,old_new_ground,(OldG,NewG)):-
     varset(X,NewG),
     varset(Y,OldG).
-path_special_builtin('open/3',open(X,Y,Z),_,old_new_ground,(OldG,NewG)):-
+special_builtin('open/3',open(X,Y,Z),_,old_new_ground,(OldG,NewG)):-
     varset(p(X,Y),OldG),
     varset(Z,NewG).
-path_special_builtin('format/2',format(X,_Y),_,old_new_ground,(OldG,[])):-
+special_builtin('format/2',format(X,_Y),_,old_new_ground,(OldG,[])):-
     varset(X,OldG).
-path_special_builtin('format/3',format(X,Y,_Z),_,old_new_ground,(OldG,[])):-
+special_builtin('format/3',format(X,Y,_Z),_,old_new_ground,(OldG,[])):-
     varset(p(X,Y),OldG).
-path_special_builtin('predicate_property/2',predicate_property(_X,Y),
+special_builtin('predicate_property/2',predicate_property(_X,Y),
                                                _,old_new_ground,([],NewG)):-
     varset(Y,NewG).
-path_special_builtin('print/2',print(X,_Y),_,old_new_ground,(OldG,[])):-
+special_builtin('print/2',print(X,_Y),_,old_new_ground,(OldG,[])):-
     varset(X,OldG).
-path_special_builtin('prolog_flag/2',prolog_flag(X,Y),_,old_new_ground,
+special_builtin('prolog_flag/2',prolog_flag(X,Y),_,old_new_ground,
                                                            (OldG,NewG)):-
     varset(X,OldG),
     varset(Y,NewG).
-path_special_builtin('prolog_flag/3',prolog_flag(X,Y,Z),_,old_new_ground,
+special_builtin('prolog_flag/3',prolog_flag(X,Y,Z),_,old_new_ground,
                                                            (OldG,NewG)):-
     varset(X,OldG),
     varset(f(Y,Z),NewG).
-path_special_builtin('write/2',write(X,_Y),_,old_new_ground,(OldG,[])):-
+special_builtin('write/2',write(X,_Y),_,old_new_ground,(OldG,[])):-
     varset(X,OldG).
-%-------------------------------------------------------------------------
-path_special_builtin('abort/0',_,_,bottom,_).
-path_special_builtin('fail/0',_,_,bottom,_).
-path_special_builtin('false/0',_,_,bottom,_).
-path_special_builtin('halt/0',_,_,bottom,_).
-%-------------------------------------------------------------------------
-path_special_builtin('!/0',_,_,unchanged,_).
-path_special_builtin('assert/1',_,_,unchanged,_).
-path_special_builtin('asserta/1',_,_,unchanged,_).
-path_special_builtin('assertz/1',_,_,unchanged,_).
-path_special_builtin('debug/0',_,_,unchanged,_).
-path_special_builtin('debugging/0',_,_,unchanged,_).
-path_special_builtin('dif/2',_,_,unchanged,_).
-path_special_builtin('display/1',_,_,unchanged,_).
-path_special_builtin('garbage_collect/0',_,_,unchanged,_).
-path_special_builtin('gc/0',_,_,unchanged,_).
-path_special_builtin('listing/0',_,_,unchanged,_).
-path_special_builtin('listing/1',_,_,unchanged,_).
-path_special_builtin('nl/0',_,_,unchanged,_).
-path_special_builtin('nogc/0',_,_,unchanged,_).
-path_special_builtin('not/1',_,_,unchanged,_).
-path_special_builtin('print/1',_,_,unchanged,_).
-path_special_builtin('repeat/0',_,_,unchanged,_).
-path_special_builtin('start_event_trace/0',_,_,unchanged,_).
-path_special_builtin('stop_event_trace/0',_,_,unchanged,_).
-path_special_builtin('seen/0',_,_,unchanged,_).
-path_special_builtin('told/0',_,_,unchanged,_).
-path_special_builtin('true/0',_,_,unchanged,_).
-path_special_builtin('ttyflush/0',_,_,unchanged,_).
-path_special_builtin('otherwise/0',_,_,unchanged,_).
-path_special_builtin('ttynl/0',_,_,unchanged,_).
-path_special_builtin('write/1',_,_,unchanged,_).
-path_special_builtin('writeq/1',_,_,unchanged,_).
+%
+special_builtin('abort/0',_,_,bottom,_).
+special_builtin('fail/0',_,_,bottom,_).
+special_builtin('false/0',_,_,bottom,_).
+special_builtin('halt/0',_,_,bottom,_).
+%
+special_builtin('!/0',_,_,unchanged,_).
+special_builtin('assert/1',_,_,unchanged,_).
+special_builtin('asserta/1',_,_,unchanged,_).
+special_builtin('assertz/1',_,_,unchanged,_).
+special_builtin('debug/0',_,_,unchanged,_).
+special_builtin('debugging/0',_,_,unchanged,_).
+special_builtin('dif/2',_,_,unchanged,_).
+special_builtin('display/1',_,_,unchanged,_).
+special_builtin('garbage_collect/0',_,_,unchanged,_).
+special_builtin('gc/0',_,_,unchanged,_).
+special_builtin('listing/0',_,_,unchanged,_).
+special_builtin('listing/1',_,_,unchanged,_).
+special_builtin('nl/0',_,_,unchanged,_).
+special_builtin('nogc/0',_,_,unchanged,_).
+special_builtin('not/1',_,_,unchanged,_).
+special_builtin('print/1',_,_,unchanged,_).
+special_builtin('repeat/0',_,_,unchanged,_).
+special_builtin('start_event_trace/0',_,_,unchanged,_).
+special_builtin('stop_event_trace/0',_,_,unchanged,_).
+special_builtin('seen/0',_,_,unchanged,_).
+special_builtin('told/0',_,_,unchanged,_).
+special_builtin('true/0',_,_,unchanged,_).
+special_builtin('ttyflush/0',_,_,unchanged,_).
+special_builtin('otherwise/0',_,_,unchanged,_).
+special_builtin('ttynl/0',_,_,unchanged,_).
+special_builtin('write/1',_,_,unchanged,_).
+special_builtin('writeq/1',_,_,unchanged,_).
 % SICStus3 (ISO)
-path_special_builtin('\\+/1',_,_,unchanged,_).
+special_builtin('\\+/1',_,_,unchanged,_).
 % SICStus2.x
-% path_special_builtin('\+/1',_,_,unchanged,_).
+% special_builtin('\+/1',_,_,unchanged,_).
 % this may not be correct!!!!!!!!
 % SICStus3 (ISO)
-path_special_builtin('\\==/2',_,_,unchanged,_).
+special_builtin('\\==/2',_,_,unchanged,_).
 % SICStus2.x
-% path_special_builtin('\==/2',_,_,unchanged,_).
-path_special_builtin('@>=/2',_,_,unchanged,_).
-path_special_builtin('@=</2',_,_,unchanged,_).
-path_special_builtin('@>/2',_,_,unchanged,_).
-path_special_builtin('@</2',_,_,unchanged,_).
-%-------------------------------------------------------------------------
-path_special_builtin('assert/2',assert(_X,Y),_,some,Vars):-
+% special_builtin('\==/2',_,_,unchanged,_).
+special_builtin('@>=/2',_,_,unchanged,_).
+special_builtin('@=</2',_,_,unchanged,_).
+special_builtin('@>/2',_,_,unchanged,_).
+special_builtin('@</2',_,_,unchanged,_).
+%
+special_builtin('assert/2',assert(_X,Y),_,some,Vars):-
     varset(Y,Vars).
-path_special_builtin('assertz/2',assertz(_X,Y),_,some,Vars):-
+special_builtin('assertz/2',assertz(_X,Y),_,some,Vars):-
     varset(Y,Vars).
-path_special_builtin('asserta/2',asserta(_X,Y),_,some,Vars):-
+special_builtin('asserta/2',asserta(_X,Y),_,some,Vars):-
     varset(Y,Vars).
-path_special_builtin('recorda/3',recorda(_X,_Y,Z),_,some,Vars):-
+special_builtin('recorda/3',recorda(_X,_Y,Z),_,some,Vars):-
     varset(Z,Vars).
-path_special_builtin('recordz/3',recordz(_X,_Y,Z),_,some,Vars):-
+special_builtin('recordz/3',recordz(_X,_Y,Z),_,some,Vars):-
     varset(Z,Vars).
-%-------------------------------------------------------------------------
-path_special_builtin('=/2','='(X,Y),_,'=/2',p(X,Y)).
+%
+special_builtin('=/2','='(X,Y),_,'=/2',p(X,Y)).
 
-
 %-------------------------------------------------------------------------
-% path_success_builtin(+,+,+,+,+,-)                                      %
-% path_success_builtin(Type,Sv_u,Condv,HvFv_u,Call,Succ)                        %
+% success_builtin(+,+,+,+,+,-)                                           %
+% success_builtin(Type,Sv_u,Condv,HvFv_u,Call,Succ)                      %
 % Obtains the success for some particular builtins:                      %
 %  * If Type = new_ground, it updates Call making all vars in Sv_u ground%
 %  * If Type = bottom, Succ = '$bottom'                                  %
@@ -653,25 +630,26 @@ path_special_builtin('=/2','='(X,Y),_,'=/2',p(X,Y)).
 %              it grounds all variables in NewG                          |
 %-------------------------------------------------------------------------
 
-path_success_builtin(new_ground,Sv_u,_,_,Call,Succ):-
+:- dom_impl(_, success_builtin/6, [noq]).
+success_builtin(new_ground,Sv_u,_,_,Call,Succ):-
     sort(Sv_u,Sv),
     ord_split_paths_from_list(Sv,Call,_,Succ).
-path_success_builtin(bottom,_,_,_,_,'$bottom').
-path_success_builtin(unchanged,_,_,_,ASub,ASub).
-path_success_builtin(some,_Sv,NewGr,_,Call,Succ):-
+success_builtin(bottom,_,_,_,_,'$bottom').
+success_builtin(unchanged,_,_,_,ASub,ASub).
+success_builtin(some,_Sv,NewGr,_,Call,Succ):-
     ord_split_paths_from_list(NewGr,Call,_,Succ).
-path_success_builtin(old_ground,Sv_u,_,_,Call,Succ):-
+success_builtin(old_ground,Sv_u,_,_,Call,Succ):-
     sort(Sv_u,Sv),
     can_be_ground(Call,Sv),!,
     ord_split_paths_from_list(Sv,Call,_,Succ).
-path_success_builtin(old_ground,_,_,_,_,'$bottom').
-path_success_builtin(old_new_ground,_,(OldG,NewG),_,Call,Succ):-
+success_builtin(old_ground,_,_,_,_,'$bottom').
+success_builtin(old_new_ground,_,(OldG,NewG),_,Call,Succ):-
     can_be_ground(Call,OldG),!,
     merge(OldG,NewG,Vars),
     ord_split_paths_from_list(Vars,Call,_,Succ).
-path_success_builtin(old_new_ground,_,_,_,_,'$bottom').
-%------------------------------------------------------------------------%
-path_success_builtin('=/2',_Sv,p(X,Y),_,Call,Succ):-
+success_builtin(old_new_ground,_,_,_,_,'$bottom').
+%
+success_builtin('=/2',_Sv,p(X,Y),_,Call,Succ):-
     simplify_equations(X,Y,Binds),
 %       mge(Binds,Call,Succ).
     mge(Binds,Call,Succ0),

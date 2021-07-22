@@ -39,8 +39,8 @@
 % ===========================================================================
 :- doc(section, "Structure domains"). % TODO: shape also?
 :- use_module(domain(aeq), []).
-:- use_module(domain(depthk)).
-:- use_module(domain(top_path_sharing)).
+:- use_module(domain(depthk), []).
+:- use_module(domain(top_path_sharing), []).
 % ===========================================================================
 :- doc(section, "Type domains"). % TODO: shape/structure?
 :- use_module(domain(termsd)).
