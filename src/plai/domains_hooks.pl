@@ -33,7 +33,7 @@
 :- use_module(domain(sharefree_clique)).
 :- use_module(domain(sharing_clique_def)).
 :- use_module(domain(sharefree_clique_def)).
-:- if(defined(has_ciaopp_extra)).
+:- if(defined(has_ciaopp_bshare)).
 :- use_module(domain(bshare/bshare)).
 :- endif.
 % ===========================================================================

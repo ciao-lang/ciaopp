@@ -13,6 +13,7 @@ create_ciaopp_config :-
         ciaopp_cost,
         ciaopp_extra,
         ciaopp_fpnum,
+        ciaopp_bshare,
         ciaopp_llvm,
         ciaopp_java,
         ciao_ppl,

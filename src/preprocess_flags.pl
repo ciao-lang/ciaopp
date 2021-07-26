@@ -894,7 +894,7 @@ pp_flag(clique_widen_lb, 'This flag controls the (lower bound) threshold used fo
 current_pp_flags(  clique_widen_lb , 200).
 valid_flag_values( clique_widen_lb , int(_)).
 
-:- if(defined(has_ciaopp_extra)).
+:- if(defined(has_ciaopp_bshare)).
 pp_flag(bshare_option).
 pp_flag(bshare_option, 'This flag controls the bit-based representation used by the bshare abstract domain.').
 current_pp_flags(  bshare_option  , tNSH).

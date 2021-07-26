@@ -82,7 +82,7 @@ doc_domain(oo_shnltau). % :- dom_def(oo_shnltau).
 doc_domain(java_nullity). % :- dom_def(java_nullity).
 doc_domain(java_cha). % :- dom_def(java_cha).
 :- endif.
-%:- if(defined(has_ciaopp_extra)).
+%:- if(defined(has_ciaopp_bshare)).
 %doc_domain('bshare/bshare'). % :- dom_def(bshare).
 %:- endif.
 

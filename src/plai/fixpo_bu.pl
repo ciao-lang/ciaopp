@@ -24,7 +24,7 @@
 :- use_module(ciaopp(preprocess_flags), [current_pp_flag/2]).
 :- use_module(ciaopp(analysis_stats), [pp_statistics/2]).
 :- use_module(ciaopp(ciaopp_log), [pplog/2]).
-:- if(defined(has_ciaopp_extra)).
+:- if(defined(has_ciaopp_bshare)).
 :- use_module(domain(bshare/bshare), [bshare_output/0, bshare_crack/2]).
 :- endif.
 
@@ -155,7 +155,7 @@ one_clause_atom(_Info,SgKey,Sg,_Sv,Vars,Entry,AbsInt,Entry1):-
     project(AbsInt,Sg,Vars,Vars,ASub1,Entry1),
     show_if_debug(Entry1,project,SgKey,AbsInt).
 
-:- if(defined(has_ciaopp_extra)).
+:- if(defined(has_ciaopp_bshare)).
 is_analysis(bshare).
 :- endif.
 is_analysis(share_amgu).
@@ -176,7 +176,7 @@ debugging(not).
 
 show_if_debug(_ASub,_Op,_SgKey,_AbsInt):-
     debugging(not),!.
-:- if(defined(has_ciaopp_extra)).
+:- if(defined(has_ciaopp_bshare)).
 show_if_debug(ASub,Op,SgKey,bshare):-
     debugging(yes),!,
     ASub = (_NSh,Vars),
@@ -195,7 +195,7 @@ bu_output(AbsInt):-
     current_fact(iterate(AbsInt,N)),
     pplog(analyze_module, ['{Number of iterations: ', N, '}']),
     bu_output_(AbsInt).
-:- if(defined(has_ciaopp_extra)).
+:- if(defined(has_ciaopp_bshare)).
 bu_output_(bshare):-
     bshare_output.
 :- endif.
@@ -206,7 +206,7 @@ bu_output_(share_amgu):-
 bu_output_(_).
 
 is_analysis_option(share_amgu,share_amgu).
-:- if(defined(has_ciaopp_extra)).
+:- if(defined(has_ciaopp_bshare)).
 is_analysis_option(bshare,AbsInt):-
     current_pp_flag(bshare_option,Opt),
     atom_concat([bshare,'-',Opt],AbsInt).
