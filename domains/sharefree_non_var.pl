@@ -699,14 +699,15 @@ shfrnv_call_to_success_fact(_Sg,_Hv,_Head,_K,_Sv,_Call,_Proj,'$bottom','$bottom'
 %------------------------------------------------------------------------%
 
 :- export(shfrnv_input_user_interface/5). 
-shfrnv_input_user_interface((Sh,Fr,Nv),Qv,(Call_sh,Call_fr),Sg,MaybeCallASub):-
+shfrnv_input_user_interface((Sh,Fr,Nv0),Qv,(Call_sh,Call_fr),Sg,MaybeCallASub):-
     shfr_input_user_interface((Sh,Fr),Qv,(Call_sh,Call_fr0),Sg,MaybeCallASub),
+    may_be_var(Nv0,Nv),
     sort(Nv,NonVar),
     change_values_insert(NonVar,Call_fr0,Call_fr,nv).
 
 :- export(shfrnv_input_interface/4). 
-shfrnv_input_interface(Info,Kind,(Sh0,Fr,Nv),(Sh,Fr,Nv)):-
-    shfr_input_interface(Info,Kind,Sh0,Sh), !.
+shfrnv_input_interface(Info,Kind,(Sh0,Fr0,Nv),(Sh,Fr,Nv)):-
+    shfr_input_interface(Info,Kind,(Sh0,Fr0),(Sh,Fr)), !.
 shfrnv_input_interface(not_free(X),perfect,(Sh,Fr,Nv0),(Sh,Fr,Nv)):-
     var(X),
     myinsert(Nv0,X,Nv).
@@ -716,6 +717,8 @@ myinsert(Fr0,X,Fr):-
     Fr = [X].
 myinsert(Fr0,X,Fr):-
     insert(Fr0,X,Fr).
+
+may_be_var(X,X):- ( X=[] ; true ), !.
 
 %% %------------------------------------------------------------------------%
 %% % shfrnv_output_interface(+,-)                                             %
