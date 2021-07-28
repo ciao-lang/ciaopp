@@ -253,6 +253,7 @@ share_clique_def_input_user_interface((Gv,Sh,Cl,I),Qv,Call,Sg,MaybeCallASub):-
 % share_clique_def_asub_to_native(ASub,Qv,OutFlag,ASub_user,Comps)       |
 %------------------------------------------------------------------------%
 
+% TODO: def_asub_to_native/5 is not used here (if done, ignore ground/1 from Def asub, keep only covered/2, etc.)
 :- export(share_clique_def_asub_to_native/5).
 share_clique_def_asub_to_native('$bottom',_Qv,_OutFlag,_ASub_user,_Comps):- !, fail.
 share_clique_def_asub_to_native(((Cl,Sh),a(G,_SS)),Qv,_OutFlag,Info,[]):-

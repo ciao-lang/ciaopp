@@ -620,9 +620,9 @@ def_asub_to_native_(a(Ground,Set),Succ):-
     def_sort_set(Set,S),
     ( G=[] -> Succ=Succ0 ; Succ=[ground(G)|Succ0] ),
     ( S=[] -> Succ0=[] ; defdeps2covered(S,Succ0) ).
-def_asub_to_native_(d(Def,Del),[delay(Del)|Succ]):-
+def_asub_to_native_(d(Def,Del),[delay(Del)|Succ]):- % TODO: not available anymore?
     def_asub_to_native_(Def,Succ).
-def_asub_to_native_(ac(ASub,Flag),[flag(Flag)|Succ]):-
+def_asub_to_native_(ac(ASub,Flag),[flag(Flag)|Succ]):- % TODO: not available anymore?
     def_asub_to_native_(ASub,Succ). 
 
 defdeps2covered([],[]).
