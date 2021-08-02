@@ -167,12 +167,14 @@ obtained after the analysis of the clause being considered
    @var{Head} given an initial abstract substitution @var{ASub} and
    abstract domain @var{AbsInt}.".
 
+% (for fixpo_bu)
 :- export(augment_asub/4).
 % augment_asub(+,+,+,-)
 :- doc(augment_asub(AbsInt,ASub,Vars,ASub0), "Augment the abstract
    substitution @var{ASub} adding the variables @var{Vars} and then
    resulting the abstract substitution @var{ASub0}.").
 
+% (for fixpo_bu)
 :- export(augment_two_asub/4).
 % augment_two_asub(+,+,+,-)
 :- doc(augment_two_asub(AbsInt,ASub0,ASub1,ASub), "@var{ASub} is an
@@ -263,6 +265,7 @@ dual_widencall(_AbsInt,_ASub0,_ASub1,_ASub) :- fail.
    @var{ASub1}, which are supposed to be consecutive approximations to the same
    abstract value. I.e., @tt{less_or_equal(AbsInt,ASub0,ASub1)} succeeds.".
 
+% (for fixpo_plai_gfp) % TODO: see note below
 :- export(dual_widen/4).
 % dual_widen(+,+,+,-)
 :- doc(dual_widen(AbsInt,ASub0,ASub1,ASub),"@var{ASub} is the result of
@@ -291,6 +294,7 @@ normalize_asub(_AbsInt,Prime,Prime).
    #"@var{LubASub} is the least upper bound of the abstract substitutions
    in list @var{ListASub}.".
 
+% (for fixpo_plai_gfp)
 :- export(compute_glb/3).
 % compute_glb(+,+,-)
 :- doc(compute_glb(AbsInt,ListASub,GlbASub),"@var{GlbASub} is the
@@ -302,6 +306,7 @@ compute_glb(AbsInt,[A,B],Glb) :-
 :- doc(hide,compute_clauses_lub/4).
 :- export(compute_clauses_lub/4).
 
+% (for fixpo_plai_gfp)
 :- doc(hide,compute_clauses_glb/4).
 :- export(compute_clauses_glb/4).
 
