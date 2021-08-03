@@ -42,19 +42,19 @@
 :- dom_impl(shareson, empty_entry/3).
 
 :- use_module(domain(sharing), [
-    share_call_to_entry/9,
-    share_exit_to_prime/7,
-    share_extend/5,
-    share_call_to_prime_fact/6,
-    share_special_builtin/5,
-    share_unknown_call/4,
-    share_unknown_entry/3,
-    share_empty_entry/3,
-    share_project/5,
-    share_lub/3,
-    share_abs_sort/2,
-    share_input_user_interface/5,
-    share_less_or_equal/2
+    call_to_entry/9,
+    exit_to_prime/7,
+    extend/5,
+    call_to_prime_fact/6,
+    special_builtin/5,
+    unknown_call/4,
+    unknown_entry/3,
+    empty_entry/3,
+    project/5,
+    lub/3, % TODO: add domain op?
+    abs_sort/2,
+    input_user_interface/5,
+    less_or_equal/2
 ]).
 :- use_module(domain(sondergaard)).
 :- use_module(domain(s_grshfr), [projected_gvars/3]).
@@ -94,7 +94,7 @@
 
 shareson_call_to_entry(Sv,Sg,Hv,Head,K,Fv,(Proj_son,Proj_sh),Entry,ExtraInfo):-
     son_call_to_entry(Sv,Sg,Hv,Head,K,Fv,Proj_son,Entry_son,ExtraInfo_son),
-    share_call_to_entry(Sv,Sg,Hv,Head,K,Fv,Proj_sh,Entry_sh,ExtraInfo_sh),
+    sharing:call_to_entry(Sv,Sg,Hv,Head,K,Fv,Proj_sh,Entry_sh,ExtraInfo_sh),
     compose(Entry_son,Entry_sh,Hv,Entry),
     ExtraInfo = (ExtraInfo_son,ExtraInfo_sh).
 
@@ -104,7 +104,7 @@ shareson_exit_to_prime(_,_,_,_,'$bottom',_,Prime):- !,
     Prime = '$bottom'.
 shareson_exit_to_prime(Sg,Hv,Head,Sv,(Exit_son,Exit_sh),ExtraInfo,Prime):- 
     ExtraInfo = (ExtraInfo_son,ExtraInfo_sh),
-    share_exit_to_prime(Sg,Hv,Head,Sv,Exit_sh,ExtraInfo_sh,Prime_sh),
+    sharing:exit_to_prime(Sg,Hv,Head,Sv,Exit_sh,ExtraInfo_sh,Prime_sh),
     son_exit_to_prime(Sg,Hv,Head,Sv,Exit_son,ExtraInfo_son,Prime_son),
     compose(Prime_son,Prime_sh,Sv,Prime).
     
@@ -113,7 +113,7 @@ shareson_exit_to_prime(Sg,Hv,Head,Sv,(Exit_son,Exit_sh),ExtraInfo,Prime):-
 shareson_extend(_Sg,'$bottom',_,_,Succ):- !,Succ = '$bottom'.
 shareson_extend(_Sg,_Prime,[],Call,Succ):- !, Call = Succ.
 shareson_extend(Sg,(Prime_son,Prime_sh),Sv,(Call_son,Call_sh),Succ):-
-    share_extend(Sg,Prime_sh,Sv,Call_sh,Succ_sh),
+    sharing:extend(Sg,Prime_sh,Sv,Call_sh,Succ_sh),
     son_extend(Sg,Prime_son,Sv,Call_son,Succ_son),
     merge_list_of_lists(Call_sh,Vars),
     compose(Succ_son,Succ_sh,Vars,Succ).
@@ -123,7 +123,7 @@ shareson_extend(Sg,(Prime_son,Prime_sh),Sv,(Call_son,Call_sh),Succ):-
 shareson_call_to_success_fact(Sg,Hv,Head,_K,Sv,Call,Proj,Prime,Succ):-
     Proj = (Proj_son,Proj_sh),
     son_call_to_prime_fact(Sg,Hv,Head,Sv,Proj_son,Prime_son),
-    share_call_to_prime_fact(Sg,Hv,Head,Sv,Proj_sh,Prime_sh),
+    sharing:call_to_prime_fact(Sg,Hv,Head,Sv,Proj_sh,Prime_sh),
     compose(Prime_son,Prime_sh,Sv,Prime),
     shareson_extend(Sg,Prime,Sv,Call,Succ).
 
@@ -131,7 +131,7 @@ shareson_call_to_success_fact(Sg,Hv,Head,_K,Sv,Call,Proj,Prime,Succ):-
 
 :- use_module(ciaopp(plai/plai_errors), [compiler_error/1]).
 shareson_special_builtin(SgKey,Sg,Subgoal,(TypeSon,TypeSh),(CondSon,CondSh)) :-
-    share_special_builtin(SgKey,Sg,Subgoal,TypeSh,CondSh),
+    sharing:special_builtin(SgKey,Sg,Subgoal,TypeSh,CondSh),
     son_special_builtin(SgKey,Sg,Subgoal,TypeSon,CondSon).
 
 %-------------------------------------------------------------------------
@@ -158,7 +158,7 @@ shareson_compose((_,Call_sh),Succ_sh,Succ_son,Succ):-
 
 shareson_unknown_call(_Sg,_Vars,'$bottom','$bottom') :- !.
 shareson_unknown_call(Sg,Vars,(Call_son,Call_sh),Succ):-
-    share_unknown_call(Sg,Vars,Call_sh,Succ_sh),
+    sharing:unknown_call(Sg,Vars,Call_sh,Succ_sh),
     son_unknown_call(Sg,Vars,Call_son,Succ_son),
     merge_list_of_lists(Call_sh,AllVars),
     compose(Succ_son,Succ_sh,AllVars,Succ).
@@ -166,14 +166,14 @@ shareson_unknown_call(Sg,Vars,(Call_son,Call_sh),Succ):-
 %-------------------------------------------------------------------------
 
 shareson_unknown_entry(Sg,Qv,Call):-
-    share_unknown_entry(Sg,Qv,Call_sh),
+    sharing:unknown_entry(Sg,Qv,Call_sh),
     son_unknown_entry(Sg,Qv,Call_son),
     compose(Call_son,Call_sh,Qv,Call).
 
 %-------------------------------------------------------------------------
 
 shareson_empty_entry(Sg,Qv,Call):-
-    share_empty_entry(Sg,Qv,Call_sh),
+    sharing:empty_entry(Sg,Qv,Call_sh),
     son_empty_entry(Sg,Qv,Call_son),
     compose(Call_son,Call_sh,Qv,Call).
 
@@ -185,7 +185,7 @@ shareson_project(_Sg,[],_HvFv_u,_,Proj):- !,
     Proj = (([],[]),[]).
 shareson_project(Sg,Vars,HvFv_u,(Call_son,Call_sh),(Proj_son,Proj_sh)):-
     son_project(Sg,Vars,HvFv_u,Call_son,Proj_son),
-    share_project(Sg,Vars,HvFv_u,Call_sh,Proj_sh).
+    sharing:project(Sg,Vars,HvFv_u,Call_sh,Proj_sh).
 
 %-------------------------------------------------------------------------
 
@@ -198,7 +198,7 @@ shareson_compute_lub([ASub,'$bottom'|Rest],Lub) :- !,
     shareson_compute_lub([ASub|Rest],Lub).
 shareson_compute_lub([(ASub_son1,ASub_sh1),(ASub_son2,ASub_sh2)|Rest],Lub) :-
     son_lub(ASub_son1,ASub_son2,ASub_son3),
-    share_lub(ASub_sh1,ASub_sh2,ASub_sh3),
+    sharing:lub(ASub_sh1,ASub_sh2,ASub_sh3),
     shareson_compute_lub([(ASub_son3,ASub_sh3)|Rest],Lub).
 shareson_compute_lub([ASub],ASub).
 
@@ -207,17 +207,17 @@ shareson_compute_lub([ASub],ASub).
 shareson_abs_sort('$bottom','$bottom').
 shareson_abs_sort((ASub_son,ASub_sh),(ASub_son_s,ASub_sh_s)):-
     son_abs_sort(ASub_son,ASub_son_s),
-    share_abs_sort(ASub_sh,ASub_sh_s).
+    sharing:abs_sort(ASub_sh,ASub_sh_s).
 
 %--------------------------------------------------------------------------
 
 shareson_input_user_interface(Struct,Qv,(Son,Sh),Sg,MaybeCallASub):-
     Struct = (Sharing,_Lin),
     son_input_user_interface(Struct,Qv,Son,Sg,MaybeCallASub),
-    share_input_user_interface(Sharing,Qv,Sh,Sg,MaybeCallASub).
+    sharing:input_user_interface(Sharing,Qv,Sh,Sg,MaybeCallASub).
 
 shareson_input_interface(Info,Kind,Struct0,Struct):-
-    % already calls share_input_...
+    % already calls sharing:input_...
     son_input_interface(Info,Kind,Struct0,Struct).
 
 %--------------------------------------------------------------------------
@@ -239,7 +239,7 @@ shareson_asub_to_native(((Gr,SSon),Sh),Qv,_OutFlag,ASub_user,[]):-
 shareson_less_or_equal(ASub0,ASub1):-
     ASub0 == ASub1.
 shareson_less_or_equal((Son0,Sh0),(Son1,Sh1)):-
-    share_less_or_equal(Sh0,Sh1),
+    sharing:less_or_equal(Sh0,Sh1),
     son_less_or_equal(Son0,Son1).
 
 %-------------------------------------------------------------------------

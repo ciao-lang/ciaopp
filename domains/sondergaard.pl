@@ -51,8 +51,8 @@
 % :- dom_impl(son, compute_lub_el(ASub1,ASub2,ASub), lub(ASub1,ASub2,ASub)).
 
 :- use_module(domain(sharing), [
-    share_input_interface/4,
-    share_input_user_interface/5
+    input_interface/4,
+    input_user_interface/5
 ]).
 :- use_module(domain(s_grshfr), [new1_gvars/4]).
 :- use_module(domain(share_aux), [if_not_nil/4,append_dl/3,handle_each_indep/4]).
@@ -412,7 +412,7 @@ son_asub_to_native((Gr,SSon),Qv,_OutFlag,ASub_user,[]):-
 %-------------------------------------------------------------------------
 
 son_input_user_interface((Sh0,Lin0),Qv,(Gr,Sh),Sg,MaybeCallASub):-
-    share_input_user_interface(Sh0,Qv,SH,Sg,MaybeCallASub),
+    sharing:input_user_interface(Sh0,Qv,SH,Sg,MaybeCallASub),
     varset(SH,SHv),
     ord_subtract(Qv,SHv,Gr),
     may_be_var(Lin0,Linear),
@@ -423,7 +423,7 @@ son_input_user_interface((Sh0,Lin0),Qv,(Gr,Sh),Sg,MaybeCallASub):-
     sort_list_of_lists(Sh_u,Sh).
 
 son_input_interface(Info,Kind,(Sh0,Lin),(Sh,Lin)):-
-    share_input_interface(Info,Kind,Sh0,Sh), !.
+    sharing:input_interface(Info,Kind,Sh0,Sh), !.
 son_input_interface(free(X),approx,(Sh,Lin0),(Sh,Lin)):-
     var(X),
     may_be_var(Lin0,Lin1),

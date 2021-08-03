@@ -37,10 +37,10 @@
 :- use_module(ciaopp(preprocess_flags), [current_pp_flag/2]).
 :- use_module(domain(s_eqs), [apply/1, keys_and_values/3]).
 :- use_module(domain(sharing), [
-    share_input_interface/4,
-    share_input_user_interface/5,
-    share_project/5,
-    share_abs_sort/2
+    input_interface/4,
+    input_user_interface/5,
+    project/5,
+    abs_sort/2
 ]).
 %
 :- use_module(library(idlists), [memberchk/2, union_idlists/3]).
@@ -118,7 +118,7 @@ call_to_entry(_Sv,Sg,_Hv,Head,_K,Fv,Proj,Entry,Flag) :-
     (aeq_current_sharing(pair) ->
       aeq_init_new_varsPS(Fv,0,NewProj,Entry_u)
     ; aeq_init_new_vars(Fv,0,NewProj,Entry_u)),
-    abs_sort(Entry_u,Entry).
+    aeq:abs_sort(Entry_u,Entry).
 call_to_entry(_Sv,Sgoal,Hv,Head,_K,Fvars,Proj,Entry,no):-
     union_idlists( Hv, Fvars, Vars ),
     aeq_parameter_passing_proj( Sgoal = Head,Vars,Proj,Init_aeqs),
@@ -130,10 +130,10 @@ call_to_entry(_Sv,Sgoal,Hv,Head,_K,Fvars,Proj,Entry,no):-
 :- dom_impl(_, exit_to_prime/7, [noq]).
 exit_to_prime(_,_,_,_,'$bottom',_,'$bottom') :- !.
 exit_to_prime(Sg,Hv,Head,_,Exit,yes,Prime) :- !,
-    project(Sg,Hv,not_provided_HvFv_u,Exit,BetaPrime),
+    aeq:project(Sg,Hv,not_provided_HvFv_u,Exit,BetaPrime),
     copy_term((Head,BetaPrime),(NewTerm,Prime_u)),
     Sg = NewTerm,
-    abs_sort(Prime_u,Prime).
+    aeq:abs_sort(Prime_u,Prime).
 exit_to_prime(Sg,_,Head,Sv,Exit,_,Prime) :-
     aeq_parameter_passing_proj(Sg=Head, Sv, Exit, Init_aeqs),
     aeq_solve(Init_aeqs, Prime) .
@@ -217,7 +217,7 @@ eliminate_equivalent(TmpLSucc,LSucc) :- absub_eliminate_equivalent(TmpLSucc,aeq,
 :- dom_impl(_, abs_sort/2, [noq]).
 abs_sort('$bottom','$bottom').
 abs_sort(ac(Asub_u,Fg),ac(Asub,Fg)) :-
-    abs_sort(Asub_u,Asub).
+    aeq:abs_sort(Asub_u,Asub).
 abs_sort(d(aeqs(Eqs,Ann,Shr,AVars,NGrAVars),Del),d(aeqs(Eqs_s,Ann,Shr,AVars,NGrAVars),Del)) :-
     mysort(Eqs,Eqs_s) .
 abs_sort(aeqs(Eqs,Ann,Shr,AVars,NGrAVars),aeqs(Eqs_s,Ann,Shr,AVars,NGrAVars)) :-
@@ -579,7 +579,7 @@ input_user_interface_(InputUser,Qv,ASub):-
 
 :- dom_impl(_, input_interface/4, [noq]).
 input_interface(Info,Kind,(Sh0,Eqs,Lv,Fv),(Sh,Eqs,Lv,Fv)):-
-    share_input_interface(Info,Kind,Sh0,Sh), !.
+    sharing:input_interface(Info,Kind,Sh0,Sh), !.
 input_interface(instance(X,T),perfect,(Sh,Eqs0,Lv,Fv),(Sh,Eqs,Lv,Fv)):-
     var(X),
     myappend(Eqs0,X=T,Eqs).
@@ -631,7 +631,7 @@ unknown_entry(_Sg, QVars, Top_aeqs) :-
 :- dom_impl(_, empty_entry/3, [noq]).
 empty_entry(_Sg, QVars, ASub) :-
     list_to_list_of_lists(QVars,Sh),
-    share_input_interface(sharing(Sh),_Kind,_Sh0,ShInfo),
+    sharing:input_interface(sharing(Sh),_Kind,_Sh0,ShInfo),
     input_user_interface_((ShInfo,[],[],QVars),QVars,ASub).
 
 %------------------------------------------------------------------------------
@@ -884,12 +884,12 @@ aeq_input_to_extern((Sh,Eqs_u,Lin_u,Free_u),Qv,AEqs,Ann,Shr):-
     aeq_unify_num(NumVarSet,0),
     keys_and_values(Qv,AVars,Pairs),
 %
-    share_input_user_interface(Sh,Qv,ShASub,sg_not_provided,no),
+    sharing:input_user_interface(Sh,Qv,ShASub,sg_not_provided,no),
     copy_term(t(ShASub,Pairs),t(Share0,Pairs_sh)),
     apply(Pairs_sh),
     flatten_lists(Share0,Share1),
-    share_project(not_provided_Sg,NumVarSet,not_provided_HvFv_u,Share1,Share2),
-    share_abs_sort(Share2,Shr),
+    sharing:project(not_provided_Sg,NumVarSet,not_provided_HvFv_u,Share1,Share2),
+    sharing:abs_sort(Share2,Shr),
 %
     aeq_input_to_annot(Lin_u,Pairs,l,Ann_u,Ann0),
     aeq_input_to_annot(Free_u,Pairs,f,Ann0,Ann1),
@@ -973,9 +973,9 @@ aeq_intern_to_extern(aeqs(Eqs_ec,Ann_ic,Shr_ic,_,_),
 
 sort_sh_ex(ps(X_u,Y_u),ps(X,Y)):- !,
     mysort(X_u,X),
-    share_abs_sort(Y_u,Y).
+    sharing:abs_sort(Y_u,Y).
 sort_sh_ex(X_u,X):- 
-    share_abs_sort(X_u,X).
+    sharing:abs_sort(X_u,X).
 
 %------------------------------------------------------------------------%
 % aeq_extern_to_output(+,-)
@@ -1004,7 +1004,7 @@ aeq_extern_to_output(aeqs(AEqs,Ann,Shr),OutputUser):- !,
     mysort(NG_u,NG),
     mysort(NF_u,NF),
     mysort(Eqs_u,Eqs),
-    share_abs_sort(Share_u,Share),
+    sharing:abs_sort(Share_u,Share),
     support_user_interface([ground(G),sharing(Share),free(F),linear(L),
                             not_ground(NG),not_free(NF)],OutputUser0),
     append(Eqs,OutputUser0,OutputUser).

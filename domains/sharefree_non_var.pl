@@ -90,10 +90,11 @@
     ]).
 :- use_module(library(terms_vars), [varset/2, varset0/2, varset_in_args/2]).
 :- use_module(domain(sharing), [
+    less_or_equal/2,
+    project/5
+]).
+:- use_module(domain(sharing), [ % TODO: move to other shared module?
     project_share/3,
-    share_less_or_equal/2,
-    share_project/5,
-    % TODO: move to other shared module?
     script_p_star/3,
     script_p/3
 ]).
@@ -770,7 +771,7 @@ shfrnv_asub_to_native((Sh,Fr),Qv,OutFlag,ASub_user,Comps):-
 
 :- export(shfrnv_less_or_equal/2). 
 shfrnv_less_or_equal((Sh0,Fr0),(Sh1,Fr1)):-
-    share_less_or_equal(Sh0,Sh1),
+    sharing:less_or_equal(Sh0,Sh1),
     member_value_freeness(Fr0,ListFr0,f),
     member_value_freeness(Fr1,ListFr1,f),
     ord_subset(ListFr1,ListFr0),
@@ -1102,7 +1103,7 @@ shfrnv_success_builtin('var/1',[X],p(X),_,Call,Succ) :-
     ;
         member_value_freeness(Call_fr,DefinitelyFreeVars,f),
         insert(DefinitelyFreeVars,X,AssumedFree),
-        share_project(not_provided_Sg,AssumedFree,not_provided_HvFv_u,Call_sh,NewSh),
+        sharing:project(not_provided_Sg,AssumedFree,not_provided_HvFv_u,Call_sh,NewSh),
         sh_free_vars_compatible(NewSh,AssumedFree),
         change_values([X],Call_fr,Succ_fr,f),
         Succ = (Call_sh,Succ_fr)

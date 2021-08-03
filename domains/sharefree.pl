@@ -114,17 +114,18 @@ shfr_needs(_) :- fail.
       list_ground/2
     ]).
 :- use_module(domain(sharing), [
-    share_project/5,
-    share_less_or_equal/2,
-    share_glb/3,
-    share_input_user_interface/5,
-    share_input_interface/4,
-    % TODO: move to other shared module?
+    project/5,
+    less_or_equal/2,
+    glb/3,
+    input_user_interface/5,
+    input_interface/4
+]).
+:- use_module(domain(sharing), [ % TODO: move to other shared module?
     pos/4,
     project_share/3,
     script_p_star/3,
     script_p/3
-    ]).
+]).
 
 :- use_module(library(lists), [append/3, list_to_list_of_lists/2, powerset/2]).
 :- use_module(library(lsets),
@@ -413,7 +414,7 @@ shfr_glb((Sh1,Fr1),(Sh2,Fr2),Glb):-
     -> Glb = '$bottom'
      ; merge(FVars1,FVars2,FVars),
        merge(GVars1,GVars2,GVars0),
-       share_glb(Sh1,Sh2,Glb_sh),
+       sharing:glb(Sh1,Sh2,Glb_sh),
        varset(Fr1,All),
        varset(Glb_sh,Now),
        ord_subtract(All,Now,NewGVars),
@@ -591,7 +592,7 @@ shfr_empty_entry(_Sg,Qv,Entry):-
 %------------------------------------------------------------------------%
 :- export(shfr_input_user_interface/5).
 shfr_input_user_interface((Sh,Fv0),Qv,(Call_sh,Call_fr),Sg,MaybeCallASub):-
-    share_input_user_interface(Sh,Qv,Call_sh,Sg,MaybeCallASub),
+    sharing:input_user_interface(Sh,Qv,Call_sh,Sg,MaybeCallASub),
     may_be_var(Fv0,Fv),
     merge_list_of_lists(Call_sh,SHv),
     ord_subtract(Qv,SHv,Gv),
@@ -602,7 +603,7 @@ shfr_input_user_interface((Sh,Fv0),Qv,(Call_sh,Call_fr),Sg,MaybeCallASub):-
 
 :- export(shfr_input_interface/4).
 shfr_input_interface(Info,Kind,(Sh0,Fr),(Sh,Fr)):-
-    share_input_interface(Info,Kind,Sh0,Sh), !.
+    sharing:input_interface(Info,Kind,Sh0,Sh), !.
 shfr_input_interface(free(X),perfect,(Sh,Fr0),(Sh,Fr)):-
     var(X),
     myinsert(Fr0,X,Fr).
@@ -707,7 +708,7 @@ shfr_obtain_info(free,(_,Fr),Info):-
 :- export(shfr_less_or_equal/2).
 shfr_less_or_equal('$bottom',_ASub):- !.
 shfr_less_or_equal((Sh0,Fr0),(Sh1,Fr1)):-
-    share_less_or_equal(Sh0,Sh1),
+    sharing:less_or_equal(Sh0,Sh1),
     member_value_freeness(Fr0,ListFr0,f),
     member_value_freeness(Fr1,ListFr1,f),
     ord_subset(ListFr1,ListFr0).
@@ -1297,7 +1298,7 @@ shfr_success_builtin('free/1',[X],p(X),_,Call,Succ) :-
     ;
         member_value_freeness(Call_fr,DefinitelyFreeVars,f),
         insert(DefinitelyFreeVars,X,AssumedFree),
-        share_project(not_provided_Sg,AssumedFree,not_provided_HvFv_u,Call_sh,NewSh),
+        sharing:project(not_provided_Sg,AssumedFree,not_provided_HvFv_u,Call_sh,NewSh),
         sh_free_vars_compatible(NewSh,AssumedFree),
         change_values([X],Call_fr,Succ_fr,f),
         Succ = (Call_sh,Succ_fr)

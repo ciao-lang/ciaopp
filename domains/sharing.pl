@@ -8,6 +8,7 @@
 :- include(ciaopp(plai/plai_domain)).
 :- dom_def(share, [default]).
 
+% TODO: move amgu here
 :- use_module(domain(sharing_amgu), [
     share_amgu_amgu/4,
     share_amgu_augment_asub/3,
@@ -86,18 +87,18 @@ absu(_). % TODO: define properly for this domain
 %                      ABSTRACT PROJECTION
 %------------------------------------------------------------------------%
 %-------------------------------------------------------------------------
-% share_project(+,+,+,+,-)                                               |
-% share_project(Sg,Vars,HvFv_u,ASub,Proj)                                |
+% project(+,+,+,+,-)
+% project(Sg,Vars,HvFv_u,ASub,Proj)
 % Eliminates from each element of the list of lists of variables given as|
 % second argument any variable which is not an element of the first      |
 % argument. Both ordered.                                                |
 % i.e. Proj = {Ys | Xs in ASub, Ys = Xs intersect Vars }                 |
 %------------------------------------------------------------------------%
 
-:- export(share_project/5).    
-:- dom_impl(_, project/5).
-share_project(_,_,_,'$bottom','$bottom'):- !.
-share_project(_Sg,Vars,_HvFv_u,ASub,Proj) :-
+:- export(project/5).    
+:- dom_impl(_, project/5, [noq]).
+project(_,_,_,'$bottom','$bottom'):- !.
+project(_Sg,Vars,_HvFv_u,ASub,Proj) :-
     project_share(Vars,ASub,Proj).
 
 :- export(project_share/3).    
@@ -124,8 +125,8 @@ project_share1(yes,Proj1,NewVars,Ls,[Proj1|Proj]):-
 %                      ABSTRACT Call To Entry                            %
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% share_call_to_entry(+,+,+,+,+,+,+,-,-)                                 %
-% share_call_to_entry(Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo)           %
+% call_to_entry(+,+,+,+,+,+,+,-,-)
+% call_to_entry(Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo)
 % It obtains the abstract substitution (Entry) which results from adding %
 % the abstraction of the Sg = Head to Proj, later projecting the         %
 % resulting substitution onto Hv. This is done as follows:               %
@@ -156,24 +157,23 @@ project_share1(yes,Proj1,NewVars,Ls,[Proj1|Proj]):-
 %         among those arguments in ShareArgsStar)
 %-------------------------------------------------------------------------
 
-:- export(share_call_to_entry/9).
-:- dom_impl(_, call_to_entry/9).
-share_call_to_entry(_Sv,Sg,_Hv,Head,_K,Fv,Proj,Entry,ExtraInfo) :-
+:- export(call_to_entry/9).
+:- dom_impl(_, call_to_entry/9, [noq]).
+call_to_entry(_Sv,Sg,_Hv,Head,_K,Fv,Proj,Entry,ExtraInfo) :-
     variant(Sg,Head),!,
     ExtraInfo = yes,
     copy_term((Sg,Proj),(NewSg,NewProj)),
     Head = NewSg,
-    share_abs_sort(NewProj,Temp),
+    abs_sort(NewProj,Temp),
     list_to_list_of_lists(Fv,Temp1),
     merge(Temp1,Temp,Entry).
-share_call_to_entry(_,_,[],_,_K,Fv,_,Entry,ExtraInfo):- !,
+call_to_entry(_,_,[],_,_K,Fv,_,Entry,ExtraInfo):- !,
     ExtraInfo = no,
     list_to_list_of_lists(Fv,Entry).
-share_call_to_entry(Sv,Sg,Hv,Head,_K,Fv,Proj,Entry,ExtraInfo) :-
+call_to_entry(Sv,Sg,Hv,Head,_K,Fv,Proj,Entry,ExtraInfo) :-
     projected_gvars(Proj,Sv,Gv1),
     abs_unify(Sg,Head,Binds,Gv2),
-    groundness_propagate(Binds,Sv,Gv1,Gv2,Proj,
-                                        NewBinds,NewProj,Gv,SvGv,HvGv),
+    groundness_propagate(Binds,Sv,Gv1,Gv2,Proj,NewBinds,NewProj,Gv,SvGv,HvGv),
     pd_graph(Sv,Hv,SvGv,HvGv,NewProj,NewBinds,Partition,H_partition),
     script_p_star(Sg,NewProj,ShareArgsStar),
     varset_in_args(Head,Head_args),
@@ -186,8 +186,8 @@ share_call_to_entry(Sv,Sg,Hv,Head,_K,Fv,Proj,Entry,ExtraInfo) :-
 %                      ABSTRACT Exit to Prime                            %
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% share_exit_to_prime(+,+,+,+,+,+,-)                                     %
-% share_exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime)                %
+% exit_to_prime(+,+,+,+,+,+,-)
+% exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime)
 % It computes the prime abstract substitution Prime, i.e.  the result of %
 % going from the abstract substitution over the head variables (Exit), to%
 % the abstract substitution over the variables in the subgoal. It will:  %
@@ -210,25 +210,24 @@ share_call_to_entry(Sv,Sg,Hv,Head,_K,Fv,Proj,Entry,ExtraInfo) :-
 %        opposite direction.                                             %
 %-------------------------------------------------------------------------
 
-:- export(share_exit_to_prime/7).
-:- dom_impl(_, exit_to_prime/7).
-share_exit_to_prime(_Sg,_Hv,_Head,_Sv,'$bottom',_Flag,'$bottom') :- !.
-share_exit_to_prime(Sg,Hv,Head,_Sv,Exit,Flag,Prime):-  
+:- export(exit_to_prime/7).
+:- dom_impl(_, exit_to_prime/7, [noq]).
+exit_to_prime(_Sg,_Hv,_Head,_Sv,'$bottom',_Flag,'$bottom') :- !.
+exit_to_prime(Sg,Hv,Head,_Sv,Exit,Flag,Prime):-  
     Flag == yes, !,
-    share_project(Sg,Hv,not_provided_HvFv_u,Exit,BPrime),
+    project(Sg,Hv,not_provided_HvFv_u,Exit,BPrime),
     copy_term((Head,BPrime),(NewHead,NewPrime)),
     Sg = NewHead,
-    share_abs_sort(NewPrime,Prime).
-share_exit_to_prime(_,[],_,_,_,_,[]):- !.
-share_exit_to_prime(Sg,Hv,Head,Sv,Exit,(Gv,NewBinds,NewProj,Partition),Prime):-
-    share_project(Sg,Hv,not_provided_HvFv_u,Exit,BPrime),
+    abs_sort(NewPrime,Prime).
+exit_to_prime(_,[],_,_,_,_,[]):- !.
+exit_to_prime(Sg,Hv,Head,Sv,Exit,(Gv,NewBinds,NewProj,Partition),Prime):-
+    project(Sg,Hv,not_provided_HvFv_u,Exit,BPrime),
     ord_subtract(Hv,Gv,Hv_rem),
     projected_gvars(BPrime,Hv_rem,NewGv_Hv),
     ( NewGv_Hv = [] ->
         transitive_closure_lists(BPrime,Partition,New_partition_u),
         ASub = NewProj
-    ; groundness_propagate(NewBinds,Sv,Gv,NewGv_Hv,NewProj,
-                                        Binds,ASub,_,SvGv,HvGv),
+    ; groundness_propagate(NewBinds,Sv,Gv,NewGv_Hv,NewProj,Binds,ASub,_,SvGv,HvGv),
       ng_vars(Hv,HvGv,[],Part0_head),
       ng_vars(Sv,SvGv,Part0_head,Partition0),
       transitive_closure_lists(ASub,Partition0,Partition1),
@@ -248,15 +247,15 @@ share_exit_to_prime(Sg,Hv,Head,Sv,Exit,(Gv,NewBinds,NewProj,Partition),Prime):-
 %                      ABSTRACT SORT                                     %
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% share_abs_sort(+,-)                                                        |
-% share_abs_sort(Asub,Asub_s)                                                |
+% abs_sort(+,-)
+% abs_sort(Asub,Asub_s)
 % sorts the set of set of variables ASub to obtaint the Asub_s           |
 %-------------------------------------------------------------------------
 
-:- export(share_abs_sort/2).       
-:- dom_impl(_, abs_sort/2).
-share_abs_sort('$bottom','$bottom'):- !.
-share_abs_sort(ASub,ASub_s):-
+:- export(abs_sort/2).
+:- dom_impl(_, abs_sort/2, [noq]).
+abs_sort('$bottom','$bottom'):- !.
+abs_sort(ASub,ASub_s):-
     sort_list_of_lists(ASub,ASub_s).
 
 %------------------------------------------------------------------------%
@@ -264,26 +263,26 @@ share_abs_sort(ASub,ASub_s):-
 %                      ABSTRACT LUB                                      %
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% share_compute_lub(+,-)                                                 %
-% share_compute_lub(ListASub,Lub)                                        %
+% compute_lub(+,-)
+% compute_lub(ListASub,Lub)
 % It computes the lub of a set of Asub. For each two abstract            %
 % substitutions ASub1 and ASub2 in ListASub, obtaining the lub is just   %
 % merging the ASub1 and ASub2.                                           %
 %------------------------------------------------------------------------%
 
-:- export(share_compute_lub/2).
-:- dom_impl(_, compute_lub/2).
-share_compute_lub([ASub1,ASub2|Rest],Lub) :-
-    share_lub(ASub1,ASub2,ASub3),
-    share_compute_lub([ASub3|Rest],Lub).
-share_compute_lub([ASub],ASub).
+:- export(compute_lub/2).
+:- dom_impl(_, compute_lub/2, [noq]).
+compute_lub([ASub1,ASub2|Rest],Lub) :-
+    lub(ASub1,ASub2,ASub3),
+    compute_lub([ASub3|Rest],Lub).
+compute_lub([ASub],ASub).
 
-:- export(share_lub/3).      
+:- export(lub/3).      
 % :- dom_impl(_, compute_lub_el(ASub1,ASub2,ASub), lub(ASub1,ASub2,ASub)).
-share_lub(ASub1,ASub2,ASub3):-
+lub(ASub1,ASub2,ASub3):-
     ASub1 == ASub2,!,
     ASub3 = ASub2.
-share_lub(ASub1,ASub2,ASub3):-
+lub(ASub1,ASub2,ASub3):-
     merge_subst(ASub1,ASub2,ASub3).
 
 merge_subst('$bottom',Yss,Yss):- !.
@@ -292,16 +291,16 @@ merge_subst(Xss,Yss,Zss) :-
     merge(Xss,Yss,Zss).
 
 %------------------------------------------------------------------------%
-% share_glb(+,+,-)                                                       %
-% share_glb(ASub0,ASub1,Lub)                                             %
+% glb(+,+,-)
+% glb(ASub0,ASub1,Lub)
 % Glb is just intersection.                                              %
 %------------------------------------------------------------------------%
 
-:- export(share_glb/3).      
-:- dom_impl(_, glb/3).
-share_glb('$bottom',_ASub,ASub3) :- !, ASub3='$bottom'.
-share_glb(_ASub,'$bottom',ASub3) :- !, ASub3='$bottom'.
-share_glb(ASub0,ASub1,Glb):-
+:- export(glb/3).
+:- dom_impl(_, glb/3, [noq]).
+glb('$bottom',_ASub,ASub3) :- !, ASub3='$bottom'.
+glb(_ASub,'$bottom',ASub3) :- !, ASub3='$bottom'.
+glb(ASub0,ASub1,Glb):-
     ord_intersection(ASub0,ASub1,ASub),
 %%      ( ASub=[], ASub0\==[], ASub1\==[] -> Glb = '$bottom' ; Glb=ASub ).
 %% this is not true AADEBUG
@@ -311,8 +310,8 @@ share_glb(ASub0,ASub1,Glb):-
 %                      ABSTRACT EXTEND                                   %
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% share_extend(+,+,+,+,-)                                                %
-% share_extend(Sg,Prime,Sv,Call,Succ)                                    %
+% extend(+,+,+,+,-)
+% extend(Sg,Prime,Sv,Call,Succ)
 % If Prime = bottom, Succ = bottom. If Sv = [], Call = Succ. Otherwise,  %
 % it splits Call into two sets of sets: Intersect (those sets containing %
 % at least a variabe in Sv) and Disjunct (the rest). Then is obtains     %
@@ -320,13 +319,13 @@ share_glb(ASub0,ASub1,Glb):-
 % with the information in Prime adding, at the end, Disjunct.            %
 %------------------------------------------------------------------------%
 
-:- export(share_extend/5).     
-:- dom_impl(_, extend/5).
-share_extend(_Sg,'$bottom',_Hv,_Call,Succ):- !,
+:- export(extend/5).     
+:- dom_impl(_, extend/5, [noq]).
+extend(_Sg,'$bottom',_Hv,_Call,Succ):- !,
     Succ = '$bottom'.
-share_extend(_Sg,_Prime,[],Call,Succ):- !,
+extend(_Sg,_Prime,[],Call,Succ):- !,
     Call = Succ.
-share_extend(_Sg,Prime,Sv,Call,Succ) :-
+extend(_Sg,Prime,Sv,Call,Succ) :-
     ord_split_lists_from_list(Sv,Call,Intersect,Disjunct),
     closure_under_union(Intersect,Star),
     prune_success(Star,Prime,Sv,Disjunct,Succ).
@@ -339,15 +338,14 @@ share_extend(_Sg,Prime,Sv,Call,Succ) :-
 % Specialized version of call_to_entry + exit_to_prime + extend for facts%
 %------------------------------------------------------------------------%
 
-:- export(share_call_to_success_fact/9).
-:- dom_impl(_, call_to_success_fact/9).
-share_call_to_success_fact(_Sg,[],_Head,_K,Sv,Call,_,[],Succ) :- !,
+:- export(call_to_success_fact/9).
+:- dom_impl(_, call_to_success_fact/9, [noq]).
+call_to_success_fact(_Sg,[],_Head,_K,Sv,Call,_,[],Succ) :- !,
     ord_split_lists_from_list(Sv,Call,_Intersect,Succ).
-share_call_to_success_fact(Sg,Hv,Head,_K,Sv,Call,Proj,Prime,Succ) :-
+call_to_success_fact(Sg,Hv,Head,_K,Sv,Call,Proj,Prime,Succ) :-
     projected_gvars(Proj,Sv,Gv1),
     abs_unify(Sg,Head,Binds,Gv2),!,
-    groundness_propagate(Binds,Sv,Gv1,Gv2,Proj,
-                                        NewBinds,NewProj,_,SvGv,HvGv),
+    groundness_propagate(Binds,Sv,Gv1,Gv2,Proj,NewBinds,NewProj,_,SvGv,HvGv),
     pd_graph(Sv,Hv,SvGv,HvGv,NewProj,NewBinds,Partition,H_partition),
     script_p_star(Sg,NewProj,ShareArgsSgStar),
     varset_in_args(Head,Head_args),
@@ -357,38 +355,36 @@ share_call_to_success_fact(Sg,Hv,Head,_K,Sv,Call,Proj,Prime,Succ) :-
     script_p(Head,Entry,ShareArgsHead),
     varset_in_args(Sg,Sg_args),
     closure_under_union(Proj,ProjStar),
-    compute_success_proj(S_partition,Sg_args,ShareArgsHead,ProjStar,[],
-                                                                Prime),
-    share_extend(Sg,Prime,Sv,Call,Succ).
-share_call_to_success_fact(_Sg,_Hv,_Head,_K,_Sv,_Call,_Proj, '$bottom','$bottom').
+    compute_success_proj(S_partition,Sg_args,ShareArgsHead,ProjStar,[],Prime),
+    extend(Sg,Prime,Sv,Call,Succ).
+call_to_success_fact(_Sg,_Hv,_Head,_K,_Sv,_Call,_Proj, '$bottom','$bottom').
 
 %-------------------------------------------------------------------------
-% Specialised version of share_call_to_success_fact in order to allow    |
+% Specialised version of call_to_success_fact in order to allow    |
 % the computation of the prime, the composition and then the extension   |
 % Note that if the success is computed (instead of the prime) and then   |
 % we compose the information and project it, we can loose information    |
 % since the extension is the step in which more information is lost      |
 %-------------------------------------------------------------------------
 
-:- export(share_call_to_prime_fact/6).
-share_call_to_prime_fact(_Sg,[],_Head,_Sv,_Call,Prime) :- !,
+:- export(call_to_prime_fact/6).
+% TODO: add domain operation (useful in combined domains)
+call_to_prime_fact(_Sg,[],_Head,_Sv,_Call,Prime) :- !,
     Prime = [].
-share_call_to_prime_fact(Sg,Hv,Head,Sv,Call,Prime) :-
+call_to_prime_fact(Sg,Hv,Head,Sv,Call,Prime) :-
     projected_gvars(Call,Sv,Gv1),
     abs_unify(Sg,Head,Binds,Gv2),
-    groundness_propagate(Binds,Sv,Gv1,Gv2,Call,
-                                       NewBinds,NewProj,_,SvGv,HvGv),
+    groundness_propagate(Binds,Sv,Gv1,Gv2,Call,NewBinds,NewProj,_,SvGv,HvGv),
     pd_graph(Sv,Hv,SvGv,HvGv,NewProj,NewBinds,Partition,H_partition),
     script_p_star(Sg,NewProj,ShareArgsSgStar),
     varset_in_args(Head,Head_args),
     compute_entry(H_partition,Head_args,ShareArgsSgStar,[],Entry),
 %       -------------------------------------------------
-    share_project(Sg,Sv,not_provided_HvFv_u,Partition,S_partition),
+    project(Sg,Sv,not_provided_HvFv_u,Partition,S_partition), % TODO: use project_share/3 and share code above?
     script_p(Head,Entry,ShareArgsHeadStar),
     varset_in_args(Sg,Sg_args),
     closure_under_union(Call,Star),
-    compute_success_proj(S_partition,Sg_args,ShareArgsHeadStar,Star,[],
-                                                           Prime).
+    compute_success_proj(S_partition,Sg_args,ShareArgsHeadStar,Star,[],Prime).
 
 %-------------------------------------------------------------------------
 %            Intermediate Functions                                      %
@@ -527,7 +523,7 @@ pd_graph(Sv,Hv,SvGv,HvGv,NewProj,Binds,Partition,Proj_Partition) :-
     transitive_closure_lists(NewProj,Partition0,Partition1),
     transitive_closure_binds(Binds,Partition1,Partition_u),
     sort(Partition_u,Partition),
-    share_project(not_provided_Sg,Hv,not_provided_HvFv_u,Partition,Proj_Partition).
+    project(not_provided_Sg,Hv,not_provided_HvFv_u,Partition,Proj_Partition).
 
 %-------------------------------------------------------------------------
 % ng_vars(+,+,+,-)                                                       |
@@ -673,65 +669,65 @@ prune_success([Xs|Xss],Prime,Sv,Call,Succ) :-
     prune_success(Xss,Prime,Sv,Temp,Succ).
 
 %-------------------------------------------------------------------------
-% share_unknown_entry(+,+,-)                                             |
-% share_unknown_entry(Sg,Qv,Call)                                        |
+% unknown_entry(+,+,-)
+% unknown_entry(Sg,Qv,Call)
 % The top value in Sharing for a set of variables is the powerset        |
 %-------------------------------------------------------------------------
 
-:- export(share_unknown_entry/3).
-:- dom_impl(_, unknown_entry/3).
-share_unknown_entry(_Sg,Qv,Call):-
+:- export(unknown_entry/3).
+:- dom_impl(_, unknown_entry/3, [noq]).
+unknown_entry(_Sg,Qv,Call):-
     powerset(Qv,Call_u),
     sort_list_of_lists(Call_u,Call).
 
-:- export(share_empty_entry/3).
-:- dom_impl(_, empty_entry/3).
-:- pred share_empty_entry(+Sg,+Vars,-Entry): cgoal * list * absu # "Gives the
-""empty"" value in this domain for a given set of variables
-@var{Vars}, resulting in the abstract substitution @var{Entry}. I.e.,
-obtains the abstraction of a substitution in which all variables
-@var{Vars} are unbound: free and unaliased. In this domain is the list
-of singleton lists of variables".
+:- export(empty_entry/3).
+:- dom_impl(_, empty_entry/3, [noq]).
+:- pred empty_entry(+Sg,+Vars,-Entry): cgoal * list * absu
+   # "Gives the ""empty"" value in this domain for a given set of
+   variables @var{Vars}, resulting in the abstract substitution
+   @var{Entry}. I.e., obtains the abstraction of a substitution in
+   which all variables @var{Vars} are unbound: free and unaliased. In
+   this domain is the list of singleton lists of variables".
 
-share_empty_entry(_Sg,Vars,Entry):-
+empty_entry(_Sg,Vars,Entry):-
     list_to_list_of_lists(Vars,Entry).
 
 %------------------------------------------------------------------------%
-% share_output_interface(+,-)                                            %
-% share_output_interface(ASub,Output)                                    %
+% output_interface(+,-)
+% output_interface(ASub,Output)
 % The readible format still close to the internal formal is identical    %
 % in Sharing                                                             %
 %-------------------------------------------------------------------------
 
-%:- export(share_output_interface/2). 
-% share_output_interface(Succ,Succ).
+%:- export(output_interface/2). 
+% output_interface(Succ,Succ).
 
 %------------------------------------------------------------------------%
-% share_asub_to_native(+,+,+,-,-)                                        %
-% share_asub_to_native(ASub,Qv,OutFlag,ASub_user,Comps)                  %
+% asub_to_native(+,+,+,-,-)
+% asub_to_native(ASub,Qv,OutFlag,ASub_user,Comps)
 % The user friendly format consists in extracting the ground variables   %
 %------------------------------------------------------------------------%
 
-:- export(share_asub_to_native/5). 
-:- dom_impl(_, asub_to_native/5).
-share_asub_to_native('$bottom',_Qv,_OutFlag,_ASub_user,_Comps):- !, fail.
-share_asub_to_native(Succ,Qv,_OutFlag,Info,[]):-
+:- export(asub_to_native/5). 
+:- dom_impl(_, asub_to_native/5, [noq]).
+asub_to_native('$bottom',_Qv,_OutFlag,_ASub_user,_Comps):- !, fail.
+asub_to_native(Succ,Qv,_OutFlag,Info,[]):-
     if_not_nil(Succ,sharing(Succ),Info,Info0),
     projected_gvars(Succ,Qv,Gv),
     if_not_nil(Gv,ground(Gv),Info0,[]).
 
 %------------------------------------------------------------------------%
-% share_input_user_interface(+,+,-,+,+)                                  %
-% share_input_user_interface(InputUser,Qv,ASub,Sg,MaybeCallASub)         %
+% input_user_interface(+,+,-,+,+)
+% input_user_interface(InputUser,Qv,ASub,Sg,MaybeCallASub)
 % Obtaining the abstract substitution for Sharing from the user supplied %
 % information just consists in taking the mshare(Sharing) element of     %
 % InputUser and sorting it. If there is no such element, get the "top"   %
 % sharing for the variables involved.                                    %
 %------------------------------------------------------------------------%
 
-:- export(share_input_user_interface/5).  
-:- dom_impl(_, input_user_interface/5).
-share_input_user_interface((Gv0,Sh0,Indep0),Qv,Call,_Sg,_MaybeCallASub):-
+:- export(input_user_interface/5).  
+:- dom_impl(_, input_user_interface/5, [noq]).
+input_user_interface((Gv0,Sh0,Indep0),Qv,Call,_Sg,_MaybeCallASub):-
     may_be_var(Gv0,Gv),
     may_be_var(Sh0,ASub0),
     may_be_var(Indep0,Indep),
@@ -739,40 +735,40 @@ share_input_user_interface((Gv0,Sh0,Indep0),Qv,Call,_Sg,_MaybeCallASub):-
     ord_subtract(Qv,Gv,NGv0),
     merge_list_of_lists(ASub1,Vars),
     ord_subtract(NGv0,Vars,NGv),
-    share_unknown_entry(sg_not_provided,NGv,ASub2),
+    unknown_entry(sg_not_provided,NGv,ASub2),
     merge(ASub1,ASub2,ASub),
     handle_each_indep(Indep,share,ASub,Call).
 
-:- export(share_input_interface/4).  
-:- dom_impl(_, input_interface/4).
-share_input_interface(ground(X),perfect,(Gv0,Sh,I),(Gv,Sh,I)):-
+:- export(input_interface/4).  
+:- dom_impl(_, input_interface/4, [noq]).
+input_interface(ground(X),perfect,(Gv0,Sh,I),(Gv,Sh,I)):-
     varset(X,Vs),
     myappend(Gv0,Vs,Gv).
-share_input_interface(sharing(X),perfect,(Gv,Sh0,I),(Gv,Sh,I)):-
+input_interface(sharing(X),perfect,(Gv,Sh0,I),(Gv,Sh,I)):-
 % should check that X is consistent!
     nonvar(X),
     sort_list_of_lists(X,ASub),
     myappend(ASub,Sh0,Sh). % IC: should it not be intersection instead of union?
-share_input_interface(sharing(Xs,Xss),perfect,(Gv,Sh0,I),(Gv,Sh,I)):-
+input_interface(sharing(Xs,Xss),perfect,(Gv,Sh0,I),(Gv,Sh,I)):-
 % should check that X is consistent!
     nonvar(Xs), nonvar(Xss),
     sort_list_of_lists(Xss,ASub),
     myappend(ASub,Sh0,Sh). % TODO: merge properly: project + intersect + extend
-share_input_interface(indep(X),perfect,(Gv,Sh,I0),(Gv,Sh,I)):-
+input_interface(indep(X),perfect,(Gv,Sh,I0),(Gv,Sh,I)):-
     nonvar(X),
     sort_list_of_lists(X,I1),
     myappend(I1,I0,I).
-share_input_interface(member(A,B),perfect,S0,S1) :- var(A), ground(B), !,
-    share_input_interface(ground(A),perfect,S0,S1).
-share_input_interface(=(A,B),perfect,S0,S) :- var(A), ground(B), !,
-    share_input_interface(ground(A),perfect,S0,S).
-share_input_interface(regtype(E),approx,S0,S):-
+input_interface(member(A,B),perfect,S0,S1) :- var(A), ground(B), !,
+    input_interface(ground(A),perfect,S0,S1).
+input_interface(=(A,B),perfect,S0,S) :- var(A), ground(B), !,
+    input_interface(ground(A),perfect,S0,S).
+input_interface(regtype(E),approx,S0,S):-
     eterms_input_interface(regtype(E),perfect,[],[NonPT]),
     functor(NonPT,T,1),
     % set_ground_type(G),
     % dz_type_included(T,G),
     is_ground_type(T),
-    share_input_interface(ground(E),_Any,S0,S).
+    input_interface(ground(E),_Any,S0,S).
 
 myappend(Vs,V0,V):-
     var(Vs), !,
@@ -783,34 +779,34 @@ myappend(Vs,V0,V):-
 may_be_var(X,X):- ( X=[] ; true ), !.
 
 %-------------------------------------------------------------------------
-% share_unknown_call(+,+,+,-)                                            |
-% share_unknown_call(Sg,Vars,Call,Succ)                                  |
+% unknown_call(+,+,+,-)
+% unknown_call(Sg,Vars,Call,Succ)
 % Obtained by selecting those sets in Call for which at least a variable |
 % in Vars appears, making the star of those sets, and adding the sets    |
 % with empty intersection with Vars                                      |
 %-------------------------------------------------------------------------
 
-:- export(share_unknown_call/4).
-:- dom_impl(_, unknown_call/4).
-share_unknown_call(_Sg,_Vars,'$bottom','$bottom') :- !.
-share_unknown_call(_Sg,_Vars,[],[]) :- !.
-share_unknown_call(_Sg,Vars,[C|Call],Succ) :-
+:- export(unknown_call/4).
+:- dom_impl(_, unknown_call/4, [noq]).
+unknown_call(_Sg,_Vars,'$bottom','$bottom') :- !.
+unknown_call(_Sg,_Vars,[],[]) :- !.
+unknown_call(_Sg,Vars,[C|Call],Succ) :-
     ord_split_lists_from_list(Vars,[C|Call],Intersect,Rest),
     closure_under_union(Intersect,Star),
     merge(Star,Rest,Succ).
 
 %------------------------------------------------------------------------%
-% share_less_or_equal(+,+)                                               %
-% share_less_or_equal(ASub0,ASub1)                                       %
+% less_or_equal(+,+)
+% less_or_equal(ASub0,ASub1)
 % Succeeds if ASub1 is more general or equal to ASub0                    %
 %------------------------------------------------------------------------%
 
-:- export(share_less_or_equal/2).
-:- dom_impl(_, less_or_equal/2).
-share_less_or_equal('$bottom',_ASub):- !.
-share_less_or_equal(ASub0,ASub1):-
+:- export(less_or_equal/2).
+:- dom_impl(_, less_or_equal/2, [noq]).
+less_or_equal('$bottom',_ASub):- !.
+less_or_equal(ASub0,ASub1):-
     ASub0 == ASub1, !.
-share_less_or_equal(ASub0,ASub1):-
+less_or_equal(ASub0,ASub1):-
     ord_subset(ASub0,ASub1).
 
 %------------------------------------------------------------------------%
@@ -818,8 +814,8 @@ share_less_or_equal(ASub0,ASub1):-
 %------------------------------------------------------------------------%
 
 %-------------------------------------------------------------------------
-% share_special_builtin(+,+,+,-,-)                                       |
-% share_special_builtin(SgKey,Sg,Subgoal,Type,Condvars)                  |
+% special_builtin(+,+,+,-,-)
+% special_builtin(SgKey,Sg,Subgoal,Type,Condvars)
 % Satisfied if the builtin does not need a very complex action. It       |
 % divides builtins into groups determined by the flag returned in the    |
 % second argument + some special handling for some builtins:             |
@@ -835,169 +831,169 @@ share_less_or_equal(ASub0,ASub1):-
 % (5) Sgkey: special handling of some particular builtins                |
 %-------------------------------------------------------------------------
 
-:- export(share_special_builtin/5).
-:- dom_impl(_, special_builtin/5).
+:- export(special_builtin/5).
+:- dom_impl(_, special_builtin/5, [noq]).
 %-------------------------------------------------------------------------
 % metacuts
-%% share_special_builtin('CHOICE IDIOM/1',_,_,ground,_).
-%% share_special_builtin('CUT IDIOM/1',_,_,ground,_).
-%% share_special_builtin('$metachoice/1',_,_,ground,_).
-%% share_special_builtin('$metacut/1',_,_,ground,_).
-%% share_special_builtin(':/2',(prolog:'$metachoice'(_)),_,ground,_).
-%% share_special_builtin(':/2',(prolog:'$metacut'(_)),_,ground,_).
-share_special_builtin('metachoice/1',_,_,ground,_).
-share_special_builtin('metacut/1',_,_,ground,_).
+%% special_builtin('CHOICE IDIOM/1',_,_,ground,_).
+%% special_builtin('CUT IDIOM/1',_,_,ground,_).
+%% special_builtin('$metachoice/1',_,_,ground,_).
+%% special_builtin('$metacut/1',_,_,ground,_).
+%% special_builtin(':/2',(prolog:'$metachoice'(_)),_,ground,_).
+%% special_builtin(':/2',(prolog:'$metacut'(_)),_,ground,_).
+special_builtin('metachoice/1',_,_,ground,_).
+special_builtin('metacut/1',_,_,ground,_).
 %-------------------------------------------------------------------------
-share_special_builtin('absolute_file_name/2',_,_,ground,_).
-share_special_builtin('atom/1',_,_,ground,_).
-share_special_builtin('atomic/1',_,_,ground,_).
-share_special_builtin('$simplify_unconditional_cges/1',_,_,ground,_).
-share_special_builtin('current_atom/1',_,_,ground,_).
-share_special_builtin('current_input/1',_,_,ground,_).
-share_special_builtin('current_module/1',_,_,ground,_).
-share_special_builtin('current_output/1',_,_,ground,_).
-share_special_builtin('current_op/3',_,_,ground,_).
-share_special_builtin('close/1',_,_,ground,_).
-share_special_builtin('depth/1',_,_,ground,_).
-share_special_builtin('ensure_loaded/1',_,_,ground,_).
-share_special_builtin('erase/1',_,_,ground,_).
-share_special_builtin('float/1',_,_,ground,_).
-share_special_builtin('flush_output/1',_,_,ground,_).
-share_special_builtin('get_code/1',_,_,ground,_).
-share_special_builtin('get1_code/1',_,_,ground,_).
-share_special_builtin('get_code/2',_,_,ground,_).
-share_special_builtin('get1_code/2',_,_,ground,_).
-share_special_builtin('ground/1',_,_,ground,_).
-share_special_builtin('int/1',_,_,ground,_).
-share_special_builtin('integer/1',_,_,ground,_).
-share_special_builtin('is/2',_,_,ground,_).
-share_special_builtin('name/2',_,_,ground,_).
-share_special_builtin('num/1',_,_,ground,_).
-share_special_builtin('number/1',_,_,ground,_).
-share_special_builtin('numbervars/3',_,_,ground,_).
-share_special_builtin('nl/1',_,_,ground,_).
-share_special_builtin('open/3',_,_,ground,_).
-share_special_builtin('op/3',_,_,ground,_).
-share_special_builtin('prolog_flag/2',_,_,ground,_).
-share_special_builtin('prolog_flag/3',_,_,ground,_).
-share_special_builtin('put_code/1',_,_,ground,_).
-share_special_builtin('put_code/2',_,_,ground,_).
-share_special_builtin('statistics/2',_,_,ground,_).
-share_special_builtin('seeing/1',_,_,ground,_).
-share_special_builtin('see/1',_,_,ground,_).
-share_special_builtin('telling/1',_,_,ground,_).
-share_special_builtin('tell/1',_,_,ground,_).
-share_special_builtin('tab/1',_,_,ground,_).
-share_special_builtin('tab/2',_,_,ground,_).
-share_special_builtin('ttyput/1',_,_,ground,_).
-share_special_builtin('save_event_trace/1',_,_,ground,_).
-share_special_builtin('=:=/2',_,_,ground,_).
-share_special_builtin('>=/2',_,_,ground,_).
-share_special_builtin('>/2',_,_,ground,_).
-share_special_builtin('</2',_,_,ground,_).
-share_special_builtin('=</2',_,_,ground,_).
+special_builtin('absolute_file_name/2',_,_,ground,_).
+special_builtin('atom/1',_,_,ground,_).
+special_builtin('atomic/1',_,_,ground,_).
+special_builtin('$simplify_unconditional_cges/1',_,_,ground,_).
+special_builtin('current_atom/1',_,_,ground,_).
+special_builtin('current_input/1',_,_,ground,_).
+special_builtin('current_module/1',_,_,ground,_).
+special_builtin('current_output/1',_,_,ground,_).
+special_builtin('current_op/3',_,_,ground,_).
+special_builtin('close/1',_,_,ground,_).
+special_builtin('depth/1',_,_,ground,_).
+special_builtin('ensure_loaded/1',_,_,ground,_).
+special_builtin('erase/1',_,_,ground,_).
+special_builtin('float/1',_,_,ground,_).
+special_builtin('flush_output/1',_,_,ground,_).
+special_builtin('get_code/1',_,_,ground,_).
+special_builtin('get1_code/1',_,_,ground,_).
+special_builtin('get_code/2',_,_,ground,_).
+special_builtin('get1_code/2',_,_,ground,_).
+special_builtin('ground/1',_,_,ground,_).
+special_builtin('int/1',_,_,ground,_).
+special_builtin('integer/1',_,_,ground,_).
+special_builtin('is/2',_,_,ground,_).
+special_builtin('name/2',_,_,ground,_).
+special_builtin('num/1',_,_,ground,_).
+special_builtin('number/1',_,_,ground,_).
+special_builtin('numbervars/3',_,_,ground,_).
+special_builtin('nl/1',_,_,ground,_).
+special_builtin('open/3',_,_,ground,_).
+special_builtin('op/3',_,_,ground,_).
+special_builtin('prolog_flag/2',_,_,ground,_).
+special_builtin('prolog_flag/3',_,_,ground,_).
+special_builtin('put_code/1',_,_,ground,_).
+special_builtin('put_code/2',_,_,ground,_).
+special_builtin('statistics/2',_,_,ground,_).
+special_builtin('seeing/1',_,_,ground,_).
+special_builtin('see/1',_,_,ground,_).
+special_builtin('telling/1',_,_,ground,_).
+special_builtin('tell/1',_,_,ground,_).
+special_builtin('tab/1',_,_,ground,_).
+special_builtin('tab/2',_,_,ground,_).
+special_builtin('ttyput/1',_,_,ground,_).
+special_builtin('save_event_trace/1',_,_,ground,_).
+special_builtin('=:=/2',_,_,ground,_).
+special_builtin('>=/2',_,_,ground,_).
+special_builtin('>/2',_,_,ground,_).
+special_builtin('</2',_,_,ground,_).
+special_builtin('=</2',_,_,ground,_).
 % SICStus3 (ISO)
-share_special_builtin('=\\=/2',_,_,ground,_).
+special_builtin('=\\=/2',_,_,ground,_).
 % SICStus2.x
-% share_special_builtin('=\=/2',_,_,ground,_).
+% special_builtin('=\=/2',_,_,ground,_).
 %-------------------------------------------------------------------------
-share_special_builtin('abort/0',_,_,bottom,_).
-share_special_builtin('fail/0',_,_,bottom,_).
-share_special_builtin('false/0',_,_,bottom,_).
-share_special_builtin('halt/0',_,_,bottom,_).
+special_builtin('abort/0',_,_,bottom,_).
+special_builtin('fail/0',_,_,bottom,_).
+special_builtin('false/0',_,_,bottom,_).
+special_builtin('halt/0',_,_,bottom,_).
 %-------------------------------------------------------------------------
-share_special_builtin('!/0',_,_,unchanged,_).
-share_special_builtin('assert/1',_,_,unchanged,_).
-share_special_builtin('asserta/1',_,_,unchanged,_).
-share_special_builtin('assertz/1',_,_,unchanged,_).
-share_special_builtin('debug/0',_,_,unchanged,_).
-share_special_builtin('debugging/0',_,_,unchanged,_).
-share_special_builtin('dif/2',_,_,unchanged,_).
-share_special_builtin('display/1',_,_,unchanged,_).
-share_special_builtin('flush_output/0',_,_,unchanged,_).
-share_special_builtin('garbage_collect/0',_,_,unchanged,_).
-share_special_builtin('gc/0',_,_,unchanged,_).
-share_special_builtin('listing/0',_,_,unchanged,_).
-share_special_builtin('listing/1',_,_,unchanged,_).
-share_special_builtin('nl/0',_,_,unchanged,_).
-share_special_builtin('nogc/0',_,_,unchanged,_).
-share_special_builtin('nonvar/1',_,_,unchanged,_). % needed?
-share_special_builtin('not_free/1',_,_,unchanged,_).
-share_special_builtin('not/1',_,_,unchanged,_).
-share_special_builtin('print/1',_,_,unchanged,_).
-share_special_builtin('repeat/0',_,_,unchanged,_).
-share_special_builtin('start_event_trace/0',_,_,unchanged,_).
-share_special_builtin('stop_event_trace/0',_,_,unchanged,_).
-share_special_builtin('true/0',_,_,unchanged,_).
-share_special_builtin('ttyflush/0',_,_,unchanged,_).
-share_special_builtin('otherwise/0',_,_,unchanged,_).
-share_special_builtin('seen/0',_,_,unchanged,_).
-share_special_builtin('told/0',_,_,unchanged,_).
-share_special_builtin('ttynl/0',_,_,unchanged,_).
-share_special_builtin('write/1',_,_,unchanged,_).
-share_special_builtin('writeq/1',_,_,unchanged,_).
+special_builtin('!/0',_,_,unchanged,_).
+special_builtin('assert/1',_,_,unchanged,_).
+special_builtin('asserta/1',_,_,unchanged,_).
+special_builtin('assertz/1',_,_,unchanged,_).
+special_builtin('debug/0',_,_,unchanged,_).
+special_builtin('debugging/0',_,_,unchanged,_).
+special_builtin('dif/2',_,_,unchanged,_).
+special_builtin('display/1',_,_,unchanged,_).
+special_builtin('flush_output/0',_,_,unchanged,_).
+special_builtin('garbage_collect/0',_,_,unchanged,_).
+special_builtin('gc/0',_,_,unchanged,_).
+special_builtin('listing/0',_,_,unchanged,_).
+special_builtin('listing/1',_,_,unchanged,_).
+special_builtin('nl/0',_,_,unchanged,_).
+special_builtin('nogc/0',_,_,unchanged,_).
+special_builtin('nonvar/1',_,_,unchanged,_). % needed?
+special_builtin('not_free/1',_,_,unchanged,_).
+special_builtin('not/1',_,_,unchanged,_).
+special_builtin('print/1',_,_,unchanged,_).
+special_builtin('repeat/0',_,_,unchanged,_).
+special_builtin('start_event_trace/0',_,_,unchanged,_).
+special_builtin('stop_event_trace/0',_,_,unchanged,_).
+special_builtin('true/0',_,_,unchanged,_).
+special_builtin('ttyflush/0',_,_,unchanged,_).
+special_builtin('otherwise/0',_,_,unchanged,_).
+special_builtin('seen/0',_,_,unchanged,_).
+special_builtin('told/0',_,_,unchanged,_).
+special_builtin('ttynl/0',_,_,unchanged,_).
+special_builtin('write/1',_,_,unchanged,_).
+special_builtin('writeq/1',_,_,unchanged,_).
 % SICStus3 (ISO)
-%meta! (no need) share_special_builtin('\\+/1',_,_,unchanged,_).
-share_special_builtin('\\==/2',_,_,unchanged,_).
+%meta! (no need) special_builtin('\\+/1',_,_,unchanged,_).
+special_builtin('\\==/2',_,_,unchanged,_).
 % SICStus2.x
-% share_special_builtin('\+/1',_,_,unchanged,_).
-% share_special_builtin('\==/2',_,_,unchanged,_).
-share_special_builtin('@>=/2',_,_,unchanged,_).
-share_special_builtin('@=</2',_,_,unchanged,_).
-share_special_builtin('@>/2',_,_,unchanged,_).
-share_special_builtin('@</2',_,_,unchanged,_).
+% special_builtin('\+/1',_,_,unchanged,_).
+% special_builtin('\==/2',_,_,unchanged,_).
+special_builtin('@>=/2',_,_,unchanged,_).
+special_builtin('@=</2',_,_,unchanged,_).
+special_builtin('@>/2',_,_,unchanged,_).
+special_builtin('@</2',_,_,unchanged,_).
 %-------------------------------------------------------------------------
-share_special_builtin('assert/2',assert(_,Z),_,some,Vars):-
+special_builtin('assert/2',assert(_,Z),_,some,Vars):-
     varset(Z,Vars).
-share_special_builtin('asserta/2',asserta(_,Z),_,some,Vars):-
+special_builtin('asserta/2',asserta(_,Z),_,some,Vars):-
     varset(Z,Vars).
-share_special_builtin('assertz/2',assertz(_,Z),_,some,Vars):-
+special_builtin('assertz/2',assertz(_,Z),_,some,Vars):-
     varset(Z,Vars).
-share_special_builtin('compare/3',compare(X,_,_),_,some,Vars):-
+special_builtin('compare/3',compare(X,_,_),_,some,Vars):-
     varset(X,Vars).
-share_special_builtin('format/2',format(X,_Y),_,some,Vars):-
+special_builtin('format/2',format(X,_Y),_,some,Vars):-
     varset(X,Vars).
-share_special_builtin('format/3',format(X,Y,_Z),_,some,List):-
+special_builtin('format/3',format(X,Y,_Z),_,some,List):-
     varset([X,Y],List).
-share_special_builtin('functor/3',functor(_X,Y,Z),_,some,List):-
+special_builtin('functor/3',functor(_X,Y,Z),_,some,List):-
     varset([Y,Z],List).
-share_special_builtin('length/2',length(_X,Y),_,some,[Y]).
-share_special_builtin('print/2',print(X,_Y),_,some,Vars):-
+special_builtin('length/2',length(_X,Y),_,some,[Y]).
+special_builtin('print/2',print(X,_Y),_,some,Vars):-
     varset(X,Vars).
-share_special_builtin('recorda/3',recorda(_,_,Z),_,some,Vars):-
+special_builtin('recorda/3',recorda(_,_,Z),_,some,Vars):-
     varset(Z,Vars).
-share_special_builtin('recordz/3',recordz(_,_,Z),_,some,Vars):-
+special_builtin('recordz/3',recordz(_,_,Z),_,some,Vars):-
     varset(Z,Vars).
-share_special_builtin('write/2',write(X,_Y),_,some,Vars):-
+special_builtin('write/2',write(X,_Y),_,some,Vars):-
     varset(X,Vars).
 %-------------------------------------------------------------------------
-share_special_builtin('=../2','=..'(X,Y),_,'=../2',p(X,Y)).
-share_special_builtin('==/2','=='(X,Y),_,'==/2',p(X,Y)).
-share_special_builtin('copy_term/2',copy_term(X,Y),_,copy_term,p(X,Y)).
+special_builtin('=../2','=..'(X,Y),_,'=../2',p(X,Y)).
+special_builtin('==/2','=='(X,Y),_,'==/2',p(X,Y)).
+special_builtin('copy_term/2',copy_term(X,Y),_,copy_term,p(X,Y)).
 %meta! (but needs special extension)
-share_special_builtin('findall/3',findall(X,_,Z),_,findall,p(X,Z)).
-share_special_builtin('indep/2',indep(X,Y),_,'indep/2',p(X,Y)).
-share_special_builtin('indep/1',indep(X),_,'indep/1',p(X)).
-share_special_builtin('recorded/3',recorded(_,Y,Z),_,'recorded/3',p(Y,Z)).
-share_special_builtin('retract/1',retract(X),_,'recorded/3',p(X,b)).
-share_special_builtin('retractall/1',retractall(X),_,'recorded/3',p(X,b)).
-share_special_builtin('read/1',read(X),_,'recorded/3',p(X,b)).
-share_special_builtin('read/2',read(X,Y),_,'recorded/3',p(Y,X)).
-share_special_builtin('var/1',var(X),_,var,p(X)). % needed?
-share_special_builtin('free/1',var(X),_,var,p(X)).
+special_builtin('findall/3',findall(X,_,Z),_,findall,p(X,Z)).
+special_builtin('indep/2',indep(X,Y),_,'indep/2',p(X,Y)).
+special_builtin('indep/1',indep(X),_,'indep/1',p(X)).
+special_builtin('recorded/3',recorded(_,Y,Z),_,'recorded/3',p(Y,Z)).
+special_builtin('retract/1',retract(X),_,'recorded/3',p(X,b)).
+special_builtin('retractall/1',retractall(X),_,'recorded/3',p(X,b)).
+special_builtin('read/1',read(X),_,'recorded/3',p(X,b)).
+special_builtin('read/2',read(X,Y),_,'recorded/3',p(Y,X)).
+special_builtin('var/1',var(X),_,var,p(X)). % needed?
+special_builtin('free/1',var(X),_,var,p(X)).
 %%%%%%%%%% others
-share_special_builtin(Key,_Goal,_,special(Key),[]):-
-    share_not_that_special_builtin(Key).
+special_builtin(Key,_Goal,_,special(Key),[]):-
+    not_that_special_builtin(Key).
 
-share_not_that_special_builtin('=/2').
-share_not_that_special_builtin('C/3').
-share_not_that_special_builtin('arg/3').
-share_not_that_special_builtin('keysort/2').
-share_not_that_special_builtin('sort/2').
+not_that_special_builtin('=/2').
+not_that_special_builtin('C/3').
+not_that_special_builtin('arg/3').
+not_that_special_builtin('keysort/2').
+not_that_special_builtin('sort/2').
 
 %-------------------------------------------------------------------------
-% share_success_builtin(+,+,+,+,+,-)                                     |
-% share_success_builtin(Type,Sv_u,Condv,HvFv_u,Call,Succ)                       |
+% success_builtin(+,+,+,+,+,-)
+% success_builtin(Type,Sv_u,Condv,HvFv_u,Call,Succ)
 % Obtains the success for some particular builtins:                      |
 %  * If Type = ground, it updates Call making all vars in Sv_u ground    |
 %  * If Type = bottom, Succ = '$bottom'                                  |
@@ -1007,42 +1003,42 @@ share_not_that_special_builtin('sort/2').
 %    Succ is computed                                                    |
 %-------------------------------------------------------------------------
 
-:- export(share_success_builtin/6).
-:- dom_impl(_, success_builtin/6).
-share_success_builtin(ground,Sv_u,_,_,Call,Succ):-
+:- export(success_builtin/6).
+:- dom_impl(_, success_builtin/6, [noq]).
+success_builtin(ground,Sv_u,_,_,Call,Succ):-
     sort(Sv_u,Sv),
     ord_split_lists_from_list(Sv,Call,_Intersect,Succ).
-share_success_builtin(bottom,_,_,_,_,'$bottom').
-share_success_builtin(unchanged,_,_,_,Call,Call).
-share_success_builtin(some,_,NewGround,_,Call,Succ):-
+success_builtin(bottom,_,_,_,_,'$bottom').
+success_builtin(unchanged,_,_,_,Call,Call).
+success_builtin(some,_,NewGround,_,Call,Succ):-
     ord_split_lists_from_list(NewGround,Call,_Intersect,Succ).
 %
-share_success_builtin('=../2',_,p(X,Y),_,Call,Succ):-
+success_builtin('=../2',_,p(X,Y),_,Call,Succ):-
     varset(X,Varsx),
     projected_gvars(Call,Varsx,Vars),Vars == Varsx,!,
     varset(Y,Varsy),
     ord_split_lists_from_list(Varsy,Call,_Intersect,Succ).
-share_success_builtin('=../2',_,p(X,Y),_,Call,Succ):-
+success_builtin('=../2',_,p(X,Y),_,Call,Succ):-
     nonvar(Y),
     Y = [Z|W],
     varset(W,Varsy),
     projected_gvars(Call,Varsy,Vars),Vars == Varsy,!,
     varset((X,Z),Varsx),
     ord_split_lists_from_list(Varsx,Call,_Intersect,Succ).
-share_success_builtin('=../2',Sv_u,p(X,Y),_,Call,Succ):-
+success_builtin('=../2',Sv_u,p(X,Y),_,Call,Succ):-
     var(X), var(Y),!,
     sort(Sv_u,Sv),
-    share_extend(not_provided_Sg,[Sv],Sv,Call,Succ).
-share_success_builtin('=../2',Sv_u,p(X,Y),_,Call,Succ):-
+    extend(not_provided_Sg,[Sv],Sv,Call,Succ).
+success_builtin('=../2',Sv_u,p(X,Y),_,Call,Succ):-
 %%      ( var(Y) ; Y = [_|_] ), !,
 %%      ( var(X) -> Term=[g|X] ; X=..Term ),
     ( var(Y) -> G=g ; Y = [G|_] ), !,
     ( var(X) -> Term=[G|X] ; X=..Term ),
     sort(Sv_u,Sv),
-    share_project(not_provided_Sg,Sv,not_provided_HvFv_u,Call,Proj),
-    share_call_to_success_builtin('=/2','='(Term,Y),Sv,Call,Proj,Succ).
-share_success_builtin('=../2',_Sv_u,_,_,_Call,'$bottom').
-share_success_builtin('==/2',Sv_u,p(X,Y),_,Call,Succ):-
+    project(not_provided_Sg,Sv,not_provided_HvFv_u,Call,Proj),
+    call_to_success_builtin('=/2','='(Term,Y),Sv,Call,Proj,Succ).
+success_builtin('=../2',_Sv_u,_,_,_Call,'$bottom').
+success_builtin('==/2',Sv_u,p(X,Y),_,Call,Succ):-
     sh_peel(X,Y,Binds-[]),
     sort(Sv_u,Sv),
     projected_gvars(Call,Sv,Ground),
@@ -1051,99 +1047,98 @@ share_success_builtin('==/2',Sv_u,p(X,Y),_,Call,Succ):-
     sort_list_of_lists(Sets,Sets1),
     ord_split_lists_from_list(NewGround1,Call,_Intersect,Temp),
     ord_subtract(Temp,Sets1,Succ).
-share_success_builtin(copy_term,_Sv_u,p(X,Y),_,Call,Succ):-
+success_builtin(copy_term,_Sv_u,p(X,Y),_,Call,Succ):-
     varset(X,VarsX),
-    share_project(not_provided_Sg,VarsX,not_provided_HvFv_u,Call,ProjectedX),
+    project(not_provided_Sg,VarsX,not_provided_HvFv_u,Call,ProjectedX),
     copy_term((X,ProjectedX),(NewX,NewProjectedX)),
     sort_list_of_lists(NewProjectedX,ProjectedNewX),
     varset(NewX,VarsNewX),
     varset(Y,VarsY),
     merge(VarsNewX,VarsY,TempSv),
-    share_project(not_provided_Sg,VarsY,not_provided_HvFv_u,Call,ProjectedY),
+    project(not_provided_Sg,VarsY,not_provided_HvFv_u,Call,ProjectedY),
     merge(ProjectedY,ProjectedNewX,TempProjected),
     merge(ProjectedNewX,Call,TempCall),
-    share_call_to_success_builtin('=/2','='(NewX,Y),TempSv,
-                            TempCall,TempProjected,Temp_success),
+    call_to_success_builtin('=/2','='(NewX,Y),TempSv,TempCall,TempProjected,Temp_success),
     merge_list_of_lists(Call,VarsCall),
-    share_project(not_provided_Sg,VarsCall,not_provided_HvFv_u,Temp_success,Succ).
-share_success_builtin(findall,_Sv_u,p(X,Z),HvFv_u,Call,Succ):-
+    project(not_provided_Sg,VarsCall,not_provided_HvFv_u,Temp_success,Succ).
+success_builtin(findall,_Sv_u,p(X,Z),HvFv_u,Call,Succ):-
     varset(X,Varsx),
     projected_gvars(Call,Varsx,Vars),Vars == Varsx,!,
     varset(Z,Varsz),
-    share_success_builtin(ground,Varsz,_any,HvFv_u,Call,Succ).
-share_success_builtin(findall,_Sv_u,_,_,Call,Call).
-share_success_builtin('indep/2',_Sv,p(X,Y),_,Call,Succ):-
+    success_builtin(ground,Varsz,_any,HvFv_u,Call,Succ).
+success_builtin(findall,_Sv_u,_,_,Call,Call).
+success_builtin('indep/2',_Sv,p(X,Y),_,Call,Succ):-
     varset(X,Xv),
     varset(Y,Yv),
     eliminate_couples(Call,Xv,Yv,Succ).
-share_success_builtin('indep/2',_Sv,_Condvars,_,_Call,'$bottom').
-share_success_builtin('indep/1',_Sv,p(X),_,Call,Succ):- 
+success_builtin('indep/2',_Sv,_Condvars,_,_Call,'$bottom').
+success_builtin('indep/1',_Sv,p(X),_,Call,Succ):- 
     nonvar(X),
     handle_each_indep(X,share,Call,Succ), !.
-share_success_builtin('indep/1',_,_,_,_,'$bottom').
-share_success_builtin('recorded/3',Sv_u,p(Y,Z),_,Call,Succ):-
+success_builtin('indep/1',_,_,_,_,'$bottom').
+success_builtin('recorded/3',Sv_u,p(Y,Z),_,Call,Succ):-
     varset(Z,Varsz),
     ord_split_lists_from_list(Varsz,Call,_,ASub),
     varset(Y,Varsy),
-    share_project(not_provided_Sg,Varsy,not_provided_HvFv_u,ASub,ASub1),
+    project(not_provided_Sg,Varsy,not_provided_HvFv_u,ASub,ASub1),
     closure_under_union(ASub1,Prime),
     sort(Sv_u,Sv),
-    share_extend(not_provided_Sg,Prime,Sv,Call,Succ).
-share_success_builtin(var,_Sv,p(X),_,Call,Succ):-
+    extend(not_provided_Sg,Prime,Sv,Call,Succ).
+success_builtin(var,_Sv,p(X),_,Call,Succ):-
     var(X),
     ord_member_list_of_lists(X,Call),!,
     Succ = Call.
-share_success_builtin(var,_Sv,_Condvars,_,_Call,'$bottom').
+success_builtin(var,_Sv,_Condvars,_,_Call,'$bottom').
 
 %-------------------------------------------------------------------------
-% share_call_to_success_builtin(+,+,+,+,+,-)                             %
-% share_call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,Succ)              %
+% call_to_success_builtin(+,+,+,+,+,-)                             %
+% call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,Succ)              %
 % Handles those builtins for which computing Prime is easier than Succ   %
 %-------------------------------------------------------------------------
 
-:- export(share_call_to_success_builtin/6).
-:- dom_impl(_, call_to_success_builtin/6).
-share_call_to_success_builtin('=/2','='(X,Y),Sv,Call,Proj,Succ):-
+:- export(call_to_success_builtin/6).
+:- dom_impl(_, call_to_success_builtin/6, [noq]).
+call_to_success_builtin('=/2','='(X,Y),Sv,Call,Proj,Succ):-
     copy_term(X,Xterm),
     copy_term(Y,Yterm),
     Xterm = Yterm,!,
     varset(Xterm,Vars),
-    share_call_to_success_fact('='(X,Y),Vars,'='(Xterm,Xterm),not_provided,Sv,Call,Proj,_Prime,Succ). % TODO: add some ClauseKey?
-share_call_to_success_builtin('=/2',_Sg,_Sv,_Call,_Proj,'$bottom').
-share_call_to_success_builtin('C/3','C'(X,Y,Z),Sv,Call,Proj,Succ):-
-    share_call_to_success_fact('='(X,[Y|Z]),[W],'='(W,W),not_provided,Sv,Call,Proj,_Prime,Succ). % TODO: add some ClauseKey?
-share_call_to_success_builtin('sort/2',sort(X,Y),Sv,Call,Proj,Succ):- 
-    share_call_to_success_builtin('=/2','='(X,Y),Sv,Call,Proj,Succ).
-share_call_to_success_builtin('expand_term/2',expand_term(X,Y),Sv,Call,Proj,Succ):- 
-    share_call_to_success_builtin('arg/3',arg(1,Y,X),Sv,Call,Proj,Succ).
-share_call_to_success_builtin('keysort/2',keysort(X,Y),Sv,Call,Proj,Succ):- 
-    share_call_to_success_builtin('=/2','='(X,Y),Sv,Call,Proj,Succ).
-share_call_to_success_builtin('arg/3',arg(X,Y,Z),_,Call,Proj,Succ):- 
+    call_to_success_fact('='(X,Y),Vars,'='(Xterm,Xterm),not_provided,Sv,Call,Proj,_Prime,Succ). % TODO: add some ClauseKey?
+call_to_success_builtin('=/2',_Sg,_Sv,_Call,_Proj,'$bottom').
+call_to_success_builtin('C/3','C'(X,Y,Z),Sv,Call,Proj,Succ):-
+    call_to_success_fact('='(X,[Y|Z]),[W],'='(W,W),not_provided,Sv,Call,Proj,_Prime,Succ). % TODO: add some ClauseKey?
+call_to_success_builtin('sort/2',sort(X,Y),Sv,Call,Proj,Succ):- 
+    call_to_success_builtin('=/2','='(X,Y),Sv,Call,Proj,Succ).
+call_to_success_builtin('expand_term/2',expand_term(X,Y),Sv,Call,Proj,Succ):- 
+    call_to_success_builtin('arg/3',arg(1,Y,X),Sv,Call,Proj,Succ).
+call_to_success_builtin('keysort/2',keysort(X,Y),Sv,Call,Proj,Succ):- 
+    call_to_success_builtin('=/2','='(X,Y),Sv,Call,Proj,Succ).
+call_to_success_builtin('arg/3',arg(X,Y,Z),_,Call,Proj,Succ):- 
     varset(X,OldG),
     ord_split_lists_from_list(OldG,Call,_Intersect,TempCall),
     Sg = p(Y,Z),
     varset(Sg,Sv),
-    share_project(not_provided_Sg,Sv,not_provided_HvFv_u,TempCall,Proj),
+    project(not_provided_Sg,Sv,not_provided_HvFv_u,TempCall,Proj),
     ( var(Y)
     -> sh_any_arg_var(Sg,Sv,TempCall,Proj,Succ)
      ; functor(Y,_,N),
        ( N=0 -> Succ = '$bottom'
        ; sh_any_arg_all_args(N,Y,Z,TempCall,Proj,Succs),
-         share_compute_lub(Succs,Succ)
+         compute_lub(Succs,Succ)
        )
     ).
 
 sh_any_arg_var(Sg,Sv,TempCall,Proj,Succ):-
     Head = p(f(A,_B),A),
     varset(Head,Hv),
-    share_call_to_success_fact(Sg,Hv,Head,not_provided,Sv,TempCall,Proj,_Prime,Succ). % TODO: add some ClauseKey?
+    call_to_success_fact(Sg,Hv,Head,not_provided,Sv,TempCall,Proj,_Prime,Succ). % TODO: add some ClauseKey?
 
 sh_any_arg_all_args(0,_,_,_Call,_Proj,Succs):- !, Succs=[].
 sh_any_arg_all_args(N,Y,Z,Call,Proj0,[Succ|Succs]):-
     arg(N,Y,NY),
     Sg = p(NY,Z),
     varset(Sg,Sv),
-    share_project(not_provided_Sg,Sv,not_provided_HvFv_u,Proj0,Proj),
+    project(not_provided_Sg,Sv,not_provided_HvFv_u,Proj0,Proj),
     sh_any_arg_var(Sg,Sv,Call,Proj,Succ),
     N1 is N-1,
     sh_any_arg_all_args(N1,Y,Z,Call,Proj0,Succs).

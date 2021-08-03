@@ -97,8 +97,8 @@
 :- use_module(domain(s_grshfr), [
     projected_gvars/3]).
 :- use_module(domain(sharing), [
-    share_input_interface/4,
-    share_project/5]).
+    input_interface/4,
+    project/5]).
 :- use_module(domain(sharing_clique), [
     share_make_reduction/5,
     projected_gvars_clique/3,
@@ -379,7 +379,7 @@ ord_intersection_no_singleton(Xs,Sv,Int):-
 :- export(share_clique_1_project/5).                  
 share_clique_1_project(_,_,_,'$bottom','$bottom'):- !.
 share_clique_1_project(Sg,Vars,HvFv_u,(Cl,Sh),Proj) :-
-    share_project(Sg,Vars,HvFv_u,Sh,Sh_Proj),
+    sharing:project(Sg,Vars,HvFv_u,Sh,Sh_Proj),
     project_clique_1(Cl,Vars,Cl_Proj,_),
     retrieve_singletons((Cl_Proj,Sh_Proj),Cl,Vars,Proj).
     
@@ -568,7 +568,7 @@ share_clique_1_input_interface(clique_1(X),perfect,(Gv,Sh,Cl0,I),(Gv,Sh,Cl,I)):-
     sort_list_of_lists(X,ASub),
     myappend(ASub,Cl0,Cl).         
 share_clique_1_input_interface(Prop,Any,(Gv0,Sh0,Cl,I0),(Gv,Sh,Cl,I)):-
-    share_input_interface(Prop,Any,(Gv0,Sh0,I0),(Gv,Sh,I)).
+    sharing:input_interface(Prop,Any,(Gv0,Sh0,I0),(Gv,Sh,I)).
 
 %------------------------------------------------------------------------%
 % share_clique_1_asub_to_native(+,+,+,-,-)                               |

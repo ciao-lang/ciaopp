@@ -400,6 +400,7 @@ identical_proj_1(AbsInt,Sg,Proj,Sg1,Proj1,Prime1,Prime2) :-
 :- doc(hide,fixpoint_covered/3).
 :- export(fixpoint_covered/3).
 
+% (for fixpo_plai_gfp)
 :- doc(hide,fixpoint_covered_gfp/3).
 :- export(fixpoint_covered_gfp/3).
 

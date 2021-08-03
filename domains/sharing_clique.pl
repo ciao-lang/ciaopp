@@ -109,11 +109,11 @@
      share_clique_1_normalize/4]).
 
 :- use_module(domain(sharing), [
-    share_project/5,
-    share_input_user_interface/5,
-    share_input_interface/4,
-    share_empty_entry/3,
-    share_special_builtin/5
+    project/5,
+    input_user_interface/5,
+    input_interface/4,
+    empty_entry/3,
+    special_builtin/5
 ]).
 :- use_module(domain(share_clique_aux)).
 :- use_module(domain(share_amgu_aux)).
@@ -433,7 +433,7 @@ share_clique_augment_asub_(ASub,[H|T],(Cl,[[H]|Sh])):-
 :- export(share_clique_project/5).                  
 share_clique_project(_,_,_,'$bottom','$bottom'):- !.
 share_clique_project(Sg,Vars,HvFv_u,(Cl,Sh),(Cl0,Sh0)) :-
-    share_project(Sg,Vars,HvFv_u,Sh,Sh0),
+    sharing:project(Sg,Vars,HvFv_u,Sh,Sh0),
     intersection_lists_with_list(Cl,Vars,Cl0).
 
 %------------------------------------------------------------------------%
@@ -625,7 +625,7 @@ share_clique_glb(ASub0,ASub1,Glb):-
 
 :- export(share_clique_input_user_interface/5).
 share_clique_input_user_interface((Gv,Sh,Cl,I),Qv,Call,Sg,MaybeCallASub):-
-    share_input_user_interface((Gv,Sh,I),Qv,New_Sh,Sg,MaybeCallASub),
+    sharing:input_user_interface((Gv,Sh,I),Qv,New_Sh,Sg,MaybeCallASub),
     may_be_var(Cl,Cl0),
     take_ground_out_clique(Gv,Cl0,New_Cl),   
     Call = (New_Cl,New_Sh).
@@ -642,7 +642,7 @@ share_clique_input_interface(clique(X),perfect,(Gv,Sh,Cl0,I),(Gv,Sh,Cl,I)):-
     sort_list_of_lists(X,ASub),
     myappend(ASub,Cl0,Cl),!.         
 share_clique_input_interface(Prop,Any,(Gv0,Sh0,Cl,I0),(Gv,Sh,Cl,I)):-
-    share_input_interface(Prop,Any,(Gv0,Sh0,I0),(Gv,Sh,I)).
+    sharing:input_interface(Prop,Any,(Gv0,Sh0,I0),(Gv,Sh,I)).
 
 :- export(may_be_var/2). % TODO: duplicated
 may_be_var(X,X):- ( X=[] ; true ), !.
@@ -700,7 +700,7 @@ share_clique_unknown_call(_Sg,Vars,(Cl,Sh),Succ):-
 
 :- export(share_clique_empty_entry/3).
 share_clique_empty_entry(Sg,Vars,Entry):-
-    share_empty_entry(Sg,Vars,EntryVars),!,
+    sharing:empty_entry(Sg,Vars,EntryVars),!,
     Entry = ([],EntryVars).
 
 %------------------------------------------------------------------------%
@@ -945,7 +945,7 @@ share_clique_special_builtin('read/2',read(X,Y),_,'recorded/3',p(Y,X)) :- !.
 share_clique_special_builtin('length/2',length(_X,Y),_,some,[Y]) :- !.
 share_clique_special_builtin('==/2',_,_,_,_):- !, fail.
 share_clique_special_builtin(SgKey,Sg,Subgoal,Type,Condvars):-
-    share_special_builtin(SgKey,Sg,Subgoal,Type,Condvars).
+    sharing:special_builtin(SgKey,Sg,Subgoal,Type,Condvars).
     
 %------------------------------------------------------------------------%
 % share_clique_success_builtin(+,+,+,+,+,-)                              |
