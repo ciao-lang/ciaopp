@@ -18,7 +18,26 @@
     input_user_interface/5,
     less_or_equal/2
 ]).
-:- use_module(domain(sondergaard)).
+:- use_module(domain(sondergaard), [
+    call_to_entry/9,
+    exit_to_prime/7,
+    extend/5,
+    call_to_prime_fact/6,
+    special_builtin/5,
+    unknown_call/4,
+    unknown_entry/3,
+    empty_entry/3,
+    project/5,
+    lub/3,
+    abs_sort/2,
+    input_user_interface/5,
+    input_interface/4,
+    less_or_equal/2
+]).
+:- use_module(domain(sondergaard), [
+    propagate_to_sh/4,
+    propagate_to_son/4
+]).
 :- use_module(domain(s_grshfr), [projected_gvars/3]).
 :- use_module(domain(share_aux), [if_not_nil/4]).
 
@@ -56,7 +75,7 @@
 
 :- dom_impl(_, call_to_entry/9, [noq]).
 call_to_entry(Sv,Sg,Hv,Head,K,Fv,(Proj_son,Proj_sh),Entry,ExtraInfo):-
-    son_call_to_entry(Sv,Sg,Hv,Head,K,Fv,Proj_son,Entry_son,ExtraInfo_son),
+    sondergaard:call_to_entry(Sv,Sg,Hv,Head,K,Fv,Proj_son,Entry_son,ExtraInfo_son),
     sharing:call_to_entry(Sv,Sg,Hv,Head,K,Fv,Proj_sh,Entry_sh,ExtraInfo_sh),
     compose(Entry_son,Entry_sh,Hv,Entry),
     ExtraInfo = (ExtraInfo_son,ExtraInfo_sh).
@@ -69,7 +88,7 @@ exit_to_prime(_,_,_,_,'$bottom',_,Prime):- !,
 exit_to_prime(Sg,Hv,Head,Sv,(Exit_son,Exit_sh),ExtraInfo,Prime):- 
     ExtraInfo = (ExtraInfo_son,ExtraInfo_sh),
     sharing:exit_to_prime(Sg,Hv,Head,Sv,Exit_sh,ExtraInfo_sh,Prime_sh),
-    son_exit_to_prime(Sg,Hv,Head,Sv,Exit_son,ExtraInfo_son,Prime_son),
+    sondergaard:exit_to_prime(Sg,Hv,Head,Sv,Exit_son,ExtraInfo_son,Prime_son),
     compose(Prime_son,Prime_sh,Sv,Prime).
     
 %-------------------------------------------------------------------------
@@ -79,7 +98,7 @@ extend(_Sg,'$bottom',_,_,Succ):- !,Succ = '$bottom'.
 extend(_Sg,_Prime,[],Call,Succ):- !, Call = Succ.
 extend(Sg,(Prime_son,Prime_sh),Sv,(Call_son,Call_sh),Succ):-
     sharing:extend(Sg,Prime_sh,Sv,Call_sh,Succ_sh),
-    son_extend(Sg,Prime_son,Sv,Call_son,Succ_son),
+    sondergaard:extend(Sg,Prime_son,Sv,Call_son,Succ_son),
     merge_list_of_lists(Call_sh,Vars),
     compose(Succ_son,Succ_sh,Vars,Succ).
 
@@ -88,7 +107,7 @@ extend(Sg,(Prime_son,Prime_sh),Sv,(Call_son,Call_sh),Succ):-
 :- dom_impl(_, call_to_success_fact/9, [noq]).
 call_to_success_fact(Sg,Hv,Head,_K,Sv,Call,Proj,Prime,Succ):-
     Proj = (Proj_son,Proj_sh),
-    son_call_to_prime_fact(Sg,Hv,Head,Sv,Proj_son,Prime_son),
+    sondergaard:call_to_prime_fact(Sg,Hv,Head,Sv,Proj_son,Prime_son),
     sharing:call_to_prime_fact(Sg,Hv,Head,Sv,Proj_sh,Prime_sh),
     compose(Prime_son,Prime_sh,Sv,Prime),
     shareson:extend(Sg,Prime,Sv,Call,Succ).
@@ -100,7 +119,7 @@ call_to_success_fact(Sg,Hv,Head,_K,Sv,Call,Proj,Prime,Succ):-
 :- dom_impl(_, special_builtin/5, [noq]).
 special_builtin(SgKey,Sg,Subgoal,(TypeSon,TypeSh),(CondSon,CondSh)) :-
     sharing:special_builtin(SgKey,Sg,Subgoal,TypeSh,CondSh),
-    son_special_builtin(SgKey,Sg,Subgoal,TypeSon,CondSon).
+    sondergaard:special_builtin(SgKey,Sg,Subgoal,TypeSon,CondSon).
 
 %-------------------------------------------------------------------------
 
@@ -124,7 +143,7 @@ body_succ_builtin(Type,Sg,Condvs,Sv,HvFv_u,Call,Proj,Succ) :- % TODO: for \+Type
 unknown_call(_Sg,_Vars,'$bottom','$bottom') :- !.
 unknown_call(Sg,Vars,(Call_son,Call_sh),Succ):-
     sharing:unknown_call(Sg,Vars,Call_sh,Succ_sh),
-    son_unknown_call(Sg,Vars,Call_son,Succ_son),
+    sondergaard:unknown_call(Sg,Vars,Call_son,Succ_son),
     merge_list_of_lists(Call_sh,AllVars),
     compose(Succ_son,Succ_sh,AllVars,Succ).
 
@@ -133,7 +152,7 @@ unknown_call(Sg,Vars,(Call_son,Call_sh),Succ):-
 :- dom_impl(_, unknown_entry/3, [noq]).
 unknown_entry(Sg,Qv,Call):-
     sharing:unknown_entry(Sg,Qv,Call_sh),
-    son_unknown_entry(Sg,Qv,Call_son),
+    sondergaard:unknown_entry(Sg,Qv,Call_son),
     compose(Call_son,Call_sh,Qv,Call).
 
 %-------------------------------------------------------------------------
@@ -141,7 +160,7 @@ unknown_entry(Sg,Qv,Call):-
 :- dom_impl(_, empty_entry/3, [noq]).
 empty_entry(Sg,Qv,Call):-
     sharing:empty_entry(Sg,Qv,Call_sh),
-    son_empty_entry(Sg,Qv,Call_son),
+    sondergaard:empty_entry(Sg,Qv,Call_son),
     compose(Call_son,Call_sh,Qv,Call).
 
 %-------------------------------------------------------------------------
@@ -152,7 +171,7 @@ project(_Sg,_Vars,_HvFv_u,'$bottom',Proj):- !,
 project(_Sg,[],_HvFv_u,_,Proj):- !,
     Proj = (([],[]),[]).
 project(Sg,Vars,HvFv_u,(Call_son,Call_sh),(Proj_son,Proj_sh)):-
-    son_project(Sg,Vars,HvFv_u,Call_son,Proj_son),
+    sondergaard:project(Sg,Vars,HvFv_u,Call_son,Proj_son),
     sharing:project(Sg,Vars,HvFv_u,Call_sh,Proj_sh).
 
 %-------------------------------------------------------------------------
@@ -166,7 +185,7 @@ compute_lub(['$bottom',ASub|Rest],Lub) :- !,
 compute_lub([ASub,'$bottom'|Rest],Lub) :- !,
     compute_lub([ASub|Rest],Lub).
 compute_lub([(ASub_son1,ASub_sh1),(ASub_son2,ASub_sh2)|Rest],Lub) :-
-    son_lub(ASub_son1,ASub_son2,ASub_son3),
+    sondergaard:lub(ASub_son1,ASub_son2,ASub_son3),
     sharing:lub(ASub_sh1,ASub_sh2,ASub_sh3),
     compute_lub([(ASub_son3,ASub_sh3)|Rest],Lub).
 compute_lub([ASub],ASub).
@@ -176,7 +195,7 @@ compute_lub([ASub],ASub).
 :- dom_impl(_, abs_sort/2, [noq]).
 abs_sort('$bottom','$bottom').
 abs_sort((ASub_son,ASub_sh),(ASub_son_s,ASub_sh_s)):-
-    son_abs_sort(ASub_son,ASub_son_s),
+    sondergaard:abs_sort(ASub_son,ASub_son_s),
     sharing:abs_sort(ASub_sh,ASub_sh_s).
 
 %--------------------------------------------------------------------------
@@ -184,13 +203,13 @@ abs_sort((ASub_son,ASub_sh),(ASub_son_s,ASub_sh_s)):-
 :- dom_impl(_, input_user_interface/5, [noq]).
 input_user_interface(Struct,Qv,(Son,Sh),Sg,MaybeCallASub):-
     Struct = (Sharing,_Lin),
-    son_input_user_interface(Struct,Qv,Son,Sg,MaybeCallASub),
+    sondergaard:input_user_interface(Struct,Qv,Son,Sg,MaybeCallASub),
     sharing:input_user_interface(Sharing,Qv,Sh,Sg,MaybeCallASub).
 
 :- dom_impl(_, input_interface/4, [noq]).
 input_interface(Info,Kind,Struct0,Struct):-
     % already calls sharing:input_...
-    son_input_interface(Info,Kind,Struct0,Struct).
+    sondergaard:input_interface(Info,Kind,Struct0,Struct).
 
 %--------------------------------------------------------------------------
 
@@ -214,7 +233,7 @@ less_or_equal(ASub0,ASub1):-
     ASub0 == ASub1.
 less_or_equal((Son0,Sh0),(Son1,Sh1)):-
     sharing:less_or_equal(Sh0,Sh1),
-    son_less_or_equal(Son0,Son1).
+    sondergaard:less_or_equal(Son0,Son1).
 
 %-------------------------------------------------------------------------
 
