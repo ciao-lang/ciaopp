@@ -59,13 +59,13 @@
 :- use_module(domain(polyhedra)).
 :- endif.
 % ===========================================================================
-:- doc(section, "OO/Java domains"). % TODO: imperative? points-to? nullity?
+:- doc(section, "OO/Java domains").
 :- if(defined(has_ciaopp_java)).
-:- use_module(domain(java_nullity)). % for java programs
-:- use_module(domain(oo_son)).
+:- use_module(domain(java_nullity), []).
+:- use_module(domain(oo_son), []).
 :- use_module(domain(oo_shnltau), []).
-:- use_module(domain(oo_types)).
-:- use_module(domain(java_cha)).
+:- use_module(domain(oo_types), []).
+:- use_module(domain(java_cha), []).
 :- endif.
 % ===========================================================================
 :- doc(section, "Non-failure and determinism").
