@@ -161,6 +161,7 @@ obtained after the analysis of the clause being considered
 % ===========================================================================
 :- doc(section, "Basic domain operations").
 
+% (for fixpo_bu)
 :- export(amgu/5).
 :- pred amgu(+AbsInt,+Sg,+Head,+ASub,-AMGU) : atm(AbsInt) + not_fails
    #"Perform the abstract unification @var{AMGU} between @var{Sg} and

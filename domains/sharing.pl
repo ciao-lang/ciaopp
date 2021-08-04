@@ -10,12 +10,12 @@
 
 % TODO: move amgu here
 :- use_module(domain(sharing_amgu), [
-    share_amgu_amgu/4,
-    share_amgu_augment_asub/3,
-    share_amgu_augment_two_asub/3]).
-:- dom_impl(_, amgu/4, [from(sharing_amgu:share_amgu)]).
-:- dom_impl(_, augment_asub/3, [from(sharing_amgu:share_amgu)]).
-:- dom_impl(_, augment_two_asub/3, [from(sharing_amgu:share_amgu)]).
+    amgu/4,
+    augment_asub/3,
+    augment_two_asub/3]).
+:- dom_impl(_, amgu/4, [from(sharing_amgu:share_amgu), noq]).
+:- dom_impl(_, augment_asub/3, [from(sharing_amgu:share_amgu), noq]).
+:- dom_impl(_, augment_two_asub/3, [from(sharing_amgu:share_amgu), noq]).
 
 %------------------------------------------------------------------------%
 %                    Meaning of the Program Variables                    %

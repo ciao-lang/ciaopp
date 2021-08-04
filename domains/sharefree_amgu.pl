@@ -77,7 +77,7 @@
 :- use_module(domain(share_aux), [list_ground/2]).
 
 :- use_module(domain(sharing), [project/5]).
-:- use_module(domain(sharing_amgu), [share_amgu_augment_asub/3]).
+:- use_module(domain(sharing_amgu), [augment_asub/3]).
 :- use_module(domain(sharefree), [
     shfr_call_to_success_builtin/6,
     shfr_extend/5,
@@ -165,7 +165,7 @@ sharefree_amgu_amgu(Sg,Head,ASub,AMGU):-
 :- export(sharefree_amgu_augment_asub/3).
 sharefree_amgu_augment_asub(SHF,[],SHF) :- !.
 sharefree_amgu_augment_asub((Sh,F),Vars,(Sh0,F0)):-
-    share_amgu_augment_asub(Sh,Vars,Sh0),
+    sharing_amgu:augment_asub(Sh,Vars,Sh0),
     sharefree_amgu_augment_asub0(F,Vars,F0).
 
 :- export(sharefree_amgu_augment_asub0/3).
