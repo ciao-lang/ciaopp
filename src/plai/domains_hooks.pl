@@ -20,7 +20,7 @@
 :- use_module(domain(def), []).
 :- use_module(domain(sharing), []).
 :- use_module(domain(sharefree)).
-:- use_module(domain(sharefree_non_var)).
+:- use_module(domain(sharefree_non_var), []).
 :- use_module(domain(shfret)). % TODO: this domain was not registerd in aidomain/1
 :- use_module(domain(shareson)).
 :- use_module(domain(shfrson)).
@@ -63,7 +63,7 @@
 :- if(defined(has_ciaopp_java)).
 :- use_module(domain(java_nullity)). % for java programs
 :- use_module(domain(oo_son)).
-:- use_module(domain(oo_shnltau)).
+:- use_module(domain(oo_shnltau), []).
 :- use_module(domain(oo_types)).
 :- use_module(domain(java_cha)).
 :- endif.
