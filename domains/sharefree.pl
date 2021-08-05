@@ -9,10 +9,10 @@
 :- dom_def(shfr, [default]).
 
 :- use_module(domain(sharefree_amgu), [
-    sharefree_amgu_amgu/4,
-    sharefree_amgu_augment_asub/3]).
-:- dom_impl(_, amgu/4, [from(sharefree_amgu)]).
-:- dom_impl(_, augment_asub/3, [from(sharefree_amgu)]).
+    amgu/4,
+    augment_asub/3]).
+:- dom_impl(_, amgu/4, [from(sharefree_amgu), noq]).
+:- dom_impl(_, augment_asub/3, [from(sharefree_amgu), noq]).
 
 :- export(needs/1).
 :- dom_impl(_, needs/1, [noq]).

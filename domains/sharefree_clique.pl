@@ -87,7 +87,7 @@
      change_values_if_differ/5,
      var_value/3,
      projected_gvars/3]).
-:- use_module(domain(sharefree_amgu), [sharefree_amgu_augment_asub0/3]).
+:- use_module(domain(sharefree_amgu), [augment_asub0/3]).
 :- use_module(domain(s_grshfr),
     [collect_vars_freeness/2, member_value_freeness/3]).
 
@@ -203,7 +203,7 @@ sharefree_clique_amgu(Sg,Head,ASub,AMGU):-
 sharefree_clique_augment_asub(ASub,[],ASub).
 sharefree_clique_augment_asub((SH,F),Vars,(SH1,F1)):-
     share_clique_augment_asub(SH,Vars,SH1),
-    sharefree_amgu_augment_asub0(F,Vars,F1).
+    sharefree_amgu:augment_asub0(F,Vars,F1).
 
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%

@@ -65,10 +65,10 @@
     obtain_prime_var_var/3,
     product/8]).
 :- use_module(domain(sharefree_amgu), [
-    sharefree_amgu_call_to_success_builtin/6,
-    sharefree_amgu_augment_asub/3,
-    sharefree_amgu_special_builtin/5,
-    sharefree_amgu_success_builtin/6,
+    call_to_success_builtin/6,
+    augment_asub/3,
+    special_builtin/5,
+    success_builtin/6,
     sharefree_delete_variables/3]).
 :- use_module(domain(share_aux), [if_not_nil/4,list_ground/2]).
 :- use_module(domain(sharefree_amgu_aux), [
@@ -188,7 +188,7 @@ shfrlin_amgu_augment_asub('$bottom',_,'$bottom'):-!.
 shfrlin_amgu_augment_asub(SHFL,[],SHFL):-!.
 shfrlin_amgu_augment_asub((Sh,F,L),Vars,(NewSh,NewF,NewL)):-
     ord_union(L,Vars,NewL),
-    sharefree_amgu_augment_asub((Sh,F),Vars,(NewSh,NewF)).
+    sharefree_amgu:augment_asub((Sh,F),Vars,(NewSh,NewF)).
 
 %------------------------------------------------------------------------%
 %                      ABSTRACT Project                                  |
@@ -288,7 +288,7 @@ shfrlin_amgu_call_to_prime_fact(_Sg,_Hv,_Head,_Sv,'$bottom','$bottom').
 %------------------------------------------------------------------------%
 :- export(shfrlin_amgu_special_builtin/5).
 shfrlin_amgu_special_builtin(SgKey,Sg,Subgoal,Type,Condvars):-
-    sharefree_amgu_special_builtin(SgKey,Sg,Subgoal,Type,Condvars).
+    sharefree_amgu:special_builtin(SgKey,Sg,Subgoal,Type,Condvars).
     
 %------------------------------------------------------------------------%
 % shfrlin_amgu_success_builtin(+,+,+,+,+,-)                                   |
@@ -339,7 +339,7 @@ shfrlin_amgu_success_builtin(exp,_,_,_,_,'$bottom'):- !.
 shfrlin_amgu_success_builtin(Type,Sv_u,Condv,HvFv_u,Call,Succ):-
     Call = (Sh,Fr,Lin),
     ord_subtract(Lin,Sv_u,Lin_not_rel),     
-    sharefree_amgu_success_builtin(Type,Sv_u,Condv,HvFv_u,(Sh,Fr),Succ0),
+    sharefree_amgu:success_builtin(Type,Sv_u,Condv,HvFv_u,(Sh,Fr),Succ0),
     ( Succ0 == '$bottom' 
     ->
       Succ = '$bottom'
@@ -438,7 +438,7 @@ shfrlin_amgu_call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,(Succ_sh,Succ_fr,Succ
     Call = (Call_sh,Call_fr,Call_lin),
     ord_subtract(Call_lin,Sv,Call_lin_not_rel),
     Proj = (Proj_sh,Proj_fr,_),
-    sharefree_amgu_call_to_success_builtin(SgKey,Sg,Sv,(Call_sh,Call_fr),
+    sharefree_amgu:call_to_success_builtin(SgKey,Sg,Sv,(Call_sh,Call_fr),
                                            (Proj_sh,Proj_fr),(Succ_sh,Succ_fr)),
     member_value_freeness(Succ_fr,Succ_lin0,f),
     ord_union(Succ_lin0,Call_lin_not_rel,Succ_lin).
