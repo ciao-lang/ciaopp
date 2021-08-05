@@ -8,22 +8,22 @@
 :- dom_def(shfrnv, [default]).
 
 :- use_module(domain(sharefree), [
-    shfr_special_builtin/5,
-    shfr_unknown_call/4,
-    shfr_unknown_entry/3,
-    shfr_empty_entry/3,
-    shfr_asub_to_native/5,
-    shfr_input_interface/4,
-    shfr_input_user_interface/5,
-    shfr_project/5,
-    shfr_abs_sort/2
+    special_builtin/5,
+    unknown_call/4,
+    unknown_entry/3,
+    empty_entry/3,
+    asub_to_native/5,
+    input_interface/4,
+    input_user_interface/5,
+    project/5,
+    abs_sort/2
 ]).
-:- dom_impl(_, project/5, [from(sharefree:shfr)]).
-:- dom_impl(_, abs_sort/2, [from(sharefree:shfr)]).
-:- dom_impl(_, special_builtin/5, [from(sharefree:shfr)]).
-:- dom_impl(_, unknown_call/4, [from(sharefree:shfr)]).
-:- dom_impl(_, unknown_entry/3, [from(sharefree:shfr)]).
-:- dom_impl(_, empty_entry/3, [from(sharefree:shfr)]).
+:- dom_impl(_, project/5, [from(sharefree:shfr), noq]).
+:- dom_impl(_, abs_sort/2, [from(sharefree:shfr), noq]).
+:- dom_impl(_, special_builtin/5, [from(sharefree:shfr), noq]).
+:- dom_impl(_, unknown_call/4, [from(sharefree:shfr), noq]).
+:- dom_impl(_, unknown_entry/3, [from(sharefree:shfr), noq]).
+:- dom_impl(_, empty_entry/3, [from(sharefree:shfr), noq]).
 
 %------------------------------------------------------------------------%
 %                    Meaning of the Program Variables                    %
@@ -126,15 +126,6 @@
 
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-%                      ABSTRACT PROJECTION
-%------------------------------------------------------------------------%
-%------------------------------------------------------------------------%
-% Identical to shfr_project/5, called straight from domain_dependent.pl  %
-%------------------------------------------------------------------------%
-
-
-%------------------------------------------------------------------------%
-%------------------------------------------------------------------------%
 %                      ABSTRACT Call To Entry
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
@@ -153,7 +144,7 @@ call_to_entry(_Sv,Sg,_Hv,Head,_K,Fv,Proj,Entry,Flag):-
     Flag = yes,
     copy_term((Sg,Proj),(NewTerm,NewProj)),
     Head = NewTerm,
-    shfr_abs_sort(NewProj,(Temp_sh,Temp_fr)),
+    sharefree:abs_sort(NewProj,(Temp_sh,Temp_fr)),
     change_values_insert(Fv,Temp_fr,Entry_fr,f),    
     list_to_list_of_lists(Fv,Temp1),
     merge(Temp1,Temp_sh,Entry_sh),
@@ -354,16 +345,16 @@ table_from_term_entry(nf(_,_),X,_,Sh,Tv,Fr,NewFr) :-
 exit_to_prime(_Sg,_Hv,_Head,_Sv,'$bottom',_Flag,Prime) :- !,
     Prime = '$bottom'.
 exit_to_prime(Sg,Hv,Head,_Sv,Exit,yes,Prime):- !,
-    shfr_project(Sg,Hv,not_provided_HvFv_u,Exit,(BPrime_sh,BPrime_fr)),
+    sharefree:project(Sg,Hv,not_provided_HvFv_u,Exit,(BPrime_sh,BPrime_fr)),
     copy_term((Head,(BPrime_sh,BPrime_fr)),(NewTerm,NewPrime)),
     Sg = NewTerm,
-    shfr_abs_sort(NewPrime,Prime).  
+    sharefree:abs_sort(NewPrime,Prime).  
 exit_to_prime(_Sg,[],_Head,Sv,_Exit,_ExtraInfo,Prime):- !,
     list_ground(Sv,Prime_fr),
     Prime = ([],Prime_fr).
 exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime):-
     ExtraInfo = ((Lda_sh,Lda_fr),Binds),
-    shfr_project(Sg,Hv,not_provided_HvFv_u,Exit,(BPrime_sh,BPrime_fr)),
+    sharefree:project(Sg,Hv,not_provided_HvFv_u,Exit,(BPrime_sh,BPrime_fr)),
     merge(Lda_fr,BPrime_fr,TempFr),
     abs_unify_exit(TempFr,Binds,NewTempFr,NewBinds),
     member_value_freeness(NewTempFr,Gv,g),
@@ -452,14 +443,6 @@ table_from_term_exit(nf(_,Term1),_,Term,_,Fr,NewFr) :-
 table_from_term_exit(_,X,_,Tv,Fr,Fr1) :- !,
     change_values_if_f(Tv,Fr,TmpFr,nf),
     change_values([X],TmpFr,Fr1,nv).
-
-%-------------------------------------------------------------------------
-%-------------------------------------------------------------------------
-%                      ABSTRACT SORT
-%-------------------------------------------------------------------------
-%-------------------------------------------------------------------------
-% Identical to shfr_abs_sort/2, called straight from domain_dependent.pl     %
-%-------------------------------------------------------------------------
 
 %-------------------------------------------------------------------------
 %-------------------------------------------------------------------------
@@ -652,13 +635,6 @@ call_to_success_fact(Sg,Hv,Head,_K,Sv,Call,(Sg_sh,Lda_fr),Prime,Succ) :-
 %
 call_to_success_fact(_Sg,_Hv,_Head,_K,_Sv,_Call,_Proj,'$bottom','$bottom').
 
-%-------------------------------------------------------------------------
-% unknown_entry(+,+,-)
-% unknown_entry(Sg,Qv,Call)
-%-------------------------------------------------------------------------
-% Identical to shfr_unknown_entry/3, called from domain_dependent.pl     %
-%-------------------------------------------------------------------------
-
 %------------------------------------------------------------------------%
 % input_user_interface(+,+,-,+,+)
 % input_user_interface(InputUser,Qv,ASub,Sg,MaybeCallASub)
@@ -668,14 +644,14 @@ call_to_success_fact(_Sg,_Hv,_Head,_K,_Sv,_Call,_Proj,'$bottom','$bottom').
 
 :- dom_impl(_, input_user_interface/5, [noq]).
 input_user_interface((Sh,Fr,Nv0),Qv,(Call_sh,Call_fr),Sg,MaybeCallASub):-
-    shfr_input_user_interface((Sh,Fr),Qv,(Call_sh,Call_fr0),Sg,MaybeCallASub),
+    sharefree:input_user_interface((Sh,Fr),Qv,(Call_sh,Call_fr0),Sg,MaybeCallASub),
     may_be_var(Nv0,Nv),
     sort(Nv,NonVar),
     change_values_insert(NonVar,Call_fr0,Call_fr,nv).
 
 :- dom_impl(_, input_interface/4, [noq]).
 input_interface(Info,Kind,(Sh0,Fr0,Nv),(Sh,Fr,Nv)):-
-    shfr_input_interface(Info,Kind,(Sh0,Fr0),(Sh,Fr)), !.
+    sharefree:input_interface(Info,Kind,(Sh0,Fr0),(Sh,Fr)), !.
 input_interface(not_free(X),perfect,(Sh,Fr,Nv0),(Sh,Fr,Nv)):-
     var(X),
     myinsert(Nv0,X,Nv).
@@ -725,7 +701,7 @@ may_be_var(X,X):- ( X=[] ; true ), !.
 
 :- dom_impl(_, asub_to_native/5, [noq]).
 asub_to_native((Sh,Fr),Qv,OutFlag,ASub_user,Comps):-
-    shfr_asub_to_native((Sh,Fr),Qv,OutFlag,ASub_user0,Comps),
+    sharefree:asub_to_native((Sh,Fr),Qv,OutFlag,ASub_user0,Comps),
     member_value_freeness(Fr,Nv,nv),
     if_not_nil(Nv,not_free(Nv),ASub_user,ASub_user0).
 
@@ -790,13 +766,6 @@ glb(_ASub0,_ASub1,_ASub) :- compiler_error(op_not_implemented(glb)), fail.
 %------------------------------------------------------------------------%
 
 %-------------------------------------------------------------------------
-% special_builtin(+,+,+,-,-)                                      |
-% special_builtin(SgKey,Sg,Subgoal,Type,Condvars)                 |
-%-------------------------------------------------------------------------
-% Identical to shfr, called straight from domain_dependent.pl            %
-%-------------------------------------------------------------------------
-
-%-------------------------------------------------------------------------
 % success_builtin(+,+,+,+,+,-)                                    |
 % success_builtin(Type,Sv_u,Condv,HvFv_u,Call,Succ)                      |
 %-------------------------------------------------------------------------
@@ -829,7 +798,7 @@ success_builtin(old_new_ground,_,(OldG,NewG),_,Call,Succ):-
 success_builtin(old_new_ground,_,_,_,_,'$bottom').
 success_builtin(all_nonfree,Sv_u,Sg,_,Call,Succ):- !,
     sort(Sv_u,Sv),
-    shfr_project(Sg,Sv,not_provided_HvFv_u,Call,(Proj_sh,Proj_fr)),
+    sharefree:project(Sg,Sv,not_provided_HvFv_u,Call,(Proj_sh,Proj_fr)),
     closure_under_union(Proj_sh,Prime_sh),
     change_values_if_f(Sv,Proj_fr,Prime_fr,nf), 
     extend(Sg,(Prime_sh,Prime_fr),Sv,Call,Succ).
@@ -844,14 +813,14 @@ success_builtin(arg,_,Sg0,_,Call,Succ):- Sg0=p(X,Y,Z),
     varset(Sg,Sv),
     varset(Head,Hv),
     TempASub = (Temp_sh,Temp_fr),
-    shfr_project(Sg,Sv,not_provided_HvFv_u,TempASub,Proj),
+    sharefree:project(Sg,Sv,not_provided_HvFv_u,TempASub,Proj),
     call_to_success_fact(Sg,Hv,Head,not_provided,Sv,TempASub,Proj,_,Succ). % TODO: add some ClauseKey?
 success_builtin(arg,_,_,_,_,'$bottom').
 success_builtin(exp,_,Sg,_,Call,Succ):-
     Head = p(A,f(A,_B)),
     varset(Sg,Sv),
     varset(Head,Hv),
-    shfr_project(Sg,Sv,not_provided_HvFv_u,Call,Proj),
+    sharefree:project(Sg,Sv,not_provided_HvFv_u,Call,Proj),
     call_to_success_fact(Sg,Hv,Head,not_provided,Sv,Call,Proj,_,Succ). % TODO: add some ClauseKey?
 success_builtin(exp,_,_,_,_,'$bottom').
 success_builtin('=../2',_,p(X,Y),_,(Call_sh,Call_fr),Succ):-
@@ -904,7 +873,7 @@ success_builtin(read2,Sv_u,Sg,_,(Call_sh,Call_fr),Succ):- Sg=p(X,Y),
       change_values_if_f([Y],Temp_fr,Succ_fr,nf), 
       Succ = (Temp_sh,Succ_fr)
     ; varset(Y,Varsy),
-      shfr_project(Sg,Varsy,not_provided_HvFv_u,(Temp_fr,Temp_sh),(Proj_sh,Prime_fr)),
+      sharefree:project(Sg,Varsy,not_provided_HvFv_u,(Temp_fr,Temp_sh),(Proj_sh,Prime_fr)),
       closure_under_union(Proj_sh,Prime_sh),
       sort(Sv_u,Sv),
       extend(Sg,(Prime_sh,Prime_fr),Sv,(Call_sh,Call_fr),Succ)
@@ -913,20 +882,20 @@ success_builtin(recorded,_,Sg,_,Call,Succ):- Sg=p(Y,Z),
     varset(Z,NewG),
     varset(Y,VarsY),
     merge(NewG,VarsY,Vars),
-    shfr_project(Sg,Vars,not_provided_HvFv_u,Call,(Sh,Fr)),
+    sharefree:project(Sg,Vars,not_provided_HvFv_u,Call,(Sh,Fr)),
     update_lambda_sf(NewG,Fr,Sh,TempPrime_fr,TempPrime_sh),
     make_dependence(TempPrime_sh,VarsY,TempPrime_fr,Prime_fr,Prime_sh),
     Prime = (Prime_sh,Prime_fr),
     extend(Sg,Prime,Vars,Call,Succ).
 success_builtin(copy_term,_,Sg,_,Call,Succ):- Sg=p(X,Y),
     varset(X,VarsX),
-    shfr_project(Sg,VarsX,not_provided_HvFv_u,Call,ProjectedX),
+    sharefree:project(Sg,VarsX,not_provided_HvFv_u,Call,ProjectedX),
     copy_term((X,ProjectedX),(NewX,NewProjectedX)),
-    shfr_abs_sort(NewProjectedX,ProjectedNewX),
+    sharefree:abs_sort(NewProjectedX,ProjectedNewX),
     varset(NewX,VarsNewX),
     varset(Y,VarsY),
     merge(VarsNewX,VarsY,TempSv),
-    shfr_project(Sg,VarsY,not_provided_HvFv_u,Call,ProjectedY),
+    sharefree:project(Sg,VarsY,not_provided_HvFv_u,Call,ProjectedY),
     ProjectedY = (ShY,FrY),
     ProjectedNewX = (ShNewX,FrNewX),
     merge(ShY,ShNewX,TempSh),
@@ -937,7 +906,7 @@ success_builtin(copy_term,_,Sg,_,Call,Succ):- Sg=p(X,Y),
     call_to_success_builtin('=/2','='(NewX,Y),TempSv,
                 (TempCallSh,TempCallFr),(TempSh,TempFr),Temp_success),
     collect_vars_freeness(FrCall,VarsCall),
-    shfr_project(Sg,VarsCall,not_provided_HvFv_u,Temp_success,Succ).
+    sharefree:project(Sg,VarsCall,not_provided_HvFv_u,Temp_success,Succ).
 success_builtin('current_key/2',_,p(X),_,Call,Succ):-
     varset(X,NewG),
     Call = (Call_sh,Call_fr),
@@ -1367,14 +1336,6 @@ update_from_values(nf,_,_X,Y,(Call_sh,Call_fr),(Succ_sh,Succ_fr)):-
 %% more_instantiate(_,_). 
 %% real_conjoin(_,_,_).
 
-%-------------------------------------------------------------------------
-%-------------------------------------------------------------------------
-%           ABSTRACT meta_call
-%-------------------------------------------------------------------------
-%-------------------------------------------------------------------------
-% identical to shfr_unknown_call, called from domain_dependent.pl        %
-%-------------------------------------------------------------------------
-
 %% %%%%%%%%%% ANNOTATION PROCESS
 %% %-------------------------------------------------------------------------
 %% % update_lambda_non_free_iterative(+,+,+,-,-,-)
@@ -1469,8 +1430,8 @@ update_from_values(nf,_,_X,Y,(Call_sh,Call_fr),(Succ_sh,Succ_fr)):-
 %%      ; Flag0 = diff,
 %%        change_values(NewNv,TmpFr,NewFr,nv)),
 %%      ( var(Flag0) ->
-%%          shfr_check_eq(Eq,AllGr,Free,NewFr,NewSh,Sv,Flag)
-%%      ; shfr_project(not_provided_Sg,Sv,not_provided_HvFv_u,(NewSh,NewFr),Flag)).
+%%          sharefree:check_eq(Eq,AllGr,Free,NewFr,NewSh,Sv,Flag)
+%%      ; sharefree:project(not_provided_Sg,Sv,not_provided_HvFv_u,(NewSh,NewFr),Flag)).
 %%        
 %%      
 %% %% check_cond([(Gr,_)|Rest],Free,Ground,NonVar,NonGround,Sh,Fr,Sv,Acc,Flag):-
@@ -1484,7 +1445,7 @@ update_from_values(nf,_,_X,Y,(Call_sh,Call_fr),(Succ_sh,Succ_fr)):-
 %% %%   PossibleNonG \== [],!,         % possibly woken
 %% %%   update_lambda_non_free(PossibleNonG,Fr,Sh,TmpFr,SuccSh),
 %% %%   change_values_if_not_g(Nv,TmpFr,SuccFr,nv),
-%% %%   shfr_project(not_provided_Sg,Sv,not_provided_HvFv_u,(SuccSh,SuccFr),Proj),
+%% %%   sharefree:project(not_provided_Sg,Sv,not_provided_HvFv_u,(SuccSh,SuccFr),Proj),
 %% %%   Acc0 = [Proj|Acc],
 %% %%   check_cond(Rest,Free,Ground,NonVar,NonGround,Sh,Fr,Sv,Acc0,Flag).
 %% %% check_cond([(_,Nv)|_],Free,_,NonVar,_,Sh,_,_,_,Flag):-
@@ -1492,12 +1453,12 @@ update_from_values(nf,_,_X,Y,(Call_sh,Call_fr),(Succ_sh,Succ_fr)):-
 %% %%   mynonvar(PossibleFree,Sh,Free),!, % definitely woken
 %% %%   Flag = w.
 %% %% check_cond([_|Rest],Free,Ground,NonVar,NonGround,Sh,Fr,Sv,Acc,Flag):-
-%% %%   shfr_project(not_provided_Sg,Sv,not_provided_HvFv_u,(Sh,Fr),Proj),
+%% %%   sharefree:project(not_provided_Sg,Sv,not_provided_HvFv_u,(Sh,Fr),Proj),
 %% %%   check_cond(Rest,Free,Ground,NonVar,NonGround,Sh,Fr,Sv,[Proj|Acc],Flag).
 %% 
 %% %-------------------------------------------------------------------------
-%% % shfr_downwards_closed(+,+,-)
-%% % shfr_downwards_closed(ACns1,ACns2,ACns)
+%% % downwards_closed(+,+,-)
+%% % downwards_closed(ACns1,ACns2,ACns)
 %% %-------------------------------------------------------------------------
 %% % ACns2 must be more instantiated than ACns1 but some downwards closed
 %% % properties might have been lost due to a later lub. Thus, those
@@ -1518,13 +1479,6 @@ update_from_values(nf,_,_X,Y,(Call_sh,Call_fr),(Succ_sh,Succ_fr)):-
 %%      ord_intersection(Free,Nv,[]),
 %%         change_values_if_not_g(Nv,TmpFr,Fr,nv).
 %%      
-%% 
-%% %-------------------------------------------------------------------------
-%% % extend_free(+,+,-)
-%% % extend_free(ASub,Vars,NewASub)
-%% %-------------------------------------------------------------------------
-%% % Identical to shfr, called from domain_dependent.pl                     %
-%% %-------------------------------------------------------------------------
 %% 
 %% %------------------------------------------------------------------------%
 %% % hash(+,-)
@@ -1599,7 +1553,7 @@ update_from_values(nf,_,_X,Y,(Call_sh,Call_fr),(Succ_sh,Succ_fr)):-
 %% impose_cond([(Gr,Nv,_)|Rest],Sv,(Sh,Fr),[ASub1|LASub]):-
 %%      update_lambda_sf(Gr,Fr,Sh,Fr1,Sh1),
 %%         change_values_if_not_g(Nv,Fr1,Fr2,nv),
-%%      shfr_project(not_provided_Sg,Sv,not_provided_HvFv_u,(Sh1,Fr2),ASub1),
+%%      sharefree:project(not_provided_Sg,Sv,not_provided_HvFv_u,(Sh1,Fr2),ASub1),
 %%      impose_cond(Rest,Sv,(Sh,Fr),LASub).
 %% 
 %% 

@@ -129,7 +129,26 @@ mutual exclusion are (property - interval describing number of solutions):
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 :- use_module(domain(eterms)).
-:- use_module(domain(sharefree)).
+:- use_module(domain(sharefree), [
+    call_to_entry/9,
+    obtain_info/3,
+    obtain_info/4,
+    exit_to_prime/7,
+    project/5,
+    extend/5,
+    needs/1,
+    compute_lub/2,
+    glb/3,
+    less_or_equal/2,
+    abs_sort/2,
+    call_to_success_fact/9,
+    input_interface/4,
+    input_user_interface/5,
+    asub_to_native/5,
+    unknown_call/4,
+    unknown_entry/3,
+    empty_entry/3
+]).
 :- use_module(domain(nfdet/nfabs)).
 :- use_module(domain(nfdet/detabs)).
 
@@ -177,15 +196,15 @@ nfdet_init_abstract_domain([variants,widen]) :-
 
 nfdet_call_to_entry(Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo) :-
     nfdet:asub(Proj,PTypes,PModes,PNonF,PDet),
-    shfr_call_to_entry(Sv,Sg,Hv,Head,K,Fv,PModes,EModes,ExtraInfoModes),
+    sharefree:call_to_entry(Sv,Sg,Hv,Head,K,Fv,PModes,EModes,ExtraInfoModes),
     eterms_call_to_entry(Sv,Sg,Hv,Head,K,Fv,PTypes,ETypes,ExtraInfoTypes),
     ( ETypes = '$bottom' ->
         Entry = '$bottom'
     ; % Obtaining invars for nf
-      shfr_obtain_info(free,Sv,PModes,FVars),
+      sharefree:obtain_info(free,Sv,PModes,FVars),
       ord_subtract(Sv,FVars,InVarsNf),
       % Obtaining invars for det
-      shfr_obtain_info(ground,Sv,PModes,InVarsDet),
+      sharefree:obtain_info(ground,Sv,PModes,InVarsDet),
       detabs:det_call_to_entry(Sv,Sg,Hv,Head,K,Fv,PDet,InVarsDet,EDet,_ExtraDet),
       %
       nfabs:nf_call_to_entry(Sv,Sg,Hv,Head,K,Fv,PNonF,InVarsNf,ENonF0,_ExtraNf),
@@ -206,7 +225,7 @@ nfdet_exit_to_prime(_Sg,_Hv,_Head,_Sv,'$bottom',_ExtraInfo,'$bottom') :- !.
 nfdet_exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime) :-
     nfdet:asub(Exit,ETypes,EModes,ENonF,EDet),
     nfdet:asub(ExtraInfo,ExtraInfoTypes,ExtraInfoModes,ExtraInfoNonF,ExtraInfoDet),
-    shfr_exit_to_prime(Sg,Hv,Head,Sv,EModes,ExtraInfoModes,PModes),
+    sharefree:exit_to_prime(Sg,Hv,Head,Sv,EModes,ExtraInfoModes,PModes),
     eterms_exit_to_prime(Sg,Hv,Head,Sv,ETypes,ExtraInfoTypes,PTypes),
     ( PTypes = '$bottom' ->
         Prime = '$bottom'
@@ -226,7 +245,7 @@ nfdet_exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime) :-
 nfdet_project(_Sg,_Vars,_HvFv_u,'$bottom','$bottom') :- !.
 nfdet_project(Sg,Vars,HvFv_u,ASub,Proj) :-
     nfdet:asub(ASub,ATypes,AModes,ANonF,ADet),
-    shfr_project(Sg,Vars,HvFv_u,AModes,PModes),
+    sharefree:project(Sg,Vars,HvFv_u,AModes,PModes),
     eterms_project(Sg,Vars,HvFv_u,ATypes,PTypes),
     nfabs:nf_project(Sg,Vars,HvFv_u,ANonF,PNonF),
     detabs:det_project(Sg,Vars,HvFv_u,ADet,PDet),
@@ -241,7 +260,7 @@ nfdet_extend(_Sg,'$bottom',_Sv,_Call,'$bottom') :- !.
 nfdet_extend(Sg,Prime,Sv,Call,Succ) :-
     nfdet:asub(Prime,PTypes,PModes,PNonF,PDet),
     nfdet:asub(Call,CTypes,CModes,CNonF,CDet),
-    shfr_extend(Sg,PModes,Sv,CModes,SModes),
+    sharefree:extend(Sg,PModes,Sv,CModes,SModes),
     eterms_extend(Sg,PTypes,Sv,CTypes,STypes),
     nfabs:nf_extend(Sg,PNonF,Sv,CNonF,SNonF),
     detabs:det_extend(Sg,PDet,Sv,CDet,SDet),
@@ -252,7 +271,7 @@ nfdet_needs(split_combined_domain) :- !.
 nfdet_needs(X) :-
     eterms_needs(X),!.
 nfdet_needs(X) :-
-    shfr_needs(X).
+    sharefree:needs(X).
 
 %------------------------------------------------------------------------%
 % nfdet_widen(+,+,-)                                                     %
@@ -264,7 +283,7 @@ nfdet_widen(ASub0,'$bottom',ASub) :- !,ASub = ASub0.
 nfdet_widen(ASub0,ASub1,ASub):-
     nfdet:asub(ASub0,ATypes0,AModes0,ANonF0,ADet0),
     nfdet:asub(ASub1,ATypes1,AModes1,ANonF1,ADet1),
-    shfr_compute_lub([AModes0,AModes1],AModes),
+    sharefree:compute_lub([AModes0,AModes1],AModes),
     eterms_widen(ATypes0,ATypes1,ATypes),
     nfabs:nf_widen(ANonF0,ANonF1,ANonF),
     detabs:det_compute_lub([ADet0,ADet1],ADet),
@@ -304,7 +323,7 @@ filter_not_bottom([X|Xs], Ys) :-
 nfdet_compute_lub_([],'$bottom') :- !.
 nfdet_compute_lub_(ListASub,Lub):-
     split(ListASub,LTypes,LModes,LNonF,LDet),
-    shfr_compute_lub(LModes,LubModes),
+    sharefree:compute_lub(LModes,LubModes),
     eterms_compute_lub(LTypes,LubTypes),
     nfabs:nf_compute_lub(LNonF,LubNonF),
     detabs:det_compute_lub(LDet,LubDet),
@@ -351,8 +370,8 @@ nfdet_compute_clauses_lub([ASub],Proj,[Lub]):-
     nfdet:asub(Lub,ATypes,AModes,LubNonF,LubDet).
 
 compute_modetypes_nf(Types,Modes,Head,MTypes):-
-    % shfr_obtain_info(free,_Vars,Modes,FVars), % PLG
-    shfr_obtain_info(free,Modes,FVars), % Added PLG
+    % sharefree:obtain_info(free,_Vars,Modes,FVars), % PLG
+    sharefree:obtain_info(free,Modes,FVars), % Added PLG
     sort(Types,Types_s),
     compute_modetypes0_nf(Types_s,FVars,Vars,ModeTypes),
     Head =.. [p|Vars],
@@ -369,8 +388,8 @@ get_mode_nf(Var,FVars,M):-
 get_mode_nf(_Var,_GVars,in).
 
 compute_modetypes_det(Types,Modes,Head,MTypes):-
-    shfr_obtain_info(ground,Modes,FVars), % Added. Aug 24, 2012 -PLG
-    % shfr_obtain_info(free,Modes,FVars), % Commented out. Aug 24, 2012. Not a safe asumption -PLG.
+    sharefree:obtain_info(ground,Modes,FVars), % Added. Aug 24, 2012 -PLG
+    % sharefree:obtain_info(free,Modes,FVars), % Commented out. Aug 24, 2012. Not a safe asumption -PLG.
     sort(Types,Types_s),
     compute_modetypes0_det(Types_s,FVars,Vars,ModeTypes),
     Head =.. [p|Vars],
@@ -396,7 +415,7 @@ nfdet_glb(_ASub,'$bottom',ASub3) :- !, ASub3='$bottom'.
 nfdet_glb(ASub0,ASub1,Glb):-
     nfdet:asub(ASub0,ATypes0,AModes0,ANonF0,ADet0),
     nfdet:asub(ASub1,ATypes1,AModes1,ANonF1,ADet1),
-    shfr_glb(AModes0,AModes1,GModes),
+    sharefree:glb(AModes0,AModes1,GModes),
     eterms_glb(ATypes0,ATypes1,GTypes),
     nfabs:nf_glb(ANonF0,ANonF1,GNonF),
     detabs:det_glb(ADet0,ADet1,GDet),
@@ -415,7 +434,7 @@ nfdet_less_or_equal('$bottom','$bottom'):- !.
 nfdet_less_or_equal(ASub0,ASub1):-
     nfdet:asub(ASub0,ATypes0,AModes0,ANonF0,ADet0),
     nfdet:asub(ASub1,ATypes1,AModes1,ANonF1,ADet1),
-    shfr_less_or_equal(AModes0,AModes1),
+    sharefree:less_or_equal(AModes0,AModes1),
     eterms_less_or_equal(ATypes0,ATypes1),
     nfabs:nf_less_or_equal(ANonF0,ANonF1),
     detabs:det_less_or_equal(ADet0,ADet1).
@@ -442,7 +461,7 @@ nfdet_identical_abstract(ASub0,ASub1):-
 nfdet_abs_sort('$bottom','$bottom'):- !.
 nfdet_abs_sort(ASub0,ASub1):-
     nfdet:asub(ASub0,ATypes0,AModes0,ANonF0,ADet0),
-    shfr_abs_sort(AModes0,AModes1),
+    sharefree:abs_sort(AModes0,AModes1),
     eterms_abs_sort(ATypes0,ATypes1),
     nfabs:nf_abs_sort(ANonF0,ANonF1),
     detabs:det_abs_sort(ADet0,ADet1),
@@ -456,7 +475,7 @@ nfdet_abs_sort(ASub0,ASub1):-
 nfdet_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ):-
     nfdet:asub(Call,CTypes,CModes,CNonF,CDet),
     nfdet:asub(Proj,PTypes,PModes,PNonF,PDet),
-    shfr_call_to_success_fact(Sg,Hv,Head,K,Sv,CModes,PModes,RModes,SModes),
+    sharefree:call_to_success_fact(Sg,Hv,Head,K,Sv,CModes,PModes,RModes,SModes),
     eterms_call_to_success_fact(Sg,Hv,Head,K,Sv,CTypes,PTypes,RTypes,STypes),
     nfabs:nf_call_to_success_fact(Sg,Hv,Head,K,Sv,CNonF,PNonF,RNonF,SNonF),
     detabs:det_call_to_success_fact(Sg,Hv,Head,K,Sv,CDet,PDet,RDet,SDet),
@@ -526,7 +545,7 @@ nfdet_input_interface(InputUser,Kind,StructI,StructO):-
     nfdet:asub(StructO,OTypes,OModes,ONonF,ODet).
 
 shfr_input_interface_(InputUser,Kind,IModes,OModes):-
-    shfr_input_interface(InputUser,Kind,IModes,OModes), !.
+    sharefree:input_interface(InputUser,Kind,IModes,OModes), !.
 shfr_input_interface_(_InputUser,_Kind,IModes,IModes).
 
 eterms_input_interface_(InputUser,Kind,ITypes,OTypes):-
@@ -548,7 +567,7 @@ det_input_interface_(_InputUser,_Kind,IDet,IDet).
 
 nfdet_input_user_interface(Struct,Qv,ASub,Sg,MaybeCallASub):-
     nfdet:asub(Struct,Types,Modes,NonF,Det),
-    shfr_input_user_interface(Modes,Qv,AModes,Sg,MaybeCallASub),
+    sharefree:input_user_interface(Modes,Qv,AModes,Sg,MaybeCallASub),
     eterms_input_user_interface(Types,Qv,ATypes,Sg,MaybeCallASub),
     nfabs:nf_input_user_interface(NonF,Qv,ANonF,Sg,MaybeCallASub),
     detabs:det_input_user_interface(Det,Qv,ADet,Sg,MaybeCallASub),
@@ -562,7 +581,7 @@ nfdet_input_user_interface(Struct,Qv,ASub,Sg,MaybeCallASub):-
 
 nfdet_asub_to_native(ASub,Qv,OutFlag,Props,CompProps):-
     nfdet:asub(ASub,ATypes,AModes,ANonF,ADet),
-    shfr_asub_to_native(AModes,Qv,OutFlag,Props1,_),
+    sharefree:asub_to_native(AModes,Qv,OutFlag,Props1,_),
     eterms_asub_to_native(ATypes,Qv,OutFlag,Props2,_),
     nfabs:nf_asub_to_native(ANonF,Qv,NfProps),
     detabs:det_asub_to_native(ADet,Qv,DetProps),
@@ -602,7 +621,7 @@ nfdet_rename_auxinfo_asub(ASub, Dict, RASub) :-
 
 nfdet_unknown_call(Sg,Vars,Call,Succ):-
     nfdet:asub(Call,CTypes,CModes,CNonF,CDet),
-    shfr_unknown_call(Sg,Vars,CModes,SModes),
+    sharefree:unknown_call(Sg,Vars,CModes,SModes),
     eterms_unknown_call(Sg,Vars,CTypes,STypes),
     nfabs:nf_unknown_call(Sg,Vars,CNonF,SNonF),
     detabs:det_unknown_call(Sg,Vars,CDet,SDet),
@@ -614,7 +633,7 @@ nfdet_unknown_call(Sg,Vars,Call,Succ):-
 %------------------------------------------------------------------------%
 
 nfdet_unknown_entry(Sg,Vars,Entry):-
-    shfr_unknown_entry(Sg,Vars,EModes),
+    sharefree:unknown_entry(Sg,Vars,EModes),
     eterms_unknown_entry(Sg,Vars,ETypes),
     nfabs:nf_unknown_entry(Sg,Vars,ENonF),
     detabs:det_unknown_entry(Sg,Vars,EDet),
@@ -626,7 +645,7 @@ nfdet_unknown_entry(Sg,Vars,Entry):-
 %------------------------------------------------------------------------%
 
 nfdet_empty_entry(Sg,Vars,Entry):-
-    shfr_empty_entry(Sg,Vars,EModes),
+    sharefree:empty_entry(Sg,Vars,EModes),
     eterms_empty_entry(Sg,Vars,ETypes),
     nfabs:nf_empty_entry(Sg,Vars,ENonF),
     detabs:det_empty_entry(Sg,Vars,EDet),
@@ -646,7 +665,7 @@ nfdet_obtain_info(Prop,Vars,ASub0,Info) :- knows_of(Prop,eterms), !,
     eterms_obtain_info(Prop,Vars,ASub,Info).
 nfdet_obtain_info(Prop,Vars,ASub0,Info) :- knows_of(Prop,shfr), !,
     nfdet:asub(ASub0,_,ASub,_,_),
-    shfr_obtain_info(Prop,Vars,ASub,Info).
+    sharefree:obtain_info(Prop,Vars,ASub,Info).
 nfdet_obtain_info(Prop,_Vars,ASub0,Info) :- knows_of(Prop,nf), !,
     nfdet:asub(ASub0,_,_,ASub,_),
     nfabs:nf_asub_to_native(ASub,_,Info).

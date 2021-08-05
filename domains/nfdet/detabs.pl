@@ -24,7 +24,7 @@
 :- use_module(domain(nfdet/nfsets), [create_minset_and_project/4]).
 :- use_module(domain(nfdet/mutexcheck), [mutual_exclusion_check/5]).
 :- use_module(domain(nfdet/nfbool), [push_neg_in_test/2, remove_negation/2, translate_test/2]).
-:- use_module(domain(sharefree), [shfr_obtain_info/4]).
+:- use_module(domain(sharefree), [obtain_info/4]).
 :- use_module(domain(s_eqs), [peel/4]).
 :- use_module(domain(nfdet/nfdet_statistics)).
 :- use_module(domain(nfdet/nfdetabs), [pred_test/1, tests/5, clause_test/1]).
@@ -651,7 +651,7 @@ det_builtin('basiccontrol:false/0', Sg, _CallType, notest, Sg, MutExDet):-
 
 is_free_var(X, CallType):-
      nonvar(CallType),
-     shfr_obtain_info(free,[X],CallType,[Y]),
+     sharefree:obtain_info(free,[X],CallType,[Y]),
      X == Y.
 
 %-------------------------------------------------------------------------

@@ -7,7 +7,7 @@
    quality of the specialized program if abstract specialization is
    then performed. PDB stands for Partial Deduction + Bottom.").
 
-:- use_module(domain(sharefree), [shfr_special_builtin/5]).
+:- use_module(domain(sharefree), [special_builtin/5]).
 
 :- include(ciaopp(plai/plai_domain)).
 :- dom_def(pdb, [default]).
@@ -72,7 +72,7 @@ less_or_equal(top,top).
 
 :- dom_impl(_, special_builtin/5, [noq]).
 special_builtin(SgKey,Sg,Subgoal,Type,Condvars) :-
-    shfr_special_builtin(SgKey,Sg,Subgoal,Type,Condvars), !. % TODO: why?
+    sharefree:special_builtin(SgKey,Sg,Subgoal,Type,Condvars), !. % TODO: why?
 special_builtin(Key,_Sg,_Subgoal,special(Key),[]):-
     very_special_builtin(Key).
 

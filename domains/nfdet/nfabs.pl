@@ -27,7 +27,7 @@
 :- use_module(domain(nfdet/nfsets), [create_minset_and_project/4]).
 :- use_module(domain(nfdet/cover), [covers_check/5]).
 :- use_module(domain(nfdet/nfbool), [push_neg_in_test/2, remove_negation/2, translate_test/2]).
-:- use_module(domain(sharefree), [shfr_obtain_info/4]).
+:- use_module(domain(sharefree), [obtain_info/4]).
 :- use_module(domain(s_eqs), [peel/4]).
 :- use_module(domain(nfdet/nfdet_statistics)).
 :- use_module(domain(nfdet/nfdetabs), [pred_test/1, tests/5, unfold_t/1,mode_types/1, clause_test/1, clause_test_disj/1]).
@@ -645,7 +645,7 @@ nf_builtin('indep/2', Sg, _CallType, notest, Sg, CovNf):-
 % TODO: This should be an shfr domain operation.
 is_free_var(X, CallType):-
      nonvar(CallType),
-     shfr_obtain_info(free,[X],CallType,[Y]),
+     sharefree:obtain_info(free,[X],CallType,[Y]),
      X == Y.
 
 % TODO: This should be an shfr domain operation.

@@ -46,19 +46,19 @@
 :- use_module(library(terms_check), [variant/2]).
 
 :- use_module(domain(sharefree), [
-    shfr_compute_lub_el/3,
-    shfr_empty_entry/3,
-    shfr_extend/5,
-    shfr_glb/3,
-    shfr_obtain_info/4,
-    shfr_input_interface/4,
-    shfr_input_user_interface/5,
-    shfr_less_or_equal/2,
-    shfr_project/5,
-    shfr_abs_sort/2,
-    shfr_unknown_call/4,
-    shfr_unknown_entry/3,
-    %
+    compute_lub_el/3,
+    empty_entry/3,
+    extend/5,
+    glb/3,
+    obtain_info/4,
+    input_interface/4,
+    input_user_interface/5,
+    less_or_equal/2,
+    project/5,
+    abs_sort/2,
+    unknown_call/4,
+    unknown_entry/3]).
+:- use_module(domain(sharefree), [
     update_lambda_sf/5,
     values_equal/3,
     change_values_if_f/4,
@@ -157,7 +157,7 @@ shfrlin_amgu_extend(Sg,Prime,Sv,Call,(Succ_sh,Succ_fr,Succ_lin)):-
     Call = (Call_sh,Call_fr,Call_lin),
     Prime = (Prime_sh,Prime_fr,Prime_lin),
     %% sharing + freeeness
-    shfr_extend(Sg,(Prime_sh,Prime_fr),Sv,(Call_sh,Call_fr),(Succ_sh,Succ_fr)),
+    sharefree:extend(Sg,(Prime_sh,Prime_fr),Sv,(Call_sh,Call_fr),(Succ_sh,Succ_fr)),
     %% linearity
     ord_subtract(Call_lin,Sv,Call_lin_not_rel),
     member_value_freeness(Succ_fr,Succ_gr,g),
@@ -199,7 +199,7 @@ shfrlin_amgu_augment_asub((Sh,F,L),Vars,(NewSh,NewF,NewL)):-
 :- export(shfrlin_amgu_project/5).
 shfrlin_amgu_project(_Sg,_Vars,_HvFv_u,'$bottom','$bottom') :- !.
 shfrlin_amgu_project(Sg,Vars,HvFv_u,(Sh,F,L),(Sh_proj,F_proj,L_proj)):-
-    shfr_project(Sg,Vars,HvFv_u,(Sh,F),(Sh_proj,F_proj)),
+    sharefree:project(Sg,Vars,HvFv_u,(Sh,F),(Sh_proj,F_proj)),
     ord_intersection(L,Vars,L_proj).
 
 %------------------------------------------------------------------------%
@@ -211,7 +211,7 @@ shfrlin_amgu_project(Sg,Vars,HvFv_u,(Sh,F,L),(Sh_proj,F_proj,L_proj)):-
 :- export(shfrlin_amgu_abs_sort/2).
 shfrlin_amgu_abs_sort('$bottom','$bottom').
 shfrlin_amgu_abs_sort((Sh,F,L),(Sh_s,F_s,L_s)):-
-    shfr_abs_sort((Sh,F),(Sh_s,F_s)),
+    sharefree:abs_sort((Sh,F),(Sh_s,F_s)),
     sort(L,L_s).
 
 %------------------------------------------------------------------------%
@@ -222,7 +222,7 @@ shfrlin_amgu_abs_sort((Sh,F,L),(Sh_s,F_s,L_s)):-
 shfrlin_amgu_glb('$bottom',_ASub,ASub3) :- !, ASub3='$bottom'.
 shfrlin_amgu_glb(_ASub,'$bottom',ASub3) :- !, ASub3='$bottom'.
 shfrlin_amgu_glb((Sh1,Fr1,Lin1),(Sh2,Fr2,Lin2),Glb):-
-    shfr_glb((Sh1,Fr1),(Sh2,Fr2),Glb0),
+    sharefree:glb((Sh1,Fr1),(Sh2,Fr2),Glb0),
     ( Glb0 == '$bottom' 
     -> 
       Glb = '$bottom'
@@ -306,7 +306,7 @@ shfrlin_amgu_special_builtin(SgKey,Sg,Subgoal,Type,Condvars):-
 %       varset(Sg,Sv),
 %       varset(Head,Hv),
 %       TempASub = (Temp_sh,Temp_fr),
-%       shfr_project(not_provided_Sg,Sv,not_provided_HvFv_u,TempASub,Proj),
+%       sharefree:project(not_provided_Sg,Sv,not_provided_HvFv_u,TempASub,Proj),
 %       shfrlin_amgu_call_to_success_fact(Sg,Hv,Head,not_provided,Sv,TempASub,Proj,_,Succ). % TODO: add some ClauseKey?
 % shfrlin_amgu_success_builtin(arg,_,_,_,'$bottom').
 shfrlin_amgu_success_builtin(exp,_,Sg,_,Call,Succ):- !,
@@ -318,13 +318,13 @@ shfrlin_amgu_success_builtin(exp,_,Sg,_,Call,Succ):- !,
 shfrlin_amgu_success_builtin(exp,_,_,_,_,'$bottom'):- !.
 % shfrlin_amgu_success_builtin(copy_term,_,p(X,Y),_,Call,Succ):-
 %       varset(X,VarsX),
-%       shfr_project(not_provided_Sg,VarsX,not_provided_HvFv_u,Call,ProjectedX),
+%       sharefree:project(not_provided_Sg,VarsX,not_provided_HvFv_u,Call,ProjectedX),
 %       copy_term((X,ProjectedX),(NewX,NewProjectedX)),
-%       shfr_abs_sort(NewProjectedX,ProjectedNewX),
+%       sharefree:abs_sort(NewProjectedX,ProjectedNewX),
 %       varset(NewX,VarsNewX),
 %       varset(Y,VarsY),
 %       merge(VarsNewX,VarsY,TempSv),
-%       shfr_project(not_provided_Sg,VarsY,not_provided_HvFv_u,Call,ProjectedY),
+%       sharefree:project(not_provided_Sg,VarsY,not_provided_HvFv_u,Call,ProjectedY),
 %       ProjectedY = (ShY,FrY),
 %       ProjectedNewX = (ShNewX,FrNewX),
 %       merge(ShY,ShNewX,TempSh),
@@ -335,7 +335,7 @@ shfrlin_amgu_success_builtin(exp,_,_,_,_,'$bottom'):- !.
 %       shfrlin_amgu_call_to_success_builtin('=/2','='(NewX,Y),TempSv,
 %                     (TempCallSh,TempCallFr),(TempSh,TempFr),Temp_success),
 %       collect_vars_freeness(FrCall,VarsCall),
-%       shfr_project(not_provided_Sg,VarsCall,not_provided_HvFv_u,Temp_success,Succ).
+%       sharefree:project(not_provided_Sg,VarsCall,not_provided_HvFv_u,Temp_success,Succ).
 shfrlin_amgu_success_builtin(Type,Sv_u,Condv,HvFv_u,Call,Succ):-
     Call = (Sh,Fr,Lin),
     ord_subtract(Lin,Sv_u,Lin_not_rel),     
@@ -459,7 +459,7 @@ shfrlin_amgu_compute_lub([ASub1,ASub2|Xs],Lub):-
 shfrlin_amgu_compute_lub_el('$bottom',ASub,ASub):-!.
 shfrlin_amgu_compute_lub_el(ASub,'$bottom',ASub):-!.
 shfrlin_amgu_compute_lub_el((Sh1,Fr1,Lin1),(Sh2,Fr2,Lin2),ASub):-
-    shfr_compute_lub_el((Sh1,Fr1),(Sh2,Fr2),(Sh_ASub,Fr_ASub)),
+    sharefree:compute_lub_el((Sh1,Fr1),(Sh2,Fr2),(Sh_ASub,Fr_ASub)),
     ord_intersection(Lin1,Lin2,Lin_ASub),
     ASub = (Sh_ASub,Fr_ASub,Lin_ASub).
 
@@ -470,7 +470,7 @@ shfrlin_amgu_compute_lub_el((Sh1,Fr1,Lin1),(Sh2,Fr2,Lin2),ASub):-
 :- export(shfrlin_amgu_less_or_equal/2).
 shfrlin_amgu_less_or_equal('$bottom',_ASub):- !.
 shfrlin_amgu_less_or_equal((Sh0,Fr0,Lin0),(Sh1,Fr1,Lin1)):-
-    shfr_less_or_equal((Sh0,Fr0),(Sh1,Fr1)),!,
+    sharefree:less_or_equal((Sh0,Fr0),(Sh1,Fr1)),!,
     ord_subset(Lin0,Lin1).
 
 
@@ -484,13 +484,13 @@ shfrlin_amgu_less_or_equal((Sh0,Fr0,Lin0),(Sh1,Fr1,Lin1)):-
 %------------------------------------------------------------------------%
 :- export(shfrlin_amgu_input_user_interface/5).
 shfrlin_amgu_input_user_interface((Sh,Vars,_),Qv,(Call_sh,Call_fr,Call_lin),Sg,MaybeCallASub):-
-    shfr_input_user_interface((Sh,Vars),Qv,(Call_sh,Call_fr),Sg,MaybeCallASub),
+    sharefree:input_user_interface((Sh,Vars),Qv,(Call_sh,Call_fr),Sg,MaybeCallASub),
     member_value_freeness(Call_fr,Call_lin,f).
 
 %------------------------------------------------------------------------%
 
 :- export(shfrlin_amgu_obtain_info/4).
-shfrlin_amgu_obtain_info(Prop,Vars,(Sh,Fr,_Lin),Info) :- shfr_obtain_info(Prop,Vars,(Sh,Fr),Info).
+shfrlin_amgu_obtain_info(Prop,Vars,(Sh,Fr,_Lin),Info) :- sharefree:obtain_info(Prop,Vars,(Sh,Fr),Info).
 
 %------------------------------------------------------------------------%
 % shfrlin_amgu_input_interface(+,+,+,-)                                       |
@@ -504,7 +504,7 @@ shfrlin_amgu_input_interface(free(X),perfect,(Sh,Fr0,Lin0),(Sh,Fr,Lin)):-
     myinsert(Fr0,X,Fr),
     myinsert(Lin0,X,Lin).
 shfrlin_amgu_input_interface(Info,Kind,(Sh0,Fr0,Lin),(Sh,Fr,Lin)):-
-    shfr_input_interface(Info,Kind,(Sh0,Fr0),(Sh,Fr)).
+    sharefree:input_interface(Info,Kind,(Sh0,Fr0),(Sh,Fr)).
 
 myunion(Lin0,X,Lin):-
     var(Lin0),!,
@@ -553,7 +553,7 @@ shfrlin_amgu_asub_to_native((Sh,Fr,L),_Qv,_OutFlag,Info,[]):-
 :- export(shfrlin_amgu_unknown_call/4).
 shfrlin_amgu_unknown_call(_Sg,_Vars,'$bottom','$bottom') :- !.
 shfrlin_amgu_unknown_call(Sg,Vars,(Call_sh,Call_fr,Call_lin),Succ):-
-    shfr_unknown_call(Sg,Vars,(Call_sh,Call_fr),(Succ_sh,Succ_fr)),
+    sharefree:unknown_call(Sg,Vars,(Call_sh,Call_fr),(Succ_sh,Succ_fr)),
     ord_subtract(Call_lin,Vars,Call_lin_not_rel),
     member_value_freeness(Succ_fr,Succ_lin0,f),
     ord_intersection(Succ_lin0,Vars,Succ_lin1),
@@ -568,7 +568,7 @@ shfrlin_amgu_unknown_call(Sg,Vars,(Call_sh,Call_fr,Call_lin),Succ):-
 %------------------------------------------------------------------------%
 :- export(shfrlin_amgu_unknown_entry/3).
 shfrlin_amgu_unknown_entry(Sg,Qv,(Call_sh,Call_fr,[])):-
-    shfr_unknown_entry(Sg,Qv,(Call_sh,Call_fr)).
+    sharefree:unknown_entry(Sg,Qv,(Call_sh,Call_fr)).
 
 %------------------------------------------------------------------------%
 % shfrlin_amgu_empty_entry(+,+,-)                                             |
@@ -578,5 +578,5 @@ shfrlin_amgu_unknown_entry(Sg,Qv,(Call_sh,Call_fr,[])):-
 %------------------------------------------------------------------------%
 :- export(shfrlin_amgu_empty_entry/3).
 shfrlin_amgu_empty_entry(Sg,Qv,(Call_sh,Call_fr,Qv)):-
-    shfr_empty_entry(Sg,Qv,(Call_sh,Call_fr)).
+    sharefree:empty_entry(Sg,Qv,(Call_sh,Call_fr)).
 

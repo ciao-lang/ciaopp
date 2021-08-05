@@ -61,7 +61,28 @@
 :- dom_impl(det, dom_statistics/1).
 
 :- use_module(domain(eterms)).
-:- use_module(domain(sharefree)).
+:- use_module(domain(sharefree), [
+    call_to_entry/9,
+    obtain_info/4,
+    exit_to_prime/7,
+    project/5,
+    extend/5,
+    needs/1,
+    compute_lub/2,
+    compute_lub/2,
+    obtain_info/3,
+    glb/3,
+    less_or_equal/2,
+    abs_sort/2,
+    call_to_success_fact/9,
+    input_interface/4,
+    input_user_interface/5,
+    asub_to_native/5,
+    unknown_call/4,
+    unknown_entry/3,
+    empty_entry/3,
+    obtain_info/4
+]).
 :- use_module(domain(nfdet/detabs)).
 
 :- use_module(ciaopp(infer/infer_dom), [knows_of/2]).
@@ -115,13 +136,13 @@ det_init_abstract_domain([variants,widen]) :-
 
 det_call_to_entry(Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo):-
     detplai:asub(Proj,PTypes,PModes,PDet),
-    shfr_call_to_entry(Sv,Sg,Hv,Head,K,Fv,PModes,EModes,ExtraInfoModes),
+    sharefree:call_to_entry(Sv,Sg,Hv,Head,K,Fv,PModes,EModes,ExtraInfoModes),
     eterms_call_to_entry(Sv,Sg,Hv,Head,K,Fv,PTypes,ETypes,ExtraInfoTypes),
     ( ETypes = '$bottom' ->
         Entry = '$bottom'
-    ; shfr_obtain_info(ground,Sv,PModes,InVars), % Added. Aug 24, 2012 -PLG
+    ; sharefree:obtain_info(ground,Sv,PModes,InVars), % Added. Aug 24, 2012 -PLG
       detabs:det_call_to_entry(Sv,Sg,Hv,Head,K,Fv,PDet,InVars,EDet,_Extra),
-      % shfr_obtain_info(free,Sv,PModes,FVars),  % Commented out. Aug 24, 2012. Not a safe asumption. -PLG 
+      % sharefree:obtain_info(free,Sv,PModes,FVars),  % Commented out. Aug 24, 2012. Not a safe asumption. -PLG 
       % ord_subtract(Sv,FVars,InVars),      % Commented out. Aug 24, 2012 -PLG 
       detplai:asub(Entry,ETypes,EModes,EDet)
     ),
@@ -136,7 +157,7 @@ det_exit_to_prime(_Sg,_Hv,_Head,_Sv,'$bottom',_ExtraInfo,'$bottom'):- !.
 det_exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime):-
     detplai:asub(Exit,ETypes,EModes,EDet),
     detplai:asub(ExtraInfo,ExtraInfoTypes,ExtraInfoModes,ExtraInfoDet),
-    shfr_exit_to_prime(Sg,Hv,Head,Sv,EModes,ExtraInfoModes,PModes),
+    sharefree:exit_to_prime(Sg,Hv,Head,Sv,EModes,ExtraInfoModes,PModes),
     eterms_exit_to_prime(Sg,Hv,Head,Sv,ETypes,ExtraInfoTypes,PTypes),
     ( PTypes = '$bottom' ->
         Prime = '$bottom'
@@ -155,7 +176,7 @@ det_exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime):-
 det_project(_Sg,_Vars,_HvFv_u,'$bottom','$bottom'):- !.
 det_project(Sg,Vars,HvFv_u,ASub,Proj):-
     detplai:asub(ASub,ATypes,AModes,ADet),
-    shfr_project(Sg,Vars,HvFv_u,AModes,PModes),
+    sharefree:project(Sg,Vars,HvFv_u,AModes,PModes),
     eterms_project(Sg,Vars,HvFv_u,ATypes,PTypes),
     detabs:det_project(Sg,Vars,HvFv_u,ADet,PDet),
     detplai:asub(Proj,PTypes,PModes,PDet).
@@ -169,7 +190,7 @@ det_extend(_Sg,'$bottom',_Sv,_Call,'$bottom'):- !.
 det_extend(Sg,Prime,Sv,Call,Succ):-
     detplai:asub(Prime,PTypes,PModes,PDet),
     detplai:asub(Call,CTypes,CModes,CDet),
-    shfr_extend(Sg,PModes,Sv,CModes,SModes),
+    sharefree:extend(Sg,PModes,Sv,CModes,SModes),
     eterms_extend(Sg,PTypes,Sv,CTypes,STypes),
     detabs:det_extend(Sg,PDet,Sv,CDet,SDet),
     detplai:asub(Succ,STypes,SModes,SDet).
@@ -179,7 +200,7 @@ det_needs(split_combined_domain) :- !.
 det_needs(X) :-
     eterms_needs(X), !.
 det_needs(X) :-
-    shfr_needs(X).
+    sharefree:needs(X).
 
 %------------------------------------------------------------------------%
 % det_widen(+,+,-)                                                        %
@@ -191,7 +212,7 @@ det_widen(ASub0,'$bottom',ASub):- !, ASub=ASub0.
 det_widen(ASub0,ASub1,ASub):-
     detplai:asub(ASub0,ATypes0,AModes0,ADet0),
     detplai:asub(ASub1,ATypes1,AModes1,ADet1),
-    shfr_compute_lub([AModes0,AModes1],AModes),
+    sharefree:compute_lub([AModes0,AModes1],AModes),
     eterms_widen(ATypes0,ATypes1,ATypes),
     detabs:det_compute_lub([ADet0,ADet1],ADet),
     detplai:asub(ASub,ATypes,AModes,ADet).
@@ -222,7 +243,7 @@ det_compute_lub(ListASub0,Lub):-
 det_compute_lub_([],'$bottom'):- !.
 det_compute_lub_(ListASub,Lub):-
     split(ListASub,LTypes,LModes,LDet),
-    shfr_compute_lub(LModes,LubModes),
+    sharefree:compute_lub(LModes,LubModes),
     eterms_compute_lub(LTypes,LubTypes),
     detabs:det_compute_lub(LDet,LubDet),
     detplai:asub(Lub,LubTypes,LubModes,LubDet).
@@ -275,8 +296,8 @@ det_compute_clauses_lub([ASub],Proj,[Lub]):-
     detplai:asub(Lub,ATypes,AModes,LubDet).
 
 compute_modetypes(Types,Modes,Head,MTypes):-
-    shfr_obtain_info(ground,Modes,FVars), % Added. Aug 24, 2012 -PLG
-    % shfr_obtain_info(free,Modes,FVars), % Commented out. Aug 24, 2012. Not a safe asumption -PLG. 
+    sharefree:obtain_info(ground,Modes,FVars), % Added. Aug 24, 2012 -PLG
+    % sharefree:obtain_info(free,Modes,FVars), % Commented out. Aug 24, 2012. Not a safe asumption -PLG. 
     sort(Types,Types_s),
     compute_modetypes0(Types_s,FVars,Vars,ModeTypes),
     Head =.. [p|Vars],
@@ -307,7 +328,7 @@ det_glb(_ASub,'$bottom',ASub3) :- !, ASub3='$bottom'.
 det_glb(ASub0,ASub1,Glb):-
     detplai:asub(ASub0,ATypes0,AModes0,ADet0),
     detplai:asub(ASub1,ATypes1,AModes1,ADet1),
-    shfr_glb(AModes0,AModes1,GModes),
+    sharefree:glb(AModes0,AModes1,GModes),
     eterms_glb(ATypes0,ATypes1,GTypes),
     detabs:det_glb(ADet0,ADet1,GDet),
     detplai:asub(Glb,GTypes,GModes,GDet).
@@ -325,7 +346,7 @@ det_less_or_equal('$bottom','$bottom'):- !.
 det_less_or_equal(ASub0,ASub1):-
     detplai:asub(ASub0,ATypes0,AModes0,ADet0),
     detplai:asub(ASub1,ATypes1,AModes1,ADet1),
-    shfr_less_or_equal(AModes0,AModes1),
+    sharefree:less_or_equal(AModes0,AModes1),
     eterms_less_or_equal(ATypes0,ATypes1),
     detabs:det_less_or_equal(ADet0,ADet1).
 
@@ -350,7 +371,7 @@ det_identical_abstract(ASub0,ASub1):-
 det_abs_sort('$bottom','$bottom'):- !.
 det_abs_sort(ASub0,ASub1):-
     detplai:asub(ASub0,ATypes0,AModes0,ADet0),
-    shfr_abs_sort(AModes0,AModes1),
+    sharefree:abs_sort(AModes0,AModes1),
     eterms_abs_sort(ATypes0,ATypes1),
     detabs:det_abs_sort(ADet0,ADet1),
     detplai:asub(ASub1,ATypes1,AModes1,ADet1).
@@ -363,7 +384,7 @@ det_abs_sort(ASub0,ASub1):-
 det_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ):-
     detplai:asub(Call,CTypes,CModes,CDet),
     detplai:asub(Proj,PTypes,PModes,PDet),
-    shfr_call_to_success_fact(Sg,Hv,Head,K,Sv,CModes,PModes,RModes,SModes),
+    sharefree:call_to_success_fact(Sg,Hv,Head,K,Sv,CModes,PModes,RModes,SModes),
     eterms_call_to_success_fact(Sg,Hv,Head,K,Sv,CTypes,PTypes,RTypes,STypes),
     detabs:det_call_to_success_fact(Sg,Hv,Head,K,Sv,CDet,PDet,RDet,SDet),
     detplai:asub(Prime,RTypes,RModes,RDet),
@@ -428,7 +449,7 @@ det_input_interface(InputUser,Kind,StructI,StructO):-
     detplai:asub(StructO,OTypes,OModes,ODet).
 
 shfr_input_interface_(InputUser,Kind,IModes,OModes):-
-    shfr_input_interface(InputUser,Kind,IModes,OModes), !.
+    sharefree:input_interface(InputUser,Kind,IModes,OModes), !.
 shfr_input_interface_(_InputUser,_Kind,IModes,IModes).
 
 eterms_input_interface_(InputUser,Kind,ITypes,OTypes):-
@@ -446,7 +467,7 @@ det_input_interface_(_InputUser,_Kind,IDet,IDet).
 
 det_input_user_interface(Struct,Qv,ASub,Sg,MaybeCallASub):-
     detplai:asub(Struct,Types,Modes,Det),
-    shfr_input_user_interface(Modes,Qv,AModes,Sg,MaybeCallASub),
+    sharefree:input_user_interface(Modes,Qv,AModes,Sg,MaybeCallASub),
     eterms_input_user_interface(Types,Qv,ATypes,Sg,MaybeCallASub),
     detabs:det_input_user_interface(Det,Qv,ADet,Sg,MaybeCallASub),
     detplai:asub(ASub,ATypes,AModes,ADet).
@@ -459,7 +480,7 @@ det_input_user_interface(Struct,Qv,ASub,Sg,MaybeCallASub):-
 
 det_asub_to_native(ASub,Qv,OutFlag,Props,CompProps):-
     detplai:asub(ASub,ATypes,AModes,ADet),
-    shfr_asub_to_native(AModes,Qv,OutFlag,Props1,_),
+    sharefree:asub_to_native(AModes,Qv,OutFlag,Props1,_),
     eterms_asub_to_native(ATypes,Qv,OutFlag,Props2,_),
     detabs:det_asub_to_native(ADet,Qv,CompProps),
     append(Props1,Props2,Props).
@@ -484,7 +505,7 @@ det_rename_auxinfo_asub(ASub, Dict, RASub) :-
 
 det_unknown_call(Sg,Vars,Call,Succ):-
     detplai:asub(Call,CTypes,CModes,CDet),
-    shfr_unknown_call(Sg,Vars,CModes,SModes),
+    sharefree:unknown_call(Sg,Vars,CModes,SModes),
     eterms_unknown_call(Sg,Vars,CTypes,STypes),
     detabs:det_unknown_call(Sg,Vars,CDet,SDet),
     detplai:asub(Succ,STypes,SModes,SDet).
@@ -495,7 +516,7 @@ det_unknown_call(Sg,Vars,Call,Succ):-
 %------------------------------------------------------------------------%
 
 det_unknown_entry(Sg,Vars,Entry):-
-    shfr_unknown_entry(Sg,Vars,EModes),
+    sharefree:unknown_entry(Sg,Vars,EModes),
     eterms_unknown_entry(Sg,Vars,ETypes), 
     detabs:det_unknown_entry(Sg,Vars,EDet),
     detplai:asub(Entry,ETypes,EModes,EDet).
@@ -506,7 +527,7 @@ det_unknown_entry(Sg,Vars,Entry):-
 %------------------------------------------------------------------------%
 
 det_empty_entry(Sg,Vars,Entry):-
-    shfr_empty_entry(Sg,Vars,EModes),
+    sharefree:empty_entry(Sg,Vars,EModes),
     eterms_empty_entry(Sg,Vars,ETypes),
     detabs:det_empty_entry(Sg,Vars,EDet),
     detplai:asub(Entry,ETypes,EModes,EDet).
@@ -522,7 +543,7 @@ det_obtain_info(Prop,Vars,ASub0,Info) :- knows_of(Prop,eterms), !,
     eterms_obtain_info(Prop,Vars,ASub,Info).
 det_obtain_info(Prop,Vars,ASub0,Info) :- knows_of(Prop,shfr), !,
     asub(ASub0,_,ASub,_),
-    shfr_obtain_info(Prop,Vars,ASub,Info).
+    sharefree:obtain_info(Prop,Vars,ASub,Info).
 det_obtain_info(Prop,_Vars,ASub0,Info) :- knows_of(Prop,det), !,
     asub(ASub0,_,_,ASub),
     detabs:det_asub_to_native(ASub,_,Info).

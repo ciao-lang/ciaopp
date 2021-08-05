@@ -34,7 +34,23 @@
 % See compose function.                                                  %
 %-------------------------------------------------------------------------
 
-:- use_module(domain(sharefree)).
+:- use_module(domain(sharefree), [
+    call_to_entry/9,
+    exit_to_prime/7,
+    extend/5,
+    call_to_prime_fact/6,
+    special_builtin/5,
+    unknown_call/4,
+    unknown_entry/3,
+    empty_entry/3,
+    project/5,
+    compute_lub/2,
+    abs_sort/2,
+    input_user_interface/5,
+    input_interface/4,
+    asub_to_native/5,
+    less_or_equal/2
+]).
 :- use_module(domain(sondergaard), [
     call_to_entry/9,
     exit_to_prime/7,
@@ -67,7 +83,7 @@
 :- dom_impl(_, call_to_entry/9, [noq]).
 call_to_entry(Sv,Sg,Hv,Head,K,Fv,(Proj_son,Proj_shfr),Entry,Extra):-
     sondergaard:call_to_entry(Sv,Sg,Hv,Head,K,Fv,Proj_son,Entry_son,Extra_son),
-    shfr_call_to_entry(Sv,Sg,Hv,Head,K,Fv,Proj_shfr,Entry_shfr,Extra_shfr),
+    sharefree:call_to_entry(Sv,Sg,Hv,Head,K,Fv,Proj_shfr,Entry_shfr,Extra_shfr),
     compose(Entry_son,Entry_shfr,Hv,Entry),
     Extra = (Extra_son,Extra_shfr).
 
@@ -78,7 +94,7 @@ exit_to_prime(_,_,_,_,'$bottom',_,Prime):- !,
     Prime = '$bottom'.
 exit_to_prime(Sg,Hv,Head,Sv,(Exit_son,Exit_shfr),ExtraInfo,Prime):- 
     ExtraInfo = (Extra_son,Extra_shfr),
-    shfr_exit_to_prime(Sg,Hv,Head,Sv,Exit_shfr,Extra_shfr,Prime_shfr),
+    sharefree:exit_to_prime(Sg,Hv,Head,Sv,Exit_shfr,Extra_shfr,Prime_shfr),
     sondergaard:exit_to_prime(Sg,Hv,Head,Sv,Exit_son,Extra_son,Prime_son),
     compose(Prime_son,Prime_shfr,Sv,Prime).
 
@@ -88,7 +104,7 @@ exit_to_prime(Sg,Hv,Head,Sv,(Exit_son,Exit_shfr),ExtraInfo,Prime):-
 extend(_Sg,'$bottom',_,_,Succ):- !,Succ = '$bottom'.
 extend(_Sg,(_,_),[],Call,Succ):- !, Call = Succ.
 extend(Sg,(Prime_son,Prime_shfr),Sv,(Call_son,Call_shfr),Succ):-
-    shfr_extend(Sg,Prime_shfr,Sv,Call_shfr,Succ_shfr),
+    sharefree:extend(Sg,Prime_shfr,Sv,Call_shfr,Succ_shfr),
     sondergaard:extend(Sg,Prime_son,Sv,Call_son,Succ_son),
     Call_shfr = (_,Fr),
     collect_vars_freeness(Fr,Vars),
@@ -100,7 +116,7 @@ extend(Sg,(Prime_son,Prime_shfr),Sv,(Call_son,Call_shfr),Succ):-
 call_to_success_fact(Sg,Hv,Head,_K,Sv,Call,Proj,Prime,Succ):-
     Proj = (Proj_son,Proj_shfr),
     sondergaard:call_to_prime_fact(Sg,Hv,Head,Sv,Proj_son,Prime_son),
-    shfr_call_to_prime_fact(Sg,Hv,Head,Sv,Proj_shfr,Prime_shfr),
+    sharefree:call_to_prime_fact(Sg,Hv,Head,Sv,Proj_shfr,Prime_shfr),
     compose(Prime_son,Prime_shfr,Sv,Prime),
     shfrson:extend(Sg,Prime,Sv,Call,Succ).
 
@@ -108,7 +124,7 @@ call_to_success_fact(Sg,Hv,Head,_K,Sv,Call,Proj,Prime,Succ):-
 
 :- dom_impl(_, special_builtin/5, [noq]).
 special_builtin(SgKey,Sg,Subgoal,(TypeSon,TypeSh),(CondSon,CondSh)) :-
-    shfr_special_builtin(SgKey,Sg,Subgoal,TypeSh,CondSh),
+    sharefree:special_builtin(SgKey,Sg,Subgoal,TypeSh,CondSh),
     sondergaard:special_builtin(SgKey,Sg,Subgoal,TypeSon,CondSon).
 
 % ---------------------------------------------------------------------------
@@ -133,7 +149,7 @@ body_succ_builtin(Type,Sg,Condvs,Sv,HvFv_u,Call,Proj,Succ) :- % TODO: for \+Type
 :- dom_impl(_, unknown_call/4, [noq]).
 unknown_call(_Sg,_Vars,'$bottom','$bottom') :- !.
 unknown_call(Sg,Vars,(Call_son,Call_shfr),Succ):-
-    shfr_unknown_call(Sg,Vars,Call_shfr,Succ_shfr),
+    sharefree:unknown_call(Sg,Vars,Call_shfr,Succ_shfr),
     sondergaard:unknown_call(Sg,Vars,Call_son,Succ_son),
     Call_shfr = (_,Fr),
     collect_vars_freeness(Fr,AllVars),
@@ -143,7 +159,7 @@ unknown_call(Sg,Vars,(Call_son,Call_shfr),Succ):-
 
 :- dom_impl(_, unknown_entry/3, [noq]).
 unknown_entry(Sg,Qv,Call):-
-    shfr_unknown_entry(Sg,Qv,Call_shfr),
+    sharefree:unknown_entry(Sg,Qv,Call_shfr),
     sondergaard:unknown_entry(Sg,Qv,Call_son),
     compose(Call_son,Call_shfr,Qv,Call).
 
@@ -151,7 +167,7 @@ unknown_entry(Sg,Qv,Call):-
 
 :- dom_impl(_, empty_entry/3, [noq]).
 empty_entry(Sg,Qv,Call):-
-    shfr_empty_entry(Sg,Qv,Call_sh),
+    sharefree:empty_entry(Sg,Qv,Call_sh),
     sondergaard:empty_entry(Sg,Qv,Call_son),
     compose(Call_son,Call_sh,Qv,Call).
 
@@ -164,10 +180,11 @@ project(_Sg,[],_HvFv_u,_,Proj) :- !,
     Proj = (([],[]),([],[])).
 project(Sg,Vars,HvFv_u,(Call_son,Call_shfr),(Proj_son,Proj_shfr)):-
     sondergaard:project(Sg,Vars,HvFv_u,Call_son,Proj_son),
-    shfr_project(Sg,Vars,HvFv_u,Call_shfr,Proj_shfr).
+    sharefree:project(Sg,Vars,HvFv_u,Call_shfr,Proj_shfr).
 
 %-------------------------------------------------------------------------
 
+:- redefining(compute_lub/2).
 :- dom_impl(_, compute_lub/2, [noq]).
 compute_lub([ASub],ASub) :- !.
 compute_lub([ASub1,ASub2|Rest],Lub) :-
@@ -179,7 +196,7 @@ compute_lub([ASub,'$bottom'|Rest],Lub) :- !,
     compute_lub([ASub|Rest],Lub).
 compute_lub([(ASub_son1,ASub_shfr1),(ASub_son2,ASub_shfr2)|Rest],Lub):-
     sondergaard:lub(ASub_son1,ASub_son2,ASub_son3),
-    shfr_compute_lub([ASub_shfr1,ASub_shfr2],ASub_shfr3),
+    sharefree:compute_lub([ASub_shfr1,ASub_shfr2],ASub_shfr3),
     compute_lub([(ASub_son3,ASub_shfr3)|Rest],Lub).
 
 %-------------------------------------------------------------------------
@@ -188,21 +205,21 @@ compute_lub([(ASub_son1,ASub_shfr1),(ASub_son2,ASub_shfr2)|Rest],Lub):-
 abs_sort('$bottom','$bottom').
 abs_sort((ASub_son,ASub_shfr),(ASub_son_s,ASub_shfr_s)):-
     sondergaard:abs_sort(ASub_son,ASub_son_s),
-    shfr_abs_sort(ASub_shfr,ASub_shfr_s).
+    sharefree:abs_sort(ASub_shfr,ASub_shfr_s).
 
 %--------------------------------------------------------------------------
 
 :- dom_impl(_, input_user_interface/5, [noq]).
 input_user_interface((Son,Shfr),Qv,ASub,Sg,MaybeCallASub):-
     sondergaard:input_user_interface(Son,Qv,ASubSon,Sg,MaybeCallASub),
-    shfr_input_user_interface(Shfr,Qv,ASubShfr,Sg,MaybeCallASub),
+    sharefree:input_user_interface(Shfr,Qv,ASubShfr,Sg,MaybeCallASub),
     compose(ASubSon,ASubShfr,Qv,ASub).
 
 :- dom_impl(_, input_interface/4, [noq]).
 input_interface(Info,Kind,(Son0,Shfr0),(Son,Shfr)):-
     % both of them already call share_input_...
     sondergaard:input_interface(Info,KindSon,Son0,Son),
-    shfr_input_interface(Info,KindShfr,Shfr0,Shfr),
+    sharefree:input_interface(Info,KindShfr,Shfr0,Shfr),
     compose_kind(KindSon,KindShfr,Kind).
 
 compose_kind(approx,approx,approx):- !.
@@ -215,7 +232,7 @@ asub_to_native(((_Gr,SSon),ShFr),Qv,OutFlag,ASub_user,Comps):-
     collect_singletons(SSon,Singletons),
     varset(Singletons,NonLinearVars),
     ord_subtract(Qv,NonLinearVars,LinearVars),
-    shfr_asub_to_native(ShFr,Qv,OutFlag,ASub_user0,Comps),
+    sharefree:asub_to_native(ShFr,Qv,OutFlag,ASub_user0,Comps),
     if_not_nil(LinearVars,linear(LinearVars),ASub_user,ASub_user0).
 
 %------------------------------------------------------------------------%
@@ -227,7 +244,7 @@ asub_to_native(((_Gr,SSon),ShFr),Qv,OutFlag,ASub_user,Comps):-
 less_or_equal(ASub0,ASub1):-
     ASub0 == ASub1.
 less_or_equal((Son0,Sh0),(Son1,Sh1)):-
-    shfr_less_or_equal(Sh0,Sh1),
+    sharefree:less_or_equal(Sh0,Sh1),
     sondergaard:less_or_equal(Son0,Son1).
 
 % ---------------------------------------------------------------------------

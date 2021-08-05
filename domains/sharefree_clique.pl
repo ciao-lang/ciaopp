@@ -4,9 +4,7 @@
 :- doc(author, "Jorge Navas").
 % Copyright (C) 2004-2019 The Ciao Development Team
 
-:- use_module(domain(sharefree), [
-    shfr_obtain_info/4
-   ]).
+:- use_module(domain(sharefree), [obtain_info/4]).
 :- include(ciaopp(plai/plai_domain)).
 :- dom_def(sharefree_clique).
 :- dom_impl(sharefree_clique, amgu/4).
@@ -25,7 +23,7 @@
 :- dom_impl(sharefree_clique, special_builtin/5).
 :- dom_impl(sharefree_clique, success_builtin/6).
 :- dom_impl(sharefree_clique, call_to_success_builtin/6).
-:- dom_impl(sharefree_clique, obtain_info/4, [from(sharefree:shfr)]).
+:- dom_impl(sharefree_clique, obtain_info/4, [from(sharefree:shfr), noq]).
 :- dom_impl(sharefree_clique, input_interface/4).
 :- dom_impl(sharefree_clique, input_user_interface/5).
 :- dom_impl(sharefree_clique, asub_to_native/5).
@@ -93,7 +91,7 @@
 :- use_module(domain(s_grshfr),
     [collect_vars_freeness/2, member_value_freeness/3]).
 
-:- use_module(domain(sharefree)).
+:- use_module(domain(sharefree), [special_builtin/5]).
 :- use_module(domain(sharefree_clique_aux)).
 :- use_module(domain(sharefree_amgu_aux)).
 
@@ -592,7 +590,7 @@ sharefree_clique_special_builtin('read/2',read(X,Y),_,'recorded/3',p(Y,X)) :- !.
 sharefree_clique_special_builtin('length/2',length(_X,Y),_,some,[Y]) :- !.
 sharefree_clique_special_builtin('==/2',_,_,_,_):- !, fail.
 sharefree_clique_special_builtin(SgKey,Sg,Subgoal,Type,Condvars):-
-    shfr_special_builtin(SgKey,Sg,Subgoal,Type,Condvars).
+    sharefree:special_builtin(SgKey,Sg,Subgoal,Type,Condvars).
     
 %------------------------------------------------------------------------%
 % sharefree_clique_success_builtin(+,+,+,+,+,-)                          |

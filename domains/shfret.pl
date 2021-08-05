@@ -52,7 +52,24 @@
 :- dom_impl(shfret, empty_entry/3).
 
 :- use_module(domain(eterms)).
-:- use_module(domain(sharefree)).
+:- use_module(domain(sharefree), [
+    call_to_entry/9,
+    exit_to_prime/7,
+    project/5,
+    extend/5,
+    needs/1,
+    compute_lub/2,
+    glb/3,
+    less_or_equal/2,
+    abs_sort/2,
+    call_to_success_fact/9,
+    input_interface/4,
+    input_user_interface/5,
+    asub_to_native/5,
+    unknown_call/4,
+    unknown_entry/3,
+    empty_entry/3
+]).
 
 %% :- use_module(library(idlists),[memberchk/2]).
 :- use_module(library(lists), [append/3]).
@@ -75,7 +92,7 @@ shfret_init_abstract_domain([variants,widen]) :-
 %------------------------------------------------------------------------%
 shfret_call_to_entry(Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo):-
     asub(Proj,PTypes,PModes),
-    shfr_call_to_entry(Sv,Sg,Hv,Head,K,Fv,PModes,EModes,ExtraInfoModes),
+    sharefree:call_to_entry(Sv,Sg,Hv,Head,K,Fv,PModes,EModes,ExtraInfoModes),
     eterms_call_to_entry(Sv,Sg,Hv,Head,K,Fv,PTypes,ETypes,ExtraInfoTypes),
     ( ETypes = '$bottom' ->
         Entry = '$bottom'
@@ -91,7 +108,7 @@ shfret_exit_to_prime(_Sg,_Hv,_Head,_Sv,'$bottom',_ExtraInfo,'$bottom'):- !.
 shfret_exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime):-
     asub(Exit,ETypes,EModes),
     asub(ExtraInfo,ExtraInfoTypes,ExtraInfoModes),
-    shfr_exit_to_prime(Sg,Hv,Head,Sv,EModes,ExtraInfoModes,PModes),
+    sharefree:exit_to_prime(Sg,Hv,Head,Sv,EModes,ExtraInfoModes,PModes),
     eterms_exit_to_prime(Sg,Hv,Head,Sv,ETypes,ExtraInfoTypes,PTypes),
     ( PTypes = '$bottom' ->
         Prime = '$bottom'
@@ -105,7 +122,7 @@ shfret_exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime):-
 shfret_project(_Sg,_Vars,_HvFv_u,'$bottom','$bottom'):- !.
 shfret_project(Sg,Vars,HvFv_u,ASub,Proj):-
     asub(ASub,ATypes,AModes),
-    shfr_project(Sg,Vars,HvFv_u,AModes,PModes),
+    sharefree:project(Sg,Vars,HvFv_u,AModes,PModes),
     eterms_project(Sg,Vars,HvFv_u,ATypes,PTypes),
     asub(Proj,PTypes,PModes).
 
@@ -117,7 +134,7 @@ shfret_extend(_Sg,'$bottom',_Sv,_Call,'$bottom'):- !.
 shfret_extend(Sg,Prime,Sv,Call,Succ):-
     asub(Prime,PTypes,PModes),
     asub(Call,CTypes,CModes),
-    shfr_extend(Sg,PModes,Sv,CModes,SModes),
+    sharefree:extend(Sg,PModes,Sv,CModes,SModes),
     eterms_extend(Sg,PTypes,Sv,CTypes,STypes),
     asub(Succ,STypes,SModes).
 
@@ -127,7 +144,7 @@ shfret_needs(split_combined_domain) :- !.
 shfret_needs(X) :-
     eterms_needs(X), !.
 shfret_needs(X) :-
-    shfr_needs(X).
+    sharefree:needs(X).
 
 %------------------------------------------------------------------------%
 % shfret_widen(+,+,-)                                                        %
@@ -138,7 +155,7 @@ shfret_widen(ASub0,'$bottom',ASub):- !, ASub=ASub0.
 shfret_widen(ASub0,ASub1,ASub):-
     asub(ASub0,ATypes0,AModes0),
     asub(ASub1,ATypes1,AModes1),
-    shfr_compute_lub([AModes0,AModes1],AModes),
+    sharefree:compute_lub([AModes0,AModes1],AModes),
     eterms_widen(ATypes0,ATypes1,ATypes),
     asub(ASub,ATypes,AModes).
 
@@ -160,7 +177,7 @@ shfret_widencall(ASub0,ASub1,ASub):-
 %------------------------------------------------------------------------%
 shfret_compute_lub(ListASub,Lub):-
     split(ListASub,LTypes,LModes),
-    shfr_compute_lub(LModes,LubModes),
+    sharefree:compute_lub(LModes,LubModes),
     eterms_compute_lub(LTypes,LubTypes),
     asub(Lub,LubTypes,LubModes).
 
@@ -183,7 +200,7 @@ shfret_glb(_ASub,'$bottom',ASub3) :- !, ASub3='$bottom'.
 shfret_glb(ASub0,ASub1,Glb):-
     asub(ASub0,ATypes0,AModes0),
     asub(ASub1,ATypes1,AModes1),
-    shfr_glb(AModes0,AModes1,GModes),
+    sharefree:glb(AModes0,AModes1,GModes),
     eterms_glb(ATypes0,ATypes1,GTypes),
     asub(Glb,GTypes,GModes).
 
@@ -199,7 +216,7 @@ shfret_less_or_equal('$bottom','$bottom'):- !.
 shfret_less_or_equal(ASub0,ASub1):-
     asub(ASub0,ATypes0,AModes0),
     asub(ASub1,ATypes1,AModes1),
-    shfr_less_or_equal(AModes0,AModes1),
+    sharefree:less_or_equal(AModes0,AModes1),
     eterms_less_or_equal(ATypes0,ATypes1).
 
 %------------------------------------------------------------------------%
@@ -220,7 +237,7 @@ shfret_identical_abstract(ASub0,ASub1):-
 shfret_abs_sort('$bottom','$bottom'):- !.
 shfret_abs_sort(ASub0,ASub1):-
     asub(ASub0,ATypes0,AModes0),
-    shfr_abs_sort(AModes0,AModes1),
+    sharefree:abs_sort(AModes0,AModes1),
     eterms_abs_sort(ATypes0,ATypes1),
     asub(ASub1,ATypes1,AModes1).
 
@@ -231,7 +248,7 @@ shfret_abs_sort(ASub0,ASub1):-
 shfret_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ):-
     asub(Call,CTypes,CModes),
     asub(Proj,PTypes,PModes),
-    shfr_call_to_success_fact(Sg,Hv,Head,K,Sv,CModes,PModes,RModes,SModes),
+    sharefree:call_to_success_fact(Sg,Hv,Head,K,Sv,CModes,PModes,RModes,SModes),
     eterms_call_to_success_fact(Sg,Hv,Head,K,Sv,CTypes,PTypes,RTypes,STypes),
     asub(Prime,RTypes,RModes),
     asub(Succ,STypes,SModes).
@@ -263,7 +280,7 @@ shfret_input_interface(InputUser,Kind,StructI,StructO):-
     asub(StructO,OTypes,OModes).
 
 shfr_input_interface_(InputUser,Kind,IModes,OModes):-
-    shfr_input_interface(InputUser,Kind,IModes,OModes), !.
+    sharefree:input_interface(InputUser,Kind,IModes,OModes), !.
 shfr_input_interface_(_InputUser,_Kind,IModes,IModes).
 
 eterms_input_interface_(InputUser,Kind,ITypes,OTypes):-
@@ -276,7 +293,7 @@ eterms_input_interface_(_InputUser,_Kind,ITypes,ITypes).
 %------------------------------------------------------------------------%
 shfret_input_user_interface(Struct,Qv,ASub,Sg,MaybeCallASub):-
     asub(Struct,Types,Modes),
-    shfr_input_user_interface(Modes,Qv,AModes,Sg,MaybeCallASub),
+    sharefree:input_user_interface(Modes,Qv,AModes,Sg,MaybeCallASub),
     eterms_input_user_interface(Types,Qv,ATypes,Sg,MaybeCallASub),
     asub(ASub,ATypes,AModes).
 
@@ -286,7 +303,7 @@ shfret_input_user_interface(Struct,Qv,ASub,Sg,MaybeCallASub):-
 %------------------------------------------------------------------------%
 shfret_asub_to_native(ASub,Qv,OutFlag,Props,Comps):-
     asub(ASub,ATypes,AModes),
-    shfr_asub_to_native(AModes,Qv,OutFlag,Props1,Comps1),
+    sharefree:asub_to_native(AModes,Qv,OutFlag,Props1,Comps1),
     eterms_asub_to_native(ATypes,Qv,OutFlag,Props2,Comps2),
     append(Props1,Props2,Props),
     append(Comps1,Comps2,Comps).
@@ -297,7 +314,7 @@ shfret_asub_to_native(ASub,Qv,OutFlag,Props,Comps):-
 %------------------------------------------------------------------------%
 shfret_unknown_call(Sg,Vars,Call,Succ):-
     asub(Call,CTypes,CModes),
-    shfr_unknown_call(Sg,Vars,CModes,SModes),
+    sharefree:unknown_call(Sg,Vars,CModes,SModes),
     eterms_unknown_call(Sg,Vars,CTypes,STypes),
     asub(Succ,STypes,SModes).
 
@@ -306,7 +323,7 @@ shfret_unknown_call(Sg,Vars,Call,Succ):-
 % shfret_unknown_entry(Sg,Vars,Entry)                                    %
 %------------------------------------------------------------------------%
 shfret_unknown_entry(Sg,Vars,Entry):-
-    shfr_unknown_entry(Sg,Vars,EModes),
+    sharefree:unknown_entry(Sg,Vars,EModes),
     eterms_unknown_entry(Sg,Vars,ETypes),
     asub(Entry,ETypes,EModes).
 
@@ -315,6 +332,6 @@ shfret_unknown_entry(Sg,Vars,Entry):-
 % shfret_empty_entry(Sg,Vars,Entry)                                      %
 %------------------------------------------------------------------------%
 shfret_empty_entry(Sg,Vars,Entry):-
-    shfr_empty_entry(Sg,Vars,EModes),
+    sharefree:empty_entry(Sg,Vars,EModes),
     eterms_empty_entry(Sg,Vars,ETypes),
     asub(Entry,ETypes,EModes).

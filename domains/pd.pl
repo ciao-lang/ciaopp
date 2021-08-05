@@ -4,7 +4,7 @@
 :- doc(module, "This abstract domain is the domain with one value,
    top. PD stands for Partial Deduction.").
 
-:- use_module(domain(sharefree), [shfr_special_builtin/5]).
+:- use_module(domain(sharefree), [special_builtin/5]).
 
 :- include(ciaopp(plai/plai_domain)).
 :- dom_def(pd, [default]).
@@ -73,7 +73,7 @@ empty_entry(_Sg,_Qv,top).
 
 :- dom_impl(_, special_builtin/5, [noq]).
 special_builtin(SgKey,Sg,Subgoal,Type,Condvars) :-
-    shfr_special_builtin(SgKey,Sg,Subgoal,Type,Condvars), !. % TODO: why?
+    sharefree:special_builtin(SgKey,Sg,Subgoal,Type,Condvars), !. % TODO: why?
 special_builtin(Key,_Sg,_Subgoal,special(Key),[]):-
     very_special_builtin(Key).
 

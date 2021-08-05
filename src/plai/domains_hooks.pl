@@ -19,7 +19,7 @@
 :- use_module(domain(gr), []).
 :- use_module(domain(def), []).
 :- use_module(domain(sharing), []).
-:- use_module(domain(sharefree)).
+:- use_module(domain(sharefree), []).
 :- use_module(domain(sharefree_non_var), []).
 :- use_module(domain(shfret)). % TODO: this domain was not registerd in aidomain/1
 :- use_module(domain(shareson), []).
@@ -34,7 +34,7 @@
 :- use_module(domain(sharing_clique_def)).
 :- use_module(domain(sharefree_clique_def)).
 :- if(defined(has_ciaopp_bshare)).
-:- use_module(domain(bshare/bshare)).
+:- use_module(domain(bshare/bshare), []).
 :- endif.
 % ===========================================================================
 :- doc(section, "Structure domains"). % TODO: shape also?
