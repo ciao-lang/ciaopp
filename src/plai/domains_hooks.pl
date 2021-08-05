@@ -27,7 +27,7 @@
 :- use_module(domain(sondergaard), []).
 :- use_module(domain(sharing_amgu), []).
 :- use_module(domain(sharefree_amgu), []).
-:- use_module(domain(shfrlin_amgu)).
+:- use_module(domain(shfrlin_amgu), []).
 :- use_module(domain(sharing_clique)).
 :- use_module(domain(sharing_clique_1)).
 :- use_module(domain(sharefree_clique)).
