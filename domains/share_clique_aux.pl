@@ -45,10 +45,10 @@
 :- use_module(library(lsets),
     [merge_list_of_lists/2, ord_intersect_all/2, sort_list_of_lists/2]).
 :- use_module(library(lists), [length/2, select/3]).
-:- use_module(domain(sharing_clique), 
-    [share_clique_abs_sort/2,
-     share_clique_widen/4      % amgu&star 
-    ]).               
+:- use_module(domain(sharing_clique), [
+    abs_sort/2,
+    widen/4      % amgu&star 
+]).               
 :- use_module(domain(share_amgu_sets), 
     [delete_vars_from_list_of_lists/3,
      intersection_list_of_lists/3,
@@ -58,10 +58,8 @@
      nosublist_list_of_lists/3,
      intersection_lists_with_list/3,
      split_list_of_lists/4]).
-:- use_module(library(aggregates), 
-    [bagof/3]).
-:- use_module(library(between), 
-    [between/3]).
+:- use_module(library(aggregates), [bagof/3]).
+:- use_module(library(between), [between/3]).
 :- use_module(domain(share_amgu_aux)).
 
 %------------------------------------------------------------------------%
@@ -161,7 +159,7 @@ amgu_clique_opt(X,T,(Cl,Sh),NewCall,AMGU):-
     ( (Cl_x = [], Cl_t = []) ->
        ( NewCall == not ->
          ExtraInfo = (Irrel_Sh_xt,Sh_x,Sh_t),
-         share_clique_widen(amgu,(Cl,Sh),ExtraInfo,New_ASub),
+         sharing_clique:widen(amgu,(Cl,Sh),ExtraInfo,New_ASub),
          amgu_clique_opt(X,T,New_ASub,yes,New_AMGU),
          AMGU = New_AMGU
        ;         
@@ -214,7 +212,7 @@ amgu_clique_opt(X,T,(Cl,Sh),AMGU):- !,
 amgu_rel_non_rel_info(X,T,V_xt,ASub,(Cl_x,Sh_x),(Cl_t,Sh_t),Irrel_Sh_xt):-
     sort(T,V_t),
     ord_union([X],T,V_xt),
-    share_clique_abs_sort(ASub,(Cl,Sh)),
+    sharing_clique:abs_sort(ASub,(Cl,Sh)),
     split_list_of_lists([X],Cl,Cl_x,_),
     split_list_of_lists(V_t,Cl,Cl_t,_),
     split_list_of_lists([X],Sh,Sh_x,_),
@@ -241,7 +239,7 @@ amgu_sharing_part(Irrel_Sh_xt,Sh_x,Sh_t,AMGU_sh):-
 amgu_s_clique(X,T,ASub,AMGU):-           
 % Both clique and sharing part are computed together
     sort(T,V_t),
-    share_clique_abs_sort(ASub,SASub),
+    sharing_clique:abs_sort(ASub,SASub),
     ord_union([X],V_t,Vxt), 
     irrel_w(Vxt,SASub,Irrel),
     rel_w([X],SASub,Rel_x),
@@ -291,7 +289,7 @@ star_w(SH,SH_s):-
 star_w(([],Sh),NewCall,SH_s):-!,
     (  NewCall == not ->
        ExtraInfo = ([],Sh,[[_]]),
-       share_clique_widen(amgu,([],Sh),ExtraInfo,New_ASub),    
+       sharing_clique:widen(amgu,([],Sh),ExtraInfo,New_ASub),    
        star_w(New_ASub,yes,SH_s)
     ;  
        star(Sh,Sh_s),
@@ -590,7 +588,7 @@ update_clique(Cand,(Cl,Sh),CandSh,SH):-
     delete_list_of_lists(Sh,CandSh,Sh1),
     % Removes subcliques of the new clique (regularize in the algorithm) 
     nosublist_list_of_lists(Cl,Cand,Cl1), 
-    share_clique_abs_sort(([Cand|Cl1],Sh1),SH).
+    sharing_clique:abs_sort(([Cand|Cl1],Sh1),SH).
 
 is_powerset(CardCand,CardCandSh,CardCandCl,Threshold):- 
     number_of_subsets(CardCand,CardPws),

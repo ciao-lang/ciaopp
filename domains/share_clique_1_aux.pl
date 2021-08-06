@@ -21,7 +21,9 @@
 :- use_module(library(lsets), [merge_list_of_lists/2, sort_list_of_lists/2]).
 :- use_module(library(lists), [length/2, delete/3]).
 :- use_module(library(aggregates), [bagof/3]).
-:- use_module(domain(sharing_clique), [share_clique_abs_sort/2, share_clique_widen/4]).
+:- use_module(domain(sharing_clique), [
+    abs_sort/2, widen/4
+]).
 :- use_module(domain(share_clique_aux), 
     [ widen/1,
       amgu_rel_non_rel_info/7,
@@ -76,7 +78,7 @@ amgu_clique_1(X,T,(Cl,Sh),NewCall,AMGU):-
     ( (Cl_x = [], Cl_t = []) ->
        ( NewCall == not ->
          ExtraInfo = (Irrel_Sh_xt,Sh_x,Sh_t),
-         share_clique_widen(amgu_clique_1,(Cl,Sh),ExtraInfo,New_ASub),
+         sharing_clique:widen(amgu_clique_1,(Cl,Sh),ExtraInfo,New_ASub),
          amgu_clique_1(X,T,New_ASub,yes,AMGU)
        ;         
          amgu_sharing_part(Irrel_Sh_xt,Sh_x,Sh_t,AMGU_sh),
@@ -167,7 +169,7 @@ star_clique_1(SH,SH_s):-
 star_clique_1(([],Sh),NewCall,SH_s):-!,
     (  NewCall == not ->
        ExtraInfo = ([],Sh,[[_]]),
-       share_clique_widen(amgu_clique_1,([],Sh),ExtraInfo,New_ASub),           
+       sharing_clique:widen(amgu_clique_1,([],Sh),ExtraInfo,New_ASub),           
        star_clique_1(New_ASub,yes,SH_s)
     ;  
        star(Sh,Sh_s),
@@ -309,7 +311,7 @@ update_clique_1(Cand,(Cl,Sh),CandSh,SH):-
     delete_list_of_lists_no_singleton(Sh,CandSh,Sh1),
     % Removes subcliques of the new clique        
     nosublist_list_of_lists(Cl,Cand,Cl1), 
-    share_clique_abs_sort(([Cand|Cl1],Sh1),SH).
+    sharing_clique:abs_sort(([Cand|Cl1],Sh1),SH).
  
 delete_list_of_lists_no_singleton(Sh,[],Sh0):- !,
     delete(Sh,[],Sh0).

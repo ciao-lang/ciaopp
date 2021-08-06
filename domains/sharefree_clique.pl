@@ -64,16 +64,17 @@
 
 :- use_module(domain(share_amgu_sets), [delete_vars_from_list_of_lists/3]).
 :- use_module(domain(sharing_clique), [
-    share_clique_extend/5,
-    share_clique_augment_asub/3,
-    share_clique_glb/3,
-    share_clique_input_interface/4,
-    share_clique_input_user_interface/5,
-    share_clique_less_or_equal/2,
+    extend/5,
+    augment_asub/3,
+    glb/3,
+    input_interface/4,
+    input_user_interface/5,
+    less_or_equal/2,
+    project/5,
+    abs_sort/2,
+    widen/4]).
+:- use_module(domain(sharing_clique), [
     share_clique_lub_cl/3,
-    share_clique_project/5,
-    share_clique_abs_sort/2,
-    share_clique_widen/4,
     may_be_var/2,
     eliminate_couples_clique/4]).
 :- use_module(domain(share_clique_aux), [
@@ -136,7 +137,7 @@ sharefree_clique_call_to_entry(_Sv,Sg,Hv,Head,_K,Fv,Proj,Entry,ExtraInfo):-
      peel_equations_frl(Sg,Head,Equations),
      sharefree_clique_augment_asub(Proj,Hv,ASub),     
      sharefree_clique_iterate(Equations,ASub,(ASub_SH,F)),
-     share_clique_widen(plai_op,ASub_SH,_,SH),
+     sharing_clique:widen(plai_op,ASub_SH,_,SH),
      sharefree_clique_update_freeness(SH,F,Hv,F1),
      sharefree_clique_project(Sg,Hv,not_provided_HvFv_u,(SH,F1),Entry0),
      sharefree_clique_augment_asub(Entry0,Fv,(Entry_SH0,Entry_Fr)),
@@ -171,7 +172,7 @@ sharefree_clique_exit_to_prime(Sg,_Hv,_Head,Sv,Exit,ExtraInfo,Prime):-
      filter_freeness_with_call(Sv,Call_Fr,New_Sv),
      sharefree_clique_augment_asub(Exit,New_Sv,ASub),     
      sharefree_clique_iterate(Equations,ASub, (ASub_SH,F)),
-     share_clique_widen(plai_op,ASub_SH,_,SH),
+     sharing_clique:widen(plai_op,ASub_SH,_,SH),
      sharefree_clique_update_freeness(SH,F,Sv,F1),
      sharefree_clique_project(Sg,Sv,not_provided_HvFv_u,(SH,F1),(SH_Prime,Prime_Fr)),
      %eliminate_redundancies(SH_Prime,SH_Prime_N),
@@ -202,7 +203,7 @@ sharefree_clique_amgu(Sg,Head,ASub,AMGU):-
 :- export(sharefree_clique_augment_asub/3).
 sharefree_clique_augment_asub(ASub,[],ASub).
 sharefree_clique_augment_asub((SH,F),Vars,(SH1,F1)):-
-    share_clique_augment_asub(SH,Vars,SH1),
+    sharing_clique:augment_asub(SH,Vars,SH1),
     sharefree_amgu:augment_asub0(F,Vars,F1).
 
 %------------------------------------------------------------------------%
@@ -213,7 +214,7 @@ sharefree_clique_augment_asub((SH,F),Vars,(SH1,F1)):-
 % sharefree_clique_extend(+,+,+,+,-)                                     |
 % sharefree_clique_extend(Sg,Prime,Sv,Call,Succ)                         |
 % If Prime = bottom, Succ = bottom. If Sv = [], Call = Succ.             |
-% Otherwise, Succ_sh is computed as in share_clique_extend/4,            |
+% Otherwise, Succ_sh is computed as in sharing_clique:extend/4,            |
 % Call_fr is computed by:                                                |
 %   * obtainig in NewGv the set of variables which have becomed ground   |
 %   * adding this NewGv variables to Prime_fr, obtaining Temp1_fr        |
@@ -231,7 +232,7 @@ sharefree_clique_extend(_Sg,_Prime,[],Call,Succ):- !,
     Call = Succ.
 sharefree_clique_extend(Sg,(Prime_SH,Prime_fr),Sv,(Call_SH,Call_fr),(Succ_SH_N,Succ_fr)):-
 %extend_SH
-    share_clique_extend(Sg,Prime_SH,Sv,Call_SH,Succ_SH),
+    sharing_clique:extend(Sg,Prime_SH,Sv,Call_SH,Succ_SH),
     Succ_SH = Succ_SH_N,
     %eliminate_redundancies(Succ_SH,Succ_SH_N),
     %share_clique_normalize(Succ_SH,Succ_SH_N),
@@ -264,7 +265,7 @@ sharefree_clique_extend(Sg,(Prime_SH,Prime_fr),Sv,(Call_SH,Call_fr),(Succ_SH_N,S
 :- export(sharefree_clique_project/5).
 sharefree_clique_project(_Sg,_,_HvFv_u,'$bottom','$bottom'):- !.
 sharefree_clique_project(Sg,Vars,HvFv_u,(SH,F),(Proj_SH,Proj_F)) :-
-    share_clique_project(Sg,Vars,HvFv_u,SH,Proj_SH),
+    sharing_clique:project(Sg,Vars,HvFv_u,SH,Proj_SH),
     project_freeness(Vars,F,Proj_F).
 
 %------------------------------------------------------------------------%
@@ -279,7 +280,7 @@ sharefree_clique_project(Sg,Vars,HvFv_u,(SH,F),(Proj_SH,Proj_F)) :-
 :- export(sharefree_clique_abs_sort/2).                     
 sharefree_clique_abs_sort('$bottom','$bottom'):- !.
 sharefree_clique_abs_sort((SH,F),(Sorted_SH,Sorted_F) ):-
-    share_clique_abs_sort(SH,Sorted_SH),
+    sharing_clique:abs_sort(SH,Sorted_SH),
     sort(F,Sorted_F).
 
 %------------------------------------------------------------------------%
@@ -331,7 +332,7 @@ sharefree_clique_eliminate_equivalent(TmpLSucc,Succ):-
 :- export(sharefree_clique_less_or_equal/2).     
 sharefree_clique_less_or_equal('$bottom',_ASub):- !.
 sharefree_clique_less_or_equal((SH0,Fr0),(SH1,Fr1)):-
-    share_clique_less_or_equal(SH0,SH1),
+    sharing_clique:less_or_equal(SH0,SH1),
     member_value_freeness(Fr0,ListFr0,f),
     member_value_freeness(Fr1,ListFr1,f),
     ord_subset(ListFr1,ListFr0).
@@ -349,7 +350,7 @@ sharefree_clique_less_or_equal((SH0,Fr0),(SH1,Fr1)):-
 %%      update_lambda_cf(Sv,Call_fr,Call_SH,Succ_fr,Succ_SH),
 %%      list_ground(Sv,Prime_fr),
 %%      Prime = ([],Prime_fr),
-%%      %share_clique_normalize(Succ_SH,Succ_SH_R),
+%%      %sharing_clique:normalize(Succ_SH,Succ_SH_R),
 %%      Succ_SH = Succ_SH_R,
 %%      Succ = (Succ_SH_R,Succ_fr).
 
@@ -359,7 +360,7 @@ sharefree_clique_call_to_success_fact(Sg,Hv,Head,_K,Sv,Call,_Proj,Prime,Succ):-
     sharefree_clique_augment_asub(Call,Hv,ASub),    
     peel_equations_frl(Sg, Head,Equations),
     sharefree_clique_iterate(Equations,ASub,(ASub_SH,F)),
-    share_clique_widen(plai_op,ASub_SH,_,SH),
+    sharing_clique:widen(plai_op,ASub_SH,_,SH),
     %share_clique_normalize(SH,SH_N),
     SH = SH_N,
     ASub = (_,Vars), % Vars has both Sv and Hv
@@ -453,7 +454,7 @@ sharefree_clique_glb((SH1,Fr1),(SH2,Fr2),Glb):-
     -> Glb = '$bottom'
      ; merge(FVars1,FVars2,FVars),
        merge(GVars1,GVars2,GVars0),
-       share_clique_glb(SH1,SH2,Glb_SH),
+       sharing_clique:glb(SH1,SH2,Glb_SH),
        varset(Fr1,All),
        Glb_SH = (Gb_Cl,Gb_Sh),
        varset(Gb_Cl,Gb_ClVx),
@@ -478,7 +479,7 @@ sharefree_clique_glb((SH1,Fr1),(SH2,Fr2),Glb):-
 %------------------------------------------------------------------------%
 :- export(sharefree_clique_input_user_interface/5).  
 sharefree_clique_input_user_interface((SH,Fv0),Qv,(Call_SH,Call_fr),Sg,MaybeCallASub):-
-    share_clique_input_user_interface(SH,Qv,Call_SH,Sg,MaybeCallASub),
+    sharing_clique:input_user_interface(SH,Qv,Call_SH,Sg,MaybeCallASub),
 %% freeness  
     may_be_var(Fv0,Fv),
     Call_SH = (Cl,Sh),
@@ -496,7 +497,7 @@ sharefree_clique_input_interface(free(X),perfect,(SH,Fr0),(SH,Fr)):-
     var(X),
     myinsert(Fr0,X,Fr).
 sharefree_clique_input_interface(Prop,Any,(SH0,Fr),(SH,Fr)):-
-    share_clique_input_interface(Prop,Any,SH0,SH), !.
+    sharing_clique:input_interface(Prop,Any,SH0,SH), !.
 
 myinsert(Fr0,X,Fr):-
     var(Fr0), !,
@@ -699,12 +700,12 @@ sharefree_clique_success_builtin('=../2',Sv_uns,p(X,Y),_,Call,Succ):-
         ( ValueZ = f , ValueX = f ->
             Succ = '$bottom'
         ; ord_subtract(Sv,[Z],NewVars),
-          share_clique_project(not_provided_Sg,NewVars,not_provided_HvFv_u,Call_SH,Proj_SH),
+          sharing_clique:project(not_provided_Sg,NewVars,not_provided_HvFv_u,Call_SH,Proj_SH),
           ord_subtract(NewVars,[X],VarsY),
           product_clique(ValueX,X,VarsY,Sv,Proj_SH,Proj_fr,Prime_SH,Prime_fr),
           sharefree_clique_extend(not_provided_Sg,(Prime_SH,Prime_fr),Sv,Call,Succ)
         )
-    ; share_clique_project(not_provided_Sg,Sv,not_provided_HvFv_u,Call_SH,Proj_SH),
+    ; sharing_clique:project(not_provided_Sg,Sv,not_provided_HvFv_u,Call_SH,Proj_SH),
       ord_subtract(Sv,[X],VarsY),
       product_clique(ValueX,X,VarsY,Sv,Proj_SH,Proj_fr,Prime_SH,Prime_fr),
       sharefree_clique_extend(not_provided_Sg,(Prime_SH,Prime_fr),Sv,Call,Succ)
@@ -1111,16 +1112,16 @@ propagate_clique_non_freeness(Vars,NonFv,(Cl,Sh),Fr,NewFr):-
       compute_lub_fr(NewFr1,NewFr2,NewFr).
 
 product_clique(f,X,VarsY,_,SH,Lda_fr,Prime_SH,Prime_fr):-
-    share_clique_project(not_provided_Sg,VarsY,not_provided_HvFv_u,SH,Temp),
+    sharing_clique:project(not_provided_Sg,VarsY,not_provided_HvFv_u,SH,Temp),
     bin_union_w(Temp,([],[[X]]),Temp1),
-    share_clique_abs_sort(Temp1,Prime_SH),
+    sharing_clique:abs_sort(Temp1,Prime_SH),
     take_clique_coupled(SH,[X],Coupled),
     change_values_if_f(Coupled,Lda_fr,Prime_fr,nf).
 product_clique(nf,X,VarsY,Sv,SH,Lda_fr,Prime_SH,Prime_fr):-
-    share_clique_project(not_provided_Sg,VarsY,not_provided_HvFv_u,SH,Temp),
+    sharing_clique:project(not_provided_Sg,VarsY,not_provided_HvFv_u,SH,Temp),
     star_w(Temp,Temp1),
     bin_union_w(Temp1,([],[[X]]),Temp2),
-    share_clique_abs_sort(Temp2,Prime_SH),
+    sharing_clique:abs_sort(Temp2,Prime_SH),
     take_clique_coupled(SH,Sv,Coupled),
     change_values_if_f(Coupled,Lda_fr,Prime_fr,nf).
 

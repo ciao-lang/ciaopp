@@ -25,7 +25,7 @@
 :- use_module(domain(share_amgu_sets),
     [split_list_of_lists/4, delete_vars_from_list_of_lists/3]).
 :- use_module(domain(share_amgu_aux), [bin_union/3]).
-:- use_module(domain(sharing_clique), [share_clique_widen/4]). % amgu&star 
+:- use_module(domain(sharing_clique), [widen/4]). % amgu&star 
 :- use_module(domain(s_grshfr), [member_value_freeness/3]).
 :- use_module(domain(share_clique_aux)).
 :- use_module(domain(sharefree_amgu_aux), 
@@ -137,7 +137,7 @@ amgu_clique_ff(X,T,(Cl,Sh),NewCall,AMGU):-
     ( (Cl_x = [], Cl_t = []) ->
        ( NewCall == not ->
          ExtraInfo = (Irrel_Sh_xt,Sh_x,Sh_t),
-         share_clique_widen(amgu,(Cl,Sh),ExtraInfo,New_ASub),
+         sharing_clique:widen(amgu,(Cl,Sh),ExtraInfo,New_ASub),
          amgu_clique_ff(X,T,New_ASub,yes,New_AMGU),
          AMGU = New_AMGU
        ; 
@@ -153,7 +153,7 @@ amgu_clique_ff(X,T,(Cl,Sh),NewCall,AMGU):-
 %            % if type_widening_condition == bamgu and NewCall == not 
 %          ( (type_widening_condition(bamgu), NewCall == not) ->
 %            ExtraInfo = (Irrel_Sh_xt,Sh_x,Sh_t),
-%            share_clique_widen(amgu,(Cl,Sh),ExtraInfo,New_ASub),
+%            sharing_clique:widen(amgu,(Cl,Sh),ExtraInfo,New_ASub),
 %            amgu_clique_ff(X,T,New_ASub,yes,AMGU)
 %          ; % NewCall == yes or type_widening_condition(aamgu)
          % clique part  
@@ -168,7 +168,7 @@ amgu_clique_ff(X,T,(Cl,Sh),NewCall,AMGU):-
          ord_union(Irrel_Sh_xt,Sh_xt,AMGU_Sh),
          AMGU = (AMGU_Cl,AMGU_Sh)
 %            ( type_widening_condition(aamgu) ->
-%              share_clique_widen(amgu,(AMGU_Cl,AMGU_Sh),_,AMGU)
+%              sharing_clique:widen(amgu,(AMGU_Cl,AMGU_Sh),_,AMGU)
 %              ; 
 %              AMGU = (AMGU_Cl,AMGU_Sh)
 %              )
