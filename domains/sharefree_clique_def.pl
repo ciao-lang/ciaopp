@@ -19,7 +19,7 @@
 :- dom_impl(sharefree_clique_def, call_to_success_fact/9).
 :- dom_impl(sharefree_clique_def, special_builtin/5).
 :- dom_impl(sharefree_clique_def, body_succ_builtin/8).
-:- dom_impl(sharefree_clique_def, input_interface/4, [from(sharefree_clique)]).
+:- dom_impl(sharefree_clique_def, input_interface/4, [from(sharefree_clique), noq]).
 :- dom_impl(sharefree_clique_def, input_user_interface/5).
 :- dom_impl(sharefree_clique_def, asub_to_native/5).
 :- dom_impl(sharefree_clique_def, unknown_call/4).
@@ -69,22 +69,22 @@
     eliminate_if_not_possible/4]).
 
 :- use_module(domain(sharefree_clique), [
-    sharefree_clique_call_to_entry/9,
-    sharefree_clique_exit_to_prime/7,
-    sharefree_clique_extend/5,
-    sharefree_clique_project/5,
-    sharefree_clique_abs_sort/2,
-    sharefree_clique_glb/3,
-    sharefree_clique_identical_abstract/2,
-    sharefree_clique_less_or_equal/2,
-    sharefree_clique_call_to_success_fact/9,
-    sharefree_clique_compute_lub_el/3,
-    sharefree_clique_input_interface/4,
-    sharefree_clique_input_user_interface/5,
-    sharefree_clique_unknown_call/4,
-    sharefree_clique_empty_entry/3,
-    sharefree_clique_special_builtin/5
-   ]).
+    call_to_entry/9,
+    exit_to_prime/7,
+    extend/5,
+    project/5,
+    abs_sort/2,
+    glb/3,
+    identical_abstract/2,
+    less_or_equal/2,
+    call_to_success_fact/9,
+    compute_lub_el/3,
+    input_interface/4,
+    input_user_interface/5,
+    unknown_call/4,
+    empty_entry/3,
+    special_builtin/5
+]).
 :- use_module(domain(def), [
     def_call_to_entry/9,
     def_exit_to_prime/7,
@@ -108,7 +108,7 @@ sharefree_clique_def_call_to_entry(Sv,Sg,Hv,Head,K,Fv,Proj,Entry,(BothEntry,Extr
     Proj = (SHF_Proj,Def_Proj),
     def_call_to_entry(Sv,Sg,Hv,Head,K,Fv,Def_Proj,Def_entry,BothEntry),
     sharefree_clique_def_compose(SHF_Proj,Def_entry,NewSHF_Proj),
-    sharefree_clique_call_to_entry(Sv,Sg,Hv,Head,K,Fv,NewSHF_Proj,(SH_Entry,Fr_Entry),ExtraInfo),
+    sharefree_clique:call_to_entry(Sv,Sg,Hv,Head,K,Fv,NewSHF_Proj,(SH_Entry,Fr_Entry),ExtraInfo),
     Entry = ((SH_Entry,Fr_Entry),Def_entry),!.
 sharefree_clique_def_call_to_entry(_,_,_,_,_,_,_,'$bottom',_):- !.
 
@@ -121,7 +121,7 @@ sharefree_clique_def_exit_to_prime(Sg,Hv,Head,Sv,Exit,(BothEntry,ExtraInfo),Prim
     Exit = (SHF_Exit,Def_Exit),
     def_exit_to_prime(Sg,Hv,Head,Sv,Def_Exit,BothEntry,Def_prime),
     sharefree_clique_def_compose(SHF_Exit,Def_prime,NewSHF_Exit),
-    sharefree_clique_exit_to_prime(Sg,Hv,Head,Sv,NewSHF_Exit,ExtraInfo,(SH_Pr,Fr_Pr)),
+    sharefree_clique:exit_to_prime(Sg,Hv,Head,Sv,NewSHF_Exit,ExtraInfo,(SH_Pr,Fr_Pr)),
     Prime = ((SH_Pr,Fr_Pr),Def_prime).
 
 %------------------------------------------------------------------------%
@@ -134,7 +134,7 @@ sharefree_clique_def_extend(Sg,(SHF_Prime,Def_Prime),Sv,(SHF_Call,Def_Call),Succ
     def_extend(Sg,Def_Prime,Sv,Def_Call,Def_succ),
     sharefree_clique_def_compose(SHF_Prime,Def_succ,NewSHF_Prime),
     sharefree_clique_def_compose(SHF_Call,Def_succ,NewSHF_Call),
-    sharefree_clique_extend(Sg,NewSHF_Prime,Sv,NewSHF_Call,(SH_Succ,Fr_Succ)),
+    sharefree_clique:extend(Sg,NewSHF_Prime,Sv,NewSHF_Call,(SH_Succ,Fr_Succ)),
     Succ = ((SH_Succ,Fr_Succ),Def_succ),!.
 
 %------------------------------------------------------------------------%
@@ -145,7 +145,7 @@ sharefree_clique_def_extend(Sg,(SHF_Prime,Def_Prime),Sv,(SHF_Call,Def_Call),Succ
 sharefree_clique_def_project(_Sg,_Vars,_HvFv_u,'$bottom','$bottom'):- !.
 sharefree_clique_def_project(Sg,Vars,HvFv_u,(SHF_ASub,Def_ASub),Proj) :-
     def_project(Sg,Vars,HvFv_u,Def_ASub,Def_Proj),
-    sharefree_clique_project(Sg,Vars,HvFv_u,SHF_ASub,SHF_Proj),
+    sharefree_clique:project(Sg,Vars,HvFv_u,SHF_ASub,SHF_Proj),
     Proj = (SHF_Proj,Def_Proj).
 
 %------------------------------------------------------------------------%
@@ -157,7 +157,7 @@ sharefree_clique_def_project(Sg,Vars,HvFv_u,(SHF_ASub,Def_ASub),Proj) :-
 sharefree_clique_def_abs_sort('$bottom','$bottom'):- !.
 sharefree_clique_def_abs_sort((SHF_ASub,Def_ASub),ASub_s ):-
     def_abs_sort(Def_ASub,Def_ASub_s),
-    sharefree_clique_abs_sort(SHF_ASub,SHF_ASub_s),
+    sharefree_clique:abs_sort(SHF_ASub,SHF_ASub_s),
     ASub_s = (SHF_ASub_s,Def_ASub_s).
 
 
@@ -173,7 +173,7 @@ sharefree_clique_def_glb((SHF_ASub0,Def_ASub0),(SHF_ASub1,Def_ASub1),Lub):-
     def_glb(Def_ASub0,Def_ASub1,Def_lub),
     sharefree_clique_def_compose(SHF_ASub0,Def_lub,NewSHF_ASub0),
     sharefree_clique_def_compose(SHF_ASub1,Def_lub,NewSHF_ASub1),
-    sharefree_clique_glb(NewSHF_ASub0,NewSHF_ASub1,SHF_lub),
+    sharefree_clique:glb(NewSHF_ASub0,NewSHF_ASub1,SHF_lub),
     Lub = (SHF_lub,Def_lub),!.
 
 %------------------------------------------------------------------------%
@@ -183,7 +183,7 @@ sharefree_clique_def_glb((SHF_ASub0,Def_ASub0),(SHF_ASub1,Def_ASub1),Lub):-
 :- export(sharefree_clique_def_identical_abstract/2).
 sharefree_clique_def_identical_abstract('$bottom','$bottom'):-!.
 sharefree_clique_def_identical_abstract((SHF0,_),(SHF1,_)):-!,
-    sharefree_clique_identical_abstract(SHF0,SHF1).
+    sharefree_clique:identical_abstract(SHF0,SHF1).
 
 %------------------------------------------------------------------------%
 % sharefree_clique_def_eliminate_equivalent(+,-)                         |
@@ -200,7 +200,7 @@ sharefree_clique_def_eliminate_equivalent(TmpLSucc,Succ):-
 :- export(sharefree_clique_def_less_or_equal/2).
 sharefree_clique_def_less_or_equal('$bottom',_ASub):- !.
 sharefree_clique_def_less_or_equal((SHF0,_),(SHF1,_)):-!,
-    sharefree_clique_less_or_equal(SHF0,SHF1).
+    sharefree_clique:less_or_equal(SHF0,SHF1).
             
 %------------------------------------------------------------------------%
 %                      ABSTRACT Call to Success Fact                     %
@@ -214,7 +214,7 @@ sharefree_clique_def_call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ):
     Proj = (_,Def_Proj),
     def_call_to_success_fact(Sg,Hv,Head,K,Sv,Def_Call,Def_Proj,Def_Prime,Def_succ),
     sharefree_clique_def_compose(SHF_Call,Def_succ,NewSHF_Call),
-    sharefree_clique_call_to_success_fact(Sg,Hv,Head,K,Sv,NewSHF_Call,_Proj,(SH_Prime,Fr_Prime),(SH_Succ,Fr_Succ)),
+    sharefree_clique:call_to_success_fact(Sg,Hv,Head,K,Sv,NewSHF_Call,_Proj,(SH_Prime,Fr_Prime),(SH_Succ,Fr_Succ)),
     Prime = ((SH_Prime,Fr_Prime),Def_Prime),
     Succ = ((SH_Succ,Fr_Succ),Def_succ),!.
 sharefree_clique_def_call_to_success_fact(_Sg,_Hv,_Head,_K,_Sv,_Call,_Proj,'$bottom','$bottom'):- !.
@@ -236,7 +236,7 @@ sharefree_clique_def_lub_cl((SHF_ASub1,Def_ASub1),(SHF_ASub2,Def_ASub2),Lub):-
     def_compute_lub_el(Def_ASub1,Def_ASub2,Def_lub),
     sharefree_clique_def_compose(SHF_ASub1,Def_lub,NewSHF_ASub1),
     sharefree_clique_def_compose(SHF_ASub2,Def_lub,NewSHF_ASub2),
-    sharefree_clique_compute_lub_el(NewSHF_ASub1,NewSHF_ASub2,SHF_lub),
+    sharefree_clique:compute_lub_el(NewSHF_ASub1,NewSHF_ASub2,SHF_lub),
     Lub = (SHF_lub,Def_lub),!.
 
 %------------------------------------------------------------------------%
@@ -245,7 +245,7 @@ sharefree_clique_def_lub_cl((SHF_ASub1,Def_ASub1),(SHF_ASub2,Def_ASub2),Lub):-
 %------------------------------------------------------------------------%
 :- export(sharefree_clique_def_input_user_interface/5).
 sharefree_clique_def_input_user_interface((SH,Fv),Qv,Call,Sg,MaybeCallASub):-
-    sharefree_clique_input_user_interface((SH,Fv),Qv,(SH_call,Fr_call),Sg,MaybeCallASub),
+    sharefree_clique:input_user_interface((SH,Fv),Qv,(SH_call,Fr_call),Sg,MaybeCallASub),
     member_value_freeness(Fr_call,Gv,g),
     Def_call = a(Gv,[]),
     Call = ((SH_call,Fr_call),Def_call).
@@ -278,7 +278,7 @@ sharefree_clique_def_asub_to_native(((SH,Fr),a(_G,_SS)),_Qv,_OutFlag,Info,[]):-!
 :- export(sharefree_clique_def_unknown_call/4).
 sharefree_clique_def_unknown_call(_Sg,_Vars,'$bottom','$bottom') :- !.
 sharefree_clique_def_unknown_call(Sg,Vars,(SHF_Call,Def_Call),Succ):-   
-    sharefree_clique_unknown_call(Sg,Vars,SHF_Call,SHF_Succ),
+    sharefree_clique:unknown_call(Sg,Vars,SHF_Call,SHF_Succ),
     Succ = (SHF_Succ,Def_Call).
 
 %------------------------------------------------------------------------%
@@ -289,7 +289,7 @@ sharefree_clique_def_unknown_call(Sg,Vars,(SHF_Call,Def_Call),Succ):-
 :- export(sharefree_clique_def_empty_entry/3).
 sharefree_clique_def_empty_entry(Sg,Vars,Entry):-
     def_unknown_entry(Sg,Vars,Def_Entry),
-    sharefree_clique_empty_entry(Sg,Vars,SHF_Entry),
+    sharefree_clique:empty_entry(Sg,Vars,SHF_Entry),
     Entry = (SHF_Entry,Def_Entry).
 
 %------------------------------------------------------------------------%
@@ -310,7 +310,7 @@ sharefree_clique_def_unknown_entry(_Sg,Qv,(SHF_Call,a([],[]))):-
 %------------------------------------------------------------------------%
 :- export(sharefree_clique_def_special_builtin/5).
 sharefree_clique_def_special_builtin(SgKey,Sg,Subgoal,Type,Condvars):-
-    sharefree_clique_special_builtin(SgKey,Sg,Subgoal,SHF_Type,SHF_Condvars),!,
+    sharefree_clique:special_builtin(SgKey,Sg,Subgoal,SHF_Type,SHF_Condvars),!,
     ( def_special_builtin(SgKey,Sg,Subgoal,Def_Type,Def_Condvars) ->
       Type = (SHF_Type,Def_Type),
       Condvars = (SHF_Condvars,Def_Condvars)

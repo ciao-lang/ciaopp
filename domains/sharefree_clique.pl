@@ -6,31 +6,8 @@
 
 :- use_module(domain(sharefree), [obtain_info/4]).
 :- include(ciaopp(plai/plai_domain)).
-:- dom_def(sharefree_clique).
-:- dom_impl(sharefree_clique, amgu/4).
-:- dom_impl(sharefree_clique, augment_asub/3).
-:- dom_impl(sharefree_clique, call_to_entry/9).
-:- dom_impl(sharefree_clique, exit_to_prime/7).
-:- dom_impl(sharefree_clique, project/5).
-:- dom_impl(sharefree_clique, compute_lub/2).
-:- dom_impl(sharefree_clique, identical_abstract/2).
-:- dom_impl(sharefree_clique, abs_sort/2).
-:- dom_impl(sharefree_clique, extend/5).
-:- dom_impl(sharefree_clique, less_or_equal/2).
-:- dom_impl(sharefree_clique, glb/3).
-:- dom_impl(sharefree_clique, eliminate_equivalent/2).
-:- dom_impl(sharefree_clique, call_to_success_fact/9).
-:- dom_impl(sharefree_clique, special_builtin/5).
-:- dom_impl(sharefree_clique, success_builtin/6).
-:- dom_impl(sharefree_clique, call_to_success_builtin/6).
-:- dom_impl(sharefree_clique, obtain_info/4, [from(sharefree:shfr), noq]).
-:- dom_impl(sharefree_clique, input_interface/4).
-:- dom_impl(sharefree_clique, input_user_interface/5).
-:- dom_impl(sharefree_clique, asub_to_native/5).
-:- dom_impl(sharefree_clique, unknown_call/4).
-:- dom_impl(sharefree_clique, unknown_entry/3).
-:- dom_impl(sharefree_clique, empty_entry/3).
-% :- dom_impl(sharefree_clique, compute_lub_el(ASub1,ASub2,ASub), compute_lub_el(ASub1,ASub2,ASub)).
+:- dom_def(sharefree_clique, [default]).
+:- dom_impl(_, obtain_info/4, [from(sharefree:shfr), noq]).
 
 %------------------------------------------------------------------------%
 % This file contains an extension (freeness) of the domain dependent     |
@@ -114,67 +91,69 @@
 %                      ABSTRACT Call To Entry                            %
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% sharefree_clique_call_to_entry(+,+,+,+,+,+,+,-,?)                      %
+% call_to_entry(+,+,+,+,+,+,+,-,?)                      %
 %-------------------------------------------------------------------------
-:- export(sharefree_clique_call_to_entry/9).
-sharefree_clique_call_to_entry(_Sv,Sg,_Hv,Head,_K,Fv,Proj,Entry,Flag):-
+:- export(call_to_entry/9).
+:- dom_impl(_, call_to_entry/9, [noq]).
+call_to_entry(_Sv,Sg,_Hv,Head,_K,Fv,Proj,Entry,Flag):-
      variant(Sg,Head),!,
      Flag = yes,
      copy_term((Sg,Proj),(NewTerm,NewProj)),
      Head = NewTerm,
-     sharefree_clique_abs_sort(NewProj,((Temp_cl,Temp_sh),Temp_fr)),
+     abs_sort(NewProj,((Temp_cl,Temp_sh),Temp_fr)),
      change_values_insert(Fv,Temp_fr,Entry_fr,f),       
      list_to_list_of_lists(Fv,Temp1),
      merge(Temp1,Temp_sh,New_Temp_sh),
      share_clique_normalize((Temp_cl,New_Temp_sh),Entry_SH),
      Entry = (Entry_SH,Entry_fr).
-sharefree_clique_call_to_entry(_Sv,_Sg,[],_Head,_K,Fv,_Proj,Entry,no):- !,
+call_to_entry(_Sv,_Sg,[],_Head,_K,Fv,_Proj,Entry,no):- !,
      list_to_list_of_lists(Fv,Entry_sh),
      change_values_insert(Fv,[],Entry_fr,f),
      share_clique_normalize(([],Entry_sh),Entry_SH),
      Entry = (Entry_SH,Entry_fr).
-sharefree_clique_call_to_entry(_Sv,Sg,Hv,Head,_K,Fv,Proj,Entry,ExtraInfo):-
+call_to_entry(_Sv,Sg,Hv,Head,_K,Fv,Proj,Entry,ExtraInfo):-
      peel_equations_frl(Sg,Head,Equations),
-     sharefree_clique_augment_asub(Proj,Hv,ASub),     
+     augment_asub(Proj,Hv,ASub),     
      sharefree_clique_iterate(Equations,ASub,(ASub_SH,F)),
      sharing_clique:widen(plai_op,ASub_SH,_,SH),
      sharefree_clique_update_freeness(SH,F,Hv,F1),
-     sharefree_clique_project(Sg,Hv,not_provided_HvFv_u,(SH,F1),Entry0),
-     sharefree_clique_augment_asub(Entry0,Fv,(Entry_SH0,Entry_Fr)),
+     project(Sg,Hv,not_provided_HvFv_u,(SH,F1),Entry0),
+     augment_asub(Entry0,Fv,(Entry_SH0,Entry_Fr)),
      share_clique_normalize(Entry_SH0,Entry_SH),
      Entry = (Entry_SH,Entry_Fr),
      Proj = (_,F2),
      ExtraInfo = (Equations,F2),!.
-sharefree_clique_call_to_entry(_Sv,_Sg,_Hv,_Head,_K,_Fv,_Proj,'$bottom',_):-!.
+call_to_entry(_Sv,_Sg,_Hv,_Head,_K,_Fv,_Proj,'$bottom',_):-!.
 
 %------------------------------------------------------------------------%
 %                      ABSTRACT Exit to Prime                            %
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% sharefree_clique_exit_to_prime(+,+,+,+,+,+,-)                          %
+% exit_to_prime(+,+,+,+,+,+,-)                          %
 %-------------------------------------------------------------------------
-:- export(sharefree_clique_exit_to_prime/7).            
-sharefree_clique_exit_to_prime(_,_,_,_,'$bottom',_,'$bottom'):-!.
-sharefree_clique_exit_to_prime(Sg,Hv,Head,_Sv,Exit,yes,Prime):- !,
-     sharefree_clique_project(Sg,Hv,not_provided_HvFv_u,Exit,(BPrime_sh,BPrime_fr)),
+:- export(exit_to_prime/7).
+:- dom_impl(_, exit_to_prime/7, [noq]).
+exit_to_prime(_,_,_,_,'$bottom',_,'$bottom'):-!.
+exit_to_prime(Sg,Hv,Head,_Sv,Exit,yes,Prime):- !,
+     project(Sg,Hv,not_provided_HvFv_u,Exit,(BPrime_sh,BPrime_fr)),
      copy_term((Head,(BPrime_sh,BPrime_fr)),(NewTerm,NewPrime)),
      Sg = NewTerm,
-     sharefree_clique_abs_sort(NewPrime,(SH_Prime,Fr_Prime)),
+     abs_sort(NewPrime,(SH_Prime,Fr_Prime)),
      %eliminate_redundancies(SH_Prime,SH_Prime_N),
      %share_clique_normalize(SH_Prime,SH_Prime_N),
      SH_Prime = SH_Prime_N,
      Prime = (SH_Prime_N,Fr_Prime).
-sharefree_clique_exit_to_prime(_Sg,[],_Head,Sv,_Exit,_ExtraInfo,Prime):- !,
+exit_to_prime(_Sg,[],_Head,Sv,_Exit,_ExtraInfo,Prime):- !,
      list_ground(Sv,Prime_fr),
      Prime = (([],[]),Prime_fr).
-sharefree_clique_exit_to_prime(Sg,_Hv,_Head,Sv,Exit,ExtraInfo,Prime):-
+exit_to_prime(Sg,_Hv,_Head,Sv,Exit,ExtraInfo,Prime):-
      ExtraInfo = (Equations,Call_Fr),   
      filter_freeness_with_call(Sv,Call_Fr,New_Sv),
-     sharefree_clique_augment_asub(Exit,New_Sv,ASub),     
+     augment_asub(Exit,New_Sv,ASub),     
      sharefree_clique_iterate(Equations,ASub, (ASub_SH,F)),
      sharing_clique:widen(plai_op,ASub_SH,_,SH),
      sharefree_clique_update_freeness(SH,F,Sv,F1),
-     sharefree_clique_project(Sg,Sv,not_provided_HvFv_u,(SH,F1),(SH_Prime,Prime_Fr)),
+     project(Sg,Sv,not_provided_HvFv_u,(SH,F1),(SH_Prime,Prime_Fr)),
      %eliminate_redundancies(SH_Prime,SH_Prime_N),
      %share_clique_normalize(SH_Prime,SH_Prime_N),
      SH_Prime = SH_Prime_N,
@@ -184,12 +163,12 @@ sharefree_clique_exit_to_prime(Sg,_Hv,_Head,Sv,Exit,ExtraInfo,Prime):-
 %                            ABSTRACT AMGU                               %
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% sharefree_clique_amgu(+,+,+,-)                                         %
-% sharefree_clique_amgu(Sg,Head,ASub,AMGU)                               %
+% amgu(+,+,+,-)                                         %
+% amgu(Sg,Head,ASub,AMGU)                               %
 % @var{AMGU} is the abstract unification between @var{Sg} and @var{Head}.%
 %------------------------------------------------------------------------%
-:- export(sharefree_clique_amgu/4).
-sharefree_clique_amgu(Sg,Head,ASub,AMGU):-
+:- dom_impl(_, amgu/4, [noq]).
+amgu(Sg,Head,ASub,AMGU):-
     peel_equations_frl(Sg, Head,Eqs),
     sharefree_clique_iterate(Eqs,ASub,AMGU),!.
 
@@ -198,11 +177,12 @@ sharefree_clique_amgu(Sg,Head,ASub,AMGU):-
 %                      ABSTRACT Extend_Asub                              %
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% sharefree_clique_augment_asub(+,+,-)                                    %
+% augment_asub(+,+,-)                                    %
 %-------------------------------------------------------------------------
-:- export(sharefree_clique_augment_asub/3).
-sharefree_clique_augment_asub(ASub,[],ASub).
-sharefree_clique_augment_asub((SH,F),Vars,(SH1,F1)):-
+:- redefining(augment_asub/3).
+:- dom_impl(_, augment_asub/3, [noq]).
+augment_asub(ASub,[],ASub).
+augment_asub((SH,F),Vars,(SH1,F1)):-
     sharing_clique:augment_asub(SH,Vars,SH1),
     sharefree_amgu:augment_asub0(F,Vars,F1).
 
@@ -211,8 +191,8 @@ sharefree_clique_augment_asub((SH,F),Vars,(SH1,F1)):-
 %                      ABSTRACT Extend                                   |
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% sharefree_clique_extend(+,+,+,+,-)                                     |
-% sharefree_clique_extend(Sg,Prime,Sv,Call,Succ)                         |
+% extend(+,+,+,+,-)                                     |
+% extend(Sg,Prime,Sv,Call,Succ)                         |
 % If Prime = bottom, Succ = bottom. If Sv = [], Call = Succ.             |
 % Otherwise, Succ_sh is computed as in sharing_clique:extend/4,            |
 % Call_fr is computed by:                                                |
@@ -225,12 +205,14 @@ sharefree_clique_augment_asub((SH,F),Vars,(SH1,F1)):-
 %     for the rest of variables in BVars                                 |
 %   * If BVarsf = [],                                                    |
 %------------------------------------------------------------------------%
-:- export(sharefree_clique_extend/5).                   
-sharefree_clique_extend(_Sg,'$bottom',_Sv,_Call,Succ):- !,
+:- redefining(extend/5).                   
+:- export(extend/5).
+:- dom_impl(_, extend/5, [noq]).
+extend(_Sg,'$bottom',_Sv,_Call,Succ):- !,
     Succ = '$bottom'.
-sharefree_clique_extend(_Sg,_Prime,[],Call,Succ):- !,
+extend(_Sg,_Prime,[],Call,Succ):- !,
     Call = Succ.
-sharefree_clique_extend(Sg,(Prime_SH,Prime_fr),Sv,(Call_SH,Call_fr),(Succ_SH_N,Succ_fr)):-
+extend(Sg,(Prime_SH,Prime_fr),Sv,(Call_SH,Call_fr),(Succ_SH_N,Succ_fr)):-
 %extend_SH
     sharing_clique:extend(Sg,Prime_SH,Sv,Call_SH,Succ_SH),
     Succ_SH = Succ_SH_N,
@@ -259,12 +241,14 @@ sharefree_clique_extend(Sg,(Prime_SH,Prime_fr),Sv,(Call_SH,Call_fr),(Succ_SH_N,S
 %                      ABSTRACT PROJECTION
 %------------------------------------------------------------------------%
 %-------------------------------------------------------------------------
-% sharefree_clique_project(+,+,+,+,-)                                    |
-% sharefree_clique_project(Sg,Vars,HvFv_u,ASub,Proj)                     |
+% project(+,+,+,+,-)                                    |
+% project(Sg,Vars,HvFv_u,ASub,Proj)                     |
 %------------------------------------------------------------------------%
-:- export(sharefree_clique_project/5).
-sharefree_clique_project(_Sg,_,_HvFv_u,'$bottom','$bottom'):- !.
-sharefree_clique_project(Sg,Vars,HvFv_u,(SH,F),(Proj_SH,Proj_F)) :-
+:- redefining(project/5).
+:- export(project/5).
+:- dom_impl(_, project/5, [noq]).
+project(_Sg,_,_HvFv_u,'$bottom','$bottom'):- !.
+project(Sg,Vars,HvFv_u,(SH,F),(Proj_SH,Proj_F)) :-
     sharing_clique:project(Sg,Vars,HvFv_u,SH,Proj_SH),
     project_freeness(Vars,F,Proj_F).
 
@@ -273,29 +257,32 @@ sharefree_clique_project(Sg,Vars,HvFv_u,(SH,F),(Proj_SH,Proj_F)) :-
 %                      ABSTRACT SORT                                     %
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% sharefree_clique_abs_sort(+,-)                                             |
-% sharefree_clique_abs_sort(Asub,Asub_s)                                     |
+% abs_sort(+,-)                                             |
+% abs_sort(Asub,Asub_s)                                     |
 % sorts the set of set of variables ASub to obtaint the Asub_s           |
 %-------------------------------------------------------------------------
-:- export(sharefree_clique_abs_sort/2).                     
-sharefree_clique_abs_sort('$bottom','$bottom'):- !.
-sharefree_clique_abs_sort((SH,F),(Sorted_SH,Sorted_F) ):-
+:- redefining(abs_sort/2).                     
+:- export(abs_sort/2).
+:- dom_impl(_, abs_sort/2, [noq]).
+abs_sort('$bottom','$bottom'):- !.
+abs_sort((SH,F),(Sorted_SH,Sorted_F) ):-
     sharing_clique:abs_sort(SH,Sorted_SH),
     sort(F,Sorted_F).
 
 %------------------------------------------------------------------------%
-% sharefree_clique_identical_abstract(+,+)                               |
-% sharefree_clique_less_or_equal(ASub0,ASub1)                            |
+% identical_abstract(+,+)                               |
+% identical_abstract(ASub0,ASub1)                            |
 % Succeeds if the two abstract substitutions are defined on the same     |
 % variables and are equivalent                                           |
 %------------------------------------------------------------------------%
-:- export(sharefree_clique_identical_abstract/2).       
-sharefree_clique_identical_abstract('$bottom','$bottom'):-!.
-sharefree_clique_identical_abstract('$bottom',_):- !,fail.
-sharefree_clique_identical_abstract(_,'$bottom'):- !,fail.
-sharefree_clique_identical_abstract(ASub0,ASub1):-
+:- export(identical_abstract/2).
+:- dom_impl(_, identical_abstract/2, [noq]).
+identical_abstract('$bottom','$bottom'):-!.
+identical_abstract('$bottom',_):- !,fail.
+identical_abstract(_,'$bottom'):- !,fail.
+identical_abstract(ASub0,ASub1):-
     ASub0 == ASub1,!.
-sharefree_clique_identical_abstract((SH0,Fr0),(SH1,Fr1)):-
+identical_abstract((SH0,Fr0),(SH1,Fr1)):-
     Fr0  == Fr1,!,
     share_clique_normalize(SH0,100,1,NSH0),!,
     ( NSH0 == SH1 ->
@@ -310,11 +297,11 @@ sharefree_clique_identical_abstract((SH0,Fr0),(SH1,Fr1)):-
 % The list LSucc is reduced wrt the list TmpLSucc  in that it            | 
 % does not contain abstract substitutions which are equivalent.          |
 %------------------------------------------------------------------------%
-:- export(sharefree_clique_eliminate_equivalent/2).
-sharefree_clique_eliminate_equivalent(TmpLSucc,Succ):-
+:- dom_impl(_, eliminate_equivalent/2, [noq]).
+eliminate_equivalent(TmpLSucc,Succ):-
     sort(TmpLSucc,Succ).
 
-% sharefree_clique_eliminate_equivalent(TmpLSucc,Succ):-
+% eliminate_equivalent(TmpLSucc,Succ):-
 %       sort(TmpLSucc,TmpLSucc1),
 %       normalize_fr_abstract_substitutions(TmpLSucc1,Succ).
 
@@ -325,13 +312,14 @@ sharefree_clique_eliminate_equivalent(TmpLSucc,Succ):-
 %         normalize_fr_abstract_substitutions(Ss,Res).
 
 %------------------------------------------------------------------------%
-% sharefree_clique_less_or_equal(+,+)                                    |
-% sharefree_clique_less_or_equal(ASub0,ASub1)                            |
+% less_or_equal(+,+)                                    |
+% less_or_equal(ASub0,ASub1)                            |
 % Succeeds if ASub1 is more general or equal to ASub0                    |
 %------------------------------------------------------------------------%
-:- export(sharefree_clique_less_or_equal/2).     
-sharefree_clique_less_or_equal('$bottom',_ASub):- !.
-sharefree_clique_less_or_equal((SH0,Fr0),(SH1,Fr1)):-
+:- export(less_or_equal/2).
+:- dom_impl(_, less_or_equal/2, [noq]).
+less_or_equal('$bottom',_ASub):- !.
+less_or_equal((SH0,Fr0),(SH1,Fr1)):-
     sharing_clique:less_or_equal(SH0,SH1),
     member_value_freeness(Fr0,ListFr0,f),
     member_value_freeness(Fr1,ListFr1,f),
@@ -354,10 +342,11 @@ sharefree_clique_less_or_equal((SH0,Fr0),(SH1,Fr1)):-
 %%      Succ_SH = Succ_SH_R,
 %%      Succ = (Succ_SH_R,Succ_fr).
 
-:- export(sharefree_clique_call_to_success_fact/9).
-sharefree_clique_call_to_success_fact(Sg,Hv,Head,_K,Sv,Call,_Proj,Prime,Succ):-
+:- export(call_to_success_fact/9).
+:- dom_impl(_, call_to_success_fact/9, [noq]).
+call_to_success_fact(Sg,Hv,Head,_K,Sv,Call,_Proj,Prime,Succ):-
 % exit_to_prime
-    sharefree_clique_augment_asub(Call,Hv,ASub),    
+    augment_asub(Call,Hv,ASub),    
     peel_equations_frl(Sg, Head,Equations),
     sharefree_clique_iterate(Equations,ASub,(ASub_SH,F)),
     sharing_clique:widen(plai_op,ASub_SH,_,SH),
@@ -367,12 +356,12 @@ sharefree_clique_call_to_success_fact(Sg,Hv,Head,_K,Sv,Call,_Proj,Prime,Succ):-
     unmap_freeness_list(Vars,Vars1),
     sharefree_clique_update_freeness(SH_N,F,Vars1,F1),
     ASub1=(SH_N,F1),
-    sharefree_clique_project(Sg,Sv,not_provided_HvFv_u,ASub1,Prime),
+    project(Sg,Sv,not_provided_HvFv_u,ASub1,Prime),
 % extend
-    sharefree_clique_delete_variables(Hv,ASub1,Succ),!.
-sharefree_clique_call_to_success_fact(_Sg,_Hv,_Head,_K,_Sv,_Call,_Proj, '$bottom','$bottom').
+    delete_variables(Hv,ASub1,Succ),!.
+call_to_success_fact(_Sg,_Hv,_Head,_K,_Sv,_Call,_Proj, '$bottom','$bottom').
 
-sharefree_clique_delete_variables(Vars,((Cl,Sh),Fr),((New_Cl,New_Sh),New_Fr)):-
+delete_variables(Vars,((Cl,Sh),Fr),((New_Cl,New_Sh),New_Fr)):-
     delete_vars_from_list_of_lists(Vars,Sh,Sh0),
     sort_list_of_lists(Sh0,New_Sh),
     delete_vars_from_list_of_lists(Vars,Cl,Cl0),
@@ -394,35 +383,35 @@ delete_variables_freeness([X/V|Xs],Vars,[X/V|Res]):-
 % we compose the information and project it, we can loose information    |
 % since the extension is the step in which more information is lost      |
 %------------------------------------------------------------------------%
-:- export(sharefree_clique_call_to_prime_fact/6).
-sharefree_clique_call_to_prime_fact(Sg,Hv,Head,Sv,(_SH,Extra_Info),Prime) :-
-    sharefree_clique_augment_asub((_SH,Extra_Info),Hv,Exit),
-    sharefree_clique_exit_to_prime(Sg,Hv,Head,Sv,Exit,Extra_Info,Prime).
+call_to_prime_fact(Sg,Hv,Head,Sv,(_SH,Extra_Info),Prime) :-
+    augment_asub((_SH,Extra_Info),Hv,Exit),
+    exit_to_prime(Sg,Hv,Head,Sv,Exit,Extra_Info,Prime).
 
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
 %                      ABSTRACT LUB                                      %
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% sharefree_clique_compute_lub(+,-)                                      |
-% sharefree_clique_compute_lub(ListASub,Lub)                             |
+% compute_lub(+,-)                                      |
+% compute_lub(ListASub,Lub)                             |
 % It computes the lub of a set of Asub. For each two abstract            |
 % substitutions ASub1 and ASub2 in ListASub, obtaining the lub is just   |
 % merging the ASub1 and ASub2.                                           |
 %------------------------------------------------------------------------%
-:- export(sharefree_clique_compute_lub/2).       
-sharefree_clique_compute_lub([ASub1,ASub2|Rest],Lub) :- !,
-    sharefree_clique_compute_lub_el(ASub1,ASub2,ASub3),
-    sharefree_clique_compute_lub([ASub3|Rest],Lub).
-sharefree_clique_compute_lub([ASub],ASub).
+:- dom_impl(_, compute_lub/2, [noq]).
+compute_lub([ASub1,ASub2|Rest],Lub) :- !,
+    compute_lub_el(ASub1,ASub2,ASub3),
+    compute_lub([ASub3|Rest],Lub).
+compute_lub([ASub],ASub).
 
-:- export(sharefree_clique_compute_lub_el/3).
-sharefree_clique_compute_lub_el('$bottom',ASub,ASub):- !.
-sharefree_clique_compute_lub_el(ASub,'$bottom',ASub):- !.
-sharefree_clique_compute_lub_el((Cl1,Fr1),(Cl2,Fr2),(Lub_cl,Lub_fr)):- !,
+:- export(compute_lub_el/3).
+% :- dom_impl(_, compute_lub_el(ASub1,ASub2,ASub), compute_lub_el(ASub1,ASub2,ASub)).
+compute_lub_el('$bottom',ASub,ASub):- !.
+compute_lub_el(ASub,'$bottom',ASub):- !.
+compute_lub_el((Cl1,Fr1),(Cl2,Fr2),(Lub_cl,Lub_fr)):- !,
     share_clique_lub_cl(Cl1,Cl2,Lub_cl),
     compute_lub_fr(Fr1,Fr2,Lub_fr).
-sharefree_clique_compute_lub_el(ASub,_,ASub).
+compute_lub_el(ASub,_,ASub).
 
 % defined in sharefree.pl, it should be exported by share.pl
 compute_lub_fr(Fr1,Fr2,Lub):- 
@@ -436,14 +425,15 @@ compute_lub_fr([X/_|Fr1],[X/_|Fr2],[X/nf|Lub_fr]):-
     compute_lub_fr(Fr1,Fr2,Lub_fr).
 
 %------------------------------------------------------------------------%
-% sharefree_clique_glb(+,+,-)                                            |
-% sharefree_clique_glb(ASub0,ASub1,Lub)                                  |
+% glb(+,+,-)                                            |
+% glb(ASub0,ASub1,Lub)                                  |
 % Glb is just intersection.                                              |
 %------------------------------------------------------------------------%
-:- export(sharefree_clique_glb/3).      
-sharefree_clique_glb('$bottom',_ASub,ASub3) :- !, ASub3='$bottom'.
-sharefree_clique_glb(_ASub,'$bottom',ASub3) :- !, ASub3='$bottom'.
-sharefree_clique_glb((SH1,Fr1),(SH2,Fr2),Glb):-
+:- export(glb/3).
+:- dom_impl(_, glb/3, [noq]).
+glb('$bottom',_ASub,ASub3) :- !, ASub3='$bottom'.
+glb(_ASub,'$bottom',ASub3) :- !, ASub3='$bottom'.
+glb((SH1,Fr1),(SH2,Fr2),Glb):-
     member_value_freeness(Fr1,FVars1,f),
     member_value_freeness(Fr2,FVars2,f),
     member_value_freeness(Fr1,GVars1,g),
@@ -471,14 +461,15 @@ sharefree_clique_glb((SH1,Fr1),(SH2,Fr2),Glb):-
     )  ).
 
 %------------------------------------------------------------------------%
-% sharefree_clique_input_user_interface(+,+,-,+,+)                       |
-% sharefree_clique_input_user_interface(InputUser,Qv,ASub,Sg,MaybeCallASub) |
+% input_user_interface(+,+,-,+,+)                       |
+% input_user_interface(InputUser,Qv,ASub,Sg,MaybeCallASub) |
 % Obtaining the abstract substitution for Cl+Fr from the user supplied   |
 % information just consists in taking th Cliques first and the var(Fv)   |
 % element of InputUser, and construct from them the Freeness.            |
 %------------------------------------------------------------------------%
-:- export(sharefree_clique_input_user_interface/5).  
-sharefree_clique_input_user_interface((SH,Fv0),Qv,(Call_SH,Call_fr),Sg,MaybeCallASub):-
+:- export(input_user_interface/5).
+:- dom_impl(_, input_user_interface/5, [noq]).
+input_user_interface((SH,Fv0),Qv,(Call_SH,Call_fr),Sg,MaybeCallASub):-
     sharing_clique:input_user_interface(SH,Qv,Call_SH,Sg,MaybeCallASub),
 %% freeness  
     may_be_var(Fv0,Fv),
@@ -492,11 +483,12 @@ sharefree_clique_input_user_interface((SH,Fv0),Qv,(Call_SH,Call_fr),Sg,MaybeCall
     change_values_insert(NonFv,Temp1,Temp2,nf),
     change_values_insert(Gv,Temp2,Call_fr,g).
 
-:- export(sharefree_clique_input_interface/4).  
-sharefree_clique_input_interface(free(X),perfect,(SH,Fr0),(SH,Fr)):-
+:- export(input_interface/4).
+:- dom_impl(_, input_interface/4, [noq]).
+input_interface(free(X),perfect,(SH,Fr0),(SH,Fr)):-
     var(X),
     myinsert(Fr0,X,Fr).
-sharefree_clique_input_interface(Prop,Any,(SH0,Fr),(SH,Fr)):-
+input_interface(Prop,Any,(SH0,Fr),(SH,Fr)):-
     sharing_clique:input_interface(Prop,Any,SH0,SH), !.
 
 myinsert(Fr0,X,Fr):-
@@ -506,13 +498,13 @@ myinsert(Fr0,X,Fr):-
     insert(Fr0,X,Fr).
 
 %------------------------------------------------------------------------%
-% sharefree_clique_asub_to_native(+,+,+,-,-)                             |
-% sharefree_clique_asub_to_native(ASub,Qv,OutFlag,ASub_user,Comps)       |
+% asub_to_native(+,+,+,-,-)                             |
+% asub_to_native(ASub,Qv,OutFlag,ASub_user,Comps)       |
 % The user friendly format consists in extracting the ground variables   |
 % and the free variables                                                 |
 %------------------------------------------------------------------------%
-:- export(sharefree_clique_asub_to_native/5). 
-sharefree_clique_asub_to_native((SH,Fr),_Qv,_OutFlag,Info,[]):-
+:- dom_impl(_, asub_to_native/5, [noq]).
+asub_to_native((SH,Fr),_Qv,_OutFlag,Info,[]):-
     SH = (Cl,Sh),
     if_not_nil(Cl,clique(Cl),Info,Info0),
     if_not_nil(Sh,sharing(Sh),Info0,Info1),
@@ -522,12 +514,13 @@ sharefree_clique_asub_to_native((SH,Fr),_Qv,_OutFlag,Info,[]):-
     if_not_nil(Gv,ground(Gv),Info2,[]).
 
 %------------------------------------------------------------------------%
-% sharefree_clique_unknown_call(+,+,+,-)                                 |
-% sharefree_clique_unknown_call(Sg,Vars,Call,Succ)                       |
+% unknown_call(+,+,+,-)                                 |
+% unknown_call(Sg,Vars,Call,Succ)                       |
 %------------------------------------------------------------------------%
-:- export(sharefree_clique_unknown_call/4).
-sharefree_clique_unknown_call(_Sg,_Vars,'$bottom','$bottom') :- !.
-sharefree_clique_unknown_call(_Sg,Vars,(Call_SH,Call_fr),(Succ_SH,Succ_fr)):-
+:- export(unknown_call/4).
+:- dom_impl(_, unknown_call/4, [noq]).
+unknown_call(_Sg,_Vars,'$bottom','$bottom') :- !.
+unknown_call(_Sg,Vars,(Call_SH,Call_fr),(Succ_SH,Succ_fr)):-
     rel_w(Vars,Call_SH,Intersect),
     irrel_w(Vars,Call_SH,Rest),
     star_w(Intersect,Star),
@@ -538,25 +531,26 @@ sharefree_clique_unknown_call(_Sg,Vars,(Call_SH,Call_fr),(Succ_SH,Succ_fr)):-
     change_values_if_f(Nonfree_vars,Call_fr,Succ_fr,nf).
 
 %------------------------------------------------------------------------%
-% sharefree_clique_empty_entry(+,+,-)                                    |
-% sharefree_clique_empty_entry(Sg,Vars,Entry)                            |
+% empty_entry(+,+,-)                                    |
+% empty_entry(Sg,Vars,Entry)                            |
 % The empty value in Sh for a set of variables is the list of singletons,|
 % in Fr is X/f forall X in the set of variables                          |            
 %------------------------------------------------------------------------%
-:- export(sharefree_clique_empty_entry/3).
-sharefree_clique_empty_entry(_Sg,Qv,Entry):-
+:- export(empty_entry/3).
+:- dom_impl(_, empty_entry/3, [noq]).
+empty_entry(_Sg,Qv,Entry):-
     list_to_list_of_lists(Qv,Entry_sh),     
     create_values(Qv,Entry_fr,f),
     Entry=(([],Entry_sh),Entry_fr).
 
 %------------------------------------------------------------------------%
-% sharefree_clique_unknown_entry(+,+,-)                                          |
-% sharefree_clique_unknown_entry(Sg,Qv,Call)                                     |
+% unknown_entry(+,+,-)                                          |
+% unknown_entry(Sg,Qv,Call)                                     |
 % The top value in Sharing for a set of variables is the powerset, in Fr |
 % X/nf forall X in the set of variables.                                 |    
 %------------------------------------------------------------------------%
-:- export(sharefree_clique_unknown_entry/3).
-sharefree_clique_unknown_entry(_Sg,Qv,Call):-
+:- dom_impl(_, unknown_entry/3, [noq]).
+unknown_entry(_Sg,Qv,Call):-
     sort(Qv,QvS),
     create_values(Qv,Call_fr,nf),
     Call = (([QvS],[]),Call_fr).
@@ -566,8 +560,8 @@ sharefree_clique_unknown_entry(_Sg,Qv,Call):-
 %------------------------------------------------------------------------%
 
 %------------------------------------------------------------------------%
-% sharefree_clique_special_builtin(+,+,+,-,-)                            |
-% sharefree_clique_special_builtin(SgKey,Sg,Subgoal,Type,Condvars)       |
+% special_builtin(+,+,+,-,-)                            |
+% special_builtin(SgKey,Sg,Subgoal,Type,Condvars)       |
 % Satisfied if the builtin does not need a very complex action. It       |
 % divides builtins into groups determined by the flag returned in the    |
 % second argument + some special handling for some builtins:             |
@@ -586,16 +580,17 @@ sharefree_clique_unknown_entry(_Sg,Qv,Call):-
 %------------------------------------------------------------------------%
 % list/1 is not defined
 %------------------------------------------------------------------------%
-:- export(sharefree_clique_special_builtin/5).
-sharefree_clique_special_builtin('read/2',read(X,Y),_,'recorded/3',p(Y,X)) :- !.
-sharefree_clique_special_builtin('length/2',length(_X,Y),_,some,[Y]) :- !.
-sharefree_clique_special_builtin('==/2',_,_,_,_):- !, fail.
-sharefree_clique_special_builtin(SgKey,Sg,Subgoal,Type,Condvars):-
+:- export(special_builtin/5).
+:- dom_impl(_, special_builtin/5, [noq]).
+special_builtin('read/2',read(X,Y),_,'recorded/3',p(Y,X)) :- !.
+special_builtin('length/2',length(_X,Y),_,some,[Y]) :- !.
+special_builtin('==/2',_,_,_,_):- !, fail.
+special_builtin(SgKey,Sg,Subgoal,Type,Condvars):-
     sharefree:special_builtin(SgKey,Sg,Subgoal,Type,Condvars).
     
 %------------------------------------------------------------------------%
-% sharefree_clique_success_builtin(+,+,+,+,+,-)                          |
-% sharefree_clique_success_builtin(Type,Sv_u,Condv,HvFv_u,Call,Succ)     |
+% success_builtin(+,+,+,+,+,-)                          |
+% success_builtin(Type,Sv_u,Condv,HvFv_u,Call,Succ)     |
 % Obtains the success for some particular builtins:                      |
 %  * If Type = new_ground, it updates Call making all vars in Sv_u ground|
 %  * If Type = bottom, Succ = '$bottom'                                  |
@@ -615,38 +610,38 @@ sharefree_clique_special_builtin(SgKey,Sg,Subgoal,Type,Condvars):-
 % NOTE: In comparison with shfr, the following builtins are not defined: |
 % - list/1                                                               |
 %------------------------------------------------------------------------%
-:- export(sharefree_clique_success_builtin/6).
-sharefree_clique_success_builtin(new_ground,Sv_u,_,_,Call,Succ):-
+:- dom_impl(_, success_builtin/6, [noq]).
+success_builtin(new_ground,Sv_u,_,_,Call,Succ):-
     sort(Sv_u,Sv),
     Call = (Lda_SH,Lda_fr),
     update_lambda_cf(Sv,Lda_fr,Lda_SH,Succ_fr,Succ_SH), 
     Succ = (Succ_SH,Succ_fr).
-sharefree_clique_success_builtin(bottom,_,_,_,_,'$bottom').
-sharefree_clique_success_builtin(unchanged,_,_,_,Lda,Lda).
-sharefree_clique_success_builtin(some,_Sv,NewGr,_,Call,Succ):-
+success_builtin(bottom,_,_,_,_,'$bottom').
+success_builtin(unchanged,_,_,_,Lda,Lda).
+success_builtin(some,_Sv,NewGr,_,Call,Succ):-
     Call = (Call_SH,Call_fr),
     update_lambda_cf(NewGr,Call_fr,Call_SH,Succ_fr,Succ_SH),
     Succ = (Succ_SH,Succ_fr).
-sharefree_clique_success_builtin(old_ground,Sv_u,_,_,Call,Succ):-
+success_builtin(old_ground,Sv_u,_,_,Call,Succ):-
     sort(Sv_u,Sv),
     Call = (Call_SH,Call_fr),
     update_lambda_clique_non_free(Sv,Call_fr,Call_SH,Succ_fr,Succ_SH),!,
     Succ = (Succ_SH,Succ_fr).
-sharefree_clique_success_builtin(old_ground,_,_,_,_,'$bottom').
-sharefree_clique_success_builtin(old_new_ground,_,(OldG,NewG),_,Call,Succ):-
+success_builtin(old_ground,_,_,_,_,'$bottom').
+success_builtin(old_new_ground,_,(OldG,NewG),_,Call,Succ):-
     Call = (Call_SH,Call_fr),
     update_lambda_clique_non_free(OldG,Call_fr,Call_SH,Temp_fr,Temp_SH),!,
     update_lambda_cf(NewG,Temp_fr,Temp_SH,Succ_fr,Succ_SH),
     Succ = (Succ_SH,Succ_fr).
-sharefree_clique_success_builtin(old_new_ground,_,_,_,_,'$bottom').
-sharefree_clique_success_builtin(all_nonfree,Sv_u,Sg,_,Call,Succ):- !,
+success_builtin(old_new_ground,_,_,_,_,'$bottom').
+success_builtin(all_nonfree,Sv_u,Sg,_,Call,Succ):- !,
     sort(Sv_u,Sv),
-    sharefree_clique_project(Sg,Sv,not_provided_HvFv_u,Call,(Proj_SH,Proj_fr)),!,
+    project(Sg,Sv,not_provided_HvFv_u,Call,(Proj_SH,Proj_fr)),!,
     star_w(Proj_SH,Prime_SH),
     change_values_if_f(Sv,Proj_fr,Prime_fr,nf),
-    sharefree_clique_extend(Sg,(Prime_SH,Prime_fr),Sv,Call,Succ).
+    extend(Sg,(Prime_SH,Prime_fr),Sv,Call,Succ).
 % special builtins
-sharefree_clique_success_builtin(arg,_,Sg0,_,Call,Succ):- Sg0=p(X,Y,Z),
+success_builtin(arg,_,Sg0,_,Call,Succ):- Sg0=p(X,Y,Z),
     Call = (Call_SH,Call_fr),
     varset(X,OldG),
     update_lambda_clique_non_free(OldG,Call_fr,Call_SH,Temp_fr,Temp_SH),
@@ -657,38 +652,38 @@ sharefree_clique_success_builtin(arg,_,Sg0,_,Call,Succ):- Sg0=p(X,Y,Z),
     varset(Sg,Sv),
     varset(Head,Hv),
     TempASub = (Temp_SH,Temp_fr),
-    sharefree_clique_project(Sg,Sv,not_provided_HvFv_u,TempASub,Proj),
-    sharefree_clique_call_to_success_fact(Sg,Hv,Head,not_provided,Sv,TempASub,Proj,_,Succ). % TODO: add some ClauseKey?
-sharefree_clique_success_builtin(arg,_,_,_,_,'$bottom').
-sharefree_clique_success_builtin(exp,_,Sg,_,Call,Succ):-
+    project(Sg,Sv,not_provided_HvFv_u,TempASub,Proj),
+    call_to_success_fact(Sg,Hv,Head,not_provided,Sv,TempASub,Proj,_,Succ). % TODO: add some ClauseKey?
+success_builtin(arg,_,_,_,_,'$bottom').
+success_builtin(exp,_,Sg,_,Call,Succ):-
     Head = p(A,f(A,_B)),
     varset(Sg,Sv),
     varset(Head,Hv),
-    sharefree_clique_project(Sg,Sv,not_provided_HvFv_u,Call,Proj),
-    sharefree_clique_call_to_success_fact(Sg,Hv,Head,not_provided,Sv,Call,Proj,_,Succ). % TODO: add some ClauseKey?
-sharefree_clique_success_builtin(exp,_,_,_,_,'$bottom').
-sharefree_clique_success_builtin('=../2',_,p(X,Y),_,(Call_SH,Call_fr),Succ):-
+    project(Sg,Sv,not_provided_HvFv_u,Call,Proj),
+    call_to_success_fact(Sg,Hv,Head,not_provided,Sv,Call,Proj,_,Succ). % TODO: add some ClauseKey?
+success_builtin(exp,_,_,_,_,'$bottom').
+success_builtin('=../2',_,p(X,Y),_,(Call_SH,Call_fr),Succ):-
     varset(X,Varsx),
     values_equal(Varsx,Call_fr,g),!,
     varset(Y,VarsY),
     update_lambda_cf(VarsY,Call_fr,Call_SH,Succ_fr,Succ_SH),
     Succ = (Succ_SH,Succ_fr).
-sharefree_clique_success_builtin('=../2',_,p(X,Y),_,(Call_SH,Call_fr),Succ):-
+success_builtin('=../2',_,p(X,Y),_,(Call_SH,Call_fr),Succ):-
     varset(Y,VarsY),
     values_equal(VarsY,Call_fr,g),!,
     varset(X,VarsX),
     update_lambda_cf(VarsX,Call_fr,Call_SH,Succ_fr,Succ_SH),
     Succ = (Succ_SH,Succ_fr).
-sharefree_clique_success_builtin('=../2',Sv_uns,p(X,Y),_,Call,Succ):-
+success_builtin('=../2',Sv_uns,p(X,Y),_,Call,Succ):-
     var(X), var(Y),!,
     sort(Sv_uns,Sv),
     Call = (_,Call_fr),
     project_freeness(Sv,Call_fr,[A/Val1,B/Val2]),
     ( obtain_freeness(Val1,Val2) ->
-        sharefree_clique_extend(not_provided_Sg,(([],[Sv]),[A/nf,B/nf]),Sv,Call,Succ)
+        extend(not_provided_Sg,(([],[Sv]),[A/nf,B/nf]),Sv,Call,Succ)
     ; Succ = '$bottom'
     ).
-sharefree_clique_success_builtin('=../2',Sv_uns,p(X,Y),_,Call,Succ):-
+success_builtin('=../2',Sv_uns,p(X,Y),_,Call,Succ):-
     var(X), !,
     sort(Sv_uns,Sv),
     Call = (Call_SH,Call_fr),       
@@ -703,36 +698,36 @@ sharefree_clique_success_builtin('=../2',Sv_uns,p(X,Y),_,Call,Succ):-
           sharing_clique:project(not_provided_Sg,NewVars,not_provided_HvFv_u,Call_SH,Proj_SH),
           ord_subtract(NewVars,[X],VarsY),
           product_clique(ValueX,X,VarsY,Sv,Proj_SH,Proj_fr,Prime_SH,Prime_fr),
-          sharefree_clique_extend(not_provided_Sg,(Prime_SH,Prime_fr),Sv,Call,Succ)
+          extend(not_provided_Sg,(Prime_SH,Prime_fr),Sv,Call,Succ)
         )
     ; sharing_clique:project(not_provided_Sg,Sv,not_provided_HvFv_u,Call_SH,Proj_SH),
       ord_subtract(Sv,[X],VarsY),
       product_clique(ValueX,X,VarsY,Sv,Proj_SH,Proj_fr,Prime_SH,Prime_fr),
-      sharefree_clique_extend(not_provided_Sg,(Prime_SH,Prime_fr),Sv,Call,Succ)
+      extend(not_provided_Sg,(Prime_SH,Prime_fr),Sv,Call,Succ)
     ).
-sharefree_clique_success_builtin('=../2',Sv_uns,Sg,_,Call,Succ):- Sg=p(X,Y),
+success_builtin('=../2',Sv_uns,Sg,_,Call,Succ):- Sg=p(X,Y),
     X =.. T,
     sort(Sv_uns,Sv),
-    sharefree_clique_project(Sg,Sv,not_provided_HvFv_u,Call,Proj),
-    sharefree_clique_call_to_success_builtin('=/2','='(T,Y),Sv,Call,Proj,Succ).
-sharefree_clique_success_builtin(recorded,_,Sg,_,Call,Succ):- Sg=p(Y,Z),
+    project(Sg,Sv,not_provided_HvFv_u,Call,Proj),
+    call_to_success_builtin('=/2','='(T,Y),Sv,Call,Proj,Succ).
+success_builtin(recorded,_,Sg,_,Call,Succ):- Sg=p(Y,Z),
     varset(Z,NewG),
     varset(Y,VarsY),
     merge(NewG,VarsY,Vars),
-    sharefree_clique_project(Sg,Vars,not_provided_HvFv_u,Call,(SH,Fr)),
+    project(Sg,Vars,not_provided_HvFv_u,Call,(SH,Fr)),
     update_lambda_cf(NewG,Fr,SH,TempPrime_fr,TempPrime_SH),
     make_clique_dependence(TempPrime_SH,VarsY,TempPrime_fr,Prime_fr,Prime_SH),
     Prime = (Prime_SH,Prime_fr),
-    sharefree_clique_extend(Sg,Prime,Vars,Call,Succ).
-sharefree_clique_success_builtin(copy_term,_,Sg,_,Call,Succ):- Sg=p(X,Y),
+    extend(Sg,Prime,Vars,Call,Succ).
+success_builtin(copy_term,_,Sg,_,Call,Succ):- Sg=p(X,Y),
     varset(X,VarsX),
-    sharefree_clique_project(Sg,VarsX,not_provided_HvFv_u,Call,ProjectedX),
+    project(Sg,VarsX,not_provided_HvFv_u,Call,ProjectedX),
     copy_term((X,ProjectedX),(NewX,NewProjectedX)),
-    sharefree_clique_abs_sort(NewProjectedX,ProjectedNewX),
+    abs_sort(NewProjectedX,ProjectedNewX),
     varset(NewX,VarsNewX),
     varset(Y,VarsY),
     merge(VarsNewX,VarsY,TempSv),
-    sharefree_clique_project(Sg,VarsY,not_provided_HvFv_u,Call,ProjectedY),
+    project(Sg,VarsY,not_provided_HvFv_u,Call,ProjectedY),
     ProjectedY = (SHY,FrY),
     ProjectedNewX = (SHNewX,FrNewX),
     ord_union_w(SHY,SHNewX,TempSH), 
@@ -740,36 +735,36 @@ sharefree_clique_success_builtin(copy_term,_,Sg,_,Call,Succ):- Sg=p(X,Y),
     Call = (SHCall,FrCall),
     ord_union_w(SHNewX,SHCall,TempCallSH),
     merge(FrNewX,FrCall,TempCallFr),
-    sharefree_clique_call_to_success_builtin('=/2','='(NewX,Y),TempSv,
+    call_to_success_builtin('=/2','='(NewX,Y),TempSv,
                 (TempCallSH,TempCallFr),(TempSH,TempFr),Temp_success),
     collect_vars_freeness(FrCall,VarsCall),
-    sharefree_clique_project(Sg,VarsCall,not_provided_HvFv_u,Temp_success,Succ).
-sharefree_clique_success_builtin('current_key/2',_,p(X),_,Call,Succ):-
+    project(Sg,VarsCall,not_provided_HvFv_u,Temp_success,Succ).
+success_builtin('current_key/2',_,p(X),_,Call,Succ):-
     varset(X,NewG),
     Call = (Call_SH,Call_fr),
     update_lambda_cf(NewG,Call_fr,Call_SH,Succ_fr,Succ_SH),
     Succ = (Succ_SH,Succ_fr).
-sharefree_clique_success_builtin('current_predicate/2',_,p(X,Y),_,Call,Succ):-
+success_builtin('current_predicate/2',_,p(X,Y),_,Call,Succ):-
     var(Y),!,
     Call = (Call_SH,Call_fr),
     change_values_if_f([Y],Call_fr,Temp_fr,nf), 
     varset(X,NewG),
     update_lambda_cf(NewG,Temp_fr,Call_SH,Succ_fr,Succ_SH),
     Succ = (Succ_SH,Succ_fr).
-sharefree_clique_success_builtin('current_predicate/2',_,p(X,_Y),_,Call,Succ):- !,
+success_builtin('current_predicate/2',_,p(X,_Y),_,Call,Succ):- !,
     Call = (Call_SH,Call_fr),
     varset(X,NewG),
     update_lambda_cf(NewG,Call_fr,Call_SH,Succ_fr,Succ_SH),
     Succ = (Succ_SH,Succ_fr).
-sharefree_clique_success_builtin(findall,_,p(X,Z),_,(Call_SH,Call_fr),(Succ_SH,Succ_fr)):-
+success_builtin(findall,_,p(X,Z),_,(Call_SH,Call_fr),(Succ_SH,Succ_fr)):-
     varset(X,Xs),
     member_value_freeness(Call_fr,GVars,g),
     ord_subset(Xs,GVars), !,
     varset(Z,Zs),
     update_lambda_cf(Zs,Call_fr,Call_SH,Succ_fr,Succ_SH).
-sharefree_clique_success_builtin(findall,_,_,_,Call,Call).
+success_builtin(findall,_,_,_,Call,Call).
 %
-sharefree_clique_success_builtin('functor/3',_,p(X,Y,Z),_,Call,Succ):-
+success_builtin('functor/3',_,p(X,Y,Z),_,Call,Succ):-
     var(X),
     Call = (Call_SH,Call_fr),
     var_value(Call_fr,X,f),!,
@@ -779,27 +774,27 @@ sharefree_clique_success_builtin('functor/3',_,p(X,Y,Z),_,Call,Succ):-
       Succ = (Succ_SH,Succ_fr)
     ; Succ = '$bottom'
     ).
-sharefree_clique_success_builtin('functor/3',_,p(_X,Y,Z),_,Call,Succ):- !,
+success_builtin('functor/3',_,p(_X,Y,Z),_,Call,Succ):- !,
     Call = (Call_SH,Call_fr),
     varset([Y,Z],NewG),
     update_lambda_cf(NewG,Call_fr,Call_SH,Succ_fr,Succ_SH),
     Succ = (Succ_SH,Succ_fr).
-sharefree_clique_success_builtin('name/2',_,p(X,Y),_,Call,Succ):-
+success_builtin('name/2',_,p(X,Y),_,Call,Succ):-
     varset(X,OldG),
     Call = (Call_SH,Call_fr),
     update_lambda_clique_non_free(OldG,Call_fr,Call_SH,Temp_fr,Temp_SH),!,
     varset(Y,NewG),
     update_lambda_cf(NewG,Temp_fr,Temp_SH,Succ_fr,Succ_SH),
     Succ = (Succ_SH,Succ_fr).
-sharefree_clique_success_builtin('name/2',_,p(X,Y),_,Call,Succ):-
+success_builtin('name/2',_,p(X,Y),_,Call,Succ):-
     varset(Y,OldG),
     Call = (Call_SH,Call_fr),
     update_lambda_clique_non_free(OldG,Call_fr,Call_SH,Temp_fr,Temp_SH),!,
     varset(X,NewG),
     update_lambda_cf(NewG,Temp_fr,Temp_SH,Succ_fr,Succ_SH),
     Succ = (Succ_SH,Succ_fr).
-sharefree_clique_success_builtin('name/2',_,_,_,_,'$bottom').
-sharefree_clique_success_builtin('nonvar/1',_,p(X),_,Call,Succ):-
+success_builtin('name/2',_,_,_,_,'$bottom').
+success_builtin('nonvar/1',_,p(X),_,Call,Succ):-
     var(X), !,
     Call = (_Call_SH,Call_fr),
     var_value(Call_fr,X,Val),
@@ -807,30 +802,30 @@ sharefree_clique_success_builtin('nonvar/1',_,p(X),_,Call,Succ):-
       Succ = '$bottom'
     ; Succ = Call
     ).
-sharefree_clique_success_builtin('nonvar/1',_,_,_,Call,Call):- !.
-sharefree_clique_success_builtin('not_free/1',_,p(X),_,Call,Succ):-
-    sharefree_clique_success_builtin('nonvar/1',_,p(X),_,Call,Succ).
-sharefree_clique_success_builtin('numbervars/3',_,p(X,Y,Z),_,Call,Succ):-
+success_builtin('nonvar/1',_,_,_,Call,Call):- !.
+success_builtin('not_free/1',_,p(X),_,Call,Succ):-
+    success_builtin('nonvar/1',_,p(X),_,Call,Succ).
+success_builtin('numbervars/3',_,p(X,Y,Z),_,Call,Succ):-
     Call = (Call_SH,Call_fr),
     varset(Y,OldG),
     update_lambda_clique_non_free(OldG,Call_fr,Call_SH,Temp_fr,Temp_SH),!,
     varset(p(X,Z),NewG),
     update_lambda_cf(NewG,Temp_fr,Temp_SH,Succ_fr,Succ_SH),
     Succ = (Succ_SH,Succ_fr).
-sharefree_clique_success_builtin('numbervars/3',_,_,_,_,'$bottom').
-sharefree_clique_success_builtin('compare/3',_,p(X),_,Call,Succ):- 
+success_builtin('numbervars/3',_,_,_,_,'$bottom').
+success_builtin('compare/3',_,p(X),_,Call,Succ):- 
     atom(X),!,
     Succ = Call.
-sharefree_clique_success_builtin('compare/3',_,p(X),_,Call,Succ):- 
+success_builtin('compare/3',_,p(X),_,Call,Succ):- 
     var(X),!,
     Call = (Call_SH,Call_fr),
     update_lambda_cf([X],Call_fr,Call_SH,Succ_fr,Succ_SH),
     Succ = (Succ_SH,Succ_fr).
-sharefree_clique_success_builtin('compare/3',_,_,_,_,'$bottom').
-sharefree_clique_success_builtin('indep/2',_,p(X,Y),_,Call,Succ):- 
+success_builtin('compare/3',_,_,_,_,'$bottom').
+success_builtin('indep/2',_,p(X,Y),_,Call,Succ):- 
     ( ground(X) ; ground(Y) ), !,
     Succ = Call.
-sharefree_clique_success_builtin('indep/2',_,p(X,Y),_,Call,Succ):- 
+success_builtin('indep/2',_,p(X,Y),_,Call,Succ):- 
     varset(X,Xv),
     varset(Y,Yv),
     Call = ((Call_Cl,Call_Sh),Call_fr),
@@ -841,63 +836,63 @@ sharefree_clique_success_builtin('indep/2',_,p(X,Y),_,Call,Succ):-
     projected_gvars(Succ_SH,Vars,Ground),
     change_values_if_differ(Ground,Call_fr,Succ_fr,g,f),!,
     Succ = ((Succ_Cl,Succ_Sh),Succ_fr).
-sharefree_clique_success_builtin('indep/2',_,_,_,_,'$bottom').
-sharefree_clique_success_builtin('indep/1',_,p(X),_,Call,Succ):- 
+success_builtin('indep/2',_,_,_,_,'$bottom').
+success_builtin('indep/1',_,p(X),_,Call,Succ):- 
     nonvar(X),
     handle_each_indep(X,sharefree_clique,Call,Succ), !.  
-sharefree_clique_success_builtin('indep/1',_,_,_,_,'$bottom').
+success_builtin('indep/1',_,_,_,_,'$bottom').
 
-sharefree_clique_success_builtin('var/1',[X],p(X),_,Call,Succ):- 
+success_builtin('var/1',[X],p(X),_,Call,Succ):- 
     Call = (Call_SH,Call_fr),
     var_value(Call_fr,X,Valuex),
     Valuex \== g,
     change_values([X],Call_fr,Succ_fr,f),
     Succ = (Call_SH,Succ_fr), !.
-sharefree_clique_success_builtin('var/1',_,_,_,_,'$bottom').
-sharefree_clique_success_builtin('free/1',[V],p(V),HvFv_u,Call,Succ):- !,
-    sharefree_clique_success_builtin('var/1',[V],p(V),HvFv_u,Call,Succ).
+success_builtin('var/1',_,_,_,_,'$bottom').
+success_builtin('free/1',[V],p(V),HvFv_u,Call,Succ):- !,
+    success_builtin('var/1',[V],p(V),HvFv_u,Call,Succ).
 
 %------------------------------------------------------------------------%
-% sharefree_clique_call_to_success_builtin(+,+,+,+,+,-)                  |
-% sharefree_clique_call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,Succ)   |
+% call_to_success_builtin(+,+,+,+,+,-)                  |
+% call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,Succ)   |
 % Handles those builtins for which computing Prime is easier than Succ   |
 %------------------------------------------------------------------------%
-:- export(sharefree_clique_call_to_success_builtin/6).
-sharefree_clique_call_to_success_builtin('=/2','='(X,_Y),Sv,Call,(_,Proj_fr),Succ):-
+:- dom_impl(_, call_to_success_builtin/6, [noq]).
+call_to_success_builtin('=/2','='(X,_Y),Sv,Call,(_,Proj_fr),Succ):-
     varset(X,VarsX), values_equal(VarsX,Proj_fr,g), !,
     Call = (Call_SH,Call_fr),
     ord_subtract(Sv,VarsX,VarsY),
     update_lambda_cf(VarsY,Call_fr,Call_SH,Succ_fr,Succ_SH),
     Succ = (Succ_SH,Succ_fr).
-sharefree_clique_call_to_success_builtin('=/2','='(_X,Y),Sv,Call,(_,Proj_fr),Succ):-
+call_to_success_builtin('=/2','='(_X,Y),Sv,Call,(_,Proj_fr),Succ):-
     varset(Y,VarsY), values_equal(VarsY,Proj_fr,g), !,
     Call = (Call_SH,Call_fr),
     ord_subtract(Sv,VarsY,VarsX),
     update_lambda_cf(VarsX,Call_fr,Call_SH,Succ_fr,Succ_SH),
     Succ = (Succ_SH,Succ_fr).
-sharefree_clique_call_to_success_builtin('=/2','='(X,Y),Sv,Call,Proj,Succ):-
+call_to_success_builtin('=/2','='(X,Y),Sv,Call,Proj,Succ):-
     var(X),var(Y), !,
     Proj = (_,Proj0_fr),    
     project_freeness(Sv,Proj0_fr,Proj_fr),  %% necessary for def
     obtain_prime_clique_var_var(Proj_fr,Call,Succ).
-sharefree_clique_call_to_success_builtin('=/2','='(X,_Y),Sv,Call,Proj,Succ):-
+call_to_success_builtin('=/2','='(X,_Y),Sv,Call,Proj,Succ):-
     var(X), !,
     Proj = (Proj_SH,Proj_fr),       
     ord_subtract(Sv,[X],VarsY),
     var_value(Proj_fr,X,ValueX),
     product_clique(ValueX,X,VarsY,Sv,Proj_SH,Proj_fr,Prime_SH,Prime_fr),
     Prime= (Prime_SH,Prime_fr),
-    sharefree_clique_extend(not_provided_Sg,Prime,Sv,Call,Succ).
-sharefree_clique_call_to_success_builtin('=/2','='(X,Y),Sv,Call,Proj,Succ):-
+    extend(not_provided_Sg,Prime,Sv,Call,Succ).
+call_to_success_builtin('=/2','='(X,Y),Sv,Call,Proj,Succ):-
     copy_term(X,Xterm),
     copy_term(Y,Yterm),
     Xterm = Yterm,!,
     varset(Xterm,Vars),
-    sharefree_clique_call_to_success_fact('='(X,Y),Vars,'='(Xterm,Xterm),not_provided,Sv,Call,Proj,_Prime,Succ). % TODO: add some ClauseKey?
-sharefree_clique_call_to_success_builtin('=/2',_Sg,_Sv,_Call,_Proj,'$bottom'):-!.
-sharefree_clique_call_to_success_builtin('C/3','C'(X,Y,Z),Sv,Call,Proj,Succ):-
-    sharefree_clique_call_to_success_fact('='(X,[Y|Z]),[W],'='(W,W),not_provided,Sv,Call,Proj,_Prime,Succ). % TODO: add some ClauseKey?
-sharefree_clique_call_to_success_builtin('sort/2',sort(X,Y),Sv,Call,Proj,Succ):- 
+    call_to_success_fact('='(X,Y),Vars,'='(Xterm,Xterm),not_provided,Sv,Call,Proj,_Prime,Succ). % TODO: add some ClauseKey?
+call_to_success_builtin('=/2',_Sg,_Sv,_Call,_Proj,'$bottom'):-!.
+call_to_success_builtin('C/3','C'(X,Y,Z),Sv,Call,Proj,Succ):-
+    call_to_success_fact('='(X,[Y|Z]),[W],'='(W,W),not_provided,Sv,Call,Proj,_Prime,Succ). % TODO: add some ClauseKey?
+call_to_success_builtin('sort/2',sort(X,Y),Sv,Call,Proj,Succ):- 
     var(X), !,
     Proj = (_SH,Fr),
     var_value(Fr,X,Val),
@@ -906,9 +901,9 @@ sharefree_clique_call_to_success_builtin('sort/2',sort(X,Y),Sv,Call,Proj,Succ):-
     ; varset([X,Y],Sv),
       copy_term(Y,Yterm),
       varset(Yterm,Vars),
-      sharefree_clique_call_to_success_fact('='(X,Y),Vars,'='(Yterm,Yterm),not_provided,Sv,Call,Proj,_Prime,Succ) % TODO: add some ClauseKey?
+      call_to_success_fact('='(X,Y),Vars,'='(Yterm,Yterm),not_provided,Sv,Call,Proj,_Prime,Succ) % TODO: add some ClauseKey?
     ).
-sharefree_clique_call_to_success_builtin('sort/2',sort(X,Y),Sv,Call,Proj,Succ):- 
+call_to_success_builtin('sort/2',sort(X,Y),Sv,Call,Proj,Succ):- 
     functor(X,'.',_), !,
     varset0(X,[Z|_]),
     Call = (Call_SH,Call_fr),
@@ -920,9 +915,9 @@ sharefree_clique_call_to_success_builtin('sort/2',sort(X,Y),Sv,Call,Proj,Succ):-
     varset(Xterm,Vars),
     Proj = (SH,Fr),
     change_values_if_f([Z],Fr,TFr,nf),
-    sharefree_clique_call_to_success_fact('='(X,Y),Vars,'='(Xterm,Xterm),not_provided,Sv,(Call_SH,Temp_fr),(SH,TFr),_Prime,Succ). % TODO: add some ClauseKey? 
-sharefree_clique_call_to_success_builtin('keysort/2',keysort(X,Y),Sv,Call,Proj,Succ):- 
-    sharefree_clique_call_to_success_builtin('=/2','='(X,Y),Sv,Call,Proj,Succ).
+    call_to_success_fact('='(X,Y),Vars,'='(Xterm,Xterm),not_provided,Sv,(Call_SH,Temp_fr),(SH,TFr),_Prime,Succ). % TODO: add some ClauseKey? 
+call_to_success_builtin('keysort/2',keysort(X,Y),Sv,Call,Proj,Succ):- 
+    call_to_success_builtin('=/2','='(X,Y),Sv,Call,Proj,Succ).
 
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
@@ -1154,5 +1149,5 @@ obtain_prime_clique_var_var([X/f,Y/f],(Call_SH,Call_fr),Succ):- !,
     Succ = (Succ_SH,Call_fr).
 obtain_prime_clique_var_var([X/_,Y/_],Call,Succ):-
     Prime = (([],[[X,Y]]),[X/nf,Y/nf]),
-    sharefree_clique_extend(not_provided_Sg,Prime,[X,Y],Call,Succ).
+    extend(not_provided_Sg,Prime,[X,Y],Call,Succ).
 
