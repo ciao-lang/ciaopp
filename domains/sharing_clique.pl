@@ -6,29 +6,6 @@
 
 :- include(ciaopp(plai/plai_domain)).
 :- dom_def(share_clique, [default]).
-:- dom_impl(_, amgu/4, [noq]).
-:- dom_impl(_, augment_asub/3, [noq]).
-:- dom_impl(_, call_to_entry/9, [noq]).
-:- dom_impl(_, exit_to_prime/7, [noq]).
-:- dom_impl(_, project/5, [noq]).
-:- dom_impl(_, compute_lub/2, [noq]).
-:- dom_impl(_, identical_abstract/2, [noq]).
-:- dom_impl(_, abs_sort/2, [noq]).
-:- dom_impl(_, extend/5, [noq]).
-:- dom_impl(_, less_or_equal/2, [noq]).
-:- dom_impl(_, glb/3, [noq]).
-:- dom_impl(_, eliminate_equivalent/2, [noq]).
-:- dom_impl(_, call_to_success_fact/9, [noq]).
-:- dom_impl(_, special_builtin/5, [noq]).
-:- dom_impl(_, success_builtin/6, [noq]).
-:- dom_impl(_, call_to_success_builtin/6, [noq]).
-:- dom_impl(_, input_interface/4, [noq]).
-:- dom_impl(_, input_user_interface/5, [noq]).
-:- dom_impl(_, asub_to_native/5, [noq]).
-:- dom_impl(_, unknown_call/4, [noq]).
-:- dom_impl(_, unknown_entry/3, [noq]).
-:- dom_impl(_, empty_entry/3, [noq]).
-% :- dom_impl(_, compute_lub_el(ASub1,ASub2,ASub), lub_cl(ASub1,ASub2,ASub)).
 
 %------------------------------------------------------------------------%
 % This file contains the domain dependent abstract functions for the     |
@@ -131,6 +108,7 @@
 % call_to_entry(+,+,+,+,+,+,+,-,?)                          |
 %------------------------------------------------------------------------%
 :- export(call_to_entry/9).
+:- dom_impl(_, call_to_entry/9, [noq]).
 call_to_entry(_Sv,Sg,_Hv,Head,_K,Fv,Proj,Entry,ExtraInfo) :-
      variant(Sg,Head),!,
      ExtraInfo = yes,
@@ -168,6 +146,7 @@ call_to_entry(_Sv,_Sg,_Hv,_Head,_K,_Fv,_Proj,'$bottom',_).
 %------------------------------------------------------------------------%
 
 :- export(exit_to_prime/7).            
+:- dom_impl(_, exit_to_prime/7, [noq]).
 exit_to_prime(_,_,_,_,'$bottom',_,'$bottom'):-!.
 exit_to_prime(Sg,Hv,Head,_Sv,Exit,Flag,Prime):-  
      Flag == yes, !,
@@ -195,6 +174,7 @@ exit_to_prime(Sg,_Hv,_Head,Sv,Exit,ExtraInfo,Prime):-
 % @var{AMGU} is the abstract unification between @var{Sg} and @var{Head}.%
 %------------------------------------------------------------------------%
 :- export(amgu/4).
+:- dom_impl(_, amgu/4, [noq]).
 amgu(Sg,Head,ASub,AMGU):-
     peel_equations(Sg, Head,Eqs),
     share_clique_iterate(Eqs,star,ASub,AMGU),!.
@@ -221,6 +201,7 @@ share_clique_iterate([(X,Ts)|Eqs],Flag,ASub, ASub2):-
 % extend(Sg,Prime,Sv,Call,Succ)                             |
 %------------------------------------------------------------------------%
 :- export(extend/5).
+:- dom_impl(_, extend/5, [noq]).
 extend(_Sg,'$bottom',_Hv,_Call,Succ):- !,
      Succ = '$bottom'.
 extend(_Sg,_Prime,[],Call,Succ):- !,
@@ -412,6 +393,7 @@ shcl_([Xs|Xss],Cl,Sv,Call,Succ):-
 % Augments the abstract subtitution with fresh variables                 |
 %------------------------------------------------------------------------%
 :- export(augment_asub/3).
+:- dom_impl(_, augment_asub/3, [noq]).
 augment_asub(ASub,[],ASub) :- !.
 augment_asub(ASub,Vars,ASub_s):-
     abs_sort(ASub,SASub),
@@ -432,6 +414,7 @@ augment_asub_(ASub,[H|T],(Cl,[[H]|Sh])):-
 %------------------------------------------------------------------------%
 :- export(project/5).                  
 :- redefining(project/5).                  
+:- dom_impl(_, project/5, [noq]).
 project(_,_,_,'$bottom','$bottom'):- !.
 project(Sg,Vars,HvFv_u,(Cl,Sh),(Cl0,Sh0)) :-
     sharing:project(Sg,Vars,HvFv_u,Sh,Sh0),
@@ -446,6 +429,7 @@ project(Sg,Vars,HvFv_u,(Cl,Sh),(Cl0,Sh0)) :-
 % sorts the set of set of variables ASub to obtaint the Asub_s           |
 %-------------------------------------------------------------------------
 :- export(abs_sort/2).                     
+:- dom_impl(_, abs_sort/2, [noq]).
 abs_sort('$bottom','$bottom'):- !.
 abs_sort((Cl_ASub,Sh_ASub),(Cl_ASub_s,Sh_ASub_s) ):-
     sort_list_of_lists(Cl_ASub,Cl_ASub_s),
@@ -458,6 +442,7 @@ abs_sort((Cl_ASub,Sh_ASub),(Cl_ASub_s,Sh_ASub_s) ):-
 % variables and are equivalent                                           |
 %------------------------------------------------------------------------%
 :- export(identical_abstract/2).
+:- dom_impl(_, identical_abstract/2, [noq]).
 identical_abstract('$bottom','$bottom'):- !.
 identical_abstract('$bottom',_):- !,fail.
 identical_abstract(_,'$bottom'):- !,fail.
@@ -481,6 +466,7 @@ identical_abstract(ASub0,ASub1):- !,
 % normalization process.                                                 |
 %------------------------------------------------------------------------%
 :- export(eliminate_equivalent/2).
+:- dom_impl(_, eliminate_equivalent/2, [noq]).
 eliminate_equivalent(TmpLSucc,Succ):-
     sort(TmpLSucc,Succ).
 
@@ -500,6 +486,7 @@ eliminate_equivalent(TmpLSucc,Succ):-
 %------------------------------------------------------------------------%
 
 :- export(less_or_equal/2).
+:- dom_impl(_, less_or_equal/2, [noq]).
 less_or_equal('$bottom',_ASub):- !.
 less_or_equal(ASub,ASub1):-
     share_clique_normalize(ASub,100,1,(Cl0,Sh0)),
@@ -541,6 +528,7 @@ sharing_part_less_or_equal_([Sh|Shs],Sh1,Cl1):-
 %------------------------------------------------------------------------%
 
 :- export(call_to_success_fact/9).
+:- dom_impl(_, call_to_success_fact/9, [noq]).
 call_to_success_fact(_,[],_Head,_K,Sv,(Cl,Sh),_,([],[]),Succ):-!,
     ord_split_lists_from_list(Sv,Sh,_,Succ_Sh),
     delete_vars_from_list_of_lists(Sv,Cl,Succ_Cl),
@@ -582,6 +570,7 @@ call_to_prime_fact(_Sg,_Hv,_Head,_Sv,_Call,'$bottom').
 % merging the ASub1 and ASub2.                                           |
 %------------------------------------------------------------------------%
 :- export(compute_lub/2).
+:- dom_impl(_, compute_lub/2, [noq]).
 compute_lub([ASub1,ASub2|Rest],Lub) :- !,
     share_clique_lub_cl(ASub1,ASub2,ASub3),
     widen(extend,ASub3,_,ASub_widen),
@@ -589,6 +578,7 @@ compute_lub([ASub1,ASub2|Rest],Lub) :- !,
 compute_lub([ASub],ASub).
 
 :- export(share_clique_lub_cl/3).
+% :- dom_impl(_, compute_lub_el(ASub1,ASub2,ASub), lub_cl(ASub1,ASub2,ASub)).
 share_clique_lub_cl(ASub1,ASub2,ASub3):-
     ASub1 == ASub2,!,
     ASub3 = ASub2.
@@ -610,6 +600,7 @@ merge_subst((Cl1,Sh1),(Cl2,Sh2),Lub) :-
 %------------------------------------------------------------------------%
 
 :- export(glb/3).      
+:- dom_impl(_, glb/3, [noq]).
 glb('$bottom',_ASub,ASub3) :- !, ASub3='$bottom'.
 glb(_ASub,'$bottom',ASub3) :- !, ASub3='$bottom'.
 glb(ASub0,ASub1,Glb):- 
@@ -625,6 +616,7 @@ glb(ASub0,ASub1,Glb):-
 %------------------------------------------------------------------------%
 
 :- export(input_user_interface/5).
+:- dom_impl(_, input_user_interface/5, [noq]).
 input_user_interface((Gv,Sh,Cl,I),Qv,Call,Sg,MaybeCallASub):-
     sharing:input_user_interface((Gv,Sh,I),Qv,New_Sh,Sg,MaybeCallASub),
     may_be_var(Cl,Cl0),
@@ -638,6 +630,7 @@ take_ground_out_clique(Gv,Cl,Cl1):-
     ord_union(Intersect1,Disjoint,Cl1).
             
 :- export(input_interface/4).
+:- dom_impl(_, input_interface/4, [noq]).
 input_interface(clique(X),perfect,(Gv,Sh,Cl0,I),(Gv,Sh,Cl,I)):-
     nonvar(X),
     sort_list_of_lists(X,ASub),
@@ -662,6 +655,7 @@ myappend(Vs,V0,V):-
 %------------------------------------------------------------------------%
 
 :- export(asub_to_native/5). 
+:- dom_impl(_, asub_to_native/5, [noq]).
 asub_to_native('$bottom',_Qv,_OutFlag,_ASub_user,_Comps):- !, fail.
 asub_to_native((Cl,Sh),Qv,_OutFlag,Info,[]):-
     ord_union(Sh,Cl,All),
@@ -679,6 +673,7 @@ asub_to_native((Cl,Sh),Qv,_OutFlag,Info,[]):-
 %------------------------------------------------------------------------%
 
 :- export(unknown_call/4).
+:- dom_impl(_, unknown_call/4, [noq]).
 unknown_call(_Sg,_Vars,'$bottom','$bottom') :- !.
 unknown_call(_Sg,_Vars,([],[]),([],[])) :- !.
 unknown_call(_Sg,Vars,(Cl,Sh),Succ):-
@@ -700,6 +695,7 @@ unknown_call(_Sg,Vars,(Cl,Sh),Succ):-
 %------------------------------------------------------------------------%
 
 :- export(empty_entry/3).
+:- dom_impl(_, empty_entry/3, [noq]).
 empty_entry(Sg,Vars,Entry):-
     sharing:empty_entry(Sg,Vars,EntryVars),!,
     Entry = ([],EntryVars).
@@ -712,6 +708,7 @@ empty_entry(Sg,Vars,Entry):-
 %------------------------------------------------------------------------%
      
 :- export(unknown_entry/3).
+:- dom_impl(_, unknown_entry/3, [noq]).
 unknown_entry(_Sg,Qv,Call):-
     sort(Qv,QvS),   
     Call = (QvS,[]).
@@ -942,6 +939,7 @@ reduce_sharing([(L-Cand-Sh_cand)|T],SH,LB,Size,Res):-
 % (5) Sgkey: special handling of some particular builtins                |
 %------------------------------------------------------------------------%
 :- export(special_builtin/5).
+:- dom_impl(_, special_builtin/5, [noq]).
 special_builtin('read/2',read(X,Y),_,'recorded/3',p(Y,X)) :- !.
 special_builtin('length/2',length(_X,Y),_,some,[Y]) :- !.
 special_builtin('==/2',_,_,_,_):- !, fail.
@@ -961,6 +959,7 @@ special_builtin(SgKey,Sg,Subgoal,Type,Condvars):-
 %------------------------------------------------------------------------%
 
 :- export(success_builtin/6).
+:- dom_impl(_, success_builtin/6, [noq]).
 success_builtin(ground,Sv_u,_,_,Call,Succ):-
     sort(Sv_u,Sv),  
     irrel_w(Sv,Call,Succ).
@@ -1088,6 +1087,7 @@ success_builtin(var,_Sv,_Condvars,_HvFv_u,_Call,'$bottom').
 %------------------------------------------------------------------------%
 
 :- export(call_to_success_builtin/6).
+:- dom_impl(_, call_to_success_builtin/6, [noq]).
 call_to_success_builtin('=/2','='(X,Y),Sv,Call,Proj,Succ):-
     copy_term(X,Xterm),
     copy_term(Y,Yterm),
