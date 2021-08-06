@@ -14,28 +14,12 @@
     input_user_interface/5,
     empty_entry/3]).
 :- include(ciaopp(plai/plai_domain)).
-:- dom_def(share_clique_1).
-:- dom_impl(share_clique_1, call_to_entry/9).
-:- dom_impl(share_clique_1, exit_to_prime/7).
-:- dom_impl(share_clique_1, project/5).
-:- dom_impl(share_clique_1, compute_lub/2).
-:- dom_impl(share_clique_1, identical_abstract/2).
-:- dom_impl(share_clique_1, abs_sort/2, [from(sharing_clique:share_clique), noq]).
-:- dom_impl(share_clique_1, extend/5).
-:- dom_impl(share_clique_1, less_or_equal/2).
-:- dom_impl(share_clique_1, glb/3).
-:- dom_impl(share_clique_1, eliminate_equivalent/2).
-:- dom_impl(share_clique_1, call_to_success_fact/9).
-:- dom_impl(share_clique_1, special_builtin/5, [from(sharing_clique:share_clique), noq]).
-:- dom_impl(share_clique_1, success_builtin/6).
-:- dom_impl(share_clique_1, call_to_success_builtin/6).
-:- dom_impl(share_clique_1, input_interface/4).
-:- dom_impl(share_clique_1, input_user_interface/5, [from(sharing_clique:share_clique), noq]).
-:- dom_impl(share_clique_1, asub_to_native/5).
-:- dom_impl(share_clique_1, unknown_call/4).
-:- dom_impl(share_clique_1, unknown_entry/3).
-:- dom_impl(share_clique_1, empty_entry/3, [from(sharing_clique:share_clique), noq]).
-% :- dom_impl(share_clique_1, compute_lub_el(ASub1,ASub2,ASub), lub_cl(ASub1,ASub2,ASub)).
+:- dom_def(share_clique_1, [default]).
+
+:- dom_impl(_, abs_sort/2, [from(sharing_clique:share_clique), noq]).
+:- dom_impl(_, special_builtin/5, [from(sharing_clique:share_clique), noq]).
+:- dom_impl(_, input_user_interface/5, [from(sharing_clique:share_clique), noq]).
+:- dom_impl(_, empty_entry/3, [from(sharing_clique:share_clique), noq]).
 
 %------------------------------------------------------------------------%
 % This file contains the domain dependent abstract functions for the     |
@@ -138,11 +122,11 @@
 %                      ABSTRACT Call To Entry                            |
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% share_clique_1_call_to_entry(+,+,+,+,+,+,+,-,?)                          |
+% call_to_entry(+,+,+,+,+,+,+,-,?)                          |
 %------------------------------------------------------------------------%
 % TODO: almost like share_clique version
-:- export(share_clique_1_call_to_entry/9).
-share_clique_1_call_to_entry(_Sv,Sg,_Hv,Head,_K,Fv,Proj,Entry,ExtraInfo) :-
+:- dom_impl(_, call_to_entry/9, [noq]).
+call_to_entry(_Sv,Sg,_Hv,Head,_K,Fv,Proj,Entry,ExtraInfo) :-
      variant(Sg,Head),!,
      ExtraInfo = yes,
      copy_term((Sg,Proj),(NewSg,NewProj)),
@@ -151,46 +135,46 @@ share_clique_1_call_to_entry(_Sv,Sg,_Hv,Head,_K,Fv,Proj,Entry,ExtraInfo) :-
      list_to_list_of_lists(Fv,Temp1),
      merge(Temp1,Temp,Sh),
      share_clique_1_normalize((Cl,Sh),Entry).
-share_clique_1_call_to_entry(_,_,[],_Head,_K,Fv,_,Entry,ExtraInfo):- !,
+call_to_entry(_,_,[],_Head,_K,Fv,_,Entry,ExtraInfo):- !,
      ExtraInfo = no,
      list_to_list_of_lists(Fv,Sh_Entry),
      share_clique_1_normalize(([],Sh_Entry),Entry).
-share_clique_1_call_to_entry(Sv,Sg,Hv,Head,_K,Fv,Proj,Entry,ExtraInfo):-
+call_to_entry(Sv,Sg,Hv,Head,_K,Fv,Proj,Entry,ExtraInfo):-
      % groundness propagation to exit_to_prime
      projected_gvars_clique(Proj,Sv,Gv_Call),
      peel_equations( Sg,Head, Equations),
      sharing_clique:augment_asub(Proj,Hv,ASub),     
      share_clique_1_iterate(Equations,ASub,ASub1),
      sharing_clique:widen(plai_op_clique_1,ASub1,_,Result),
-     share_clique_1_project(Sg,Hv,not_provided_HvFv_u,Result,Entry0),
+     project(Sg,Hv,not_provided_HvFv_u,Result,Entry0),
      sharing_clique:augment_asub(Entry0,Fv,Entry1),
      share_clique_1_normalize(Entry1,Entry),
      ExtraInfo = (Equations,Gv_Call),!.
-share_clique_1_call_to_entry(_Sv,_Sg,_Hv,_Head,_K,_Fv,_Proj,'$bottom',_).
+call_to_entry(_Sv,_Sg,_Hv,_Head,_K,_Fv,_Proj,'$bottom',_).
 
 %------------------------------------------------------------------------%
 %                      ABSTRACT Exit to Prime                            |
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% share_clique_1_exit_to_prime(+,+,+,+,+,-,-)                            |
+% exit_to_prime(+,+,+,+,+,-,-)                            |
 %------------------------------------------------------------------------%
 
 % TODO: almost like share_clique version
-:- export(share_clique_1_exit_to_prime/7).            
-share_clique_1_exit_to_prime(_,_,_,_,'$bottom',_,'$bottom'):-!.
-share_clique_1_exit_to_prime(Sg,Hv,Head,_Sv,Exit,Flag,Prime):-  
+:- dom_impl(_, exit_to_prime/7, [noq]).
+exit_to_prime(_,_,_,_,'$bottom',_,'$bottom'):-!.
+exit_to_prime(Sg,Hv,Head,_Sv,Exit,Flag,Prime):-  
      Flag == yes, !,
-     share_clique_1_project(Sg,Hv,not_provided_HvFv_u,Exit,BPrime),
+     project(Sg,Hv,not_provided_HvFv_u,Exit,BPrime),
      copy_term((Head,BPrime),(NewHead,NewPrime)),
      Sg = NewHead,
      sharing_clique:abs_sort(NewPrime,Prime).
-share_clique_1_exit_to_prime(_,[],_,_,_,_,([],[])):- !.
-share_clique_1_exit_to_prime(Sg,_Hv,_Head,Sv,Exit,ExtraInfo,Prime):-
+exit_to_prime(_,[],_,_,_,_,([],[])):- !.
+exit_to_prime(Sg,_Hv,_Head,Sv,Exit,ExtraInfo,Prime):-
      ExtraInfo = (Equations,Gv_Call),           
      sharing_clique:augment_asub(Exit,Sv,ASub),   
      share_clique_1_iterate(Equations,ASub, Prime0),
      sharing_clique:widen(plai_op_clique_1,Prime0,_,Prime1),
-     share_clique_1_project(Sg,Sv,not_provided_HvFv_u,Prime1,(Cl,Sh)),
+     project(Sg,Sv,not_provided_HvFv_u,Prime1,(Cl,Sh)),
      % groundness propagation from call_to_entry
      nrel_clique_1(Gv_Call,(Cl,Sh),(Cl1,Sh1)),
      Prime = (Cl1,Sh1).
@@ -213,16 +197,16 @@ share_clique_1_iterate([(X,Ts)|Eqs],ASub, ASub2):-
 %                      ABSTRACT Extend                                   %
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% share_clique_1_extend(+,+,+,+,-)                                       |
-% share_clique_1_extend(Sg,Prime,Sv,Call,Succ)                           |
+% extend(+,+,+,+,-)                                       |
+% extend(Sg,Prime,Sv,Call,Succ)                           |
 %------------------------------------------------------------------------%
 
-:- export(share_clique_1_extend/5).
-share_clique_1_extend(_Sg,'$bottom',_Hv,_Call,Succ):- !,
+:- dom_impl(_, extend/5, [noq]).
+extend(_Sg,'$bottom',_Hv,_Call,Succ):- !,
      Succ = '$bottom'.
-share_clique_1_extend(_Sg,_Prime,[],Call,Succ):- !,
+extend(_Sg,_Prime,[],Call,Succ):- !,
      Call = Succ.
-share_clique_1_extend(_Sg,Prime,Sv,Call,Succ):-
+extend(_Sg,Prime,Sv,Call,Succ):-
 %open('clsh.pl',append,Fd),
      % explicit groundness propagation  
      projected_gvars_clique(Prime,Sv,Gv),
@@ -369,16 +353,17 @@ ord_intersection_no_singleton(Xs,Sv,Int):-
 %                      ABSTRACT PROJECTION                               |
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% share_clique_1_project(+,+,+,+,-)                                      |
-% share_clique_1_project(Sg,Vars,HvFv_u,ASub,Proj)                       |
+% project(+,+,+,+,-)                                      |
+% project(Sg,Vars,HvFv_u,ASub,Proj)                       |
 % project(g,(cl,sh)) = (\one(R), S U project(g,sh))                      |
 % R = {s | c \in cl, s = c /\ g}                                         |
 % S = {{x} | x \in s, c \in cl, s = c /\ g, s \subseteq c}               |
 %------------------------------------------------------------------------%
 
-:- export(share_clique_1_project/5).                  
-share_clique_1_project(_,_,_,'$bottom','$bottom'):- !.
-share_clique_1_project(Sg,Vars,HvFv_u,(Cl,Sh),Proj) :-
+:- redefining(project/5).
+:- dom_impl(_, project/5, [noq]).
+project(_,_,_,'$bottom','$bottom'):- !.
+project(Sg,Vars,HvFv_u,(Cl,Sh),Proj) :-
     sharing:project(Sg,Vars,HvFv_u,Sh,Sh_Proj),
     project_clique_1(Cl,Vars,Cl_Proj,_),
     retrieve_singletons((Cl_Proj,Sh_Proj),Cl,Vars,Proj).
@@ -435,22 +420,22 @@ subset_if_not_nil(C,Vars,Res):-
     ).  
 
 %------------------------------------------------------------------------%
-% share_clique_1_compute_lub(+,-)                                        |
-% share_clique_1_compute_lub(ListASub,Lub)                               |
+% compute_lub(+,-)                                        |
+% compute_lub(ListASub,Lub)                               |
 %------------------------------------------------------------------------%
-:- export(share_clique_1_compute_lub/2).
-share_clique_1_compute_lub([ASub],ASub).
-share_clique_1_compute_lub([ASub1,ASub2|Rest],Lub) :-
-    share_clique_1_lub_cl(ASub1,ASub2,ASub3),
+:- dom_impl(_, compute_lub/2, [noq]).
+compute_lub([ASub],ASub).
+compute_lub([ASub1,ASub2|Rest],Lub) :-
+    lub_cl(ASub1,ASub2,ASub3),
 %       sharing_clique:widen(extend_clique_1,ASub3,_,ASub_widen),
     ASub3 = ASub_widen,
-    share_clique_1_compute_lub([ASub_widen|Rest],Lub).
+    compute_lub([ASub_widen|Rest],Lub).
 
-:- export(share_clique_1_lub_cl/3).
-share_clique_1_lub_cl(ASub1,ASub2,ASub3):-
+% :- dom_impl(_, compute_lub_el(ASub1,ASub2,ASub), lub_cl(ASub1,ASub2,ASub), [noq]).
+lub_cl(ASub1,ASub2,ASub3):-
     ASub1 == ASub2,!,
     ASub3 = ASub2.
-share_clique_1_lub_cl(ASub1,ASub2,ASub3):-
+lub_cl(ASub1,ASub2,ASub3):-
     merge_subst_clique_1(ASub1,ASub2,ASub3).
 
 merge_subst_clique_1('$bottom',Yss,Yss):- !.
@@ -461,14 +446,14 @@ merge_subst_clique_1((Cl1,Sh1),(Cl2,Sh2),Lub) :-
     share_clique_1_normalize((Cl0,Sh0),100,2,Lub).
 
 %------------------------------------------------------------------------%
-% share_clique_1_glb(+,+,-)                                              |
-% share_clique_1_glb(ASub0,ASub1,Lub)                                    |
+% glb(+,+,-)                                              |
+% glb(ASub0,ASub1,Lub)                                    |
 %------------------------------------------------------------------------%
 
-:- export(share_clique_1_glb/3).
-share_clique_1_glb('$bottom',_ASub,ASub3) :- !, ASub3='$bottom'.
-share_clique_1_glb(_ASub,'$bottom',ASub3) :- !, ASub3='$bottom'.
-share_clique_1_glb((Cl1,Sh1),(Cl2,Sh2),Lub):-
+:- dom_impl(_, glb/3, [noq]).
+glb('$bottom',_ASub,ASub3) :- !, ASub3='$bottom'.
+glb(_ASub,'$bottom',ASub3) :- !, ASub3='$bottom'.
+glb((Cl1,Sh1),(Cl2,Sh2),Lub):-
     intersection_list_of_lists(Cl1,Cl2,Cl0),
     split_list_of_lists_singleton(Cl0,Cl0_Non_sing,_),
     intersection_list_of_lists(Cl1,Sh2,Int0),
@@ -479,17 +464,17 @@ share_clique_1_glb((Cl1,Sh1),(Cl2,Sh2),Lub):-
     Lub = (Cl0_Non_sing,Sh0).
 
 %------------------------------------------------------------------------%
-% share_clique_1_identical_abstract(+,+)                                 |
-% share_clique_1_identical_abstract(ASub0,ASub1)                         |
+% identical_abstract(+,+)                                 |
+% identical_abstract(ASub0,ASub1)                         |
 %------------------------------------------------------------------------%
 % TODO: almost like share_clique version
-:- export(share_clique_1_identical_abstract/2).
-share_clique_1_identical_abstract('$bottom','$bottom'):- !.
-share_clique_1_identical_abstract('$bottom',_):- !,fail.
-share_clique_1_identical_abstract(_,'$bottom'):- !,fail.
-share_clique_1_identical_abstract(ASub0,ASub1):-
+:- dom_impl(_, identical_abstract/2, [noq]).
+identical_abstract('$bottom','$bottom'):- !.
+identical_abstract('$bottom',_):- !,fail.
+identical_abstract(_,'$bottom'):- !,fail.
+identical_abstract(ASub0,ASub1):-
     ASub0 == ASub1,!.
-share_clique_1_identical_abstract(ASub0,ASub1):- !,
+identical_abstract(ASub0,ASub1):- !,
     share_clique_1_normalize(ASub0,100,2,NASub0),!,
     ( NASub0 == ASub1 ->
       true
@@ -502,19 +487,19 @@ share_clique_1_identical_abstract(ASub0,ASub1):- !,
 % eliminate_equivalent(+,-)                                              |
 % eliminate_equivalent(TmpLSucc,LSucc)                                   |
 %------------------------------------------------------------------------%
-:- export(share_clique_1_eliminate_equivalent/2).
-share_clique_1_eliminate_equivalent(TmpLSucc,Succ):-
+:- dom_impl(_, eliminate_equivalent/2, [noq]).
+eliminate_equivalent(TmpLSucc,Succ):-
     sort(TmpLSucc,Succ).
 
 %------------------------------------------------------------------------%
-% share_clique_1_less_or_equal(+,+)                                      |
-% share_clique_1_less_or_equal(ASub0,ASub1)                              |
+% less_or_equal(+,+)                                      |
+% less_or_equal(ASub0,ASub1)                              |
 % Succeeds if ASub1 is more general or equal to ASub0                    |
 %------------------------------------------------------------------------%
 
-:- export(share_clique_1_less_or_equal/2).
-share_clique_1_less_or_equal('$bottom',_ASub):- !.
-share_clique_1_less_or_equal(ASub,ASub1):-
+:- dom_impl(_, less_or_equal/2, [noq]).
+less_or_equal('$bottom',_ASub):- !.
+less_or_equal(ASub,ASub1):-
     share_clique_1_normalize(ASub,100,2,(Cl0,Sh0)),
     share_clique_1_normalize(ASub1,100,2,(Cl1,Sh1)),
     clique_part_less_or_equal(Cl0,Cl1),
@@ -527,18 +512,18 @@ share_clique_1_less_or_equal(ASub,ASub1):-
 % Specialized version of call_to_entry + exit_to_prime + extend for facts|
 %------------------------------------------------------------------------%
 % TODO: almost like share_clique version
-:- export(share_clique_1_call_to_success_fact/9).
-share_clique_1_call_to_success_fact(_,[],_Head,_K,Sv,(Cl,Sh),_,([],[]),Succ):-!,
+:- dom_impl(_, call_to_success_fact/9, [noq]).
+call_to_success_fact(_,[],_Head,_K,Sv,(Cl,Sh),_,([],[]),Succ):-!,
     ord_split_lists_from_list(Sv,Sh,_,Succ_Sh),
     delete_vars_from_list_of_lists(Sv,Cl,Succ_Cl),
     Succ = (Succ_Cl,Succ_Sh).
-share_clique_1_call_to_success_fact(Sg,Hv,Head,_K,Sv,Call,_Proj,Prime,Succ):-
+call_to_success_fact(Sg,Hv,Head,_K,Sv,Call,_Proj,Prime,Succ):-
 % exit_to_prime
     sharing_clique:augment_asub(Call,Hv,ASub),        
     peel_equations(Sg, Head,Equations),
     share_clique_1_iterate(Equations,ASub,(Cl1,Sh1)),
     sharing_clique:widen(plai_op_clique_1,(Cl1,Sh1),_,(Cl,Sh)),
-    share_clique_1_project(Sg,Sv,not_provided_HvFv_u,(Cl,Sh),Prime),
+    project(Sg,Sv,not_provided_HvFv_u,(Cl,Sh),Prime),
 % extend
     delete_vars_from_list_of_lists(Hv,Cl,Succ_Cl0),
     sort_list_of_lists(Succ_Cl0,Succ_Cl1),  
@@ -546,39 +531,39 @@ share_clique_1_call_to_success_fact(Sg,Hv,Head,_K,Sv,Call,_Proj,Prime,Succ):-
     delete_vars_from_list_of_lists(Hv,Sh,Succ_Sh),
     sort_list_of_lists(Succ_Sh,Succ_Sh_s),  
     Succ = (Succ_Cl,Succ_Sh_s),!.
-share_clique_1_call_to_success_fact(_Sg,_Hv,_Head,_K,_Sv,_Call,_Proj,'$bottom','$bottom').
+call_to_success_fact(_Sg,_Hv,_Head,_K,_Sv,_Call,_Proj,'$bottom','$bottom').
 
 %% %------------------------------------------------------------------------%
 %% % Specialised version of share_call_to_success_fact in order to allow    |
 %% % the computation of the prime, the composition and then the extension   |
 %% %------------------------------------------------------------------------%
 %% 
-%% share_clique_1_call_to_prime_fact(Sg,Hv,Head,Sv,Call,Prime) :-
+%% call_to_prime_fact(Sg,Hv,Head,Sv,Call,Prime) :-
 %% % exit_to_prime
 %%      sharing_clique:augment_asub(Call,Hv,ASub),        
 %%      peel_equations(Sg, Head,Equations),
 %%      share_clique_1_iterate(Equations,ASub,(Cl1,Sh1)),
 %%      sharing_clique:widen(plai_op_clique_1,(Cl1,Sh1),_,(Cl,Sh)),
-%%      share_clique_1_project(Sg,Sv,not_provided_HvFv_u,(Cl,Sh),Prime).
+%%      project(Sg,Sv,not_provided_HvFv_u,(Cl,Sh),Prime).
     
 % TODO: almost like share_clique version
-:- export(share_clique_1_input_interface/4).  
-share_clique_1_input_interface(clique_1(X),perfect,(Gv,Sh,Cl0,I),(Gv,Sh,Cl,I)):-
+:- dom_impl(_, input_interface/4, [noq]).
+input_interface(clique_1(X),perfect,(Gv,Sh,Cl0,I),(Gv,Sh,Cl,I)):-
     nonvar(X),
     sort_list_of_lists(X,ASub),
     myappend(ASub,Cl0,Cl).         
-share_clique_1_input_interface(Prop,Any,(Gv0,Sh0,Cl,I0),(Gv,Sh,Cl,I)):-
+input_interface(Prop,Any,(Gv0,Sh0,Cl,I0),(Gv,Sh,Cl,I)):-
     sharing:input_interface(Prop,Any,(Gv0,Sh0,I0),(Gv,Sh,I)).
 
 %------------------------------------------------------------------------%
-% share_clique_1_asub_to_native(+,+,+,-,-)                               |
-% share_clique_1_asub_to_native(ASub,Qv,OutFlag,ASub_user,Comps)         |
+% asub_to_native(+,+,+,-,-)                               |
+% asub_to_native(ASub,Qv,OutFlag,ASub_user,Comps)         |
 %------------------------------------------------------------------------%
 
 % TODO: almost like share_clique version
-:- export(share_clique_1_asub_to_native/5). 
-share_clique_1_asub_to_native('$bottom',_Qv,_OutFlag,_ASub_user,_Comps):- !, fail.
-share_clique_1_asub_to_native((Cl,Sh),Qv,_OutFlag,Info,[]):-
+:- dom_impl(_, asub_to_native/5, [noq]).
+asub_to_native('$bottom',_Qv,_OutFlag,_ASub_user,_Comps):- !, fail.
+asub_to_native((Cl,Sh),Qv,_OutFlag,Info,[]):-
     ord_union(Sh,Cl,All),
     projected_gvars(All,Qv,Gv),
     if_not_nil(Cl,clique_1(Cl),Info,Info0),
@@ -593,10 +578,10 @@ share_clique_1_asub_to_native((Cl,Sh),Qv,_OutFlag,Info,[]):-
 % literal whose definition is not present, and adds this top value to    |
 % Call.                                                                  |
 %------------------------------------------------------------------------% 
-:- export(share_clique_1_unknown_call/4).
-share_clique_1_unknown_call(_Sg,_Vars,'$bottom','$bottom') :- !.
-share_clique_1_unknown_call(_Sg,_Vars,([],[]),([],[])) :- !.
-share_clique_1_unknown_call(_Sg,Vars,(Cl,Sh),Succ):-
+:- dom_impl(_, unknown_call/4, [noq]).
+unknown_call(_Sg,_Vars,'$bottom','$bottom') :- !.
+unknown_call(_Sg,_Vars,([],[]),([],[])) :- !.
+unknown_call(_Sg,Vars,(Cl,Sh),Succ):-
     split_list_of_lists(Vars,Cl,Cl_vars,_),
     split_list_of_lists(Vars,Sh,Sh_vars,_),
     nrel_clique_1(Vars,(Cl,Sh),Rest),
@@ -604,12 +589,12 @@ share_clique_1_unknown_call(_Sg,Vars,(Cl,Sh),Succ):-
     ord_union_w(Star,Rest,Succ).
 
 %------------------------------------------------------------------------%
-% share_clique_1_unknown_entry(+,+,-)                                    |
-% share_clique_1_unknown_entry(Sg,Qv,Call)                               |
+% unknown_entry(+,+,-)                                    |
+% unknown_entry(Sg,Qv,Call)                               |
 %------------------------------------------------------------------------%
 
-:- export(share_clique_1_unknown_entry/3).
-share_clique_1_unknown_entry(_Sg,Qv,Call):-
+:- dom_impl(_, unknown_entry/3, [noq]).
+unknown_entry(_Sg,Qv,Call):-
     sort(Qv,QvS),   
     sharing_clique:augment_asub((QvS,[]),QvS,Call).
 
@@ -617,8 +602,8 @@ share_clique_1_unknown_entry(_Sg,Qv,Call):-
 %                         HANDLING BUILTINS                              |
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%      
-% share_clique_1_success_builtin(+,+,+,+,+,-)                            |
-% share_clique_1_success_builtin(Type,Sv_u,Condv,HvFv_u,Call,Succ)              |
+% success_builtin(+,+,+,+,+,-)                            |
+% success_builtin(Type,Sv_u,Condv,HvFv_u,Call,Succ)              |
 % Obtains the success for some particular builtins:                      |
 %  * If Type = ground, it updates Call making all vars in Sv_u ground    |
 %  * If Type = bottom, Succ = '$bottom'                                  |
@@ -628,17 +613,18 @@ share_clique_1_unknown_entry(_Sg,Qv,Call):-
 %    Succ is computed                                                    |
 %------------------------------------------------------------------------%
 
-:- export(share_clique_1_success_builtin/6).
-share_clique_1_success_builtin(ground,Sv_u,_,_,Call,Succ):-
+:- redefining(success_builtin/6).
+:- dom_impl(_, success_builtin/6, [noq]).
+success_builtin(ground,Sv_u,_,_,Call,Succ):-
     sort(Sv_u,Sv),
     nrel_clique_1(Sv,Call,Succ).
-share_clique_1_success_builtin(bottom,_,_,_,_,'$bottom').
-share_clique_1_success_builtin(unchanged,_,_,_,Call,Call).
-share_clique_1_success_builtin(some,_,NewGround,_,Call,Succ):-
+success_builtin(bottom,_,_,_,_,'$bottom').
+success_builtin(unchanged,_,_,_,Call,Call).
+success_builtin(some,_,NewGround,_,Call,Succ):-
     nrel_clique_1(NewGround,Call,Succ).
 % TODO: almost like share_clique version
 % SPECIAL BUILTINS
-share_clique_1_success_builtin('=../2',_,p(X,Y),_,(Cl,Sh),Succ):-
+success_builtin('=../2',_,p(X,Y),_,(Cl,Sh),Succ):-
 % All variables of X are ground. All variables of Y will be ground
     varset(X,Varsx),
     ord_union(Sh,Cl,All),
@@ -648,7 +634,7 @@ share_clique_1_success_builtin('=../2',_,p(X,Y),_,(Cl,Sh),Succ):-
     ord_split_lists_from_list(Varsy,Sh,_Intersect,Sh1),
     take_ground_out_clique_1(Varsy,Cl,Cl1),
     Succ = (Cl1,Sh1).
-share_clique_1_success_builtin('=../2',_,p(X,Y),_,(Cl,Sh),Succ):-
+success_builtin('=../2',_,p(X,Y),_,(Cl,Sh),Succ):-
 % All variables of Y are ground. All variables of X will be ground
     nonvar(Y),
     Y = [Z|W],
@@ -660,26 +646,26 @@ share_clique_1_success_builtin('=../2',_,p(X,Y),_,(Cl,Sh),Succ):-
     ord_split_lists_from_list(Varsx,Sh,_Intersect,Sh1),
     take_ground_out_clique_1(Varsx,Cl,Cl1),
     Succ = (Cl1,Sh1).
-share_clique_1_success_builtin('=../2',Sv_u,p(X,Y),_,Call,Succ):-
+success_builtin('=../2',Sv_u,p(X,Y),_,Call,Succ):-
 % X and Y are variables. Therefore, all variables of X can 
 % share with all variables of Y
     var(X), var(Y),!,
     sort(Sv_u,Sv),
     Prime = ([],[Sv]),
-    share_clique_1_extend(not_provided_Sg,Prime,Sv,Call,Succ).
-share_clique_1_success_builtin('=../2',Sv_u,p(X,Y),_,Call,Succ):-
+    extend(not_provided_Sg,Prime,Sv,Call,Succ).
+success_builtin('=../2',Sv_u,p(X,Y),_,Call,Succ):-
 % General case: Either X is f(t1,...,tn) or Y is [G|Something]. 
 % We must unify [f,t1,...,tn] = [G|Something]
     ( var(Y) -> G=g ; Y = [G|_] ), !,
     ( var(X) -> Term=[G|X] ; X=..Term ),
     sort(Sv_u,Sv),
-    share_clique_1_project(not_provided_Sg,Sv,not_provided_HvFv_u,Call,Proj),
-    share_clique_1_call_to_success_builtin('=/2','='(Term,Y),Sv,Call,Proj,Succ).
-share_clique_1_success_builtin('=../2',_Sv_u,_,_,_Call,'$bottom').
+    project(not_provided_Sg,Sv,not_provided_HvFv_u,Call,Proj),
+    call_to_success_builtin('=/2','='(Term,Y),Sv,Call,Proj,Succ).
+success_builtin('=../2',_Sv_u,_,_,_Call,'$bottom').
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% REVIEW !!
-share_clique_1_success_builtin('==/2',Sv_u,p(X,Y),_,Call,Succ):-
+success_builtin('==/2',Sv_u,p(X,Y),_,Call,Succ):-
 % If X and Y are identical, we only need to propagate groundness
     sh_peel(X,Y,Binds-[]),
     sort(Sv_u,Sv),
@@ -699,90 +685,90 @@ share_clique_1_success_builtin('==/2',Sv_u,p(X,Y),_,Call,Succ):-
     ord_split_lists_from_list(NewGround3,Sh0,_Intersect,Temp),
     ord_subtract(Temp,Sets1,Succ_Sh),
     Succ = (Succ_Cl,Succ_Sh).
-share_clique_1_success_builtin(copy_term,_Sv_u,p(X,Y),_,Call,Succ):-
+success_builtin(copy_term,_Sv_u,p(X,Y),_,Call,Succ):-
     varset(X,VarsX),
-    share_clique_1_project(not_provided_Sg,VarsX,not_provided_HvFv_u,Call,ProjectedX),
+    project(not_provided_Sg,VarsX,not_provided_HvFv_u,Call,ProjectedX),
     copy_term((X,ProjectedX),(NewX,NewProjectedX)),
     sharing_clique:abs_sort(NewProjectedX,ProjectedNewX),
     varset(NewX,VarsNewX),
     varset(Y,VarsY),
     merge(VarsNewX,VarsY,TempSv),
-    share_clique_1_project(not_provided_Sg,VarsY,not_provided_HvFv_u,Call,ProjectedY),
+    project(not_provided_Sg,VarsY,not_provided_HvFv_u,Call,ProjectedY),
     ord_union_w(ProjectedY,ProjectedNewX,TempProjected),
     ord_union_w(ProjectedNewX,Call,TempCall),
-    share_clique_1_call_to_success_builtin('=/2','='(NewX,Y),TempSv,
+    call_to_success_builtin('=/2','='(NewX,Y),TempSv,
                           TempCall,TempProjected,Temp_success),
     Call = (Cl,Sh),                    
     merge_list_of_lists(Cl,VarsCl),   
     merge_list_of_lists(Sh,VarsSh),   
     ord_union(VarsCl,VarsSh,VarsCall),
-    share_clique_1_project(not_provided_Sg,VarsCall,not_provided_HvFv_u,Temp_success,Succ).
+    project(not_provided_Sg,VarsCall,not_provided_HvFv_u,Temp_success,Succ).
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-share_clique_1_success_builtin(findall,_Sv_u,p(X,Z),_,Call,Succ):-
+success_builtin(findall,_Sv_u,p(X,Z),_,Call,Succ):-
     Call=(Cl,Sh),
     ord_union(Sh,Cl,All),
     varset(X,Varsx),
     projected_gvars(All,Varsx,Vars),
     Vars == Varsx,!,
     varset(Z,Varsz),
-    share_clique_1_success_builtin(ground,Varsz,_any,_,Call,Succ).
-share_clique_1_success_builtin(findall,_Sv_u,_,_,Call,Call).
-share_clique_1_success_builtin('indep/2',_Sv,p(X,Y),_,(Cl,Sh),(Succ_Cl,Succ_Sh)):-
+    success_builtin(ground,Varsz,_any,_,Call,Succ).
+success_builtin(findall,_Sv_u,_,_,Call,Call).
+success_builtin('indep/2',_Sv,p(X,Y),_,(Cl,Sh),(Succ_Cl,Succ_Sh)):-
     varset(X,Xv),
     varset(Y,Yv),
     eliminate_couples_clique_1(Cl,Xv,Yv,Succ_Cl),
     eliminate_couples(Sh,Xv,Yv,Succ_Sh).
-share_clique_1_success_builtin('indep/2',_Sv,_Condvars,_,_Call,'$bottom').
-share_clique_1_success_builtin('indep/1',_Sv,p(X),_,Call,Succ):- 
+success_builtin('indep/2',_Sv,_Condvars,_,_Call,'$bottom').
+success_builtin('indep/1',_Sv,p(X),_,Call,Succ):- 
     nonvar(X),
     handle_each_indep(X,share_clique_1,Call,Succ), !.  
-share_clique_1_success_builtin('indep/1',_,_,_,_,'$bottom').
-share_clique_1_success_builtin('recorded/3',Sv_u,p(Y,Z),_,Call,Succ):-
+success_builtin('indep/1',_,_,_,_,'$bottom').
+success_builtin('recorded/3',Sv_u,p(Y,Z),_,Call,Succ):-
     varset(Z,Varsz),
     nrel_clique_1(Varsz,Call,ASub),
     varset(Y,Varsy),
-    share_clique_1_project(not_provided_Sg,Varsy,not_provided_HvFv_u,ASub,ASub1),!,
+    project(not_provided_Sg,Varsy,not_provided_HvFv_u,ASub,ASub1),!,
     star_clique_1(ASub1,Prime),
     sort(Sv_u,Sv),
-    share_clique_1_extend(not_provided_Sg,Prime,Sv,Call,Succ).
+    extend(not_provided_Sg,Prime,Sv,Call,Succ).
 
-share_clique_1_success_builtin(var,_Sv,p(X),HvFv_u,(Cl,Sh),Succ):-
+success_builtin(var,_Sv,p(X),HvFv_u,(Cl,Sh),Succ):-
     sharing_clique:success_builtin(var,_,p(X),HvFv_u,(Cl,Sh),Succ).
 
 %------------------------------------------------------------------------%
-% share_clique_1_call_to_success_builtin(+,+,+,+,+,-)                    |
-% share_clique_1_call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,Succ)     |
+% call_to_success_builtin(+,+,+,+,+,-)                    |
+% call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,Succ)     |
 % Handles those builtins for which computing Prime is easier than Succ   |
 %------------------------------------------------------------------------%
 
 % TODO: almost like share_clique version
-:- export(share_clique_1_call_to_success_builtin/6).
-share_clique_1_call_to_success_builtin('=/2','='(X,Y),Sv,Call,Proj,Succ):-
+:- dom_impl(_, call_to_success_builtin/6, [noq]).
+call_to_success_builtin('=/2','='(X,Y),Sv,Call,Proj,Succ):-
     copy_term(X,Xterm),
     copy_term(Y,Yterm),
     Xterm = Yterm,!,
     varset(Xterm,Vars),
-    share_clique_1_call_to_success_fact('='(X,Y),Vars,'='(Xterm,Xterm),not_provided,Sv,Call,Proj,_Prime,Succ). % TODO: add some ClauseKey?
-share_clique_1_call_to_success_builtin('=/2',_Sg,_Sv,_Call,_Proj,'$bottom').
-share_clique_1_call_to_success_builtin('C/3','C'(X,Y,Z),Sv,Call,Proj,Succ):-
-    share_clique_1_call_to_success_fact('='(X,[Y|Z]),[W],'='(W,W),not_provided,Sv,Call,Proj,_Prime,Succ). % TODO: add some ClauseKey?
-share_clique_1_call_to_success_builtin('sort/2',sort(X,Y),Sv,Call,Proj,Succ):- 
-    share_clique_1_call_to_success_builtin('=/2','='(X,Y),Sv,Call,Proj,Succ).
-share_clique_1_call_to_success_builtin('expand_term/2',expand_term(X,Y),Sv,Call,
+    call_to_success_fact('='(X,Y),Vars,'='(Xterm,Xterm),not_provided,Sv,Call,Proj,_Prime,Succ). % TODO: add some ClauseKey?
+call_to_success_builtin('=/2',_Sg,_Sv,_Call,_Proj,'$bottom').
+call_to_success_builtin('C/3','C'(X,Y,Z),Sv,Call,Proj,Succ):-
+    call_to_success_fact('='(X,[Y|Z]),[W],'='(W,W),not_provided,Sv,Call,Proj,_Prime,Succ). % TODO: add some ClauseKey?
+call_to_success_builtin('sort/2',sort(X,Y),Sv,Call,Proj,Succ):- 
+    call_to_success_builtin('=/2','='(X,Y),Sv,Call,Proj,Succ).
+call_to_success_builtin('expand_term/2',expand_term(X,Y),Sv,Call,
                               Proj,Succ):- 
-    share_clique_1_call_to_success_builtin('arg/3',arg(1,Y,X),Sv,Call,Proj,Succ).
-share_clique_1_call_to_success_builtin('keysort/2',keysort(X,Y),Sv,Call,Proj,Succ):- 
-    share_clique_1_call_to_success_builtin('=/2','='(X,Y),Sv,Call,Proj,Succ).
-share_clique_1_call_to_success_builtin('arg/3',arg(X,Y,Z),_,Call,Proj,Succ):- 
+    call_to_success_builtin('arg/3',arg(1,Y,X),Sv,Call,Proj,Succ).
+call_to_success_builtin('keysort/2',keysort(X,Y),Sv,Call,Proj,Succ):- 
+    call_to_success_builtin('=/2','='(X,Y),Sv,Call,Proj,Succ).
+call_to_success_builtin('arg/3',arg(X,Y,Z),_,Call,Proj,Succ):- 
     varset(X,OldG),
     nrel_clique_1(OldG,Call,TempCall),
     Sg = p(Y,Z),
     Head = p(f(A,_B),A),
     varset(Sg,Sv),
     varset(Head,Hv),
-    share_clique_1_project(not_provided_Sg,Sv,not_provided_HvFv_u,TempCall,Proj),
-    share_clique_1_call_to_success_fact(Sg,Hv,Head,not_provided,Sv,TempCall,Proj,_Prime,Succ). % TODO: add some ClauseKey?
+    project(not_provided_Sg,Sv,not_provided_HvFv_u,TempCall,Proj),
+    call_to_success_fact(Sg,Hv,Head,not_provided,Sv,TempCall,Proj,_Prime,Succ). % TODO: add some ClauseKey?
 
 %------------------------------------------------------------------------%
 %                      Intermediate operations                           |
