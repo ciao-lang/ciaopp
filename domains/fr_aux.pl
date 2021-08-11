@@ -70,6 +70,9 @@ fr_restriction_entry(Vars, as(ACo,ACn), as(ACop,ACnp)) :-
 % SPECIFIC VERSION OF LUB USED AT PROCEDURE EXIT (computes only n-comp)
 % uses approach 2 (wrt determining ACo-ACn)
 
+%:- compilation_fact(dummy_lub_uas).
+
+:- if(defined(dummy_lub_uas)).
 % fr_lub_uas(UsefulASlist, Lub)
 % REQ : UsefulASlist =/= []
 %
@@ -88,29 +91,33 @@ fr_lub_uas2([as(_ACo1,ACn1) | UsefulASlist], ACn2, ACnlub):-
     ss_lubm(ACn1, ACn2, ACnlubAcc),
     fr_lub_uas2(UsefulASlist, ACnlubAcc, ACnlub).
 
+:- else.
+
+fr_lub_uas(UAs, Alub) :- fr_lub_uas_general(UAs, Alub).
 
 % GENERAL VERSION OF LUB TO BE USED FOR ANNOTATION (support3.pl)
 % uses approach 2 (wrt determining ACo-ACn)
 
-%% % fr_lub_uas_general(UsefulASlist, Lub)
-%% % REQ : UsefulASlist =/= []
-%% %
-%% % :- mode fr_lub_uas_general(?,o).
-%% fr_lub_uas_general([as(ACo, ACn) | UsefulASlist], as(AColub, ACnlub)):-
-%%      fr_lub_uas_general2(UsefulASlist, ACo, ACn, AColub, ACnlub).
-%% 
-%% % fr_lub_uas_general2(UsefulASlist, ACo, ACn, AColub, ACnlub)
-%% % <AColub,ACnlub> = lub of <ACo,ACn> and the <as> in UsefulASlist
-%% %
-%% % :- mode fr_lub_uas_general2(?,?,?,o,o).
-%% fr_lub_uas_general2([], AColub, ACnlub, AColub, ACnlub).
-%% fr_lub_uas_general2([as(ACo1,ACn1) | UsefulASlist], ACo2, ACn2,
-%%                                      AColub, ACnlub):-
-%%      ss_lubm(ACn1, ACn2, ACnlubAcc),
-%%      ss_union_list([ACo1, ACn1, ACo2, ACn2], ACt12),
-%%      ss_minimise(ACt12, ACtlubAcc),
-%%      ss_diff(ACtlubAcc, ACnlubAcc, AColubAcc),
-%%      fr_lub_uas_general2(UsefulASlist, AColubAcc, ACnlubAcc, AColub, ACnlub).
+% fr_lub_uas_general(UsefulASlist, Lub)
+% REQ : UsefulASlist =/= []
+%
+% :- mode fr_lub_uas_general(?,o).
+fr_lub_uas_general([as(ACo, ACn) | UsefulASlist], as(AColub, ACnlub)):-
+     fr_lub_uas_general2(UsefulASlist, ACo, ACn, AColub, ACnlub).
+
+% fr_lub_uas_general2(UsefulASlist, ACo, ACn, AColub, ACnlub)
+% <AColub,ACnlub> = lub of <ACo,ACn> and the <as> in UsefulASlist
+%
+% :- mode fr_lub_uas_general2(?,?,?,o,o).
+fr_lub_uas_general2([], AColub, ACnlub, AColub, ACnlub).
+fr_lub_uas_general2([as(ACo1,ACn1) | UsefulASlist], ACo2, ACn2,
+                                     AColub, ACnlub):-
+     ss_lubm(ACn1, ACn2, ACnlubAcc),
+     ss_union_list([ACo1, ACn1, ACo2, ACn2], ACt12),
+     ss_minimise(ACt12, ACtlubAcc),
+     ss_diff(ACtlubAcc, ACnlubAcc, AColubAcc),
+     fr_lub_uas_general2(UsefulASlist, AColubAcc, ACnlubAcc, AColub, ACnlub).
+:- endif.
 
 %--------------------------------------------------------------------------
 

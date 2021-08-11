@@ -112,7 +112,7 @@ fr_call_to_entry(_Sv,Sg,Hv,Head,_K,_Fv,Proj,Entry,_ExtraInfo):-
     fr_call_head_unif(Sargs, Hargs, Proj, ProjSH),
     fr_project_(ProjSH, Hv, Entry).
     %% no initialisation necessary for the local variables
-                                                                         
+
 %----------------------------------------------------------------------------
 
 % fr_exit_to_prime(Sg, Hv, Head, Sv, Exit, _ExtraInfo, Prime)  (S)                     
@@ -193,7 +193,7 @@ fr_identical_abstract(Bottom, Bottom):-
     bottomelement(Bottom), !.
 fr_identical_abstract(as(ACo1,ACn1), as(ACo2,ACn2)) :-
     ss_identical(ACo1, ACo2),                                        
-    ss_identical(ACn1, ACn2).                                          
+    ss_identical(ACn1, ACn2).
 
 %----------------------------------------------------------------------------
 

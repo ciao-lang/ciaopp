@@ -10,27 +10,38 @@
 
 %% do_compute_lub(AbsInt,SubstList,Subst) :- AbsInt = frdef, !, compute_lub_general(AbsInt,SubstList,Subst).
 
+%:- compilation_fact(dummy_lub_uas).
+
+:- if(defined(dummy_lub_uas)).
 do_compute_lub(AbsInt,SubstList,Subst):-
     ( AbsInt = fr ; AbsInt = fd ), !, % TODO: fd vs frdef?
+    % TODO: compute_lub_general not available here! see CiaoPP 0.7 
     compute_lub_general(AbsInt,SubstList,Subst).
+:- endif.
 do_compute_lub(AbsInt,SubstList,Subst):-
     there_is_delay, !,
     del_compute_lub(SubstList,AbsInt,Subst).
 do_compute_lub(AbsInt,SubstList,Subst):-
     compute_lub_(AbsInt,SubstList,Subst).
 
+:- if(defined(dummy_lub_uas)).
 compute_lub_general(_,_,_). % TODO: simplify? remove? (was in pool.pl)
 fake_fd_extend(_,_,_,_). % TODO: simplify? remove? (was in pool.pl) % TODO: fd vs frdef?
 fake_fr_extend(_,_,_,_). % TODO: simplify? remove? (was in pool.pl)
+:- endif.
 
 compute_lub_(_AbsInt,[],'$bottom'):- !.
 compute_lub_(AbsInt,SubstList,Subst):-
     compute_lub(AbsInt,SubstList,Subst).
 
+:- if(defined(dummy_lub_uas)).
 join_if_needed(fd,Proj,Prime,_Sg,Sv,Join):- !, % TODO: fd vs frdef?
+    % TODO: use fd_extend here! see CiaoPP 0.7 
     fake_fd_extend(Prime,Sv,Proj,Join).
 join_if_needed(fr,Proj,Prime,_Sg,Sv,Join):- !,
+    % TODO: use fr_extend here! see CiaoPP 0.7 
     fake_fr_extend(Prime,Sv,Proj,Join).
+:- endif.
 join_if_needed(_,_,Prime,_,_,Prime).
 
 free_vars_in_asub(depthk,Vars,Info,FVars):- !,

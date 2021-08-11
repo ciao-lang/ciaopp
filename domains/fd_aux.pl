@@ -77,6 +77,9 @@ vero_restriction_entry(Vars, as(Do1, Po1, Dn1, Pn1), as(Do2, Po2, Dn2, Pn2)) :-
 % SPECIFIC VERSION OF LUB USED AT PROCEDURE EXIT (computes only n-comp)
 % uses approach 2 (wrt determining old-new)
 
+%:- compilation_fact(dummy_lub_uas).
+
+:- if(defined(dummy_lub_uas)).
 % vero_lub_uas(UsefulASlist, G_lub, F_lub)
 % REQ : UsefulASlist =/= []
 %
@@ -114,6 +117,9 @@ vero_lub(Dn1, Pn1, Dn2, Pn2, G_lub, Dn_lub, Pn_lub) :-
     ss_union_list([Pn1,Pn2,Sing1n], Pn_lub_nonmin),
     ss_minimise(Pn_lub_nonmin, Pn_lub).
 
+:- else.
+
+vero_lub_uas(UAs, G_lub, F_lub) :- vero_lub_uas_general(UAs, G_lub, F_lub).
 
 % GENERAL VERSION OF LUB TO BE USED FOR ANNOTATION (support3.pl)
 % uses approach 2 (wrt determining old-new)
@@ -122,45 +128,47 @@ vero_lub(Dn1, Pn1, Dn2, Pn2, G_lub, Dn_lub, Pn_lub) :-
 % REQ : UsefulASlist =/= []
 %
 % :- mode vero_lub_uas_general(?,?,o).
-%%
-%% vero_lub_uas_general([AS1 | UsefulASlist], G_lub, F_lub):-
-%%      vero_lub_uas_general2(UsefulASlist, AS1, G_lub, F_lub).
-%% 
-%% % vero_lub_uas_general2(UsefulASlist, F_lub_Acc, G_lub, F_lub)
-%% % F_lub = lub({F_lub_Acc, States_of_UsefulASlist})
-%% %
-%% % :- mode vero_lub_uas_general2(?,?,?,o).
-%% vero_lub_uas_general2([], F_lub, _G_lub, F_lub).
-%% vero_lub_uas_general2([AS1 | ASrest], AS2, G_lub, F_lub):-
-%%      vero_lub_general(AS1, AS2, G_lub, Lub12),
-%%      vero_lub_uas_general2(ASrest, Lub12, G_lub, F_lub).
-%% 
-%% % vero_lub_general(AS1, AS2, G_lub, AS_lub)
-%% % AS_lub = lub(AS1, AS2) given G_lub
-%% %
-%% % :- mode vero_lub_general(?,?,?,o).
-%% vero_lub_general(as(D1o,P1o,D1n,P1n), as(D2o,P2o,D2n,P2n), G_lub, Lub) :-
-%%      Lub = as(Dlo,Plo,Dln,Pln),
-%%      % def part      
-%%      set_intersect(D1n, D2n, Dln),   % D1n \intersect D2n = Dln
-%%      set_diff(G_lub, Dln, Dlo),      % Dlo = G_lub \ Dln (cfr footnote 12)
-%% 
-%%      % free part, Pnew
-%%      set_union(D1n, D2n, D12n),
-%%      set_diff(D12n, G_lub, Sings),
-%%      ss_make_singl(Sings, Sing1n),
-%%      ss_union_list([P1n,P2n,Sing1n], Pln_nonmin),
-%%      ss_minimise(Pln_nonmin, Pln),
-%% 
-%%      % free part, Ptot
-%%      set_union_list([D1o, D2o, D12n], D12t),
-%%      set_diff(D12t, G_lub, DefXst),
-%%      ss_make_singl(DefXst, Singt),
-%%      ss_union_list([P1o, P1n, P2o, P2n, Singt], Plt_nonmin),
-%%      ss_minimise(Plt_nonmin,Plt),
-%% 
-%%      % free part, Pold
-%%      ss_diff(Plt, Pln, Plo).
+
+vero_lub_uas_general([AS1 | UsefulASlist], G_lub, F_lub):-
+     vero_lub_uas_general2(UsefulASlist, AS1, G_lub, F_lub).
+
+% vero_lub_uas_general2(UsefulASlist, F_lub_Acc, G_lub, F_lub)
+% F_lub = lub({F_lub_Acc, States_of_UsefulASlist})
+%
+% :- mode vero_lub_uas_general2(?,?,?,o).
+vero_lub_uas_general2([], F_lub, _G_lub, F_lub).
+vero_lub_uas_general2([AS1 | ASrest], AS2, G_lub, F_lub):-
+     vero_lub_general(AS1, AS2, G_lub, Lub12),
+     vero_lub_uas_general2(ASrest, Lub12, G_lub, F_lub).
+
+% vero_lub_general(AS1, AS2, G_lub, AS_lub)
+% AS_lub = lub(AS1, AS2) given G_lub
+%
+% :- mode vero_lub_general(?,?,?,o).
+vero_lub_general(as(D1o,P1o,D1n,P1n), as(D2o,P2o,D2n,P2n), G_lub, Lub) :-
+     Lub = as(Dlo,Plo,Dln,Pln),
+     % def part      
+     set_intersect(D1n, D2n, Dln),   % D1n \intersect D2n = Dln
+     set_diff(G_lub, Dln, Dlo),      % Dlo = G_lub \ Dln (cfr footnote 12)
+
+     % free part, Pnew
+     set_union(D1n, D2n, D12n),
+     set_diff(D12n, G_lub, Sings),
+     ss_make_singl(Sings, Sing1n),
+     ss_union_list([P1n,P2n,Sing1n], Pln_nonmin),
+     ss_minimise(Pln_nonmin, Pln),
+
+     % free part, Ptot
+     set_union_list([D1o, D2o, D12n], D12t),
+     set_diff(D12t, G_lub, DefXst),
+     ss_make_singl(DefXst, Singt),
+     ss_union_list([P1o, P1n, P2o, P2n, Singt], Plt_nonmin),
+     ss_minimise(Plt_nonmin,Plt),
+
+     % free part, Pold
+     ss_diff(Plt, Pln, Plo).
+
+:- endif.
 
 %--------------------------------------------------------------------------
 

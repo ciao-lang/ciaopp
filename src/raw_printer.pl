@@ -245,7 +245,7 @@ output_raw_clauses([(RFlag, X)|Clauses], S) :-
     format(S, '% ~w ~w ~n', [ClKey, RFlag]),
     add_ppoints(Body, Vars, PBody),
     list_to_clause_body(PBody, ClBody),
-    portray_clause(S, ':-'(Head, ClBody)),
+    portray_clause(S, ':-'(Head, ClBody)), % TODO: bug, do not consider already numbered vars!
     nl(S),
     output_raw_clauses(Clauses, S).
 
