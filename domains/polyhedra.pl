@@ -52,12 +52,12 @@ polyhedra_finalize :- true. % TODO: do nothing (debug)
 
 :- use_module(ciaopp(preprocess_flags), [push_pp_flag/2]).
 
-:- dom_impl(polyhedra, init_abstract_domain/1, [noq]).
+:- dom_impl(_, init_abstract_domain/1, [noq]).
 init_abstract_domain([widen]) :- 
     push_pp_flag(widen,on).
 
 %-------------------------------------------------------------------------
-:- dom_impl(polyhedra, abs_sort/2, [noq]).
+:- dom_impl(_, abs_sort/2, [noq]).
 abs_sort('$bottom','$bottom'):-!.
 abs_sort(ASub1,ASub2):-
     polyhedra_initialize,
@@ -79,12 +79,12 @@ polyhedra_sort_(ASub,ASub_Sorted):-
     ).
 polyhedra_sort_(X,X).
 
-:- dom_impl(polyhedra, eliminate_equivalent/2, [noq]).
+:- dom_impl(_, eliminate_equivalent/2, [noq]).
 eliminate_equivalent(ASub1,ASub2):-
     abs_sort(ASub1,ASub2).
 
 %-------------------------------------------------------------------------
-:- dom_impl(polyhedra, identical_abstract/2, [noq]).
+:- dom_impl(_, identical_abstract/2, [noq]).
 identical_abstract('$bottom','$bottom'):-!.
 identical_abstract(ASub1,ASub2):-
     polyhedra_initialize,
@@ -109,7 +109,7 @@ identical_abstract_(ASub1,ASub2):-
 %------------------------------------------------------------------------%
 
 % widening requires Dim0 = Dim1
-:- dom_impl(polyhedra, widencall/3, [noq]).
+:- dom_impl(_, widencall/3, [noq]).
 widencall('$bottom',ASub2,ASub2):-!.
 widencall(ASub1,'$bottom',ASub1):-!.
 widencall(ASub1,ASub2,New_ASub):- 
@@ -136,16 +136,16 @@ widencall_(Poly0,Poly1,Poly_Widen):-
     ppl_Polyhedron_BHRZ03_widening_assign(New_Poly,Poly0),  
     Poly_Widen = New_Poly.
 
-:- dom_impl(polyhedra, needs/1, [noq]).
+:- dom_impl(_, needs/1, [noq]).
 needs(widen).
 
-:- dom_impl(polyhedra, widen/3, [noq]).
+:- dom_impl(_, widen/3, [noq]).
 widen(Prime0,Prime1,New_Prime):- 
     widencall(Prime0,Prime1,New_Prime).
 
 %-------------------------------------------------------------------------
 :- export(less_or_equal/2). % (for abs_exec_cond)
-:- dom_impl(polyhedra, less_or_equal/2, [noq]).
+:- dom_impl(_, less_or_equal/2, [noq]).
 less_or_equal(ASub1,ASub2):-
     polyhedra_initialize,
     ASub1 = (Poly1,Vars),
@@ -154,7 +154,7 @@ less_or_equal(ASub1,ASub2):-
     polyhedra_finalize.
 
 %-------------------------------------------------------------------------
-:- dom_impl(polyhedra, compute_lub/2, [noq]).
+:- dom_impl(_, compute_lub/2, [noq]).
 compute_lub(ASubList,Lub):-
     polyhedra_initialize,
     compute_lub_(ASubList,Lub),
@@ -178,7 +178,7 @@ compute_lub_el(ASub1,ASub2,Lub):-
 compute_lub_el(_ASub1,_ASub2,'$bottom').
 
 %-------------------------------------------------------------------------
-:- dom_impl(polyhedra, glb/3, [noq]).
+:- dom_impl(_, glb/3, [noq]).
 glb('$bottom',_ASub,ASub3) :- !, ASub3='$bottom'.
 glb(_ASub,'$bottom',ASub3) :- !, ASub3='$bottom'.
 glb(ASub1,ASub2,Glb):-
@@ -197,7 +197,7 @@ glb_(ASub1,ASub2,Glb):-
     Glb = (Poly1,Vars).
 
 %------------------------------------------------------------------------%
-:- dom_impl(polyhedra, project/5, [noq]).
+:- dom_impl(_, project/5, [noq]).
 project(_Sg,Vars,_HvFv_u,ASub,Proj):-
     polyhedra_initialize,
     project_(ASub,Vars,Proj),
@@ -220,7 +220,7 @@ project_on_dimensions( Poly,Dim,[_Var|Rest_Var],Vars):-
     project_on_dimensions(Poly,Dim,Rest_Var,Vars).
 
 %-------------------------------------------------------------------------
-:- dom_impl(polyhedra, extend/5, [noq]).
+:- dom_impl(_, extend/5, [noq]).
 extend(_Sg,Prime,Sv,Call,Success):-
     polyhedra_initialize,
     extend_(Prime,Sv,Call,Success),
@@ -249,7 +249,7 @@ call_to_entry_(_Sv,Sg,Hv,Head,Fv,Proj,Entry,ExtraInfo):-
     ExtraInfo = (Upd_Proj,HvFv).
 
 %-------------------------------------------------------------------------
-:- dom_impl(polyhedra, exit_to_prime/7, [noq]).
+:- dom_impl(_, exit_to_prime/7, [noq]).
 exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime):-
     polyhedra_initialize,
     exit_to_prime_(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime),
@@ -266,7 +266,7 @@ exit_to_prime_(_Sg,_Hv,_Head,Sv,Exit,ExtraInfo,Prime):-
 %------------------------------------------------------------------------%
 % Specialized version of call_to_entry + exit_to_prime + extend for facts%
 %-------------------------------------------------------------------------
-:- dom_impl(polyhedra, call_to_success_fact/9, [noq]).
+:- dom_impl(_, call_to_success_fact/9, [noq]).
 call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ):-
     polyhedra_initialize,
     call_to_success_fact_(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ),
@@ -287,14 +287,14 @@ call_to_success_fact_(Sg,Hv,Head,_K,Sv,Call,Proj,Prime,Succ):-
 %                Unknow & Empty Entry,Unknow Call                        %
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-:- dom_impl(polyhedra, unknown_entry/3, [noq]).
+:- dom_impl(_, unknown_entry/3, [noq]).
 unknown_entry(_Sg,Vars,Entry):- 
     polyhedra_initialize,
     polyhedra_get_empty_Asub(Empty),
     polyhedra_add_dimensions(Empty,Vars,Entry),
     polyhedra_finalize.
 
-:- dom_impl(polyhedra, empty_entry/3, [noq]).
+:- dom_impl(_, empty_entry/3, [noq]).
 empty_entry(Sg,Vars,Entry):- 
     polyhedra_initialize,
     unknown_entry(Sg,Vars,Entry),
@@ -303,7 +303,7 @@ empty_entry(Sg,Vars,Entry):-
 % The unknown call might only impose more constraints on Vars, so Call is
 % a valid approximation for Succ, even for those dimensions that could be
 % instantiated as non-numeric values in the unknown call
-:- dom_impl(polyhedra, unknown_call/4, [noq]).
+:- dom_impl(_, unknown_call/4, [noq]).
 unknown_call(_Sg,_Vars,Call,Succ):-
     polyhedra_initialize,
     Succ = Call,
@@ -318,7 +318,7 @@ unknown_call(_Sg,_Vars,Call,Succ):-
 %                          Special Builtin
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-:- dom_impl(polyhedra, special_builtin/5, [noq]).
+:- dom_impl(_, special_builtin/5, [noq]).
 special_builtin('=/2',=(X,Y),_,unification,Condvars):-
     Condvars = (X,Y).       
 special_builtin('is/2',is(X,Y),_,constraint,Condvars):-
@@ -342,7 +342,7 @@ special_builtin('read:read/1',_,_,unchanged,_).
     
 % We only pay attention to the subset [=,<,>,>=,=<] if they relate linear
 % equations.
-:- dom_impl(polyhedra, success_builtin/6, [noq]).
+:- dom_impl(_, success_builtin/6, [noq]).
 success_builtin(Type,Sv,Condv,_HvFv_u,Call,New_Succ):-
     polyhedra_initialize,
     success_builtin0(Type,Sv,Condv,Call,New_Succ),
@@ -377,7 +377,7 @@ success_builtin_(constraint,_Sv,_Condv,Call,Succ):-
 %                       Call to Success Builtin
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-:- dom_impl(polyhedra, call_to_success_builtin/6, [noq]).
+:- dom_impl(_, call_to_success_builtin/6, [noq]).
 call_to_success_builtin(SgKey,Sh,Sv,Call,Proj,Succ):-
     polyhedra_initialize,
     call_to_success_builtin_(SgKey,Sh,Sv,Call,Proj,Succ),
@@ -393,7 +393,7 @@ call_to_success_builtin_(_SgKey,_Sh,_Sv,Call,_Proj,Succ):-
 %-------------------------------------------------------------------------
 
 :- export(input_user_interface/5). % (for abs_exec_cond)
-:- dom_impl(polyhedra, input_user_interface/5, [noq]).
+:- dom_impl(_, input_user_interface/5, [noq]).
 input_user_interface(Cons_Sys,Qv,New_ASub,_Sg,_MaybeCallASub):-
     polyhedra_initialize,
     length(Qv,Dims),
@@ -411,7 +411,7 @@ input2builtin([In_Equality|Rest_Cons],ASub,New_ASub):-
     success_builtin0(constraint,_,In_Equality,ASub,ASub1),
     input2builtin(Rest_Cons,ASub1,New_ASub).
     
-:- dom_impl(polyhedra, input_interface/4, [noq]).
+:- dom_impl(_, input_interface/4, [noq]).
 input_interface(InputUser,_Kind,Old_Cons_Sys,New_Cons_sys):-
     polyhedra_initialize,
     input_interface_(InputUser,_Kind,Old_Cons_Sys,New_Cons_sys),
@@ -420,7 +420,7 @@ input_interface(InputUser,_Kind,Old_Cons_Sys,New_Cons_sys):-
 input_interface_(constraint(Cons_Sys),perfect,Old_Cons_Sys,New_Cons_Sys):-
     append(Old_Cons_Sys,Cons_Sys,New_Cons_Sys). 
 
-:- dom_impl(polyhedra, asub_to_native/5, [noq]).
+:- dom_impl(_, asub_to_native/5, [noq]).
 asub_to_native('$bottom',_Qv,_OutFlag,'$bottom',[]) :- !.
 asub_to_native(ASub1,_Qv,_OutFlag,[Output],[]):-
     polyhedra_initialize,

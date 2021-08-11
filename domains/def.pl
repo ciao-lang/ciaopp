@@ -222,7 +222,7 @@ compute_lub([Constr1,Constr2|Xs],Lub):-
     compute_lub([LubConstr|Xs],Lub).
 
 :- export(compute_lub_el/3).
-% :- dom_impl(def, compute_lub_el(ASub1,ASub2,ASub), compute_lub_el(ASub1,ASub2,ASub)).
+% :- dom_impl(_, compute_lub_el(ASub1,ASub2,ASub), compute_lub_el(ASub1,ASub2,ASub)).
 compute_lub_el('$bottom',Constr,Constr):- !.
 compute_lub_el(a(G1,S1),a(G2,S2),a(LubG,LubS)):- !,
     ord_intersection(G1,G2,LubG),
@@ -790,7 +790,7 @@ each_subset0([_|SS1],S0):-
 %% % groundness from ACns2 to ACns1. An then propagate it back.
 %% %-------------------------------------------------------------------------
 %% 
-%% :- dom_impl(def, propagate_downwards_closed(ASub1,ASub2,ASub), downwards_closed(ASub1,ASub2,ASub)).
+%% :- dom_impl(_, propagate_downwards_closed(ASub1,ASub2,ASub), downwards_closed(ASub1,ASub2,ASub)).
 %% downwards_closed(a(G1,D1),a(G2,D2),ACns):- 
 %%      merge(G1,G2,G),
 %%      def_conjunct_constr(a(G,[]),a(G1,D1),Temp),
@@ -854,15 +854,15 @@ each_subset0([_|SS1],S0):-
 %%      def_conjunct_constr(a(Gr,[]),a(GOld,SSOld),ASub),
 %%      def_conjunct_constr(ASub,a(GOld,SSOld),Conj).
 
-% :- dom_impl(def, more_instantiate(ASub1,ASub2), less_or_equal(ASub2,ASub1)).
-% :- dom_impl(def, convex_hull(Old,_,Old)).
+% :- dom_impl(_, more_instantiate(ASub1,ASub2), less_or_equal(ASub2,ASub1)).
+% :- dom_impl(_, convex_hull(Old,_,Old)).
 %
-% :- dom_impl(def, del_check_cond(Cond,ASub,Sv,Flag,WConds), check_cond(Cond,ASub,Sv,Flag,WConds)).
+% :- dom_impl(_, del_check_cond(Cond,ASub,Sv,Flag,WConds), check_cond(Cond,ASub,Sv,Flag,WConds)).
 %% check_cond(_,_,_,_,_). 
 %% downwards_closed(_,_,_).
-%% :- dom_impl(def, del_hash(ASub,Vars,N), hash(ASub,Vars,N)).
+%% :- dom_impl(_, del_hash(ASub,Vars,N), hash(ASub,Vars,N)).
 %% hash(_,_,_).
-% :- dom_impl(def, del_impose_cond(LCond,Sv,ASub,LASub), impose_cond(LCond,Sv,ASub,LASub)).
+% :- dom_impl(_, del_impose_cond(LCond,Sv,ASub,LASub), impose_cond(LCond,Sv,ASub,LASub)).
 %% impose_cond(_,_,_,_).
-%% :- dom_impl(def, del_real_conjoin(ASub1,ASub2,ASub), real_conjoin(ASub1,ASub2,ASub)).
+%% :- dom_impl(_, del_real_conjoin(ASub1,ASub2,ASub), real_conjoin(ASub1,ASub2,ASub)).
 %% real_conjoin(_,_,_).

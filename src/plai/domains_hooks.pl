@@ -56,7 +56,7 @@
 :- use_module(domain(nonrel_fintervals), []). % floating-point interval domain [DJ]
 :- endif.
 :- if(defined(has_ciao_ppl)).
-:- use_module(domain(polyhedra)).
+:- use_module(domain(polyhedra), []).
 :- endif.
 % ===========================================================================
 :- doc(section, "OO/Java domains").
