@@ -45,21 +45,21 @@
 :- dom_impl(frdef, empty_entry/3).
 
 :- use_module(domain(def), [
-    def_call_to_entry/9,
-    def_exit_to_prime/7,
-    def_project/5,
-    def_compute_lub/2,
-    def_abs_sort/2,
-    def_extend/5,
-    def_call_to_success_fact/9,
-    def_special_builtin/5,
-    def_success_builtin/6,
-    def_input_user_interface/5,
-    def_input_interface/4,
-    def_asub_to_native/5,
-    def_unknown_call/4,
-    def_unknown_entry/3,
-    def_less_or_equal/2
+    call_to_entry/9,
+    exit_to_prime/7,
+    project/5,
+    compute_lub/2,
+    abs_sort/2,
+    extend/5,
+    call_to_success_fact/9,
+    special_builtin/5,
+    success_builtin/6,
+    input_user_interface/5,
+    input_interface/4,
+    asub_to_native/5,
+    unknown_call/4,
+    unknown_entry/3,
+    less_or_equal/2
 ]).
 :- use_module(domain(fr_sets)).
 :- use_module(domain(fr_shared)).
@@ -97,7 +97,7 @@
 %------------------------------------------------------------------------------
 
 frdef_call_to_entry(Sv,Sg,Hv,Head,K,Fv,(F,D),Entry,ExtraInfo):-
-    def_call_to_entry(Sv,Sg,Hv,Head,Fv,K,D,D_entry,ExtraInfo),
+    def:call_to_entry(Sv,Sg,Hv,Head,Fv,K,D,D_entry,ExtraInfo),
     frdef_decide_continue_entry(D_entry,F,D,Sv,Sg,Hv,Head,K,F_entry),
     frdef_decide_bottom(F_entry,D_entry,Entry).
 
@@ -112,7 +112,7 @@ frdef_decide_bottom(F_entry,D_entry,(F_entry,D_entry)).
 
 frdef_exit_to_prime(_Sg,_Hv,_Head,_Sv,'$bottom',_ExtraInfo,'$bottom') :- !.
 frdef_exit_to_prime(Sg,Hv,Head,Sv,(F_exit,D_exit),ExtraInfo,Prime):-
-    def_exit_to_prime(Sg,Hv,Head,Sv,D_exit,ExtraInfo,D_prime),
+    def:exit_to_prime(Sg,Hv,Head,Sv,D_exit,ExtraInfo,D_prime),
     frdef_decide_continue_exit(D_prime,D_exit,F_exit,Sg,Hv,Head,Sv,F_prime),
     frdef_decide_bottom(F_prime,D_prime,Prime).
 
@@ -124,7 +124,7 @@ frdef_decide_continue_exit(a(G_prime,_R),a(G_exit,_),F_exit,Sg,Hv,Head,Sv,F_prim
 
 frdef_project(_Sg,_Vars,_HvFv_u,'$bottom','$bottom'):- !.
 frdef_project(Sg,Vars,HvFv_u,(F_call,D_call),(F_proj,D_proj)):-
-    def_project(Sg,Vars,HvFv_u,D_call,D_proj),
+    def:project(Sg,Vars,HvFv_u,D_call,D_proj),
     vero_project(F_call,Vars,F_proj).
 
 %------------------------------------------------------------------------------
@@ -135,7 +135,7 @@ frdef_compute_lub(ListASub,LubASub):-
 
 frdef_decide_bottom_lub([],[],'$bottom'):- !.
 frdef_decide_bottom_lub(F,D,(F_lub,D_lub)):-
-    def_compute_lub(D,D_lub),
+    def:compute_lub(D,D_lub),
     D_lub = a(G_lub,_),
     vero_compute_lub(F,G_lub,F_lub).
 
@@ -146,7 +146,7 @@ frdef_decide_bottom_lub(F,D,(F_lub,D_lub)):-
 %% 
 %% frdef_decide_bottom_general([],[],'$bottom'):- !.
 %% frdef_decide_bottom_general(F,D,(F_lub,D_lub)):-
-%%         def_compute_lub(D,D_lub),
+%%         def:compute_lub(D,D_lub),
 %%         D_lub = a(G_lub,_),
 %%         vero_compute_lub_general(F,G_lub,F_lub).
 
@@ -168,14 +168,14 @@ frdef_identical_abstract((F1,D1),(F2,D2)):-
 
 frdef_abs_sort('$bottom','$bottom').
 frdef_abs_sort((F,D),(F_s,D_s)):-
-    def_abs_sort(D,D_s),
+    def:abs_sort(D,D_s),
     vero_sort(F,F_s).
 
 %------------------------------------------------------------------------------
 
 frdef_extend(_Sg,'$bottom',_,_Call,'$bottom') :- !.
 frdef_extend(Sg,(F_prime,D_prime),Sv,(F_call,D_call),Succ):-
-    def_extend(Sg,D_prime,Sv,D_call,D_succ),
+    def:extend(Sg,D_prime,Sv,D_call,D_succ),
     frdef_decide_continue_extend(D_succ,F_prime,F_call,Sv,F_succ),
     frdef_decide_bottom(F_succ,D_succ,Succ).
 
@@ -187,7 +187,7 @@ frdef_decide_continue_extend(a(G_succ,_R),F_prime,F_call,Sv,F_succ):-
 
 frdef_call_to_success_fact(_Sg,_Hv,_Head,_K,_Sv,_Call,'$bottom','$bottom','$bottom') :- !.
 frdef_call_to_success_fact(Sg,Hv,Head,K,Sv,(F_proj,D_proj),(F_call,D_call),Prime,Succ):-
-    def_call_to_success_fact(Sg,Hv,Head,K,Sv,D_call,D_proj,D_prime,D_succ),
+    def:call_to_success_fact(Sg,Hv,Head,K,Sv,D_call,D_proj,D_prime,D_succ),
     frdef_decide_continue_fact(D_succ,F_call,F_proj,D_proj,Hv,Head,K,Sv,Sg,F_prime,F_succ),
     frdef_decide_bottom(F_prime,D_prime,Prime),
     frdef_decide_bottom(F_succ,D_succ,Succ).
@@ -199,14 +199,14 @@ frdef_decide_continue_fact(a(G_succ,_),F_call,F_proj,a(G_proj,_),Hv,Head,K,Sv,Sg
 %------------------------------------------------------------------------------
 
 frdef_special_builtin(SgKey,Sg,Subgoal,(TypeF,TypeD),(CondF,CondD)) :-
-    def_special_builtin(SgKey,Sg,Subgoal,TypeD,CondD),
+    def:special_builtin(SgKey,Sg,Subgoal,TypeD,CondD),
     fr_special_builtin(SgKey,Sg,Subgoal,TypeF,CondF).
 % TODO: body_succ_builtin/9: (old comment) these do not have special(_), so ok: AbsInt \== def, AbsInt \== fr, AbsInt \== frdef
 
 %------------------------------------------------------------------------------
 
 frdef_success_builtin((F_type,D_type),Sv_u,(InfoF,InfoD),HvFv_u,(F_call,D_call),Succ):-
-    def_success_builtin(D_type,Sv_u,InfoD,HvFv_u,D_call,D_succ),
+    def:success_builtin(D_type,Sv_u,InfoD,HvFv_u,D_call,D_succ),
     frdef_decide_builtin(D_succ,F_type,Sv_u,InfoF,F_call,F_succ),
     frdef_decide_bottom(F_succ,D_succ,Succ).
 
@@ -217,11 +217,11 @@ frdef_decide_builtin(a(G_succ,_),Type,Sv_u,InfoF,F_call,F_succ):-
 %------------------------------------------------------------------------------
 
 frdef_input_user_interface((InfoF,InfoD),Vars,(F,D),Sg,MaybeCallASub):-
-    def_input_user_interface(InfoD,Vars,D,Sg,MaybeCallASub),
+    def:input_user_interface(InfoD,Vars,D,Sg,MaybeCallASub),
     vero_input_user_interface(InfoF,Vars,F,Sg,MaybeCallASub).
 
 frdef_input_interface(Prop,Kind,(F0,D0),(F,D)):-
-    def_input_interface(Prop,Kind0,D0,D),
+    def:input_interface(Prop,Kind0,D0,D),
     paco_input_interface(Prop,Kind1,F0,F),
     compose_kind(Kind0,Kind1,Kind).
 
@@ -232,7 +232,7 @@ compose_kind(_Kind0,_Kind1,perfect).
 
 %fail: frdef_asub_to_native('$bottom',_,_,'$bottom',[]).
 frdef_asub_to_native((F,D),Qv,OutFlag,Succ,Comps):-
-    def_asub_to_native(D,Qv,OutFlag,Succ1,Comps1),
+    def:asub_to_native(D,Qv,OutFlag,Succ1,Comps1),
     ( member(ground(Gv),Succ1) -> true ; Gv=[] ),
     sort(Qv,Qv_s),
     ord_subtract(Qv_s,Gv,Rest),
@@ -247,13 +247,13 @@ frdef_asub_to_native((F,D),Qv,OutFlag,Succ,Comps):-
 %------------------------------------------------------------------------------
 
 frdef_unknown_call(Sg,Vars,(CallF,CallD),(F,D)):-
-    def_unknown_call(Sg,Vars,CallD,D),
+    def:unknown_call(Sg,Vars,CallD,D),
     vero_unknown_call(Sg,Vars,CallF,F).
 
 %------------------------------------------------------------------------------
 
 frdef_unknown_entry(Sg,Vars,(F,D)):-
-    def_unknown_entry(Sg,Vars,D),
+    def:unknown_entry(Sg,Vars,D),
     vero_unknown_entry(Sg,Vars,F).
 
 frdef_empty_entry(_,_,_):-
@@ -262,7 +262,7 @@ frdef_empty_entry(_,_,_):-
 %------------------------------------------------------------------------------
 
 frdef_less_or_equal((F1,D1),(F2,D2)):-
-    def_less_or_equal(D1,D2),
+    def:less_or_equal(D1,D2),
     vero_less_or_equal(F1,F2).
 
 % ---------------------------------------------------------------------------
