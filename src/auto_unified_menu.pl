@@ -41,7 +41,7 @@ all, 'Action'       # inter_all  - analyze_check :: all_menu_branch.
 ~munified(1), '| Cost'          # para_cost        - both      <- para_c1.
 :- endif.
 
-~munified(1), 'Analysis entry'         # entry_point      - entry_calls.
+~munified(1), 'Analysis entry'         # entry_point      - entry.
 
 % ------------------------------------------------------------
 % modularity options
