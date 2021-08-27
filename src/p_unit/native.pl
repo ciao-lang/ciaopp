@@ -3,7 +3,7 @@
       native_prop_map/3, native_prop_term/1,
       native_builtin/2, native_property/2,
       wam_builtin/2],
-    [assertions, regtypes, hiord, nortchecks, ciaopp(ciaopp_options)]).
+    [assertions, regtypes, hiord, nortchecks, nativeprops, ciaopp(ciaopp_options)]).
 
 :- use_module(library(lists), [member/2, append/3]).
 :- use_module(engine(runtime_control), [module_split/3]).
@@ -91,24 +91,20 @@ native(not_mut_exclusive).
 native(sideff(X)):- member(X,[pure,soft,hard]).
 %native(possibly_fails).
 %native(possibly_nondet).
-native(steps(C)):- cost_exp(C).
-native(steps_lb(C)):- cost_exp(C).
-native(steps_ub(C)):- cost_exp(C).
-native(steps_o(C)):- cost_exp(C).
-native(cost(C)):- resource_exp(C).    % JNL
+native(steps(C)):- cost_expression(C).
+native(steps_lb(C)):- cost_expression(C).
+native(steps_ub(C)):- cost_expression(C).
+native(steps_o(C)):- cost_expression(C).
+native(cost(C)):- cost_expression(C).    % JNL
 native(terminates).
-native(size(C)):- cost_exp(C).
-native(size(A,B)) :- var(A), cost_exp(B).
-native(size_lb(C)):- cost_exp(C).
-native(size_ub(C)):- cost_exp(C).
-native(size_o(C)):- cost_exp(C).
+native(size(C)):- cost_expression(C).
+native(size(A,B)) :- var(A), cost_expression(B).
+native(size_lb(C)):- cost_expression(C).
+native(size_ub(C)):- cost_expression(C).
+native(size_o(C)):- cost_expression(C).
 native(rsize(A,_B)) :- var(A). % TODO:[new-resources]
 native(cardinality(_N,_M)). % TODO:[new-resources]
 native(costb(_R,_N,_M)). % TODO:[new-resources]
-
-cost_exp(_). % Not implemented yet --EMM
-
-resource_exp(_). % Not implemented yet --EMM
 
 :- doc(doinclude,vlist/1).
 :- doc(vlist/1,"@includedef{vlist/1}").
