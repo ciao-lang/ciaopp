@@ -16,11 +16,11 @@
    This module is loaded by default in the CiaoPP toplevel and
    reexported from the @lib{ciaopp} module.").
 
-:- doc(module, "This module provides the main entry points for for
+:- doc(module, "This module provides the main entry points for 
    performing analysis and assertion checking. It requires loading the
    program before (e.g., with @lib{frontend_driver}).
 
-   @section{Adding new analysis}
+   @section{Adding new analyses}
 
    To include a new analysis, add a clause for @tt{analyze/2} (and for
    @tt{analysis/1}).
@@ -32,7 +32,7 @@
    directory for an example of this.
 ").
 
-:- doc(bug,"3. Program point compile time checking with the det and nf
+:- doc(bug,"3. Program point compile-time checking with the det and nf
    domain needs some work. It is now turned off since it loops").
 :- doc(bug,"4. Analysis with res_plai of transformed programs(with
    unfold_entry) considers cost of some of the clauses that always
