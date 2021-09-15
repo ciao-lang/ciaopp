@@ -47,7 +47,7 @@
 :- use_module(domain(ptypes), []).
 :- use_module(domain(eterms)).
 :- use_module(domain(etermsvar)).
-:- use_module(domain(svterms)).
+:- use_module(domain(svterms), []).
 :- use_module(domain(deftypes), []).
 % ===========================================================================
 :- doc(section, "Numeric domains").
