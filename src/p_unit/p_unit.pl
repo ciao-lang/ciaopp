@@ -414,31 +414,28 @@ atom_concat_with_underscore(L, L).
     # "There is an entry assertion for @var{Goal} with call
        pattern @var{Call}, uniquely identifiable by @var{Name}.".
 entry_assertion(Goal,Call,Name):-
-    \+ current_pp_flag(entry_point, calls),
-    curr_module(M),
-    assertion_read(Goal,M,_Status,entry,Body,_Dict,_S,_LB,_LE),
-    assertion_body(Goal,_Compat,Call,_Succ,Comp,_Comm,Body),
-    ( builtin(entry_point_name(Goal,Name),Entry),
-      member(Entry,Comp)
-    -> true
-    ; functor(Goal,Name,_)
-    ).
-entry_assertion(Goal,Call,Name):-
-    \+ current_pp_flag(entry_point, entry),
+    current_pp_flag(entry_points_auto,EntryPointsAuto),
     curr_module(M),
     assertion_read(Goal,M,_Status,Type,Body,_Dict,_S,_LB,_LE),
-    (Type == success; Type == comp),
+    valid_assertion_type(Type,EntryPointsAuto),
+    ( Type = entry ->
+        true
+    ; current_pp_flag(entry_calls_scope,EntryCallsScope),
+      ( EntryCallsScope = exported ->
+          ( type_of_goal(exported,Goal) -> true ) % Avoid choice points.
+      ; EntryCallsScope = all
+      )
+    ),
     assertion_body(Goal,_Compat,Call,_Succ,Comp,_Comm,Body),
     ( builtin(entry_point_name(Goal,Name),Entry),
       member(Entry,Comp)
     -> true
     ; functor(Goal,Name,_)
     ).
-entry_assertion(Goal,Call,Name):-
-    \+ current_pp_flag(entry_point, entry),
-    curr_module(M),
-    get_call_from_call_assrt(Goal,M,_Status,Call,_,_,_),
-    functor(Goal,Name,_).
+
+valid_assertion_type(entry,_) :- !.
+valid_assertion_type(calls,calls) :- !.
+valid_assertion_type(_,all).
 
 :- pred get_call_from_call_assrt(Sg,M,Status,Call,Source,LB,LE)
    # "Returns in @var{Call}, upon backtracking call patterns from calls

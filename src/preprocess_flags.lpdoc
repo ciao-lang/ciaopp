@@ -48,6 +48,17 @@
  @item @tt{type_precision} (@tt{defined, all})
        to use during type analysis only types defined by the user or also
         types inferred anew.
+ @item @tt{entry_points_auto} (@tt{none, calls, all})
+       What kind of assertions to use as entry points: @decl{entry/1}
+       will always be used, @decl{calls/1} and @decl{calls/2} will be
+       used if the flag is @bf{not} set to @tt{none}; and
+       @decl{success/1}, @decl{success/2}, @decl{comp/1} and
+       @decl{comp/2} will be used if the flag is set to @tt{all}.
+ @item @tt{entry_calls_scope} (@tt{exported, all})
+      What non-@tt{entry} assertions to use as entry points. If the
+      flag takes the value @tt{exported}, only assertions from
+      exported predicates will be used; if it takes the value
+      @tt{all}, exported and non-exported assertions will be used.
 @end{itemize}
 @item for partial evaluation:
 @begin{itemize}

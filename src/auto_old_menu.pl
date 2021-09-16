@@ -94,7 +94,8 @@ para     , 'Granularity Analysis'   # para_grain       - none.
 ~mtype   , '| Algebraic System'    # math_system      - builtin <- cost_ana.
 ~mtype   , '| Static Profiling'    # perform_static_profiling - no <- cost_ana. % currently disabled
 ~mtypepar, 'Analyze Determinism'  # ana_det          - none      <- ana_or_check_or_paral_uoudg.
-~mtypeepar,'Analysis entry'      # entry_point      - entry     <- ana_or_check_or_paral.
+~mtypeepar,'Automatic entry points.'      # entry_points_auto - calls     <- ana_or_check_or_paral.
+~mtypeepar,'Assertions to use as entry points.'      # entry_calls_scope      - exported     <- ana_or_check_or_paral.
 
 % ------------------------------------------------------------
 % modularity options

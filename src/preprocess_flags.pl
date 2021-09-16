@@ -929,11 +929,15 @@ current_pp_flags( ct_regen_reg  , off).
 valid_flag_values(ct_regen_reg  , member(_, [off,on])).
 
 
-pp_flag(entry_point).
-pp_flag(entry_point, 'Whether to use calls assertions as entries.').
-current_pp_flags(entry_point, entry).
-valid_flag_values(entry_point, member(_, [entry,calls,entry_calls])).
+pp_flag(entry_points_auto).
+pp_flag(entry_points_auto, 'What kind of assertions to use as entry points.').
+current_pp_flags(entry_points_auto, calls).
+valid_flag_values(entry_points_auto, member(_, [none,calls,all])).
 
+pp_flag(entry_calls_scope).
+pp_flag(entry_calls_scope, 'What non-entry assertions to use as entry points.').
+current_pp_flags(entry_calls_scope, exported).
+valid_flag_values(entry_calls_scope, member(_, [exported,all])).
 
 pp_flag(ct_mod_iterate).
 pp_flag(ct_mod_iterate, 'Whether to iterate over all modules to reach the global fixpoint, while CT checking.').
