@@ -14,7 +14,8 @@
 
 %% CiaoPP library:
 :- use_module(ciaopp(plai/domains), 
-   [glb/4, info_to_asub/7, unknown_call/5, call_to_entry/10, identical_abstract/3]).
+   [abs_sort/3, glb/4, info_to_asub/7, unknown_call/5,
+   call_to_entry/10, identical_abstract/3]).
 
 :- use_module(ciaopp(p_unit),
     [predicate_names/1, multifile_predicate_names/1, entry_assertion/3, assertion_set_status/3,
@@ -26,7 +27,9 @@
 :- use_module(ciaopp(p_unit/assrt_db), [ref_assertion_read/10]).
 
 :- use_module(ciaopp(infer), [get_completes_lub/6, get_completes/4, get_info/5]).
-:- use_module(ciaopp(ctchecks/ctchecks_common)).
+:- use_module(ciaopp(infer/infer_dom),   [abs_execute_with_info/4]).
+
+:- use_module(spec(abs_exec_ops), [adapt_info_to_assrt_head/6]).
 
 %% Ciao library:
 :- use_module(library(terms_vars), [varset/2]).
@@ -119,7 +122,7 @@ check_pred_all(Sg, AbsInts) :-
 check_pred_all(_, _).
 
 % TODO: temporary warning, fix checking several call assertions!!
-:- use_module(library(messages), [warning_message/2]).
+:- use_module(library(messages), [warning_message/2,error_message/3]).
 
 warn_call_assrts([], Sg, N) :-
     ( N >= 2 ->
@@ -450,3 +453,63 @@ reduce_compl_fin(true, checked) :- !.
 reduce_compl_fin(fail, false) :- !.
 reduce_compl_fin(nosucc, checked) :- !.
 reduce_compl_fin(dont_know, check).
+
+% ------------------------------------------------------------------------
+
+abs_execute(none, _Head, Calls, _Goal, _Vars, _Info , Calls) :- !.
+abs_execute(Domain, Head, Calls, Goal, Vars, Info, NCalls) :-
+    list(Calls), !,
+%       PP: seems to peel off prefixes from native types, making them 
+%       not working in abs_execute/4, and nothing more. Commented out
+%       to_native_props(Calls, NativeCalls),   
+    Calls = NativeCalls,
+    list_to_conj(NativeCalls, ConjNativeCalls),
+    adapt_info_to_assrt_head(Domain, Goal, Vars, Info, Head, NewInfo),
+    pp_abs_execute_with_info(ConjNativeCalls,Domain,Head,NewInfo,NCalls).
+abs_execute(Domain, Head, Calls, Goal, Vars, Info, NCalls) :-
+    adapt_info_to_assrt_head(Domain, Goal, Vars, Info, Head, NewInfo),
+    abs_sort(Domain, NewInfo, NewInfo_o),
+    pp_abs_execute_with_info(Calls,Domain,Head, NewInfo_o, NCalls).
+
+pp_abs_execute_with_info(ExpL, AbsInt,Goal,Info,NewExp):-
+    ExpL = [_|_],!,
+    list_to_conj(ExpL, Exp),
+    pp_abs_execute_with_info(Exp, AbsInt,Goal,Info,NewExp).
+pp_abs_execute_with_info((Exp1,Exp2), AbsInt,Goal,Info,NewExp):-
+    !,
+    pp_abs_execute_with_info(Exp1,AbsInt,Goal,Info,NewExp1),
+    ( NewExp1 == fail ->
+        NewExp = fail
+    ;
+        pp_abs_execute_with_info(Exp2,AbsInt,Goal,Info,NewExp2),
+        compose_conj(NewExp1,NewExp2,NewExp)
+   ).
+pp_abs_execute_with_info((Exp1L;Exp2L), AbsInt,Goal,Info,NewExp):-
+    !,
+%       list_to_conj(Exp1L, Exp1),
+    pp_abs_execute_with_info(Exp1L,AbsInt,Goal,Info,NewExp1),
+    ( NewExp1 == true ->
+        NewExp = true
+    ;
+%           list_to_conj(Exp2L,Exp2),
+        pp_abs_execute_with_info(Exp2L,AbsInt,Goal,Info,NewExp2),
+        compose_disj(NewExp1,NewExp2,NewExp)
+   ).
+pp_abs_execute_with_info(Prop, AbsInt, _Goal,Info, E) :-   
+    abs_execute_with_info(AbsInt, Info, Prop, E),
+    !.
+pp_abs_execute_with_info(Prop,_AbsInt,_Goal,_Info,Prop) :-
+    error_message(error, "INTERNAL ERROR: pp_abs_execute_with_info: " ||
+                          "cannot execute abs: ~w", [Prop]).
+
+compose_conj(true , Exp2, Exp2) :- !.
+compose_conj(Exp1 , true, Exp1) :- !.
+compose_conj(_Exp1, fail, fail) :- !.
+compose_conj(Exp1 , Exp2, (Exp1,Exp2)).
+
+compose_disj(fail, Exp2, Exp2) :- !.
+compose_disj(_Exp, true, true) :- !.
+compose_disj(Exp1, fail, Exp1) :- !.
+compose_disj(Exp1, Exp2, (Exp1L;Exp2L)) :-
+    conj_to_list(Exp1, Exp1L),
+    conj_to_list(Exp2, Exp2L).
