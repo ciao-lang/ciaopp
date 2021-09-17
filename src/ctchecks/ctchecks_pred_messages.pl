@@ -319,8 +319,6 @@ name_vars([V='$VAR'(V)|Vs]):-
 :- pred prepare_output_info(+AbsInts,+,+Head,+Type,-Info)
    : list(AbsInts) => list(Info) + not_fails.
 prepare_output_info([],[],_Head,_Type,[]) :-!.
-prepare_output_info([none|Ds],[_I|Is],H,Type,AInfo) :-!,
-    prepare_output_info(Ds,Is,H,Type,AInfo).
 prepare_output_info([D|Ds],[I|Is],H,Type,AInfoOut) :-
     trans_aux(Type,D,H,I,A),
     ( knows_of(regtypes,D), \+ A = [[bottom]] ->   % (\=)/2 is not a builtin???

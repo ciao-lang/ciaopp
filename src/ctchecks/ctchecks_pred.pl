@@ -55,7 +55,6 @@
 
 %-------------------------------------------------------------------
 :- export(decide_get_info/4).
-decide_get_info(none,_Key,_Goal,[]):-!.
 % set of completes
 decide_get_info(AbsInt,Key,MGoal,Completes):-
     current_pp_flag(multivariant_ctchecks, on),!,
