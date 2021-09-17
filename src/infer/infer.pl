@@ -244,7 +244,7 @@ inline_type_name(T,T).
 %------------------------------------------------------------------------%
 
 get_memo_entry(Key,Vars,AbsInt,Subst):-
-            current_fact(memo_table(Key,AbsInt,_,_,Vars,Subst)).
+    current_fact(memo_table(Key,AbsInt,_,_,Vars,Subst)).
 
 :- pred get_memo_lub(Key,Vars,AbsInt,Lub,ASub)
    : ( gnd(Key), term(Vars), atm(AbsInt), var(Lub), var(ASub) )

@@ -35,8 +35,8 @@
 output_user_interface(AbsInt,ASub,NVars,Props):-
     asub_to_info(AbsInt,ASub,NVars,Props,_NativeComp), !.
 
-display_message_check_pp(_LC,_Str,_Args) :- current_pp_flag(ass_not_stat_eval, off), !.
-display_message_check_pp(LC,Str,Args) :- current_pp_flag(ass_not_stat_eval, warning),!,
+display_message_check_pp(_LC,_Str,_Args) :- current_pp_flag(asr_not_stat_eval, off), !.
+display_message_check_pp(LC,Str,Args) :- current_pp_flag(asr_not_stat_eval, warning),!,
     warning_message(LC,Str,Args).
 display_message_check_pp(LC,Str,Args) :-
     error_message(LC,Str,Args).

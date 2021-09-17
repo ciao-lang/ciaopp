@@ -16,7 +16,7 @@ check   , 'Iterate Over Modules' # ct_mod_iterate - on :: post_iter  <- cct_mod.
 check(1) ,'Interleave Analysis and Checking'# interleave_an_check - off <- cct_mod_reg.
 check(1), 'Related Modules Info'        # ct_ext_policy - assertions <- cct.
 check(1), 'Regenerate Analysis Registry'# ct_regen_reg - off::reg_reg <- cct_mod_reg.
-check   , 'Report Non-Verified Assrts'  # ass_not_stat_eval - warning <- cct2.
+check   , 'Report Non-Verified Assrts'  # asr_not_stat_eval - warning <- cct2.
 check(1), 'Predicate-Level CT Checks'   # pred_ctchecks      - on   <- cct.
 check(1), 'Multivariant CT Checks'   # multivariant_ctchecks - off  <- cct.
 check(1), 'Program-Point CT Checks'     # pp_ctchecks        - on  <- cct.

@@ -82,7 +82,7 @@ memo_ctcheck_sum(check) :-
 inform_as_change_to_user(Old,OldRef,New,AbsInts,Info) :-
     current_pp_flag(pplog,L),
     ( member(ctchecks, L) -> VCT = on ; VCT = off ),
-    current_pp_flag(ass_not_stat_eval,STAT),   
+    current_pp_flag(asr_not_stat_eval,STAT),
     ( get_interval_check(Old, IvalCheck) ->
         decide_inform_user_interval(VCT, STAT, IvalCheck, Old, OldRef, New, AbsInts, Info)
     ; decide_inform_user(VCT, STAT, Old, OldRef, New, AbsInts, Info)

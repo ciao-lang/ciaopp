@@ -411,7 +411,7 @@ decide_summary(Sum) :-
     Sum = error.
 decide_summary(Sum) :-
     is_any_check(yes),
-    current_pp_flag(ass_not_stat_eval, ANSE), 
+    current_pp_flag(asr_not_stat_eval, ANSE),
     ( ANSE = warning,  Sum = warning
     ; ANSE = error,  Sum = error
     ; Sum = ok

@@ -848,10 +848,10 @@ pp_flag(punit_boundary, 'Whether to process libraries or not during intermodular
 current_pp_flags(  punit_boundary  , bundle).
 valid_flag_values( punit_boundary  , member(_, [off,on,no_engine,bundle])).
 
-pp_flag(ass_not_stat_eval).
-pp_flag(ass_not_stat_eval, 'When running compile-time checks, some assertions cannot be marked as checked or false. This flag decides what to do in those situations: nothing, report a warning or report an error.').
-current_pp_flags(  ass_not_stat_eval  , warning). % TODO:[new-resources] was 'off' in new-resources
-valid_flag_values( ass_not_stat_eval  , member(_, [off,warning,error])).
+pp_flag(asr_not_stat_eval).
+pp_flag(asr_not_stat_eval, 'When running compile-time checks, some assertions cannot be marked as checked or false. This flag decides what to do in those situations: nothing, report a warning or report an error.').
+current_pp_flags(  asr_not_stat_eval  , warning). % TODO:[new-resources] was 'off' in new-resources
+valid_flag_values( asr_not_stat_eval  , member(_, [off,warning,error])).
 
 pp_flag(verbosity).
 pp_flag(verbosity, 'This flag controls, the verbosity of ciaopp execution.').
