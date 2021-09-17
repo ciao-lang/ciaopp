@@ -352,7 +352,6 @@ pp_abs_execute_with_info(Prop,AbsInt,_,Info,Sense):-
 
 decide_get_just_info(K,Vars,Dom,Info) :-
     get_memo_lub(K,Vars,Dom,yes,Info),!.
-decide_get_just_info(_K,_Vars,_Types,'$bottom').
 
 decide_get_applicable_info(K,Vars,Head,Goal,Dom,Info):-
     Head = Goal,
