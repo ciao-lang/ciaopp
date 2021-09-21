@@ -546,6 +546,9 @@ all_ground_with_types([Var|Vars],AbsInt,Info):-
     is_ground_type(T),
     all_ground_with_types(Vars,AbsInt,Info).
 
+type_of(deftypes,X,Sust,T):-
+    member(Y:T,Sust),
+    X == Y,!.
 type_of(eterms,X,Sust,T):-
     member(Y:(_N,T),Sust),
     X == Y,!.
