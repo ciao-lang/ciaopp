@@ -1,20 +1,24 @@
-# CiaoPP examples
+# CiaoPP examples for on-the-fly assertion checking (verifly)
 
-Examples to show on-the-fly assertion checking with ciaopp.
+This directory contain some examples to demonstrate CiaoPP on-the-fly
+assertion checking in CiaoPP.
 
-## Steps
+## Requirements
 
-1. Install [`ciao_emacs`](https://github.com/ciao-lang/ciao_emacs) bundle (requires emacs):
+1. [Emacs](https://www.gnu.org/software/emacs/).
 
+2. [`ciao`](https://github.com/ciao-lang/ciao),
+   [`ciaopp`](https://github.com/ciao-lang/ciao_emacs), and 
+   [`ciao_emacs`](https://github.com/ciao-lang/ciao_emacs) bundles.
+   We recommend the installation of the development environment, e.g.:
 ```
 $ ciao get devenv
 ```
 
-2. Open examples with our emacs configuration
+## Usage
 
+Setup the `flycheck` extension or open the examples with our
+pre-configured emacs using the `ciao-emacs` command:
 ```
 $ ciao-emacs verifly/<file.pl>
 ```
-
-Note: More examples can be found in `ciaopp_extra/examples`, which
-will be moved soon here.
