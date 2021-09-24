@@ -21,7 +21,7 @@
 :- use_module(ciaopp(p_unit/p_unit_basic), [type_of_goal/2]).
 :- use_module(ciaopp(frontend_driver), [write_one_type/2]). % TODO: move somewhere else
 :- use_module(typeslib(typeslib), [pretty_type_lit_rules_desimp/2, equiv_type/2]).
-:- use_module(ciaopp(plai/domains), [asub_to_info/5, project/5,project/6]).
+:- use_module(ciaopp(plai/domains), [asub_to_info/5,needs/2,project/5,project/6]).
 :- use_module(ciaopp(p_unit/assrt_norm), [denorm_goal_prop/3]).
 :- use_module(ciaopp(preprocess_flags)).
 
@@ -321,7 +321,12 @@ name_vars([V='$VAR'(V)|Vs]):-
 prepare_output_info([],[],_Head,_Type,[]) :-!.
 prepare_output_info([D|Ds],[I|Is],H,Type,AInfoOut) :-
     trans_aux(Type,D,H,I,A),
-    ( knows_of(regtypes,D), \+ A = [[bottom]] ->   % (\=)/2 is not a builtin???
+    ( % TODO: Workaround: abstract substitutions from combined domains
+      % carry additional information not used to verify types, leading
+      % to an error in collect_rules/4.
+      \+ needs(D,split_combined_domain),
+      knows_of(regtypes,D),
+      \+ A = [[bottom]] ->   % (\=)/2 is not a builtin???
         collect_rules(H,A,ReqRules,A1)
     ; ReqRules = [],
       A1 = A
