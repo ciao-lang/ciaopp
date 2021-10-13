@@ -17,7 +17,7 @@
     get_last_file/1
     %                         ,opt_menu_branch/2
     %                         ,all_menu_branch/2
-], [assertions, fsyntax, dcg, datafacts, ciaopp(ciaopp_options)]).
+], [assertions, fsyntax, dcg, datafacts, ciaopp(ciaopp_options), isomodes]).
 
 :- use_package(menu).
 
@@ -1150,7 +1150,7 @@ auto_analyze_(File, OFile) :-
     module(File,Info),
     fail_if_module_error(Info), !,
     get_menu_flag(ana, inter_ana, AnaKinds),
-    anakinds_to_absints(AnaKinds, ana, AbsInts),
+    anakinds_to_absints_menu(AnaKinds, ana, AbsInts),
     analyze(AbsInts),
     %
     get_menu_flag(ana, vers, Vers) ,
@@ -1205,8 +1205,12 @@ auto_check_assert_(File, OFile) :-
         % just read from menu.
         get_menu_flag(ana, inter_ana, AnaKinds),
         get_menu_flag(~ctcheck_menu_name, dom_sel, DomSel),
+        % pp_statistics(runtime, [T0,_]),
         ( DomSel == auto -> decide_domains(AnaKinds) ; true ),
         anakinds_to_absints(AnaKinds, ~ctcheck_menu_name, AbsInts),
+        % pp_statistics(runtime, [T1,_]),
+        % T is T1 - T0,
+        % pplog(auto_interface, ['{automatic selection of domains in ', time(T), ' msec.}']),
         % pplog(auto_interface, ['{Analyses selected to check assertions: ',~~(AbsInts), '}']),
         % Perform analyses
         exec_analyses_and_acheck(AbsInts, TopLevel, File, OFile)
@@ -1273,14 +1277,14 @@ gencert_ctchecks(_,File,GENCERT):-
 
 % Extract the (menu flag) selected abstract domains AbsInts from the
 % specified analysis kinds AnaKinds.
-anakinds_to_absints([],_Menu,[]).
-anakinds_to_absints([AnaKind|AnaKinds],Menu,[AbsInt|AbsInts]):-
+anakinds_to_absints_menu([],_Menu,[]).
+anakinds_to_absints_menu([AnaKind|AnaKinds],Menu,[AbsInt|AbsInts]):-
     get_menu_flag(Menu,AnaKind,AbsInt),
     \+ AbsInt = none,
     !,
-    anakinds_to_absints(AnaKinds,Menu,AbsInts).
-anakinds_to_absints([_|AnaKinds],Menu,AbsInts):-
-    anakinds_to_absints(AnaKinds,Menu,AbsInts).
+    anakinds_to_absints_menu(AnaKinds,Menu,AbsInts).
+anakinds_to_absints_menu([_|AnaKinds],Menu,AbsInts):-
+    anakinds_to_absints_menu(AnaKinds,Menu,AbsInts).
 
 % ---------------------------------------------------------------------------
 %! # Auto selection of domains for ctchecks
@@ -1297,11 +1301,34 @@ anakinds_to_absints([_|AnaKinds],Menu,AbsInts):-
 % select them in the corresponding menu flags.
 decide_domains(AnaKinds) :-
     ( current_pp_flag(intermod, off) ->
-        decide_domains_monolithic(AnaKinds, AnaFlags)
+        decide_domains_monolithic(AnaKinds, AnaFlags),
+        select_anaflags_monolithic(AnaFlags)
     ; % TODO: this was enabled only for 'get_menu_flag(~ctcheck_menu_name,ct_modular,all)' [IG&JF]
-      decide_domains_intermod(AnaKinds, AnaFlags)
-    ),
-    select_anaflags(AnaFlags).
+      decide_domains_intermod(AnaKinds, AnaFlags),
+      select_anaflags_intermod(AnaFlags)
+    ).
+
+%% :- compilation_fact(menu_based_dom_sel).
+
+:- if(defined(menu_based_dom_sel)).
+
+%! # Domains to use from previous analysis
+
+anakinds_to_absints(AnaKinds, Menu, AbsInts) :-
+    anakinds_to_absints_menu(AnaKinds, Menu, AbsInts).
+
+% ------------------------------------------------------------------------
+
+%! # Set anaflags after properties analysis
+
+select_anaflags_monolithic(AnaFlags) :-
+    select_anaflags_intermod(AnaFlags).
+
+% ------------------------------------------------------------------------
+
+%! # Automatically Pick Domains
+% Algorithm to automatically pick what domains to use when verifying
+% assertions. Only one domain of each kind can be picked.
 
 decide_domains_monolithic(AnaKinds, AnaFlags) :-
     cleanup_decide_domains,
@@ -1312,27 +1339,6 @@ decide_domains_monolithic_([],[]).
 decide_domains_monolithic_([AnaKind|AnaKinds],[f(AnaKind, AbsInt)|AnaFlags]) :-
     decide_domain_monolithic(AnaKind, AbsInt),
     decide_domains_monolithic_(AnaKinds,AnaFlags).
-
-% TODO: ad-hoc for modular ct checking (it fixes types and modes)
-decide_domains_intermod([], []).
-decide_domains_intermod([AnaKind|AnaKinds], [f(AnaKind, AbsInt)|AnaFlags]):-
-    decide_domain_intermod(AnaKind, AbsInt),
-    decide_domains_intermod(AnaKinds, AnaFlags).
-
-% TODO: ad-hoc for intermod ct checking (it fixes types and modes)
-decide_domain_intermod(types, eterms) :- !.
-decide_domain_intermod(modes, shfr) :- !.
-decide_domain_intermod(_AnaKind, none).
-
-% Select menu flags AnaFlags for analysis (setting each AnaKind to the
-% corresponding AbsInt)
-select_anaflags([]).
-select_anaflags([f(AnaKind,AbsInt)|AnaFlags]) :-
-    set_menu_flag(~ctcheck_menu_name,AnaKind,AbsInt),
-    select_anaflags(AnaFlags).
-
-% ---------------------------------------------------------------------------
-% Decide necessary domains from assertions to be checked
 
 cleanup_decide_domains :-
     retractall_fact(prop_covered(_,_,_)).
@@ -1374,43 +1380,6 @@ needed_to_prove_prop(M, AbsInt, AnaKind) :-
     % Check if the domain is needed for some prop
     ( prop_covered(_,_,AbsInt) -> true ; fail ).
 
-% Enumerate all native props Prop (see prop_to_native/2) from check
-% assertions of module M
-get_one_prop(M,Prop) :-
-    relevant_assertion(M,Body),
-    assertion_body(_,_,Call,Succ,Comp,_,Body),
-    ( member(Prop0,Succ) 
-    ; member(Prop0,Call)
-    ; member(Prop0,Comp)
-    ),
-    prop_to_native(Prop0,Prop).
-
-% The assertion Body is relevant for ctchecks:
-%  - calls assertions from libraries
-%  - calls, success, or comp assertions if:
-%    - M1 is M (our own module)
-%    - any module if ct_modular=all
-relevant_assertion(M,Body) :-
-    % IG: if we use assertion_read instead, all assertions from all libraries
-    % are considered. If the libraries are not cached, pgm_assertion_read
-    % includes the libraries as well.
-    %pgm_assertion_read(_,M1,check,Kind,Body,_,Base,_,_),
-    %
-    % TODO: JF: using assertion_read/9 again to make sure that we can
-    %   check calls to libraries, as it seems to be used in
-    %   take_assertion/4
-    %
-    assertion_read(_,M1,check,Kind,Body,_,Base,_,_),
-    ( M \== M1, is_library(Base) ->
-        % assume that one does not check libraries with auto
-        Kind = calls
-    ; ( M == M1 
-      ; current_pp_flag(ct_modular,all)
-      ) ->
-        ( Kind = comp ; Kind = success ; Kind = calls )
-    ; fail
-    ).
-
 needed_to_prove_def(AnaKind, Ana, P) :-
     preferred_ana(AnaKind, Ana),
     P =.. [F,_|Rest],
@@ -1420,7 +1389,11 @@ needed_to_prove_def(AnaKind, Ana, P) :-
 :- doc(bug, "needed_to_prove/3 is a weird predicate, it must be
     more easy to read. --EMM.").
 
-% a kludge to avoid problems with knows_of/2
+:- pred needed_to_prove(+AnaKind, ?AbsInt, +Prop)
+   # "Domain @var{AbsInt}, of kind @var{AnaKind} is needed to prove
+     property @var{Prop}.".
+
+% a predicate to avoid different format of knows_of/2
 needed_to_prove(modes, _, ground(_)) :- !.
 needed_to_prove(modes, _, free(_)) :- !.
 % This handles most of the cases
@@ -1444,6 +1417,293 @@ needed_to_prove(ana_cost, _, P) :-
     P =.. [F|As],
     PP =.. [F,_|As],
     needed_to_prove(ana_size, _, PP).
+:- else.
+
+%! # Automatic Domain Selection Algorithm
+%
+% 1. For each property:
+%    1. Select what domains to use to verify it (disjunction of
+%       conjunctions).
+%    2. Add possible instrumental domains, e.g., resources would need
+%       to run types, modes, non-failure and determinism domains in
+%       advance.
+%    3. Simplify obtained disjunction of conjunctions.
+% 2. Simplify the obtained conjunction of disjunction of conjunctions,
+%    obtaining a disjunctions of conjunctions
+% 3. Sort these conjunctions using heuristics.
+% 4. Take first combination from the list.
+%
+% Differences with menu-based approach:
+%
+% - Former automatic domain selection code iterated over each
+%   "preferred domain" and each property; the new algorithm simply
+%   iterates over properties.
+% - Former code selected domains for each property occurrence in the
+%   code; the new algorithm, for each property (using functor/3).
+% - Former code chose one domain for each property, which could result
+%   in incomplete domain selection; new algorithm obtains all possible
+%   complete combinations of domains. E.g., the former algorithm would
+%   choose only a domain (shfr, eterms, or steps_ualb) to check a
+%   steps_o/2 property; the new algorithm would obtain a disjunction
+%   of conjunctions (eterms^shfr^nf^det^steps_ualb or
+%   eterms^shfr^nfdet^steps_ualb or nfdet^steps_ualb...).
+%
+
+%% For automatic domain selection
+:- use_module(spec(static_abs_exec_table), [abs_ex/4]).
+:- use_module(spec(abs_exec), [determinable/2]).
+
+:- use_module(library(lists), [cross_product/2]).
+:- use_module(library(llists), [append/2]).
+:- use_module(library(sort), [keysort/2, sort/2]).
+
+%! ## Domains to use from previous analysis
+
+% Several domains of the same "kind" can be selected.
+anakinds_to_absints(_AnaKinds, _Menu, AbsInts) :-
+    % TODO: Not needed? current_fact(selected_domains(Selected)) should fail.
+    get_menu_flag(~ctcheck_menu_name, dom_sel, auto),
+    current_pp_flag(intermod, off), !,
+    %
+    current_fact(selected_domains(Selected)),
+    % TODO: Select more than one combination.
+    ( Selected = [[]] ->
+        warning_message("There are no assertions reachable (from local or imported predicates) and you have not selected any analysis.")
+    ; true
+    ),
+    member(AbsInts, Selected).
+anakinds_to_absints(AnaKinds, Menu, AbsInts) :-
+    anakinds_to_absints_menu(AnaKinds, Menu, AbsInts).
+
+% ------------------------------------------------------------------------
+
+%! ## Set anaflags after properties analysis
+
+:- data selected_domains/1.
+
+cleanup_decide_domains :-
+    retractall_fact(prop_covered(_,_,_)),
+    retractall_fact(selected_domains(_)).
+
+select_anaflags_monolithic(AnaFlags0) :-
+    sort_with_heuristics(AnaFlags0, AnaFlags),
+    assertz_fact(selected_domains(AnaFlags)).
+
+sort_with_heuristics(AnaFlags0, AnaFlags) :-
+    assign_score(AnaFlags0, AnaFlags1),
+    keysort(AnaFlags1, AnaFlags2),
+    get_values(AnaFlags2, AnaFlags).
+
+% TODO: Work on heuristics.
+assign_score([], []).
+assign_score([X|Xs], [H-X|Ys]) :-
+    assign_score_(X, H),
+    assign_score(Xs, Ys).
+
+assign_score_([], 0).
+assign_score_([X|Xs], H) :-
+    assign_score_(Xs, H0),
+    ( preferred_ana(_, X) ->
+        H = H0
+    ; H is H0 + 1
+    ).
+
+% TODO: Duplicated.
+get_values([], []).
+get_values([_-V|Xs], [V|Ys]) :-
+    get_values(Xs, Ys).
+
+% ------------------------------------------------------------------------
+
+%! ## Automatically Pick Domains
+% New algorithm to automatically pick what domains to use when
+% verifying assertions. Domain kinds are irrelevant.
+% TODO: Be careful when sorting domains, e.g., shfr should run before resources.
+
+% TODO: Take into account combined domains.
+decide_domains_monolithic(_AnaKinds, AnaFlags) :-
+    cleanup_decide_domains,
+    % First, obtain disjunctions conjunctions of needed domains in a
+    % failure driven loop.
+    ( curr_file(_, M),
+      get_one_prop(M, Prop),
+      functor(Prop, F, A),
+      \+ is_prop_covered(F, A, _),
+      findallsort(AbsInt, domain_native_property(Prop, AbsInt), AbsIntDisj),
+      add_auxiliary_domains(AbsIntDisj, LLAbsInt),
+      set_prop_covered(F, A, LLAbsInt),
+      fail
+    ; true
+    ),
+    findallsort(Dom, is_prop_covered(F, A, Dom), AnaFlags0),
+    % Simplify conjunction of disjunctions of conjunctions to
+    % disjunctions of conjunctions.
+    domains_disjunction(AnaFlags0, AnaFlags).
+
+:- meta_predicate findallsort(?, goal, ?).
+
+findallsort(Template, Generator, Set) :-
+    findall(Template, Generator, List),
+    sort(List, Set).
+
+% Cache to store whether a (native) property was already covered in
+% previously selected domains AbsInt. E.g., if shfr covers groundness,
+% do not run eterms/nf (they also know about groundess).
+:- data prop_covered/3.
+
+set_prop_covered(F, A, LLAbsInt) :-
+    assertz_fact(prop_covered(F, A, LLAbsInt)).
+
+is_prop_covered(F, A, LLAbsInt) :-
+    current_fact(prop_covered(F, A, LLAbsInt)).
+
+%! ### Deciding Domains from Properties
+% TODO: Should be a domain operation.
+
+:- multifile(aidomain/1).
+
+% If we have a plai domain understanding the property, we will not use
+% nonplai domains.
+domain_native_property(Prop, AbsInt) :-
+    ( plai_domain_native_property(Prop, _) ->
+        plai_domain_native_property(Prop, AbsInt)
+    ; nonplai_domain_native_property(Prop, AbsInt)
+    ).
+
+plai_domain_native_property(Prop, AbsInt) :-
+    functor(Prop,F,A),
+    ( F = regtype ->
+        Determ = types
+    ; abs_ex(F/A,Determ,_,_),
+      use_types_just_for_types(Determ,F/A)
+    ),
+    determinable(AbsInt,Determ).
+
+% Avoid using types domains to analyze instantiation properties
+% (ground/1, not_free/1, var/1, free/1).
+use_types_just_for_types(types,Prop) :-
+    abs_ex(Prop,Determ,_,_),
+    Determ \= types, !,
+    fail.
+use_types_just_for_types(_,_).
+
+nonplai_domain_native_property(Prop, AbsInt) :-
+    ( knows_of(Prop, _) ->
+        Prop1 = Prop
+    ; functor(Prop, P, N),
+      M is N - 1,
+      functor(Prop1, P, M)
+    ),
+    knows_of(Prop1, AbsInt).
+
+%! ### Auxiliary domains
+% Adds auxiliary domains to list of selected domains.
+% TODO: Should be a domain operation
+
+:- doc(add_auxiliary_domains(L0, L1), "Adds auxiliary domains needed
+   to run @var{L0}, returning the result in @var{L0}.").
+
+:- pred add_auxiliary_domains(L0, L1)
+   : ( list(atom, L0), var(L1) )
+   => ( list(atom, L0), list(list(atom), L1) ).
+
+add_auxiliary_domains(AbsInts0, AbsInts) :-
+    add_auxiliary_domains_(AbsInts0, AbsInts1),
+    append(AbsInts1, AbsInts2),
+    sort(AbsInts2, AbsInts).
+
+add_auxiliary_domains_([], []).
+add_auxiliary_domains_([AbsInt|AbsInts0], [Needed|AbsInts1]) :-
+    auxiliary_domains(AbsInt, Others),
+    ( Others = [] ->
+        Needed = [[AbsInt]]
+    ; cross_product([[AbsInt]|Others], Needed0),
+      sort_each(Needed0, Needed1),
+      sort(Needed1, Needed)
+    ),
+    add_auxiliary_domains_(AbsInts0, AbsInts1).
+
+% TODO: Should be a domain operation.
+auxiliary_domains(Res, [T,M,N,D]) :-
+    ( Res = resources
+    ; Res = steps_lb
+    ; Res = steps_o
+    ; Res = steps_ualb
+    ; Res = steps_ub
+    ), !,
+    all_types_domains(T),
+    all_modes_domains(M),
+    all_nonfailure_domains(N),
+    all_determinism_domains(D).
+auxiliary_domains(NfDet, [T,M]) :-
+    ( NfDet = nfg
+    ; NfDet = detg
+    ), !,
+    all_types_domains(T),
+    all_modes_domains(M).
+auxiliary_domains(_, []).
+
+%% :- compilation_fact(complete_aux_dom_selection).
+
+% Exponential number of auxiliary domains.
+:- if(defined(complete_aux_dom_selection)).
+
+all_types_domains(T) :-
+    findall(Types, determinable(Types, types), T).
+
+all_modes_domains(M) :-
+    findall(Modes, determinable(Modes, sharing), M).
+
+all_nonfailure_domains(N) :-
+    % TODO: When in determinable/2, use: findall(Nf, determinable(Nf, nonfailure), N).
+    findall(Nf, knows_of(not_fails, Nf), N).
+
+all_determinism_domains(D) :-
+    % TODO: When in determinable/2, use: findall(Det, determinable(Det, determinism), D).
+    findall(Det, knows_of(is_det, Det), D).
+
+% Single "preferred" auxiliary domain.
+:- else.
+
+all_types_domains([T]) :-
+    preferred_ana(types, T).
+
+all_modes_domains([M]) :-
+    preferred_ana(modes, M).
+
+all_nonfailure_domains([N]) :-
+    preferred_ana(ana_nf, N).
+
+all_determinism_domains([D]) :-
+    preferred_ana(ana_det, D).
+
+:- endif.
+
+sort_each([], []).
+sort_each([X|Xs], [Y|Ys]) :-
+    sort(X, Y),
+    sort_each(Xs, Ys).
+
+%! ### Domains list processing
+% Predicates to obtain the final domain list as a disjunction of
+% conjunctions.
+% TODO: Take into account combined domains.
+
+domains_disjunction(Conjunction, Disjunction) :-
+    cross_product(Conjunction, CrossProduct),
+    append_each(CrossProduct, Disjunction0),
+    sort(Disjunction0, Disjunction).
+
+append_each([], []).
+append_each([X|Xs], [Y|Ys]) :-
+    append(X, Y0),
+    sort(Y0, Y),
+    append_each(Xs, Ys).
+:- endif.
+
+:- pred preferred_ana(+AnaKind, -AbsInt)
+   # "Domain @var{AbsInt} is the preferred analysis of kind
+     @var{AnaKind}.".
 
 % Preferred analyses of different kind.
 % Cannot use the flags here, as default values of the flags
@@ -1456,6 +1716,64 @@ preferred_ana(ana_cost, steps_ualb). % IG: why duplicated?, possible choicepoint
 preferred_ana(ana_cost, resources).
 preferred_ana(ana_size, size_ualb).
 preferred_ana(ana_det,  det).
+
+% TODO: ad-hoc for modular ct checking (it fixes types and modes)
+decide_domains_intermod([], []).
+decide_domains_intermod([AnaKind|AnaKinds], [f(AnaKind, AbsInt)|AnaFlags]):-
+    decide_domain_intermod(AnaKind, AbsInt),
+    decide_domains_intermod(AnaKinds, AnaFlags).
+
+% TODO: ad-hoc for intermod ct checking (it fixes types and modes)
+decide_domain_intermod(types, eterms) :- !.
+decide_domain_intermod(modes, shfr) :- !.
+decide_domain_intermod(_AnaKind, none).
+
+% Select menu flags AnaFlags for analysis (setting each AnaKind to the
+% corresponding AbsInt)
+select_anaflags_intermod([]).
+select_anaflags_intermod([f(AnaKind,AbsInt)|AnaFlags]) :-
+    set_menu_flag(~ctcheck_menu_name,AnaKind,AbsInt),
+    select_anaflags_intermod(AnaFlags).
+
+% ---------------------------------------------------------------------------
+% Decide necessary domains from assertions to be checked
+
+% Enumerate all native props Prop (see prop_to_native/2) from check
+% assertions of module M
+get_one_prop(M,Prop) :-
+    relevant_assertion(M,Body),
+    assertion_body(_,_,Call,Succ,Comp,_,Body),
+    ( member(Prop0,Succ)
+    ; member(Prop0,Call)
+    ; member(Prop0,Comp)
+    ),
+    ( prop_to_native(Prop0,Prop) -> true ).  % Avoids choicepoints.
+
+% The assertion Body is relevant for ctchecks:
+%  - calls assertions from libraries
+%  - calls, success, or comp assertions if:
+%    - M1 is M (our own module)
+%    - any module if ct_modular=all
+relevant_assertion(M,Body) :-
+    % IG: if we use assertion_read instead, all assertions from all libraries
+    % are considered. If the libraries are not cached, pgm_assertion_read
+    % includes the libraries as well.
+    %pgm_assertion_read(_,M1,check,Kind,Body,_,Base,_,_),
+    %
+    % TODO: JF: using assertion_read/9 again to make sure that we can
+    %   check calls to libraries, as it seems to be used in
+    %   take_assertion/4
+    %
+    assertion_read(_,M1,check,Kind,Body,_,Base,_,_),
+    ( M \== M1, is_library(Base) ->
+        % assume that one does not check libraries with auto
+        Kind = calls
+    ; ( M == M1
+      ; current_pp_flag(ct_modular,all)
+      ) ->
+        ( Kind = comp ; Kind = success ; Kind = calls )
+    ; fail
+    ).
 
 % ---------------------------------------------------------------------------
 % Auto check certificate

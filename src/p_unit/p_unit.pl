@@ -741,6 +741,7 @@ prop_to_native(Prop,NProp2):-
 prop_to_native(Prop,NProp):-
     prop_to_native_(Prop,NProp).
 
+% TODO: Creates choicepoints. Intended?
 prop_to_native_(Prop,NProp):-
     current_fact(p_unit:native(Prop,NProp)).
 prop_to_native_(Prop,NProp):-
