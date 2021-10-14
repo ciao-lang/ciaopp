@@ -41,8 +41,8 @@ all, 'Action'       # inter_all  - analyze_check :: all_menu_branch.
 ~munified(1), '| Cost'          # para_cost        - both      <- para_c1.
 :- endif.
 
-~munified(1),'Automatic entry points.'      # entry_points_auto - calls.
-~munified(1),'Assertions to use as entry points.'      # entry_calls_scope      - exported.
+~munified(1),'Automatic entry points'      # entry_points_auto - calls.
+~munified(1),'Assertions to use as entry points'      # entry_calls_scope      - exported.
 
 % ------------------------------------------------------------
 % modularity options
