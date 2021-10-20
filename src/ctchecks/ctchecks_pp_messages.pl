@@ -15,7 +15,7 @@
 :- use_module(library(vndict), [rename/2]).
 :- use_module(library(write),  [numbervars/3, prettyvars/1]).
 
-:- use_module(ciaopp(p_unit/assrt_norm), [denorm_goal_prop/3]).
+:- use_module(library(assertions/assrt_lib), [prop_unapply/3]).
 :- use_module(ciaopp(p_unit/clause_db), [maybe_clause_locator/2]).
 %:- use_module(ciaopp(p_unit/clause_db), [clause_locator/2]).
 :- use_module(ciaopp(p_unit), [prop_to_native/2]).
@@ -393,7 +393,7 @@ infer_unify_vars0([V=N|VNs]):-
 
 inline_types([]).
 inline_types([Prop|Props]):- !,
-    denorm_goal_prop(Prop,P,P),
+    prop_unapply(Prop,P,P),
     ctchecks_pp_messages:inline_types(Props).
 inline_types((Prop;Props)):- !,
     ctchecks_pp_messages:inline_types(Prop),
@@ -402,13 +402,13 @@ inline_types((Prop,Props)):- !,
     ctchecks_pp_messages:inline_types(Prop),
     ctchecks_pp_messages:inline_types(Props).
 inline_types(Prop):-
-    denorm_goal_prop(Prop,P,P).
+    prop_unapply(Prop,P,P).
 
 % PP: New version to cope with multiple occurences of the same variable
 inline_types2([],[]).
 inline_types2([Prop|Props],[P|Ps]):- !,
     copy_term(Prop,InProp),
-    denorm_goal_prop(InProp,P,P),
+    prop_unapply(InProp,P,P),
     inline_types2(Props,Ps).
 inline_types2((Prop;Props),Ps):- !,
     inline_types2(Prop,Ps1),
@@ -420,7 +420,7 @@ inline_types2((Prop,Props),Ps):- !,
     inline_types2(Props,Ps2).
 inline_types2(Prop,[P]):-
     copy_term(Prop,InProp),
-    denorm_goal_prop(InProp,P,P).
+    prop_unapply(InProp,P,P).
 
 filter_required_rules([typedef(::=(T,_))|Ds],Rs,Fs) :-
     functor(G,T,1), type(G), !,  % not inferred
