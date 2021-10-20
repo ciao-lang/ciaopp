@@ -1,4 +1,4 @@
-:- module(always_fails,[top/0],[assertions]).
+:- module(never_succeeds,[top/0],[assertions]).
 
 top:-
     input_data(X),
@@ -11,6 +11,7 @@ compute(X,Y):-
     X1 is X-1,
     compute(X1,Y1),
     Y is Y1*X1.  
+
 
 show_results(_X):-
     % ...
