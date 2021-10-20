@@ -13,7 +13,7 @@
 %% successful return from the procedure
 
 :- use_module(ciaopp(infer/infer),
-              [get_info/5, get_memo_lub/5, type2measure/3]).
+              [get_completes/4, get_info/5, get_memo_lub/5, type2measure/3]).
 :- use_module(ciaopp(infer/infer_db), [domain/1, inferred/3]).
 :- use_module(ciaopp(infer/infer_dom), [does_not_use_memo_lub/1]).
 :- use_module(ciaopp(infer/gather_modes_basic), [translate_to_modes/2, get_metric/2]).
@@ -28,13 +28,10 @@ get_modes_assrt(_,_) :- fail. % (default)
     is_directive/3, is_clause/4, lit_ppkey/3, get_predkey/3,
     predkey_from_sg/2]).
 :- use_module(ciaopp(p_unit), [type_of_goal/2, entry_assertion/3]).
-:- use_module(ciaopp(p_unit/itf_db), [curr_module/1]).
 :- use_module(library(assertions/assrt_lib), [assertion_body/7]).
-:- use_module(ciaopp(p_unit/clause_db)).
 :- use_module(ciaopp(p_unit/assrt_db)).
 :- use_module(library(hiordlib), [
     foldl/4,
-    foldl/5,
     maplist/2,
     maplist/3,
     maplist/4,
@@ -43,17 +40,14 @@ get_modes_assrt(_,_) :- fail. % (default)
 :- use_module(ciaopp(preprocess_flags), [current_pp_flag/2]).
 :- use_module(ciaopp(ciaopp_log), [pplog/2]).
 
-:- use_module(engine(internals), [module_concat/3]).
 :- use_module(engine(runtime_control), [module_split/3]).
-:- use_module(library(dict), [dic_get/3, dic_lookup/4, dic_replace/4]).
+:- use_module(library(dict), [dic_get/3, dic_lookup/3]).
 :- use_module(library(lists),           [member/2, append/3, length/2]).
-:- use_module(library(sets),            [insert/3, ord_member/2]).
-:- use_module(library(sort),            [sort/2]).
+:- use_module(library(sets),            [ord_member/2]).
 :- use_module(library(terms_vars),      [varset/2]).
 :- use_module(library(vndict),          [create_dict/2]).
 :- use_module(library(aggregates)).
 :- use_module(library(messages)).
-:- use_module(library(terms)).
 
 :- doc(bug, "The predicate add_mode_declaration_/10 has two versions: (a)
 gathering mode information by using type information, and (b) gathering
@@ -116,29 +110,65 @@ gather_entry_modes(_).
 % does not count with information from previous analyses and would
 % cause failure.
 %
+% Currently, we are removing unreachable predicates and program points
+% inside reachable clauses.
+%
 
 remove_dead_code(Cls0,Ds0,Cls,Ds) :-
-    % If fact info is being stored, we do not need to call
-    % ad_hoc_remove_dead_code/5.
-    ( ( current_pp_flag(fact_info,on) ; domain(nf) ) ->
-        Cls1 = Cls0,
-        Ds1 = Ds0,
-        Removed1 = []
-    ; ad_hoc_remove_dead_code(Cls0,Ds0,Cls1,Ds1,Removed1)
-    ),
-    maplist(to_keypair,Cls1,Ds1,ClDs1),
     findall(Domain,domain_uses_memo_lub(Domain),Domains),
-    partition(used_clause(Domains),ClDs1,ClDs2,RemovedDs),
-    maplist(prune_clause(Domains),ClDs2,ClDs),
-    maplist(to_keypair,Cls,Ds,ClDs),
-    ( Removed1 = [], RemovedDs = [] ->
+    remove_preds(Domains,Cls0,Ds0,Cls1,Ds,Removed),
+    maplist(prune_clause(Domains),Cls1,Cls),
+    ( Removed = [] ->
         true
-    ; maplist(to_keypair,Removed2,_,RemovedDs),
-      maplist(clause_id,Removed2,Removed3),
-      append(Removed1,Removed3,Removed4),
-      sort(Removed4,Removed),
-      pplog(infer, ['Unreachable predicates and clauses: ', ''(Removed)])
+    ; pplog(infer, ['Unreachable predicates: ', ''(Removed)])
     ).
+
+% TODO: Move.
+domain_uses_memo_lub(Domain) :- domain(Domain),
+    \+ does_not_use_memo_lub(Domain).
+
+% ------------------------------------------------------------------------
+%! ### Removing unreachable predicates
+%
+% If there is no complete stored for a predicate, it is unreachable.
+%
+
+% Code reaches this predicate in the form of clauses. We use a
+% dictionary using predicate keys as keys to remember reachable
+% predicates when iterating over the clauses list.
+remove_preds(Domains,Cls0,Ds0,Cls,Ds,Removed) :-
+    remove_preds_(Cls0,Ds0,Cls,Ds,Removed,Domains,_).
+
+remove_preds_([],[],[],[],[],_Domains,_Dic).
+remove_preds_([Cl|Cls0],[D|Ds0],Cls,Ds,Removed,Domains,Dic) :-
+    predkey_from_clause(Cl,PredKey),
+    ( dic_get(Dic,PredKey,ToRemove) ->
+        true
+    ; ( used_pred(Domains,PredKey) ->
+          ToRemove = false
+      ; ToRemove = true
+      ),
+      dic_lookup(Dic,PredKey,ToRemove)
+    ),
+    ( ToRemove = true ->
+        Cls = Cls1,
+        Ds = Ds1,
+        Removed = [PredKey|Removed1]
+    ; Cls = [Cl|Cls1],
+      Ds = [D|Ds1],
+      Removed = Removed1
+    ),
+    remove_preds_(Cls0,Ds0,Cls1,Ds1,Removed1,Domains,Dic).
+
+used_pred(Domains, Key) :-
+    maplist(used_pred_(Key), Domains).
+
+used_pred_(Key, Domain) :-
+    get_completes(Key,_Goal,Domain,_Completes).
+
+predkey_from_clause(Cl,PredKey) :-
+    is_clause(Cl,Sg,_,_),
+    predkey_from_sg(Sg,PredKey).
 
 % ------------------------------------------------------------------------
 %! ### Ad Hoc Code Removal
@@ -146,123 +176,125 @@ remove_dead_code(Cls0,Ds0,Cls,Ds) :-
 % First code removal step. Needed because domains only store fact info
 % if the flag `fact_info` is set.
 %
+% Commented out: We only use CiaoPP based code removal.
+%
 
-ad_hoc_remove_dead_code(Cls0, Ds0, Cls, Ds, Removed) :-
-    (source_clause(_, directive(module(_, Exports0, _)), _) -> true ; true),
-    (
-        var(Exports0) ->
-        pplog(infer, ['All predicates exported so there is no dead code']),
-        Cls = Cls0, Ds = Ds0
-    ;
-        findall(F/A, (entry_assertion(Goal, _, _), functor(Goal, F, A)),
-            Exports, Exports1),
-        curr_module(Module),
-        maplist(([Module] -> ''(F0/A, F/A) :- module_concat(Module,F0,F)),
-                Exports0, 
-                Exports1),
-        remove_dead_clauses(Exports,Cls0,Ds0,Cls,Ds,Removed)
-    ).
+%% ad_hoc_remove_dead_code(Cls0, Ds0, Cls, Ds, Removed) :-
+%%     (source_clause(_, directive(module(_, Exports0, _)), _) -> true ; true),
+%%     (
+%%         var(Exports0) ->
+%%         pplog(infer, ['All predicates exported so there is no dead code']),
+%%         Cls = Cls0, Ds = Ds0
+%%     ;
+%%         findall(F/A, (entry_assertion(Goal, _, _), functor(Goal, F, A)),
+%%             Exports, Exports1),
+%%         curr_module(Module),
+%%         maplist(([Module] -> ''(F0/A, F/A) :- module_concat(Module,F0,F)),
+%%                 Exports0, 
+%%                 Exports1),
+%%         remove_dead_clauses(Exports,Cls0,Ds0,Cls,Ds,Removed)
+%%     ).
 
-remove_dead_clauses(Exports0,Cls0,Ds0,Cls,Ds,Removed) :-
-    remove_dups(Exports0,Exports),
-    init_used(Cls0,Ds0,Used),
-    add_exports_to_worklist(Used,Exports,WorkList),
-    mark_all(WorkList,Used),
-    sweep(Used,Cls,Ds,Removed).
+%% remove_dead_clauses(Exports0,Cls0,Ds0,Cls,Ds,Removed) :-
+%%     remove_dups(Exports0,Exports),
+%%     init_used(Cls0,Ds0,Used),
+%%     add_exports_to_worklist(Used,Exports,WorkList),
+%%     mark_all(WorkList,Used),
+%%     sweep(Used,Cls,Ds,Removed).
 
-remove_dups(L0,L1) :-
-    foldl(insert_set,L0,[],L1).
+%% remove_dups(L0,L1) :-
+%%     foldl(insert_set,L0,[],L1).
 
-insert_set(El,L0,L1) :-
-    insert(L0,El,L1).
+%% insert_set(El,L0,L1) :-
+%%     insert(L0,El,L1).
 
-init_used(Cls0,Ds0,Used) :-
-    foldl(init_used_,Cls0,Ds0,_,Used).
+%% init_used(Cls0,Ds0,Used) :-
+%%     foldl(init_used_,Cls0,Ds0,_,Used).
 
-init_used_(Cl,D,Used0,Used1) :-
-    clause_to_pred(Cl,Pred),!,
-    record_used(Used0,Pred,Cl-D-_M,Used1).
-init_used_(_Cl,_D,Used0,Used0). % In case Cl is not a clause
+%% init_used_(Cl,D,Used0,Used1) :-
+%%     clause_to_pred(Cl,Pred),!,
+%%     record_used(Used0,Pred,Cl-D-_M,Used1).
+%% init_used_(_Cl,_D,Used0,Used0). % In case Cl is not a clause
     
-clause_to_pred(Cl,F/A) :-
-    is_clause(Cl,Head,_,_),
-    functor(Head,F,A).
+%% clause_to_pred(Cl,F/A) :-
+%%     is_clause(Cl,Head,_,_),
+%%     functor(Head,F,A).
 
-record_used(Used0,Pred,V,Used1) :-
-    dic_lookup(Used0,Pred,L,O),
-    ( O = old ->
-        dic_replace(Used0,Pred,[V|L],Used1)
-    ;
-        Used1 = Used0,
-        L = [V] ).
+%% record_used(Used0,Pred,V,Used1) :-
+%%     dic_lookup(Used0,Pred,L,O),
+%%     ( O = old ->
+%%         dic_replace(Used0,Pred,[V|L],Used1)
+%%     ;
+%%         Used1 = Used0,
+%%         L = [V] ).
 
-add_exports_to_worklist(Used,Exports,WorkList) :-
-    foldl(add_export_to_worklist(Used),Exports,[],WorkList).
+%% add_exports_to_worklist(Used,Exports,WorkList) :-
+%%     foldl(add_export_to_worklist(Used),Exports,[],WorkList).
 
-add_export_to_worklist(Used,Export,WorkList0,WorkList1) :-
-    mark_export(Used,Export,Bodies),
-    append(Bodies,WorkList0,WorkList1).
+%% add_export_to_worklist(Used,Export,WorkList0,WorkList1) :-
+%%     mark_export(Used,Export,Bodies),
+%%     append(Bodies,WorkList0,WorkList1).
 
-mark_export(Used,Export,Bodies) :-
-    dic_get(Used,Export,L),
-    maplist(mark,L,Bodies).
+%% mark_export(Used,Export,Bodies) :-
+%%     dic_get(Used,Export,L),
+%%     maplist(mark,L,Bodies).
 
-mark(Cl-_-used,Body) :-
-    is_clause(Cl,_,Body,_).
+%% mark(Cl-_-used,Body) :-
+%%     is_clause(Cl,_,Body,_).
 
-mark_all([],_).
-mark_all([Body|WorkList0],Used) :-
-    mark_body(Body,Used,WorkList0,WorkList1),
-    mark_all(WorkList1,Used).
+%% mark_all([],_).
+%% mark_all([Body|WorkList0],Used) :-
+%%     mark_body(Body,Used,WorkList0,WorkList1),
+%%     mark_all(WorkList1,Used).
 
-mark_body((LitPPKey, Body), Used, WorkList0, WorkList2) :-
-    mark_lit(LitPPKey, Used, WorkList0, WorkList1),
-    mark_body(Body,Used,WorkList1,WorkList2).
-mark_body((LitPPKey), Used, WorkList0, WorkList1) :-
-    mark_lit(LitPPKey, Used, WorkList0, WorkList1).
+%% mark_body((LitPPKey, Body), Used, WorkList0, WorkList2) :-
+%%     mark_lit(LitPPKey, Used, WorkList0, WorkList1),
+%%     mark_body(Body,Used,WorkList1,WorkList2).
+%% mark_body((LitPPKey), Used, WorkList0, WorkList1) :-
+%%     mark_lit(LitPPKey, Used, WorkList0, WorkList1).
 
-mark_lit(LitPPKey, Used, WorkList0, WorkList1) :-
-    lit_ppkey(LitPPKey, Lit, _),
-    functor(Lit, F, A),
-    ( dic_get(Used,F/A,L) ->
-        foldl(mark_applicable_clause(Lit),L,WorkList0,WorkList1)
-    ;
-        WorkList1 = WorkList0 ).
+%% mark_lit(LitPPKey, Used, WorkList0, WorkList1) :-
+%%     lit_ppkey(LitPPKey, Lit, _),
+%%     functor(Lit, F, A),
+%%     ( dic_get(Used,F/A,L) ->
+%%         foldl(mark_applicable_clause(Lit),L,WorkList0,WorkList1)
+%%     ;
+%%         WorkList1 = WorkList0 ).
 
-mark_applicable_clause(Lit,Cl-D-M,WorkList0,WorkList1) :-
-    ( to_mark(Lit,Cl,M,Body) ->
-        mark(Cl-D-M,_),
-        WorkList1 = [Body|WorkList0]
-    ;
-        WorkList1 = WorkList0 ).
+%% mark_applicable_clause(Lit,Cl-D-M,WorkList0,WorkList1) :-
+%%     ( to_mark(Lit,Cl,M,Body) ->
+%%         mark(Cl-D-M,_),
+%%         WorkList1 = [Body|WorkList0]
+%%     ;
+%%         WorkList1 = WorkList0 ).
 
-to_mark(Lit,Cl,M,Body) :-
-    var(M),
-    is_clause(Cl,Head,Body,_),
-    applicable_clause(Head,Lit).
+%% to_mark(Lit,Cl,M,Body) :-
+%%     var(M),
+%%     is_clause(Cl,Head,Body,_),
+%%     applicable_clause(Head,Lit).
 
-sweep(Used,Cls,Ds,Removed) :-
-    sweep_(Used,[],[],[],Cls,Ds,Removed).
+%% sweep(Used,Cls,Ds,Removed) :-
+%%     sweep_(Used,[],[],[],Cls,Ds,Removed).
 
-sweep_(D,Cls,Ds,Removed,Cls,Ds,Removed) :- var(D), !.
-sweep_(dic(F/A,V,L,R),Cls0,Ds0,Removed0,Cls,Ds,Removed) :-
-    sweep_(L,Cls0,Ds0,Removed0,Cls1,Ds1,Removed1),
-    foldl(sweep_clause,V,Cls1-Ds1-[],Cls2-Ds2-RemovedX),
-    ( length(RemovedX,Len), length(V,Len) ->
-        atom_number(AA,A),
-        atom_concat([F, /, AA], K),
-        Removed2 = [K|Removed1]
-    ;
-        append(RemovedX,Removed1,Removed2) ),
-    sweep_(R,Cls2,Ds2,Removed2,Cls,Ds,Removed).
+%% sweep_(D,Cls,Ds,Removed,Cls,Ds,Removed) :- var(D), !.
+%% sweep_(dic(F/A,V,L,R),Cls0,Ds0,Removed0,Cls,Ds,Removed) :-
+%%     sweep_(L,Cls0,Ds0,Removed0,Cls1,Ds1,Removed1),
+%%     foldl(sweep_clause,V,Cls1-Ds1-[],Cls2-Ds2-RemovedX),
+%%     ( length(RemovedX,Len), length(V,Len) ->
+%%         atom_number(AA,A),
+%%         atom_concat([F, /, AA], K),
+%%         Removed2 = [K|Removed1]
+%%     ;
+%%         append(RemovedX,Removed1,Removed2) ),
+%%     sweep_(R,Cls2,Ds2,Removed2,Cls,Ds,Removed).
 
-sweep_clause(Cl-_D-M,Cls0-Ds0-Removed0,Cls0-Ds0-[ClId|Removed0]) :- var(M), !,
-    clause_id(Cl,ClId).
-sweep_clause(Cl-D-_,Cls0-Ds0-Removed0,[Cl|Cls0]-[D|Ds0]-Removed0).
+%% sweep_clause(Cl-_D-M,Cls0-Ds0-Removed0,Cls0-Ds0-[ClId|Removed0]) :- var(M), !,
+%%     clause_id(Cl,ClId).
+%% sweep_clause(Cl-D-_,Cls0-Ds0-Removed0,[Cl|Cls0]-[D|Ds0]-Removed0).
 
-clause_id(Cl,ClId) :- is_clause(Cl,_,_,ClId).
+%% clause_id(Cl,ClId) :- is_clause(Cl,_,_,ClId).
 
-applicable_clause(Head0, Head1) :- \+ \+ Head0 = Head1.
+%% applicable_clause(Head0, Head1) :- \+ \+ Head0 = Head1.
 
 % ------------------------------------------------------------------------
 %! ### ciaopp Based Code Removal
@@ -270,49 +302,40 @@ applicable_clause(Head0, Head1) :- \+ \+ Head0 = Head1.
 % Predicates to remove dead code using information inferred by other
 % domains.
 %
-
-% TODO: Move.
-domain_uses_memo_lub(Domain) :- domain(Domain),
-    \+ does_not_use_memo_lub(Domain).
-
-% TODO: Duplicated.
-to_keypair(A,B,A-B).
-
-used_clause(Domains,Cl-_) :-
-    is_clause(Cl,_,Body,Key),
-    ( Body = true:_, current_pp_flag(fact_info,off) ->
-        ( domain(nf) ->  % Only nf stores entries for facts by default.
-            reachable_clause(Key,nf)
-        ; true
-        )
-    ; maplist(reachable_clause(Key),Domains)
-    ).
-
-% A clause is reachable iff:
+% Commented out: We are not removing unreachable clauses by now.
 %
-% - The end of the clause is reachable (needed because domains other
-%   than nf don't store info for the first point of facts).
-% Or
-% - The first point of the clause is reachable. We cannot just test
-%   whether there is an entry at a memo table at such point because in
-%   some cases a $bottom entry is inserted for unreachable clauses,
-%   e.g., (using nf, $bottom is represented by fails in output):
-%
-% :- entry p(A) : num(A).
-%
-% p(1) :- true(not_fails), q, true(not_fails).
-% p(a) :- true($bottom), q, true($bottom).
-%
-% q :- true(not_fails), true, true(not_fails).
-reachable_clause(Key, Domain) :-
-    reachable_point(Key, Domain).
-reachable_clause(Key0,Domain) :-
-    atom_concat(Key0,'/1',Key),
-    reachable_point(Key, Domain).
 
-reachable_point(Key,Domain) :-
-    get_memo_lub(Key,_Vars,Domain,_Lub,ASub),
-    ASub \== '$bottom'.
+%% used_clause(Domains,Cl-_) :-
+%%     is_clause(Cl,_,Body,Key),
+%%     ( Body = true:_, current_pp_flag(fact_info,off) ->
+%%         ( domain(nf) ->  % Only nf stores entries for facts by default.
+%%             reachable_clause(Key,nf)
+%%         ; true
+%%         )
+%%     ; maplist(reachable_clause(Key),Domains)
+%%     ).
+
+%% % A clause is reachable iff:
+%% %
+%% % - The end of the clause is reachable (needed because domains other
+%% %   than nf don't store info for the first point of facts).
+%% % Or
+%% % - The first point of the clause is reachable. We cannot just test
+%% %   whether there is an entry at a memo table at such point because in
+%% %   some cases a $bottom entry is inserted for unreachable clauses,
+%% %   e.g., (using nf, $bottom is represented by fails in output):
+%% %
+%% % :- entry p(A) : num(A).
+%% %
+%% % p(1) :- true(not_fails), q, true(not_fails).
+%% % p(a) :- true($bottom), q, true($bottom).
+%% %
+%% % q :- true(not_fails), true, true(not_fails).
+%% reachable_clause(Key, Domain) :-
+%%     reachable_point(Key, Domain).
+%% reachable_clause(Key0,Domain) :-
+%%     atom_concat(Key0,'/1',Key),
+%%     reachable_point(Key, Domain).
 
 % ------------------------------------------------------------------------
 %! ## Clause pruning
@@ -323,24 +346,52 @@ reachable_point(Key,Domain) :-
 % info is inferred after the point of failure.
 %
 
-:- use_module(library(formulae), [conj_to_list/2, list_to_conj/2]).
-
-prune_clause(Domains, Cl0-Ds, Cl-Ds) :-
+% Facts should not be pruned. CiaoPP domains do not store program
+% point info for facts by default (except nonfailure/determinism
+% domains).
+prune_clause(_Domains, Cl, Cl) :- is_fact(Cl), !.
+prune_clause(Domains, Cl0, Cl) :-
     is_clause(Cl0, Head, Body0, Key),
-    conj_to_list(Body0, LBody0),
-    prune_clause_(LBody0, Domains, LBody),
-    list_to_conj(LBody, Body),
+    ( prune_clause_(Body0, Domains, Body) ->
+        true
+    ; atom_concat(Key, '/1', LitKey),
+      lit_ppkey(Body, true, LitKey)
+    ),
     is_clause(Cl, Head, Body, Key).
 
 % If a program point is not reachable, the following program points
 % will not be reachable, so we can prune the clause.
+prune_clause_((Lit,Rest), Domains, Res) :- !,
+    reachable_point(Lit, Domains),
+    ( prune_clause_(Rest, Domains, Res1) ->
+        Res = (Lit,Res1)
+    ; Res = Lit
+    ).
+prune_clause_(Lit, Domains, Lit) :-
+    reachable_point(Lit, Domains).
 
-prune_clause_([], _, []) :- !.
-prune_clause_([Lit|LCl0], Domains, [Lit|LCl]) :-
-    Lit = _:LitKey,
-    maplist(reachable_point(LitKey), Domains), !,
-    prune_clause_(LCl0, Domains, LCl).
-prune_clause_(_, _, []).
+% Facts:
+%
+% foo(...).          ==> Body = true:_
+% foo(...) :- true.  ==> Body = true:_
+% foo(...) :- !.     ==> Body = !
+is_fact(Cl) :-
+    is_clause(Cl, _, Body, _),
+    ( Body = true:_ ->
+        true
+    ; Body = !
+    ).
+
+reachable_point(Lit, Domains) :-
+    lit_ppkey(Lit, _, LitKey),
+    ( LitKey = noinfo ->
+        true
+    ; maplist(reachable_point_(LitKey), Domains)
+    ).
+
+reachable_point_(Key,Domain) :-
+    ( get_memo_lub(Key,_Vars,Domain,_Lub,ASub) -> true ),
+    ASub \== '$bottom'.
 
 % ---------------------------------------------------------------------------
 % First entry point: collect mode info in the database
