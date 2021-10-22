@@ -14,11 +14,10 @@
 :- use_module(library(aggregates), [findall/3]).
 
 compound_to_simple_assrt(L, CannonAs) :-
-    compound_to_simple_assrt__(L, CannonAs, []),
-    !. % TODO: Why this cut?
+    compound_to_simple_assrt__(L, CannonAs, []).
 
-compound_to_simple_assrt__([], A,   A).
-compound_to_simple_assrt__(L,  NAs, TTNAs) :- !,
+compound_to_simple_assrt__([], A,   A) :- !.
+compound_to_simple_assrt__(L,  NAs, TTNAs) :-
 % Get predicate assertions from the same pred
     gather_pred_assertions_with_same_head(L, As, L_left),
     get_only_pred_assertions(As, PredAs, NAs, As_Tleft),
