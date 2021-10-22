@@ -126,7 +126,7 @@ special_directive_(entry).
 special_directive_(true).
 special_directive_(false).
 special_directive_(success).
-special_directive_(call).
+special_directive_(calls).
 special_directive_(check).
 special_directive_(checked).
 special_directive_(pred). % Assertion 
