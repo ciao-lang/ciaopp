@@ -7,7 +7,7 @@
 
 :- use_package(ciaopp(p_unit/p_unit_argnames)).
 
-:- use_module(library(assertions/assertions_props), [assrt_status/1]).
+:- use_module(library(assertions/assertions_props), [assrt_status/1, assrt_type/1]).
 
 :- use_module(library(messages), [error_message/2]).
 :- use_module(library(lists), [member/2, append/3]).
@@ -67,7 +67,7 @@ pred_to_success(As, Suc, Suc__) :-
     ( Succ == [] ->
         Suc = Suc__
     ;
-        decide_status(Status, success, SStatus),
+        decide_status(success, Status, SStatus),
         SAs = as${status => SStatus,type => success,call => Call,
             compat => [],succ => Succ,comp => []},
         copy_the_rest(As, SAs),
@@ -79,7 +79,7 @@ pred_to_comp(As, Suc, Suc__) :-
     ( Comp == [] ->
         Suc = Suc__
     ;
-        decide_status(Status, comp, CoStatus),
+        decide_status(comp, Status, CoStatus),
         CAs = as${status => CoStatus,type => comp,call => Call,
             compat => [],succ => [],comp => Comp},
         copy_the_rest(As, CAs),
@@ -123,7 +123,7 @@ gather_pred_assertions_of_same_status([_|As], Status, Ls) :-
 join_pred_assertions(PredAs, CallAs) :-
     %L = [LA|_],
   %     LA = as${ status => Status }, % TODO: wrong?? take the status of the first one????
-  %     decide_status(Status, calls, PredStatus),
+  %     decide_status(calls, Status, PredStatus),
     % GenericA = as${status => PredStatus,type => calls,call => Calls,
     %     succ => [],compat => [], comp => [], comment => [],
     %     fromwhere => read
@@ -133,9 +133,9 @@ join_pred_assertions(PredAs, CallAs) :-
 %%% IG generate one calls assertion per pred
 extract_calls_from_pred_assertions([],[]).
 extract_calls_from_pred_assertions([PredA|Ps],[CallsA|Cs]) :-
-    PredA = as${status => PredStatus},
-    decide_status(Status, calls, PredStatus),
-    $~(PredA, as${type => calls, status => Status, succ => [],
+    PredA = as${status => Status},
+    decide_status(calls, Status, CallStatus),
+    $~(PredA, as${type => calls, status => CallStatus, succ => [],
        compat => [], comp => [], comment => [], fromwhere => read}, CallsA),
     extract_calls_from_pred_assertions(Ps,Cs).
 
@@ -204,8 +204,8 @@ extract_calls_from_pred_assertions([PredA|Ps],[CallsA|Cs]) :-
 % min(X, Y, Z) :- X < Y, !, Z = X.
 % min(_X, Y, Y).
 
-:- pred decide_status(S, AType, PredS) :: assrt_status * atm * assrt_status
+:- pred decide_status(AType, S, PredS) :: assrt_type * assrt_status * assrt_status
 # "For a given status @var{S} from a pred assertions, the status of
   transformed assertion of type @var{AType} are returned on @var{PredS}.".
-%decide_status(trust, calls, check) :- !.
-decide_status(Status, _Type, Status).
+decide_status(calls, trust, Status) :- !, Status = check.
+decide_status(_Type, Status, Status).
