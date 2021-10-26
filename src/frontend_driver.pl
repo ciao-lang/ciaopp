@@ -378,7 +378,6 @@ perform_transformations([E|Ls]) :-
 
 :- use_module(library(pretty_print),  [pretty_print/4]).
 :- use_module(library(messages),      [error_message/2, warning_message/2]).
-:- use_module(library(odd), [setarg/3]). % TODO: DO NOT USE IT!
 :- use_module(library(terms),         [atom_concat/2]).
 
 :- use_module(typeslib(typeslib), [get_required_types/1, typedef_to_pred/3]).
@@ -701,24 +700,23 @@ write_one_type(typedef(::=(Pred, Def)), S) :-
     pretty_print(S, ClsT, [], _),
     nl(S).
 
+transform_one_type_clause(TH, _, THT) :- var(TH), !, THT = TH.
 transform_one_type_clause(TH, (N, NT), THT) :-
     functor(TH, F, A),
     ( F==N ->
         FT = NT
     ; FT = F
     ),
-    TH =.. [_|Args],
-    THT =.. [FT|Args],
-    transform_one_type_clause_args(A, THT, (N, NT)).
-transform_one_type_clause(TH, _, TH).
+    functor(THT, FT, A),
+    transform_one_type_clause_args(A, TH, THT, (N, NT)).
 
-transform_one_type_clause_args(0, _,    _) :- !.
-transform_one_type_clause_args(N, Pred, T) :-
+transform_one_type_clause_args(0, _,    _,     _) :- !.
+transform_one_type_clause_args(N, Pred, NPred, T) :-
     N1 is N - 1,
     arg(N, Pred, ArgN),
     transform_one_type_clause(ArgN, T, ArgNT),
-    setarg(N, Pred, ArgNT),
-    transform_one_type_clause_args(N1, Pred, T).
+    arg(N, NPred, ArgNT),
+    transform_one_type_clause_args(N1, Pred, NPred, T).
 
 % ---------------------------------------------------------------------------
 
