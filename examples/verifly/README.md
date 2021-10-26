@@ -1,6 +1,6 @@
 # CiaoPP examples for on-the-fly assertion checking (verifly)
 
-This directory contain some examples to demonstrate CiaoPP on-the-fly
+This directory contains some examples to demonstrate CiaoPP on-the-fly
 assertion checking in CiaoPP.
 
 ## Requirements
