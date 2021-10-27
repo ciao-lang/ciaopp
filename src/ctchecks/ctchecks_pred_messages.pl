@@ -93,14 +93,7 @@ decide_inform_user(VCT, _STAT, Old, OldRef, New, AbsInts, Info) :-
     New = as${status => Status, type => Type},
     checked_or_true(Status),
     !,
-    Old = as${comp => OldComp},
-    Old = as${call => OrigCall, succ => OrigSuccess},
-    assertion_set_calls(New, OrigCall, A2), % TODO: why?
-    assertion_set_success(A2, OrigSuccess, A3), % TODO: why?
-    assertion_set_comp(A3, OldComp, NewToPrint), % TODO: why?
-    erase(OldRef), %% TODO: [IG] Why erase the assertion when printing the
-                   %% message and not when the assertion is checked?
-    add_assertion(NewToPrint),
+    change_assertion_status(Old, OldRef, New),
     local_inccounter_split(simp,checked,Type,_),
     ( VCT = on ->
         inform_checked(Old, New, AbsInts, Info)
@@ -119,8 +112,7 @@ decide_inform_user(VC, STAT, Old, OldRef, New, AbsInts, Info):-
     !,
     local_inccounter_split(simp,Status,Type,_),
     ( Status = false -> % TODO: WHY?
-        erase(OldRef),
-        add_assertion(New)
+        change_assertion_status(Old, OldRef, New)
     ; true
     ),
     ( VC = on ->
@@ -130,9 +122,21 @@ decide_inform_user(VC, STAT, Old, OldRef, New, AbsInts, Info):-
 % (otherwise)
 decide_inform_user(_Flag1,_Flag2,_Old,_OldRef,_New,_Dom,_Info) :- !.
 
+
+% By design we preserve original calls/success/comp in the output;
+% perhaps we could just update the status in the original assertion.
+change_assertion_status(Old, OldRef, New) :-
+    Old = as${comp => OldComp, call => OrigCall, succ => OrigSuccess},
+    assertion_set_calls(New, OrigCall, A2),
+    assertion_set_success(A2, OrigSuccess, A3),
+    assertion_set_comp(A3, OldComp, NewToPrint),
+    erase(OldRef), %% TODO: [IG] Why erase the assertion when printing the
+                   %% message and not when the assertion is checked?
+    add_assertion(NewToPrint).
+
 :- export(inform_checked/4).
 inform_checked(Old, New, AbsInts, Info) :-
-    New = as${type => Type, dic => Dict},
+    New = as${type => Type, dic => Dict, call => Call},
     Old = as${head => Goal, locator => Loc},
     %
     prepare_output_info(AbsInts, Info, Goal, Type, RelInfo),
@@ -156,6 +160,11 @@ inform_checked(Old, New, AbsInts, Info) :-
         note_message("(lns ~d-~d) Trivially verified assertion:~n"||
             "~p"||
             "because the predicate never succeeds (for the given precondition)",
+            [FromL, ToL, OldCopy])
+    ; Call == [fail] ->
+        note_message("(lns ~d-~d) Trivially verified assertion:~n"||
+            "~p"||
+            "because the predicate is never called with the given precondition",
             [FromL, ToL, OldCopy])
     ; note_message("(lns ~d-~d) Verified assertion:~n"||
           "~p", 

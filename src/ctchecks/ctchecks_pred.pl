@@ -270,6 +270,7 @@ compose_cs_goals(_Status,Orig,G1,G2,GOut) :-
 :- pred abs_exec_each_succ(+Goal, +AsCall, +AsSucc, +AbsInt, +AGoal, +ComplSuccs, +NCall, -NSucc, -Status).
 % IG: ComplSuccs is a list because of multivariant on success
 
+abs_exec_each_succ(_Goal, _Call, _Succ, _AbsInt, _AGoal, _, fail,   true,   true) :- !.
 abs_exec_each_succ(_Goal, _Call, _Succ, _AbsInt, _AGoal, [], _NCall, nosucc, nosucc) :- !.
 % IG: if '$bottom' in the complete, the predicate never succeeeds and the
 % assertion is trivially verified
@@ -346,14 +347,17 @@ abs_exec_one_assertion(AbsInt, Cmpls, A, _Key, NA, Status) :-
     !,
     abs_exec_complete_success(Goal, Call, Success, AbsInt, Cmpls, NCall, NSuccess, Status0),
     reduce_compl_fin(Status0,Status),
+    % We update the assertion with the simplified pre and post to
+    % output better messages. For false and checked status, original
+    % assertion is output.
     ( Status = check ->
-        list_to_conj(OCall, NCall),
-        list_to_conj(OSuccess, NSuccess),
-        assertion_set_calls(A, OCall, A2),
-        assertion_set_success(A2, OSuccess, NA)
-    ;
-        assertion_set_status(A, Status, NA)
-    ).
+        A = A2
+    ; assertion_set_status(A, Status, A2)
+    ),
+    list_to_conj(OCall, NCall),
+    list_to_conj(OSuccess, NSuccess),
+    assertion_set_calls(A2, OCall, A3),
+    assertion_set_success(A3, OSuccess, NA).
 abs_exec_one_assertion(AbsInt, Cmpls, A, _Key, NA, Status) :-
     A = as${ status=>check, type=>calls, head=>Goal,call=>Call},
     !,
