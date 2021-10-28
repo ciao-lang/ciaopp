@@ -5,10 +5,7 @@
     get_entry_assertion/4,
 %%      num_var_in_goal/4,
     pp_check/2,
-    recorda_assertion/2,
-    synt_compose_disj/3,
-    synt_compose_conj/3,
-    synt_compose_list/3
+    recorda_assertion/2
 %       native_props/2  %% GP: exported for use in ctchecks.pl. Is this OK?
 ], [assertions, regtypes, isomodes, datafacts]).
 
@@ -172,31 +169,3 @@ get_entry_assertion(_Goal,_,BA,BA).
 group_calls([(Goal,Call)],Goal,[Call]):- !.
 group_calls([(Goal,Call)|More],Goal,(Call;Calls)):-
     group_calls(More,Goal,Calls).
-
-% --------------------------------------------------------------------------
-
-synt_compose_conj(true,NewExp2,NewExp2):-!.
-synt_compose_conj(NewExp1,true,NewExp1):-!.
-synt_compose_conj(_NewExp1,fail,fail):-!.
-synt_compose_conj(NewExp1,NewExp2,[NewExp1,NewExp2]).
-
-synt_compose_list(true,NewExp2,NewExp2):-!.
-synt_compose_list(NewExp1,true,NewExp1):-!.
-synt_compose_list(_NewExp1,fail,fail):-!.
-synt_compose_list(NewExp1,NewExp2,[NewExp1,NewExp2]).
-
-synt_compose_disj(fail,NewExp2,NewExp2):-!.
-synt_compose_disj(_NewExp1,true,true):-!.
-synt_compose_disj(NewExp1,fail,NewExp1):-!.
-synt_compose_disj(NewExp1,NewExp2,(NewExp1;NewExp2)).
-
-%% num_var_in_goal(0,Goal,_Var,_Num):-!,
-%%      message("Type for argument not in ~q~n",[Goal]).
-%% num_var_in_goal(A,Goal,Var,Num):-
-%%      arg(A,Goal,VarGoal),
-%%      VarGoal == Var,!,
-%%      Num = A.
-%% num_var_in_goal(A,Goal,Var,Num):-
-%%      A1 is A -1,
-%%      A1 > 0,
-%%      num_var_in_goal(A1,Goal,Var,Num).

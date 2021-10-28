@@ -4,17 +4,14 @@
 :- use_module(library(formulae), [conj_to_list/2, list_to_conj/2]).
 :- use_module(library(messages), [debug_message/1, debug_message/2]).
 :- use_module(library(vndict), [rename/2]).
-:- use_module(library(terms_vars), [varset/2]).
 :- use_module(engine(runtime_control), [module_split/3]).
 
 :- use_module(library(counters)).
 :- use_module(library(hiordlib), [filter/3,maplist/3]).
 
-:- use_module(spec(abs_exec_ops), [adapt_info_to_assrt_head/6]).
-
 % CiaoPP library
 :- use_module(ciaopp(infer), [get_memo_lub/5]).
-:- use_module(ciaopp(infer/infer_dom), [abs_execute_with_info/4,knows_of/2]).
+:- use_module(ciaopp(infer/infer_dom), [abs_execute/7,knows_of/2]).
 :- use_module(library(assertions/assrt_lib), [assertion_body/7]).
 :- use_module(ciaopp(p_unit), [program/2, filtered_program_clauses/3]).
 :- use_module(ciaopp(p_unit/p_unit_basic), [type_of_goal/2]).
@@ -100,13 +97,13 @@ pp_ct_body_list_types(Goal,K,_Goals,Vars,Names,AbsInts):-
 %       decide_get_applicable_info(Types,K,Vars,CopyBuiltin,Goal,TypesInfo),
 %       decide_get_applicable_info(Modes,K,Vars,CopyBuiltin,Goal,ModesInfo),
 %       not_already_bottom(TypesInfo,ModesInfo),
-%       decide_abs_execute(Types,Goal,Calls,Goal,TypesInfo,TNewInfo,NCalls),
+%       abs_execute(Types,Goal,Calls,Goal,Vars,TypesInfo,NCalls),
 %       (NCalls == true -> inccounter(pp_checked_c,_), fail; true),
 %         ( NCalls == fail ->
 %         message_pp_builtin(TNewInfo,Types,Builtin,Calls,dic(Vars,Names),K),
 %         inccounter(pp_false_c,_)
 %       ;
-%       decide_abs_execute(Modes,Goal,NCalls,Goal,ModesInfo,_,Fail),
+%       abs_execute(Modes,Goal,NCalls,Goal,Vars,ModesInfo,Fail),
 %         ( Fail == fail ->
 %           message_pp_builtin(ModesInfo,Modes,Goal,Calls,dic(Vars,Names),K),
 %           inccounter(pp_false_c,_)
@@ -144,7 +141,7 @@ check_entrycalls_assertion(Logger,EntryCalls,Head,CopyHead,Goal,K,Vars,AbsInts,D
     maplist(decide_get_applicable_info(K,Vars,CopyHead,Goal),AbsInts,Info),
     \+ any_is_bottom(Info),
     get_domain_knows_of(regtypes,AbsInts,Info,Types,TypesInfo),
-    decide_abs_execute(Types,Goal,EntryCalls,Head,TypesInfo,_TNewInfo,NEntryCalls),
+    abs_execute(Types,Head,EntryCalls,Goal,Vars,TypesInfo,NEntryCalls),
     ( NEntryCalls == true ->
         Logger(TypesInfo,Types,Goal,Head,EntryCalls,Dict,K,checked),
         inccounter_cond(pp_checked_c,EntryCalls)
@@ -152,7 +149,7 @@ check_entrycalls_assertion(Logger,EntryCalls,Head,CopyHead,Goal,K,Vars,AbsInts,D
         Logger(TypesInfo,Types,Goal,Head,EntryCalls,Dict,K,false),
         local_inccounter(pp_false_c,_)
     ; get_domain_knows_of(sharing,AbsInts,Info,Modes,ModesInfo),
-      decide_abs_execute(Modes,Goal,NEntryCalls,Head,ModesInfo,_,Fail),
+      abs_execute(Modes,Head,NEntryCalls,Goal,Vars,ModesInfo,Fail),
       ( Fail == fail ->
           Logger(ModesInfo,Modes,Goal,Head,EntryCalls,Dict,K,false),
           local_inccounter(pp_false_c,_)
@@ -172,7 +169,7 @@ check_success_assertion(Calls0,Succ0,Head,CopyHead,Goal,K,Goals,Vars,AbsInts,Dic
     \+ any_is_bottom(Info),
     list_to_conj(Succ0,Succ),
     get_domain_knows_of(regtypes,AbsInts,Info,Types,TypesInfo),
-    decide_abs_execute(Types,Goal,Succ,Head,TypesInfo,_TNewInfo,NSucc),
+    abs_execute(Types,Head,Succ,Goal,Vars,TypesInfo,NSucc),
     ( NSucc == true -> 
         inccounter_cond(pp_checked_s,Succ0), 
         message_pp_success_diag(TypesInfo,Types,Goal,Head,Calls0,Succ0,Dict,K,checked)
@@ -180,7 +177,7 @@ check_success_assertion(Calls0,Succ0,Head,CopyHead,Goal,K,Goals,Vars,AbsInts,Dic
         message_pp_success_diag(TypesInfo,Types,Goal,Head,Calls0,Succ0,Dict,K,false),
         local_inccounter(pp_false_s,_)
     ; get_domain_knows_of(sharing,AbsInts,Info,Modes,ModesInfo),
-      decide_abs_execute(Modes,Goal,NSucc,Head,ModesInfo,_MNewInfo,Fail),
+      abs_execute(Modes,Head,NSucc,Goal,Vars,ModesInfo,Fail),
       ( Fail == fail ->
           message_pp_success_diag(ModesInfo,Modes,Goal,Head,Calls0,Succ0,Dict,K,false),
           local_inccounter(pp_false_s,_)
@@ -218,7 +215,7 @@ check_precond(Calls,AbsInts,Head,K,Vars,Goal) :-
     list_to_conj(Calls,CallsC),
 % now: if precond is false then backtrack and forget the assertion
     \+ any_is_bottom(Info),
-    maplist(( ''(Dom,In) :- \+ decide_abs_execute(Dom,Goal,CallsC,Head,In,_,fail) ),
+    maplist(( ''(Dom,In) :- \+ abs_execute(Dom,Head,CallsC,Goal,Vars,In,fail) ),
             AbsInts,Info).
 
 inccounter_cond(_Counter,[[]]) :-!. % do not increase the counter if the assertion is empty
@@ -237,11 +234,11 @@ pp_ct_check_assertion(Prop,K,Vars,Names,AbsInts):-
     maplist(decide_get_just_info(K,Vars),AbsInts,Info),
     \+ any_is_bottom(Info),
     get_domain_knows_of(regtypes,AbsInts,Info,Types,TypesInfo),
-    decide_abs_execute(Types,Goal,Prop,Goal,TypesInfo,_,NProp), % check it (Goal)!
+    abs_execute(Types,Head,Prop,Goal,Vars,TypesInfo,NProp), % check it (Goal)!
     ( ((NProp == true, S = checked); (NProp == fail, S = false)) ->
         message_pp_check(TypesInfo,Types,Prop,K,dic(Vars,Names),S)
     ;   get_domain_knows_of(sharing,AbsInts,Info,Modes,ModesInfo),
-        decide_abs_execute(Modes,Goal,NProp,Goal,ModesInfo,_,NNProp),
+        abs_execute(Modes,Head,NProp,Goal,Vars,ModesInfo,NNProp),
         (
             (NNProp == fail, S = false)
         ;   (NNProp == true, S = checked)
@@ -274,40 +271,6 @@ get_domain_knows_of(Prop,[Dom|AbsInts],[In|Info],Dom1,In1):-
 %% decide_make_list_of_one([P|Ps],LProps):-!,
 %%      LProps = [P|Ps].
 %% decide_make_list_of_one(Props,[Props]).
-
-decide_abs_execute(Domain,Goal,Calls,Head,Info,NewInfo,NCalls):-
-%       list_to_conj( Calls , ConjCalls ),
-    varset(Goal,Vars),
-    adapt_info_to_assrt_head( Domain, Goal, Vars, Info, Head, NewInfo ),
-    pp_abs_execute_with_info(Calls,Domain,Head,NewInfo,NCalls).
-
-pp_abs_execute_with_info([],_AbsInt,_Goal,_Info,true) :-!.
-pp_abs_execute_with_info((Exp1,Exp2),AbsInt,Goal,Info,NewExp):-!,
-    pp_abs_execute_with_info(Exp1,AbsInt,Goal,Info,NewExp1),
-    (NewExp1 == fail ->
-        NewExp = fail
-    ;
-        pp_abs_execute_with_info(Exp2,AbsInt,Goal,Info,NewExp2),
-        synt_compose_conj(NewExp1,NewExp2,NewExp)).
-pp_abs_execute_with_info((Exp1;Exp2),AbsInt,Goal,Info,NewExp):-!,
-    pp_abs_execute_with_info(Exp1,AbsInt,Goal,Info,NewExp1),
-    (NewExp1 == true ->
-        NewExp = true
-    ;
-        pp_abs_execute_with_info(Exp2,AbsInt,Goal,Info,NewExp2),
-        synt_compose_disj(NewExp1,NewExp2,NewExp)).
-pp_abs_execute_with_info([Exp],AbsInt,Goal,Info,NewExp):-!,
-    pp_abs_execute_with_info(Exp,AbsInt,Goal,Info,NewExp).
-pp_abs_execute_with_info([Exp1,Exp2],AbsInt,Goal,Info,NewExp):-!,
-    pp_abs_execute_with_info(Exp1,AbsInt,Goal,Info,NewExp1),
-    (NewExp1 == fail ->
-        NewExp = fail
-    ;
-        pp_abs_execute_with_info(Exp2,AbsInt,Goal,Info,NewExp2),
-        synt_compose_list(NewExp1,NewExp2,NewExp)).
-%
-pp_abs_execute_with_info(Prop,AbsInt,_,Info,Sense):-
-    abs_execute_with_info(AbsInt,Info,Prop,Sense).
 
 decide_get_just_info(K,Vars,Dom,Info) :-
     get_memo_lub(K,Vars,Dom,yes,Info),!.

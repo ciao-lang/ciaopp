@@ -1,7 +1,8 @@
 :- module(infer_dom,
     [ asub_to_info/6,
       asub_to_out/6,
-      asub_to_props/4, 
+      asub_to_props/4,
+      abs_execute/7,
       abs_execute_with_info/4,
       does_not_use_memo_lub/1,
       flag_is/3,
@@ -9,7 +10,7 @@
       knows_of/2,
       non_collapsable/1
     ],
-    [assertions, regtypes, datafacts, ciaopp(ciaopp_options)]).
+    [assertions, regtypes, datafacts, ciaopp(ciaopp_options), nativeprops]).
 
 :- use_package(ciaopp(p_unit/p_unit_argnames)).
 
@@ -51,17 +52,22 @@
     ]).
 :- endif.
 %
+:- use_module(ciaopp(plai/domains), [abs_sort/3]).
 :- use_module(ciaopp(p_unit), [prop_to_native/2]).
 :- use_module(ciaopp(p_unit/assrt_norm), [norm_goal_prop/3]).
 :- use_module(spec(abs_exec),      [abs_exec/4, determinable/2]).
 :- use_module(spec(abs_exec_cond), [cond/4]).
+:- use_module(spec(abs_exec_ops), [adapt_info_to_assrt_head/6]).
 :- use_module(domain(termsd), [terms_internal_to_native/3]).
 :- use_module(typeslib(typeslib), [make_prop_type_unary/2, equivalent_to_top_type/1]).
 %
+:- use_module(library(formulae), [conj_to_list/2, list_to_conj/2, t_conj/1]).
 :- use_module(library(keys), [key_lookup/4]).
 :- use_module(library(terms_vars), [varset/2]).
 :- use_module(library(lists), [member/2,append/3,reverse/2]). %[LD] add reverse
-% :- use_module(library(messages),
+:- use_module(library(messages), [error_message/3]).
+
+:- multifile analysis/1.
 %     [warning_message/1,warning_message/2]). %[LD] for interval information
 % Note and log:
 % 31 Aug 2011: bug fix expression_greater_than
@@ -347,6 +353,75 @@ decide_complexity_output(F, F):-
 :- endif.
 
 %-------------------------------------------------------------------------
+
+:- doc(abs_execute(Domain, Head, Calls, Goal, Vars, Info, NCalls),
+   "Checks @var{Calls}, coming from an assertion whose head is
+   @var{Head}, using information @var{Info} from domain @var{Domain},
+   returning the resulting simplified properties in @var{NCalls}.").
+
+:- pred abs_execute(Domain, Head, Calls, Goal, Vars, Info, NCalls)
+   : ( analysis(Domain), cgoal(Head), list(cgoal,Calls), cgoal(Goal),
+       list(var,Vars), nonvar(Info), ivar(NCalls) )
+   => t_conj(NCalls)
+   + no_choicepoints.
+
+abs_execute(none, _Head, Calls, _Goal, _Vars, _Info , Calls) :- !.
+abs_execute(Domain, Head, Calls, Goal, Vars, Info, NCalls) :-
+    list(Calls), !,
+%       PP: seems to peel off prefixes from native types, making them
+%       not working in abs_execute/4, and nothing more. Commented out
+%       to_native_props(Calls, NativeCalls),
+    Calls = NativeCalls,
+    list_to_conj(NativeCalls, ConjNativeCalls),
+    adapt_info_to_assrt_head(Domain, Goal, Vars, Info, Head, NewInfo),
+    pp_abs_execute_with_info(ConjNativeCalls,Domain,Head,NewInfo,NCalls).
+abs_execute(Domain, Head, Calls, Goal, Vars, Info, NCalls) :-
+    adapt_info_to_assrt_head(Domain, Goal, Vars, Info, Head, NewInfo),
+    abs_sort(Domain, NewInfo, NewInfo_o),
+    pp_abs_execute_with_info(Calls,Domain,Head, NewInfo_o, NCalls).
+
+pp_abs_execute_with_info(ExpL, AbsInt,Goal,Info,NewExp):-
+    ExpL = [_|_],!,
+    list_to_conj(ExpL, Exp),
+    pp_abs_execute_with_info(Exp, AbsInt,Goal,Info,NewExp).
+pp_abs_execute_with_info((Exp1,Exp2), AbsInt,Goal,Info,NewExp):-
+    !,
+    pp_abs_execute_with_info(Exp1,AbsInt,Goal,Info,NewExp1),
+    ( NewExp1 == fail ->
+        NewExp = fail
+    ;
+        pp_abs_execute_with_info(Exp2,AbsInt,Goal,Info,NewExp2),
+        compose_conj(NewExp1,NewExp2,NewExp)
+   ).
+pp_abs_execute_with_info((Exp1L;Exp2L), AbsInt,Goal,Info,NewExp):-
+    !,
+%       list_to_conj(Exp1L, Exp1),
+    pp_abs_execute_with_info(Exp1L,AbsInt,Goal,Info,NewExp1),
+    ( NewExp1 == true ->
+        NewExp = true
+    ;
+%           list_to_conj(Exp2L,Exp2),
+        pp_abs_execute_with_info(Exp2L,AbsInt,Goal,Info,NewExp2),
+        compose_disj(NewExp1,NewExp2,NewExp)
+   ).
+pp_abs_execute_with_info(Prop, AbsInt, _Goal,Info, E) :-
+    abs_execute_with_info(AbsInt, Info, Prop, E),
+    !.
+pp_abs_execute_with_info(Prop,_AbsInt,_Goal,_Info,Prop) :-
+    error_message(error, "INTERNAL ERROR: pp_abs_execute_with_info: " ||
+                          "cannot execute abs: ~w", [Prop]).
+
+compose_conj(true , Exp2, Exp2) :- !.
+compose_conj(Exp1 , true, Exp1) :- !.
+compose_conj(_Exp1, fail, fail) :- !.
+compose_conj(Exp1 , Exp2, (Exp1,Exp2)).
+
+compose_disj(fail, Exp2, Exp2) :- !.
+compose_disj(_Exp, true, true) :- !.
+compose_disj(Exp1, fail, Exp1) :- !.
+compose_disj(Exp1, Exp2, (Exp1L;Exp2L)) :-
+    conj_to_list(Exp1, Exp1L),
+    conj_to_list(Exp2, Exp2L).
 
 % abs_execute_with_info(steps_ub,Info,Prop,Sense):- !,
 %       check_cost_info(Prop,Info,Sense).
