@@ -19,6 +19,7 @@
 :- use_module(ciaopp(p_unit), [program/2, filtered_program_clauses/3]).
 :- use_module(ciaopp(p_unit/assrt_db), [assertion_read/9]).
 :- use_module(ciaopp(p_unit/itf_db), [curr_file/2]).
+:- use_module(ciaopp(p_unit/program_keys), [first_key/2]).
 :- use_module(spec(s_simpspec), 
               [next_pred/2, body2list/2, next_or_last_key/3]).
 %% :- use_module(spec(abs_exec), [cond/4]).
@@ -52,14 +53,14 @@ pp_ctcheck_cls([clause(H,Body):Clid|Cs],[D|Ds],AbsInts):-
 
 % call type incompatible with head of the clause
 pp_compile_time_check_types(Body,H,Clid,dic(Vars,Names),AbsInts):-
-    (Body = ((_:K),_) -> true ; Body = (_:K)),
+    first_key(Body,K),
     filter(knows_of(regtypes),AbsInts,Types), Types \= [],
     maplist(decide_get_just_info(K,Vars),Types,TypesInfo),
     any_is_bottom(TypesInfo),!,
     Types = [Dom|_],  % any domain is valid here.
     message_clause_incompatible(Clid,Dom,H,Vars,Names).
 % The clause is a fact                                        %
-pp_compile_time_check_types(true,_H,_Clid,_Dict,_AbsInts):- !.
+pp_compile_time_check_types(true:_,_H,_Clid,_Dict,_AbsInts):- !.
 % The body is just a cut                                      %
 pp_compile_time_check_types(!,_H,_Clid,_Dict,_AbsInts):- !.
 % Rest of clauses. We try to simplify its body                %
