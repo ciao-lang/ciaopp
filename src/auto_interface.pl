@@ -215,10 +215,10 @@
    @item @tt{auto_optimize(File)}: optimize File
    @end{itemize}
 
-   The actions above can be controlled by a set of so-called
-   @bf{preprocessor flags}. Note that, depending on flags, processing can
+   The actions above can be controlled by a set of @bf{preprocessor
+   flags}. Note that, depending on some of these flags, processing can
    be of one module or also all the related modules. The default
-   values of CiaoPP flags can be changed with the following
+   values of the CiaoPP flags can be changed with the following
    predicates:
 
    @begin{itemize}
@@ -227,10 +227,13 @@
    @item @pred{set_menu_flag/3}: select flag values non-interactively.
    @end{itemize}
 
-   The customization menus can be configured to show more or less
+   The @apl{emacs} environment offers a graphical version of these
+   menus.
+
+   These customization menus can be configured to show more or less
    detailed options, depending on the level of expertise of the
    user. This can be configured in the menu changing the @tt{Menu
-   Level} flag (naive or expert).  The following predicates are
+   Level} flag to @tt{naive} or @tt{expert}.  The following predicates 
    provide handy shortcuts to perform customization and preprocessing
    actions:
 
