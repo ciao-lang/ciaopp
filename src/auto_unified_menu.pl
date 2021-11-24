@@ -74,7 +74,7 @@ all, 'Action'       # inter_all  - analyze_check :: all_menu_branch.
 % 0 = naive, 1 = expert
 ~munified(0),'Generate output'           # output               - on.
 ~munified(0),'| Output language'         # output_lang          - source <- output_on.
-~munified(1),'| Include program point'   # pp_info              - off <- output_on. % TODO: this option was enabled in opt+para menu, recover if needed
+~munified(0),'| Include program point'   # pp_info              - off <- output_on. % TODO: this option was enabled in opt+para menu, recover if needed
 ~munified(1),'| Multi-variant analysis results'# vers           - off <- output_on. % TODO: this option was enabled in opt+para menu, recover if needed
 ~munified(0),'| Collapse versions'       # collapse_ai_vers     - on <- output_on. % TODO: this option was enabled in opt+para menu, recover if needed
 ~munified(0),'| Output types'            # type_output          - all <- output_on.
