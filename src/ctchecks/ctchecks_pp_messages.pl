@@ -23,7 +23,7 @@
               [decode_litkey/5, get_predkey/3, get_clkey/4]).
 
 :- use_module(typeslib(typeslib), [pretty_type_lit_rules/4]).
-:- use_module(ciaopp(plai/domains), [asub_to_info/5, project/6, abs_sort/3]).
+:- use_module(ciaopp(plai/domains), [asub_to_info/5, project/6, abs_sort/3, obtain_info/5]).
 :- use_module(ciaopp(infer), [get_completes_lub/6]).
 :- use_module(ciaopp(infer/infer_dom), [knows_of/2]).
 :- use_module(ciaopp(preprocess_flags), [current_pp_flag/2]).
@@ -362,7 +362,7 @@ message_clause_incompatible(Clid,Types,H,Vars,Names):-
     get_predkey(N,A,Key),
     functor(TGoal,N,A),
     get_completes_lub(Key,TGoal,Types,yes,Call0,_Succ0),
-    output_user_interface(Types,Call0,Vars,Props),
+    obtain_info(Types,regtypes,Vars,Call0,Props),
     ctchecks_pp_messages:inline_types(Props),
     typeslib:pretty_type_lit_rules(TGoal,P_Call,_TSymbols,Rules0),
     ctchecks_pp_messages:filter_required_rules(Rules0,Rules,Forms),
