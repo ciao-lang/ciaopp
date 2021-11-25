@@ -1,7 +1,7 @@
-:- module(ctchecks_pp, [ctcheck_pp/2], [assertions]).
+:- module(ctchecks_pp, [ctcheck_pp/2], [assertions,hiord]).
 
 :- use_module(library(lists), [member/2]).
-:- use_module(library(formulae), [list_to_conj/2]).
+:- use_module(library(formulae), [conj_to_list/2, list_to_conj/2]).
 :- use_module(library(messages), [debug_message/1, debug_message/2]).
 :- use_module(library(vndict), [rename/2]).
 :- use_module(library(terms_vars), [varset/2]).
@@ -17,11 +17,11 @@
 :- use_module(ciaopp(infer/infer_dom), [abs_execute_with_info/4,knows_of/2]).
 :- use_module(library(assertions/assrt_lib), [assertion_body/7]).
 :- use_module(ciaopp(p_unit), [program/2, filtered_program_clauses/3]).
+:- use_module(ciaopp(p_unit/p_unit_basic), [type_of_goal/2]).
 :- use_module(ciaopp(p_unit/assrt_db), [assertion_read/9]).
 :- use_module(ciaopp(p_unit/itf_db), [curr_file/2]).
-:- use_module(ciaopp(p_unit/program_keys), [first_key/2]).
-:- use_module(spec(s_simpspec), 
-              [next_pred/2, body2list/2, next_or_last_key/3]).
+:- use_module(ciaopp(p_unit/program_keys), [first_key/2,lit_ppkey/3]).
+:- use_module(spec(s_simpspec), [next_pred/2, body2list/2, next_or_last_key/3]).
 %% :- use_module(spec(abs_exec), [cond/4]).
 
 % Own library
@@ -65,9 +65,18 @@ pp_compile_time_check_types(true:_,_H,_Clid,_Dict,_AbsInts):- !.
 pp_compile_time_check_types(!,_H,_Clid,_Dict,_AbsInts):- !.
 % Rest of clauses. We try to simplify its body                %
 pp_compile_time_check_types(Body,_H,_Clid,dic(Vars,Names),AbsInts):-
-    body2list(Body,Blist),
-    next_pred(Blist,Pred),
-    pp_ct_body_list_types(Pred,Blist,Vars,Names,AbsInts).
+    conj_to_list(Body,Blist),
+    pp_compile_time_check_each(Blist,Vars,Names,AbsInts).
+
+pp_compile_time_check_each([],_Vars,_Names,_AbsInts).
+pp_compile_time_check_each([Goal|Goals],Vars,Names,AbsInts):-
+    lit_ppkey(Goal,Lit,K),
+    pp_ct_body_list_types(Lit,K,Goals,Vars,Names,AbsInts),
+    % If a call always fails, do not check next predicate.
+    ( pp_ct_body_check_always_fails(Lit,K,Goals,Vars,Names,AbsInts) ->
+        true
+    ; pp_compile_time_check_each(Goals,Vars,Names,AbsInts)
+    ).
 
 %-------------------------------------------------------------%
 %-------------------------------------------------------------%
@@ -77,16 +86,11 @@ prepare_info_pp(AbsInts,Info,Dom,In):-
     get_domain_knows_of(Prop,AbsInts,Info,Dom,In),!.
 prepare_info_pp([Dom|_],[Info|_],Dom,Info).
 
-pp_ct_body_list_types(none,[],_,_,_).
-pp_ct_body_list_types((!/0),[!:_|Goals],Vars,Names,AbsInts):-!,
-    next_pred(Goals,Pred),
-    pp_ct_body_list_types(Pred,Goals,Vars,Names,AbsInts).
+pp_ct_body_list_types(!,_,_Goals,_Vars,_Names,_AbsInts):-!.
 % This goal is a program point assertion                      %
-pp_ct_body_list_types(_FA,[Goal:K|Goals],Vars,Names,AbsInts):-
+pp_ct_body_list_types(Goal,K,_Goals,Vars,Names,AbsInts):-
     pp_check(Goal,Prop),!,
-    pp_ct_check_assertion(Prop,K,Vars,Names,AbsInts),
-    next_pred(Goals,NPred),
-    pp_ct_body_list_types(NPred,Goals,Vars,Names,AbsInts).
+    pp_ct_check_assertion(Prop,K,Vars,Names,AbsInts).
 % Goal is a builtin whose call is violated using type info    %
 %
 % pp_ct_body_list_types(F/A,[(Goal:K)|_],Vars,Names,[Types,Modes]):-
@@ -110,98 +114,60 @@ pp_ct_body_list_types(_FA,[Goal:K|Goals],Vars,Names,AbsInts):-
 %           fail
 %       )).
 %
-% Violation of an "entry" assertion                      %
-pp_ct_body_list_types(F/A,[(Goal:K)|_],Vars,_Names,AbsInts):-
-    curr_file(_,M),
-    functor(Head,F,A),
-    \+ module_split(F, M, _), % make sure that we have an imported predicate
-%       displayq(Head),nl,
-    get_entry_assertion(Head,pp,Calls,Dict),
-%       get_calls_assertion(Goal,pp,Calls,Dict),
-    nonvar(Calls),
-    debug_message("calls assertion found ~q",[Calls]),
+pp_ct_body_list_types(Goal,K,Goals,Vars,_Names,AbsInts):-
+    assr_head(Goal,Head),
     copy_term(Head,CopyHead),
-    maplist(decide_get_applicable_info(K,Vars,CopyHead,Goal),AbsInts,Info),
-    \+ any_is_bottom(Info),
-    get_domain_knows_of(regtypes,AbsInts,Info,Types,TypesInfo),
-    decide_abs_execute(Types,Goal,Calls,Head,TypesInfo,_TNewInfo,NCalls),
-    ( NCalls == true -> 
-        message_pp_entry(TypesInfo,Types,Goal,Head,Calls,Dict,K,checked),
-        inccounter_cond(pp_checked_c,Calls), 
-        fail
-    ; 
-        true
-    ),
-    (NCalls == fail ->
-        message_pp_entry(TypesInfo,Types,Goal,Head,Calls,Dict,K,false),
-        local_inccounter(pp_false_c,_)
-    ;   get_domain_knows_of(sharing,AbsInts,Info,Modes,ModesInfo),
-        decide_abs_execute(Modes,Goal,NCalls,Head,ModesInfo,_,Fail),
-        ( Fail == fail ->
-            message_pp_entry(ModesInfo,Modes,Goal,Head,Calls,Dict,K,false),
-            local_inccounter(pp_false_c,_)
-        ;
-            ( Fail == true -> 
-                message_pp_entry(TypesInfo,Types,Goal,Head,Calls,Dict,K,checked),
-                inccounter_cond(pp_checked_c,Calls) 
-            ; 
-                prepare_info_pp(AbsInts,Info,Dom,In),
-                message_pp_entry(In,Dom,Goal,Head,Calls,Dict,K,check),
-                local_inccounter(pp_check_c,_)
-            ),
-            fail
-        )
+    % Failure-driven loop to check each relevant assertion.
+    % entry and calls assertions are checked independently.
+    ( ( type_of_goal(imported,Goal) -> true ),
+      get_entry_assertion(Head,pp,Entry,Dict),
+      nonvar(Entry),
+      debug_message("entry assertion found ~q",[Entry]),
+      check_entrycalls_assertion(message_pp_entry,Entry,Head,CopyHead,Goal,K,Vars,AbsInts,Dict),
+      fail
+    ; get_calls_assertion(Head,pp,Calls,Dict),
+      nonvar(Calls),
+      debug_message("calls assertion found ~q",[Calls]),
+      check_entrycalls_assertion(message_pp_calls_diag,Calls,Head,CopyHead,Goal,K,Vars,AbsInts,Dict),
+      fail
+    ; assertion_read(Head,_M,check,success,Body,Dict,_Source,_LB,_LE),
+      assertion_body(Head,_Compat,Calls0,Succ0,_Comp,_Comm,Body),
+      debug_message("success assertion found ~q",[Succ0]),
+      check_success_assertion(Calls0,Succ0,Head,CopyHead,Goal,K,Goals,Vars,AbsInts,Dict),
+      fail
+    ; true
     ).
-%
-% Violation of a "check calls" assertion                      %
-pp_ct_body_list_types(F/A,[(Goal:K)|_],Vars,_Names,AbsInts):-
-    functor(Head,F,A),
-    get_calls_assertion(Head,pp,Calls,Dict),
-%       get_calls_assertion(Goal,pp,Calls,Dict),
-    nonvar(Calls),
-    debug_message("calls assertion found ~q",[Calls]),
-    copy_term(Head,CopyHead),
+
+:- meta_predicate check_entrycalls_assertion(pred(8),+,+,+,+,+,+,+,+).
+
+check_entrycalls_assertion(Logger,EntryCalls,Head,CopyHead,Goal,K,Vars,AbsInts,Dict):-
     maplist(decide_get_applicable_info(K,Vars,CopyHead,Goal),AbsInts,Info),
     \+ any_is_bottom(Info),
     get_domain_knows_of(regtypes,AbsInts,Info,Types,TypesInfo),
-    decide_abs_execute(Types,Goal,Calls,Head,TypesInfo,_TNewInfo,NCalls),
-    (NCalls == true -> 
-        inccounter_cond(pp_checked_c,Calls), 
-        message_pp_calls_diag(TypesInfo,Types,Goal,Head,Calls,Dict,K,checked),
-        fail
-    ; 
-        true),
-    (NCalls == fail ->
-        message_pp_calls_diag(TypesInfo,Types,Goal,Head,Calls,Dict,K,false),
+    decide_abs_execute(Types,Goal,EntryCalls,Head,TypesInfo,_TNewInfo,NEntryCalls),
+    ( NEntryCalls == true ->
+        Logger(TypesInfo,Types,Goal,Head,EntryCalls,Dict,K,checked),
+        inccounter_cond(pp_checked_c,EntryCalls)
+    ; NEntryCalls == fail ->
+        Logger(TypesInfo,Types,Goal,Head,EntryCalls,Dict,K,false),
         local_inccounter(pp_false_c,_)
-    ;    get_domain_knows_of(sharing,AbsInts,Info,Modes,ModesInfo),
-         decide_abs_execute(Modes,Goal,NCalls,Head,ModesInfo,_,Fail),
-         ( Fail == fail ->
-             message_pp_calls_diag(ModesInfo,Modes,Goal,Head,Calls,Dict,K,false),
-             local_inccounter(pp_false_c,_)
-        ;
-           ( Fail == true -> 
-               message_pp_calls_diag(ModesInfo,Modes,Goal,Head,Calls,Dict,K,checked),
-               inccounter_cond(pp_checked_c,Calls) 
-           ; 
-               prepare_info_pp(AbsInts,Info,Dom,In),
-               message_pp_calls_diag(In,Dom,Goal,Head,Calls,Dict,K,check),
-               local_inccounter(pp_check_c,_)
-           )
-        )
-    ),
-    fail.
-%
-% Violation of a "check success" assertion                    %
-pp_ct_body_list_types(F/A,[(Goal:K)|Goals],Vars,_Names,AbsInts):-
-    functor(Head,F,A),
-    assertion_read(Head,_M,AStatus,success,Body,Dict,_Source,_LB,_LE),
-    member(AStatus,[check]),
-    assertion_body(Head,_Compat,Calls0,Succ0,_Comp,_Comm,Body),
-    debug_message("success assertion found ~q",[Succ]),
+    ; get_domain_knows_of(sharing,AbsInts,Info,Modes,ModesInfo),
+      decide_abs_execute(Modes,Goal,NEntryCalls,Head,ModesInfo,_,Fail),
+      ( Fail == fail ->
+          Logger(ModesInfo,Modes,Goal,Head,EntryCalls,Dict,K,false),
+          local_inccounter(pp_false_c,_)
+      ; Fail == true ->
+          Logger(TypesInfo,Types,Goal,Head,EntryCalls,Dict,K,checked),
+          inccounter_cond(pp_checked_c,EntryCalls)
+      ; prepare_info_pp(AbsInts,Info,Dom,In),
+        Logger(In,Dom,Goal,Head,EntryCalls,Dict,K,check),
+        local_inccounter(pp_check_c,_)
+      )
+    ).
+
+check_success_assertion(Calls0,Succ0,Head,CopyHead,Goal,K,Goals,Vars,AbsInts,Dict):-
     check_precond(Calls0,AbsInts,Head,K,Vars,Goal),
     next_or_last_key(Goals,K,K1),
-    copy_term(Head,CopyHead),
     maplist(decide_get_applicable_info(K1,Vars,CopyHead,Goal),AbsInts,Info),
     \+ any_is_bottom(Info),
     list_to_conj(Succ0,Succ),
@@ -209,48 +175,40 @@ pp_ct_body_list_types(F/A,[(Goal:K)|Goals],Vars,_Names,AbsInts):-
     decide_abs_execute(Types,Goal,Succ,Head,TypesInfo,_TNewInfo,NSucc),
     ( NSucc == true -> 
         inccounter_cond(pp_checked_s,Succ0), 
-        message_pp_success_diag(TypesInfo,Types,Goal,Head,Calls0,Succ0,Dict,K,checked),
-        fail
-    ; 
-        true
-    ),
-    (NSucc == fail ->
+        message_pp_success_diag(TypesInfo,Types,Goal,Head,Calls0,Succ0,Dict,K,checked)
+    ; NSucc == fail ->
         message_pp_success_diag(TypesInfo,Types,Goal,Head,Calls0,Succ0,Dict,K,false),
         local_inccounter(pp_false_s,_)
-    ;   get_domain_knows_of(sharing,AbsInts,Info,Modes,ModesInfo),
-        decide_abs_execute(Modes,Goal,NSucc,Head,ModesInfo,_MNewInfo,Fail),
-        (Fail == fail ->
-            message_pp_success_diag(ModesInfo,Modes,Goal,Head,Calls0,Succ0,Dict,K,false),
-            local_inccounter(pp_false_s,_)
-        ;
-            debug_message("NO DETECTADO"),
-            ( Fail == true -> 
-              inccounter_cond(pp_checked_s,Succ0) ,
-              message_pp_success_diag(ModesInfo,Modes,Goal,Head,Calls0,
-                                 Succ0,Dict,K,checked)
-            ; prepare_info_pp(AbsInts,Info,Dom,In),
-              message_pp_success_diag(In,Dom,Goal,Head,Calls0,Succ0,Dict,K,check),
-              local_inccounter(pp_check_s,_)
-            )
-        )
-       ),fail.
+    ; get_domain_knows_of(sharing,AbsInts,Info,Modes,ModesInfo),
+      decide_abs_execute(Modes,Goal,NSucc,Head,ModesInfo,_MNewInfo,Fail),
+      ( Fail == fail ->
+          message_pp_success_diag(ModesInfo,Modes,Goal,Head,Calls0,Succ0,Dict,K,false),
+          local_inccounter(pp_false_s,_)
+      ; Fail == true ->
+          inccounter_cond(pp_checked_s,Succ0) ,
+          message_pp_success_diag(ModesInfo,Modes,Goal,Head,Calls0,Succ0,Dict,K,checked)
+      ; prepare_info_pp(AbsInts,Info,Dom,In),
+        message_pp_success_diag(In,Dom,Goal,Head,Calls0,Succ0,Dict,K,check),
+        local_inccounter(pp_check_s,_)
+      )
+    ).
+
+assr_head(Goal,Head):-
+    functor(Goal,F,A),
+    functor(Head,F,A).
 
 % Goal has bottom as success substitution                     %
-pp_ct_body_list_types(_P,[(Goal:K)|Goals],Vars,Names,AbsInts):-
+pp_ct_body_check_always_fails(Goal,K,Goals,Vars,Names,AbsInts):-
     Goal\== 'basiccontrol:fail', Goal\== 'basiccontrol:false',
     debug_message("checking if bottom for ~q",[Goal]),
     maplist(decide_get_just_info(K,Vars),AbsInts,Info),
     \+ any_is_bottom(Info),
     next_or_last_key(Goals,K,K1),
     maplist(decide_get_just_info(K1,Vars),AbsInts,Info1),
-    any_is_bottom(Info1), !,
+    any_is_bottom(Info1),
     copy_term((Goal,dic(Vars,Names)),(NGoal,Dict)),
     rename(NGoal,Dict),
     preproc_warning(always_fails,[NGoal,K]).
-% None of the previous                                        %
-pp_ct_body_list_types(_,[_|Goals],Vars,Names,AbsInts):-
-    next_pred(Goals,NPred),
-    pp_ct_body_list_types(NPred,Goals,Vars,Names,AbsInts).
 
 % check pre-condition in success P:Pre => Post assertions
 check_precond([],_AbsInts,_Head,_K,_Vars,_Goal) :-!.
