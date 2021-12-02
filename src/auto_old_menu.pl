@@ -20,6 +20,7 @@ check   , 'Report Non-Verified Assrts'  # asr_not_stat_eval - warning <- cct2.
 check(1), 'Predicate-Level CT Checks'   # pred_ctchecks      - on   <- cct.
 check(1), 'Multivariant CT Checks'   # multivariant_ctchecks - off  <- cct.
 check(1), 'Program-Point CT Checks'     # pp_ctchecks        - on  <- cct.
+check(1), 'Simplify Check Assertions'     # simplify_checks        - off  <- cct.
 %check(1), 'Create Error Log File'      # error_log          - off  <- cct.
 check   , 'Customize Analysis Flags'    # check_config_ana   - off  <- cct_manual.
 check   , 'Generate Certificate'        # gen_certificate    - off.

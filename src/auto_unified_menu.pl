@@ -11,6 +11,7 @@ all, 'Action'       # inter_all  - analyze_check :: all_menu_branch.
 ~munified(0), '| Modules to check' # ct_modular - curr_mod  :: post_mod_check  <- cct_manual.
 ~munified(0), '| Predicate-level checks'   # pred_ctchecks      - on   <- cct_manual.
 ~munified(0), '| Program point checks'     # pp_ctchecks        - on  <- cct_manual.
+~munified(0), '| Simplify Check Assertions'     # simplify_checks        - off  <- cct_manual.
 ~munified(1), '| Multivariant checks'   # multivariant_ctchecks - off  <- cct_manual.
 ~munified(1), '| Report non-verified assrts'  # asr_not_stat_eval - warning <- cct_manual.
 ~munified(1), '| Generate intervals' # ctchecks_intervals - off <- cct_manual.

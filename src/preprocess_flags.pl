@@ -1044,6 +1044,11 @@ pp_flag(output_lang, 'The language in which the analysis/transformation results 
 current_pp_flags(  output_lang        , source   ).
 valid_flag_values( output_lang        , member(_, [intermediate, source, raw])).
 
+pp_flag(simplify_checks).
+pp_flag(simplify_checks, 'Whether to output simplified check assertions after verification or not.').
+current_pp_flags(simplify_checks, off).
+valid_flag_values(simplify_checks, member(_, [on,off])).
+
 %%%% Debugging flags %%%%
 % See manual entry for info about debugging with davinci
 %% TODO: this is disabled because it affect performance. To enable it, comment

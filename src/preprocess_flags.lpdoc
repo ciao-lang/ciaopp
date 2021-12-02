@@ -16,6 +16,8 @@
  @item @tt{type_output} (@tt{defined, all})
        to output the types inferred for predicates in terms only of 
 	types defined by the user or including types inferred anew.
+ @item @tt{simplify_checks} (@tt{on, off})
+       to output simplified check assertions after verification or not.
 @end{itemize}
 @item for analysis:
 @begin{itemize}

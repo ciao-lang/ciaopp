@@ -111,7 +111,7 @@ decide_inform_user(VC, STAT, Old, OldRef, New, AbsInts, Info):-
     %
     !,
     local_inccounter_split(simp,Status,Type,_),
-    ( Status = false -> % TODO: WHY?
+    ( ( Status = false ; current_pp_flag(simplify_checks, on) ) ->
         change_assertion_status(Old, OldRef, New)
     ; true
     ),
