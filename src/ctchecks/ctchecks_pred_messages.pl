@@ -111,8 +111,11 @@ decide_inform_user(VC, STAT, Old, OldRef, New, AbsInts, Info):-
     %
     !,
     local_inccounter_split(simp,Status,Type,_),
-    ( ( Status = false ; current_pp_flag(simplify_checks, on) ) ->
+    ( Status = false  ->
         change_assertion_status(Old, OldRef, New)
+    ; current_pp_flag(simplify_checks, on) ->
+        erase(OldRef),
+        add_assertion(New)
     ; true
     ),
     ( VC = on ->
