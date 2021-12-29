@@ -7,11 +7,11 @@ save_cfg,'Menu configuration name' # menu_config_name  - none : show_mcfg.
 all, 'Menu level'   # menu_level - naive.
 all, 'Action'       # inter_all  - analyze_check :: all_menu_branch.
 
-~munified(0), 'CTCheck assertions' # ctcheck  - on :: post_ctcheck.
+~munified(0), 'Static assertion checking' # ctcheck  - on :: post_ctcheck.
 ~munified(0), '| Modules to check' # ct_modular - curr_mod  :: post_mod_check  <- cct_manual.
 ~munified(0), '| Predicate-level checks'   # pred_ctchecks      - on   <- cct_manual.
 ~munified(0), '| Program point checks'     # pp_ctchecks        - on  <- cct_manual.
-~munified(0), '| Simplify Check Assertions'     # simplify_checks        - off  <- cct_manual.
+~munified(0), '| Simplify check assertions'     # simplify_checks        - off  <- cct_manual.
 ~munified(1), '| Multivariant checks'   # multivariant_ctchecks - off  <- cct_manual.
 ~munified(1), '| Report non-verified assrts'  # asr_not_stat_eval - warning <- cct_manual.
 ~munified(1), '| Generate intervals' # ctchecks_intervals - off <- cct_manual.
@@ -21,22 +21,22 @@ all, 'Action'       # inter_all  - analyze_check :: all_menu_branch.
 % ------------------------------------------------------------
 % analysis domain options
 
-~munified(0), 'Domain selection' # dom_sel          - auto   .
-~munified(0), '| Aliasing/Modes' # modes            - shfr   <- dom_manual.
-~munified(0), '| Shape/Types'    # types            - eterms <- dom_manual.
-~munified(1), '  | Type precision'       # type_precision   - all <- types_prec_guard.
-~munified(1), '  | Eval types'           # type_eval        - off <- eval_types_guard.
-~munified(0), '  | Widening sharing'     # clique_widen     - off       <- clipre.
-~munified(1), '  | Type of widening'     # clique_widen_type- cautious  <- clipre.
-~munified(1), '  | Upper bound threshold'# clique_widen_ub  - 200       <- clipre.
-~munified(1), '  | Lower bound threshold'# clique_widen_lb  - 250       <- clipre.
+~munified(0), 'Abstract domain selection' # dom_sel          - auto   .
+~munified(0), '| Aliasing/Modes'          # modes            - shfr   <- dom_manual.
+~munified(0), '| Shapes/Types'   # types            - eterms <- dom_manual.
+~munified(1), '| | Type precision'       # type_precision   - all <- types_prec_guard.
+~munified(1), '| | Eval types'           # type_eval        - off <- eval_types_guard.
+~munified(0), '| | Widening sharing'     # clique_widen     - off       <- clipre.
+~munified(1), '| | Type of widening'     # clique_widen_type- cautious  <- clipre.
+~munified(1), '| | Upper bound threshold'# clique_widen_ub  - 200       <- clipre.
+~munified(1), '| | Lower bound threshold'# clique_widen_lb  - 250       <- clipre.
 ~munified(0), '| Determinism'   # ana_det          - none    <- dom_manual.
 ~munified(0), '| Non-failure'   # ana_nf           - none    <- dom_manual.
 ~munified(0), '| Numeric'       # ana_num          - none    <- dom_manual.
 ~munified(0), '| Cost'          # ana_cost         - none    <- dom_manual.
-~munified(1), '  | Recurrence solver'    # req_solver       - builtin   <- cost_ana.
-~munified(1), '  | Algebraic system'     # math_system      - builtin   <- cost_ana.
-~munified(1), '  | Static profiling'     # perform_static_profiling - no<- cost_ana. % currently disabled
+~munified(1), '| | Recurrence solver'    # req_solver       - builtin   <- cost_ana.
+~munified(1), '| | Algebraic system'     # math_system      - builtin   <- cost_ana.
+~munified(1), '| | Static profiling'     # perform_static_profiling - no<- cost_ana. % currently disabled
 
 :- if(defined(has_ciaopp_extra)).
 ~munified(1), '| Cost'          # para_cost        - both      <- para_c1.
@@ -63,8 +63,8 @@ all, 'Action'       # inter_all  - analyze_check :: all_menu_branch.
 ~munified(1), '| Widen call'             # widencall      - com_child  <- custo_fixpoint.
 ~munified(1), '| Variants'               # variants       - off        <- custo_fixpoint.
 ~munified(1), '| Multivariant success'   # multi_success  - off        <- custo_fixpoint. % TODO: this option was enabled in opt+para menu, recover if needed
-~munified(1), '| PP info of facts'       # fact_info      - off        <- custo_fixpoint.
-~munified(1), '| Trace'                  # trace_fixp     - no         <- custo_fixpoint.
+~munified(1), '| Program point info for facts'  # fact_info - off      <- custo_fixpoint.
+~munified(1), '| Tracing'                # trace_fixp     - no         <- custo_fixpoint.
 % TODO: only for fixpo_di?
 ~munified(1), '| Local control'          # local_control  - off        <- custo_fixpoint_ana_lc. % (ana_or_check + types!=none&modes!=none)
 ~munified(1), '| Global control'         # global_control - hom_emb    <- custo_fixpoint_ana_gc. % (ana_or_check_not_nf_evaltypes + local_control!=off)
@@ -74,11 +74,11 @@ all, 'Action'       # inter_all  - analyze_check :: all_menu_branch.
 % 0 = naive, 1 = expert
 ~munified(0),'Generate output'           # output               - on.
 ~munified(0),'| Output language'         # output_lang          - source <- output_on.
-~munified(0),'| Include program point'   # pp_info              - off <- output_on. % TODO: this option was enabled in opt+para menu, recover if needed
+~munified(0),'| Include program point info' # pp_info           - off <- output_on. % TODO: this option was enabled in opt+para menu, recover if needed
 ~munified(1),'| Multi-variant analysis results'# vers           - off <- output_on. % TODO: this option was enabled in opt+para menu, recover if needed
-~munified(0),'| Collapse versions'       # collapse_ai_vers     - on <- output_on. % TODO: this option was enabled in opt+para menu, recover if needed
+~munified(0),'| Collapse procedure versions'   # collapse_ai_vers     - on <- output_on. % TODO: this option was enabled in opt+para menu, recover if needed
 ~munified(0),'| Output types'            # type_output          - all <- output_on.
-~munified(1),'| Output resource'         # output_resources     - functions <- output_on.
+~munified(1),'| Output resources'        # output_resources     - functions <- output_on.
 ~munified(1),'| Output cost'             # cost_analysis_output - all <- output_on.
 ~munified(1),'Dump analysis'             # dump                 - off.
 
