@@ -1,8 +1,9 @@
 # The CiaoPP Program Processor
 
-CiaoPP is an program processor framework for
+CiaoPP is a program processor framework for
 [Ciao](https://github.com/ciao-lang/ciao). CiaoPP performs a number of
-program debugging, analysis, and source-to-source transformations:
+program debugging, analysis, and source-to-source transformation
+tasks:
 
  - **Inference of properties** of the predicates and literals of the
    program (*types*, *modes* and other *variable instantiation*
@@ -28,7 +29,8 @@ is in turn also used by the Ciao system documentation generator,
 `lpdoc`.
 
 This repository contains the generic preprocessor framework together
-with some basic domains, transformations, and language support. Other
-features are distributed as separate bundles.
+with some basic analyses, transformations, and language support. Other
+features (including support for a variety of programming languages)
+are distributed as separate bundles. 
 
 CiaoPP is distributed under the GNU general public license.
