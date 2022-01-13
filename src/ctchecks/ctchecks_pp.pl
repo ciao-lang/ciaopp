@@ -117,12 +117,12 @@ pp_ct_body_list_types(Goal,K,Goals,Vars,_Names,AbsInts):-
     % Failure-driven loop to check each relevant assertion.
     % entry and calls assertions are checked independently.
     ( ( type_of_goal(imported,Goal) -> true ),
-      get_entry_assertion(Head,pp,Entry,Dict),
+      get_entry_assertion(Head,Entry,Dict),
       nonvar(Entry),
       debug_message("entry assertion found ~q",[Entry]),
       check_entrycalls_assertion(message_pp_entry,Entry,Head,CopyHead,Goal,K,Vars,AbsInts,Dict),
       fail
-    ; get_calls_assertion(Head,pp,Calls,Dict),
+    ; get_calls_assertion(Head,Calls,Dict),
       nonvar(Calls),
       debug_message("calls assertion found ~q",[Calls]),
       check_entrycalls_assertion(message_pp_calls_diag,Calls,Head,CopyHead,Goal,K,Vars,AbsInts,Dict),
