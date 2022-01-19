@@ -8,6 +8,7 @@
 :- use_package(ciaopp(p_unit/p_unit_argnames)).
 
 :- use_module(library(formulae), [list_to_conj/2]).
+:- use_module(library(hiordlib), [maplist/2]).
 :- use_module(library(messages), [
     show_message/3, warning_message/2, error_message/2, note_message/2]).
 
@@ -114,7 +115,7 @@ decide_inform_user(VC, STAT, Old, OldRef, New, AbsInts, Info):-
     ( Status = false  ->
         change_assertion_status(Old, OldRef, New)
     ; current_pp_flag(simplify_checks, on) ->
-        erase(OldRef),
+        maplist(erase, OldRef),
         add_assertion(New)
     ; true
     ),
@@ -133,8 +134,8 @@ change_assertion_status(Old, OldRef, New) :-
     assertion_set_calls(New, OrigCall, A2),
     assertion_set_success(A2, OrigSuccess, A3),
     assertion_set_comp(A3, OldComp, NewToPrint),
-    erase(OldRef), %% TODO: [IG] Why erase the assertion when printing the
-                   %% message and not when the assertion is checked?
+    maplist(erase,OldRef),  %% TODO: [IG] Why erase the assertion when printing the
+                            %% message and not when the assertion is checked?
     add_assertion(NewToPrint).
 
 :- export(inform_checked/4).
@@ -414,6 +415,7 @@ my_asub_to_info(AbsInt,S1,Qv,SInfo,Comp):-
     list_to_conj(SInfoL,SInfo).
 
 inline_types([bottom]) :-!.
+inline_types(true) :-!.
 inline_types((Prop,Props)):- !,
     inline_types(Prop),
     inline_types(Props).

@@ -1,5 +1,7 @@
 :- module(ctchecks_pp, [ctcheck_pp/2], [assertions,hiord]).
 
+:- use_package(ciaopp(p_unit/p_unit_argnames)).
+
 :- use_module(library(lists), [member/2]).
 :- use_module(library(formulae), [conj_to_list/2, list_to_conj/2]).
 :- use_module(library(messages), [debug_message/1, debug_message/2]).
@@ -12,7 +14,6 @@
 % CiaoPP library
 :- use_module(ciaopp(infer), [get_memo_lub/5]).
 :- use_module(ciaopp(infer/infer_dom), [abs_execute/7,knows_of/2]).
-:- use_module(library(assertions/assrt_lib), [assertion_body/7]).
 :- use_module(ciaopp(p_unit), [program/2, filtered_program_clauses/3]).
 :- use_module(ciaopp(p_unit/p_unit_basic), [type_of_goal/2]).
 :- use_module(ciaopp(p_unit/assrt_db), [assertion_read/9]).
@@ -113,26 +114,25 @@ pp_ct_body_list_types(Goal,K,_Goals,Vars,Names,AbsInts):-
 %
 pp_ct_body_list_types(Goal,K,Goals,Vars,_Names,AbsInts):-
     assr_head(Goal,Head),
-    copy_term(Head,CopyHead),
     % Failure-driven loop to check each relevant assertion.
     % entry and calls assertions are checked independently.
-    ( ( type_of_goal(imported,Goal) -> true ),
-      get_entry_assertion(Head,Entry,Dict),
-      nonvar(Entry),
-      debug_message("entry assertion found ~q",[Entry]),
-      check_entrycalls_assertion(message_pp_entry,Entry,Head,CopyHead,Goal,K,Vars,AbsInts,Dict),
-      fail
-    ; get_calls_assertion(Head,Calls,Dict),
-      nonvar(Calls),
-      debug_message("calls assertion found ~q",[Calls]),
-      check_entrycalls_assertion(message_pp_calls_diag,Calls,Head,CopyHead,Goal,K,Vars,AbsInts,Dict),
-      fail
-    ; assertion_read(Head,_M,check,success,Body,Dict,_Source,_LB,_LE),
-      assertion_body(Head,_Compat,Calls0,Succ0,_Comp,_Comm,Body),
-      debug_message("success assertion found ~q",[Succ0]),
-      check_success_assertion(Calls0,Succ0,Head,CopyHead,Goal,K,Goals,Vars,AbsInts,Dict),
+    ( get_check_assertion(Head,Assertion,_Refs),
+      check_assertion(Assertion,Goal,K,Vars,Goals,AbsInts),
       fail
     ; true
+    ).
+
+check_assertion(As,Goal,K,Vars,Goals,AbsInts) :-
+    As = as${type=>Type, head=>Head, call=>Call, succ=>Succ, dic=>Dict},
+    copy_term(Head,CopyHead),
+    ( Type = success ->
+        check_success_assertion(Call,Succ,Head,CopyHead,Goal,K,Goals,Vars,AbsInts,Dict)
+    ; ( Type = entry ->
+        Logger = message_pp_entry
+      ; Type = calls ->
+        Logger = message_pp_calls_diag
+      ),
+      check_entrycalls_assertion(Logger,Call,Head,CopyHead,Goal,K,Vars,AbsInts,Dict)
     ).
 
 :- meta_predicate check_entrycalls_assertion(pred(8),+,+,+,+,+,+,+,+).

@@ -11,6 +11,7 @@
 :- use_module(ciaopp(preprocess_flags)).
 :- use_module(ciaopp(ctchecks/comp_ctchecks), [abs_execute_comp/5, abs_execute_sizes/5]).
 :- use_module(ciaopp(ctchecks/ctchecks_pred_messages), [inform_as_change_to_user/5]).
+:- use_module(ciaopp(ctchecks/ctchecks_pp_common), [get_check_assertion/3]).
 
 %% CiaoPP library:
 :- use_module(ciaopp(plai/domains), 
@@ -138,18 +139,6 @@ inform_as_changes_to_user([]).
 inform_as_changes_to_user([u(Old,OldRef,New,AbsInts,Info)|As]) :-
     inform_as_change_to_user(Old,OldRef,New,AbsInts,Info),
     inform_as_changes_to_user(As).
-
-get_check_assertion(ClKey, A, ARef) :-
-    Status = check,
-    A = as(M,Status,Type,Key,Compat,Call,Succ,Comp,Dic,Loc,Comment,_),
-    Loc = loc(S, LB, LE),
-    ref_assertion_read(ClKey, M, Status, Type, Body, Dic, S, LB, LE, ARef),
-    check_assrt_type(Type),
-    assertion_body(Key, Compat, Call, Succ, Comp, Comment, Body).
-
-check_assrt_type(calls).
-check_assrt_type(success).
-check_assrt_type(comp).
 
 decide_get_info_all([],_,_,[]).
 decide_get_info_all([D|Ds],Key,P,[I|Is]):-
