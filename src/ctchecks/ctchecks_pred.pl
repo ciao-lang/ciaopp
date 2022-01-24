@@ -11,7 +11,7 @@
 :- use_module(ciaopp(preprocess_flags)).
 :- use_module(ciaopp(ctchecks/comp_ctchecks), [abs_execute_comp/5, abs_execute_sizes/5]).
 :- use_module(ciaopp(ctchecks/ctchecks_pred_messages), [inform_as_change_to_user/5]).
-:- use_module(ciaopp(ctchecks/ctchecks_pp_common), [get_check_assertion/3]).
+:- use_module(ciaopp(ctchecks/ctchecks_common), [get_check_assertion/3]).
 
 %% CiaoPP library:
 :- use_module(ciaopp(plai/domains), 

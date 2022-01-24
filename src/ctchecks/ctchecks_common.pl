@@ -1,4 +1,4 @@
-:- module(ctchecks_pp_common, [
+:- module(ctchecks_common, [
     check_type_calls/2,
     get_check_assertion/3,
 %%      num_var_in_goal/4,
