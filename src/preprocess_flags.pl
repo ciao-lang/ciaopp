@@ -854,17 +854,17 @@ current_pp_flags(  asr_not_stat_eval  , warning). % TODO:[new-resources] was 'of
 valid_flag_values( asr_not_stat_eval  , member(_, [off,warning,error])).
 
 pp_flag(verbosity).
-pp_flag(verbosity, 'This flag controls, the verbosity of ciaopp execution.').
+pp_flag(verbosity, 'This flag controls the verbosity of ciaopp execution.').
 current_pp_flags(  verbosity , low).
 valid_flag_values( verbosity  , member(_, [off,low,high,very_high])).
 
 pp_flag(pred_ctchecks).
-pp_flag(pred_ctchecks, 'This flags controls whether, to perform predicate level compile-time checking and the algorithm to use.').
+pp_flag(pred_ctchecks, 'This flag controls whether to perform predicate level compile-time checking and the algorithm to use.').
 current_pp_flags(  pred_ctchecks  , on).
 valid_flag_values( pred_ctchecks  , member(_, [off,on,on_succ])).
 
 pp_flag(pp_ctchecks).
-pp_flag(pp_ctchecks, 'This flags controls whether, to perform program point compile-time checking and the algorithm to use.').
+pp_flag(pp_ctchecks, 'This flag controls whether to perform program point compile-time checking and the algorithm to use.').
 current_pp_flags(  pp_ctchecks  , on).
 valid_flag_values( pp_ctchecks  , member(_, [off,on])).
 
@@ -880,7 +880,7 @@ current_pp_flags(  clique_widen , off).
 valid_flag_values( clique_widen , member(_, [off,amgu,plai_op])).
 
 pp_flag(clique_widen_type).
-pp_flag(clique_widen_type, 'This flags controls the type of the widening sharing based on cliques.').
+pp_flag(clique_widen_type, 'This flag controls the type of the widening sharing based on cliques.').
 current_pp_flags(  clique_widen_type , cautious).
 valid_flag_values( clique_widen_type , member(_, [panic_1,panic_2,inter_1,inter_2,cautious])).
 
