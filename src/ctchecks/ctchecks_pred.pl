@@ -417,8 +417,8 @@ reduce_calls(  fail  , false   ) :- !.  % +
 reduce_calls( _Calls , check   ).
 
 reduce_success( fail , _Success , check   ) :- !. % -
+reduce_success( true , fail     , false   ) :- !. % -
 reduce_success( _Call, true     , checked ) :- !. % +
-reduce_success( _    , fail     , false   ) :- !. % -
 reduce_success( _    , _        , check   ).
 
 % PP: Commented out for a while...
