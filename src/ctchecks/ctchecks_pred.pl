@@ -273,6 +273,8 @@ abs_exec_each_succ(Goal, Call, Succ, AbsInt, AGoal, [ASucc|ASuccs], NCall, NSucc
     glb(AbsInt, Cond1, ASucc, CondASucc),
     ( CondASucc = '$bottom' ->  % no success possible with current Pre, thus this
                                 % complete should be "neutral" for the whole assertion
+        % TODO: We think this is unreachable; this case is handled
+        % before.
         LocalStatus = nosucc,
         NSuccess = fail
     ;
@@ -284,6 +286,7 @@ abs_exec_each_succ(Goal, Call, Succ, AbsInt, AGoal, [ASucc|ASuccs], NCall, NSucc
     reduce_compl_succ(LocalStatus, NStatus ,Status),
     compose_compl_goals(LocalStatus, NStatus, Succ, NSuccess, NSuccess1, NSucc).
 abs_exec_each_succ(Goal, Call, Succ, AbsInt, AGoal,  [ASucc|ASuccs], NCall, NSucc, Status):-
+    % Case for pred_ctchecks=on. pred_ctchecks=off handled earlier.
     abs_execute_exp(Goal, Succ, AbsInt, AGoal, ASucc, NSuccess),
     reduce_success(NCall, NSuccess, LocalStatus0),
     reduce_compl_fin(LocalStatus, LocalStatus0),
