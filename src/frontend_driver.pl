@@ -446,6 +446,20 @@ perform_transformations([E|Ls]) :-
 
 :- use_module(ciaopp(p_unit), [get_output_path/2]).
 
+:- doc(output_option/1, "A global option that specifies some aspect of
+    how the output is presented. The current set of options is:
+
+    @begin{itemize}
+
+    @item @tt{no_written_file_msg} : the \"written file\" message is not 
+          shown in the toplevel output;
+
+    @end{itemize}").
+
+:- regtype output_option(Opt) # "@var{Opt} is an output option".
+
+output_option(no_written_file_msg).
+
 :- export(output/0).
 :- pred output # "Outputs the current Module preprocessing state to a
    file named Module@tt{_opt.ext}, where Module is the current
@@ -478,6 +492,15 @@ create_output_symlink(COFile, OptFile) :-
    valid for the loaded program) is guessed from the file extension.".
 
 output(File) :-
+    output(File,[]).
+
+:- export(output/2).
+:- pred output(+Output, +Opts) # "Outputs the current module preprocessing
+   state to a file @var{Output}. The output format (which should be
+   valid for the loaded program) is guessed from the file extension.
+   @var{Opts} is a list of options for this predicate".
+
+output(File, Opts) :-
     path_splitext(File, _, Ext),
     ( output_ext(Ext) -> true
     ; error_message("unknown output extension ~w", [Ext]),
@@ -494,7 +517,10 @@ output(File) :-
         fail
     ; true
     ),
-    pplog(output, ['{written file ',~~(File),'}']).
+    ( member(no_written_file_msg, Opts) ->
+        true 
+    ;   pplog(output, ['{written file ',~~(File),'}'])
+    ).
 
 % ---------------------------------------------------------------------------
 
