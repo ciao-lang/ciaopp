@@ -446,18 +446,17 @@ perform_transformations([E|Ls]) :-
 
 :- use_module(ciaopp(p_unit), [get_output_path/2]).
 
-:- doc(output_option/1, "A global option that specifies some aspect of
-    how the output is presented. The current set of options is:
-
-    @begin{itemize}
-
-    @item @tt{no_written_file_msg} : the \"written file\" message is not 
-          shown in the toplevel output;
-
-    @end{itemize}").
+:- doc(output_option/1, "Options for @pred{output/2}. The current set
+   of options is:
+   @begin{itemize}
+   @item @tt{output_symlink}: @tt{_co} symbolic link to the latest output file;
+   @item @tt{no_written_file_msg}: the \"written file\" message is not 
+     shown in the toplevel output;
+   @end{itemize}").
 
 :- regtype output_option(Opt) # "@var{Opt} is an output option".
 
+output_option(output_symlink).
 output_option(no_written_file_msg).
 
 :- export(output/0).
@@ -467,25 +466,8 @@ output_option(no_written_file_msg).
 
 output :-
     get_output_path(yes, OptFile),
-    % Create output file
-    output(OptFile),
-    % Create _co symbolic link (points to latest output file)
-    get_output_path(no, COFile),
-    ( create_output_symlink(COFile, OptFile) ->
-        true
-    ; warning_message("Symbolic link to output file failed!", [])
-    ).
+    output(OptFile, [output_symlink]).
 
-% Create _co symbolic link (points to latest output file)
-create_output_symlink(COFile, OptFile) :-
-    ( COFile = OptFile ->
-        true
-    ; % Create relative symlink (assumes that dirnames are the same)
-      path_split(OptFile, _, RelOptFile),
-      copy_file(RelOptFile, COFile, [overwrite, symlink])
-    ).
-
-% TODO: output_by_ext/2 is strange, should it take lang instead?
 :- export(output/1).
 :- pred output(+Output) # "Outputs the current module preprocessing
    state to a file @var{Output}. The output format (which should be
@@ -494,6 +476,7 @@ create_output_symlink(COFile, OptFile) :-
 output(File) :-
     output(File,[]).
 
+% TODO: output_by_ext/2 is strange, should it take lang instead?
 :- export(output/2).
 :- pred output(+Output, +Opts) # "Outputs the current module preprocessing
    state to a file @var{Output}. The output format (which should be
@@ -507,8 +490,7 @@ output(File, Opts) :-
       fail
     ),
     open(File, write, Stream),
-    ( output_by_ext(Ext, Stream) ->
-        Err = no
+    ( output_by_ext(Ext, Stream) -> Err = no
     ; Err = yes
     ),
     close(Stream),
@@ -517,9 +499,27 @@ output(File, Opts) :-
         fail
     ; true
     ),
+    % "written file" msg
     ( member(no_written_file_msg, Opts) ->
         true 
-    ;   pplog(output, ['{written file ',~~(File),'}'])
+    ; pplog(output, ['{written file ',~~(File),'}'])
+    ),
+    % Create _co symbolic link (points to latest output file)
+    ( member(output_symlink, Opts) ->
+        get_output_path(no, COFile),
+        ( create_output_symlink(COFile, File) -> true
+        ; warning_message("Symbolic link to output file failed!", [])
+        )
+    ; true
+    ).
+
+% Create _co symbolic link (points to latest output file)
+create_output_symlink(COFile, OptFile) :-
+    ( COFile = OptFile ->
+        true
+    ; % Create relative symlink (assumes that dirnames are the same)
+      path_split(OptFile, _, RelOptFile),
+      copy_file(RelOptFile, COFile, [overwrite, symlink])
     ).
 
 % ---------------------------------------------------------------------------
