@@ -460,30 +460,30 @@ output_option(output_symlink).
 output_option(no_written_file_msg).
 
 :- export(output/0).
-:- pred output # "Outputs the current Module preprocessing state to a
-   file named Module@tt{_opt.ext}, where Module is the current
-   module.".
+:- pred output # "Outputs the current module preprocessing state
+   with the default output options. Equivalent to @tt{output(File,[])}.".
 
-output :-
-    get_output_path(yes, OptFile),
-    output(OptFile, [output_symlink]).
+output :- output(_, [output_symlink]).
 
 :- export(output/1).
-:- pred output(+Output) # "Outputs the current module preprocessing
-   state to a file @var{Output}. The output format (which should be
-   valid for the loaded program) is guessed from the file extension.".
+:- pred output(?File) # "Outputs to @var{File} the current module
+   preprocessing state with the default output options. If unbound,
+   @var{File} is unified with a default name (encoding the
+   preprocessing steps).  Equivalent to @tt{output(File,[])}.".
 
-output(File) :-
-    output(File,[]).
+output(File) :- output(File,[]).
 
 % TODO: output_by_ext/2 is strange, should it take lang instead?
 :- export(output/2).
-:- pred output(+Output, +Opts) # "Outputs the current module preprocessing
-   state to a file @var{Output}. The output format (which should be
-   valid for the loaded program) is guessed from the file extension.
-   @var{Opts} is a list of options for this predicate".
+:- pred output(?File, +Opts) # "Outputs the current module
+   preprocessing state to a file @var{File}. If unbound, @var{File} is
+   unified with a default name (encoding the preprocessing steps).
+   The output format (which should be valid for the loaded program) is
+   guessed from the file extension. @var{Opts} is a list of options
+   for this predicate (see @prop{output_option/1})".
 
 output(File, Opts) :-
+    ( var(File) -> get_output_path(yes, File) ; true ),
     path_splitext(File, _, Ext),
     ( output_ext(Ext) -> true
     ; error_message("unknown output extension ~w", [Ext]),
