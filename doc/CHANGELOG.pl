@@ -1,3 +1,45 @@
+:- doc(version(1*5+0,2022/3/2,20:34*30+'CET'), "
+   @begin{itemize}
+   @item ADDED: CiaoPP is included now by default with the @tt{devenv}
+      bundle. 
+   @item ADDED: Output options in the @tt{output/2} predicate.
+   @item ADDED: More examples (most of them for verifly).
+   @item ADDED: Documentation for debugging analyses.
+   @item ADDED: @tt{ciaoppcl} can start as an active module (flycheck).
+   @item IMPROVED: Better automatic selection of analysis domains (covering
+      better the properties to be checked; using mode domains before type
+      domains, etc.); @tt{dom_sel} flag to decide whether to
+      automatically select domains for verification.
+   @item IMPROVED: Refactoring and improving @tt{ctchecks} (compile-time
+      assertion checking) code: modular ctchecking working again (i.e.,
+      after intermodular fixpoint); report assertions per module; better
+      messages; many bug fixes.
+   @item IMPROVED: Reducing boilerplate code in the implementation of
+      analysis domains using the new @tt{aidomain} package.
+   @item IMPROVED: Simplified menu, unified menu for analysis and ctchecks.
+   @item IMPROVED: Improved precision of (nf,det) analysis domains. Adding
+      (experimental) new @tt{nfdet} combined analysis domain.
+   @item CHANGED: Change default setting for entry point selection from
+      assertions (exported calls by default).
+   @item CHANGED: Disabled output for @tt{ciaoppcl -V}.
+   @item CHANGED: Assertion simplification (eliminating statically proven
+      properties from run-time checks) now enabled by default during
+      assertion checking.
+   @item CHANGED: @tt{trust pred} assertions expanded to @tt{check
+      calls}, @tt{trust success} and @tt{trust comp} assertions.
+   @item CHANGED: Abort @tt{auto_interface} action early if there is a
+      compilation error.
+   @item CHANGED: @tt{pp_info} flag (printing analysis infor at literal
+      level) moved to the naive menu.
+   @item FIXED: Many bug fixes and performance improvements: eliminated some
+      dangling choicepoints; avoid printing some calls assertions twice;
+      wrong use of @tt{denorm_goal_prop/3} changed to
+      @tt{prop_unapply/3}; missing clause to @tt{abs_exec_cond:type_of/4}
+      to handle @tt{deftypes} domain.
+   @item FIXED: Bug in treatment of dynamic predicates.
+   @end{itemize}
+").
+
 :- doc(version(1*4+0,2020/11/18,6:18*07+'CET'), "
    @begin{itemize}
    @item General changes and new features:
