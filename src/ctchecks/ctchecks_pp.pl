@@ -2,25 +2,19 @@
 
 :- use_package(ciaopp(p_unit/p_unit_argnames)).
 
-:- use_module(library(lists), [member/2]).
-:- use_module(library(formulae), [conj_to_list/2, list_to_conj/2]).
-:- use_module(library(messages), [debug_message/1, debug_message/2]).
+:- use_module(library(formulae), [conj_to_list/2]).
+:- use_module(library(messages), [debug_message/2]).
 :- use_module(library(vndict), [rename/2]).
-:- use_module(engine(runtime_control), [module_split/3]).
 
 :- use_module(library(counters)).
-:- use_module(library(hiordlib), [filter/3,maplist/3]).
+:- use_module(library(hiordlib), [filter/3,maplist/3,maplist/4]).
 
 % CiaoPP library
 :- use_module(ciaopp(infer), [get_memo_lub/5]).
 :- use_module(ciaopp(infer/infer_dom), [abs_execute/7,knows_of/2]).
 :- use_module(ciaopp(p_unit), [program/2, filtered_program_clauses/3]).
-:- use_module(ciaopp(p_unit/p_unit_basic), [type_of_goal/2]).
-:- use_module(ciaopp(p_unit/assrt_db), [assertion_read/9]).
-:- use_module(ciaopp(p_unit/itf_db), [curr_file/2]).
 :- use_module(ciaopp(p_unit/program_keys), [first_key/2,lit_ppkey/3]).
-:- use_module(spec(s_simpspec), [next_pred/2, body2list/2, next_or_last_key/3]).
-%% :- use_module(spec(abs_exec), [cond/4]).
+:- use_module(spec(s_simpspec), [next_or_last_key/3]).
 
 % Own library
 :- use_module(ciaopp(ctchecks/ctchecks_common)).
@@ -122,73 +116,44 @@ pp_ct_body_list_types(Goal,K,Goals,Vars,_Names,AbsInts):-
     ; true
     ).
 
-check_assertion(As,Goal,K,Vars,Goals,AbsInts) :-
-    As = as${type=>Type, head=>Head, call=>Call, succ=>Succ, dic=>Dict},
-    copy_term(Head,CopyHead),
-    ( Type = success ->
-        check_success_assertion(Call,Succ,Head,CopyHead,Goal,K,Goals,Vars,AbsInts,Dict)
-    ; ( Type = entry ->
-        Logger = message_pp_entry
-      ; Type = calls ->
-        Logger = message_pp_calls_diag
-      ),
-      check_entrycalls_assertion(Logger,Call,Head,CopyHead,Goal,K,Vars,AbsInts,Dict)
-    ).
-
-:- meta_predicate check_entrycalls_assertion(pred(8),+,+,+,+,+,+,+,+).
-
-check_entrycalls_assertion(Logger,EntryCalls,Head,CopyHead,Goal,K,Vars,AbsInts,Dict):-
-    maplist(decide_get_applicable_info(K,Vars,CopyHead,Goal),AbsInts,Info),
-    \+ any_is_bottom(Info),
-    get_domain_knows_of(regtypes,AbsInts,Info,Types,TypesInfo),
-    abs_execute(Types,Head,EntryCalls,Goal,Vars,TypesInfo,NEntryCalls),
-    ( NEntryCalls == true ->
-        Logger(TypesInfo,Types,Goal,Head,EntryCalls,Dict,K,checked),
-        inccounter_cond(pp_checked_c,EntryCalls)
-    ; NEntryCalls == fail ->
-        Logger(TypesInfo,Types,Goal,Head,EntryCalls,Dict,K,false),
+check_assertion(A0,Goal,K,Vars,Goals,AbsInts) :-
+    A0 = as${type=>Type, head=>Head},
+    copy_term(Head, CopyHead),
+    maplist(decide_get_applicable_info(K, Vars, CopyHead, Goal), AbsInts, Calls),
+    next_or_last_key(Goals, K, K1),
+    maplist(decide_get_applicable_info(K1, Vars, CopyHead, Goal), AbsInts, Succ),
+    maplist(adapt_to_completes_format(CopyHead, K), Calls, Succ, Info),
+    adapt_entry_to_calls(A0, A),
+    abs_exec_one_assertion_all(AbsInts, Info, A, K, DomsOut, InfoOut, NA),
+    NA = as${status=>Status, dic=>Dict},
+    ( Status = checked ->
+        ( Type = success ->
+            A0 = as${succ=>C}
+        ; A0 = as${call=>C}
+        ),
+        inccounter_cond(pp_checked_c, C)
+    ; Status = false ->
         local_inccounter(pp_false_c,_)
-    ; get_domain_knows_of(sharing,AbsInts,Info,Modes,ModesInfo),
-      abs_execute(Modes,Head,NEntryCalls,Goal,Vars,ModesInfo,Fail),
-      ( Fail == fail ->
-          Logger(ModesInfo,Modes,Goal,Head,EntryCalls,Dict,K,false),
-          local_inccounter(pp_false_c,_)
-      ; Fail == true ->
-          Logger(TypesInfo,Types,Goal,Head,EntryCalls,Dict,K,checked),
-          inccounter_cond(pp_checked_c,EntryCalls)
-      ; prepare_info_pp(AbsInts,Info,Dom,In),
-        Logger(In,Dom,Goal,Head,EntryCalls,Dict,K,check),
-        local_inccounter(pp_check_c,_)
-      )
+    ; local_inccounter(pp_check_c,_)
+    ),
+    % TODO: add counters here if needed for statistics (currently they are not)
+    ( Type = success ->
+        message_pp_success_diag(A0, InfoOut, DomsOut, Head, Dict, K, Status)
+    ; Type = calls ->
+        message_pp_calls_diag(A0, InfoOut, DomsOut, Head, Dict, K, Status)
+    ; Type = entry ->
+        message_pp_entry(A0, InfoOut, DomsOut, Head, Dict, K, Status)
     ).
 
-check_success_assertion(Calls0,Succ0,Head,CopyHead,Goal,K,Goals,Vars,AbsInts,Dict):-
-    check_precond(Calls0,AbsInts,Head,K,Vars,Goal),
-    next_or_last_key(Goals,K,K1),
-    maplist(decide_get_applicable_info(K1,Vars,CopyHead,Goal),AbsInts,Info),
-    \+ any_is_bottom(Info),
-    list_to_conj(Succ0,Succ),
-    get_domain_knows_of(regtypes,AbsInts,Info,Types,TypesInfo),
-    abs_execute(Types,Head,Succ,Goal,Vars,TypesInfo,NSucc),
-    ( NSucc == true -> 
-        inccounter_cond(pp_checked_s,Succ0), 
-        message_pp_success_diag(TypesInfo,Types,Goal,Head,Calls0,Succ0,Dict,K,checked)
-    ; NSucc == fail ->
-        message_pp_success_diag(TypesInfo,Types,Goal,Head,Calls0,Succ0,Dict,K,false),
-        local_inccounter(pp_false_s,_)
-    ; get_domain_knows_of(sharing,AbsInts,Info,Modes,ModesInfo),
-      abs_execute(Modes,Head,NSucc,Goal,Vars,ModesInfo,Fail),
-      ( Fail == fail ->
-          message_pp_success_diag(ModesInfo,Modes,Goal,Head,Calls0,Succ0,Dict,K,false),
-          local_inccounter(pp_false_s,_)
-      ; Fail == true ->
-          inccounter_cond(pp_checked_s,Succ0) ,
-          message_pp_success_diag(ModesInfo,Modes,Goal,Head,Calls0,Succ0,Dict,K,checked)
-      ; prepare_info_pp(AbsInts,Info,Dom,In),
-        message_pp_success_diag(In,Dom,Goal,Head,Calls0,Succ0,Dict,K,check),
-        local_inccounter(pp_check_s,_)
-      )
-    ).
+adapt_to_completes_format(AGoal, Key, ACall, ASuccs0, Formatted) :-
+    Formatted = [complete(AGoal,ACall,[ASuccs0],Key,lub)].
+
+adapt_entry_to_calls(as(Module,_Status,entry,Head,Compat,Call,Succ,Comp,Dic,
+                        Locator,Comment,Fromwhere),
+                     Res) :- !,
+    Res = as(Module,check,calls,Head,Compat,Call,Succ,Comp,Dic,Locator,Comment,
+             Fromwhere).
+adapt_entry_to_calls(As, Res) :- As = Res.
 
 assr_head(Goal,Head):-
     functor(Goal,F,A),
@@ -207,18 +172,7 @@ pp_ct_body_check_always_fails(Goal,K,Goals,Vars,Names,AbsInts):-
     rename(NGoal,Dict),
     preproc_warning(always_fails,[NGoal,K]).
 
-% check pre-condition in success P:Pre => Post assertions
-check_precond([],_AbsInts,_Head,_K,_Vars,_Goal) :-!.
-check_precond(Calls,AbsInts,Head,K,Vars,Goal) :-
-    copy_term(Head,CopyHead),
-    maplist(decide_get_applicable_info(K,Vars,CopyHead,Goal),AbsInts,Info),
-    list_to_conj(Calls,CallsC),
-% now: if precond is false then backtrack and forget the assertion
-    \+ any_is_bottom(Info),
-    maplist(( ''(Dom,In) :- \+ abs_execute(Dom,Head,CallsC,Goal,Vars,In,fail) ),
-            AbsInts,Info).
-
-inccounter_cond(_Counter,[[]]) :-!. % do not increase the counter if the assertion is empty
+inccounter_cond(_Counter,[]) :-!. % do not increase the counter if the assertion is empty
 inccounter_cond(Counter,_) :-
     local_inccounter(Counter,_).
 
@@ -272,17 +226,21 @@ get_domain_knows_of(Prop,[Dom|AbsInts],[In|Info],Dom1,In1):-
 %%      LProps = [P|Ps].
 %% decide_make_list_of_one(Props,[Props]).
 
+% TODO: Do not discard all but the first domain before running how/6.
+
 decide_get_just_info(K,Vars,Dom,Info) :-
     get_memo_lub(K,Vars,Dom,yes,Info),!.
 
 decide_get_applicable_info(K,Vars,Head,Goal,Dom,Info):-
     Head = Goal,
-    get_memo_lub(K,Vars,Dom,yes,Info).
+    get_memo_lub(K,Vars,Dom,yes,Info), !.
 
-message_pp_calls_diag(Info,Abs,Goal,Head,Calls,Dict,K,Status):-
-    message_pp_calls(Info,Abs,Goal,Head,Calls,Dict,K,Status),
+message_pp_calls_diag(A,Info,Abs,Head,Dict,K,Status):-
+    A = as${call=>Calls},
+    message_pp_calls(A,Info,Abs,Head,Dict,K,Status),
     current_pp_flag(run_diagnosis,Diag),
-    decide_diag_calls(Diag,Abs,Head,Calls,K,Status).
+    Abs = [DiagAbs|_],
+    decide_diag_calls(Diag,DiagAbs,Head,Calls,K,Status).
 
 decide_diag_calls(off,_,_,_,_,_) :-!.
 decide_diag_calls(on,Abs,Head,Calls,K,Status) :-
@@ -292,10 +250,12 @@ decide_diag_calls(on,Abs,Head,Calls,K,Status) :-
     ; true
     ).
 
-message_pp_success_diag(Info,Abs,Goal,Head,Calls,Succ,Dict,K,Status):-
-    message_pp_success(Info,Abs,Goal,Head,Calls,Succ,Dict,K,Status),
+message_pp_success_diag(A,Info,Abs,Head,Dict,K,Status):-
+    A = as${succ=>Succ},
+    message_pp_success(A,Info,Abs,Head,Dict,K,Status),
     current_pp_flag(run_diagnosis,Diag),
-    decide_diag_success(Diag,Abs,Head,Succ,K,Status).
+    Abs = [DiagAbs|_],
+    decide_diag_success(Diag,[DiagAbs|_],Head,Succ,K,Status).
 
 decide_diag_success(off,_,_,_,_,_) :-!.
 decide_diag_success(on,Abs,Head,Succ,K,Status) :-

@@ -1,7 +1,7 @@
 :- module(ctchecks_pp_messages, [
-    message_pp_calls/8,
-    message_pp_entry/8,
-    message_pp_success/9,
+    message_pp_calls/7,
+    message_pp_entry/7,
+    message_pp_success/7,
     message_pp_check/6,
     message_clause_incompatible/5
 ], [assertions, regtypes]).
@@ -29,8 +29,8 @@
 :- use_module(ciaopp(preprocess_flags), [current_pp_flag/2]).
 
 :- use_module(ciaopp(ctchecks/preproc_errors), [preproc_error/2]).
-:- use_module(ciaopp(ctchecks/ctchecks_pred_messages), [memo_ctcheck_sum/1,
-    prepare_output_info/5,name_vars/1]).
+:- use_module(ciaopp(ctchecks/ctchecks_common),
+              [memo_ctcheck_sum/1,prepare_output_info/5,name_vars/1]).
 
 output_user_interface(AbsInt,ASub,NVars,Props):-
     asub_to_info(AbsInt,ASub,NVars,Props,_NativeComp), !.
@@ -61,11 +61,9 @@ make_dict(['$VAR'(N)|Ns],[V|Vs],[Name=V|NVs]):-
     name(Name,[N1]),
     make_dict(Ns,Vs,NVs).
 
-:- pred message_pp_calls/8.
-message_pp_calls(_,none,_,_,_,_,_,_):- !.
-message_pp_calls(Info,AbsInt,Goal,Head,Calls,Dict,K,Status):-
-    As = as(_,check,calls,Head,[],Calls,[],[],Dict,_,_,_),
-    prepare_output_info([AbsInt], [Info], Head, calls_pp(Goal), RelInfo),
+message_pp_entrycalls(_,_,none,_,_,_,_) :- !.
+message_pp_entrycalls(As,Info,AbsInt,Head,Dict,K,Status):-
+    prepare_output_info(AbsInt, Info, Head, calls, RelInfo),
     copy_term((Head,'$an_results'(RelInfo),Dict),(GoalCopy,RelInfoCopy,DictCopy)),
     name_vars(DictCopy),
     prettyvars((GoalCopy,RelInfoCopy)),
@@ -92,125 +90,21 @@ message_pp_calls(Info,AbsInt,Goal,Head,Calls,Dict,K,Status):-
           "~p",
           [L,As])
     ).
-%pp%
-%pp%message_pp_calls(Info,AbsInt,Goal,Head,Calls,Dict_,K,Status):-
-%pp%    update_dict(Dict_,Head,Dict),
-%pp%    copy_term((Info,Goal,Head,Calls,Dict),
-%pp%              (NInfo,NGoal,NHead,NCall,NVsNNs)),
-%pp%    abs_sort(AbsInt,NInfo,Sorted_Info),
-%pp%    varset(NGoal,NVars),
-%pp%    project(AbsInt,NVars,_,Sorted_Info,Proj),
-%pp%    output_user_interface(AbsInt,Proj,NVars,Props0),
-%pp%    list_to_conj(Props0,Props),
-%pp%    ( knows_of(regtypes,AbsInt)
-%pp%    -> copy_term((NGoal,Props0),(TGoal,TProps))
-%pp%     ; true
-%pp%    ),
-%pp%%   ( NVsNNs = [] ->
-%pp%%     numbervars(NCall,0,_)
-%pp%%   ; infer_unify_vars0(NVsNNs)
-%pp%%   ),
-%pp%    infer_unify_vars0(NVsNNs),
-%pp%    decode_litkey(K,F,A,C,L),
-%pp%        get_clkey(F,A,C,ClId),
-%pp%        clause_locator(ClId,LC),
-%pp%    ( knows_of(regtypes,AbsInt)
-%pp%    -> ctchecks_pp_messages:inline_types(TProps),
-%pp%       escapify(TGoal,TGoalEsc),
-%pp%       typeslib:pretty_type_lit_rules(TGoalEsc,P_Info,_Types,Rules),
-%pp%       ctchecks_pp_messages:filter_required_rules(Rules,ReqRules,FormRules),
-%pp%       W1='',
-%pp%       ( ReqRules = [] -> W2='' ; W2=' with:' )
-%pp%     ; ReqRules=[Props],
-%pp%       P_Info=NGoal,
-%pp%       W1='of ',
-%pp%       W2=' :',
-%pp%       FormRules="~n  ~w"
-%pp%    ),
-%pp%    ( Status == false ->
-%pp%      memo_ctcheck_sum(false),
-%pp%      error_message(LC,"At literal ~w false calls assertion:
-%pp%   :- calls ~w : ~w~n because on call ~w~w~w"||FormRules,
-%pp%                         [L,NHead,NCall,W1,P_Info,W2|ReqRules]),
-%pp%      Expected = calls(NHead:NCall),
-%pp%      preproc_error(calls,[lit(F,A,C,L),Expected,Props0,[]])
-%pp%    ; ( Status == check -> 
-%pp%        memo_ctcheck_sum(check),
-%pp%        display_message_check_pp(LC,"At literal ~w could not verify calls assertion:
-%pp%   :- calls ~w : ~w~n because on call ~w~w~w"||FormRules,
-%pp%                         [L,NHead,NCall,W1,P_Info,W2|ReqRules])
-%pp%      ;
-%pp%        display_message_checked_pp(LC,
-%pp%                "At literal ~w successfully checked calls assertion:
-%pp%   :- calls ~w : ~w", [L,NHead,NCall])
-%pp%      )
-%pp%    ),
-%pp%    !.
-%
-message_pp_calls(Info,AbsInt,Goal,Head,Calls,Dict,K,Status) :-
-    throw(bug_failed(message_pp_calls(Info,AbsInt,Goal,Head,Calls,Dict,K,Status))).
 
-:- pred message_pp_entry/8.
-message_pp_entry(Info,AbsInt,Goal,Head,Calls,Dict_,K,Status):-
-    update_dict(Dict_,Head,Dict),
-    copy_term((Info,Goal,Head,Calls,Dict),(NInfo,NGoal,NHead,NCall,NVsNNs)),
-    abs_sort(AbsInt,NInfo,Sorted_Info),
-    varset(NGoal,NVars),
-    project(AbsInt,NGoal,NVars,[],Sorted_Info,Proj),
-    output_user_interface(AbsInt,Proj,NVars,Props0),
-    list_to_conj(Props0,Props),
-    ( knows_of(regtypes,AbsInt) ->
-        copy_term((NGoal,Props0),(TGoal,TProps))
-    ; true
-    ),
-    infer_unify_vars0(NVsNNs),
-    decode_litkey(K,F,A,C,L),
-    get_clkey(F,A,C,ClId),
-    maybe_clause_locator(ClId,LC),
-    ( knows_of(regtypes,AbsInt) ->
-        ctchecks_pp_messages:inline_types(TProps),
-        escapify(TGoal,TGoalEsc),
-        typeslib:pretty_type_lit_rules(TGoalEsc,P_Info,_Types,Rules),
-        ctchecks_pp_messages:filter_required_rules(Rules,ReqRules,FormRules),
-        W1='',
-        ( ReqRules = [] -> W2='' ; W2=' with:' )
-    ;
-        ReqRules=[Props],
-        P_Info=NGoal,
-        W1='of ',
-        W2=' :',
-        FormRules="~n"||"  ~w"
-    ),
-    !,
-    ( Status == false ->
-        memo_ctcheck_sum(false),
-        error_message(LC,
-            "At literal ~w false entry assertion:~n"||
-            "   :- entry ~w : ~w~n"||
-            " because on call ~w~w~w"||
-            FormRules,
-            [L,NHead,NCall,W1,P_Info,W2|ReqRules]),
-        Expected = calls(NHead:NCall),
-        preproc_error(calls,[lit(F,A,C,L),Expected,Props0,[]])
-    ; Status == check -> 
-        memo_ctcheck_sum(check),
-        display_message_check_pp(LC,
-            "At literal ~w could not verify entry assertion:~n"||
-            "   :- entry ~w : ~w~n"||
-            " because on call ~w~w~w"||
-            FormRules,
-            [L,NHead,NCall,W1,P_Info,W2|ReqRules])
-    ; display_message_checked_pp(LC,
-          "At literal ~w successfully checked entry assertion:~n"||
-          "   :- entry ~w : ~w",
-          [L,NHead,NCall])
-    ).
-message_pp_entry(Info,AbsInt,Goal,Head,Calls,Dict,K,Status) :-
-    throw(bug_failed(message_pp_entry(Info,AbsInt,Goal,Head,Calls,Dict,K,Status))).
+:- pred message_pp_calls/7.
+message_pp_calls(As,Info,AbsInt,Head,Dict,K,Status):-
+    message_pp_entrycalls(As,Info,AbsInt,Head,Dict,K,Status), !.
+message_pp_calls(As,Info,AbsInt,Head,Dict,K,Status) :-
+    throw(bug_failed(message_pp_calls(As,Info,AbsInt,Head,Dict,K,Status))).
 
-message_pp_success(Info,AbsInt,Goal,Head,Calls,Succ,Dict,K,Status):-
-    As = as(_,check,success,Head,[],Calls,Succ,[],Dict,_,_,_),
-    prepare_output_info([AbsInt], [Info], Head, success_pp(Goal), RelInfo),
+:- pred message_pp_entry/7.
+message_pp_entry(As,Info,AbsInt,Head,Dict,K,Status):-
+    message_pp_entrycalls(As,Info,AbsInt,Head,Dict,K,Status), !.
+message_pp_entry(As,Info,AbsInt,Head,Dict,K,Status) :-
+    throw(bug_failed(message_pp_entry(As,Info,AbsInt,Head,Dict,K,Status))).
+
+message_pp_success(As,Info,AbsInt,Head,Dict,K,Status):-
+    prepare_output_info(AbsInt, Info, Head, success, RelInfo),
     copy_term((Head,'$an_results'(RelInfo),Dict),(GoalCopy,RelInfoCopy,DictCopy)),
     name_vars(DictCopy),
     prettyvars((GoalCopy,RelInfoCopy)),
@@ -290,8 +184,8 @@ message_pp_success(Info,AbsInt,Goal,Head,Calls,Succ,Dict,K,Status):-
 %pp%    ),
 %pp%    !.
 %
-message_pp_success(Info,AbsInt,Goal,Head,Calls,Succ,Dict,K,Status):-
-    throw(bug_failed(message_pp_success(Info,AbsInt,Goal,Head,Calls,Succ,Dict,K,Status))).
+message_pp_success(As,Info,AbsInt,Head,Dict,K,Status):-
+    throw(bug_failed(message_pp_success(As,Info,AbsInt,Head,Dict,K,Status))).
 
 message_pp_check(Info,AbsInt,Prop,Key,Dict,Status):-
     copy_term((Info,Prop,Dict),(NInfo,NProp,NDict)),

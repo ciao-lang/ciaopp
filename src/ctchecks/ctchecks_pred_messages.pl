@@ -12,7 +12,6 @@
 :- use_module(library(messages), [
     show_message/3, warning_message/2, error_message/2, note_message/2]).
 
-:- use_module(ciaopp(p_unit), [prop_to_native/2]).
 :- use_module(ciaopp(p_unit), [
     add_assertion/1,
     assertion_set_status/3,
@@ -21,60 +20,27 @@
     assertion_set_comp/3]).
 :- use_module(ciaopp(p_unit/p_unit_basic), [type_of_goal/2]).
 :- use_module(ciaopp(frontend_driver), [write_one_type/2]). % TODO: move somewhere else
-:- use_module(typeslib(typeslib), [pretty_type_lit_rules_desimp/2, equiv_type/2]).
-:- use_module(ciaopp(plai/domains), [asub_to_info/5,needs/2,project/5,project/6]).
-:- use_module(ciaopp(p_unit/assrt_norm), [denorm_goal_prop/3]).
 :- use_module(ciaopp(preprocess_flags)).
 
-:- use_module(ciaopp(infer/infer_dom), [knows_of/2]).
-:- use_module(spec(abs_exec_ops), [adapt_info_to_assrt_head/6]).
-
-:- use_module(library(lists), [member/2, append/3, length/2]).
+:- use_module(library(lists), [length/2]).
 :- use_module(library(sort)).
 :- use_module(library(write)).
 :- use_module(library(format)).
 :- use_module(library(counters), [inccounter/2]).
-:- use_module(library(terms_vars), [varset/2]).
 :- use_module(library(terms), [atom_concat/2]).
+
+:- use_module(ciaopp(ctchecks/ctchecks_common),
+              [memo_ctcheck_sum/1,prepare_output_info/5,name_vars/1]).
 
 :- if(defined(has_ciaopp_cost)).
 :- use_module(ciaopp(ctchecks/ctchecks_intervals), [
-    cleanup_polynom_message/0,
     get_interval_check/2,
     decide_inform_user_interval/8
 ]).
 :- else.
-cleanup_polynom_message.
 get_interval_check(_, _) :- fail.
 decide_inform_user_interval(_, _, _, _, _, _, _, _).
 :- endif.
-
-% ===========================================================================
-
-:- export(is_any_false/1).
-:- export(is_any_check/1).
-
-:- data is_any_false/1.
-:- data is_any_check/1.
-
-is_any_false(no).
-is_any_check(no).
-
-:- export(init_ctcheck_sum/0).
-init_ctcheck_sum :-
-    retractall_fact(is_any_false(_)),
-    retractall_fact(is_any_check(_)),
-    asserta_fact(is_any_false(no)),
-    asserta_fact(is_any_check(no)),
-    cleanup_polynom_message.
-
-:- export(memo_ctcheck_sum/1).
-memo_ctcheck_sum(false) :-
-    retract_fact(is_any_false(_)),
-    asserta_fact(is_any_false(yes)).
-memo_ctcheck_sum(check) :-
-    retract_fact(is_any_check(_)),
-    asserta_fact(is_any_check(yes)).
 
 % ===========================================================================
 % Process assertion level
@@ -304,121 +270,7 @@ find_tab_x(['$dom'(Dom,Res,Rules)|Rs],Tab,MaxTab,['$dom'(Dom,Res,Rules,Tab)|RsT]
 find_max(A,B,C) :- A > B, !, C = A.
 find_max(_,B,B).
 
-% a bit different from that in ctchecks_pp_messages.pl
-filter_required_rules([typedef(::=(T,_))|Ds],Rs,RsOut):-
-    ( functor(G,T,1), prop_to_native(G,regtype(_Prop)) % not inferred
-    ; equiv_type(T,_)               % an equivalent type will be shown 
-    ), 
-    !, 
-    filter_required_rules(Ds,Rs,RsOut).
-filter_required_rules([R|Ds],Rs,RsOut):-
-    member(R,Rs),!,                    % already in
-    filter_required_rules(Ds,Rs,RsOut).
-filter_required_rules([R|Rs],RIn,ROut):-
-    filter_required_rules(Rs,[R|RIn],ROut).
-filter_required_rules([],Rs,Rs).
-
 %:- export(filter_left_over/5).
 filter_left_over(calls, Call, _, _, Call).
 filter_left_over(success, _, Succ, _, Succ).
 filter_left_over(comp, _, _, Comp, Comp).
-
-:- export(name_vars/1).
-name_vars([]).
-name_vars([V='$VAR'(V)|Vs]):-
-    name_vars(Vs).
-
-:- export(prepare_output_info/5).
-:- pred prepare_output_info(+AbsInts,+,+Head,+Type,-Info)
-   : list(AbsInts) => list(Info) + not_fails.
-prepare_output_info([],[],_Head,_Type,[]) :-!.
-prepare_output_info([D|Ds],[I|Is],H,Type,AInfoOut) :-
-    trans_aux(Type,D,H,I,A),
-    ( % TODO: Workaround: abstract substitutions from combined domains
-      % carry additional information not used to verify types, leading
-      % to an error in collect_rules/4.
-      \+ needs(D,split_combined_domain),
-      knows_of(regtypes,D),
-      \+ A = [[bottom]] ->   % (\=)/2 is not a builtin???
-        collect_rules(H,A,ReqRules,A1)
-    ; ReqRules = [],
-      A1 = A
-    ),
-    ( A1 = [] ->
-        AInfoOut = AInfo
-    ; AInfoOut = ['$dom'(D,A1,ReqRules)|AInfo]
-    ),
-    prepare_output_info(Ds,Is,H,Type,AInfo).
-
-% collect type rules for each and every complete
-collect_rules(G,Info,Rules,NewInfo):-
-    collect_rules_all(G,Info,[],Rules,NewInfo).
-
-collect_rules_all(_G,[],R,R,[]) :- !.
-collect_rules_all(G,[I|Is],RIn,ROut,[NewI|NewIs]) :-
-    copy_term((G,I),(CG,CI)),
-    inline_types(CI),
-    pretty_type_lit_rules_desimp(CG,Rules),
-    filter_required_rules(Rules,RIn,RInter),
-    replace_equiv(I,NewI),
-    collect_rules_all(G,Is,RInter,ROut,NewIs).
-
-replace_equiv((A,B),(A1,B1)) :- !,
-    replace_equiv(A,A1),
-    replace_equiv(B,B1).
-replace_equiv(A,B) :-
-    A =.. [T,Arg],
-    equiv_type(T,ET),
-    B =.. [ET,Arg],
-%       prop_to_native(B,regtype(_Prop)), % not inferred
-    !.
-replace_equiv(A,A).
-
-trans_aux(comp,generic_comp,_Goal,[],[['No info available']]) :-!.
-trans_aux(_ ,_ ,_, [],[]) :-!.
-trans_aux(calls,AbsInt,Head,[complete(G,C,_Ss,_,_)|Completes],[CInfo1|CInfo]):-!,   
-    varset(G,Qv),
-    adapt_info_to_assrt_head(AbsInt,G,Qv,C,Head,C1),
-    my_asub_to_info(AbsInt,C1,Qv,CInfo1,_Comp),
-    trans_aux(calls,AbsInt,Head,Completes,CInfo).
-trans_aux(calls_pp(G),AbsInt,Head,Call,[CInfo]):-!,   
-    varset(G,Qv),
-    adapt_info_to_assrt_head(AbsInt,G,Qv,Call,Head,C1),
-    varset(Head,Hv),
-    project(AbsInt,Head,Hv,[],C1,C2),
-    my_asub_to_info(AbsInt,C2,Qv,CInfo,_Comp).
-trans_aux(success,AbsInt,Head,[complete(G,_C,Ss,_,_)|Completes],SInfoL):-!,  
-    collect_success_info(Ss,AbsInt,Head,G,SInfoL1),
-    append(SInfoL1,SInfoL2,SInfoL),
-    trans_aux(success,AbsInt,Head,Completes,SInfoL2).
-trans_aux(success_pp(G),AbsInt,Head,Ss,SInfoL):-!,  
-    collect_success_info([Ss],AbsInt,Head,G,SInfoL).
-%       append(SInfoL1,SInfoL2,SInfoL).
-%       trans_aux(success,AbsInt,Goal,Completes,SInfoL2).
-trans_aux(success,_,_Goal,Info,Info):-!.  % for size properties
-trans_aux(comp,generic_comp,_Goal,Info,Info):-!.
-%%      displayq(Info).
-trans_aux(comp,_AbsInt,_Goal,_Info,[]).
-
-collect_success_info([],_AbsInt,_Head,_G,[]).
-collect_success_info([S|Ss],AbsInt,Head,G,[SInfo|SInfoTail]):-
-    varset(G,Qv),
-    adapt_info_to_assrt_head(AbsInt,G,Qv,S,Head,S_tmp),
-    varset(Head,Hv),
-    project(AbsInt,Head,Hv,[],S_tmp,S1),
-    my_asub_to_info(AbsInt,S1,Qv,SInfo,_Comp),
-    collect_success_info(Ss,AbsInt,Head,G,SInfoTail).
-
-my_asub_to_info(_AbsInt,'$bottom',_Qv,[bottom],_Comp):-!.
-my_asub_to_info(AbsInt,S1,Qv,SInfo,Comp):-
-    asub_to_info(AbsInt,S1,Qv,SInfoL,Comp),!,
-    list_to_conj(SInfoL,SInfo).
-
-inline_types([bottom]) :-!.
-inline_types(true) :-!.
-inline_types((Prop,Props)):- !,
-    inline_types(Prop),
-    inline_types(Props).
-inline_types(Prop):-
-    denorm_goal_prop(Prop,P,P).
-
