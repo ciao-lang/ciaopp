@@ -387,6 +387,8 @@ handle_eqs(An):-
 :- use_module(ciaopp(ctchecks/ctchecks_common), [init_ctcheck_sum/0,
     is_any_false/1, is_any_check/1]).
 
+:-use_module(library(counters)).
+
 :- export(ctcheck_sum/1).
 :- regtype ctcheck_sum/1.
 ctcheck_sum(ok).
@@ -417,6 +419,64 @@ decide_summary(Sum) :-
     ; Sum = ok
     ),!. 
 decide_summary(ok).
+
+:- export(acheck_summary/2).
+:- pred acheck_summary(-Info,-S)
+   # "Same as acheck_summary(@var{S}) but in @var{Info} returns assertion
+   checking statistics.".
+
+acheck_summary(Info,Sum) :-
+    reset_total_info,
+    set_counters,
+    acheck_summary(Sum),
+    get_assert_count(assert_count(CTInfo)),
+    curr_file(_,Mod),
+    add_to_total_info([assert_count(Mod,CTInfo)]),
+    get_total_info(Info).
+
+set_counters :-
+    setcounter(pp_checked_c,0),
+    setcounter(pp_check_c,0),
+    setcounter(pp_false_c,0),
+    setcounter(simp_checked_c,0),
+    setcounter(simp_check_c,0),
+    setcounter(simp_false_c,0),
+    setcounter(pp_checked_s,0),
+    setcounter(pp_check_s,0),
+    setcounter(pp_false_s,0),
+    setcounter(simp_checked_s,0),
+    setcounter(simp_check_s,0),
+    setcounter(simp_false_s,0),
+    setcounter(simp_true_s,0).
+
+:- export(get_assert_count/1).
+get_assert_count(Info) :-
+    getcounter(pp_checked_c,PPCheckedC),
+    getcounter(pp_check_c,PPCheckC),
+    getcounter(pp_false_c,PPFalseC),
+    getcounter(simp_checked_c,SimpCheckedC),
+    getcounter(simp_check_c,SimpCheckC),
+    getcounter(simp_false_c,SimpFalseC),
+    getcounter(pp_checked_s,PPCheckedS),
+    getcounter(pp_check_s,PPCheckS),
+    getcounter(pp_false_s,PPFalseS),
+    getcounter(simp_checked_s,SimpCheckedS),
+    getcounter(simp_check_s,SimpCheckS),
+    getcounter(simp_false_s,SimpFalseS),
+    getcounter(simp_true_s,SimpTrueS),
+    Info = assert_count([(pp_checked_c,[PPCheckedC]),
+            (pp_check_c,[PPCheckC]),
+            (pp_false_c,[PPFalseC]),
+            (simp_checked_c,[SimpCheckedC]),
+            (simp_check_c,[SimpCheckC]),
+            (simp_false_c,[SimpFalseC]),
+            (pp_checked_s,[PPCheckedS]),
+            (pp_check_s,[PPCheckS]),
+            (pp_false_s,[PPFalseS]),
+            (simp_checked_s,[SimpCheckedS]),
+            (simp_check_s,[SimpCheckS]),
+            (simp_false_s,[SimpFalseS]),
+            (simp_true_s,[SimpTrueS])]).
 
 :- use_module(library(aggregates), [findall/3]).
 

@@ -129,14 +129,9 @@ check_assertion(A0,Goal,K,Vars,Goals,AbsInts) :-
     ( Status = checked ->
         ( Type = success ->
             A0 = as${succ=>C}
-        ; A0 = as${call=>C}
-        ),
-        inccounter_cond(pp_checked_c, C)
-    ; Status = false ->
-        local_inccounter(pp_false_c,_)
-    ; local_inccounter(pp_check_c,_)
-    ),
-    % TODO: add counters here if needed for statistics (currently they are not)
+        ; A0 = as${call=>C} )    
+    ; C = not_empty ),
+    local_inccounter_split(pp,Status,Type,C),
     ( Type = success ->
         message_pp_success_diag(A0, InfoOut, DomsOut, Head, Dict, K, Status)
     ; Type = calls ->
@@ -172,6 +167,11 @@ pp_ct_body_check_always_fails(Goal,K,Goals,Vars,Names,AbsInts):-
     rename(NGoal,Dict),
     preproc_warning(always_fails,[NGoal,K]).
 
+local_inccounter_split(Proc,Status,Type,C) :-
+    ( Type = calls -> T = c ; T = s),
+    counter_name(Proc, Status, T, Counter),
+    inccounter_cond(Counter, C).
+
 inccounter_cond(_Counter,[]) :-!. % do not increase the counter if the assertion is empty
 inccounter_cond(Counter,_) :-
     local_inccounter(Counter,_).
@@ -179,6 +179,13 @@ inccounter_cond(Counter,_) :-
 local_inccounter(Counter, Val) :-  % in case the counter is not defined.
     inccounter(Counter, Val),!.
 local_inccounter(_, _).
+
+counter_name(pp, false, c, pp_false_c).
+counter_name(pp, false, s, pp_false_s).
+counter_name(pp, check, c, pp_check_c).
+counter_name(pp, check, s, pp_check_s).
+counter_name(pp, checked, c, pp_checked_c).
+counter_name(pp, checked, s, pp_checked_s).
 
 %-------------------------------------------------------------%
 % program_point check assertion

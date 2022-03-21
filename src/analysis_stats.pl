@@ -307,6 +307,48 @@ sort_total_info([I0|I0s],[I1|I1s]):-
     arg(2,I1,I1list),
     sort_total_info(I0s,I1s).
 
+:- use_module(library(messages), [note_message/2]).
+
+:- export(pretty_print_acheck_stats/1).
+pretty_print_acheck_stats(Stats) :-
+    member(assert_count(_Mod,CTInfo),Stats),
+    CTInfo = [(pp_check_c,[PPCheckC]),
+        (pp_check_s,[PPCheckS]),
+        (pp_checked_c,[PPCheckedC]),
+        (pp_checked_s,[PPCheckedS]),
+        (pp_false_c,[PPFalseC]),
+        (pp_false_s,[PPFalseS]),
+        (simp_check_c,[SimpCheckC]),
+        (simp_check_s,[SimpCheckS]),
+        (simp_checked_c,[SimpCheckedC]),
+        (simp_checked_s,[SimpCheckedS]),
+        (simp_false_c,[SimpFalseC]),
+        (simp_false_s,[SimpFalseS]),
+        (simp_true_s,_)],
+    NTotalPP = PPCheckedC+PPCheckedS+PPFalseC+PPFalseS+PPCheckC+PPCheckS,
+    NTotalSimp = SimpCheckedC+SimpCheckedS+SimpFalseC+SimpFalseS+SimpCheckC+SimpCheckS,
+    note_message( 
+        "Assertion checking summary:~n[Predicate-level] " || 
+        "Checked: ~d (~2f\%) " ||
+        "False: ~d (~2f\%) " ||
+        "Check: ~d (~2f\%) " ||
+        "Total: ~d~n" ||
+        "[Call site-level] " || 
+        "Checked: ~d (~2f\%) " ||
+        "False: ~d (~2f\%) " ||
+        "Check: ~d (~2f\%) " ||
+        "Total: ~d~n",
+        [
+            SimpCheckedC+SimpCheckedS, 100*(SimpCheckedC+SimpCheckedS)/NTotalSimp,
+            SimpFalseC+SimpFalseS, 100*(SimpFalseC+SimpFalseS)/NTotalSimp,
+            SimpCheckC+SimpCheckS, 100*(SimpCheckC+SimpCheckS)/NTotalSimp,
+            NTotalSimp,
+            PPCheckedC+PPCheckedS, 100*(PPCheckedC+PPCheckedS)/NTotalPP,
+            PPFalseC+PPFalseS, 100*(PPFalseC+PPFalseS)/NTotalPP,
+            PPCheckC+PPCheckS, 100*(PPCheckC+PPCheckS)/NTotalPP,
+            NTotalPP
+        ]).
+
 :- export(pp_statistics/2).
 % The precision of runtime vs walltime is much worse in linux than in mac
 % pp_statistics(runtime,B) :- !,
