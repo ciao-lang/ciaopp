@@ -74,11 +74,13 @@ get_check_assertion(Goal,Calls,Refs) :-
     debug_message("calls assertion found ~q",[Calls]).
 get_check_assertion(Goal,Assertion,Refs) :-
     Status = check,
-    Type = success,
+    ( Type = success
+    ; Type = comp
+    ),
     ref_assertion_read(Goal, M, Status, Type, Body, Dic, S, LB, LE, ARef),
     rebuild_assertion(M, Status, Type, Body, Dic, S, LB, LE, Assertion),
     Refs = [ARef],
-    debug_message("success assertion found ~q",[Assertion]).
+    debug_message("~q assertion found ~q",[Type,Assertion]).
 
 rebuild_assertion(M, Status, Type, Body, Dic, S, LB, LE, A) :-
     A = as(M,Status,Type,Key,Compat,Call,Succ,Comp,Dic,Loc,Comment,_),
