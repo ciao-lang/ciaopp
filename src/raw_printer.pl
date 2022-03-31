@@ -245,7 +245,7 @@ output_raw_clauses([(RFlag, X)|Clauses], S) :-
     format(S, '% ~w ~w ~n', [ClKey, RFlag]),
     add_ppoints(Body, Vars, PBody),
     list_to_clause_body(PBody, ClBody),
-    portray_clause(S, ':-'(Head, ClBody)), % TODO: bug, do not consider already numbered vars!
+    portray_clause(S, ':-'(Head, ClBody)), 
     nl(S),
     output_raw_clauses(Clauses, S).
 
@@ -289,8 +289,7 @@ add_ppoints((g(LitKey, _, _, _, Goal), Goals), Vars, Clause) :-
 
 prepare_memo(MemoKey, Vars, NPPSubs) :-
     findall(true(Caller,Subs,Vars), memo_table(MemoKey, _AbsInt, Caller, _Child, Vars, Subs), PPSubs),
-    bind_vars(PPSubs, Vars, NPPSubs),
-    numbervars(NPPSubs, 0, _).
+    bind_vars(PPSubs, Vars, NPPSubs).
 
 bind_vars([], _, []).
 bind_vars([true(A,B,Vars)|Xs], Vars, [true(A,B)|Ys]) :-
