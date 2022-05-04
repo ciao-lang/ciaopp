@@ -102,8 +102,8 @@ persistent_dir(dbdir, '~/.ciao.d/ciaopp_flags').
 % enough for our use case.
 pp_flag(pplog).
 pp_flag(pplog, 'Controls the message groups of CiaoPP.').
-current_pp_flags(  pplog, [auto_interface, analyze_module, ctchecks, dump, infer, load_module, modular, output,spec_module,transform_module]).
-valid_flag_values( pplog, sublist(_, [auto_interface, analyze_module, ctchecks, dump, incremental, incremental_high, infer, load_assrts, load_module, modular, intermod_dump, intermod_reg, output, p_abs, spec_module, spec_module_high,transform_module])).
+current_pp_flags(  pplog, [auto_interface, analyze_module, ctchecks, dump, infer, load_module, modular, output,spec_module, transform_module, testing]).
+valid_flag_values( pplog, sublist(_, [auto_interface, analyze_module, ctchecks, dump, incremental, incremental_high, infer, load_assrts, load_module, modular, intermod_dump, intermod_reg, output, p_abs, spec_module, spec_module_high, transform_module, testing])).
 % TODO: does this list need to be sorted?
 
 pp_flag(output_info).
@@ -1074,6 +1074,33 @@ pp_flag(remove_useless_abs_info).
 pp_flag(remove_useless_abs_info, 'Whether to remove intermediate analysis results that are not reachable from the entries. This is disabled by default, because it may be costly (traverses the whole analysis graph).').
 current_pp_flags( remove_useless_abs_info, off).
 valid_flag_values(remove_useless_abs_info, member(_, [on, off])).
+
+%:- if(defined(has_ciaopp_extra)).
+pp_flag(testing).
+pp_flag(testing, 'Testing of assertions.').
+current_pp_flags(  testing             , off).
+valid_flag_values( testing             , member(_,[on, off])).
+
+pp_flag(run_utests).
+pp_flag(run_utests, 'Whether to run unit tests present in the module.').
+current_pp_flags(  run_utests           , on).
+valid_flag_values( run_utests           , member(_,[on, off])).
+
+pp_flag(test_gen).
+pp_flag(test_gen, 'Whether to perform automatic assertion-based random testing after checking program assertions.').
+current_pp_flags(  test_gen             , off).
+valid_flag_values( test_gen             , member(_,[on, off])).
+
+pp_flag(show_test_cases).
+pp_flag(show_test_cases, 'Whether to show all generated test cases (not just failed ones).').
+current_pp_flags(  show_test_cases      , off).
+valid_flag_values( show_test_cases      , member(_,[on, off])).
+
+pp_flag(num_test_cases).
+pp_flag(num_test_cases, 'Choose the number of test cases to be generated for each assertion.').
+current_pp_flags(  num_test_cases      , 100).
+valid_flag_values( num_test_cases      , member(_,[25,50,100,200,400])).
+%:- endif.
 
 % ---------------------------------------------------------------------------
 

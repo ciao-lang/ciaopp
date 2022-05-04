@@ -26,8 +26,8 @@
 :- doc(title, "The CiaoPP high-level interface").
 :- doc(author, "CiaoPP development team").
 
-:- use_module(ciaopp(frontend_driver), [module/2, output/0, output/1]).
-:- use_module(ciaopp(analyze_driver), [analyze/1, acheck_summary/1, acheck/0]).
+:- use_module(ciaopp(frontend_driver), [module/2, output/0, output/1, output/2]).
+:- use_module(ciaopp(analyze_driver), [analyze/1, acheck_summary/1, acheck_summary/2, acheck/0, get_assert_count/1]).
 :- use_module(ciaopp(transform_driver), [transform/1]).
 :- use_module(ciaopp(ciaopp_log), [pplog/2]).
 %% *** These two for ACC, need to be revised MH
@@ -44,7 +44,7 @@
 :- use_module(ciaopp(infer/infer_db),        [domain/1]).
 :- use_module(library(assertions/assrt_lib), [assertion_body/7]).
 :- use_module(ciaopp(p_unit/assrt_db),      [assertion_read/9]).
-:- use_module(ciaopp(p_unit), [prop_to_native/2]).
+:- use_module(ciaopp(p_unit), [prop_to_native/2, get_output_path/2, push_history/1]).
 :- use_module(ciaopp(p_unit/itf_db),        [curr_file/2]).
 :- use_module(ciaopp(p_unit/aux_filenames), [is_library/1]).
 :- use_module(ciaopp(infer/infer_dom),       [knows_of/2]).
@@ -52,7 +52,7 @@
 :- use_module(engine(io_basic)).
 :- use_module(library(lists),         [member/2, append/3]).
 :- use_module(library(aggregates),    [findall/3]).
-:- use_module(ciaopp(analysis_stats), [pp_statistics/2]).
+:- use_module(ciaopp(analysis_stats), [pp_statistics/2, set_total_info/1, get_total_info/1, pretty_print_acheck_stats/1]).
 :- use_module(library(system),        [file_exists/2]).
 :- use_module(library(messages)).
 :- reexport(library(menu/menu_generator), [
@@ -66,7 +66,7 @@
     set_menu_flag/3
    ]).
 :- use_module(library(prompt),[prompt_for_default/2]).
-:- use_module(library(pathnames), [path_splitext/3]).
+:- use_module(library(pathnames), [path_splitext/3, path_basename/2]).
 
 :- doc(bug, "1 commented out the question for error file since we
     are generating it in any case (not yet implemented)").
@@ -775,6 +775,14 @@ guard polydepth(X)  :-
      Y == both). % missing cut?
 :- endif.
 
+guard testing_on(X)  :-
+    member(testing=I, X),
+    I == on.
+
+guard test_gen_on(X)  :-
+    member(test_gen=I, X),
+    I == on.
+
 :- push_prolog_flag(multi_arity_warnings, off).
 
 % SPecSLice
@@ -1134,6 +1142,157 @@ do_output(OFile, Menu) :-
     ;   true
     ).
 
+% ---------------------------------------------------------------------------
+%! # Test case generation
+% TODO: move to other file
+:- if(defined(has_ciaotest)).
+
+:- use_module(library(ciaotest/ciaotest_driver),[ciaotest/2, processed_test_case/6, clean_processed_cases/0]).
+:- use_module(engine(internals), [module_concat/3]).
+%:- use_module(library(unittest), [run_tests_in_module/3]).
+%:- use_module(library(unittest/unittest_summaries), [show_test_summaries/1]).
+%:- use_module(library(unittest/unittest_statistics), [statistical_summary/1, get_statistical_summary/2]).
+:- use_module(ciaopp(p_unit/assrt_db), [add_assertion_read/9, remove_assertion_read/9, assertion_read/9]).
+:- use_module(library(counters)).
+
+% Run unit-tests and perform assertion-based random test generation in File
+do_testing(File, OutFile) :- 
+    ( current_pp_flag(testing, on) -> 
+        ( var(OutFile) -> get_output_path(yes, OFile) ; OFile = OutFile ), % TODO: remove this line? 
+        output(OFile,[no_written_file_msg,add_srcloc_prop]),
+        /* 
+        ( current_pp_flag(run_utests, on) ->
+            pplog(testing, ['{Executing test assertions from module ' , ~~(OFile), '}']),
+            run_tests_in_module(OFile,[],TestSumm),
+            show_test_summaries(TestSumm),
+            statistical_summary(TestSumm),
+            flatten(TestSumm, IdxTestSummaries),
+            get_statistical_summary(IdxTestSummaries, Stats),
+            Stats = stats(NTests,_,NFailed,_,_,_,_),
+            ( NTests == 0 -> pplog(testing, ['{No test assertions found in module ' , ~~(OFile), '}']) ; true )
+        ; true ),
+        
+        ( var(NFailed) -> NFailed = 0 ; true ),
+        ( NFailed == 0 ->
+            pplog(testing, ['{Generating random test cases for module ' , ~~(OFile), '}']),
+        */
+        current_pp_flag(run_utests, UTesting),
+        current_pp_flag(test_gen, TestGen),
+        get_test_selection(UTesting,TestGen,Mode),
+        current_pp_flag(verbosity, Verb),
+        ( Verb == off ; Verb == low -> VerbLvl = normal ; VerbLvl = high ),
+        Opts = [keep_processed_cases(yes),
+                test_selection(Mode),
+                verbosity(VerbLvl)|O],
+        ( current_pp_flag(show_test_cases, on) ->
+            O = [show_test_cases(yes)|O2]
+        ; O = O2 ),
+        current_pp_flag(num_test_cases, N), 
+        O2 = [number_tests(N)],
+        clean_processed_cases,
+        ( ciaotest(OFile,Opts) ->  
+            path_splitext(File, Base, _),
+            path_basename(Base,M1),
+            path_splitext(OFile, Base2, _),
+            path_basename(Base2,M2),
+            update_assrt_status(M1,M2),
+            push_history(testing)
+        ; true )
+    ; true ).
+
+get_test_selection(on,on,both).
+get_test_selection(on,off,user).
+get_test_selection(off,on,auto).
+
+update_assrt_status(ModOrig,ModOut) :-
+    current_fact(processed_test_case(ModOut,Id,Type,TestCase,Loc,Pass)), !, % get failed test case
+    update_assrt_status_(ModOrig,ModOut,Id,Type,TestCase,Loc,Pass),
+    update_assrt_status(ModOrig,ModOut).
+update_assrt_status(_,_).
+
+update_assrt_status_(ModOrig,ModOut,Id,Type,TestCase,Loc,Pass) :-
+    Loc = loc(OSrc,LB,LE),
+    functor(TestCase,N,Ar),
+    module_concat(ModOrig,N,Name),
+    functor(Goal,Name,Ar),
+    (   assertion_read(Goal,ModOrig,Status,Type,Body,Dict,OSrc,LB,LE), % find assertion that matches with test case goal
+        (Type \== calls) -> true % filter out calls assertions
+    ; 
+        throw(bug('No assertions found for test case')) 
+    ),
+    remove_assertion_read(Goal,ModOrig,Status,Type,Body,Dict,Source,LB,LE), % remove assertion from db
+    assertion_body(Pred,Compat,Call,Succ,Comp,Comm,Body),
+    ( Type \== test ->  
+        append(Comp,[ by(Pred, texec(Id)) ],NewComp), update_acheck_counters(Type,ModOrig) 
+    ;   
+        NewComp = Comp ),
+    assertion_body(Pred,Compat,Call,Succ,NewComp,Comm,Body2),
+    ( ground(Pass) -> NewStatus = checked ; NewStatus = false ),
+    add_assertion_read(Goal,ModOrig,NewStatus,Type,Body2,Dict,Source,LB,LE), % add assertion with false status
+    add_texec_assrts(Type,Id,Goal,ModOut,ModOrig,Dict,Source,LB,LE).
+
+add_texec_assrts(Type,Id,Goal,ModOut,ModOrig,Dict,Source,LB,LE) :-
+    findall(TestCases,processed_test_case(ModOut,Id,_,TestCases,_,_),Res),
+    retractall_fact(processed_test_case(ModOut,Id,_,_,_,_)),  % remove all other test cases for this assertion
+    ( Type \== test -> add_texec_assrts_(Res,Id,Goal,ModOrig,Dict,Source,LB,LE) ; true).
+
+add_texec_assrts_([],_,_,_,_,_,_,_).
+add_texec_assrts_([TestCase|Cases],Id,Goal,Mod,Dict,Source,LB,LE) :-
+    functor(TestCase,F,A),
+    functor(Head,F,A),
+    flat_head(TestCase, Head, Unifs),
+    assertion_body(Head,[],Unifs,[],[ id(Head, Id) ],[],Body), % create body of new test asertion 
+    add_assertion_read(Goal,Mod,check,texec,Body,Dict,Source,LB,LE), % add new test assertion to db
+    add_texec_assrts_(Cases,Id,Goal,Mod,Dict,Source,LB,LE).
+
+update_acheck_counters(Type,Mod) :-
+    ( Type = calls -> T = c ; T = s),
+    counter_name(simp,false,T,Counter),
+    counter_name(simp,check,T,Counter2),
+    safe_inccounter(Counter,_),
+    safe_deccounter(Counter2,_),
+    get_assert_count(assert_count(CTInfo)),
+    set_total_info([assert_count(Mod,CTInfo)]).
+
+safe_inccounter(Counter, Val) :- % in case the counter is not defined
+    inccounter(Counter, Val), !.
+safe_inccounter(_,_).
+
+safe_deccounter(Counter, Val) :- % in case the counter is not defined
+    deccounter(Counter, Val), !.
+safe_deccounter(_,_).
+
+counter_name(simp, false, c, simp_false_c).
+counter_name(simp, false, s, simp_false_s).
+counter_name(simp, check, c, simp_check_c).
+counter_name(simp, check, s, simp_check_s).
+
+:- use_module(library(dict)).
+flat_head(Head, Head2, Unifs) :-
+    Head =.. [N|As],
+    Seen = _, % empty dictionary
+    flat_head_(As, Seen, As2, Unifs),
+    Head2 =.. [N|As2].
+
+flat_head_([], _, [], []).
+flat_head_([A|As], Seen, [A2|As2], Unifs) :-
+    ( var(A) ->
+        % A variable, add as unif only if it appeared before
+        ( dic_get(Seen, A, _) ->
+            Unifs = [A2 = A|Unifs0]
+        ; Unifs = Unifs0,
+          A2 = A,
+          dic_lookup(Seen, A, yes)
+        )
+    ; Unifs = [A2 = A|Unifs0]
+    ),
+    flat_head_(As, Seen, As2, Unifs0).
+:- else.
+do_testing(_,_).
+:- endif. % defined(has_ciaotest).
+
+% ---------------------------------------------------------------------------
+
 :- pred auto_analyze(F)
    # "Analyze the module @var{F} with the current analysis options (use
       @tt{customize(analyze)} to change these options).".
@@ -1230,7 +1389,7 @@ exec_analyses_and_acheck(AbsInts, TopLevel, File, OFile) :-
     ),
     ( current_pp_flag(intermod, off) ->
         analyze(AbsInts),
-        acheck_summary(AnyError) % TODO: TopLevel vs File?
+        acheck_summary(_,AnyError) % TODO: TopLevel vs File?
     ; current_pp_flag(interleave_an_check,on) -> % TODO: IG: probably this is not working
         inductive_ctcheck_summary(AbsInts,TopLevel,AnyError)
     ;
@@ -1249,6 +1408,9 @@ exec_analyses_and_acheck(AbsInts, TopLevel, File, OFile) :-
         true
     ;
         gencert_ctchecks(AnyError, File, GENCERT),
+        do_testing(File, OFile),
+        get_total_info(ACheckInfo),
+        pretty_print_acheck_stats(ACheckInfo),
         do_output(OFile, ~ctcheck_menu_name),
         set_last_file(File)
     ).
@@ -1457,7 +1619,7 @@ needed_to_prove(ana_cost, _, P) :-
 :- use_module(spec(abs_exec), [determinable/2]).
 
 :- use_module(library(lists), [cross_product/2]).
-:- use_module(library(llists), [append/2]).
+:- use_module(library(llists), [append/2, flatten/2]).
 :- use_module(library(sort), [keysort/2, sort/2]).
 
 %! ## Domains to use from previous analysis

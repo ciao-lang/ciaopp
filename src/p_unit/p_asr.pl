@@ -847,7 +847,7 @@ is_included_by_default(prelude).
 
 get_one_assertion_of(PD, M, As2) :-
     current_fact(assertion_of(PD,M,Status,Type,Body0,Dict,Source,LB,LE)),
-    Type \== test, % Skip tests assertions, not processed here
+    %Type \== test, % Skip tests assertions, not processed here
     assertion_body(PD, Co, Ca, Su, Cp, Cm, Body0),
     LOC = loc(Source, LB, LE),
     head_expand(Type, PD, M, Dict, ExpPD, LOC), % TODO: rename these predicates

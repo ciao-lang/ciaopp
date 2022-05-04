@@ -70,6 +70,14 @@ all, 'Action'       # inter_all  - analyze_check :: all_menu_branch.
 ~munified(1), '| Global control'         # global_control - hom_emb    <- custo_fixpoint_ana_gc. % (ana_or_check_not_nf_evaltypes + local_control!=off)
 
 % ------------------------------------------------------------
+% testing options
+~munified(0),'Test assertions'                          # testing              - off.
+~munified(0),'| Run test assertions'                    # run_utests           - on  <- testing_on.
+~munified(0),'| Generate tests from check assertions'   # test_gen             - off <- testing_on.
+~munified(0),'| | Number of tests to generate'          # num_test_cases       - 100 <- test_gen_on.
+~munified(0),'| | Show all test cases'                  # show_test_cases      - off <- test_gen_on.
+
+% ------------------------------------------------------------
 % output options
 % 0 = naive, 1 = expert
 ~munified(0),'Generate output'           # output               - on.

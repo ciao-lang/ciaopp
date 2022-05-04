@@ -6,7 +6,7 @@
 
 :- use_package(ciaopp(p_unit/p_unit_argnames)).
 
-:- use_module(library(lists), [member/2]).
+:- use_module(library(lists), [member/2, append/3]).
 :- use_module(engine(stream_basic)).
 :- use_module(engine(io_basic)).
 :- use_module(library(format)).
@@ -22,7 +22,9 @@
                get_assertion/2, get_output_operator/3]).
 :- use_module(ciaopp(p_unit/program_keys), [predkey_from_sg/2]).
 
-:- use_module(ciaopp(frontend_driver), [check_global_props/2]). % TODO: move this pred somewhere else
+:- use_module(ciaopp(frontend_driver), 
+              [check_global_props/2, % TODO: move this pred somewhere else
+               add_srcloc_prop/0]). 
 :- use_module(library(assertions/assrt_lib), [assertion_body/7]).
 :- use_module(ciaopp(p_unit/clause_db), [source_clause/3, clause_locator/2]).
 :- use_module(ciaopp(p_unit/unexpand), [
@@ -131,6 +133,8 @@ special_directive_(check).
 special_directive_(checked).
 special_directive_(pred). % Assertion 
 special_directive_(module).
+special_directive_(texec).
+special_directive_(test).
 
 % ---------------------------------------------------------------------------
 
@@ -348,18 +352,19 @@ get_infos([],_Vars,[]).
 
 print_assrts([], _).
 print_assrts([A|As], S) :-
-    ( ignore_print_assrt(A) -> true
-    ; print_assrt(A, S), nl(S)
-    ),
+    %( ignore_print_assrt(A) -> true
+    %    ; print_assrt(A, S), nl(S)
+    %),
+    print_assrt(A, S), nl(S),
     print_assrts(As, S).
 
-ignore_print_assrt(A) :-
-    A = as${
-        type => Type,
-        fromwhere => From
-    },
-    \+ From == commented, % TODO: write test assertions in this case too?
-    Type == test.
+%ignore_print_assrt(A) :-
+%    A = as${
+%        type => Type,
+%        fromwhere => From
+%    },
+%    \+ From == commented, % TODO: write test assertions in this case too?
+%    Type == test.
 
 print_assrt(A, S) :-
     A = as${
@@ -370,14 +375,22 @@ print_assrt(A, S) :-
         compat => Compat,
         call => Call,
         succ => Succ,
-        comp => Comp,
+        comp => Comp0,
         dic => Dic,
         % comment => UserComment,
-        fromwhere => From
+        fromwhere => From,
+        locator => loc(Src, LB, LE)
     },
     ( var(Head) ->
         throw(error(unbound_head, print_assrt/2))
     ; true
+    ),
+    % --- add original line numbers in comp field
+    ( add_srcloc_prop, Type \= texec -> 
+        SrcLoc = srcloc(Head, Src, LB, LE),
+        ( LB =\= 0, LE =\= 0 -> append(Comp0, [SrcLoc], Comp) ; Comp = Comp0 ) 
+    ;
+        Comp = Comp0
     ),
     % --- inverse rewrite program
     assertion_body(Head, Compat, Call, Succ, Comp, [], Body),
@@ -391,7 +404,7 @@ print_assrt(A, S) :-
         create_dict_with_assrt_and_cl(Head, VN)
     ; VN = Dic
     ),
-    ( (Type = entry ; Type = prop) ->
+    ( (Type = entry ; Type = prop ; Type = texec) ->
         WriteStatus = nostatus
     ; WriteStatus = status
     ),
@@ -400,8 +413,8 @@ print_assrt(A, S) :-
             write_assertion_as_double_comment(S, HeadT, Status, Type, BodyT2, VN, WriteStatus)
         ; write_assertion_as_comment(S, HeadT, Status, Type, BodyT2, VN, WriteStatus)
         )
-    ; Type == test ->
-        true
+    %; Type == test ->
+    %    true
     ; write_assertion(S, HeadT, Status, Type, BodyT2, VN, WriteStatus)
     ).
 

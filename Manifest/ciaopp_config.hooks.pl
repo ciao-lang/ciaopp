@@ -16,6 +16,7 @@ create_ciaopp_config :-
         ciaopp_bshare,
         ciaopp_llvm,
         ciaopp_java,
+        ciaotest, % TODO: rename to ciaopp_testgen?
         ciao_ppl,
         mathematica,
         davinci

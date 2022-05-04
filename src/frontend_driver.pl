@@ -452,12 +452,18 @@ perform_transformations([E|Ls]) :-
    @item @tt{output_symlink}: @tt{_co} symbolic link to the latest output file;
    @item @tt{no_written_file_msg}: the \"written file\" message is not 
      shown in the toplevel output;
+   @item @tt{add_srcloc_prop}: the @tt{srcloc/4} property is added to assertions
+     in the output file. This in needed when testing is performed;
    @end{itemize}").
 
 :- regtype output_option(Opt) # "@var{Opt} is an output option".
 
 output_option(output_symlink).
 output_option(no_written_file_msg).
+output_option(add_srcloc_prop).
+
+:- data add_srcloc_prop/0.
+:- export(add_srcloc_prop/0).
 
 :- export(output/0).
 :- pred output # "Outputs the current module preprocessing state
@@ -489,6 +495,8 @@ output(File, Opts) :-
     ; error_message("unknown output extension ~w", [Ext]),
       fail
     ),
+    retractall_fact(add_srcloc_prop),
+    ( member(add_srcloc_prop, Opts) -> assertz_fact(add_srcloc_prop) ; true ),
     open(File, write, Stream),
     ( output_by_ext(Ext, Stream) -> Err = no
     ; Err = yes
