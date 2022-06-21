@@ -341,17 +341,11 @@ process_main_files([F|Fs], Opts,  [M|Ms], Verb) :- !,
     process_main_file1(F,  Opts, M,  Verb),
     process_main_files(Fs, Opts, Ms, Verb).
 
-:- if(defined(mini_pp)).
-maybe_translate(F, _Opts, _M, Lang, NF) :-
-    Lang = ciao,
-    NF = F.
-:- else.
 maybe_translate(F, Opts, M, Lang, NF) :-
     atom(F),
     detect_language(F, Lang),
-    call_to_sockets_init, % TODO:[new-resources] make it optional!
+    call_to_sockets_init, % TODO:[new-resources] this should not be needed
     translate_input_file(Lang, F, Opts, M, NF).
-:- endif.
 
 process_main_file1(F, Opts, M, Verb) :-
     maybe_translate(F, Opts, M, Lang, NF),
@@ -362,14 +356,6 @@ process_main_file1(F, Opts, M, Verb) :-
                 c_itf:false, c_itf:false, do_nothing)
         ),fail). % TODO: fail or abort?
 
-:- use_module(library(sockets), [initial_from_ciaopp/0]).
-:- data socket_initialized/0.
-call_to_sockets_init :-
-    current_fact(socket_initialized), !.
-call_to_sockets_init :-
-    asserta_fact(socket_initialized),
-    sockets:initial_from_ciaopp.
-
 :- pred cleanup_pasr
 # "Clean up all facts that p_asr asserts.".
 
@@ -378,13 +364,27 @@ cleanup_pasr :-
     retractall_fact(processed_file(_)),
     retractall_fact(related_file(_)),
     retractall_fact(irrelevant_file(_)),
-    retractall_fact(file_included_by_package(_)),
-    retractall_fact(socket_initialized).
+    retractall_fact(file_included_by_package(_)).
 
 there_was_error(yes) :- module_error, !.
 there_was_error(yes) :- module_error(_), !.
 there_was_error(yes) :- mexpand_error, !.
 there_was_error(no).
+
+%% ---------------------------------------------------------------------------
+% TODO: sockets (foreign code) are sometimes not initialized properly, why?
+
+:- if(defined(has_ciaopp_java)).
+:- use_module(library(sockets), [initial_from_ciaopp/0]).
+:- data socket_initialized/0.
+call_to_sockets_init :-
+    current_fact(socket_initialized), !.
+call_to_sockets_init :-
+    asserta_fact(socket_initialized),
+    sockets:initial_from_ciaopp.
+:- else.
+call_to_sockets_init.
+:- endif.
 
 %% ---------------------------------------------------------------------------
 %% Main file (current module) processing
