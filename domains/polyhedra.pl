@@ -173,8 +173,9 @@ compute_lub_el(ASub1,ASub2,Lub):-
     New_ASub1 = (Poly1,Vars),
     New_ASub2 = (Poly2,Vars),
     % TODO: call minimize after assign
-    ppl_Polyhedron_poly_hull_assign(Poly1,Poly2),!,
-    Lub = (Poly1,Vars).
+    ppl_new_NNC_Polyhedron_from_NNC_Polyhedron(Poly1,Poly1_c), %% [DJ] added to work with a copy
+    ppl_Polyhedron_poly_hull_assign(Poly1_c,Poly2),!,
+    Lub = (Poly1_c,Vars).
 compute_lub_el(_ASub1,_ASub2,'$bottom').
 
 %-------------------------------------------------------------------------
@@ -189,12 +190,13 @@ glb(ASub1,ASub2,Glb):-
 glb_(('$bottom',_),_ASub2,'$bottom'):- !.     
 glb_(_ASub1,('$bottom',_),'$bottom'):- !.     
 glb_(ASub1,ASub2,Glb):-
-    match_dimensions(ASub1,ASub2,New_ASub1,New_ASub2),
+    match_dimensions(ASub1,ASub2,New_ASub1,New_ASub2), %% TODO: match_dimensions sometimes create a copy..
     New_ASub1 = (Poly1,Vars),
     New_ASub2 = (Poly2,Vars),
     % TODO: call minimize after assign
-    ppl_Polyhedron_intersection_assign(Poly1,Poly2),!,
-    Glb = (Poly1,Vars).
+    ppl_new_NNC_Polyhedron_from_NNC_Polyhedron(Poly1,Poly1_c), %% [DJ] added to work with a copy
+    ppl_Polyhedron_intersection_assign(Poly1_c,Poly2),!,
+    Glb = (Poly1_c,Vars).
 
 %------------------------------------------------------------------------%
 :- dom_impl(_, project/5, [noq]).
@@ -207,17 +209,17 @@ project_('$bottom',_,'$bottom'):- !.
 project_(ASub,Vars,Proj):-
     ASub = (Poly,Poly_Vars),
     ppl_new_NNC_Polyhedron_from_NNC_Polyhedron(Poly,Poly_Proj),
-    project_on_dimensions(Poly_Proj,0,Poly_Vars,Vars),
-    Proj = (Poly_Proj,Vars).
+    project_on_dimensions(Poly_Proj,0,Poly_Vars,Poly_Vars_Proj, Vars),
+    Proj = (Poly_Proj,Poly_Vars_Proj).
 
-project_on_dimensions(_Poly,_Dim,[],_Vars):-!.
-project_on_dimensions( Poly,Dim,[Var|Rest_Var],Vars):-
+project_on_dimensions(_Poly,_Dim,[],[], _Vars):-!.
+project_on_dimensions( Poly,Dim,[Var|Rest_Var],[Var|Poly_Vars_Proj],Vars):-
     ord_member(Var,Vars),!,
     Dim1 is Dim + 1,
-    project_on_dimensions(Poly,Dim1,Rest_Var,Vars).
-project_on_dimensions( Poly,Dim,[_Var|Rest_Var],Vars):-
+    project_on_dimensions(Poly,Dim1,Rest_Var,Poly_Vars_Proj,Vars).
+project_on_dimensions( Poly,Dim,[_Var|Rest_Var],Poly_Vars_Proj,Vars):-
     ppl_Polyhedron_remove_space_dimensions(Poly,['$VAR'(Dim)]),
-    project_on_dimensions(Poly,Dim,Rest_Var,Vars).
+    project_on_dimensions(Poly,Dim,Rest_Var,Poly_Vars_Proj,Vars).
 
 %-------------------------------------------------------------------------
 :- dom_impl(_, extend/5, [noq]).
@@ -227,7 +229,7 @@ extend(_Sg,Prime,Sv,Call,Success):-
     polyhedra_finalize.
 
 extend_('$bottom',_Sv,_Call,'$bottom').
-extend_(Prime,Sv,Call,Success):- 
+extend_(Prime,Sv,Call,Success):-
     polyhedra_merge(Call,Prime,Sv,Success).
 
 %------------------------------------------------------------------------%
@@ -358,10 +360,16 @@ success_builtin0(Type,Sv,Condv,Call,New_Succ):-
 
 success_builtin_(unchanged,_,_,Call,Succ):-
     Call = Succ.
+%% success_builtin_(unification,_Sv,Condv,Call,Succ):-
+%%     Condv = (Term1,Term2),
+%%     polyhedra_simplify_equations(Term1,Term2,Binds),
+%%     abs_gunify(Call,Binds,Succ,_NewBinds).
 success_builtin_(unification,_Sv,Condv,Call,Succ):-
     Condv = (Term1,Term2),
     polyhedra_simplify_equations(Term1,Term2,Binds),
-    abs_gunify(Call,Binds,Succ,_NewBinds).
+    Call = (Poly1, Vars),
+    ppl_new_NNC_Polyhedron_from_NNC_Polyhedron(Poly1,Poly2), %% [DJ] added to work with a copy
+    abs_gunify((Poly2, Vars),Binds,Succ,_NewBinds).
 success_builtin_(constraint,_Sv,Condv,Call,Succ):-
     Call = (Poly1,Vars),
     dim2var_constraint(Condv,Vars,Condv_As_PPL_Cons),!,
@@ -498,6 +506,7 @@ polyhedra_delete_polyhedron(Poly):-
 polyhedra_add_dimension((Poly,Vars),Added_Vars,(Poly,New_Vars)):-
     ppl_Polyhedron_add_space_dimensions_and_embed(Poly,1),
     append(Vars,[Added_Vars],New_Vars).
+
 polyhedra_add_dimensions((Poly,Vars),New_Dims,(Poly,New_Vars)):-
     length(New_Dims,No_New_Dims),
     ppl_Polyhedron_add_space_dimensions_and_embed(Poly,No_New_Dims),
@@ -537,7 +546,6 @@ polyhedra_merge_poly(ASub1,ASub2):-
     New_ASub1=(Poly1,Vars2),
     ppl_Polyhedron_get_minimized_constraints(Poly1,Cons_Sys1),      
     ppl_Polyhedron_add_constraints(Poly2,Cons_Sys1).        
-
     
 % mix the set of variables of both substitutions        
 polyhedra_merge_vars([],_HvFv,Exit,Sorted_Exit):-
@@ -627,7 +635,8 @@ ab_unify([(X,Term,[])|Binds],Proj,New_Proj,NewBinds):-
 ab_unify([(X,Term,[])|Binds],Proj,New_Proj,NewBinds):-
     var(X),
     ground(Term),
-    polyhedra_remove_nonint_dims(Proj,X,Proj1),!,
+    polyhedra_remove_nonint_dims(Proj,X,Proj1),
+    !,
     ab_unify(Binds,Proj1,New_Proj,NewBinds).
 ab_unify([(X,Term,[])|Binds],Proj,New_Proj,NewBinds):-
     var(X),
