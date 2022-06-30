@@ -4,6 +4,20 @@
 
 % ===========================================================================
 
+:- bundle_flag(lite, [
+    comment("Select lite version"),
+    details(
+      % .....................................................................
+      "Build a version with reduced dependencies"),
+    valid_values(['yes', 'no']),
+    %
+    rule_default('no'),
+    %
+    interactive([advanced])
+]).
+
+% ===========================================================================
+
 :- use_module(library(bundle/bundle_flags), [get_bundle_flag/2]).
 
 % ============================================================================
