@@ -182,24 +182,11 @@ det_call_to_entry(_Sv,Sg,Hv,Head,_K,_Fv,_Proj,InVars,Entry,_Extra):-
 % Exiting a clause: project the tests gathered while traversing the clause 
 % onto the variables of the goal
 
-det_exit_to_prime(Sg,_Hv,Head,_Sv,Exit,GVars,Prime):-
-    asub(Exit,Tests,Unfold,MutExclusive,Det),
-    tests(Tests,_InVars,Unif,Arith,Meta),
-%%
-%%      create_unif_tests(Sg,Type,SgInVars,SgEqs),
-%%      create_unif_tests(Head,Type,HeadInVars,HeadEqs),
-%%      copy_term((HeadInVars,HeadEqs,Tests),(HeadInVarsC,HeadEqsC,TestsC)),
-%%      unify(TestsC),
-%%      unify(HeadEqsC),
-%%      copy_term((SgInVars,SgEqs),(SgInVarsC,SgEqsC)),
-%%      unify(SgEqsC),
-%%      SgInVarsC = HeadInVarsC, !,
-%%      new_tests(SgInVars,SgInVarsC,PrimeTests),
-%%
-    peel(Sg,Head,Bindings,Unif), !,
-    tests(PrimeTests,GVars,Bindings,Arith,Meta),
-    asub(Prime,PrimeTests,Unfold,MutExclusive,Det).
-det_exit_to_prime(_Sg,_Hv,_Head,_Sv,_Exit,_Extra,'$bottom').
+
+% (PLG) Head unification tests are now added only in
+% det_call_to_entry, not in det_exit_to_prime (they were
+% duplicated). Originally, they only were added in det_exit_to_prime.
+det_exit_to_prime(_Sg,_Hv,_Head,_Sv,Exit,_GVars,Exit).
 
 %% new_tests([],[],[]).
 %% new_tests([X|Xs],[Y|Ys],[X=Y|Eqs]):-
