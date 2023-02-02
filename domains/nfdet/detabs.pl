@@ -27,7 +27,7 @@
 :- use_module(domain(sharefree), [obtain_info/4]).
 :- use_module(domain(s_eqs), [peel/4]).
 :- use_module(domain(nfdet/nfdet_statistics)).
-:- use_module(domain(nfdet/nfdetabs), [pred_test/1, tests/5, clause_test/1]).
+:- use_module(domain(nfdet/nfdetabs), [pred_test/1, tests/5, clause_test/1, unfold_t/1]).
 :- use_module(ciaopp(p_unit/program_keys), [predkey_from_sg/2]).
 
 :- use_module(library(idlists), [memberchk/2]).
@@ -54,7 +54,7 @@ The abstract domain lattices for determinism and mutual exclusion are:
    possibly_not_mut_exclusive       possibly_nondet
             /     \\                     /   \\
            /       \\                   /     \\
-not_mut_exclusive  mut_exclusive   non_det   det
+not_mut_exclusive  mut_exclusive   non_det   is_det
            \\       /                   \\     /
             \\     /                     \\   /
             $bottom                    $bottom
@@ -90,8 +90,9 @@ detabs_asub(ASub):- detabs_par_asub(clause_test,ASub).
 :- meta_predicate detabs_par_asub(pred(1), ?).
 
 detabs_par_asub(_, '$bottom').
-detabs_par_asub(TestTyp, det(Tests,MutEx,Det)) :-
-    TestTyp(Tests),    
+detabs_par_asub(TestTyp, det(Tests,Unfold,MutEx,Det)) :-
+    TestTyp(Tests),
+    unfold_t(Unfold),
     mutexclusion_t(MutEx),
     determinism_t(Det).
 
@@ -315,12 +316,15 @@ tests_union_([T|Ts],Tests0,Tests1) :- memberchk(T,Tests0), !,
 tests_union_([T|Ts],Tests0,[T|Tests1]) :-
     tests_union_(Ts,Tests0,Tests1).
 
+% TODO: (LR) Check accumulate_mut_exclusion and accumulate_determinism
+%            Discuss in meeting.
+% Using non-top value as default is fishy to me.
 accumulate_mut_exclusion(mut_exclusive,_,mut_exclusive):- !.
 accumulate_mut_exclusion(_,mut_exclusive,mut_exclusive):- !.
 accumulate_mut_exclusion(A,B,C):- lub_mut_exclusion(A,B,C).
 
-accumulate_determinism(det,_,det):- !.
-accumulate_determinism(_,det,det):- !.
+accumulate_determinism(is_det,_,is_det):- !.
+accumulate_determinism(_,is_det,is_det):- !.
 accumulate_determinism(A,B,C):- lub_determinism(A,B,C).
 
 accumulate_unfold_tests('$bottom',X,X):-!.

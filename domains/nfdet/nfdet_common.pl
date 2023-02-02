@@ -127,7 +127,7 @@ get_tests_from_asub(ASub,Select,Tests) :-
 
 asub_can_fail(ASub,true) :-
     nfabs:asub_can_fail(ASub), !.
-asub_can_fail(_,fail).
+asub_can_fail(_,false).
 
 :- export(asub_is_det/2).
 

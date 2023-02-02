@@ -128,6 +128,7 @@ clause_test_disj(Test) :-
 :- export(unfold_t/1).
 
 :- regtype unfold_t/1.
+% TODO: document
 
 unfold_t(unfold).
 unfold_t(not_unfold).

@@ -470,7 +470,7 @@ valid_flag_values( collapse_ai_vers  , member(_,[off,on])).
 
 pp_flag(cost_approximation).
 pp_flag(cost_approximation, 'Decides whether to compute upper or lower bounds in cost (steps) or size analysis').
-current_pp_flags(  cost_approximation , upper).
+current_pp_flags(  cost_approximation , upper_and_lower).
 valid_flag_values( cost_approximation , member(_,[lower,upper,upper_and_lower])).
 
 pp_flag(dbdebug).
