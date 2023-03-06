@@ -5,10 +5,12 @@
 % How to make them:
 % Run Ciao on this program in the corresponding directory.
 
-% TODO: This module is outdated (fix absolute paths and make it work again)
+% TODO: This module is outdated
+% UPDATE: (LR) added absolute paths, but module still outdated and not working
+%         Will have to be fixed
 
-:- use_module('/home/clip/Systems/ciao/etc/components.pl').
-:- use_module('/home/clip/Systems/ciao/etc/xmrefs.pl').
+:- use_module(core_cmds(components)).
+:- use_module(core_cmds(xmrefs)).
 
 fig(Part):-
     ( Part=ciaopp
