@@ -228,7 +228,8 @@ portray('$dom'(Dom,Res,Rules,Tab)) :-
         nl
     ; format("~nwith:~n~n",[]),
       % Flag for a format of rules here 
-      write_rules(Rules)
+      current_output(CO),
+      write_rules(Rules, CO)
     ).
 
 write_results([]).
@@ -247,15 +248,15 @@ write_info([A|As],Tab) :-
     ),
     write_info(As,Tab).
 
-write_rules([]).
-write_rules([typedef(::=(H,B))|Rules]) :-
-    write_one_type(typedef(::=(H,B)), user_output),
+write_rules([], _S).
+write_rules([typedef(::=(H,B))|Rules], S) :-
+    write_one_type(typedef(::=(H,B)), S),
 %     format("~w ::= ~w~n",[H,B]),
 %     ( Rules \== [] ->
 %         format("      ",[])
 %     ; true
 %     ),
-    write_rules(Rules).
+    write_rules(Rules, S).
 
 find_tab(Res,ResT) :-
     find_tab_x(Res,Tab,Tab,ResT).
