@@ -1,0 +1,13 @@
+ERROR: (lns 19-20) Failed test for predicate:
+power_testing_eterms_nf_shfr_co:powers(A,B,C).
+Test case:
+	powers([72,72,92,95,58],13,_).
+In *comp*, unsatisfied property: 
+	not_fails.
+Where:
+	fails
+
+
+ERROR: (lns 81-82) Failed in power_testing_eterms_nf_shfr_co:powers(A,B,C).
+
+

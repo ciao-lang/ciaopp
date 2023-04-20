@@ -1,0 +1,11 @@
+:- true pred sorted_insert(A,B,C)
+   : ( mshare([[C]]),
+       var(C), ground([A,B]), list_pair(A), num_pair(B), term(C) )
+   => ( ground([A,B,C]), list_pair(A), num_pair(B), list_pair1(C) )
+   + ( multi, covered, possibly_not_mut_exclusive ).
+
+:- true pred sorted_insert(A,B,C)
+   : ( mshare([[C]]),
+       var(C), ground([A,B]), list_pair(A), num_pair(B), term(C) )
+   => ( ground([A,B,C]), list_pair(A), num_pair(B), list_pair1(C) )
+   + ( multi, covered, possibly_not_mut_exclusive ).

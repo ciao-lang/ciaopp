@@ -1,0 +1,7 @@
+:- checked calls app(A,B,C)
+   : ( list(A), list(B) ).
+
+:- checked success app(A,B,C)
+   : ( list(A), list(B) )
+   => list(C).
+

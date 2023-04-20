@@ -1,0 +1,21 @@
+WARNING: (lns 5-6) [PFsOut,PFsOut1] - singleton variables in remove_power/3
+
+
+WARNING (preproc_errors): (lns 2-4) goal arithmetic:=\=(Power,power1) at literal 1 does not succeed!
+
+
+WARNING (preproc_errors): (lns 5-6) goal remove_power_bug1:remove_power(Power,RestPFsIn,PFsOut1) at literal 1 does not succeed!
+
+
+ERROR (ctchecks_pp_messages): (lns 2-4) At literal 1 false assertion:
+:- check calls A=\=B
+   : ( nonvar(A), nonvar(B), arithexpression(A), arithexpression(B) ).
+because on call arithmetic:=\=(A,B) :
+
+[eterms] basic_props:term(A),rt2(B) 
+with:
+
+:- regtype rt2/1.
+rt2(power1).
+
+

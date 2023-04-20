@@ -1,0 +1,13 @@
+:- regtype rt51/1.
+
+rt51([]).
+rt51([A|B]) :-
+    num(A),
+    term(B).
+
+:- regtype rt96/1.
+
+rt96((A,B)) :-
+    num(A),
+    num(B).
+

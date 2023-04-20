@@ -1,0 +1,11 @@
+:- check success powers(A,B,C)
+   : ( list_nnegint(A), nnegint(B), var(C) )
+   => ( list_nnegint(C), sorted(C) ).
+
+:- check comp powers(A,B,C)
+   : ( list_nnegint(A), nnegint(B), var(C) )
+   + not_fails.
+
+:- checked calls powers(A,B,C)
+   : ( list_nnegint(A), nnegint(B), var(C) ).
+

@@ -1,0 +1,4 @@
+
+:- true pred sorted_insert(_A,X,_B)
+   : ( list(^(('basic_props:num','basic_props:num')),_A), rt96(X), term(_B) )
+   => ( list(^(('basic_props:num','basic_props:num')),_A), rt96(X), list1(^((num,num)),_B) ).

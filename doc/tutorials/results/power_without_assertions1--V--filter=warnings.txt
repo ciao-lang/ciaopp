@@ -1,0 +1,60 @@
+WARNING (ctchecks_pp_messages): (lns 23-23) At literal 1 could not verify assertion:
+:- check calls B=<A
+   : ( nonvar(B), nonvar(A), arithexpression(B), arithexpression(A) ).
+because on call arithmetic:=<(A,B) :
+
+[eterms] basic_props:term(B),basic_props:term(A),basic_props:term(A),basic_props:term(B),basic_props:term(C) 
+
+[shfr]   native_props:mshare([[B],[B,A],[B,A,B],[B,B],[A],[A],[A,B],[B],[C]]),term_typing:var(A),term_typing:var(C) 
+
+
+
+WARNING (ctchecks_pp_messages): (lns 24-24) At literal 1 could not verify assertion:
+:- check calls B>A
+   : ( nonvar(B), nonvar(A), arithexpression(B), arithexpression(A) ).
+because on call arithmetic:>(A,B) :
+
+[eterms] basic_props:term(B),basic_props:term(A),basic_props:term(A),basic_props:term(B),basic_props:term(C) 
+
+[shfr]   native_props:mshare([[B],[B,A],[B,A,B],[B,B],[A],[A],[A,B],[B],[C]]),term_typing:var(A),term_typing:var(C) 
+
+
+
+WARNING (ctchecks_pp_messages): (lns 28-35) At literal 4 could not verify assertion:
+:- check calls A is B
+   : ( ( var(A), nonvar(B), var(A), arithexpression(B) ); ( var(A), nonvar(B), var(A), intexpression(B) ); ( nonvar(A), nonvar(B), num(A), arithexpression(B) ); ( nonvar(A), nonvar(B), int(A), intexpression(B) ) ).
+because on call arithmetic:is(A,B) :
+
+[eterms] basic_props:term(A),rt201(B) 
+with:
+
+:- regtype rt201/1.
+rt201(A*B) :-
+    term(A),
+    term(B).
+[shfr]   native_props:mshare([[A],[B]]),term_typing:var(A) 
+
+
+
+WARNING (ctchecks_pp_messages): (lns 39-40) At literal 1 could not verify assertion:
+:- check calls A=\=B
+   : ( nonvar(A), nonvar(B), arithexpression(A), arithexpression(B) ).
+because on call arithmetic:=\=(A,B) :
+
+[eterms] basic_props:term(A),rt112(A),basic_props:term(B),basic_props:term(B) 
+
+[shfr]   native_props:mshare([[A],[A,A],[A,A,B],[A,A,B,B],[A,A,B],[A,B],[A,B,B],[A,B],[A],[A,B],[A,B,B],[A,B],[B],[B,B],[B]]) 
+
+
+
+WARNING (ctchecks_pp_messages): (lns 45-45) At literal 1 could not verify assertion:
+:- check calls B=<A
+   : ( nonvar(B), nonvar(A), arithexpression(B), arithexpression(A) ).
+because on call arithmetic:=<(A,B) :
+
+[eterms] rt112(A),basic_props:term(B),basic_props:term(B),basic_props:num(A),arithmetic:arithexpression(C) 
+
+[shfr]   native_props:mshare([[A],[A,B],[A,B,B],[A,B],[B],[B,B],[B]]),term_typing:ground([A,C]) 
+
+
+

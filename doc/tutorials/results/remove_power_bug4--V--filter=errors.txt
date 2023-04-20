@@ -1,0 +1,12 @@
+ERROR (ctchecks_pp_messages): (lns 4-5) At literal 1 false assertion:
+:- check calls A=\=B
+   : ( nonvar(A), nonvar(B), arithexpression(A), arithexpression(B) ).
+because on call arithmetic:=\=(A,B) :
+
+[eterms] basic_props:term(A),rt9(B) 
+with:
+
+:- regtype rt9/1.
+rt9(power1).
+
+

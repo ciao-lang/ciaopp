@@ -2,7 +2,7 @@
 
 :- doc(filetype, documentation).
 
-:- doc(title, "Advanced Tutorial on Program Development and Optimization using the
+:- doc(title, "Program Development using the
    CiaoPP Program Processor").
 
 :- doc(author, "The Ciao Development Team").
@@ -10,7 +10,7 @@
 %%% Uncomment for the large version of this tutorial
 %:- compilation_fact(full_tutorial).
 
-:- if(defined(full_tutorial)).
+:- if(defined(full_tutorial)). 
 % TODO: Review summary (think about what we want to say about parallelization)
 :- doc(summary,
 "We present in a tutorial fashion @apl{ciaopp}, the preprocessor of the Ciao

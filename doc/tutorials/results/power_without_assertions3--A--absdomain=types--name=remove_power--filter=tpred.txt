@@ -1,0 +1,4 @@
+
+:- true pred remove_power(_1,_A,PFsOut)
+   : ( num(_1), list(^(('basic_props:num','basic_props:num')),_A), term(PFsOut) )
+   => ( num(_1), list(^(('basic_props:num','basic_props:num')),_A), list(^(('basic_props:num','basic_props:num')),PFsOut) ).

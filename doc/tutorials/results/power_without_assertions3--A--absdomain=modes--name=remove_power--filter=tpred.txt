@@ -1,0 +1,5 @@
+
+:- true pred remove_power(_1,_A,PFsOut)
+   : ( mshare([[PFsOut]]),
+       var(PFsOut), ground([_1,_A]) )
+   => ground([_1,_A,PFsOut]).

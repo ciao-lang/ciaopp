@@ -1,0 +1,11 @@
+%% %% :- check pred powers(A,B,C)
+%% %%    : ( list_num(A), num(B), var(C) )
+%% %%    => list_num(C).
+
+:- checked calls powers(A,B,C)
+   : ( list_num(A), num(B), var(C) ).
+
+:- checked success powers(A,B,C)
+   : ( list_num(A), num(B), var(C) )
+   => list_num(C).
+

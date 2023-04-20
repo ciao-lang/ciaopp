@@ -1,0 +1,21 @@
+WARNING: (lns 4-5) predicate remove_power/3 is already defined with arity 2
+
+
+WARNING (preproc_errors): (lns 4-5) goal arithmetic:=\=(Power,power1) at literal 1 does not succeed!
+
+
+WARNING (preproc_errors): (lns 6-7) goal remove_power_bug3:remove_power(Power,RestPFsIn,PFsOut) at literal 1 does not succeed!
+
+
+ERROR (ctchecks_pp_messages): (lns 4-5) At literal 1 false assertion:
+:- check calls A=\=B
+   : ( nonvar(A), nonvar(B), arithexpression(A), arithexpression(B) ).
+because on call arithmetic:=\=(A,B) :
+
+[eterms] basic_props:term(A),rt2(B) 
+with:
+
+:- regtype rt2/1.
+rt2(power1).
+
+

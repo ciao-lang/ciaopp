@@ -1,0 +1,11 @@
+%% %% :- check pred sorted_insert(A,B,C)
+%% %%    : ( list_pair(A), num_pair(B), var(C) )
+%% %%    => list_pair1(C).
+
+:- checked calls sorted_insert(A,B,C)
+   : ( list_pair(A), num_pair(B), var(C) ).
+
+:- checked success sorted_insert(A,B,C)
+   : ( list_pair(A), num_pair(B), var(C) )
+   => list_pair1(C).
+

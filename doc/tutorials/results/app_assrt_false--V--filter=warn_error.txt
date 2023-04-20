@@ -1,0 +1,10 @@
+ERROR (ctchecks_pred_messages): (lns 3-3) False assertion:
+:- check success app(A,B,C)
+   : ( list(A), list(B) )
+   => var(C).
+because the success field is incompatible with inferred success:
+[eterms] basic_props:list(A),basic_props:list(B),basic_props:list(C) 
+
+
+ERROR (auto_interface): Errors detected. Further preprocessing aborted.
+
