@@ -1,5 +1,7 @@
 :- module(_, [], [doccfg, ciaopp(ciaopp_options)]).
 
+:- include(ciaopp_docsrc(docpaths)).
+
 output_name := 'ciaopp_tutorials'.
 
 doc_structure :=

@@ -50,3 +50,4 @@ readme('CHANGELOG', [main='doc/readmes/CHANGELOG_CIAOPP.pl']).
 
 manual('ciaopp', [main='doc/reference/SETTINGS.pl']).
 % manual('ciaopp_internals', [main='doc/internals/SETTINGS.pl']).
+manual('ciaopp_tutorials', [main='doc/tutorials/SETTINGS.pl']).
