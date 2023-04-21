@@ -29,5 +29,8 @@ interfaces are based on the functionality provided by the high and
 low-level interfaces.
 ").
 
+% TODO: horrible hack: due to a texinfo bug, this stops index generation, which itself prevents another bug in the old macOS implementation of texindex
+:- doc(module, "@bf{@math{}}").
+
 % Note that if @apl{emacs} is not available, this
 % menu interface can be used as a text-based menu interface. 
