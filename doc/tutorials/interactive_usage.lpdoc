@@ -1,0 +1,28 @@
+@comment{Generic information for active logic documents}
+
+@begin{alert}
+@bf{How to use this @tt{interactive} document}:
+@begin{itemize}
+@item Some code boxes needs your interaction. You will identify them
+  by a @bf{question mark} (@bf{?}) in the right top corner.
+@item Your goal is turn all @em{question marks} boxes into 
+  @bf{green checked marks} (@bf{✔}):
+@begin{itemize}
+  @item Boxes with a @bf{thinking face} (🤔) are exercises that you
+    must complete in order to progress. Once an exercise is completed,
+    press the @em{question mark}.
+  @item Boxes without the @em{thinking face} just needs pressing the
+    @em{question mark}. They are editable so that you can play with them.
+  @item Code errors or failed exercises turn into @bf{red erroneous
+    mark} (@bf{✘}). You can try again.
+  @item When available, pressing the @bf{northeast pointing arrow}
+    (@bf{↗}) will load the code in a separate playground window.
+@end{itemize}
+@item Additionally, boxes with @bf{right-pointing triangles} (@bf{▶})
+  allow interacting with the code loaded so far (as @em{queries}). In
+  order to use them, @bf{make sure previous code boxes are checked}.
+@end{itemize}
+@end{alert}
+
+@comment{This document embeds a running Ciao Prolog toplevel in your
+  browser (the page footer shows its running status).}
