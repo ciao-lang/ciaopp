@@ -25,7 +25,8 @@
 :- include(core_docsrc(common/'ClipAddress')).
 
 :- doc(copyright, "Copyright @copyright{} 1996-2011 Francisco Bueno,
-Manuel Hermenegildo, Pedro L@'{o}pez, and Germ@'{a}n Puebla.
+Manuel Hermenegildo, Pedro L@'{o}pez, Jos@'{e} Francisco Morales,
+and Germ@'{a}n Puebla.
 
 @include{FreeDocLicense.lpdoc}
 ").
@@ -34,7 +35,14 @@ Manuel Hermenegildo, Pedro L@'{o}pez, and Germ@'{a}n Puebla.
     prompt you can issue any of the commands described below and 
     in the next chapter as exports.").
 
-:- doc(summary, "@include{Summary.lpdoc}").
+:- doc(summary, "@include{CiaoPPRefSummary.lpdoc}
+
+@p
+
+@bf{Note:} This is the CiaoPP @bf{reference} manual. To begin using
+CiaoPP, we suggest you start by following one or more of the companion
+CiaoPP @bf{tutorials} available in the Ciao system documentation.
+").
 
 :- doc(module, "
 

@@ -42,8 +42,3 @@ documentation generator, @apl{lpdoc}.
 CiaoPP is distributed under the @concept{GNU general public
 license}.
 
-@p
-
-@bf{Note:} This is the CiaoPP @bf{reference} manual. To begin using
-CiaoPP, we suggest you start by following one or more of the companion
-CiaoPP @bf{tutorials} available in the Ciao system documentation.
