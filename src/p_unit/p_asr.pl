@@ -819,6 +819,7 @@ get_module_from_path(Path, Module) :-
 % TODO: update! compute dynamically?
 
 is_syntax_package(rtchecks).
+is_syntax_package(modes).
 is_syntax_package(basicmodes).
 is_syntax_package(isomodes).
 is_syntax_package(assertions).
