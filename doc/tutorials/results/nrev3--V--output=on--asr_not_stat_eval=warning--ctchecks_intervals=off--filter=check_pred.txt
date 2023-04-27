@@ -1,0 +1,6 @@
+:- checked calls nrev(A,B)
+   : ( ground(A), list(A), var(B) ).
+
+:- checked comp nrev(A,B)
+   + steps_o(exp(length(A),2)).
+

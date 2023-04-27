@@ -9,8 +9,8 @@
 
 %%% Uncomment for the large version of this tutorial
 %:- compilation_fact(full_tutorial).
-
-:- if(defined(full_tutorial)). 
+ 
+:- if(defined(full_tutorial)).  
 % TODO: Review summary (think about what we want to say about parallelization)
 :- doc(summary,
 "We present in a tutorial fashion @apl{ciaopp}, the preprocessor of the Ciao
@@ -87,9 +87,9 @@ space cost). ").
 
 
 :- doc(module, "
-@apl{ciaopp} is a standalone preprocessor to the standard clause-level
+@apl{CiaoPP} is a standalone preprocessor to the standard clause-level
 compiler. It performs source-to-source transformations. The input to
-@apl{ciaopp} are logic programs (optionally with assertions and syntactic
+@apl{CiaoPP} are logic programs (optionally with assertions and syntactic
 extensions). The output are @em{error/warning messages} plus the
 @em{transformed logic program}, with
 results of @bf{analysis} (as assertions),
@@ -100,35 +100,58 @@ results of @bf{static checking of assertions},
 This tutorial is organized as follows:
 
 @begin{itemize}
-@item @ref{Getting Started} gives the ``getting started'' basics.
-@item @ref{Static Analysis and Program Assertions} shows how @apl{ciaopp}
+@item @ref{Getting Started} gives the ''getting started'' basics.
+@item @ref{Static Analysis and Program Assertions} shows how @apl{CiaoPP}
 performs program analysis.
-@item @ref{Program Debugging and Assertion Validation} does the same for 
+@item @ref{Program Debugging and Assertion Checking} does the same for 
 program debugging and validation.
-@item @ref{Source Program Optimization} presents @apl{ciaopp} at work for program
+@comment{
+@item @ref{Source Program Optimization} presents @apl{CiaoPP} at work for program
 transformation and optimization.
+}
 @end{itemize}
 
 @section{Getting Started}
 
-A @apl{ciaopp} session consists in the preprocessing of a file. The session is
+In order to follow these examples you need to either:
+
+@begin{itemize}
+
+@item Install @apl{Ciao} on your computer, including the development
+      environment (see @ref{Installation} for more information). This
+      includes @apl{CiaoPP} (and @apl{LPdoc}). You can then access
+      @apl{CiaoPP} from the Emacs interface or the command line. 
+
+@item Run @apl{CiaoPP} directly on your browser through the @apl{Ciao}
+      playground. To this end, load the examples into the playground
+      by pressing the @key{↗} button (''Load in playground''), and
+      then @apl{CiaoPP} can be run clicking the @key{More...} button
+      and selecting @key{Analyze and check assertions}.
+
+@end{itemize}
+
+To follow this tutorial we recommend
+installing it as many of the advanced features are not yet included in the playground.
+The instructions below use the Emacs interface.
+
+A @apl{CiaoPP}  session consists in the preprocessing of a file. The session is
 governed by a @bf{menu}, where you can choose the kind of preprocessing you want to
 be done to your file among several analyses and program transformations
 available. This tutorial shows how to customize the preprocessing but some
-predefined preprocessing options are described in @ref{CiaoPP Quick Tutorial}.
+predefined preprocessing options are described in @ref{CiaoPP at a glance}.
 
 Clicking on the icon @image{Figs/button-options-new}{38}{34}
 in the buffer containing the file to be preprocessed displays the menu, which
-will look (depending on the options available in the current @apl{ciaopp}
-version) something like the ``Preprocessor Option Browser'' shown in:
+will look (depending on the options available in the current @apl{CiaoPP} 
+version) something like the ''Preprocessor Option Browser'' shown in:
 
-@image{Figs/naive-menu-new}{671}{763}
+@image{Figs/naive-menu-new}{600}{375}
 
 Except for the first line, which refers to selecting levels of customization.
-You can select @bf{analysis} (@tt{analyze}), @bf{assertion checking}
-(@tt{check_assertions}), @bf{certificate checking} (@tt{check_certificate}), or
+You can select @bf{analysis} and @bf{assertion checking}
+ (@tt{analyze_check}) or
 @bf{program optimization} (@tt{optimize}), and you can later combine the four kinds
-of preprocessing. The relevant options for the @tt{action group} selected are
+of preprocessing. The relevant options for the @tt{action} selected are
 then shown, together with the relevant flags.
 
 A description of the values for each option will be given as it is
@@ -153,7 +176,7 @@ precise data structure shape and pointer sharing. It can also infer
 @bf{bounds on data structure sizes}, as well as procedure-level properties
 such as @bf{determinacy, termination, non-failure, and bounds on resource
 consumption} (time or space cost). @apl{CiaoPP} implements several techniques
-for dealing with ``difficult'' language features (such as
+for dealing with ''difficult'' language features (such as
 side-effects, meta-programming, higher-order, etc.)  and as a result
 can for example deal safely with arbitrary ISO-Prolog
 programs @cite{full-prolog-esop96}. A unified language of assertions
@@ -166,37 +189,47 @@ specifications.
 @subsection{Static Analysis Basics}
 
 Consider the program defining a module which exports the @tt{qsort} predicate:
-@includecode{tut_examples/qsort}
+
+```ciao_runnable
+:- module(_, [qsort/2], [assertions]).
+
+:- pred qsort(A,B) : (list(num, A), var(B)).
+
+qsort([],[]).
+qsort([First|Rest],Result) :-
+    partition(Rest,First,Sm,Lg),
+    qsort(Sm,SmS), qsort(Lg,LgS),
+    append(SmS,[First|LgS],Result).
+
+partition([],_,[],[]).
+partition([X|Y],F,[X|Y1],Y2):-
+    X =< F, partition(Y,F,Y1,Y2).
+partition([X|Y],F,Y1,[X|Y2]):-
+    X > F, partition(Y,F,Y1,Y2).
+
+append([],X,X).
+append([H|X],Y,[H|Z]):- append(X,Y,Z).
+```
 
 The @bf{sharing and freenes} analysis abstract domain computes @bf{freeness,
 independence, and grounding dependencies} between program variables.
 
 It is performed by selecting the menu option @tt{Aliasing-Mode}:
 
-@image{Figs/analysis-shfr-new}{671}{763}
+@image{Figs/analysis-shfr-new}{600}{375}
 
 The output of the analysis is performed via @em{assertions} (see @ref{Using
 assertions for preprocessing programs} for a detailed description). In this
 case three assertions appear:
  
-@begin{verbatim}
-:- true pred qsort(A,B)
-     : mshare([[A],[A,B],[B]])
-    => mshare([[A,B]]).
-:- true pred partition(A,B,C,D)
-     : ( var(C), var(D), mshare([[A],[A,B],[B],[C],[D]]) )
-    => ( ground(A), ground(C), ground(D), mshare([[B]]) ).
-:- true pred append(A,B,C)
-     : ( ground(A), mshare([[B],[B,C],[C]]) )
-    => ( ground(A), mshare([[B,C]]) ).
-@end{verbatim}
-
+@exfilter{qsort.pl}{A,types=none,modes=shfr,filter=tpred}
+ 
 These @em{assertions} express, for example, that the third and fourth arguments
-of @tt{partition} have ``output mode'': @bf{when @tt{partition} is called
-(@tt{:}) @var{C} and @var{D} are free unaliased variables} and they are
+of @tt{partition} have ''output mode'': @bf{when @tt{partition} is called
+(@tt{:}) @var{Y1} and @var{Y2} are free unaliased variables} and they are
 @bf{ground on success (@tt{=>})}. Also, @tt{append} is used in a mode in which
-the first argument is input (i.e., ground on call). Also, upon success the
-arguments of @tt{qsort} will share all variables (if any). ").
+the first and second argument are input (i.e., ground on call). 
+").
 
 %%%%% IG: Old from modular example
 % and imports predicates @tt{geq} and @tt{lt} from module
@@ -228,25 +261,12 @@ level and at the literal level
 domains can be selected with the menu option @code{Shape-Type} Analysis. As
 shown in the following screenshot:
 
-@image{Figs/analysis-eterms-new}{671}{763}
-
-The preprocessor will output, as before, the analysis with @bf{assertions}:
-
-@image{Figs/analysis-eterms-analyzed-new}{671}{763}
+@image{Figs/analysis-eterms-new}{600}{375}
 
 At the predicate level the inferred information is:
 
-@begin{verbatim}
-:- true pred qsort(A,B)
-     : ( list(num,A), term(B) )
-    => ( list(num,A), list(num,B) ).
-:- true pred partition(_A,_B,Left,Right)
-     : ( list(num,_A), num(_B), term(Left), term(Right) )
-    => ( list(num,_A), num(_B), list(num,Left), list(num,Right) ).
-:- true pred append(_A,X,_B)
-     : ( list(num,_A), rt5(X), term(_B) )
-    => ( list(num,_A), rt5(X), rt11(_B) ).
-@end{verbatim}
+@exfilter{qsort.pl}{A,types=eterms,modes=none,filter=tpred}
+
 where @tt{term} is any term and prop @tt{list} is defined
 in @tt{library(lists)} as:
 @begin{verbatim}
@@ -256,31 +276,16 @@ list(_T,[]).
 list(T,[X|L]) :- T(X), list(T,L).
 @end{verbatim}
 
-And there were two new inferred types:
+We have added a @tt{pred} assertion for the exported predicate @tt{qsort} expressing that
+it should be called with its first argument bound to a list of numbers.
+assertions 
 @begin{verbatim}
-:- regtype rt5/1.
-rt5([A]) :-
-    num(A).
-
-:- regtype rt11/1.
-rt11([A|B]) :-
-    num(A),
-    list(num,B).
+:- pred qsort(A,B) : (list(num, A), var(B)).
 @end{verbatim}
-
-@tt{Entry} assertions @cite{full-prolog-esop96}
-to specify a restricted class of calls to the module entry points as
-acceptable:
-@begin{verbatim}
-:- entry qsort(A,B) : (list(num, A), var(B)).
-@end{verbatim}
-This @bf{informs} the analyzer that @bf{in all external calls} to @tt{qsort},
-the @bf{first argument will be a list of numbers and the second a free
-variable}.  Note the use of builtin properties (i.e., defined in
+ Note the use of builtin properties (i.e., defined in
 modules which are loaded by default, such as @tt{var}, @tt{num},
 @tt{list}, etc.).  Note also that @bf{properties natively understood by
 different analysis domains can be combined} in the same assertion.
-
 
 @subsection{Non-failure and Determinacy Analysis:}
 
@@ -288,27 +293,22 @@ different analysis domains can be combined} in the same assertion.
 @cite{non-failure-iclp97} and @cite{nfplai-flops04}, which can detect procedures
 and goals that can be @bf{guaranteed not to fail}, i.e., to produce at least one
 solution or not terminate. It also can detect predicates that are
-@bf{``covered''}, i.e., such that for any input (included in the calling type of
-the predicate), there is at least one clause whose ``test'' (head unification
-and body builtins) succeeds. CiaoPP also includes a @bf{determinacy} analysis
+@bf{''covered''}, i.e., such that for any input (included in the calling type of
+the predicate), there is at least one clause whose ''test'' (head unification
+and body builtins) succeeds. @apl{CiaoPP} also includes a @bf{determinacy} analysis
 based on @cite{determ-lopstr04}, which can detect predicates which produce at
 most one solution, or predicates whose clause tests are mutually exclusive, even
 if they are not deterministic (because they call other predicates that can
 produce more than one solution). Programs can be analyzed with this kind of
 domains by selecting to perform @code{Non-Failure} Analysis with domain
 @code{nf}:
-
-@image{Figs/analysis-nf-new}{671}{763}
-
+ 
+@image{Figs/analysis-nf-new}{600}{375}
+ 
 Analyzing qsort with the @code{nf} domain will produce (among others) the
 following assertion:
 
-@begin{verbatim}
-:- true pred qsort(A,B)
-     : ( mshare([[B]]), var(B), ground([A]), list(num,A), term(B) )
-    => ( ground([A,B]), list(num,A), list(num,B) )
-     + ( not_fails, covered ).
-@end{verbatim}
+@exfilter{qsort.pl}{A,ana_nf=nf,name=qsort,filter=tpred_plus}
 
 The @tt{+} field in @tt{pred} assertions can contain a conjunction of global
 properties of the @em{computation} of the predicate. @tt{not_fails} states
@@ -324,7 +324,7 @@ infer lower and upper bounds on the sizes of terms and the computational
 cost of predicates @cite{low-bou-sas94,low-bounds-ilps97}.  The cost
 bounds are expressed as functions on the sizes of the input arguments
 and yield the number of resolution steps. Various measures are used
-for the ``size'' of an input, such as list-length, term-size,
+for the ''size'' of an input, such as list-length, term-size,
 term-depth, integer-value, etc.
 Note that obtaining a non-infinite upper bound on cost also implies
 proving @bf{termination} of the predicate.
@@ -341,50 +341,23 @@ This is done by replacing the first line by:
 Also, to be able to infer lower bounds a non-failure and determinacy analysis
 has to be performed:
 
-@image{Figs/analysis-resources-new}{671}{763}
+@image{Figs/analysis-resources-new}{600}{375}
 
 As an example, the following assertions are part of the output of 
 the upper bounds analysis:
 
-@begin{verbatim}
-:- true pred qsort(A,B)
-     : ( list(num,A), var(B) )
-    => ( list(num,A), list(num,B), size(ub,A,length(A)), size(ub,B,exp(2,length(A))-1.0) )
-     + cost(ub,steps,sum($(j),1,length(A),exp(2,length(A)- $(j))* $(j))+exp(2,length(A)-1)*length(A)+2.0*exp(2,length(A))-1.0).
-:- true pred append(_A,X,_B)
-     : ( list(_A,num), rt13(X), var(_B) )
-    => ( list(_A,num), rt13(X), rt13(_B), size(ub,_A,length(_A)), size(ub,X,length(X)), size(ub,_B,length(X)+length(_A)) )
-     + cost(ub,steps,length(_A)+1).
-@end{verbatim}
+@exfilter{qsort2.pl}{A,ana_nf=nf,ana_cost=resources,name=append,assertion=[cost,ub],filter=tpred_plus} 
 
-For example, the second assertion is inferring @bf{on success
+
+The assertion is inferring @bf{on success
 @tt{size(ub,_B,length(X)+length(_A))}}, which means that @bf{an (upper) bound}
 on the size of the third argument of @tt{append/3} is the @bf{sum of the sizes
 of the first and second arguments}. The inferred @bf{upper bound on
 computational steps} (@tt{+ cost(ub,steps,length(_A)+1)}) is @bf{the length of
 the first argument} of @tt{append/3}.
 
-The following is the output of the lower-bounds analysis:
-@begin{verbatim}
-:- true pred qsort(A,B)
-     : ( list(num,A), var(B) )
-    => ( list(num,A), list(num,B), size(lb,A,length(A)), size(lb,B,1) )
-     + cost(lb,steps,length(A)+3).
-:- true pred append(_A,X,_B)
-     : ( list(num,_A), rt13(X), var(_B) )
-    => ( list(num,_A), rt13(X), rt13(_B), size(lb,_A,length(_A)), size(lb,X,length(X)), size(lb,_B,length(X)+length(_A)) )
-     + cost(lb,steps,0).
-@end{verbatim}
-The lower-bounds analysis uses information from the non-failure
-analysis, without which a trivial lower bound of 0 would be derived.
-
-In this case it is inferred that on success the lower bound of the third
-argument of append is @bf{size(lb,_B,length(X)+length(_A))} (the same as the
-upper bound!), and the @bf{upper bound on computational steps} @tt{+
-cost(lb,steps,0)}, which represents the case in which the first list to
-concatenate is empty.
-").
- 
+").  
+  
 :- doc(module, "
 @subsection{Decidability, Approximations, and Safety}
 
@@ -397,10 +370,10 @@ bugs, of course) they are @bf{never @em{incorrect}}: the properties stated in
 inferred assertions do always hold of the program.
 
 @section{Program Debugging and Assertion Checking}
-@apl{ciaopp} is also capable of static assertion checking, and
+@apl{CiaoPP} is also capable of static assertion checking, and
 debugging using the ideas outlined so far. To this end, it implements
 the framework described in @cite{prog-glob-an,preproc-disciplbook}
-which involves several of the tools which comprise @apl{ciaopp}.
+which involves several of the tools which comprise @apl{CiaoPP}.
 The following figure depicts the overall
 architecture.
 
@@ -413,7 +386,7 @@ Program verification and detection of errors is first @bf{performed at compile-t
 by inferring properties of the program via abstract interpretation-based static
 analysis} and comparing this information against (partial) specifications written
 in terms of assertions (see @cite{ciaopp-sas03-journal-scp} for a detailed
-description of the sufficient conditions used for achieving this @apl{ciaopp}
+description of the sufficient conditions used for achieving this @apl{CiaoPP}
 functionality).
 
 The @bf{static checking} is @bf{provably @em{safe}} in the sense
@@ -439,7 +412,7 @@ appear in the output of the analyzer (i.e. the user should not use it).
 
 @item @bf{@tt{check}}: (input and output status) @bf{default} status (i.e., if
 no status is specified), expresses properties that the user wants @bf{ensured to
-hold at run-time}.
+hold at run-time}, i.e., that the analyzer should prove (or else generate run-time checks for). 
 @item @bf{@tt{trust}}: (input status) the assertion represents an @bf{actual
 behavior} of the predicate that @bf{the analyzer may not be able to infer
 automatically}.
@@ -468,7 +441,7 @@ as follows:
 The same approach can be used if the predicates are written in, e.g.,
 an external language such as, e.g., C or Java. Finally, assertions
 with a @tt{check} prefix 
-are the ones used to specify the @em{intended} semantics of the
+are the ones used to specify the @em{ intended} semantics of the
 program, which can then be used in debugging and/or validation, 
 as we will see later in this section.
 Interestingly, this
@@ -504,7 +477,8 @@ qsort([X|L],R) :-
 
 
 :- doc(module, "
-    In CiaoPP @bf{properties are predicates}, which may be @bf{builtin or user defined}.
+
+In @apl{CiaoPP} @bf{properties are predicates}, which may be @bf{builtin or user defined}.
 For example, the property @tt{var} used in the above examples is the standard
 builtin predicate to check for a free variable. The same applies to @tt{ground}
 and @tt{mshare}. The properties used by an analysis in its output (such as
@@ -529,53 +503,110 @@ or, using the functional syntax package, more compactly as:
 :- prop list/1. list := [] | [_|list].
 @end{verbatim}
 
-defines the property ``@tt{list}''. A list is an instance of a very useful class of
+defines the property ''@tt{list}''. A list is an instance of a very useful class of
 user-defined properties called @em{regular types}
 @cite{yardeni87,Dart-Zobel,gallagher-types-iclp94,set-based-absint-padl,eterms-sas02},
 which herein are simply a syntactically restricted class of logic programs. We
-can mark this fact by stating ``@tt{:- regtype list/1.}'' instead of ``@tt{:-
+can mark this fact by stating ''@tt{:- regtype list/1.}'' instead of ''@tt{:-
 prop list/1.}'' (this can be done automatically). The definition above can be
 included in a user program or, alternatively, it can be imported from a system
 library, e.g.: @tt{:- use_module(library(lists),[list/1]).}
 
 @subsection{Using analysis information for debugging}
 
-    The idea of using analysis information
+The idea of using analysis information
 for debugging comes naturally after observing analysis @bf{outputs for
 erroneous programs}.  Consider this buggy implementation of qsort:
 
-@includecode{tut_examples/qsort_bug}
+```ciao_runnable
+:- module(qsort, [qsort/2], [assertions]).
+
+:- pred qsort(A,B) : (list(num, A), var(B)).
+
+qsort([],[]).
+qsort([First|Rest],Result) :-
+    partition(Rest,First,Sm,Lg),
+    qsort(Sm,SmS), qsort(Lg,LgS),
+    append(SmS,[x|LgS],Result).  % <-- 'x' should be X (variable)
+
+partition([],_,[],[]).
+partition([X|Y],F,[X|Y1],Y2):-
+    X =< F, partition(Y,F,Y1,Y2).
+partition([X|Y],F,Y1,[X|Y2]):-
+    X > F, partition(Y,F,Y1,Y2).
+
+append([],X,X).
+append([H|X],Y,[H|Z]):- append(X,Y,Z).
+```
 
 The result of regular type analysis for this program includes the
 following code:
-@begin{verbatim}
+
+@exfilter{bugqsort.pl}{A,types=eterms,name=qsort,modes=none,filter=tpred}
+
+@comment{
+@begin{verbatim} 
 :- true pred qsort(A,B)
      : ( list(num,A), term(B) )
     => ( list(num,A), list(^(x),B) ).
-@end{verbatim}
-where @bf{@tt{list(^x,B)} means ``B is a list of atoms @tt{x}.''}. The information
+@end{verbatim}}
+where @bf{@tt{list(^x,B)} means ''B is a list of atoms @tt{x}.''}. The information
 inferred does not seem compatible with a correct definition of @tt{qsort}, which
 clearly points to a bug in the program.
 
 @subsection{Static Checking of Assertions in System Libraries}
 
-In addition to manual inspection of the analyzer output, @apl{ciaopp} includes a
+In addition to manual inspection of the analyzer output, @apl{CiaoPP} includes a
 number of automated facilities to help in the debugging task. For example,
-@apl{ciaopp} can @bf{find incompatibilities} between the ways in which library
+@apl{CiaoPP} can @bf{find incompatibilities} between the ways in which library
 predicates are called and their intended mode of use, expressed in the form of
-assertions in the libraries themselves. Also, the preprocessor can @bf{detect
-inconsistencies in the program} and @bf{check the assertions} present in other
-modules used by the program.
+assertions in the libraries themselves. 
 
+If we remove the assertion from the @pred{qsort} program:
 
+```ciao_runnable
+:- module(_, [qsort/2], [assertions, regtypes, nativeprops]).
+
+qsort([],[]).
+qsort([First|Rest],Result) :-
+    partition(Rest,First,Sm,Lg),
+    qsort(Sm,SmS), qsort(Lg,LgS),
+    append(SmS,[First|LgS],Result).
+
+partition([],_,[],[]).
+partition([X|Y],F,[X|Y1],Y2):-
+    X =< F, partition(Y,F,Y1,Y2).
+partition([X|Y],F,Y1,[X|Y2]):-
+    X > F, partition(Y,F,Y1,Y2).
+
+append([],X,X).
+append([H|X],Y,[H|Z]):- append(X,Y,Z).
+```
+and no other information is provided, the exported predicate @pred{qsort/2} can
+be called with arbitrarily instantiated terms as arguments. This implies that the
+library predicates @pred{=</2} and @pred{>/2} in @pred{partition/4} can also be called
+with arbitrary terms and thus run-time errors are possible, since @pred{=</2} and
+@pred{>/2} require their arguments to be bound to arithmetic expressions when called.
+Even though there are no assertions in the program itself, the system is able to warn that
+it cannot verify the calls to @pred{=</2} and @pred{>/2}. To this end, run compile-time
+error checking and select type and mode analysis for our
+tentative @tt{qsort} program, by selecting the action @em{analyze_check} again.
+We obtain the following messages (and the system highlights the line
+which produces the first of them, as shown:
+
+@exfilter{qsort_without_assertions.pl}{V,filter=warnings}
+ 
+This is the result of a modular global analysis and a comparison of the inferred
+information at the program points before the calls to @pred{=</2} and @pred{>/2} with
+the assertions that express the calling restrictions on  @pred{=</2} and  @pred{>/2}. Such
+assertions live in the libraries which provide these standard predicates.
+
+@comment{
 Consider a different implementation of @tt{qsort}, also with bugs:
-
-@includecode{tut_examples/qsort2}
 
 We run compile-time error checking and selecting type and mode analysis for our
 tentative @tt{qsort} program, by selecting the action @em{check_assertions}.
 
-@image{Figs/debugging-ctchecking1a-new}{671}{763}
 
 By default, the option @em{Perform Compile-Time Checks} is set to @em{auto},
 which means that the system will @bf{automatically detect the analyses to be
@@ -583,7 +614,6 @@ performed} in order to check the program, depending on the information available
 in the program assertions (in the example in The entry assertion informs how the
 predicate @tt{qsort/2} will be called using types and modes information only).
 
-@image{Figs/debugging-ctchecking1b-new}{671}{763}
 
 Using the default options, and setting @em{Report Non-Verified Assrts} to
 @em{error}, we obtain the following messages (and the system highlights the line
@@ -592,7 +622,7 @@ which produces the first of them, as shown:
 @begin{verbatim}
 WARNING (preproc_errors): (lns 5-8) goal qsort2:partition(L,L1,X,L2) at literal 1 does not succeed!
 
-WARNING (ctchecks_pp_messages): (lns 11-12) the head of clause 'qsort2:partition/4/2' is incompatible with its call type
+WARNING (ctchecks_messages): (lns 11-12) the head of clause 'qsort2:partition/4/2' is incompatible with its call type
      Head:      qsort2:partition([e|R],C,[E|Left1],Right)
      Call Type: qsort2:partition(basic_props:list(num),term,num,term)
 
@@ -623,7 +653,7 @@ third arguments in reversed order -- @bf{the correct call is
 After correcting this bug, we proceed to perform another round of
 compile-time checking, which continues producing the following message:
 @begin{verbatim}
-WARNING (ctchecks_pp_messages): (lns 11-12) the head of clause 'qsort2:partition/4/2' is incompatible with its call type
+WARNING (ctchecks_messages): (lns 11-12) the head of clause 'qsort2:partition/4/2' is incompatible with its call type
      Head:      qsort2:partition([e|R],C,[E|Left1],Right)
      Call Type: qsort2:partition(basic_props:list(num),term,num,term)
 @end{verbatim}
@@ -632,13 +662,10 @@ Checking this clause we see that in the first argument of the head
 there is an @tt{e} which should be @tt{E} instead.
 Compile-time checking of the program with this bug corrected does not
 produce any further warning or error messages.
+}
 
 @subsection{Static Checking of User Assertions and Program
   Validation}
-
-@begin{alert}
-TODO: This section is not finished
-@end{alert}
 
 Though, as seen above, it is often possible to detect error without adding
 assertions to user programs, if the program is not correct, the more assertions
@@ -650,109 +677,92 @@ stable. In order to be more confident about our program, we add to it the
 following @tt{check} assertions: @footnote{The @tt{check} prefix is assumed when
 no prefix is given, as in the example shown.}
 
-@begin{verbatim}
-:- calls qsort(A,B) : list(num, A).                        % A1
-:- success qsort(A,B)  => (ground(B), sorted_num_list(B)). % A2
-:- calls partition(A,B,C,D) : (ground(A), ground(B)).      % A3
-:- success partition(A,B,C,D) => (list(num, C),ground(D)). % A4
-:- calls append(A,B,C) : (list(num,A),list(num,B)).        % A5
-:- comp partition/4 + not_fails.                           % A6
-:- comp partition/4 + is_det.                              % A7
-:- comp partition(A,B,C,D) + terminates.                   % A8
+```ciao_runnable
+:- module(_, [qsort/2], [assertions, regtypes, nativeprops]).
 
-:- prop sorted_num_list/1.
-sorted_num_list([]).
-sorted_num_list([X]):- number(X).
-sorted_num_list([X,Y|Z]):- 
-    number(X), number(Y), X=<Y, sorted_num_list([Y|Z]).
-@end{verbatim}
+:- regtype list_num(A).
+list_num([]).
+list_num([A|B]) :- num(A), list_num(B).
 
-where we also use a new property, @tt{sorted_num_list}, defined in the module
-itself. These assertions provide a partial specification of the program. They
+:- calls qsort(A,B) : list_num(A).                           % A1
+:- success qsort(A,B)  => (list_num(B)).                     % A2
+:- calls partition(A,B,C,D) : (ground(A), num(B)).           % A3
+:- success partition(A,B,C,D) => (list(num, C), ground(D)).  % A4
+:- comp partition/4 + not_fails.                             % A5
+:- comp partition/4 + is_det.                                % A6
+
+
+qsort([],[]).
+qsort([First|Rest],Result) :-
+    partition(Rest,First,Sm,Lg),
+    qsort(Sm,SmS), qsort(Lg,LgS),
+    append(SmS,[First|LgS],Result).
+
+partition([],_,[],[]).
+partition([X|Y],F,[X|Y1],Y2):-
+    X < F, partition(Y,F,Y1,Y2). % (1) should be >= (or =< below)
+partition([X|Y],F,Y1,[X|Y2]):-
+    X > F, partition(Y,F,Y1,Y2).
+
+append([],X,X).
+append([H|X],Y,[H|Z]):- append(X,Y,Z).
+```
+
+The properties that are used in assertions (such as “list of numbers”) are defined.
+As mentioned before, such properties are typically written in Prolog and its extensions;
+and they can also be built-in and/or imported from libraries.
+But note that here we have defined the regtype, @tt{list_num}. Marking predicates
+as properties allows them to be used in assertions, but they remain regular predicates,
+and can be called as any other, and also used as run-time tests, to generate examples (test cases), etc. Both are correct and we can use them independently.
+
+These assertions provide a partial specification of the program. They
 can be seen as integrity constraints: if their properties do not hold at the
 corresponding program points (procedure call, procedure exit, etc.), the program
 is incorrect. @tt{Calls} assertions specify properties of all calls to a
 predicate, while @tt{success} assertions specify properties of exit points for
 all calls to a predicate. Properties of successes can be restricted to apply
-only to calls satisfying certain properties upon entry by adding a ``@tt{:}''
+only to calls satisfying certain properties upon entry by adding a @tt{:}
 field to @tt{success} assertions. Finally, @tt{Comp} assertions specify
-@em{global} properties of the execution of a predicate. These include complex
-properties such as determinacy or termination and are in general not amenable to
+@em{global} properties of the execution of a predicate. These complex
+properties such as determinacy or termination are in general not amenable to
 run-time checking. They can also be restricted to a subset of the calls using
-``@tt{:}''. More details on the assertion language can be found in
+@tt{:}. Also, instead of the above basic assertions, the following compound one could be given:
+
+```ciao
+:- pred partition(A,B,C,D) : (ground(A), num(B)) => (list(num, C),ground(D)).
+```
+which will be equivalent to:
+```ciao
+:- calls partition(A,B,C,D) : (ground(A), num(B)).
+:- success partition(A,B,C,D) : (ground(A), num(B)) => (list(num,C), ground(D)).
+```
+
+More details on the assertion language can be found in 
 @cite{assert-lang-disciplbook}.
 
-@apl{ciaopp} can perform compile-time checking of the assertions above, by
+@apl{CiaoPP} can perform compile-time checking of the assertions above, by
 comparing them with the assertions inferred by analysis 
 (see
 @cite{ciaopp-sas03-journal-scp,aadebug97-informal,assrt-theoret-framework-lopstr99} for 
 details), producing as output the following assertions: 
-@begin{verbatim}
-:- checked calls qsort(A,B) : list(num,A).                        % A1
-:- check success qsort(A,B)  => sorted_num_list(B).               % A2
-:- checked calls partition(A,B,C,D) : (ground(A),ground(B)).      % A3
-:- checked success partition(A,B,C,D) => (list(num,C),ground(D) ).% A4 
-:- false calls append(A,B,C) : ( list(num,A), list(num,B) ).      % A5
-:- checked comp partition/4 + not_fails.                          % A6
-:- checked comp partition/4 + is_det.                             % A7
-:- checked comp partition/4 + terminates.                         % A8
-@end{verbatim}
-In order to produce this output, the @apl{ciaopp} @em{check_assertions}
-menu must be set to the same options as those used in
-Figure @ref{fig:debugging-ctchecking1a} for checking assertions in
-system libraries.
-Since the @em{auto} mode has been used for the option @em{Perform Compile-Time Checks}, CiaoPP has automatically detected that the
+
+@exfilter{bugqsort_assertions.pl}{V,output=on,filter=check_pred} 
+
+In order to produce this output, the @apl{CiaoPP} @em{analyze_check}
+menu.
+@apl{CiaoPP} has automatically detected that the
 program must be analyzed not only for types and modes domains, but
 also to check non-failure, determinism, and upper-bound cost.
-Note that a number of initial assertions have been marked as
+For each assertion originally with status @tt{check}, the result of this process can be: that it is verified (the new status is @tt{checked}), that a violation is detected (the new status is @tt{false}), or that it is not possible to decide either way, in which case the assertion status remains as check. Note that a number of initial assertions have been marked as
 @tt{checked}, i.e., they have been @em{validated}. If all
 assertions had been moved to this @tt{checked} status, the program
-would have been @em{verified}. In these cases @apl{ciaopp} is capable of
+would have been @em{verified}. In these cases @apl{CiaoPP} is capable of
 generating certificates which can be checked efficiently for, e.g.,
 mobile code applications @cite{cocv04-ai-safety}.  However, in our case
-assertion @tt{A5} has been detected to be false.  This indicates a
-violation of the specification given, which is also flagged by @apl{ciaopp}
-as follows:
-@begin{verbatim}
-ERROR: (lns 22-23) false calls assertion:
-   :- calls append(A,B,C) : list(num,A),list(num,B)
-      Called append(list(^x),[^x|list(^x)],var)
-@end{verbatim}
-The error is now in the call @tt{append(R2,[x|R1],R)} in
-@tt{qsort}
-(@tt{x} instead of @tt{X}).
-Assertions @tt{A1},
-@tt{A3}, @tt{A4}, @tt{A6}, @tt{A7}, and @tt{A8} have been
-detected to hold.
-Note that though the predicate @tt{partition} may fail in general, in
-the context of the current program it can be proved not to fail
-(assertion @tt{A6}).
-However, it was not possible to prove statically assertion @tt{A2},
-which has remained with @tt{check} status.
-Note also that @tt{A2}
-has been simplified, and this is because the mode analysis has
-determined that on success the second argument of @tt{qsort} is
-ground, and thus this does not have to be checked at run-time.  On the
-other hand the analyses used in our session (types, modes,
-non-failure, determinism, and upper-bound cost analysis) do not
-provide enough information to prove that the output of @tt{qsort} is
-a @em{sorted} list of numbers, since this is not a native property of
-the analyses being used. While this property could be captured by
-including a more refined domain (such as constrained types), it is
-interesting to see what happens with the analyses selected for the
-example.
-
-@footnote{Note that while property @tt{sorted_num_list}
-  cannot be proved with only (over approximations) of mode and regular
-  type information, it may be possible to prove that it does @em{not}
-  hold (an example of how properties which are not natively understood
-  by the analysis can also be useful for detecting bugs at
-  compile-time): while the regular type analysis cannot capture
-  perfectly the property @tt{sorted_num_list}, it can still
-  approximate it (by analyzing the definition) as @tt{list(num, B)}.
-  If type analysis for the program were to generate a type for @tt{B}
-  not compatible with @tt{list(num, B)}, then a definite error
-  symptom would be detected.}
+assertion @tt{A5} has remained with check status.
+This is because the case where @var{X}=@var{F} is not “covered” by the “tests”
+of @pred{partition/4}.
+ 
 
 ").
 
@@ -762,7 +772,7 @@ example.
 @subsection{Dynamic Debugging with Run-time Checks}
 Assuming that we stay with the analyses selected previously, the following step
 in the development process is to compile the program obtained above with the
-``generate run-time checks'' option. @apl{ciaopp} will then introduce run-time
+''generate run-time checks'' option. @apl{ciaopp} will then introduce run-time
 tests in the program for those @tt{calls} and @tt{success} assertions which have
 not been proved nor disproved during compile-time (see again
 Figure @ref{fig:chiprewhere}). In our case, the program with run-time checks
@@ -797,7 +807,7 @@ L = [2,1] ?
 @end{verbatim}
 Clearly, there is a problem with @tt{qsort}, since @tt{[2,1]} is not
 the result of ordering @tt{[1,2]} in ascending order. This is a (now,
-run-time, or @em{concrete}) incorrectness symptom, which can be used
+run-time, or @em{ concrete}) incorrectness symptom, which can be used
 as the starting point of diagnosis. The result of such diagnosis
 should indicate that the call to @tt{append} (where @tt{R1} and
 @tt{R2} have been swapped) is the cause of the error and that the
@@ -809,99 +819,91 @@ Figure @ref{fig:qsortnomod}.
 :- doc(module, "
 @subsection{Performance Debugging and Validation:}
 
-@apl{ciaopp} allows stating assertions about the efficiency of the program. This
+@apl{CiaoPP} allows stating assertions about the efficiency of the program. This
 is done by stating @bf{lower and/or upper bounds on the computational cost} of
 predicates (given in number of execution steps). Consider for example the naive
 reverse program:
 
-@includecode{tut_examples/nrev.pl}
-
 Suppose that the programmer thinks that @bf{the cost of @tt{nrev} is
 given by a linear function on the size (list-length) of its first
 argument}, maybe because he has not taken into account the cost of the
-@tt{append} call, and adds the assertion:
+@tt{append} call, and adds the assertion: 
 
-@code{:- check comp nrev(A,B) + steps_ub(length(A)+1).}
+```ciao_runnable
+:- module(_, [nrev/2], [assertions]).
 
-Since @tt{append} is linear, it causes @tt{nrev} to be quadratic. @apl{ciaopp}
+:- use_module(library(assertions/native_props)).
+
+:- pred nrev(A,B) : (ground(A), list(A), var(B)).
+%! \\begin{focus}
+:- check comp nrev(A,B) + steps_ub(length(A)+1).   
+
+nrev([],[]).
+nrev([H|L],R) :-
+    nrev(L,R1),
+    append(R1,[H],R).
+
+append([],Ys,Ys).
+append([X|Xs],Ys,[X|Zs]):- append(Xs,Ys,Zs).
+%! \\end{focus}
+```
+
+Since @tt{append} is linear, it causes @tt{nrev} to be quadratic. @apl{CiaoPP}
 can be used to inform the programmer about this false idea about the cost of
 @tt{nrev}. 
 
-As before, we set the option @tt{Select Action Group} to @tt{check_assertions}
-in the menu:
+As before, we set the option @tt{Action} to @tt{analyze_check}
+in the menu. We get the following error message:
 
-@image{Figs/debugging-performance1-new}
-
-The output is:
-
-@image{Figs/debugging-performance2-new}
-
-We get the following error message:
-
-@begin{verbatim}
-ERROR (ctchecks_pred_messages): (lns 6-6) False assertion:
-:- check comp nrev(A,B)
-     + steps_ub(length(A)+1).
-
-because 
-on comp nrev:nrev(A,B) :
-
-[generic_comp] : covered,is_det,mut_exclusive,not_fails,steps_lb(0.5*exp(length(A),2)+1.5*length(A)+1),steps_ub(0.5*exp(length(A),2)+1.5*length(A)+1),[A:(name57,rt103),B:(name59,rt102)]
-@end{verbatim}
-
+@exfilter{nrev.pl}{V,asr_not_stat_eval=warning,ctchecks_intervals=off,filter=errors}
+ 
 This message states that @bf{@tt{nrev}} will take @bf{at least
-@math{0.5*(length(A))^2 + 1.5*length(A) + 1} resolution steps} (which is the
+@tt{0.5*(length(A))^2 + 1.5*length(A) + 1} resolution steps} (which is the
 cost analysis output), while the @bf{assertion requires that it take at most
-@math{length(A)+1}} resolution steps. The cost function in the user-provided
+@tt{length(A)+1}} resolution steps. The cost function in the user-provided
 assertion is compared with the lower-bound cost assertion inferred by analysis.
 This allows detecting the inconsistency and proving that the program does not
 satisfy the efficiency requirements imposed. Upper-bound cost assertions can
-also be proved to hold, i.e., can be @em{checked}, by using upper-bound cost
+also be proved to hold, i.e., can be @tt{checked}, by using upper-bound cost
 analysis rather than lower-bound cost analysis. In such case, it holds when the
 upper-bound computed by analysis is lower or equal than the upper-bound stated
 by the user in the assertion. The converse holds for lower-bound cost
 assertions.
 
-@apl{ciaopp} can also verify or falsify cost assertions expressing @bf{worst
+@apl{CiaoPP} can also verify or falsify cost assertions expressing @bf{worst
 case computational complexity orders} (this is specially useful if the
 programmer does not want or does not know which particular cost
 function should be checked). For example, suppose now that the
-programmer adds the following ``check'' assertion:
+programmer adds the following ''check'' assertion:
 
-@code{:- check comp nrev(A,B) + steps_o(length(A)).}
-
+```ciao
+:- check comp nrev(A,B) + steps_o(length(A)).
+```
 In this case, we get the following error message:
 
-@begin{verbatim}
-ERROR (ctchecks_pred_messages): (lns 7-7) False assertion:
-:- check comp nrev(A,B)
-     + steps_o(length(A)).
+@exfilter{nrev2.pl}{V,asr_not_stat_eval=warning,ctchecks_intervals=off,filter=errors}
 
-because 
-on comp nrev:nrev(A,B) :
+This message states that @tt{nrev} will take at least @tt{0.5*(length(A))^2 +
+1.5*length(A) + 1} resolution steps (which is the cost analysis output, as in
+the previous example), while the assertion requires that the worst case cost of
+@tt{nrev} be linear on @tt{length(A)} (the size of the input argument).
 
-[generic_comp] : covered,is_det,mut_exclusive,not_fails,steps_lb(0.5*exp(length(A),2)+1.5*length(A)+1),steps_ub(0.5*exp(length(A),2)+1.5*length(A)+1),[A:(name57,rt103),B:(name59,rt102)]
-@end{verbatim}
+If the programmer adds now the following ''check'' assertion:
 
-This message states that @tt{nrev} will take at least
-@math{0.5*(length(A))^2 + 1.5*length(A) + 1} resolution steps (which
-is the cost analysis output, as in the previous example), while the
-assertion requires that the worst case cost of @tt{nrev} be linear on
-@math{length(A)} (the size of the input argument).
-
-If the programmer adds now the following ``check'' assertion:
-
-@code{:- check comp nrev(A,B) + steps_o(exp(length(A),2)).}
+```ciao
+:- check comp nrev(A,B) + steps_o(exp(length(A),2)).
+```
 
 which states that the worst case cost of @tt{nrev} is quadratic, i.e.
 is in @math{O(n^{2})}, where @math{n} is the length of the first list
 (represented as @tt{length(A)}). Then the assertion is validated and
-the following ``checked'' assertion is included in the output produced
-by @apl{ciaopp}:
+the following ''checked'' assertion is included in the output produced
+by @apl{CiaoPP}:
 
-@code{:- checked comp nrev(A,_1) + steps_o( exp(length(A), 2) ).}
+@exfilter{nrev3.pl}{V,output=on,asr_not_stat_eval=warning,ctchecks_intervals=off,filter=check_pred}
 
-@apl{ciaopp} can certify programs with resource consumption assurances
+
+@apl{CiaoPP} can certify programs with resource consumption assurances
 @cite{tutorial-europar04}.
 ").
 
@@ -1070,7 +1072,7 @@ tests may be eliminated and invariants extracted automatically from
 loops, resulting generally in lower overheads and in several cases in
 increased speedups. We consider automatic parallelization of a program
 for matrix multiplication using the same analysis and parallelization
-algorithms as the @tt{qsort} example used in
+algorithms as the @tt{ qsort} example used in
 Section @ref{Parallelization}.
 
 ").
@@ -1102,7 +1104,7 @@ the recursive clause of @tt{multiply} (these tests essentially check
 that the arrays do not contain pointers that point in such a way that
 would make the @tt{vmul} and @tt{multiply} calls be dependent). 
 However, abstract multiple
-specialization generates four versions of the predicate @tt{multiply}
+specialization generates four versions of the predicate @tt{ multiply}
 which correspond to the different ways this predicate may be called
 (basically, depending on whether the tests succeed or not). Of these
 four variants, the most optimized one is:
@@ -1311,7 +1313,7 @@ program transformations performed by partial evaluation.  We will use
 the challenge program of Figure @ref{fig:peanoarithm}.
 
 A simple Peano's arithmetic program:
-@includecode{tut_examples/peano}
+@includecode{code/peano}
 
 It is a simple @apl{ciao} program which uses Peano's arithmetic. The @tt{entry}
 declaration is used to inform that all calls to the only exported predicate
@@ -1425,9 +1427,9 @@ data structures at run-time.
 
 Consider the following program :
 
-@includecode{tut_examples/qsort_par}
+@includecode{code/qsort_par}
 
-A possible parallelization is:
+A possible parallelization is: 
 
 @begin{verbatim}
 qsort([X|L],R) :-
@@ -1476,7 +1478,7 @@ independent and-parallelism, provided the definition of independence is applied
 at the appropriate granularity level.
 @footnote{For example, stream
 and-parallelism can be seen as independent and-parallelism if the independence
-of ``bindings'' rather than goals is considered.}
+of ''bindings'' rather than goals is considered.}
 
     ").
 :- endif.
@@ -1512,7 +1514,7 @@ of the selected menu options to achieve this is depicted in Figure
 @image{Figs/optimization-granularity}
 
 In the resulting optimized code, @apl{ciaopp} adds a clause:
-``@tt{qsort(_1,_2) :- g_qsort(_1,_2).}''
+''@tt{qsort(_1,_2) :- g_qsort(_1,_2).}''
 (to preserve the original entry point) and produces 
 @tt{g_qsort/2}, the version of @tt{qsort/2} that performs
 granularity control (@tt{s_qsort/2} is the sequential version):
@@ -1557,7 +1559,7 @@ partition_o3_4([E|R],C,Left,[E|Right1],_1,_2) :-
     E>=C, partition_o3_4(R,C,Left,Right1,_1,_3), _2 is _3+1.
 @end{verbatim}
 
-is the transformed version of @tt{partition/4}, which \"on the fly\"
+is the transformed version of @tt{ partition/4}, which \"on the fly\"
 computes the sizes of its third and fourth arguments (the
 automatically generated variables @tt{_1} and @tt{_2} represent
 these sizes respectively) @cite{termsize-iclp95}.

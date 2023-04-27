@@ -1,0 +1,11 @@
+:- true pred qsort(A,B)
+   : ( mshare([[B]]),
+       var(B), ground([A]), list(num,A), term(B) )
+   => ( ground([A,B]), list(num,A), list(num,B) )
+   + ( not_fails, covered ).
+
+:- true pred qsort(A,B)
+   : ( mshare([[B]]),
+       var(B), ground([A]), list(num,A), term(B) )
+   => ( ground([A,B]), list(num,A), list(num,B) )
+   + ( not_fails, covered ).

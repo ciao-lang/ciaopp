@@ -1,0 +1,10 @@
+ERROR (ctchecks_pred_messages): (lns 6-6) False assertion:
+:- check comp nrev(A,B)
+   + steps_ub(length(A)+1).
+because the comp field is incompatible with inferred comp:
+[generic_comp] covered,is_det,mut_exclusive,not_fails,steps_lb(0.5*exp(length(A),2)+1.5*length(A)+1),steps_ub(0.5*exp(length(A),2)+1.5*length(A)+1)
+
+
+
+ERROR (auto_interface): Errors detected. Further preprocessing aborted.
+

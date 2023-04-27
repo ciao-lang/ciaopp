@@ -1,0 +1,7 @@
+
+:- true pred append(_A,X,_B)
+   : ( list(num,_A), list1(num,X), var(_B) )
+   => ( list(num,_A), list1(num,X), list1(num,_B),
+        size(ub,length,_B,length(X)+length(_A)) )
+   + cost(ub,steps,length(_A)+1).
+

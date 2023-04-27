@@ -1,0 +1,15 @@
+:- true pred qsort(A,B)
+   : ( mshare([[B]]),
+       var(B), ground([A]) )
+   => ground([A,B]).
+
+:- true pred partition(_A,_1,Y1,Y2)
+   : ( mshare([[Y1],[Y2]]),
+       var(Y1), var(Y2), ground([_A,_1]) )
+   => ground([_A,_1,Y1,Y2]).
+
+:- true pred append(_A,X,_B)
+   : ( mshare([[_B]]),
+       var(_B), ground([_A,X]) )
+   => ground([_A,X,_B]).
+

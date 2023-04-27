@@ -1,0 +1,3 @@
+:- true pred qsort(A,B)
+   : ( term(A), term(B) )
+   => ( list(num,A), list(^(x),B) ).

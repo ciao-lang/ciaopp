@@ -1,0 +1,12 @@
+:- true pred qsort(A,B)
+   : ( list(num,A), term(B) )
+   => ( list(num,A), list(num,B) ).
+
+:- true pred partition(_A,_1,Y1,Y2)
+   : ( list(num,_A), num(_1), term(Y1), term(Y2) )
+   => ( list(num,_A), num(_1), list(num,Y1), list(num,Y2) ).
+
+:- true pred append(_A,X,_B)
+   : ( list(num,_A), list1(num,X), term(_B) )
+   => ( list(num,_A), list1(num,X), list1(num,_B) ).
+
