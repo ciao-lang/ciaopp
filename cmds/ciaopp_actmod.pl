@@ -19,14 +19,14 @@
 :- use_module(library(actmod_http), []). % (include actmod_http)
 :- use_module(ciaopp_client, _, [active]). % (for set_buf/2)
 
-% ----- (loaded dynamically in ciaoppcl)
+% ----- (loaded dynamically in ciaoppcl_common)
 :- use_module(ciaopp(p_unit/p_asr), []).
 :- use_module(ciaopp(analyze_driver), []).
 :- use_module(ciaopp(transform_driver), []).
 :- use_module(ciaopp(auto_interface), []). % TODO: needed?
 %
-:- use_module(ciaoppcl, [
-    short_usage_message/0, parse_opts/3, ciaopp_run/2,
+:- use_module(ciaopp(ciaoppcl_common), [
+    parse_opts/3, ciaopp_run/2,
     ciaopp_error_message/1
 ]).
 %
@@ -63,10 +63,9 @@ cmdrun__(Args0) :-
 cmdrun__(_) :-
     display(user_error, '{ERROR: Unrecognized argument list}'), nl(user_error).
 
-ciaopp_cmd(help, _Flags) :- !,
-    short_usage_message.
 ciaopp_cmd(Cmd, _Flags) :- 
-    ( Cmd = toplevel(_)
+    ( Cmd = help % (use ciaoppcl)
+    ; Cmd = toplevel(_)
     ; Cmd = customize_and_preprocess(_)
     ; Cmd = restore_menu(_,_)
     ),
