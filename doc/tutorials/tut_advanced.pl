@@ -211,8 +211,18 @@ append([],X,X).
 append([H|X],Y,[H|Z]):- append(X,Y,Z).
 ```
 
-The @bf{sharing and freenes} analysis abstract domain computes @bf{freeness,
-independence, and grounding dependencies} between program variables.
+We have added a @tt{pred} assertion for the exported predicate
+@tt{qsort} expressing that it should be called with its first argument
+bound to a list of numbers.
+
+Note the use of builtin properties (i.e., defined in modules which are
+loaded by default, such as @tt{var}, @tt{num}, @tt{list}, etc.).  Note
+also that @bf{properties natively understood by different analysis
+domains can be combined} in the same assertion.
+
+The @bf{sharing and freeness} analysis abstract domain computes
+@bf{freeness, independence, and grounding dependencies} between
+program variables.
 
 It is performed by selecting the menu option @tt{Aliasing-Mode}:
 
@@ -267,25 +277,18 @@ At the predicate level the inferred information is:
 
 @exfilter{qsort.pl}{A,types=eterms,modes=none,filter=tpred}
 
-where @tt{term} is any term and prop @tt{list} is defined
+where @tt{term} is any term and prop @tt{list} and @tt{list1} are defined
 in @tt{library(lists)} as:
-@begin{verbatim}
+```ciao
 :- regtype list(T,L) #\"@var{L} is a list of @var{T}'s.\".
 :- meta_predicate list(pred(1),?).
 list(_T,[]).
 list(T,[X|L]) :- T(X), list(T,L).
-@end{verbatim}
 
-We have added a @tt{pred} assertion for the exported predicate @tt{qsort} expressing that
-it should be called with its first argument bound to a list of numbers.
-assertions 
-@begin{verbatim}
-:- pred qsort(A,B) : (list(num, A), var(B)).
-@end{verbatim}
- Note the use of builtin properties (i.e., defined in
-modules which are loaded by default, such as @tt{var}, @tt{num},
-@tt{list}, etc.).  Note also that @bf{properties natively understood by
-different analysis domains can be combined} in the same assertion.
+:- regtype list1(T,X) # \"@var{X} is a list of @var{Y}s of at least one element.\".
+:- meta_predicate list1(pred(1),?).
+list1(T,[X|R]) :- T(X), list(T,R).
+```
 
 @subsection{Non-failure and Determinacy Analysis:}
 
@@ -334,9 +337,9 @@ defining the resource to be used has to be imported in the module, in this case
 we use the default package that infers information about computation al steps.
 This is done by replacing the first line by:
 
-@begin{verbatim}
+```ciao
 :- module(qsort, [qsort/2], [assertions,predefres(res_steps)]).
-@end{verbatim}
+```
 
 Also, to be able to infer lower bounds a non-failure and determinacy analysis
 has to be performed:
@@ -433,10 +436,10 @@ Figure @ref{fig:qsort},
 we could describe the mode of the (now
 missing) @tt{geq} and @tt{lt} predicates to the analyzer for example
 as follows:
-@begin{verbatim}
+```ciao
 :- trust pred geq(X,Y) => ( ground(X), ground(Y) ).
 :- trust pred lt(X,Y)  => ( ground(X), ground(Y) ).
-@end{verbatim}
+```
 
 The same approach can be used if the predicates are written in, e.g.,
 an external language such as, e.g., C or Java. Finally, assertions
@@ -465,13 +468,13 @@ of this, the following
 is a fragment of the output produced by CiaoPP for the program in
 Figure @ref{fig:qsort} when information is requested at this level:
 
-@begin{verbatim}
+```ciao
 qsort([X|L],R) :-
   true((ground(X),ground(L),var(R),var(L1),var(L2),var(R2), ...
   partition(L,X,L1,L2),
   true((ground(X),ground(L),ground(L1),ground(L2),var(R),var(R2), ...
   qsort(L2,R2), ...
-@end{verbatim}
+```
  ").
 :- endif.
 
@@ -493,22 +496,22 @@ program or system builtin, and also visible.}
 
 Properties declared and/or @bf{defined}
 in a module can be @bf{exported} as any other predicate. For example:
-@begin{verbatim}
+```ciao
 :- prop list/1.
 list([]).
 list([_|L]) :- list(L).
-@end{verbatim}
+```
 or, using the functional syntax package, more compactly as:
-@begin{verbatim}
+```ciao
 :- prop list/1. list := [] | [_|list].
-@end{verbatim}
+```
 
-defines the property ''@tt{list}''. A list is an instance of a very useful class of
+defines the property @tt{list}. A list is an instance of a very useful class of
 user-defined properties called @em{regular types}
 @cite{yardeni87,Dart-Zobel,gallagher-types-iclp94,set-based-absint-padl,eterms-sas02},
 which herein are simply a syntactically restricted class of logic programs. We
-can mark this fact by stating ''@tt{:- regtype list/1.}'' instead of ''@tt{:-
-prop list/1.}'' (this can be done automatically). The definition above can be
+can mark this fact by stating @tt{:- regtype list/1.} instead of @tt{:-
+prop list/1.} (this can be done automatically). The definition above can be
 included in a user program or, alternatively, it can be imported from a system
 library, e.g.: @tt{:- use_module(library(lists),[list/1]).}
 
@@ -516,7 +519,7 @@ library, e.g.: @tt{:- use_module(library(lists),[list/1]).}
 
 The idea of using analysis information
 for debugging comes naturally after observing analysis @bf{outputs for
-erroneous programs}.  Consider this buggy implementation of qsort:
+erroneous programs}.  Consider this buggy implementation of @tt{qsort}:
 
 ```ciao_runnable
 :- module(qsort, [qsort/2], [assertions]).
@@ -545,11 +548,12 @@ following code:
 @exfilter{bugqsort.pl}{A,types=eterms,name=qsort,modes=none,filter=tpred}
 
 @comment{
-@begin{verbatim} 
+```ciao
 :- true pred qsort(A,B)
      : ( list(num,A), term(B) )
     => ( list(num,A), list(^(x),B) ).
-@end{verbatim}}
+```
+}
 where @bf{@tt{list(^x,B)} means ''B is a list of atoms @tt{x}.''}. The information
 inferred does not seem compatible with a correct definition of @tt{qsort}, which
 clearly points to a bug in the program.
@@ -600,7 +604,9 @@ This is the result of a modular global analysis and a comparison of the inferred
 information at the program points before the calls to @pred{=</2} and @pred{>/2} with
 the assertions that express the calling restrictions on  @pred{=</2} and  @pred{>/2}. Such
 assertions live in the libraries which provide these standard predicates.
-
+").  
+  
+:- doc(module, "
 @comment{
 Consider a different implementation of @tt{qsort}, also with bugs:
 
@@ -619,7 +625,7 @@ Using the default options, and setting @em{Report Non-Verified Assrts} to
 @em{error}, we obtain the following messages (and the system highlights the line
 which produces the first of them, as shown:
 
-@begin{verbatim}
+```ciao-inferior
 WARNING (preproc_errors): (lns 5-8) goal qsort2:partition(L,L1,X,L2) at literal 1 does not succeed!
 
 WARNING (ctchecks_messages): (lns 11-12) the head of clause 'qsort2:partition/4/2' is incompatible with its call type
@@ -627,7 +633,7 @@ WARNING (ctchecks_messages): (lns 11-12) the head of clause 'qsort2:partition/4/
      Call Type: qsort2:partition(basic_props:list(num),term,num,term)
 
 WARNING (preproc_errors): (lns 13-14) goal arithmetic:>=(E,C) at literal 1 does not succeed!
-@end{verbatim}
+```
 
 First and last messages warn that all @bf{calls to @tt{partition} and @tt{>=/2} will
 fail}, something normally not intended (e.g., in our case). The error message
@@ -636,9 +642,9 @@ error has been detected by comparing the mode information obtained by global
 analysis, which at the corresponding program point indicates that the second
 argument to the call to @tt{>=/2} is a variable, with the assertion:
 
-@begin{verbatim}
+```ciao-inferior
 :- check calls A>=B : (ground(A), ground(B)).
-@end{verbatim}
+```
 
 which is present in the default builtins module, and which implies that the two
 arguments to @tt{>=/2} should be ground when this arithmetic predicate is
@@ -652,32 +658,34 @@ third arguments in reversed order -- @bf{the correct call is
 
 After correcting this bug, we proceed to perform another round of
 compile-time checking, which continues producing the following message:
-@begin{verbatim}
+```ciao-inferior
 WARNING (ctchecks_messages): (lns 11-12) the head of clause 'qsort2:partition/4/2' is incompatible with its call type
      Head:      qsort2:partition([e|R],C,[E|Left1],Right)
      Call Type: qsort2:partition(basic_props:list(num),term,num,term)
-@end{verbatim}
+```
 This time the error is in the second clause of @tt{partition}.
 Checking this clause we see that in the first argument of the head
 there is an @tt{e} which should be @tt{E} instead.
 Compile-time checking of the program with this bug corrected does not
 produce any further warning or error messages.
 }
+").  
+  
+:- doc(module, "
+@subsection{Static Checking of User Assertions and Program Validation}
 
-@subsection{Static Checking of User Assertions and Program
-  Validation}
+Though, as seen above, it is often possible to detect error without
+adding assertions to user programs, if the program is not correct, the
+more assertions are present in the program the more likely it is for
+errors to be automatically detected. Thus, for those parts of the
+program which are potentially buggy or for parts whose correctness is
+crucial, the programmer may decide to invest more time in writing
+assertions than for other parts of the program which are more
+stable. In order to be more confident about our program, we add to it
+the following @tt{check} assertions (the @tt{check} prefix is assumed
+when no prefix is given, as in the example shown):
 
-Though, as seen above, it is often possible to detect error without adding
-assertions to user programs, if the program is not correct, the more assertions
-are present in the program the more likely it is for errors to be automatically
-detected. Thus, for those parts of the program which are potentially buggy or
-for parts whose correctness is crucial, the programmer may decide to invest more
-time in writing assertions than for other parts of the program which are more
-stable. In order to be more confident about our program, we add to it the
-following @tt{check} assertions: @footnote{The @tt{check} prefix is assumed when
-no prefix is given, as in the example shown.}
-
-```ciao_runnable
+```ciao
 :- module(_, [qsort/2], [assertions, regtypes, nativeprops]).
 
 :- regtype list_num(A).
@@ -690,7 +698,6 @@ list_num([A|B]) :- num(A), list_num(B).
 :- success partition(A,B,C,D) => (list(num, C), ground(D)).  % A4
 :- comp partition/4 + not_fails.                             % A5
 :- comp partition/4 + is_det.                                % A6
-
 
 qsort([],[]).
 qsort([First|Rest],Result) :-
@@ -780,31 +787,31 @@ will call the definition of @tt{sorted_num_list} at the appropriate times. In
 the current implementation of @apl{ciaopp} we obtain the following code for
 predicate @tt{qsort} (the code for @tt{partition} and @tt{append} remain the
 same as there is no other assertion left to check):
-@begin{verbatim}
+```ciao
 qsort(A,B) :-
     new_qsort(A,B),
     postc([ qsort(C,D) : true => sorted(D) ], qsort(A,B)).
-@end{verbatim}
-@begin{verbatim}
+```
+```ciao
 new_qsort([X|L],R) :-
     partition(L,X,L1,L2),
     qsort(L2,R2), qsort(L1,R1),
     append(R2,[X|R1],R).
 new_qsort([],[]).
-@end{verbatim}
+```
 where @tt{postc} is the library predicate in charge of checking
 postconditions of predicates.  If we now run the program with run-time
 checks in order to sort, say, the list @tt{[1,2]}, the Ciao system
 generates the following error message:
-@begin{verbatim}
+```ciao-inferior
 ?- qsort([1,2],L).
 ERROR: for Goal qsort([1,2],[2,1])
 Precondition: true  holds, but 
 Postcondition: sorted_num_list([2,1]) does not.
-@end{verbatim}
-@begin{verbatim}
+```
+```ciao-inferior
 L = [2,1] ? 
-@end{verbatim}
+```
 Clearly, there is a problem with @tt{qsort}, since @tt{[2,1]} is not
 the result of ordering @tt{[1,2]} in ascending order. This is a (now,
 run-time, or @em{ concrete}) incorrectness symptom, which can be used
@@ -934,24 +941,24 @@ policy. The idea is that, if the assertions can be verified, then we
 know that the safety policy is entailed from them and the program. The
 program code is as follows:
 
-@begin{verbatim}
+```ciao
 :- module(_, [nrev/2], [assertions,functions,regtypes,nativeprops]).
 :- function(arith(false)).
 :- entry nrev/2 : {list, ground} * var.
 
- :- check pred nrev(A,B)  : list(A) => list(B).  
- :- check comp nrev(_,_)  + ( not_fails, is_det ).
- :- check comp nrev(A,_)  + steps_o( exp(length(A),2) ).  
+:- check pred nrev(A,B)  : list(A) => list(B).  
+:- check comp nrev(_,_)  + ( not_fails, is_det ).
+:- check comp nrev(A,_)  + steps_o( exp(length(A),2) ).  
 
 nrev( [] )    := [] .
 nrev( [H|L] ) := ~conc( ~nrev(L),[H] ).
 
- :- check comp conc(_,_,_) + ( terminates, is_det ).
- :- check comp conc(A,_,_) + steps_o(length(A)).
+:- check comp conc(_,_,_) + ( terminates, is_det ).
+:- check comp conc(A,_,_) + steps_o(length(A)).
 
 conc( [],   L ) := L.
 conc( [H|L], K ) := [ H | ~conc(L,K) ]. 
-@end{verbatim}
+```
 
 For generating the certificate, the menu @em{check_assertions} will
 be used.  Since the certificate will require specific values for some
@@ -962,7 +969,7 @@ are shown in Figure @ref{fig:debugging-acc1}.
 The results of analysis show that the above assertions have been
 proved and hence the intended safety policy holds:
 
-@begin{verbatim}
+```ciao
 :- checked comp nrev(_1,_2)
      + ( not_fails, is_det ).
 
@@ -981,7 +988,7 @@ proved and hence the intended safety policy holds:
 
 :- checked comp conc(A,_1,_2)
      + steps_o(length(A)).
-@end{verbatim}
+```
 
 The consumer will receive the untrusted code and the certificate
 package generated with the options in Figure @ref{fig:debugging-acc1}.
@@ -1027,21 +1034,21 @@ a (possibly infinite) set of concrete values.
 For example, consider the following definition of the property @tt{
   sorted_num_list/1}:
 
-@begin{verbatim}
+```ciao
 :- prop sorted_num_list/1.
 sorted_num_list([]).
 sorted_num_list([X]):- number(X).
 sorted_num_list([X,Y|Z]):- 
     number(X), number(Y), X=<Y, sorted_num_list([Y|Z]).
-@end{verbatim}
+```
 and assume that regular type analysis infers that @tt{sorted_num_list/1} will
 always be called with its argument bound to a list of integers. Abstract
 specialization can use this information to optimize the code into:
-@begin{verbatim}
+```ciao
 sorted_num_list([]).
 sorted_num_list([_]).
 sorted_num_list([X,Y|Z]):- X=<Y, sorted_num_list([Y|Z]).
-@end{verbatim}
+```
 which is clearly more efficient because no @tt{number}
 tests are executed. The optimization above is based on abstractly
 executing the @tt{number} literals to the value @tt{true}, as
@@ -1090,14 +1097,14 @@ the interesting case in which the user does not provide such
 declaration, the code generated contains a large number of run-time
 tests. We include below the code for predicate @tt{multiply} which 
 multiplies a matrix by a vector:
-@begin{verbatim}
+```ciao
 multiply([],_,[]).
 multiply([V0|Rest],V1,[Result|Others]) :-
     (ground(V1),
      indep([[V0,Rest],[V0,Others],[Rest,Result],[Result,Others]]) ->
        vmul(V0,V1,Result) & multiply(Rest,V1,Others) 
     ;  vmul(V0,V1,Result), multiply(Rest,V1,Others)).
-@end{verbatim}
+```
 Four independence tests and one groundness test have
 to be executed prior to executing in parallel the calls in the body of
 the recursive clause of @tt{multiply} (these tests essentially check
@@ -1108,13 +1115,13 @@ specialization generates four versions of the predicate @tt{ multiply}
 which correspond to the different ways this predicate may be called
 (basically, depending on whether the tests succeed or not). Of these
 four variants, the most optimized one is:
-@begin{verbatim}
+```ciao
 multiply3([],_,[]).
 multiply3([V0|Rest],V1,[Result|Others]) :-
     (indep([[Result,Others]]) ->
        vmul(V0,V1,Result) & multiply3(Rest,V1,Others)
     ;  vmul(V0,V1,Result), multiply3(Rest,V1,Others)).
-@end{verbatim}
+```
 where the groundness test and three out of the four independence tests
 have been eliminated. 
 Note also that the recursive calls to @tt{multiply} use the optimized
@@ -1167,13 +1174,13 @@ declaration states that calls to append will be performed with a list
 starting by the prefix @tt{[1,2,3]} always.  The user program will
 look as follows:
 
-@begin{verbatim}
-:- module( app, [append/3], [assertions] ).
+```ciao
+:- module(app, [append/3], [assertions] ).
 :- entry append([1,2,3|L],L1,Cs).
 
 append([],X,X).
 append([H|X],Y,[H|Z]):- append(X,Y,Z).
-@end{verbatim}
+```
 
 The default options for @tt{optimization} can be used to successfully
 specialize the program (Figure @ref{fig:optimization-pe1} shows the
@@ -1186,7 +1193,7 @@ the third argument by propagating the first three known values. There
 is an auxiliary predicate @tt{append_2} used to concatenate the remaining
 elements of the first and second lists.
 
-@begin{verbatim}
+```ciao
 :- module( _app, [append/3], [assertions] ).
 :- entry append([1,2,3|L],L1,Cs).
 
@@ -1197,7 +1204,7 @@ append([1,2,3,B|C],A,[1,2,3,B|D]) :-
 append_2(A,A,[]).
 append_2([B|D],A,[B|C]) :-
     append_2(D,A,C) .
-@end{verbatim}
+```
 
     ").
 :- endif.
@@ -1216,7 +1223,7 @@ static information (see, e.g., @cite{LeuschelBruynooghe:TPLP02}).  Let
 us describe this feature by means of the following program, which
 implements an exponentiation procedure with accumulating parameter:
 
-@begin{verbatim}
+```ciao
 :- module(exponential_ac,[exp/3],[assertions]).
 :- entry exp(Base,3,_) : int(Base).
 
@@ -1229,13 +1236,13 @@ exp_ac(Exp,Base,Tmp,Res):-
     Exp1 is Exp - 1, 
     NTmp is Tmp * Base, 
     exp_ac(Exp1,Base,NTmp,Res). 
-@end{verbatim}
+```
 
 The default options for partial evaluation produce the following
 non-optimal residual program where only leftmost unfolding have been
 used: 
 
-@begin{verbatim}
+```ciao
 :- module( _exponential_ac, [exp/3], [assertions] ).
 :- entry exp(Base,3,_1) : int(Base).
 
@@ -1249,7 +1256,8 @@ exp_ac_1(C,B,A) :-
 
 exp_ac_2(C,B,A) :-
     C is B*A. 
-@end{verbatim}
+```
+
 where the calls to the builtin \"is\" cannot be executed and hence they
 have been residualized. This prevents the atoms to the right of the
 calls to \"is\" from being unfolded and intermediate rules have to be
@@ -1270,7 +1278,7 @@ specialization so that a post-processing of unfolding is carried out.
 @image{Figs/optimization-pe2}
 
 The resulting specialized program is further improved:
-@begin{verbatim}
+```ciao
 :- module( _exponential_ac, [exp/3], [assertions] ).
 
 :- entry exp(Base,3,_1) : int(Base).
@@ -1279,7 +1287,7 @@ exp(A,3,B) :-
     C is 1*A,
     D is C*A,
     B is D*A. 
-@end{verbatim}
+```
 ").
 
 :- endif.
@@ -1341,7 +1349,7 @@ Extended menu options for integration of abstract interpretation and partial
 
 Optimized Peano's arithmetic program with abstract
     interpretation and partial evaluation integrated:
-@begin{verbatim}
+```ciao
 :- module( _example_sd, [main/2], [assertions, regtypes, nativeprops] ).
 
 :- entry main(N,R): ( gt_two_nat(N), var(R) ).
@@ -1357,8 +1365,7 @@ tw_1(s(A),s(s(B))) :-
 formula_1(0,0).
 formula_1(s(s(B)),s(A)) :-
     tw_1(A,B).
-@end{verbatim}
-
+```
 
 We can see that calls to predicates @tt{ground/1} and
 @tt{var/1} in predicate @tt{formula/2} have been removed.  For
@@ -1431,13 +1438,13 @@ Consider the following program :
 
 A possible parallelization is: 
 
-@begin{verbatim}
+```ciao
 qsort([X|L],R) :-
     partition(L,X,L1,L2),
     ( indep([[L1,L2]]) -> qsort(L2,R2) & qsort(L1,R1)
                         ; qsort(L2,R2), qsort(L1,R1) ),
     append(R1,[X|R2],R).
-@end{verbatim}
+```
 which indicates that, provided that @tt{L1} and @tt{L2} do not have
 variables in common (at execution time), then the recursive calls to
 @tt{qsort} can be run in parallel.
@@ -1451,12 +1458,12 @@ Section @ref{Static Analysis and Program Assertions}), which determines that @tt
 variables), the independence test and the conditional can be
 simplified via abstract executability and the annotator yields
 instead:
-@begin{verbatim}
+```ciao
 qsort([X|L],R) :-
     partition(L,X,L1,L2),
     qsort(L2,R2) & qsort(L1,R1),
     append(R1,[X|R2],R).
-@end{verbatim}
+```
 which is much more efficient since it has no run-time test. This test
 simplification process is described in detail in @cite{effofai-toplas}
 where the impact of abstract interpretation in the effectiveness of
@@ -1514,11 +1521,11 @@ of the selected menu options to achieve this is depicted in Figure
 @image{Figs/optimization-granularity}
 
 In the resulting optimized code, @apl{ciaopp} adds a clause:
-''@tt{qsort(_1,_2) :- g_qsort(_1,_2).}''
+@tt{qsort(_1,_2) :- g_qsort(_1,_2).}
 (to preserve the original entry point) and produces 
 @tt{g_qsort/2}, the version of @tt{qsort/2} that performs
 granularity control (@tt{s_qsort/2} is the sequential version):
-@begin{verbatim}
+```ciao
 g_qsort([X|L],R) :-
     partition_o3_4(L,X,L1,L2,_1,_2),
     ( _2>7 -> (_1>7 -> g_qsort(L2,R2) & g_qsort(L1,R1)
@@ -1527,7 +1534,7 @@ g_qsort([X|L],R) :-
                      ; s_qsort(L2,R2), s_qsort(L1,R1))),
     append(R1,[X|R2],R).
 g_qsort([],[]).
-@end{verbatim}
+```
 
 Note that if the lengths of the two input lists to the qsort program
 are greater than a threshold (a list length of 7 in this case) then
@@ -1551,13 +1558,13 @@ threshold, and thus the cost function for qsort does not need to be
 evaluated.@footnote{This size threshold will obviously be different if
   the cost function is.}
 Predicate @tt{partition_o3_4/6}:
-@begin{verbatim}
+```ciao
 partition_o3_4([],_B,[],[],0,0).
 partition_o3_4([E|R],C,[E|Left1],Right,_1,_2) :-
     E<C, partition_o3_4(R,C,Left1,Right,_3,_2), _1 is _3+1.
 partition_o3_4([E|R],C,Left,[E|Right1],_1,_2) :-
     E>=C, partition_o3_4(R,C,Left,Right1,_1,_3), _2 is _3+1.
-@end{verbatim}
+```
 
 is the transformed version of @tt{ partition/4}, which \"on the fly\"
 computes the sizes of its third and fourth arguments (the

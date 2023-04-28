@@ -3,6 +3,9 @@
 INSTALLATION_CIAOPP
 *******************
 
+INSTALLATION_CIAOPP
+*******************
+
 The distribution of CiaoPP consists of its source files, written in the
 Ciao language. By default, Ciao will detect and build CiaoPP during
 system compilation. In order to customize the default configuration
