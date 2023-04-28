@@ -24,7 +24,7 @@
 :- use_module(ciaopp(plai/domains),
               [asub_to_info/5,glb/4,info_to_asub/7,unknown_call/5,
                call_to_entry/10,identical_abstract/3,needs/2,project/6]).
-:- use_module(ciaopp(p_unit/assrt_norm), [denorm_goal_prop/3]).
+:- use_module(library(assertions/assrt_lib), [prop_unapply/3]).
 :- use_module(ciaopp(p_unit),
               [assertion_set_status/3, assertion_set_calls/3,
                assertion_set_success/3, assertion_set_comp/3,
@@ -570,13 +570,14 @@ my_asub_to_info(AbsInt,S1,Qv,SInfo,Comp):-
     asub_to_info(AbsInt,S1,Qv,SInfoL,Comp),!,
     list_to_conj(SInfoL,SInfo).
 
+% TODO: why is that different than ctchecks_pp_messages:inline_types?
 inline_types([bottom]) :-!.
 inline_types(true) :-!.
 inline_types((Prop,Props)):- !,
     inline_types(Prop),
     inline_types(Props).
 inline_types(Prop):-
-    denorm_goal_prop(Prop,P,P).
+    prop_unapply(Prop,P,P).
 
 :- export(name_vars/1).
 name_vars([]).

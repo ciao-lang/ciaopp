@@ -1356,10 +1356,9 @@ auto_check_assert_(File, OFile) :-
     ),
     ( current_pp_flag(interleave_an_check,on), 
       \+ current_pp_flag(intermod, off) -> true % TODO: IG: probably this is not working
-      ;
-          module(TopLevel,Info),
-          ( fail_if_module_error(Info) -> true ; Error = yes )
-      ),
+    ; module(TopLevel,Info),
+      ( fail_if_module_error(Info) -> true ; Error = yes )
+    ),
     ( Error == yes ->
         error_message("Analysis and checking aborted.")
     ;
@@ -1988,7 +1987,7 @@ auto_optimize(File, OFile) :-
         error_message("Optimization aborted.")
     ), !.
 auto_optimize(File, _) :-
-    error_message("INTERNAL ERROR: Unexpected error when executing auto_optimize(~w)", [File]).
+    error_message("INTERNAL ERROR: Unexpected error when executing ~w", [auto_optimize(File)]).
 
 :- pop_prolog_flag(multi_arity_warnings).
 
