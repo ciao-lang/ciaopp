@@ -129,13 +129,6 @@ nonfailure_t(not_fails).
 nonfailure_t(fails).
 nonfailure_t('$bottom').
 
-:- export(asub/5).
-
-:- doc(asub(ASub, Tests, Unfold_Tests, Covered, Fails), " @var{ASub}
-  is the nonfailure abstract substitution carrying tests @var{Tests},
-  a boolean @var{Unfold_Tests} stating whether tests must be unfolded,
-  covering @var{Covered} and nonfailure info @var{Fails}.").
-
 asub(nf(Tests,Unfold_Tests,Covered,Fails),Tests,Unfold_Tests,Covered,Fails).
 
 :- export(get_tests/2).
@@ -504,11 +497,11 @@ nf_less_or_equal(ASub0,ASub1):-
     le_unfold_tests(Unfold0,Unfold1).
 
 le_covering(A,A):- !.
-le_covering('$bottom',_):- !. %PLG. Added cut.
+le_covering('$bottom',_).
 le_covering(_,possibly_not_covered).
 
 le_nonfailure(A,A):- !.
-le_nonfailure('$bottom',_):- !.  %PLG. Added cut.
+le_nonfailure('$bottom',_).
 le_nonfailure(_,possibly_fails).
 
 le_unfold_tests(A,A):- !.

@@ -141,7 +141,7 @@ list_to_disj_(L,  Disj) :- list_to_disj(L, Disj).
 :- pred ctchecks_log(?Abs,?Status,?Type,?Key,?Id) + no_rtcheck #
     "Returns upon backtracking completes (@var{Key}+@var{Id}+@var{Abs})
      which participated during CT checking in giving assertion of
-     type @var{Type} (calls, success or comp) status @var{check}.".
+     type @var{Type} (calls or success) status @var{check}.".
 
 clear_log :- retractall_fact(ctchecks_log(_,_,_,_,_)).
 
@@ -322,58 +322,6 @@ abs_exec_complete_call(_Goal, Call, _AbsInt, _Info, NCall, dont_know) :-
     list_to_conj(Call, NCall).
 
 %--------------------------------------------------------------------------------
-% TODO: Factorize with abs_exec_complete_success
-abs_exec_complete_comp(_Goal, _Call, _Comp, _AbsInt, [],
-                       nosucc, nosucc, nosucc) :- !.
-abs_exec_complete_comp(Goal, Call, Comp, AbsInt,
-                       [complete(AGoal,ACall,ASuccs,Key,Id)|Cmpls],
-                       NCalls, NComp, Status) :- !,
-    abs_execute_exp(Goal, Call, AbsInt, AGoal, ACall, NCall),
-    abs_exec_each_comp(Goal, Call, Comp, AbsInt, AGoal, ASuccs, NCall,
-                       LocalNComp, LocalStatus),
-    reduce_compl_fin(LocalStatus, LogStatus),
-    assertz_fact(ctchecks_log(AbsInt,LogStatus,comp,Key,Id)),
-    ( LocalStatus == true, is_perfect_match(AbsInt, Goal, ACall) ->
-        Status = perfect
-    ; abs_exec_complete_comp(Goal, Call, Comp, AbsInt, Cmpls, NCalls0, NComp0,
-                             Status0),
-      reduce_compl(LocalStatus, Status0, Status),
-      compose_cs_goals(Status,Call,NCalls0,NCall,NCalls),    % left to prove goals of calls
-      compose_cs_goals(Status,Comp,LocalNComp,NComp0,NComp)  % left to prove goals of comp
-    ).
-abs_exec_complete_comp(_Goal, Call, Comp, _AbsInt, _Info, NCall, NComp, dont_know) :-
-    % Convert to expected format.
-    list_to_conj(Call, NCall),
-    list_to_conj(Comp, NComp).
-
-abs_exec_each_comp(Goal, Call, Comp, AbsInt, AGoal, [AComp|AComps], NCall, NComp, Status):-
-    current_pp_flag(pred_ctchecks, Flag), 
-    Flag == on_succ, !,
-    varset(Goal, Gv),
-    varset(AComp, ASv),
-    info_to_asub(AbsInt, _, Call, Gv, Cond, Goal, no), 
-    unknown_call(AbsInt, Goal, Gv, Cond, Cond0),
-    call_to_entry(AbsInt, Gv, Goal, ASv, AGoal, not_provided, [], Cond0, Cond1, _ExtraInfo), % TODO: add some ClauseKey? (JF)
-    glb(AbsInt, Cond1, AComp, CondAComp),
-    ( CondAComp = '$bottom' ->
-        LocalStatus = nosucc,
-        NC = fail
-    ; abs_execute_exp(Goal, Comp, AbsInt, AGoal, CondAComp, NC),
-      reduce_success(NCall, NC, LocalStatus0),
-      reduce_compl_fin(LocalStatus, LocalStatus0)
-    ),
-    abs_exec_each_comp(Goal, Call, Comp, AbsInt, AGoal, AComps, NCall, NC1, NStatus),  
-    reduce_compl_succ(LocalStatus, NStatus ,Status),
-    compose_compl_goals(LocalStatus, NStatus, Comp, NC, NC1, NComp).
-abs_exec_each_comp(Goal, Call, Comp, AbsInt, AGoal, [AComp|AComps], NCall, NComp, Status):-
-    abs_execute_exp(Goal, Comp, AbsInt, AGoal, AComp, NC),
-    reduce_success(NCall, NC, LocalStatus0),
-    reduce_compl_fin(LocalStatus, LocalStatus0),
-    abs_exec_each_succ(Goal, Call, Comp, AbsInt, AGoal, AComps, NCall, NC1, NStatus),  
-    reduce_compl_succ(LocalStatus, NStatus ,Status),
-    compose_compl_goals(LocalStatus, NStatus, Comp, NC, NC1, NComp).
-
-%--------------------------------------------------------------------------------
 :- export(abs_exec_one_assertion/6).
 abs_exec_one_assertion(_AbsInt, [], A, _Key, NA, checked) :- !,
     assertion_set_status(A, checked, NA).
@@ -413,17 +361,12 @@ abs_exec_one_assertion(AbsInt, Cmpls, A, _Key, NA, Status) :-
         assertion_set_status(A, Status, NA)
     ).
 abs_exec_one_assertion(AbsInt, Cmpls, A, _Key, NA, Status) :-
-    A = as${ status=>check, type=>comp, head=>Goal, call=>Call, comp=>Comp},
+    A = as${ status=>check, type=>comp, head=>Goal, call=>Call},
     !,
-    abs_exec_complete_comp(Goal, Call, Comp, AbsInt, Cmpls, NCall, NComp, Status0),
-    reduce_compl_fin(Status0, Status),
-    ( Status = check ->
-        list_to_conj(OCall, NCall),
-        list_to_conj(OComp, NComp),
-        assertion_set_calls(A, OCall, A2),
-        assertion_set_comp(A2, OComp, NA)
-    ; assertion_set_status(A, Status, NA)
-    ).
+    abs_exec_complete_call(Goal, Call, AbsInt, Cmpls, NCall, _Status0),
+    Status = check,
+    list_to_conj(NNCall, NCall),
+    assertion_set_calls(A, NNCall, NA).
 
 abs_exec_comp_assertion(A, _Key, AComp, NA, Status) :-
     A = as${ status=>check, type=>comp, head=>Goal, call=>Call, comp=>Comp},
@@ -463,8 +406,8 @@ new_status(Flag,_,_):-
     Flag \== check,
     !.
 
-% TODO: Make res_plai use the default algorithm instead of
-% comp_ctchecks one, which should only be used for non-plai domains.
+buggy_only_comp_dom(nf).
+buggy_only_comp_dom(det).
 buggy_only_comp_dom(res_plai).
 
 reduce_calls(  true  , checked ) :- !.  % -
@@ -604,31 +547,25 @@ trans_aux(calls,AbsInt,Head,[complete(G,C,_Ss,_,_)|Completes],[CInfo1|CInfo]):-!
     adapt_info_to_assrt_head(AbsInt,G,Qv,C,Head,C1),
     my_asub_to_info(AbsInt,C1,Qv,CInfo1,_Comp),
     trans_aux(calls,AbsInt,Head,Completes,CInfo).
-trans_aux(Type,AbsInt,Head,[complete(G,_C,Ss,_,_)|Completes],SInfoL):-
-    (Type = success ; Type = comp), !,
-    collect_succcomp_info(Ss,Type,AbsInt,Head,G,SInfoL1),
+trans_aux(success,AbsInt,Head,[complete(G,_C,Ss,_,_)|Completes],SInfoL):-!,  
+    collect_success_info(Ss,AbsInt,Head,G,SInfoL1),
     append(SInfoL1,SInfoL2,SInfoL),
-    trans_aux(Type,AbsInt,Head,Completes,SInfoL2).
+    trans_aux(success,AbsInt,Head,Completes,SInfoL2).
 trans_aux(success,_,_Goal,Info,Info):-!.  % for size properties
+trans_aux(comp,generic_comp,_Goal,Info,Info):-!.
+%%      displayq(Info).
+trans_aux(comp,_AbsInt,_Goal,_Info,[]).
 
-collect_succcomp_info([],_Type,_AbsInt,_Head,_G,[]).
-collect_succcomp_info([S|Ss],Type,AbsInt,Head,G,[SInfo|SInfoTail]):-
+collect_success_info([],_AbsInt,_Head,_G,[]).
+collect_success_info([S|Ss],AbsInt,Head,G,[SInfo|SInfoTail]):-
     varset(G,Qv),
     adapt_info_to_assrt_head(AbsInt,G,Qv,S,Head,S_tmp),
     varset(Head,Hv),
     project(AbsInt,Head,Hv,[],S_tmp,S1),
-    my_asub_to_info(AbsInt,S1,Qv,Succ,Comp),
-    select_most_useful_info(Type,Succ,Comp,SInfo),
-    collect_succcomp_info(Ss,Type,AbsInt,Head,G,SInfoTail).
+    my_asub_to_info(AbsInt,S1,Qv,SInfo,_Comp),
+    collect_success_info(Ss,AbsInt,Head,G,SInfoTail).
 
-% No info is no useful.
-select_most_useful_info(_,[],Comp,Out) :- !, Out = Comp.
-select_most_useful_info(_,Succ,[],Out) :- !, Out = Succ.
-% If we have both kinds of info, take into account type.
-select_most_useful_info(succ,Succ,_Comp,Out) :- !, Out = Succ.
-select_most_useful_info(comp,_Succ,Comp,Out) :- Out = Comp.
-
-my_asub_to_info(_AbsInt,'$bottom',_Qv,[bottom],[bottom]):-!.
+my_asub_to_info(_AbsInt,'$bottom',_Qv,[bottom],_Comp):-!.
 my_asub_to_info(AbsInt,S1,Qv,SInfo,Comp):-
     asub_to_info(AbsInt,S1,Qv,SInfoL,Comp),!,
     list_to_conj(SInfoL,SInfo).

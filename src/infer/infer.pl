@@ -36,7 +36,6 @@
 :- use_module(library(terms_check), [variant/2]).
 :- use_module(library(terms_vars),  [varset/2]).
 :- use_module(ciaopp(preprocess_flags),  [current_pp_flag/2]).
-:- use_module(domain(nfdet/nfdet_common), [nfdet_decide_call_to_entry/7]).
 
 %------------------------------------------------------------------------%
 :- doc(title,"Analysis Information Server").
@@ -366,13 +365,13 @@ most_general_goal(Goal1,Call1,Succ1,res_plai,Goal,Gov,Call,Succ_s):- !, % TODO:[
     abs_sort(res_plai,Call1,Call_s),
     abs_sort(res_plai,Succ1,Succ_s),
     varset(Goal1,Go1v),
-    decide_call_to_entry(Call_s,res_plai,Go1v,Goal1,Gov,Goal,Call).
+    decide_call_to_entry(Call_s,res_plai,Go1v,Goal1,Gov,Goal,[],Call).
     %decide_call_to_entry(Succ_s,AbsInt,Go1v,Goal1,Gov,Goal,[],Succ).
 most_general_goal(Goal1,Call1,Succ1,res_plai_stprf,Goal,Gov,Call,Succ_s):- !, % TODO:[new-resources] remove ad-hoc, add hook if needed (JF) -- see other comments like this
     abs_sort(res_plai_stprf,Call1,Call_s),
     abs_sort(res_plai_stprf,Succ1,Succ_s),
     varset(Goal1,Go1v),
-    decide_call_to_entry(Call_s,res_plai_stprf,Go1v,Goal1,Gov,Goal,Call).
+    decide_call_to_entry(Call_s,res_plai_stprf,Go1v,Goal1,Gov,Goal,[],Call).
     %decide_call_to_entry(Succ_s,AbsInt,Go1v,Goal1,Gov,Goal,[],Succ).
 % most_general_goal(Goal1,Call1,Succ1,sized_types,Goal,Gov,Call,Succ_s):-
 %       abs_sort(sized_types,Call1,Call_s),
@@ -386,21 +385,12 @@ most_general_goal(Goal1,Call1,Succ1,AbsInt,Goal,Gov,Call,Succ):-
     abs_sort(AbsInt,Call1,Call_s),
     abs_sort(AbsInt,Succ1,Succ_s),
     varset(Goal1,Go1v),
-    decide_call_to_entry(Call_s,AbsInt,Go1v,Goal1,Gov,Goal,Call),
-    decide_call_to_entry(Succ_s,AbsInt,Go1v,Goal1,Gov,Goal,Succ).
+    decide_call_to_entry(Call_s,AbsInt,Go1v,Goal1,Gov,Goal,[],Call),
+    decide_call_to_entry(Succ_s,AbsInt,Go1v,Goal1,Gov,Goal,[],Succ).
 
 % TODO: duplicated
-decide_call_to_entry('$bottom',_AbsInt,_Go1v,_Goal1,_Gov,_Goal,'$bottom'):-!.
-decide_call_to_entry(Call_s,AbsInt,Go1v,Goal1,Gov,Goal,Call):-
-    decide_call_to_entry_(AbsInt,Call_s,Go1v,Goal1,Gov,Goal,Call).
-
-decide_call_to_entry_(AbsInt,Call_s,Go1v,Goal1,Gov,Goal,Call):-
-    ( AbsInt = nf
-    ; AbsInt = det
-    ; AbsInt = nfdet
-    ), !,
-    nfdet_decide_call_to_entry(AbsInt,Call_s,Go1v,Goal1,Gov,Goal,Call).
-decide_call_to_entry_(AbsInt,Call_s,Go1v,Goal1,Gov,Goal,Call):-
+decide_call_to_entry('$bottom',_AbsInt,_Go1v,_Goal1,_Gov,_Goal,_,'$bottom'):-!.
+decide_call_to_entry(Call_s,AbsInt,Go1v,Goal1,Gov,Goal,[],Call):-
     call_to_entry(AbsInt,Go1v,Goal1,Gov,Goal,not_provided,[],Call_s,Call,_). % TODO: add ClauseKey? (JF)
 
 %------------------------------------------------------------------------%
