@@ -52,8 +52,8 @@
     ]).
 :- endif.
 %
+:- use_module(ciaopp(p_unit), [native_to_prop/2, prop_to_native/2]).
 :- use_module(ciaopp(plai/domains), [abs_sort/3]).
-:- use_module(ciaopp(p_unit), [prop_to_native/2]).
 :- use_module(ciaopp(p_unit/assrt_norm), [norm_goal_prop/3]).
 :- use_module(spec(abs_exec),      [abs_exec/4, determinable/2]).
 :- use_module(spec(abs_exec_cond), [cond/4]).
@@ -493,11 +493,7 @@ abs_execute_with_info(size_o,Info,Prop,Sense):- !,
 %
 abs_execute_with_info(nfg,Info,Prop,Sense):- !,
     check_nf_info(Prop,Info,Sense).
-abs_execute_with_info(nf,Info,Prop,Sense):- !,
-    check_nf_info(Prop,Info,Sense).
 abs_execute_with_info(detg,Info,Prop,Sense):- !,
-    check_det_info(Prop,Info,Sense).
-abs_execute_with_info(det,Info,Prop,Sense):- !,
     check_det_info(Prop,Info,Sense).
 %
 abs_execute_with_info(Dom,Info,'basic_props:compat'(X,_Prop),true):-
@@ -525,8 +521,9 @@ abs_execute_with_info(Dom,Info,Prop,Sense):-
     !.
 abs_execute_with_info(AbsInt,Info,Prop,Sense):-
     functor(Prop,F,A),
-    statically_comp(AbsInt,F/A,Sense,Condition),
-    cond(Condition,AbsInt,Prop,Info), !.
+    statically_comp(AbsInt,F/A,Sense0,Condition),
+    cond(Condition,AbsInt,Prop,Info), !,
+    format_new_comp(Sense0,Prop,Sense).
 abs_execute_with_info(_AbsInt,_Info,Prop,Prop).
 
 % IG: this code was duplicating information of the abstract execution table
@@ -552,6 +549,17 @@ abs_execute_with_info(_AbsInt,_Info,Prop,Prop).
 %%     Condition = free(1).
 statically_comp(AbsInt,F/A,Sense,Condition):-
     abs_exec(AbsInt,F/A,Sense,Condition).
+
+% TODO: Workaround due to different format of property.
+format_new_comp(Sense0,Prop,Sense) :-
+    ( Sense0 = semidet
+    ; Sense0 = multi
+    ), !,
+    arg(1,Prop,G),
+    functor(Sense1,Sense0,1),
+    arg(1,Sense1,G),
+    native_to_prop(Sense1,Sense).
+format_new_comp(Sense,_Prop,Sense).
 
 % ------------------------------------------------------------------------
 
@@ -889,7 +897,13 @@ marshall_args_([$(N1)|Args],N):-
 
 nf_incompatible(fails,Nf):-
     member(not_fails,Nf).
+% TODO: legacy, see old_nfdet
 nf_incompatible(not_fails,Nf):-
+    member(fails,Nf).
+%
+nf_incompatible(det,Nf):-
+    member(fails,Nf).
+nf_incompatible(multi,Nf):-
     member(fails,Nf).
 nf_incompatible(covered,Nf):-
     member(not_covered,Nf).
@@ -898,23 +912,39 @@ nf_incompatible(not_covered,Nf):-
 
 nf_included(fails,Nf):-
     member(fails,Nf).
+% TODO: legacy, see old_nfdet
 nf_included(not_fails,Nf):-
+    member(not_fails,Nf).
+nf_included(possibly_fails,_Nf).
+%
+nf_included(nondet,_Nf).
+nf_included(multi,Nf) :-
     member(not_fails,Nf).
 nf_included(covered,Nf):-
     member(covered,Nf).
 nf_included(not_covered,Nf):-
     member(not_covered,Nf).
-nf_included(possibly_fails,_Nf).
 nf_included(possibly_not_covered,_Nf).
 
+% TODO: legacy, see old_nfdet
 det_incompatible(non_det,Det):-
     member(is_det,Det).
+%
+det_incompatible(det,Det):-
+    member(non_det,Det).
+det_incompatible(semidet,Det):-
+    member(non_det,Det).
 det_incompatible(mut_exclusive,Det):-
     member(not_mut_exclusive,Det).
 det_incompatible(not_mut_exclusive,Det):-
     member(mut_exclusive,Det).
 
+% TODO: legacy, see old_nfdet
 det_included(is_det,Det):-
+    member(is_det,Det).
+%
+det_included(nondet,_Det).
+det_included(semidet,Det):-
     member(is_det,Det).
 det_included(mut_exclusive,Det):-
     member(mut_exclusive,Det).
@@ -941,6 +971,10 @@ does_not_use_memo_lub(detg).
 does_not_use_memo_lub(resources).
 
 knows_of(regtypes,Dom):- determinable(Dom,types).
+knows_of(X,nfdet) :- knows_of(X,eterms).
+knows_of(X,nfdet) :- knows_of(X,shfr).
+knows_of(X,nfdet) :- nf_info(X).
+knows_of(X,nfdet) :- det_info(X).
 knows_of(X,nf):- nf_info(X).
 knows_of(X,nf):- knows_of(X,eterms). % PLG
 knows_of(X,nf):- knows_of(X,shfr).   % PLG
@@ -973,16 +1007,28 @@ knows_of(X,size_lb):- size_info(X).
 knows_of(X,size_ualb):- size_info(X).
 knows_of(X,size_o):- size_info(X).
 knows_of(X,Dom):- determinable(Dom,X).
-     
-nf_info(fails).
+
+% TODO: legacy, see old_nfdet
 nf_info(not_fails).
 nf_info(possibly_fails).
+%
+nf_info(fails).
+nf_info(det).
+nf_info(multi).
+nf_info(semidet).
+nf_info(nondet).
 nf_info(covered).
 nf_info(not_covered).
 
+% TODO: legacy, see old_nfdet
 det_info(is_det).
 det_info(possibly_nondet).
 det_info(non_det).
+%
+det_info(det).
+det_info(multi).
+det_info(semidet).
+det_info(nondet).
 det_info(mut_exclusive).
 det_info(not_mut_exclusive).
 

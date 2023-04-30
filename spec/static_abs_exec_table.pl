@@ -249,6 +249,40 @@ abs_ex(when/2,nonvar,when,true).
 % abs_ex(when/2,nonground,when,true):-!.
 % abs_ex(when/2,free,when,true):-!.
 
+% Begin MR !433
+%-------------------------------------------------------------------%
+% Predicates abstractly executable with nfdet info                  %
+%-------------------------------------------------------------------%
+% TODO: Add old-new equivalences to manual.
+abs_ex(det/1,nfdet,true,det).
+abs_ex(det/1,nonfailure,semidet,multi).
+abs_ex(det/1,determinism,multi,semidet).
+abs_ex(det/1,nonfailure,fail,fails).
+abs_ex(det/1,determinism,fail,multi_min2).
+%
+abs_ex(semidet/1,determinism,true,semidet).
+abs_ex(semidet/1,nfdet,true,det).
+abs_ex(semidet/1,determinism,fail,multi_min2).
+%
+abs_ex(multi/1,nonfailure,true,multi).
+abs_ex(multi/1,nfdet,true,det).
+abs_ex(multi/1,nonfailure,fail,fails).
+%
+abs_ex(fails/1,nonfailure,true,fails).
+abs_ex(fails/1,nonfailure,fail,multi).
+%
+abs_ex(is_det/1,determinism,true,semidet).    % det
+abs_ex(is_det/1,nfdet,true,det).              % det
+abs_ex(is_det/1,determinism,fail,multi_min2). % det
+%
+abs_ex(not_fails/1,nonfailure,true,multi). % nf
+abs_ex(not_fails/1,nfdet,true,det).        % nf
+abs_ex(not_fails/1,nonfailure,fail,fails). % nf
+%
+abs_ex(non_det/1,determinism,true,multi_min2). 
+abs_ex(non_det/1,determinism,fail,semidet).
+% End MR !433
+
 abs_ex_if_not_constraint(Determ,Sense,Cond):-
     language(lp),
     Determ = free,

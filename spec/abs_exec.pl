@@ -5,11 +5,17 @@
 ], [assertions]).
 
 :- use_module(spec(static_abs_exec_table), [abs_ex/4]).
-:- use_module(spec(abs_exec_ops), [abs_exec_regtype/3]).
+:- use_module(spec(abs_exec_ops), [abs_exec_regtype/3,adapt_info_to_assrt_head/6]). %PLG. Added adapt_info_to_assrt_head/6
 %% :- use_module(spec(unfold_builtins), [peel_call/2]).
 :- use_module(spec(modular_spec), [dyn_abs_spec/5]).
+:- use_module(spec(abs_exec_cond), [type_of/4]). %PLG
 :- use_module(ciaopp(p_unit), [prop_to_native/2]).
+:- use_module(ciaopp(p_unit/assrt_db), [assertion_read/9]). %PLG
+:- use_module(ciaopp(p_unit/program_keys), [predkey_from_sg/2]). %PLG
+:- use_module(ciaopp(ctchecks/ctchecks_pred), [decide_get_info/4]). %PLG
+:- use_module(ciaopp(plai/domains), [abs_sort/3]). %PLG
 :- use_module(library(assertions/assrt_lib), [denorm_goal_prop/3]).
+:- use_module(library(terms_vars), [varset/2]). %PLG
 
 /*             Copyright (C)1990-94 UPM-CLIP                       */
 
@@ -35,7 +41,10 @@
 abs_exec(Abs,F/A,Sense,Cond):-
     find_original_pred_if_needed(F,A,OrigF,OrigA),
     functor(Pred,OrigF,OrigA),
-    prop_to_native(Pred,NPred),
+    abs_exec_p(Abs,Pred,Sense,Cond).
+
+abs_exec_p(Abs,Pred,Sense,Cond):-
+    prop_to_native(Pred,NPred), !,
     functor(NPred,NF,NA),
     (NF == regtype ->
         determinable(Abs,types),
@@ -45,6 +54,23 @@ abs_exec(Abs,F/A,Sense,Cond):-
     ;
         abs_exec_(Abs,NF/NA,Sense,Cond)
     ).
+% PLG. Added this case as a quick hack: if Pred is a prop, but not a
+% regtype, then its (over-approximated) success type info (SuccType)
+% is used in place of Pred. Only the incompatibility check is safe,
+% not the type inclusion. It will be generalized to other properties
+% than types.
+abs_exec_p(Abs,Pred,fail,incomp_type(1,SuccType)):-
+    assertion_read(Pred,_M,_Status,prop,_Body,_Dict,_S,_LB,_LE), !, % Succeeds iff Pred is a prop.
+    determinable(Abs,types),   
+    predkey_from_sg(Pred,Key),
+    decide_get_info(Abs,Key,Pred,Completes),
+    Completes = [complete(APred,_ACall,ASuccs,_Key,_Id)],
+    varset(Pred, Vars),
+    adapt_info_to_assrt_head(Abs, Pred, Vars, ASuccs, APred, NSuccs),
+    abs_sort(Abs, NSuccs, NSuccs_s), %PLG This can be avoided if NSuccs has only one item.
+    Vars = [V],
+    NSuccs_s = [Succ],
+    type_of(Abs,V,Succ,SuccType).
 
 find_original_pred_if_needed(F,A,OrigF,OrigA):-
 %%      current_pp_flag(local_control,Unf),
@@ -57,6 +83,11 @@ find_original_pred_if_needed(F,A,OrigF,OrigA):-
     .
 
 abs_exec_(_,true/0,true,true).
+% Begin MR !433
+abs_exec_(_,nondet/1,true,true). % nfdet
+abs_exec_(_,possibly_fails/1,true,true). % nf
+abs_exec_(_,possibly_nondet/1,true,true). % det 
+% End MR !433
 abs_exec_(_,otherwise/0,true,true).
 abs_exec_(_,fail/0,fail,true). % in any domain
 abs_exec_(_,false/0,fail,true).
@@ -172,6 +203,13 @@ determinable(fd,not_ground).
 %%       (e.g., linear arithmetic)
 determinable(polyhedra,polyhedra).
 %
+%
+determinable(nfdet,nfdet).
+determinable(nfdet,nonfailure).
+determinable(nfdet,determinism).
+determinable(nf,nonfailure).
+determinable(det,determinism).
+
 determinable(Dom,[X|Xs]):-
     determinable(Dom,X),
     determinable(Dom,Xs).

@@ -30,6 +30,7 @@
 :- use_module(ciaopp(p_unit),
     [entry_assertion/3, type_of_goal/2, type_of_directive/2]).
 :- use_module(ciaopp(p_unit/program_keys), [get_predkey/3, predkey_from_sg/2]).
+:- use_module(ciaopp(p_unit/assrt_db), [assertion_read/9]). %PLG
 :- use_module(ciaopp(plai/intermod_entry), [get_entry_info/3]).
 :- use_module(ciaopp(preprocess_flags), [current_pp_flag/2,
     push_pp_flag/2, pop_pp_flag/1]).
@@ -381,6 +382,19 @@ entry_point(AbsInt,Goal,Qv,Call,Name):-
 %       varset((Goal,Unif),Qa),
     info_to_asub(AbsInt,_approx,CInfo,Qv,Call,Goal,no).
 %       analyze_unify(Unif,AbsInt,Call0,Call).
+%
+% PLG. Added to generate a most general entry point for general
+% properties (prop) that are not exported nor have an entry assertion
+% in the source code.
+entry_point(AbsInt,Goal,Qv,Call,Name):-
+    assertion_read(Goal,_M,_Status,prop,_Body,_Dict,_S,_LB,_LE), !, % Succeeds iff Pred is a prop.
+    functor(Goal,F,A),
+    functor(G,F,A),
+    \+ entry_assertion(G,_Call,_Name),
+    \+ type_of_goal(exported,Goal), 
+    get_predkey(F,A,Name), % Name the unique topmost version of F/A
+    varset(Goal,Qv),  
+    unknown_entry(AbsInt,Goal,Qv,Call).
 % TODO: Add here clauses for get_entry_info to merge with mod_topdown_analysis
 
      % get_unify([],[],[]).

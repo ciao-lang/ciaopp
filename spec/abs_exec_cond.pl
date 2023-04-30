@@ -9,7 +9,8 @@
      not_free/3,
      abs_exec_reg_type_with_post_info/4,
      abs_exec_reg_type_with_post_info_one_version/5,
-     abs_exec_conj_props/3
+     abs_exec_conj_props/3,
+     type_of/4 % PLG. Exported, used in abs_exec:abs_exec/4.
     ],
     [assertions, isomodes, datafacts, ciaopp(ciaopp_options)]).
 
@@ -47,6 +48,10 @@
 
 :- use_module(ciaopp(plai/plai_db), [memo_table/6]).
 :- use_module(library(sort), [sort/2]).
+
+% Begin MR !433
+:- use_module(domain(nfdet/nfdet_common), [nfdet_cond/2, nfdet_condition/1]).
+% End MR !433
 
 %-------------------------------------------------------------------%
 %             programmed by A.German Puebla Sanchez                 %
@@ -172,6 +177,10 @@ cond(leq(Sg,Proj),AbsInt,Goal,Info):-
     less_or_equal_proj(AbsInt,Goal,SortedEntry,Sg,SortedProj).
 %jcf
 %
+% Begin MR !433
+cond(NfDetCond, _AbsInt, _Goal, Info) :- nfdet_condition(NfDetCond), !,
+    nfdet_cond(NfDetCond, Info).
+% End MR !433
 :- if(defined(has_ciao_ppl)).
 cond(polyhedra_constraint,AbsInt,Goal,Info) :-
     % TODO: REWRITE!!! (e.g, using domain operations)
