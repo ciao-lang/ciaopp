@@ -9,4 +9,3 @@ with:
 :- regtype rt9/1.
 rt9(power1).
 
-

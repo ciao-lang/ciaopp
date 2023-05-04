@@ -7,7 +7,5 @@ In *comp*, unsatisfied property:
 Where:
 	fails
 
-
 ERROR: (lns 81-82) Failed in power_testing_eterms_nf_shfr_co:powers(A,B,C).
-
 

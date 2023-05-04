@@ -5,9 +5,7 @@ because on call arithmetic:=<(A,B) :
 
 [eterms] basic_props:term(B),basic_props:term(A),basic_props:term(A),basic_props:term(B),basic_props:term(C) 
 
-[shfr]   native_props:mshare([[B],[B,A],[B,A,B],[B,B],[A],[A],[A,B],[B],[C]]),term_typing:var(A),term_typing:var(C) 
-
-
+[shfr]   native_props:mshare([[B],[B,A],[B,A,B],[B,B],[A],[A],[A,B],[B],[C]]),term_typing:var(A),term_typing:var(C)
 
 WARNING (ctchecks_pp_messages): (lns 12-13) At literal 1 could not verify assertion:
 :- check calls B>A
@@ -16,7 +14,5 @@ because on call arithmetic:>(A,B) :
 
 [eterms] basic_props:term(B),basic_props:term(A),basic_props:term(A),basic_props:term(B),basic_props:term(C) 
 
-[shfr]   native_props:mshare([[B],[B,A],[B,A,B],[B,B],[A],[A],[A,B],[B],[C]]),term_typing:var(A),term_typing:var(C) 
-
-
+[shfr]   native_props:mshare([[B],[B,A],[B,A,B],[B,B],[A],[A],[A,B],[B],[C]]),term_typing:var(A),term_typing:var(C)
 
