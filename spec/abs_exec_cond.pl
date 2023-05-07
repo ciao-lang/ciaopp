@@ -9,7 +9,8 @@
      not_free/3,
      abs_exec_reg_type_with_post_info/4,
      abs_exec_reg_type_with_post_info_one_version/5,
-     abs_exec_conj_props/3
+     abs_exec_conj_props/3,
+     type_of/4 % PLG. Exported, used in abs_exec:abs_exec/4.
     ],
     [assertions, isomodes, datafacts, ciaopp(ciaopp_options)]).
 
