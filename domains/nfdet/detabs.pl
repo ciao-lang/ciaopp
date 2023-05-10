@@ -160,7 +160,15 @@ get_tests(ASub,Tests) :-
 asub_is_det(ASub) :-
     asub(ASub,_,_,_,is_det).
 
-asub(det(Tests,Unfold_Tests,MutExclusive,Det),Tests,Unfold_Tests,MutExclusive,Det).
+:- export(asub/5).
+
+:- doc(asub(ASub, Tests, Unfold_Tests, MutEx, Det), "@var{ASub} is an
+  abstract substitution of the det domain, containing tests
+  @var{Tests}, a boolean @var{Unfold_Tests} stating whether tests
+  should be unfolded in the extend operation, mutual exclusion and
+  determinism information (@var{MutEx} and @var{Det})respectively).").
+
+asub(det(Tests,Unfold_Tests,MutEx,Det),Tests,Unfold_Tests,MutEx,Det).
 
 %------------------------------------------------------------------------%
 % det_call_to_entry(+,+,+,+,+,+,+,-,-)                                   %
@@ -264,7 +272,7 @@ extend_unfold_tests(_,_, unfold).
 %------------------------------------------------------------------------%
 
 det_widen(Prime0,Prime1,NewPrime) :-
-    asub(ASub,[],unfold,mut_exclusive,det),
+    asub(ASub,[],unfold,mut_exclusive,is_det), 
     foldr(widen,[Prime0,Prime1],ASub,NewPrime).
 
 widen('$bottom',ASub0,ASub0):- !.
@@ -273,7 +281,7 @@ widen(ASub,ASub0,NewASub):-
     asub(ASub0,Tests0,Unfold0,MutEx0,Det0),
     asub(ASub,Tests1,Unfold1,MutEx1,Det1),
     tests_union(Tests1,Tests0,Tests), % Tests=[Tests1|Tests0],
-    ( Det0 = det ->
+    ( Det0 = is_det -> 
         lub_mut_exclusion(MutEx0,MutEx1,MutEx),
         lub_determinism(Det0,Det1,Det),
         lub_unfold_tests(Unfold0,Unfold1,Unfold)
@@ -319,12 +327,10 @@ tests_union_([T|Ts],Tests0,[T|Tests1]) :-
 % TODO: (LR) Check accumulate_mut_exclusion and accumulate_determinism
 %            Discuss in meeting.
 % Using non-top value as default is fishy to me.
-accumulate_mut_exclusion(mut_exclusive,_,mut_exclusive):- !.
-accumulate_mut_exclusion(_,mut_exclusive,mut_exclusive):- !.
+accumulate_mut_exclusion(mut_exclusive,mut_exclusive,mut_exclusive):- !. 
 accumulate_mut_exclusion(A,B,C):- lub_mut_exclusion(A,B,C).
 
-accumulate_determinism(is_det,_,is_det):- !.
-accumulate_determinism(_,is_det,is_det):- !.
+accumulate_determinism(is_det,is_det,is_det):- !. 
 accumulate_determinism(A,B,C):- lub_determinism(A,B,C).
 
 accumulate_unfold_tests('$bottom',X,X):-!.
