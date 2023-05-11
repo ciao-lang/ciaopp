@@ -7,6 +7,8 @@
 :- use_module(library(lists),      [append/3, list_concat/2]).
 :- use_module(library(aggregates)).
 
+% This module handles assertion checking for non-plai domains. 
+
  %% :- doc(bug,"1. The success part of cost information (arg sizes) is not
  %%     considered for checks.").
  %% :- doc(bug,"2. Cost expressions have length($(1)) while it should be %
@@ -15,6 +17,7 @@
 :- doc(bug,"3. The check assertions with resource-related properties
                should be review in more detail.").
 
+% TODO: Status should be a valid status, not a property. Change output. % MR !433
 abs_execute_comp(Goal,Comp,AComp,NewComp,Status):-
     get_cost_info(Goal,Cost0,_Succ),
     get_resource_info(Goal,Resource,_Succ2), 
@@ -95,9 +98,9 @@ select_info(steps_lb,Cost,_Nf,_Det,Cost).
 select_info(steps_o,Cost,_Nf,_Det,Cost).
 select_info(resources,Cost,_Nf,_Det,Cost).
 select_info(nfg,_Cost,Nf,_Det,Nf).
-select_info(nf,_Cost,Nf,_Det,Nf).
+%select_info(nf,_Cost,Nf,_Det,Nf). % MR !433
 select_info(detg,_Cost,_Nf,Det,Det).
-select_info(det,_Cost,_Nf,Det,Det).
+%select_info(det,_Cost,_Nf,Det,Det). % MR !433
 select_info(res_plai,Cost,_,_,Cost).
 
 compose_status(true,Status,Status) :- !.
@@ -168,12 +171,11 @@ get_size_info(Goal,Cost,Succ):-
     ).
 
 get_nf_info(Goal,Call,Nf):-
-%       get_info(nfg,pred,Call,Goal,Nf), !.
-    get_info(nonfail,pred,Call,Goal,Nf), !.
+    %get_info(nonfail,pred,Call,Goal,Nf), !.
+    get_info(nfg,pred,Call,Goal,Nf), !. % MR !433
 get_nf_info(_Goal,_Call,[]).
 
-%% get_det_info(Goal,Call,Det):-
-    %% get_info(detg,pred,Call,Goal,Det), !.
 get_det_info(Goal,Call,Det):-
-    get_info(determinism,pred,Call,Goal,Det), !.
+    %get_info(determinism,pred,Call,Goal,Det), !.
+    get_info(detg,pred,Call,Goal,Det), !. % MR !433
 get_det_info(_Goal,_Call,[]).

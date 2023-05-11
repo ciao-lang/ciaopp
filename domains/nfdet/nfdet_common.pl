@@ -12,11 +12,13 @@
 :- doc(author, "Manuel Hermenegildo").
 :- doc(author, "Jose F. Morales").
 
+:- use_module(ciaopp(plai/domains), [call_to_entry/10]).
+
 :- use_module(domain(nfdet/nfdet), [nfdet_asub/1, asub/5]).
 :- use_module(domain(nfdet/nfplai), [nf_asub/1, asub/4]).
 :- use_module(domain(nfdet/detplai), [det_asub/1, asub/4]).
-:- use_module(domain(nfdet/nfabs), [nfabs_asub/1, asub_can_fail/1, get_tests/2]).
-:- use_module(domain(nfdet/detabs), [detabs_asub/1, asub_is_det/1, get_tests/2]).
+:- use_module(domain(nfdet/nfabs), [asub/5, nfabs_asub/1, asub_can_fail/1, get_tests/2]).
+:- use_module(domain(nfdet/detabs), [asub/5, detabs_asub/1, asub_is_det/1, get_tests/2]).
 :- use_module(domain(nfdet/nfdetabs), [tests/5, clause_test/1]).
 
 % TODO: Split. Move "internal" common nfdet operations to a new
@@ -65,6 +67,25 @@ nf_det_abs_asub(ASub) :-
     nfabs_asub(ASub).
 nf_det_abs_asub(ASub) :-
     detabs_asub(ASub).
+
+% Begin MR !433
+:- export(nfdet_condition/1).
+
+:- doc(nfdet_condition(Cond), "@var{Cond} is a condition which can be
+   verified using nfdet* info.").
+
+:- regtype nfdet_condition(Cond)
+   # "@var{Cond} is a condition which can be verified using nfdet*
+   info.".
+
+nfdet_condition(det).
+nfdet_condition(semidet).
+nfdet_condition(multi).
+nfdet_condition(fails).
+nfdet_condition(multi_min2).
+% End MR !433
+
+% ------------------------------------------------------------------------
 
 :- export(nfdet_test_class/1).
 
@@ -129,6 +150,34 @@ asub_can_fail(ASub,true) :-
     nfabs:asub_can_fail(ASub), !.
 asub_can_fail(_,false).
 
+% Begin MR !433
+:- export(asub_surely_fails/2).
+
+:- doc(asub_surely_fails(ASub,Fails), "Returns @tt{true} in
+   @var{Fails} if @var{ASub} represents failure, and @tt{false}
+   otherwise.").
+
+:- pred asub_surely_fails(ASub,Fails)
+   : ( nfabs_asub(ASub), var(Fails) )
+   => ( nfabs_asub(ASub), bool_t(Fails) ).
+
+asub_surely_fails(ASub,true) :- nfabs:asub(ASub,_,_,_,fails), !.
+asub_surely_fails(_,false).
+
+:- export(asub_is_surely_non_det/2).
+
+:- doc(asub_is_surely_non_det(ASub,IsNonDet), "Returns @tt{true} in
+   @var{IsNonDet} if @var{ASub} contains @tt{non_det}, and @tt{false}
+   otherwise.").
+
+:- pred asub_is_surely_non_det(ASub,IsNonDet)
+   : ( nfabs_asub(ASub), var(IsNonDet) )
+   => ( nfabs_asub(ASub), bool_t(IsNonDet) ).
+
+asub_is_surely_non_det(ASub,true) :- detabs:asub(ASub,_,_,_,non_det), !.
+asub_is_surely_non_det(_,false).
+% End MR !433
+
 :- export(asub_is_det/2).
 
 :- doc(asub_is_det(ASub,IsDet), "Returns @tt{true} in @var{IsDet} if
@@ -159,7 +208,71 @@ asub_is_det(_,false).
    : ( nfdet_asub(ASub), var(SelfASub) )
    => ( nfdet_asub(ASub), nf_det_abs_asub(SelfASub) ).
 
+% (nondet)
 split_self(ASub,SelfASub) :- nfplai:asub(ASub,_,_,SelfASub), !.
 split_self(ASub,SelfASub) :- detplai:asub(ASub,_,_,SelfASub), !.
-split_self(ASub,SelfASub) :- nfdet:asub(ASub,_,_,SelfASub,_).
-split_self(ASub,SelfASub) :- nfdet:asub(ASub,_,_,_,SelfASub).
+% Begin MR !433
+split_self(ASub,SelfASub) :- nfdet:asub(ASub,_,_,Nf,Det),
+    ( SelfASub = Nf
+    ; SelfASub = Det
+    ).
+
+:- export(nfdet_cond/2).
+
+:- doc(nfdet_cond(Cond, Info), "Checks whether condition @var{Cond}
+   can be verified using info @var{Info}.").
+
+:- pred nfdet_cond(Cond, Info)
+   : ( nfdet_condition(Cond), nf_det_asub(Info) )
+   # "Condition @var{Cond} can be verified using info @var{Info}.".
+
+% TODO: Change calls to x:asub/N by call x:x_asub/1 when defined.
+nfdet_cond(det, Info) :-
+    nfdet:asub(Info,_,_,Nf,Det),
+    asub_can_fail(Nf, CanFail),
+    CanFail = false,
+    asub_is_det(Det, true).
+nfdet_cond(semidet, Info) :-
+    split_self(Info, Self),
+    detabs:asub(Self,_,_,_,_), !,
+    asub_is_det(Self, true).
+nfdet_cond(multi, Info) :-
+    split_self(Info, Self),
+    nfabs:asub(Self,_,_,_,_), !,
+    asub_can_fail(Self, CanFail),
+    CanFail = false.
+nfdet_cond(fails, Info) :-
+    ( Info = '$bottom' ->
+        true
+    ; split_self(Info, Self),
+      nfabs:asub(Self,_,_,_,_), !,
+      asub_surely_fails(Self, true)
+    ).
+nfdet_cond(multi_min2, Info) :-
+    split_self(Info, Self),
+    detabs:asub(Self,_,_,_,_), !,
+    asub_is_surely_non_det(Self, true).
+
+:- export(nfdet_decide_call_to_entry/7).
+
+:- doc(nfdet_decide_call_to_entry(AbsInt,Call_s,Go1v,Goal1,Gov,Goal,Call),
+   "Calls @pred{call_to_entry/10} on the types and modes info of
+   @var{AbsInt}").
+
+nfdet_decide_call_to_entry(nf, Call_s, Go1v, Goal1, Gov, Goal, Call) :- !,
+    nfplai:asub(Call_s, Types_s, Modes_s, Nf),
+    nfdet_decide_call_to_entry_(Types_s, Modes_s, Go1v, Goal1, Gov, Goal, Types, Modes),
+    nfplai:asub(Call, Types, Modes, Nf).
+nfdet_decide_call_to_entry(det, Call_s, Go1v, Goal1, Gov, Goal, Call) :- !,
+    detplai:asub(Call_s, Types_s, Modes_s, Det),
+    nfdet_decide_call_to_entry_(Types_s, Modes_s, Go1v, Goal1, Gov, Goal, Types, Modes),
+    detplai:asub(Call, Types, Modes, Det).
+nfdet_decide_call_to_entry(nfdet, Call_s, Go1v, Goal1, Gov, Goal, Call) :-
+    nfdet:asub(Call_s, Types_s, Modes_s, Nf, Det),
+    nfdet_decide_call_to_entry_(Types_s, Modes_s, Go1v, Goal1, Gov, Goal, Types, Modes),
+    nfdet:asub(Call, Types, Modes, Nf, Det).
+
+nfdet_decide_call_to_entry_(Types_s, Modes_s, Go1v, Goal1, Gov, Goal, Types, Modes) :-
+    call_to_entry(eterms, Go1v, Goal1, Gov, Goal, not_provided, [], Types_s, Types, _),
+    call_to_entry(shfr, Go1v, Goal1, Gov, Goal, not_provided, [], Modes_s, Modes, _).
+% End MR !433

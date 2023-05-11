@@ -83,6 +83,11 @@ find_original_pred_if_needed(F,A,OrigF,OrigA):-
     .
 
 abs_exec_(_,true/0,true,true).
+% Begin MR !433
+abs_exec_(_,nondet/1,true,true). % nfdet
+abs_exec_(_,possibly_fails/1,true,true). % nf
+abs_exec_(_,possibly_nondet/1,true,true). % det 
+% End MR !433
 abs_exec_(_,otherwise/0,true,true).
 abs_exec_(_,fail/0,fail,true). % in any domain
 abs_exec_(_,false/0,fail,true).
@@ -198,6 +203,15 @@ determinable(fd,not_ground).
 %%       (e.g., linear arithmetic)
 determinable(polyhedra,polyhedra).
 %
+%
+% Begin MR !433
+determinable(nfdet,nfdet).
+determinable(nfdet,nonfailure).
+determinable(nfdet,determinism).
+determinable(nf,nonfailure).
+determinable(det,determinism).
+% End MR !433
+
 determinable(Dom,[X|Xs]):-
     determinable(Dom,X),
     determinable(Dom,Xs).
