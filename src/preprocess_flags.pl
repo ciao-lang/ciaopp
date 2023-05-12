@@ -1046,7 +1046,7 @@ valid_flag_values( output_lang        , member(_, [intermediate, source, raw])).
 
 pp_flag(simplify_checks).
 pp_flag(simplify_checks, 'Whether to output simplified check assertions after verification or not.').
-current_pp_flags(simplify_checks, off).
+current_pp_flags(simplify_checks, on).
 valid_flag_values(simplify_checks, member(_, [on,off])).
 
 %%%% Debugging flags %%%%
