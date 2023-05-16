@@ -760,7 +760,7 @@ current_pp_flags(  pres_inf_fail      , off).
 valid_flag_values( pres_inf_fail      , member(_, [off,on])).
 
 pp_flag(spec_postproc).
-pp_flag(spec_postproc, 'Whether to post process the results of analysis.').
+pp_flag(spec_postproc, 'Whether to post-process the results of analysis.').
 current_pp_flags(  spec_postproc      , on).
 valid_flag_values( spec_postproc      , member(_, [off,on])).
 
