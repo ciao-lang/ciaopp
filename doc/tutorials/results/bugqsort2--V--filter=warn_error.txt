@@ -1,0 +1,15 @@
+WARNING (preproc_errors): (lns 4-8) goal bugqsort2:partition(L,L1,X,L2) at literal 1 does not succeed!
+
+WARNING (ctchecks_pp_messages): (lns 12-13) the head of clause 'bugqsort2:partition/4/2' is incompatible with its call type
+     Head:      bugqsort2:partition([e|R],C,[E|Left1],Right)
+     Call Type: bugqsort2:partition(basic_props:list(num),term,num,term)
+
+WARNING (preproc_errors): (lns 14-15) goal arithmetic:>=(E,C) at literal 1 does not succeed!
+
+ERROR (ctchecks_pp_messages): (lns 14-15) At literal 1 false assertion:
+:- check calls B>=A
+   : ( nonvar(B), nonvar(A), arithexpression(B), arithexpression(A) ).
+because on call arithmetic:>=(A,B) :
+
+[shfr] native_props:mshare([[B],[_],[A],[_],[A]]),term_typing:var(B),term_typing:var(A) 
+

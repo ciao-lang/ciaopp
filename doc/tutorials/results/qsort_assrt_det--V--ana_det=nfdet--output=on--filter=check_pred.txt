@@ -1,0 +1,33 @@
+:- checked calls qsort(_A,_B)
+   : list(num,_A).
+
+:- checked success qsort(_A,_B)
+   : list(num,_A)
+   => list(num,_B).
+
+:- checked comp qsort(_A,_B)
+   : list(num,_A)
+   + semidet.
+
+:- checked calls partition(_A,_B,_C,_D)
+   : ( list(num,_A), num(_B) ).
+
+:- checked success partition(_A,_B,_C,_D)
+   : ( list(num,_A), num(_B) )
+   => ( list(num,_C), list(num,_D) ).
+
+:- checked comp partition(_A,_B,_C,_D)
+   : ( list(num,_A), num(_B) )
+   + det.
+
+:- checked calls append(_A,_B,_C)
+   : ( list(num,_A), list(num,_B) ).
+
+:- checked success append(_A,_B,_C)
+   : ( list(num,_A), list(num,_B) )
+   => list(num,_C).
+
+:- checked comp append(_A,_B,_C)
+   : ( list(num,_A), list(num,_B) )
+   + semidet.
+

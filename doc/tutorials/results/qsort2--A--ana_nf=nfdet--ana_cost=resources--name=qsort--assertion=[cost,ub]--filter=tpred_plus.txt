@@ -1,0 +1,6 @@
+
+:- true pred qsort(A,B)
+   : ( list(num,A), var(B) )
+   => ( list(num,A), list(num,B),
+        size(ub,length,B,2**length(A)-1.0) )
+   + cost(ub,steps,sum($(j),1,length(A),$(j)*2**(length(A)- $(j)))+2.0*2**length(A)+length(A)*2**(length(A)-1)-1.0).

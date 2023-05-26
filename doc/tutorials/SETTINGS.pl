@@ -8,6 +8,7 @@ doc_structure :=
     ciaopp_tutorials-[
         quick_start,
         tut_gentle_intro,
+        tut_assrts,
         tut_advanced
     ].
 

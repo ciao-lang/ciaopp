@@ -1,0 +1,23 @@
+:- checked calls qsort(A,B)
+   : ( list(num,A) ).
+
+:- check success qsort(A,B)
+   => sorted_num_list(B).
+
+:- checked calls partition(A,B,C,D)
+   : ( ground(A), ground(B) ).
+
+:- checked success partition(A,B,C,D)
+   => ( list(num,C), ground(D) ).
+
+:- checked comp partition(_A,_B,_C,_D)
+   + not_fails.
+
+:- checked comp partition(_A,_B,_C,_D)
+   + det.
+
+:- checked comp partition(A,B,C,D)
+   + terminates.
+
+:- check calls append(A,B,C)
+   : list(num,B).

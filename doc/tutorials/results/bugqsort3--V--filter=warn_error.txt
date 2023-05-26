@@ -1,0 +1,4 @@
+WARNING (ctchecks_pp_messages): (lns 12-13) the head of clause 'bugqsort3:partition/4/2' is incompatible with its call type
+     Head:      bugqsort3:partition([e|R],C,[E|Left1],Right)
+     Call Type: bugqsort3:partition(basic_props:list(num),num,term,term)
+

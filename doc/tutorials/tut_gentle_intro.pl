@@ -898,7 +898,7 @@ first_powers(N,[(Power,Factor)|PFs],[Power|Powers]) :-
     Power1 is Power*Factor,
     sorted_insert(PFs1,(Power1,Factor),PFs2),
     first_powers(N1,PFs2,Powers).
-first_powers(0,_,[]).e
+first_powers(0,_,[]).
  
 remove_power(_,[],[]).
 remove_power(Power,[(Power1,Factor)|RestOut],[(Power1,Factor)|RestOut]) :-

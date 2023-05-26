@@ -1,0 +1,7 @@
+
+:- true pred conc(A,B,C)
+   : ( list(num,A), rt4(B), var(C) )
+   => ( list(num,A), rt4(B), list1(num,C),
+        size_lb(length,C,length(B)+length(A)),
+        size_ub(length,C,length(B)+length(A)) )
+   + ( steps_lb(length(A)+1), steps_ub(length(A)+1) ).

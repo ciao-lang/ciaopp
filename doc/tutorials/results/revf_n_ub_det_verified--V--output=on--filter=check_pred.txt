@@ -1,0 +1,16 @@
+:- checked calls nrev(A,B)
+   : ( list(num,A), var(B) ).
+
+:- checked success nrev(A,B)
+   : ( list(num,A), var(B) )
+   => list(B).
+
+:- checked comp nrev(A,B)
+   : ( list(num,A), var(B) )
+   + ( det, terminates, steps_ub(exp(length(A),2)) ).
+
+:- checked calls conc(A,B,C).
+
+:- checked comp conc(A,B,C)
+   + ( det, terminates, steps_ub(length(A)+1) ).
+

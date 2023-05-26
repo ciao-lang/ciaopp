@@ -1,0 +1,4 @@
+WARNING (ctchecks_pp_messages): (lns 18-18) the head of clause 'bugqsort_assertions:append/3/2' is incompatible with its call type
+     Head:      bugqsort_assertions:append([H|X],Y,[H|Z])
+     Call Type: bugqsort_assertions:append([],[^(x)],term)
+

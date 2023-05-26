@@ -1,0 +1,7 @@
+
+:- true pred nrev(A,B)
+   : ( list(num,A), var(B) )
+   => ( list(num,A), list(num,B),
+        size_lb(length,B,length(A)),
+        size_ub(length,B,length(A)) )
+   + ( steps_lb(0.5*exp(length(A),2)+1.5*length(A)+1), steps_ub(0.5*exp(length(A),2)+1.5*length(A)+1) ).

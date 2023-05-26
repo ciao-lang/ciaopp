@@ -1,0 +1,6 @@
+
+:- true pred qsort(A,B)
+   : ( list(num,A), var(B) )
+   => ( list(num,A), list(num,B),
+        size(lb,length,B,1) )
+   + cost(lb,steps,0).
