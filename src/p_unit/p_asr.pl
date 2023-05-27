@@ -1146,7 +1146,6 @@ load_lib_sources(Path) :-
     load_from_file(Path, 'lib_prop_clause_read.pl', clause_db:load_lib_props),
     load_from_file(Path, 'lib_itf_db.pl', itf_db:load_lib_itf),
     load_from_file(Path, 'lib_typedb.pl', typeslib:load_lib_type_info).
-%load_lib_sources(_Path).
 
 :- use_module(library(pathnames)).
 

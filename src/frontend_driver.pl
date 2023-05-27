@@ -317,10 +317,13 @@ ensure_lib_sources_loaded :-
     % Check if they were already loaded
     \+ loaded_lib_sources, !,
     ensure_datadir('ciaopp_lib_cache', Dir),
-    catch(load_lib_sources(Dir), error(_,_), true).
+    catch(load_lib_sources(Dir), error(_,_), warn_no_cache).
     % TODO: warn if not defined??
     % TODO: call command to generate them if not defined??
 ensure_lib_sources_loaded.
+
+warn_no_cache :-
+    note_message("uncached library sources (enable with 'ciaopp --gen-lib-cache')", []).
 
 % ---------------------------------------------------------------------------
 % Cleanup
@@ -377,7 +380,7 @@ perform_transformations([E|Ls]) :-
 :- endif. % with_fullpp
 
 :- use_module(library(pretty_print),  [pretty_print/4]).
-:- use_module(library(messages),      [error_message/2, warning_message/2]).
+:- use_module(library(messages),      [error_message/2, warning_message/2, note_message/2]).
 :- use_module(library(terms),         [atom_concat/2]).
 
 :- use_module(typeslib(typeslib), [get_required_types/1, typedef_to_pred/3]).

@@ -50,15 +50,10 @@ ciaopp_client_sh := ~bundle_path(ciaopp, 'cmds/ciaopp-client.bash').
 % ===========================================================================
 
 :- doc(section, "Hooks for caching library assertions").
-% This precompilation of the library assertions allows faster module
-% loading in CiaoPP (libraries are not checked, the cached data is
-% used).
 
-% Warning: This hook only caches the libraries.
-% To enable the lib cache execute:
-%   ?- use_module(library(persdb/datadir), [ensure_datadir/2]).
-%   ?- use_module(ciaopp(p_unit/p_asr), [load_lib_sources/1]).
-%   ?- ensure_datadir('ciaopp_lib_cache', _Dir), load_lib_sources(_Dir).
+% Precompilation of the library assertions allows faster module
+% loading in CiaoPP (libraries are not checked, the cached data is
+% used). This hook just calls 'ciaopp --gen-lib-cache'.
 
 '$builder_hook'(custom_run(cache_libraries, [])) :- !,
     cache_libraries.
