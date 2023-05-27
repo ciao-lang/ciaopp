@@ -6,7 +6,7 @@
 % cost-related properties).
 
 :- pred nrev(A,B) : (list(num,A), var(B)) => list(B) 
-   + ( det, terminates, steps_ub( exp(length(A),2) ) ).
+   + ( det, terminates, steps_o( exp(length(A),2) ) ).
 
 nrev( [] )    := [].
 nrev( [H|L] ) := ~conc( ~nrev(L),[H] ).

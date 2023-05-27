@@ -1,9 +1,9 @@
 :- module(_,[p/1,colorlist/1,sorted/1,color/1],[assertions,regtypes,fsyntax]).
 
-% Defining some types and properties (using functiomal syntax)
+% Defining some types and properties (using functional syntax)
 % which are then used in two simple assertions. The system
 % detects that property sorted is incompatible with the success
-% tyoe of p/1.
+% type of p/1.
 
 :- pred p(X) => sorted(X).
 p(X) :- q(X).
