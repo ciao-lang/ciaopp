@@ -1629,13 +1629,19 @@ anakinds_to_absints(_AnaKinds, _Menu, AbsInts) :-
     get_menu_flag(~ctcheck_menu_name, dom_sel, auto),
     current_pp_flag(intermod, off), !,
     %
-    current_fact(selected_domains(Selected)),
+    ( current_fact(selected_domains(Selected)) -> true
+    ; throw(no_decide_domains) % bug
+    ),
+    ( Selected = [] ->
+        warning_message("no domain candidates found by decide_domains/1")
+    ; true
+    ),
     % TODO: Select more than one combination.
     ( Selected = [[]] ->
         warning_message("There are no assertions reachable (from local or imported predicates) and you have not selected any analysis.")
     ; true
     ),
-    member(AbsInts, Selected).
+    Selected = [AbsInts|_]. % NOTE: commit to first selection; was nondet: member(AbsInts, Selected). (JFMC)
 anakinds_to_absints(AnaKinds, Menu, AbsInts) :-
     anakinds_to_absints_menu(AnaKinds, Menu, AbsInts).
 
@@ -1687,16 +1693,20 @@ get_values([_-V|Xs], [V|Ys]) :-
 % TODO: Take into account combined domains.
 decide_domains_monolithic(_AnaKinds, AnaFlags) :-
     cleanup_decide_domains,
-    % First, obtain disjunctions conjunctions of needed domains in a
-    % failure driven loop.
-    ( curr_file(_, M),
+    % First, obtain disjunctions conjunctions of needed domains
+    ( % (failure-driven loop)
+      curr_file(_, M),
       get_one_prop(M, Prop),
       functor(Prop, F, A),
-      \+ is_prop_covered(F, A, _),
-      findallsort(AbsInt, domain_native_property(Prop, AbsInt), AbsIntDisj),
-      add_auxiliary_domains(AbsIntDisj, LLAbsInt),
-      set_prop_covered(F, A, LLAbsInt),
-      fail
+        \+ is_prop_covered(F, A, _),
+        findallsort(AbsInt, domain_native_property(Prop, AbsInt), AbsIntDisj),
+        \+ AbsIntDisj = [], % Skip properties with no domains --
+                            % otherwise we get an empty list of
+                            % candidate domains (JFMC) (this bug
+                            % manifests with '--gen-lib-cache')
+        add_auxiliary_domains(AbsIntDisj, LLAbsInt),
+        set_prop_covered(F, A, LLAbsInt),
+        fail
     ; true
     ),
     findallsort(Dom, is_prop_covered(F, A, Dom), AnaFlags0),
