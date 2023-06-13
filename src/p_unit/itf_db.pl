@@ -1,5 +1,5 @@
 :- module(itf_db,
-    [ assert_itf/5, assert_itf_kludge/2,
+    [ assert_itf/5, % assert_itf_kludge/2,
       cleanup_itf_db/0,
       current_itf/3,
       retract_itf/5,
@@ -21,12 +21,11 @@
 
 :- reexport(ciaopp(p_unit/itf_base_db)).
 
-:- doc(bug, "assert_itf_kludge/2 ?").
 :- doc(bug, "Missing doc").
 
 cleanup_itf_db:-
     retractall_fact(defines(_,_,_)),
-    retractall_fact(imports(_,_)),
+    retractall_fact(imports(_,_,_,_)),
     retractall_fact(exports(_,_)),
     retractall_fact(multifile(_,_)),
     retractall_fact(meta(_,_)),
@@ -45,18 +44,23 @@ assert_itf(defines,M,F,A,_Type):-
     goal_module_expansion(Goal0, M, Goal),
     functor(Goal,FG,A),
     assertz_fact(defines(FG,A,M)).
-assert_itf(imports,_M,F,A,r(IM,EM)) :- !, % reexported predicates reexported
+assert_itf(imports,M,F,A,r(IM,EM)) :- !, % reexported predicates reexported
     functor(Goal0,F,A),
     goal_module_expansion(Goal0, EM, Goal),
     % unexpand_meta_calls(Goal1,Goal), % TODO: remove? related with addmodule?
     % TODO: this depends on type_of_goal which, at some point calls current_itf(meta, Goal, Meta)
-    assertz_if_needed(imports(Goal,EM)), % TODO: IG missing which imports which
-    assertz_if_needed(imports(Goal0,r(IM,EM))). % (unexpanded goal for unexpand.pl)
-assert_itf(imports,_IM,F,A,EM):-
+    assertz_if_needed(imports(Goal,M,EM)),
+    assertz_if_needed(imports(Goal0,M,r(IM,EM))). % (unexpanded goal for unexpand.pl)
+assert_itf(imports,M,F,A,EM):-
     functor(Goal0,F,A),
     goal_module_expansion(Goal0, EM, Goal),
     % unexpand_meta_calls(Goal1,Goal), % TODO: remove? related with addmodule?
-    assertz_if_needed(imports(Goal,EM)).  % TODO: IG missing which imports which
+    assertz_if_needed(imports(Goal,M,EM)).
+assert_itf(indirect_imports,M,F,A,EM):-
+    functor(Goal0,F,A),
+    goal_module_expansion(Goal0, EM, Goal),
+    % unexpand_meta_calls(Goal1,Goal), % TODO: remove? related with addmodule?
+    assertz_if_needed(indirect_imports(Goal,M,EM)).
 assert_itf(exports,M,F,A,_M):-
     functor(Goal0,F,A),
     goal_module_expansion(Goal0, M, Goal),
@@ -91,20 +95,32 @@ assert_itf(impl_defines,M,F,A,_DynType):-
     goal_module_expansion( Goal0 , M , Goal ),
     assertz_fact(impl_defines(Goal,M)).
 
-assertz_if_needed(imports(Goal,M)) :-
-    ( current_fact(imports(Goal, M)) -> true
-    ; assertz_fact(imports(Goal,M))
+assertz_if_needed(indirect_imports(Goal,M,EM)) :-
+    ( current_fact(imports(Goal,M,EM,_)) -> true
+    ; assertz_fact(imports(Goal,M,EM,indirect))
+    ).
+assertz_if_needed(imports(Goal,M,EM)) :-
+    ( current_fact(imports(Goal,M,EM,Mode)) ->
+        ( Mode = direct -> true
+        ; retractall_fact(imports(Goal,M,EM,_)),
+          assertz_fact(imports(Goal,M,EM,direct))
+        )
+    ; assertz_fact(imports(Goal,M,EM,direct))
     ).
 assertz_if_needed(exports(Goal,M)) :-
-    ( current_fact(exports(Goal, M)) -> true
-    ; assertz_fact(exports(Goal,M))).
+    ( current_fact(exports(Goal,M)) -> true
+    ; assertz_fact(exports(Goal,M))
+    ).
 assertz_if_needed(dynamic(Goal)) :-
     ( current_fact(dynamic(Goal)) -> true
-    ; assertz_fact(dynamic(Goal))).
+    ; assertz_fact(dynamic(Goal))
+    ).
 
-assert_itf_kludge(remote,imports(Goal,IM)):-
-    ( current_fact(imports(Goal,IM)) -> true
-    ; assertz_fact(imports(Goal,IM)) ).
+% TODO: why? remove?
+% assert_itf_kludge(remote,imports(Goal,IM)):-
+%     ( current_fact(imports(Goal,IM)) -> true
+%     ; assertz_fact(imports(Goal,IM))
+%     ).
 
 % {ERROR (p_asr): ERROR PROCESSING FACT exports(basiccontrol,\+,1,static,\+goal)
 %   from ast file}
@@ -143,13 +159,17 @@ current_itf(defines_pred,G,M):-
 current_itf(defines_pred,G,M):-
     lib_defines(F,A,M),
     functor(G,F,A).
-current_itf(imports,Goal,IM):- % IG change name to imported? do not confuse with compiler
-    current_fact(imports(Goal,IM)).
+current_itf(imports(M,Mode),Goal,IM):- % TODO: fixed arity in current_itf/3 is weird (JFMC)
+    current_fact(imports(Goal,M,IM,Mode)).
+current_itf(imports(M,Mode),Goal,IM):-
+    lib_imports(Goal,M,IM,Mode).
 % TODO: use a different predicate for imports relation. Uses of this case of
 % current_itf look strange... I.e., if an expanded literal appears in an
 % expanded body, then it is obvious that the pred is imported.
+current_itf(imports,Goal,IM):- % IG change name to imported? do not confuse with compiler
+    current_fact(imports(Goal,_M,IM,_)).
 current_itf(imports,Goal,IM):-
-    lib_imports(Goal,IM).
+    lib_imports(Goal,_M,IM,_).
 current_itf(exports,Goal,M):- % IG change name to exported? do not confuse with compiler
     current_fact(exports(Goal,M)). 
 current_itf(exports,Goal,M):-
@@ -186,7 +206,7 @@ defines_module_(M, Base) :-
     (current_fact(defines_module_rev_idx(M, Base))
     ; lib_defines_module_rev_idx(M, Base)).
 
-% TODO: This is wrong, visibility depends on the module (except for multifiles)
+% TODO: This is wrong, visibility depends on the module (except for multifiles); add M (JFMC)
 visible_goal(Goal):-
     current_itf(imports,Goal,_).
 visible_goal(Goal):-
@@ -225,7 +245,7 @@ get_module_from_sg(_,''). %% '\+/1' has no module in Sg. % TODO: ??
 
 
 :- use_module(library(write), [writeq/2]).
-:- data lib_defines/3, lib_imports/2, lib_exports/2, lib_multifile/2, lib_meta/2.
+:- data lib_defines/3, lib_imports/4, lib_exports/2, lib_multifile/2, lib_meta/2.
 :- data lib_dynamic/1, lib_impl_defines/2, lib_defines_module/2.
 % reverse indexes
 :- data lib_defines_module_rev_idx/2.
@@ -241,8 +261,8 @@ dump_lib_itf(Stream):-
     display(Stream,'.'),nl(Stream),
     fail.
 dump_lib_itf(Stream):-
-    imports(A,B),
-    writeq(Stream,lib_imports(A,B)),
+    imports(A,B,C,D),
+    writeq(Stream,lib_imports(A,B,C,D)),
     display(Stream,'.'),nl(Stream),
     fail.
 dump_lib_itf(Stream):-
@@ -288,7 +308,7 @@ dump_lib_itf(_).
    # "Cleans up all facts of lib_* predicates.".
 cleanup_lib_itf:-
     retractall_fact(lib_defines(_,_,_)),
-    retractall_fact(lib_imports(_,_)),
+    retractall_fact(lib_imports(_,_,_,_)),
     retractall_fact(lib_exports(_,_)),
     retractall_fact(lib_multifile(_,_)),
     retractall_fact(lib_meta(_,_)),

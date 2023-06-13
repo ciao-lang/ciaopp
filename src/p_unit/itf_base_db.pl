@@ -4,8 +4,8 @@
 
 :- export(defines/3).
 :- data defines/3.
-:- export(imports/2).
-:- data imports/2.
+:- export(imports/4).
+:- data imports/4.
 :- export(exports/2).
 :- data exports/2.
 :- export(multifile/2).

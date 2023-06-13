@@ -484,10 +484,9 @@ save_itf_info_of(Base, M, _IsMain) :-
 save_itf_info_of(_Base, M, yes) :- % saving imported preds
     imports(M, IM, F, A, EM),
     ( (EM = '.' ; IM = EM) ->
-        assert_itf(imports, IM, F, A, IM) % IG define end module and reexported
-    ;
-        assert_itf(imports, IM, F, A, r(IM,EM)), % TODO: needed for output
-        assert_itf(imports, IM, F, A, EM)
+        assert_itf(imports, M, F, A, IM) % IG define end module and reexported
+    ; assert_itf(imports, M, F, A, r(IM,EM)), % TODO: needed for output
+      assert_itf(imports, M, F, A, EM)
     ),
     %       save_meta_dynamic(Meta, DefType, M, F, A), %%% IG: here use meta_args
     fail.
@@ -1335,8 +1334,8 @@ read_asr_data_loop__action(imports(M, IM, F, A, EndMod)) :-
 read_asr_data_loop__action(exports(M, F, A, DefType, Meta)) :-
     !,
     ( adding_to_module(CM) ->
-        c_itf:restore_imports(CM, M, F, A, M),
-        assert_itf(imports, CM, F, A, M)
+        c_itf:restore_imports(CM, M, F, A, M), % TODO: wrong, this should be an indirect import!
+        assert_itf(indirect_imports, CM, F, A, M)
 %           read_asr_data_loop__action( imports(CM, M, F, A, DefType, Meta) )
     ;
         assert_itf(exports, M, F, A, M)
@@ -1361,11 +1360,12 @@ read_asr_data_loop__action(X) :-
         assertion_body(Head, _, _, _, _, _, Body),
         functor(Head,   MF, A),
         functor(Head__, MF, A),
-        ( current_itf(imports, Head__, M) ->
+        ( current_itf(imports(CM,_), Head__, M) ->
             true
         ;
             module_split(MF, _, F),
-            read_asr_data_loop__action(imports(CM, M, F, A, M))
+            c_itf:restore_imports(CM, M, F, A, M), % TODO: wrong, this should be an indirect import!
+            assert_itf(indirect_imports, CM, F, A, M)
         )
     ;
         true
