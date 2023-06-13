@@ -190,7 +190,7 @@ Other commands useful when developing or debugging CiaoPP:
 :- endif.
 
 :- use_module(ciaopp(preprocess_flags), [current_pp_flag/2]).
-:- use_module(ciaopp(p_unit/itf_db), [current_itf/3, preloaded_module/2]).
+:- use_module(ciaopp(p_unit/itf_db), [current_itf/3, preloaded_module/2, curr_file/2]).
 :- use_module(ciaopp(p_unit/aux_filenames), [is_library/1]).
 :- use_module(engine(runtime_control), [module_split/3]).
 
@@ -209,6 +209,16 @@ typeslib_is_user_type(T) :-
     module_split(T,M,_),
     current_itf(defines_module,M,Base), !, % TODO: dangling choice points?
     \+ is_library(Base).
+
+% (hook)
+typeslib_is_visible(F,N) :-
+    functor(G,F,N),
+    ( curr_file(_,Mod) -> true ; fail ), % TODO: multidet?
+    ( current_itf(imports(Mod,direct),G,_) -> true % NOTE: avoid 'indirect_imports'
+    ; current_itf(defines_pred,G,Mod) -> true
+    ; current_itf(multifile,G,Mod) -> true % TODO: why Mod in multifile query?
+    ; fail
+    ).
 
 % (hook)
 typeslib_interesting_type(T, Mode) :-
