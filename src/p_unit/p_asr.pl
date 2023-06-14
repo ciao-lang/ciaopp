@@ -1,6 +1,6 @@
 :- module(p_asr, [
     preprocessing_unit_opts/4,
-    do_cache/0,
+    do_cache/0, % TODO: deprecate?
     show_asr/1,
     cleanup_code_and_related_assertions/0,
     cleanup_pasr/0,
