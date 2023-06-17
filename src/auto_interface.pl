@@ -1145,9 +1145,9 @@ do_output(OFile, Menu) :-
 % ---------------------------------------------------------------------------
 %! # Test case generation
 % TODO: move to other file
-:- if(defined(has_ciaotest)).
+:- if(defined(has_ciaopp_testgen)).
 
-:- use_module(library(ciaotest/ciaotest_driver),[ciaotest/2, processed_test_case/6, clean_processed_cases/0]).
+:- use_module(ciaopp_testgen(ciaotest_driver),[ciaotest/2, processed_test_case/6, clean_processed_cases/0]).
 :- use_module(engine(internals), [module_concat/3]).
 %:- use_module(library(unittest), [run_tests_in_module/3]).
 %:- use_module(library(unittest/unittest_summaries), [show_test_summaries/1]).
@@ -1289,7 +1289,7 @@ flat_head_([A|As], Seen, [A2|As2], Unifs) :-
     flat_head_(As, Seen, As2, Unifs0).
 :- else.
 do_testing(_,_).
-:- endif. % defined(has_ciaotest).
+:- endif. % defined(has_ciaopp_testgen).
 
 % ---------------------------------------------------------------------------
 

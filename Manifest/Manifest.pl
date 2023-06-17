@@ -1,9 +1,9 @@
 :- bundle(ciaopp).
 depends([
     core,
-    ciaodbg-[optional], 
-    ciaotest-[optional], % TODO: rename to ciaopp_testgen?
     typeslib,
+    ciaodbg-[optional], 
+    ciaopp_testgen-[optional],
     ciao_ppl-[optional], % (optional for polyhedra, numerical constraints, etc.)
     ciao_gsl-[optional], % TODO: remove once ciaopp dep is explicit
     ciaopp_fpnum-[optional], % TODO: remove once ciaopp dep is explicit

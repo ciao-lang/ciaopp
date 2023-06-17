@@ -23,7 +23,7 @@ opt_b(ciaopp_fpnum).
 opt_b(ciaopp_bshare).
 opt_b(ciaopp_llvm).
 opt_b(ciaopp_java).
-opt_b(ciaotest). % TODO: rename to ciaopp_testgen?
+opt_b(ciaopp_testgen).
 opt_b(ciao_ppl).
 opt_b(mathematica).
 opt_b(davinci).
