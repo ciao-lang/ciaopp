@@ -1,19 +1,4 @@
-:- module(p_asr, [
-    preprocessing_unit_opts/4,
-    do_cache/0, % TODO: deprecate?
-    show_asr/1,
-    cleanup_code_and_related_assertions/0,
-    cleanup_pasr/0,
-    load_related_files/2,
-    load_lib_sources/1,
-    gen_lib_sources/1, % TODO: do_cache/0?
-    loaded_lib_sources/0,
-    cleanup_lib_sources/0,
-    % regtypes
-    preprocessing_opts/1,
-    % for intermod
-    there_was_error/1
-], [
+:- module(p_asr, [], [
     assertions,
     basicmodes,
     regtypes,
@@ -132,25 +117,15 @@ importing libraries @lib{ciaopp/p_unit}, @lib{ciaopp/p_unit/itf_db},
 
 % Documentation
 :- use_module(library(assertions/c_itf_props)).
+:- use_module(library(assertions/assrt_lib), [assertion_body/7]).
 
-:- use_module(ciaopp(p_unit/p_canonical)).
-:- use_module(ciaopp(frontend_driver), [
-    detect_language/2,
-    translate_input_file/5]).
-
-:- use_module(library(pathnames), [path_split/3, path_splitext/3]).
-:- use_module(library(compiler/c_itf), [defines/3]).
+:- use_module(library(aggregates), [findall/3]).
+:- use_module(library(pathnames), [path_concat/3, path_basename/2, path_split/3, path_splitext/3]).
 :- use_module(library(formulae), [asbody_to_conj/2]).
 :- use_module(engine(runtime_control), [module_split/3]).
 
-:- use_module(ciaopp(p_unit), [add_output_operator/3, add_output_package/1]).
-:- use_module(ciaopp(p_unit), [add_assertions/1, add_commented_assertion/1, get_assertion/2]).
-:- use_module(ciaopp(preprocess_flags), [current_pp_flag/2, set_pp_flag/2]).
-:- use_module(ciaopp(ciaopp_log), [pplog/2]).
-
-:- use_module(library(aggregates), [findall/3]).
-
 % TODO: merge c_itf here, merge second pass with compiler
+:- use_module(library(compiler/c_itf), [defines/3]).
 :- use_module(library(compiler/c_itf), [
     activate_translation/3, cleanup_c_itf_data/0,
     module_expansion/9, location/3,
@@ -179,17 +154,15 @@ importing libraries @lib{ciaopp/p_unit}, @lib{ciaopp/p_unit/itf_db},
 %% :- use_module(library(system),
 %%      [fmode/2,chmod/2,file_exists/1,file_exists/2,delete_file/1]).
 :- use_module(library(system), [working_directory/2]).
-:- use_module(library(pathnames), [path_split/3]).
 :- use_module(library(lists),  [member/2]).
-:- use_module(library(pathnames), [path_basename/2, path_splitext/3]).
 :- use_module(engine(stream_basic)).
 :- use_module(engine(stream_basic), [absolute_file_name/7]).
 :- use_module(engine(io_basic)).
 :- use_module(library(stream_utils), [write_string/1]).
 :- use_module(engine(messages_basic), [message/2]).
 
-% Own libraries
-:- use_module(library(assertions/assrt_lib), [assertion_body/7]).
+:- use_module(ciaopp(preprocess_flags), [current_pp_flag/2, set_pp_flag/2]).
+:- use_module(ciaopp(ciaopp_log), [pplog/2]).
 :- use_module(ciaopp(p_unit/assrt_db)).
 :- use_module(ciaopp(p_unit/assrt_norm)).
 :- use_module(ciaopp(p_unit/clause_db)).
@@ -199,8 +172,12 @@ importing libraries @lib{ciaopp/p_unit}, @lib{ciaopp/p_unit/itf_db},
     preloaded_module/2,
     dump_lib_itf/1,
     load_lib_itf/1]).
-
-% asr files
+:- use_module(ciaopp(frontend_driver), [
+    detect_language/2,
+    translate_input_file/5]).
+:- use_module(ciaopp(p_unit/p_canonical)).
+:- use_module(ciaopp(p_unit), [add_output_operator/3, add_output_package/1]).
+:- use_module(ciaopp(p_unit), [add_assertions/1, add_commented_assertion/1, get_assertion/2]).
 :- use_module(ciaopp(p_unit/aux_filenames), [get_module_filename/3]).
 
 %% ---------------------------------------------------------------------------
@@ -214,6 +191,7 @@ importing libraries @lib{ciaopp/p_unit}, @lib{ciaopp/p_unit/itf_db},
 asr_version('5.0').
 
 %% ---------------------------------------------------------------------------
+:- export(cleanup_code_and_related_assertions/0).
 :- pred cleanup_code_and_related_assertions/0
 # "Cleans up data asserted by assertion/code reader/normalizer.".
 
@@ -228,6 +206,7 @@ cleanup_code_and_related_assertions :-
 filenames(X) :- filename(X).
 filenames(X) :- list(filenames, X).
 
+:- export(preprocessing_opts/1). % regtype
 :- regtype preprocessing_opts/1
    # "Defines the possible options when loading a module:
 @begin{itemize}
@@ -241,6 +220,7 @@ preprocessing_opts('-v').
 preprocessing_opts('-d').
 preprocessing_opts(load_pkg_from(_)).
 
+:- export(preprocessing_unit_opts/4).
 :- pred preprocessing_unit_opts(in(Fs), in(Opts), out(Ms), out(E))
     :: filenames * list(preprocessing_opts)
     * moddesc * switch
@@ -284,17 +264,8 @@ preprocessing_opts(load_pkg_from(_)).
 
 preprocessing_unit_opts(Fs, Opts, Ms, E) :-
     %statistics(walltime, [L1|_]),
-    % get verbosity
-    ( ( current_pp_flag(verbosity, very_high)
-      ; member('-v', Opts)
-      ) ->
-        Verb = verbose
-    ; member('-d', Opts) -> Verb = debug
-    ; Verb = quiet 
-    ),
-    % read_cache, % TODO: why not? (JF)
     % process main file
-    process_main_files(Fs, Opts, Ms, Verb),
+    process_main_files(Fs, Opts, Ms),
     ( ( member(load_pkg_from(Mod), Opts)
       ; member(Mod, Ms) % TODO: wrong! only first one?!
       ; Ms = [user(_)], Mod = [user] % TODO: why not a list?
@@ -303,10 +274,9 @@ preprocessing_unit_opts(Fs, Opts, Ms, E) :-
     ; retractall_fact(adding_to_module(_)) % TODO: review this
     ),
     % traverse the related files closure
-    related_files_closure(direct, Verb, Opts),
+    related_files_closure(direct, Opts),
     retractall_fact(adding_to_module(_)),
     %% check for props in the related files
-    % ver_esp_asr,
     delayed_checks,
     %
     %statistics(walltime, [L2|_]),
@@ -317,29 +287,16 @@ preprocessing_unit_opts(Fs, Opts, Ms, E) :-
 
 % ---------------------------------------------------------------------------
 
-% ver_esp_asr :-
-%       display( 'imprimiendo la prueba\n\n' ),
-%                       assertion_read(PD,_AM,_Status,prop,_Body,_Dict,_S,_LB,_LE),
-%       display( PD ), nl,
-%       fail.
-%
-% ver_esp_asr :-
-%       display( '\n\nimprimiendo los irrelevantes\n\n' ),
-%       current_fact( irrelevant_file(PD) ),
-%       display( PD ), nl,
-%       fail.
-% ver_esp_asr.
-
 % DTM: When loading ast file, if we are adding the module to the
 % output, i.e., we add one module information to the current one (see
 % load_package_info/1), we have to add import fact in
 % itf_db. adding_to_module specifies the original (first) loaded module 
 :- data adding_to_module/1.
 
-process_main_files([],     _Opts, [],     _Verb) :- !.
-process_main_files([F|Fs], Opts,  [M|Ms], Verb) :- !,
-    process_main_file1(F,  Opts, M,  Verb),
-    process_main_files(Fs, Opts, Ms, Verb).
+process_main_files([],     _Opts, []) :- !.
+process_main_files([F|Fs], Opts,  [M|Ms]) :- !,
+    process_main_file1(F,  Opts, M),
+    process_main_files(Fs, Opts, Ms).
 
 maybe_translate(F, Opts, M, Lang, NF) :-
     atom(F),
@@ -347,15 +304,16 @@ maybe_translate(F, Opts, M, Lang, NF) :-
     call_to_sockets_init, % TODO:[new-resources] this should not be needed
     translate_input_file(Lang, F, Opts, M, NF).
 
-process_main_file1(F, Opts, M, Verb) :-
+process_main_file1(F, Opts, M) :-
     maybe_translate(F, Opts, M, Lang, NF),
     set_pp_flag(prog_lang, Lang), % TODO: one per module
     error_protect(ctrlc_clean(
             process_file(NF, asr, any,
-                process_main_info_file(M, Verb, Opts),
+                process_main_info_file(M, Opts),
                 c_itf:false, c_itf:false, do_nothing)
         ),fail). % TODO: fail or abort?
 
+:- export(cleanup_pasr/0).
 :- pred cleanup_pasr
 # "Clean up all facts that p_asr asserts.".
 
@@ -366,25 +324,11 @@ cleanup_pasr :-
     retractall_fact(irrelevant_file(_)),
     retractall_fact(file_included_by_package(_)).
 
+:- export(there_was_error/1). % for intermod
 there_was_error(yes) :- module_error, !.
 there_was_error(yes) :- module_error(_), !.
 there_was_error(yes) :- mexpand_error, !.
 there_was_error(no).
-
-%% ---------------------------------------------------------------------------
-% TODO: sockets (foreign code) are sometimes not initialized properly, why?
-
-:- if(defined(has_ciaopp_java)).
-:- use_module(library(sockets), [initial_from_ciaopp/0]).
-:- data socket_initialized/0.
-call_to_sockets_init :-
-    current_fact(socket_initialized), !.
-call_to_sockets_init :-
-    asserta_fact(socket_initialized),
-    sockets:initial_from_ciaopp.
-:- else.
-call_to_sockets_init.
-:- endif.
 
 %% ---------------------------------------------------------------------------
 %% Main file (current module) processing
@@ -392,50 +336,24 @@ call_to_sockets_init.
 
 %% this file have to assert related_file fact to be processed later.
 
-% process_main_file(Base,M,Verb,Opts):- 
-%         pplog(load_assrts, ['{Processing main module ']),
-%       defines_module(Base,M),
-%       assertz_fact( processed_file( Base ) ),
-%       assert_itf(defines_module,M,_,_,Base),
-%       %% forces generation of defines/5 data (used below)
-%       c_itf:comp_defines(Base),
-%       %% (can not!) checks that properties are identifiable
-%       normalize_assertions(M,Base,Opts),
-%         %% save clauses, assertions, and itf (everything expanded)
-%         activate_second_translation(Base,M),
-%       % treat assertions
-%       get_assertions_of( _, M, Assrt ),
-%       compound_to_simple_assrt( Assrt, NAssrt ),
-%       % Save orignal pred assertions
-%       comment_original_pred_assertions( Assrt ),
-%       % Add clauses to DB
-%       assert_clauses_of(Base,M),
-%       % Add assertions to DB
-%       add_assertions( NAssrt ),
-%       % add ift facts to DB
-%       save_itf_of(Base,M),
-%         deactivate_second_translation( Base, M ),
-%       %% initialize the (directly) related files of Base
-%       assert_related_files_( Base, Verb ),
-%         pplog(load_assrts, ['}']).
-
+:- export(load_related_files/2).
 :- pred load_related_files(Files, M) : (list(Files), var(M))
 # "Add some related files to the current module(s) loaded. The
   assertions and properties are loaded. Also the necessary information
   for a correct unexpansion.".
 
-load_related_files([F|Fs], M) :-
-    add_related_file(F),
-    load_related_files(Fs, M).
 load_related_files([], M) :-
     ( asserta_fact(adding_to_module(M), Ref)
     ; erase(Ref), fail
     ),
-    related_files_closure(direct, quiet, []),
+    related_files_closure(direct, []),
     erase(Ref),
     !.
+load_related_files([F|Fs], M) :-
+    add_related_file(F),
+    load_related_files(Fs, M).
 
-process_main_info_file(M, _Verb, Opts, Base) :-
+process_main_info_file(M, Opts, Base) :-
     pplog(load_assrts,['{Processing main module ']),
     defines_module(Base, M),
     assertz_fact(processed_file(Base)),
@@ -460,7 +378,7 @@ process_main_info_file(M, _Verb, Opts, Base) :-
     ),
     % Add operators to output operator DB
     assert_operators_of(Base),
-    % add ift facts to DB
+    % add itf facts to DB
     ( member(load_pkg_from(_), Opts) ->
         % TODO: (JF) I changed it injection of packages behave like 
         %   'related files' (it fills impl_defines now)
@@ -470,8 +388,9 @@ process_main_info_file(M, _Verb, Opts, Base) :-
     save_itf_info_of(Base, M, IsMain),
     deactivate_second_translation(Base, M),
 %% initialize the (directly) related files of Base
-    assert_related_files_(Base, quiet),
+    assert_related_files_direct(Base),
     pplog(load_assrts,['}']).
+
 save_itf_info_of(Base, M, _IsMain) :-
     defines(Base, F, A, DefType, Meta),
     assert_itf(defines, M, F, A, M),
@@ -550,28 +469,28 @@ comment_original_pred_assertions([_|As]) :-
 % module M is (resp.) 
 % processed/related/processed but irrelevant (a leave in the closure)
 
-related_files_closure(Rel, Verb, Opts) :-
+related_files_closure(Rel, Opts) :-
     current_fact(related_file(_)), !,
-    related_files(Rel, Verb, Opts).
-related_files_closure(_Rel, _Verb, _Opts).
+    related_files(Rel, Opts).
+related_files_closure(_Rel, _Opts).
 
-related_files(Rel, Verb, Opts) :-
+related_files(Rel, Opts) :-
     retract_fact(related_file(I)),
     \+ current_fact(processed_file(I)),
     \+ user_module(I),
     error_protect(ctrlc_clean(
             process_file(I, asr, any,
-                process_related_file(Rel, Verb, Opts),
+                process_related_file(Rel, Opts),
                 c_itf:false,
-                asr_readable(Verb),
+                asr_readable,
                 do_nothing)
-        ),fail), % TODO: fail or abort?
+        ),true), % TODO: abort on error?
     fail.
-related_files(_Rel, Verb, Opts) :-
+related_files(_Rel, Opts) :-
 %jcf%- To load only the directly related modules (for testing), just 
 %jcf%- comment out this line.
-%       related_files_closure(trans,Verb,Opts).
-    related_files_closure(direct, Verb, Opts).
+%       related_files_closure(trans,Opts).
+    related_files_closure(direct, Opts).
 %jcf%   
 %true.
 
@@ -581,7 +500,7 @@ user_module(user). %% 'user' module cannot be treated as a normal module.
 do_nothing(_).
 
 % fail ==> force generation of .asr
-asr_readable(Verb, Base) :-
+asr_readable(Base) :-
 % DTM: If you suspect that asr files are being 
 %     reading more than once, uncomment these lines
 %
@@ -594,7 +513,7 @@ asr_readable(Verb, Base) :-
         get_module_filename(asr, Base, AsrName),
         file_up_to_date(AsrName, PlName),
         % display('Reading asr file '), display(AsrName), nl,
-        read_asr_file(AsrName, Verb),
+        read_asr_file(AsrName),
         defines_module(Base, M),
         assert_itf(defines_module, M, _, _, Base)
     ).
@@ -623,51 +542,53 @@ file_up_to_date(AuxName,PlName):-
 %% ---------------------------------------------------------------------------
 %% Preprocessing Unit closure
 
-assert_related_files0(direct, Base, _M, Verb) :- !,
-    assert_related_files_(Base, Verb).
-assert_related_files0(trans, Base, M, Verb) :-
-    assert_related_files(Base, M, Verb).
+% TODO: 'trans' is not used, check if it works
+
+assert_related_files(direct, Base, _M) :- !,
+    assert_related_files_direct(Base).
+assert_related_files(trans, Base, M) :-
+    assert_related_files_trans(Base, M).
 
 % the closure finalizes when there is no property exported:
-assert_related_files(Base, M, Verb) :-
+assert_related_files_trans(Base, M) :-
     relevant_prop(M, Prop),
     functor(Prop, F, A),
     exports(Base, F, A, _DefType, _Meta),
     !,
-    assert_related_files_(Base, Verb).
+    assert_related_files_direct(Base).
+assert_related_files_trans(_Base, M) :-
+    assertz_fact(irrelevant_file(M)),
+    write_asr_fact(irrelevant_file(M)).
 
-assert_related_files(_Base, M, _Verb) :-
-    Fact = irrelevant_file(M),
-    assertz_fact(Fact),
-    write_asr_fact(Fact).
+:- data seen_related_file/1.
 
-:- data related_file_on_asr/1.
+assert_related_files_direct(Base) :-
+    retractall_fact(seen_related_file(_)),
+    ( % (failure driven loop)
+      imports_pred(Base, IM, _F, _A, _DefType, _Meta, _EndFile),
+      \+ user_module(IM),
+        resolve_imported_path(Base, IM, IMAbs),
+        ( current_fact(seen_related_file(IMAbs)) ->
+            true
+        ; asserta_fact(seen_related_file(IMAbs)),
+          write_asr_fact(related_file(IMAbs)),
+          add_related_file(IMAbs)
+        ),
+        fail % (loop)
+    ; true
+    ).
 
-assert_related_files_(Base, _Verb) :-
-    retractall_fact(related_file_on_asr(IMAbs)),
-    imports_pred(Base, IM, _F, _A, _DefType, _Meta, _EndFile),
-    \+ user_module(IM),
-% NEW
+resolve_imported_path(Base, IM, IMAbs) :-
     file_path(Base, CWD),
-%%jcf% working_directory/2 is needed to evaluate .() notation.
+    %%jcf% working_directory/2 is needed to evaluate .() notation.
     working_directory(OldCWD, CWD),
     absolute_file_name(IM, '_opt', '.pl', CWD, _, IMAbs, _),
-    working_directory(_, OldCWD),
+    working_directory(_, OldCWD).
 % OLD:
 %       file_path(Base,Path),
 %       working_directory(Old,Path),
 %       absolute_file_name(IM,'','.pl','.',_,IMAbs,_),
 %       working_directory(_Path,Old),
-    \+ current_fact(related_file_on_asr(IMAbs)),
-    ( current_fact(generate_asr_file(_)) ->
-        asserta_fact(related_file_on_asr(IMAbs)),
-        write_asr_fact(related_file(IMAbs))
-    ;
-        true
-    ),
-    add_related_file(IMAbs),
-    fail.
-assert_related_files_(_Base, _Verb).
 
 % TODO: check predicate (is '.' needed?)
 file_path(Base,Path):-
@@ -678,14 +599,6 @@ relevant_prop(M, Prop) :-
     current_fact(assertion_of(PD, M, _, prop, _, _, _, _LB, _LE)),
     functor(PD,   F, A),
     functor(Prop, F, A).
-
-% remove_undesired_directives( Base ) :-
-%       db_directive_of( Base,Body,_VNames,_Src,_L0,_L1 ),
-%       display( dir( Body ) ),nl,nl,
-%       Body = use_package( Package ),
-%       add_output_package(Package),
-%       fail.
-% remove_undesired_directives( _ ).
 
 % we fo have to process include directives. If one include directive
 % belongs to a syntax pakage, then all things included from that
@@ -728,8 +641,8 @@ get_assertions_of(Pred, M, As) :-
     !.
 get_assertions_of(_Pred, _M, []).
 
-fast_write_assertions([],     _).
-fast_write_assertions([A|As], S) :-
+write_asr_assrts([]).
+write_asr_assrts([A|As]) :-
     A = as${
         module => M,
         head => ExpPD,
@@ -745,10 +658,8 @@ fast_write_assertions([A|As], S) :-
     },
     Loc = loc(Source, LB, LE),
     assertion_body(ExpPD, Co, Ca, Su, Cp, Cm, Body1),
-    ASSRT = assertion_read(ExpPD, M, Status, Type, Body1, Dict, Source, LB,
-        LE),
-    write_asr_fact(ASSRT),
-    fast_write_assertions(As, S).
+    write_asr_fact(assertion_read(ExpPD, M, Status, Type, Body1, Dict, Source, LB, LE)),
+    write_asr_assrts(As).
 
 %%% --------------------------------
 %%% --- TEMPORARY
@@ -813,31 +724,10 @@ get_module_from_path(Path, Module) :-
     path_splitext(File, Module, _).
 
 % ---------------------------------------------------------------------------
-% Packages that will included in the output (and not expanded)
+% Packages info
 
-% TODO: update! compute dynamically?
-
-is_syntax_package(rtchecks).
-is_syntax_package(modes).
-is_syntax_package(basicmodes).
-is_syntax_package(isomodes).
-is_syntax_package(assertions).
-is_syntax_package(regtypes).
-is_syntax_package(nativeprops).
-is_syntax_package(fsyntax).
-is_syntax_package(chr).
-is_syntax_package(clpr).
-is_syntax_package(clpq).
-is_syntax_package('chr/ciao/chr2').
-is_syntax_package(chr2).
-is_syntax_package(chr_atts).
-is_syntax_package(swi_mattr_global).
-is_syntax_package(mattr_global).
-is_syntax_package(dcg).
-is_syntax_package(pcpe_rtquery).
-
-% TODO: use compiler
-is_included_by_default(prelude).
+% is_syntax_package/1, is_included_by_default/1
+:- include(.(p_asr_package_info)).
 
 %% ---------------------------------------------------------------------------
 %% Module Name Expansion in the DB
@@ -986,9 +876,7 @@ module_expansion(H, B, Module, Dict, Mode, Src, Ln0, Ln1, H1, B1, H2, B2):-
 %% ---------------------------------------------------------------------------
 %% Related file processing
 
-:- data generate_asr_file/1.
-
-process_related_file(Rel, Verb, Opts, Base) :-
+process_related_file(Rel, Opts, Base) :-
     defines_module(Base, M),
     assertz_fact(processed_file(Base)),
 %       display( processed_file( Base ) ), nl,
@@ -997,16 +885,8 @@ process_related_file(Rel, Verb, Opts, Base) :-
     pplog(load_assrts,['{Processing related module ', M]),
 %% .asr file
     get_module_filename(asr, Base, AsrName),
-    (
-        open_asr_to_write(AsrName, Stream, CI),
-        !,
-        write_asr_header(Stream),
-        fast_write(Stream, defines(M, Base)),
-        set_fact(generate_asr_file(Stream))
-    ;
-% DTM: in which case is this neccessary???
-        retractall_fact(generate_asr_file(_))
-    ),
+    open_asr_to_write(AsrName),
+    write_asr_fact(defines(M, Base)),
 % The first fact saved is defines...
     save_itf_of_to_asr(Base, M),
 %% inhibits the expansion of meta-predicates
@@ -1019,104 +899,67 @@ process_related_file(Rel, Verb, Opts, Base) :-
     save_relevant_properties_of(Base, M),
     deactivate_second_translation(Base, M),
 %% store (more) files related to Base
-    assert_related_files0(Rel, Base, M, Verb),
+    assert_related_files(Rel, Base, M),
 %% .asr file
-    (  current_fact(generate_asr_file(Stream)) ->
-        close_asr(Stream, CI),
-        retractall_fact(generate_asr_file(Stream))
-    ;
-        true
-    ),
+    close_asr_to_write,
     % TODO: should multifile be saved?
     save_itf_info_of(Base, M, no),
     pplog(load_assrts,'}').
+
+save_exported_assertions_of(Base, M) :-
+    ( % (failure-driven loop)
+      exports(Base, F, A, _DefType, _Meta),
+        functor(PD, F, A),
+        write_and_save_assertions_of(PD, M),
+        fail % (loop)
+    ; true
+    ).
+
+save_relevant_properties_of(Base, M) :-
+    ( % (failure-driven loop)
+      relevant_prop(M, Prop),
+        save_predicate_clauses_of(Base, M, Prop),
+        functor(Prop, F, A),
+        ( exports(Base, F, A, _DefType, _Meta) -> true
+        ; write_and_save_assertions_of(Prop, M)
+        ),
+        fail % (loop)
+    ; true
+    ).
 
 write_and_save_assertions_of(P, M) :-
     get_assertions_of(P, M, Assrt),
     compound_to_simple_assrt_same_pred(Assrt, NAssrt),
     add_assertions(NAssrt),
-    ( current_fact(generate_asr_file(S)) ->
-        fast_write_assertions(NAssrt, S)
-    ;
-        true
-    ).
-% --- notify internal error!
-% write_and_save_assertions_of( P, M ) :-
-
-save_exported_assertions_of(Base, M) :-
-    exports(Base, F, A, _DefType, _Meta),
-    functor(PD, F, A),
-    write_and_save_assertions_of(PD, M),
-    fail.
-save_exported_assertions_of(_Base, _M).
-
-save_relevant_properties_of(Base, M) :-
-    relevant_prop(M, Prop),
-    save_predicate_clauses_of(Base, M, Prop),
-    functor(Prop, F, A),
-    \+ exports(Base, F, A, _DefType, _Meta),
-    write_and_save_assertions_of(Prop, M),
-    fail.
-save_relevant_properties_of(_Base, _M).
+    write_asr_assrts(NAssrt).
 
 save_predicate_clauses_of(Base, M, Prop) :-
-    db_clause_of(Prop, Base, M, Head, Body, VarNames, Source, Line0,
-        Line1),
-    write_asr_fact(prop_clause_read(M, Head, Body, VarNames, Source, Line0,
-            Line1)),
+    db_clause_of(Prop, Base, M, Head, Body, VarNames, Source, Line0, Line1),
+    write_asr_fact(prop_clause_read(M, Head, Body, VarNames, Source, Line0, Line1)),
     add_prop_clause_read(M, Head, Body, VarNames, Source, Line0, Line1),
     fail.
 save_predicate_clauses_of(_Base, _M, _Prop).
 
-%
-% DTM: This is a kludge. The metapredicate information
-% should be read from .itf file, but while ciaopp and ciao
-% this is the more sensate solution.
-%
-% save_itf_of_to_asr( Base, M ) :-
-%       defines(Base,F,A,DefType,Meta),
-%       write_asr_fact( defines(M,F,A,DefType,Meta) ),
-%       fail.
-% save_itf_of_to_asr( Base, M ) :-
-%       imports_pred(Base,IM,F,A,DefType,Meta,_EndFile),
-%       write_asr_fact( imports(M,IM,F,A,DefType,Meta) ),
-%       read_asr_data_loop__action( imports(M,IM,F,A,DefType,Meta) ),
-%       fail.
-
-% DTM: Restriction: When loading from ast file, imports fact has to be
-% read before exports, because exports may need to add a meta_predicate
-% information, and its needs module_expansion/9, which need imports to
-% be defined.
-% save_itf_of_to_asr( _Base, M ) :-
-%       c_itf:imports(M,IM,F,A,EndMod),
-%       Fact = imports(M,IM,F,A,EndMod),
-%       write_asr_fact( Fact ),
-%       read_asr_data_loop__action( Fact ),
-%       fail.   
 save_itf_of_to_asr(Base, M) :-
     c_itf:exports(Base, F, A, DefType, Meta),
     Meta \== 0,
 %       c_itf:imports(M,_IM,F,A,EndMod),
-    Fact = exports(M, F, A, DefType, Meta),
-    write_asr_fact(Fact),
-    read_asr_data_loop__action(Fact),
+    write_asr_fact(exports(M, F, A, DefType, Meta)),
+    add_exports(M, F, A, DefType, Meta),
     fail.
-% save_itf_of_to_asr( Base, M ) :-
-%       def_multifile(Base,F,A,DefType),
-%       \+ c_itf_internal_pred(F,A),
-%       Fact = multifile(M,F,A,DefType),
-%       write_asr_fact( Fact ),
-%       read_asr_data_loop__action( Fact ),
-%       fail.
-% save_itf_of_to_asr( Base, M ) :-
-% %     defines(Base,F,A,implicit,Meta), same as:
-%       impl_defines( Base, F, A ),
-%       (meta_pred( Base, F, A, Meta ) -> true ; Meta = 0),
-%       Fact = impl_defines(M,F,A,Meta),
-%       write_asr_fact( Fact ),
-%       read_asr_data_loop__action( Fact ),
-%       fail.
 save_itf_of_to_asr(_Base, _M).
+
+add_exports(M, F, A, DefType, Meta) :-
+    ( adding_to_module(CM) ->
+        add_indirect_imports(CM, M, F, A)
+    ; assert_itf(exports, M, F, A, M)
+    ),
+    restore_defines(M, F, A, DefType, Meta),
+    save_meta_dynamic(Meta, DefType, M, F, A).
+
+add_indirect_imports(CM, M, F, A) :-
+    c_itf:restore_imports(CM, M, F, A, M), % TODO: wrong, this should be an indirect import!
+    assert_itf(indirect_imports, CM, F, A, M).
 
 %% ---------------------------------------------------------------------------
 %% Library preloading info generation.
@@ -1129,6 +972,7 @@ save_itf_of_to_asr(_Base, _M).
     load_lib_type_info/1,
     cleanup_lib_type_info/0]).
 
+:- export(cleanup_lib_sources/0).
 :- pred cleanup_lib_sources
     # "Cleans up all preloaded assertion information.".
 cleanup_lib_sources :-
@@ -1137,6 +981,7 @@ cleanup_lib_sources :-
     clause_db:cleanup_lib_props,
     itf_db:cleanup_lib_itf.
 
+:- export(load_lib_sources/1).
 :- pred load_lib_sources(Path) # "Loads source files for preloading
     assertion info.  Files are loaded from directory @var{Path}.".
 load_lib_sources(Path) :-
@@ -1146,8 +991,6 @@ load_lib_sources(Path) :-
     load_from_file(Path, 'lib_itf_db.pl', itf_db:load_lib_itf),
     load_from_file(Path, 'lib_typedb.pl', typeslib:load_lib_type_info).
 
-:- use_module(library(pathnames)).
-
 :- meta_predicate load_from_file(?, ?, pred(1)).
 load_from_file(Path, Name, Pred) :-
     path_concat(Path, Name, F),
@@ -1155,6 +998,7 @@ load_from_file(Path, Name, Pred) :-
     Pred(InS),
     close(InS).
 
+:- export(loaded_lib_sources/0).
 :- pred loaded_lib_sources/0 #"Checks if the library sources are already
     preloaded. This predicate assumes that the lib cache contains at least
     one assertion. This is enough in practice".
@@ -1163,6 +1007,7 @@ loaded_lib_sources :-
 
 :- use_module(engine(runtime_control), [push_prolog_flag/2, pop_prolog_flag/1]). % TODO: do in a better way
 
+:- export(gen_lib_sources/1).
 :- pred gen_lib_sources(Path) # "Generates source files for preloading
     info from assertions.  Files are generated in directory @var{Path}.".
 gen_lib_sources(Path) :-
@@ -1195,7 +1040,7 @@ delayed_checks :- % TODO: checking every assertion in the program!!!!!, this can
     \+ Type = test,
     functor(PD, F, A),
     assertion_body(_NPD, CNDP, CNCP, CNAP, CNGP, _CO, Body),
-    Where= loc(S, LB, LE),
+    Where = loc(S, LB, LE),
     check_properties(CNDP, F, A, M, Where),
     check_properties(CNCP, F, A, M, Where),
     check_properties(CNAP, F, A, M, Where),
@@ -1262,6 +1107,7 @@ check_property(PF, PA, _Prop, F, A, M, Where) :-
 %% SHOW ASR FILE
 %% ---------------------------------------------------------------------------
 
+:- export(show_asr/1).
 :- pred show_asr(+File) #"Read and shows the asr @var{File} file.".
 show_asr(File) :-
     open(File, read, Stream),
@@ -1282,14 +1128,14 @@ read_and_show(_).
 %% READ ASR FILE
 %% ---------------------------------------------------------------------------
 
-read_asr_file(AsrName, Verb) :-
+read_asr_file(AsrName) :-
     catch(open(AsrName, read, Stream), error(_,_), fail),
     (
         asr_version(V),
         read(Stream, v(V)),
         !,
         pplog(load_assrts,['{Reading ', AsrName]),
-        read_asr_data_loop(Verb, AsrName, Stream),
+        read_asr_data_loop(AsrName, Stream),
         close(Stream),
         pplog(load_assrts,['}'])
     ;
@@ -1299,215 +1145,94 @@ read_asr_file(AsrName, Verb) :-
     ).
 
 %% fast_read/1 version (just fails at end of file)
-read_asr_data_loop(Verb, F, Stream) :-
+read_asr_data_loop(F, Stream) :-
     ( fast_read(Stream, X) ->
-        ( read_asr_data_loop__action(X) ->
-            true
-        ;
-            error_message("ERROR PROCESSING FACT ~w from ast file ~w",
-                [X, F])
+        ( read_asr_data_loop__action(X) -> true
+        ; error_message("ERROR PROCESSING FACT ~w from ast file ~w", [X, F])
         ),
-        read_asr_data_loop(Verb, F, Stream)
-    ;
-        true
+        read_asr_data_loop(F, Stream)
+    ; true
     ).
 
-% not fails + determinist
-read_asr_data_loop__action(defines(M, Base)) :-
-    !,
+read_asr_data_loop__action(defines(M, Base)) :- !,
     assert_itf(defines_module, M, _, _, Base).
-read_asr_data_loop__action(related_file(M)) :-
-    !,
+read_asr_data_loop__action(related_file(M)) :- !,
     add_related_file(M).
-read_asr_data_loop__action(defines(M, F, A, DefType, Meta)) :-
-    !,
+read_asr_data_loop__action(defines(M, F, A, DefType, Meta)) :- !,
     restore_defines(M, F, A, DefType, Meta),
     assert_itf(defines, M, F, A, M),
     save_meta_dynamic(Meta, DefType, M, F, A).
-% read_asr_data_loop__action( imports(M,IM,F,A,DefType,Meta) ) :-
-%       !,
-%       assert_itf(imports,M,F,A,IM),
-%       save_meta_dynamic(Meta,DefType,M,F,A).
-read_asr_data_loop__action(imports(M, IM, F, A, EndMod)) :-
+read_asr_data_loop__action(imports(M, IM, F, A, EndMod)) :- !,
     c_itf:restore_imports(M, IM, F, A, EndMod),
     assert_itf(imports, M, F, A, IM).
-read_asr_data_loop__action(exports(M, F, A, DefType, Meta)) :-
-    !,
-    ( adding_to_module(CM) ->
-        c_itf:restore_imports(CM, M, F, A, M), % TODO: wrong, this should be an indirect import!
-        assert_itf(indirect_imports, CM, F, A, M)
-%           read_asr_data_loop__action( imports(CM, M, F, A, DefType, Meta) )
-    ;
-        assert_itf(exports, M, F, A, M)
-    ),
-    restore_defines(M, F, A, DefType, Meta),
-    save_meta_dynamic(Meta, DefType, M, F, A).
-%       read_asr_data_loop__action( defines(M, F, A, DefType, Meta) ).
-read_asr_data_loop__action(multifile(M, F, A, DefType)) :-
-    !,
+read_asr_data_loop__action(exports(M, F, A, DefType, Meta)) :- !,
+    add_exports(M, F, A, DefType, Meta).
+read_asr_data_loop__action(multifile(M, F, A, DefType)) :- !,
     c_itf:restore_multifile(M, F, A, DefType),
     assert_itf(multifile, M, F, A, DefType).
-read_asr_data_loop__action(impl_defines(M, F, A, _Meta)) :-
-    !,
+read_asr_data_loop__action(impl_defines(M, F, A, _Meta)) :- !,
     assert_itf(impl_defines, M, F, A, M).
-read_asr_data_loop__action(irrelevant_file(F)) :-
-    !,
+read_asr_data_loop__action(irrelevant_file(F)) :- !,
     assertz_fact(irrelevant_file(F)).
-read_asr_data_loop__action(X) :-
-    X = assertion_read(_, M, _, _, Body, _, _, _, _),
-    !,
+read_asr_data_loop__action(X) :- X = assertion_read(_, M, _, _, Body, _, _, _, _), !,
     ( adding_to_module(CM) ->
         assertion_body(Head, _, _, _, _, _, Body),
         functor(Head,   MF, A),
         functor(Head__, MF, A),
         ( current_itf(imports(CM,_), Head__, M) ->
             true
-        ;
-            module_split(MF, _, F),
-            c_itf:restore_imports(CM, M, F, A, M), % TODO: wrong, this should be an indirect import!
-            assert_itf(indirect_imports, CM, F, A, M)
+        ; module_split(MF, _, F),
+          add_indirect_imports(CM, M, F, A)
         )
     ;
         true
     ),
     X = assertion_read(A1, A2, A3, A4, A5, A6, A7, A8, A9),
     add_assertion_read(A1, A2, A3, A4, A5, A6, A7, A8, A9).
-read_asr_data_loop__action(X) :-
-    X = prop_clause_read(A1, A2, A3, A4, A5, A6, A7),
+read_asr_data_loop__action(X) :- X = prop_clause_read(A1, A2, A3, A4, A5, A6, A7), !,
     add_prop_clause_read(A1, A2, A3, A4, A5, A6, A7).
 
-%% ---------------------------------------------------------------------------
-%% WRITE ASR FILE
-%% ---------------------------------------------------------------------------
+% ---------------------------------------------------------------------------
+% asr file storage
 
-write_asr_fact(X) :-
-    current_fact(generate_asr_file(S)),
-    !,
-    fast_write(S, X).
-write_asr_fact(_).
+:- data asr_stream/1.
 
 write_asr_header(S) :-
     asr_version(V),
     displayq(S, v(V)),
     display(S, ' .\n').
 
-open_asr_to_write(AsrName, Stream, CI) :-
+write_asr_fact(X) :- current_fact(asr_stream(S)), !,
+    fast_write(S, X).
+write_asr_fact(_).
+
+open_asr_to_write(AsrName) :-
+    retractall_fact(asr_stream(_)),
     ( catch(open(AsrName, write, Stream), error(_,_), fail) ->
-        current_output(CI),
-        set_output(Stream)
+        set_fact(asr_stream(Stream)),
+        write_asr_header(Stream)
+    ; true % (asr storate silently disabled if file cannot be opened)
     ).
 
-close_asr(Stream, CI) :-
-    set_output(CI),
-    close(Stream).
+close_asr_to_write :-
+    ( current_fact(asr_stream(Stream)) ->
+        close(Stream),
+        retractall_fact(asr_stream(_))
+    ; true
+    ).
 
 %% ---------------------------------------------------------------------------
-% CACHE
-%% ---------------------------------------------------------------------------
+% TODO: sockets (foreign code) are sometimes not initialized properly, why?
 
-ast_cache([
-            library(aggregates),
-            library(debugger),
-            library(lists),
-% hiord?
-%       library(hiord_rt),
-            library(sort),
-            library(terms_check),
-            %
-            engine(term_basic),
-            engine(arithmetic),
-            engine(debugger_support),
-            engine(mattr_global),
-            engine(term_compare),
-            engine(term_typing),
-            engine(atomic_basic),
-            engine(exceptions),
-            engine(runtime_control),
-            engine(attributes),
-            engine(basic_props),
-            engine(internals),
-            engine(basiccontrol),
-            engine(messages_basic),
-            engine(stream_basic),
-            library(datafacts/datafacts_rt),
-            engine(io_basic),
-            engine(system_info)
-        ]
-).
-
-do_cache :-
-    cleanup_pasr,
-    removeall_assertion_read(_, _, _, _, _, _, _, _, _),
-    ast_cache(Modules),
-% this funcion assert 'related_files' in order to make
-% related_files_closure work.
-    transform_to_related_files(Modules, _Files, Names),
-    related_files_closure(direct, quiet, []),
-    open_asr_to_write(ciaopp_cache, Stream, CI),
-    write_asr_header(Stream),
-    set_fact(generate_asr_file(Stream)),
-    (
-% save assertions_of
-        save_cache_assertions(Names, Stream),
-% save prop_clauses
-        save_prop_clauses(Names),
-% save related_files
-        save_related_files,
-% save processed_files
-        save_processed_files
-    ->
-        true
-    ;
-        message(error, ['There was an error generating cache.'])
-    ),
-% save processed_files  
-    retractall_fact(generate_asr_file(Stream)),
-    close_asr(Stream, CI).
-
-transform_to_related_files([],     [],     []).
-transform_to_related_files([M|Ms], [F|Fs], [N|Ns]) :-
-    absolute_file_name(M, F),
-    !,
-    get_module_from_path(F, N),
-    add_related_file(F),
-    transform_to_related_files(Ms, Fs, Ns).
-transform_to_related_files([_|Ms], F, N) :-
-    transform_to_related_files(Ms, F, N),
-    !.
-
-save_cache_assertions([],     _).
-save_cache_assertions([M|Ms], S) :-
-    findall(As, get_mod_assertion(M, As), L),
-    fast_write_assertions(L, S),
-    save_cache_assertions(Ms, S).
-
-get_mod_assertion(M, As) :-
-    As = as${ module => M },
-    get_assertion(_, As).
-
-save_prop_clauses([]).
-save_prop_clauses([M|Ms]) :-
-    save_prop_clauses__(M),
-    save_prop_clauses(Ms).
-
-save_prop_clauses__(M) :-
-% relevant_prop( M, Prop ),
-% db_clause_of( Prop, _ , M,Head,Body,VarNames,Source,Line0,Line1),
-    prop_clause_read(M, Head, Body, VarNames, Source, Line0, Line1),
-    Fact = prop_clause_read(M, Head, Body, VarNames, Source, Line0, Line1),
-    write_asr_fact(Fact),
-    fail.
-save_prop_clauses__(_).
-
-save_related_files :-
-    current_fact(related_file(F)),
-    write_asr_fact(related_file(F)),
-    fail.
-save_related_files.
-
-save_processed_files :-
-    current_fact(processed_file(F)),
-    write_asr_fact(processed_file(F)),
-    fail.
-save_processed_files.
+:- if(defined(has_ciaopp_java)).
+:- use_module(library(sockets), [initial_from_ciaopp/0]).
+:- data socket_initialized/0.
+call_to_sockets_init :-
+    current_fact(socket_initialized), !.
+call_to_sockets_init :-
+    asserta_fact(socket_initialized),
+    sockets:initial_from_ciaopp.
+:- else.
+call_to_sockets_init.
+:- endif.
 
