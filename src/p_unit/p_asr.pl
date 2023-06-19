@@ -212,12 +212,8 @@ filenames(X) :- list(filenames, X).
 @begin{itemize}
 @item load_pkg_from(M): Load package (ignore assertions), 
        all facts are added as if they were imported from M.
-@item '-v': Produce verbose output for tracing.
-@item '-d': Produce verbose output for debugging.
 @end{itemize}".
 
-preprocessing_opts('-v').
-preprocessing_opts('-d').
 preprocessing_opts(load_pkg_from(_)).
 
 :- export(preprocessing_unit_opts/4).
@@ -225,8 +221,7 @@ preprocessing_opts(load_pkg_from(_)).
     :: filenames * list(preprocessing_opts)
     * moddesc * switch
 # "This is the main entry point to the @concept{assertion reader/normalizer}. 
-   It accepts some options in @var{Opts}. In particular, @tt{'-v'}
-   produces verbose output for debugging. Also passes on the options
+   It accepts some options in @var{Opts}. Also passes on the options
    in @var{Opts} to pass two of the assertion normalizer.
 
    With the default options it does the following:

@@ -15,7 +15,6 @@
     be efficiently recomputed from the first one, since a fixpoint
     is guaranteed to be found in only one iteration. (to be continued)").
 
-:- use_module(library(conc_aggregates), [findall/3]).
 :- use_module(engine(stream_basic)).
 :- use_module(engine(io_basic)).
 :- use_module(library(messages), [show_message/3]).

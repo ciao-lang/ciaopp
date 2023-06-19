@@ -161,7 +161,6 @@ preprocessing_unit_list(Fs,Ms,E):-
     %jcf%       cleanup_code_and_related_assertions,
 %       cleanup_punit,
     set_ciaopp_expansion(true),
-    % TODO: use '-v' option for debugging
     % note: this includes splitting pred assertions into calls and success
     preprocessing_unit_opts(Fs, [load_mod], Ms, E),
 %       assert_curr_modules(Ms),
