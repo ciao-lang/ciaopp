@@ -33,14 +33,12 @@ incremental analysis").
 :- use_module(ciaopp(p_unit/assrt_db), [pgm_assertion_read/9]).
 :- use_module(ciaopp(p_unit/program_keys),
     [decode_litkey/5, decode_clkey/4, decode_predkey/3, get_clkey/4,
-     counter/3]).
+     counter/3, make_atom/2]).
 %:- use_module(ciaopp(p_unit/p_dump), [add_to_db/1]).
 :- use_module(ciaopp(plai/domains), [identical_proj/5, abs_sort/3]).
 :- use_module(ciaopp(plai/fixpo_ops), [fixpoint_id/1, fixp_id/1]).
 
 :- use_module(ciaopp(preprocess_flags), [current_pp_flag/2]).
-
-:- use_module(spec(s_simpspec), [make_atom/2]).
 
 % ----------------------------------------------------------------------
 :- doc(section, "Predicates for handling clause IDs").

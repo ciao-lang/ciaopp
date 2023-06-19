@@ -1,9 +1,8 @@
 :- module(remdisj, [cleanup_remdisj/0, remove_disjunctions/10], [assertions, datafacts]).
 
-:- use_module(ciaopp(p_unit/program_keys), [clause_key/2, last_clause/1]).
+:- use_module(ciaopp(p_unit/program_keys), [clause_key/2, last_clause/1, make_atom/2]).
 :- use_module(ciaopp(p_unit), [new_predicate/3]).
 :- use_module(ciaopp(tr_syntax/meta_call), [meta_call/1, process_meta_call/5]).
-:- use_module(spec(s_simpspec), [make_atom/2]).
 :- use_module(ciaopp(p_unit/clause_db), [clause_locator/2, add_clause_locator/2]).
 
 :- use_module(library(lists), [length/2, append/3]).

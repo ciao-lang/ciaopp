@@ -36,14 +36,14 @@
 :- use_module(spec(min_unf),            [group_versions/4]).
 :- use_module(spec(global_control),     [spec_def_for/8, spec_wrt/3]).
 :- use_module(ciaopp(plai/domains),     [identical_proj/5]).
-:- use_module(spec(s_simpspec),         [make_atom/2, newformat/2]).
+:- use_module(spec(s_simpspec), [newformat/2]).
 :- use_module(spec(s_simpspec), [list_format/2]).
 
 :- use_module(ciaopp(p_unit),          [new_predicate/3, predicate_names/1]).
 :- use_module(ciaopp(p_unit/itf_db),   [assert_itf/5, retract_itf/5]).
 :- use_module(ciaopp(p_unit/program_keys),
     [decode_litkey/5, decode_entrykey/4, decode_predkey/3, get_predkeys/2,
-     get_predkey/3]).
+     get_predkey/3, make_atom/2]).
 :- use_module(ciaopp(plai/plai_db), [complete/7]).
 :- use_module(ciaopp(plai/plai_errors)).
 

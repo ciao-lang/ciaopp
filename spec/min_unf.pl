@@ -18,11 +18,10 @@
     ]).
 :- use_module(spec(unfold_builtins), [can_be_evaluated/1]).
 :- use_module(ciaopp(p_unit/program_keys),
-    [decode_litkey/5, get_predkey/3, predkey_from_sg/2]).
+    [decode_litkey/5, get_predkey/3, predkey_from_sg/2, make_atom/2]).
 :- use_module(spec(global_control), [locate_spec_definition/3]).
 :- use_module(spec(sp_clauses), [sp_clause/2]).
 :- use_module(spec(ch_trees),   [ch_tree/2]).
-:- use_module(spec(s_simpspec), [make_atom/2]).
 :- use_module(spec(spec), [versions/2]).
 :- use_module(library(terms_check), [most_specific_generalization/3]).
 :- use_module(library(llists), [flatten/2]).

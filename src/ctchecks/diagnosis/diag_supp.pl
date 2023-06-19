@@ -1,6 +1,5 @@
 :- module(_,[],[]).
 
-:- use_module(spec(s_simpspec), [make_atom/2]).
 :- use_module(ciaopp(p_unit/program_keys)).
 :- use_module(ciaopp(p_unit/clause_db), [source_clause/3]).
 :- use_module(library(lists), [length/2]).

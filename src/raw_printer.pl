@@ -66,8 +66,7 @@ to avoid recomputation), but it not implemented yet.").
 :- use_module(ciaopp(plai), [generate_trans_clauses/4]).
 :- use_module(ciaopp(plai/fixpo_dd), ['$change_list'/3]).
 :- use_module(ciaopp(p_unit/program_keys),
-    [decode_litkey/5, decode_clkey/4, get_predkey/3]).
-:- use_module(spec(s_simpspec), [make_atom/2]).
+    [decode_litkey/5, decode_clkey/4, get_predkey/3, make_atom/2]).
 :- use_module(ciaopp(p_unit), [program/2]).
 :- use_module(ciaopp(p_unit/itf_db), [current_itf/3]).
 :- use_module(ciaopp(p_unit/clause_db), [source_clause/3]).

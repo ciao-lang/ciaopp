@@ -21,7 +21,6 @@
     ]).
 :- use_module(spec(spec_support), [change_call/3]).
 :- use_module(spec(spec_multiple), [mult_spec_unf/3]).
-:- use_module(spec(s_simpspec), [make_atom/2]).
 :- use_module(spec(unfold_times), [global_time_ellapsed/3]).
 :- use_module(spec(unfold_operations), [orig_pred_name/2]).
 :- use_module(spec(min_unf), 
@@ -37,7 +36,7 @@
 :- use_module(ciaopp(plai/plai_db), [complete/7, memo_table/6]).
 :- use_module(ciaopp(p_unit/program_keys),
     [decode_litkey/5, decode_clkey/4, rewrite_source_all_clauses/2,
-     cleanup_program_keys/0, get_predkey/3, get_predkeys/2]).
+     cleanup_program_keys/0, get_predkey/3, get_predkeys/2, make_atom/2]).
 :- use_module(library(assertions/assrt_lib), [assertion_body/7]).
 :- use_module(ciaopp(p_unit/assrt_db), [
     assertion_read/9,

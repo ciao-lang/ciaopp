@@ -75,8 +75,7 @@
 :- use_module(spec(abs_exec_cond), [cond/4, abs_exec_conj_props/3]).
 :- use_module(spec(modular_spec), 
     [generate_abs_execs_from_equivs/0, reset_equivs/0, equiv/3]).
-:- use_module(spec(s_simpspec),
-    [body2list/2, next_pred/2, next_or_last_key/3, newformat/2]).
+:- use_module(spec(s_simpspec), [body2list/2, next_pred/2, next_or_last_key/3, newformat/2]).
 
 :- use_module(ciaopp(infer), [get_memo_lub/5]).
 

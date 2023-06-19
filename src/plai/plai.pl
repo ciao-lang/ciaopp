@@ -23,13 +23,12 @@
 % CiaoPP library
 :- use_module(ciaopp(analysis_stats), [stat_no_store/2]).
 :- use_module(ciaopp(ciaopp_log), [pplog/2]).
-:- use_module(spec(s_simpspec), [make_atom/2]).
 :- use_module(spec(sp_clauses), [init_unfold/0]).
 :- use_module(spec(unfold_times), 
     [ init_unfold_times/0, ask_unfold_times/1, global_time_ellapsed/3 ]).
 :- use_module(ciaopp(p_unit),
     [entry_assertion/3, type_of_goal/2, type_of_directive/2]).
-:- use_module(ciaopp(p_unit/program_keys), [get_predkey/3, predkey_from_sg/2]).
+:- use_module(ciaopp(p_unit/program_keys), [get_predkey/3, predkey_from_sg/2, make_atom/2]).
 :- use_module(ciaopp(p_unit/assrt_db), [assertion_read/9]). %PLG
 :- use_module(ciaopp(plai/intermod_entry), [get_entry_info/3]).
 :- use_module(ciaopp(preprocess_flags), [current_pp_flag/2,

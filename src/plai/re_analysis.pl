@@ -29,8 +29,7 @@
     is needed, yet. Also, some predicates have not been ported, yet.").
 
 :- use_module(ciaopp(p_unit/program_keys),
-    [decode_litkey/5, decode_clkey/4, get_predkey/3, predkey_from_sg/2]).
-:- use_module(spec(s_simpspec), [make_atom/2]).
+    [decode_litkey/5, decode_clkey/4, get_predkey/3, predkey_from_sg/2, make_atom/2]).
 :- use_module(spec(spec), [versions/2]).
 :- use_module(ciaopp(plai/plai_db), [memo_lub/5, complete/7, memo_table/6, del_parent/4, get_memo_table/7]).
 :- use_module(ciaopp(plai/fixpo_ops), [fixpoint_id/1]).

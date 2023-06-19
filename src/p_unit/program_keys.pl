@@ -7,6 +7,7 @@
       first_key/2,
       last_clause/1,
       null_directive_key/1,
+      make_atom/2, % (it was in s_simpspec.pl)
       % program rewriting % TODO: rewritting should not be here (clause_db)?
       inverse_rewrite_source_program/2,
       inverse_rewrite_source_program_cl/2,
@@ -594,6 +595,20 @@ namel_2_atoml([], []).
 namel_2_atoml([A|AA], [S|SS]) :-
     name(A, S),
     namel_2_atoml(AA, SS).
+
+% (it was in s_simpspec.pl)
+% TODO: review, merge with make_atom_internal/2?
+make_atom(X,Y):-
+    make_name(X,Z),
+    name(Y,Z).
+
+make_name([X],X1) :-
+    !,
+    name(X,X1).
+make_name([X|Y],Z) :-
+    name(X,X1),
+    make_name(Y,Y1),
+    append(X1,[0'/|Y1],Z).
 
 % ------------------------------------------------------------
 % Generating keys

@@ -1,7 +1,6 @@
 :- module(s_simpspec,
     [ body2list/2,
       list2body/2,
-      make_atom/2,
       p_exp2list/2,
       next_pred/2,
 %%        next_key/2,
@@ -12,24 +11,11 @@
     ],
     [assertions,isomodes]).
 
-:- use_module(ciaopp(p_unit/program_keys), [decode_litkey/5]).
+:- use_module(ciaopp(p_unit/program_keys), [decode_litkey/5, make_atom/2]).
 
 :- op( 950, xfy,[(&),(\&)]).
 
 :- use_module(engine(messages_basic), [message/2]).
-:- use_module(library(lists), [append/3]).
-
-make_atom(X,Y):-
-    make_name(X,Z),
-    name(Y,Z).
-
-make_name([X],X1) :-
-    !,
-    name(X,X1).
-make_name([X|Y],Z) :-
-    name(X,X1),
-    make_name(Y,Y1),
-    append(X1,[0'/|Y1],Z).
 
 %-------------------------------------------------------------------%
 % list2body(+,-)                                                    %
