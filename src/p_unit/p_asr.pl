@@ -1158,20 +1158,20 @@ read_asr_data_loop__action(defines(M, Base)) :- !,
     assert_itf(defines_module, M, _, _, Base).
 read_asr_data_loop__action(related_file(M)) :- !,
     add_related_file(M).
-read_asr_data_loop__action(defines(M, F, A, DefType, Meta)) :- !,
-    restore_defines(M, F, A, DefType, Meta),
-    assert_itf(defines, M, F, A, M),
-    save_meta_dynamic(Meta, DefType, M, F, A).
-read_asr_data_loop__action(imports(M, IM, F, A, EndMod)) :- !,
-    c_itf:restore_imports(M, IM, F, A, EndMod),
-    assert_itf(imports, M, F, A, IM).
+%(ITF)% read_asr_data_loop__action(defines(M, F, A, DefType, Meta)) :- !,
+%(ITF)%     restore_defines(M, F, A, DefType, Meta),
+%(ITF)%     assert_itf(defines, M, F, A, M),
+%(ITF)%     save_meta_dynamic(Meta, DefType, M, F, A).
+%(ITF)% read_asr_data_loop__action(imports(M, IM, F, A, EndMod)) :- !,
+%(ITF)%     c_itf:restore_imports(M, IM, F, A, EndMod),
+%(ITF)%     assert_itf(imports, M, F, A, IM).
 read_asr_data_loop__action(exports(M, F, A, DefType, Meta)) :- !,
     add_exports(M, F, A, DefType, Meta).
-read_asr_data_loop__action(multifile(M, F, A, DefType)) :- !,
-    c_itf:restore_multifile(M, F, A, DefType),
-    assert_itf(multifile, M, F, A, DefType).
-read_asr_data_loop__action(impl_defines(M, F, A, _Meta)) :- !,
-    assert_itf(impl_defines, M, F, A, M).
+%(ITF)% read_asr_data_loop__action(multifile(M, F, A, DefType)) :- !,
+%(ITF)%     c_itf:restore_multifile(M, F, A, DefType),
+%(ITF)%     assert_itf(multifile, M, F, A, DefType).
+%(ITF)% read_asr_data_loop__action(impl_defines(M, F, A, _Meta)) :- !,
+%(ITF)%     assert_itf(impl_defines, M, F, A, M).
 read_asr_data_loop__action(irrelevant_file(F)) :- !,
     assertz_fact(irrelevant_file(F)).
 read_asr_data_loop__action(X) :- X = assertion_read(_, M, _, _, Body, _, _, _, _), !,
