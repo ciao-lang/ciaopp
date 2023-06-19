@@ -757,66 +757,19 @@ transform_one_type_clause_args(N, Pred, NPred, T) :-
 
 % ---------------------------------------------------------------------------
 
-:- use_module(library(assertions/assrt_lib), [assertion_body/7]).
-
-:- export(check_global_props/2).
-check_global_props(In, Out) :-
-    assertion_body(Pred, Compat, Call0, Succ, Comp0, Comm, In),
-    compact_props(Call0, compact_calls_prop, Call),
-    compact_props(Comp0, comp_remove_first_argument, Comp1),
-    compact_props(Comp1, compact_global_prop, Comp),
-    assertion_body(Pred, Compat, Call, Succ, Comp, Comm, Out).
-
-:- meta_predicate compact_props(?, pred(2), ?).
-compact_props([],   _,   []) :- !.
-compact_props([A0|B0], CompactProp, [A|B]) :- !,
-    compact_props(A0, CompactProp, A),
-    compact_props(B0, CompactProp, B).
-compact_props(A, CompactProp, B) :-
-    CompactProp(A, B).
-
-% TODO: rename by comp_remove_goal_arg or comp_unapply? (similar to prop_unapply)
-comp_remove_first_argument(M:A, M:B) :- !,
-    comp_remove_first_argument(A, B).
-comp_remove_first_argument(A, B) :-
-    A =.. [F, _|Args],
-    !,
-    B =.. [F|Args].
-comp_remove_first_argument(A, B) :-
-    A =.. [B].
-
-% TODO: compact_global_prop/2 is a hook, and its implementation
-% TODO: for cost properties must not be implemented here, but in a
-% TODO: separated module (perhaps resources ???). --EMM
-
-% :- multifile custom_compact_global_prop/2.
-
 :- if(defined(with_fullpp)).
 :- if(defined(has_ciaopp_cost)).
+
+:- include(ciaopp(p_unit/p_unit_hooks)).
+
 :- use_module(library(resdefs/rescostfunc), [compact_cf/3, compact_size/3]).
-:- endif.
-:- endif. % with_fullpp
 
-:- if(defined(with_fullpp)).
-:- if(defined(has_ciaopp_cost)).
-compact_global_prop(cost(Rel, Ap, Type, Res, _, IF, CFN), Cost) :-
+% (hook)
+hook_compact_global_prop(cost(Rel, Ap, Type, Res, _, IF, CFN), Cost) :-
     compact_cf(CFN, IF, CF),
     compact_cost(Rel, Ap, Type, Res, CF, Cost),
     !.
-:- endif.
-:- endif. % with_fullpp
-compact_global_prop(C, C).
 
-:- if(defined(with_fullpp)).
-:- if(defined(has_ciaopp_cost)).
-compact_calls_prop(intervals(_, G, _, L), intervals(S, L)) :-
-    compact_size(G, _, S), !.
-:- endif.
-:- endif. % with_fullpp
-compact_calls_prop(A, A).
-
-:- if(defined(with_fullpp)).
-:- if(defined(has_ciaopp_cost)).
 compact_cost(rel, Ap, Type, Res, CF, RelCost) :-
     compact_rel_cost(Type, Ap, Res, CF, RelCost).
 compact_cost(abs, Ap, Type, Res, CF, AbsCost) :-
@@ -827,6 +780,11 @@ compact_rel_cost(Type, Ap, Res, CF, rel_cost(Ap, Type, Res, CF)).
 
 compact_abs_cost(call, Ap, Res, CF, cost(Ap, Res, CF)) :- !.
 compact_abs_cost(Type, Ap, Res, CF, cost(Ap, Type, Res, CF)).
+
+% (hook)
+hook_compact_calls_prop(intervals(_, G, _, L), intervals(S, L)) :-
+    compact_size(G, _, S), !.
+
 :- endif.
 :- endif. % with_fullpp
 

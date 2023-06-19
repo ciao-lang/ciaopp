@@ -86,7 +86,6 @@ Other commands useful when developing or debugging CiaoPP:
 :- doc(hide,module/2).
 :- doc(doinclude,output/1).
 :- doc(doinclude,output/0).
-:- doc(hide,check_global_props/2).
 :- doc(hide,supported_language/1).
 :- doc(hide,language_extension/2).
 :- doc(hide,translate_input_file/5).

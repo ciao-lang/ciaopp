@@ -22,9 +22,7 @@
                get_assertion/2, get_output_operator/3]).
 :- use_module(ciaopp(p_unit/program_keys), [predkey_from_sg/2]).
 
-:- use_module(ciaopp(frontend_driver), 
-              [check_global_props/2, % TODO: move this pred somewhere else
-               add_srcloc_prop/0]). 
+:- use_module(ciaopp(frontend_driver), [add_srcloc_prop/0]). 
 :- use_module(library(assertions/assrt_lib), [assertion_body/7]).
 :- use_module(ciaopp(p_unit/clause_db), [source_clause/3, clause_locator/2]).
 :- use_module(ciaopp(p_unit/unexpand), [
@@ -397,7 +395,7 @@ print_assrt(A, S) :-
     % TODO: printing discards the comments of all assertions
     transform_head(Head, M, HeadT),
     transform_assrt_body(Body, M, BodyT),
-    check_global_props(BodyT, BodyT2),
+    compact_assrt(BodyT, BodyT2),
     ( Dic = no ->
         % create_dict((HeadT:-BodyT), _VN),
         % dict2varnamesl(_VN, VN)
@@ -417,6 +415,43 @@ print_assrt(A, S) :-
     %    true
     ; write_assertion(S, HeadT, Status, Type, BodyT2, VN, WriteStatus)
     ).
+
+:- use_module(library(assertions/assrt_lib), [assertion_body/7]).
+
+% hooks: hook_compact_global_prop/2, hook_compact_calls_prop/2
+:- include(ciaopp(p_unit/p_unit_hooks)).
+
+:- export(compact_assrt/2).
+compact_assrt(In, Out) :-
+    assertion_body(Pred, Compat, Call0, Succ, Comp0, Comm, In),
+    compact_props(Call0, compact_calls_prop, Call),
+    compact_props(Comp0, comp_remove_first_argument, Comp1),
+    compact_props(Comp1, compact_global_prop, Comp),
+    assertion_body(Pred, Compat, Call, Succ, Comp, Comm, Out).
+
+:- meta_predicate compact_props(?, pred(2), ?).
+compact_props([],   _,   []) :- !.
+compact_props([A0|B0], CompactProp, [A|B]) :- !,
+    compact_props(A0, CompactProp, A),
+    compact_props(B0, CompactProp, B).
+compact_props(A, CompactProp, B) :-
+    CompactProp(A, B).
+
+% TODO: rename by comp_remove_goal_arg or comp_unapply? (similar to prop_unapply)
+comp_remove_first_argument(M:A, M:B) :- !,
+    comp_remove_first_argument(A, B).
+comp_remove_first_argument(A, B) :-
+    A =.. [F, _|Args],
+    !,
+    B =.. [F|Args].
+comp_remove_first_argument(A, B) :-
+    A =.. [B].
+
+compact_global_prop(C0, C) :- hook_compact_global_prop(C0, C), !.
+compact_global_prop(C, C).
+
+compact_calls_prop(A0, A) :- hook_compact_calls_prop(A0, A), !.
+compact_calls_prop(A, A).
 
 % ---------------------------------------------------------------------------
 
