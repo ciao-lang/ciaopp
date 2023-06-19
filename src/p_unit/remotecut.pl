@@ -5,7 +5,7 @@
 :- use_module(ciaopp(p_unit),   [new_predicate/3]).
 :- use_module(ciaopp(p_unit/clause_db), [clause_locator/2, add_clause_locator/2]).
 
-:- use_module(ciaopp(tr_syntax/meta_call), [meta_call/1, process_meta_call/5]).
+:- use_module(ciaopp(p_unit/meta_call), [meta_call/1, process_meta_call/5]).
 
 :- use_module(library(lists),    [member/2, append/3]).
 :- use_module(library(vndict),   [complete_dict/3, prune_dict/3, sort_dict/2]).

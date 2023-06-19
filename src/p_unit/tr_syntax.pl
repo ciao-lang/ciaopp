@@ -1,9 +1,9 @@
 :- module(tr_syntax, [cleanup_tr_syntax/0, traverse_clauses/5],
     [assertions, basicmodes]).
 
-:- use_module(ciaopp(tr_syntax/remotecut), [cleanup_remcut/0, transform_remote_cut/8]).
-:- use_module(ciaopp(tr_syntax/remdisj), [cleanup_remdisj/0, remove_disjunctions/10]).
-%:- use_module(ciaopp(tr_syntax/cge2ite),[cge_to_ite/2,unravel_cges/8]).
+:- use_module(ciaopp(p_unit/remotecut), [cleanup_remcut/0, transform_remote_cut/8]).
+:- use_module(ciaopp(p_unit/remdisj), [cleanup_remdisj/0, remove_disjunctions/10]).
+%:- use_module(ciaopp(p_unit/cge2ite),[cge_to_ite/2,unravel_cges/8]).
 cge_to_ite(Cl,Cl).
 unravel_cges(Cl,_D,_,Cl,NCls,NCls,NDs,NDs).
 

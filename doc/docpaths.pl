@@ -30,7 +30,6 @@ filepath := at_bundle(ciaopp, 'src').
 filepath := at_bundle(ciaopp, 'src/plai').
 filepath := at_bundle(ciaopp, 'src/plai/incanal'). % IG: for incremental analysis
 filepath := at_bundle(ciaopp, 'src/p_unit').
-filepath := at_bundle(ciaopp, 'src/tr_syntax').
 filepath := at_bundle(ciaopp, 'src/infer').
 filepath := at_bundle(ciaopp, 'domains').
 filepath := at_bundle(ciaopp, 'domains/nfdet').

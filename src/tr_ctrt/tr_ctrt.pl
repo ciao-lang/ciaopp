@@ -93,7 +93,7 @@
 :- use_package(ciaopp(p_unit/p_unit_argnames)).
 
 :- use_module(ciaopp(p_unit), [replace_program/2]).
-:- use_module(ciaopp(tr_syntax/tr_syntax), [traverse_clauses/5]).
+:- use_module(ciaopp(p_unit/tr_syntax), [traverse_clauses/5]).
 %:- use_module(ciaopp(preprocess_flags), [current_pp_flag/2]).
 :- use_module(ciaopp(p_unit/program_keys),
     [ clause_key/2, rewrite_source_clause/3

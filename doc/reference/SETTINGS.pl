@@ -159,7 +159,6 @@ doc_internals :=
         'p_unit',
         'native',
         'program_keys',
-        % (not in p_unit dir)
         'tr_syntax'
       ],
       'Infer1'-[

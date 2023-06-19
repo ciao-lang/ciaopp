@@ -89,7 +89,7 @@
 :- reexport(ciaopp(p_unit/p_unit_basic), [type_of_goal/2]).
 
 :- use_module(ciaopp(p_unit/p_asr), [cleanup_pasr/0, preprocessing_unit_opts/4]).
-:- use_module(ciaopp(tr_syntax), [cleanup_tr_syntax/0, traverse_clauses/5]).
+:- use_module(ciaopp(p_unit/tr_syntax), [cleanup_tr_syntax/0, traverse_clauses/5]).
 :- use_module(typeslib(typeslib),
     [ legal_user_type_pred/1, insert_user_type_pred_def/2, post_init_types/0]).
 
