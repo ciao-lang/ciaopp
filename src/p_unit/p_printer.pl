@@ -143,34 +143,10 @@ special_directive_(test).
 :- export(get_filtered_assertions/2).
 % Enumerate all (filtered) assertions
 get_filtered_assertions(Goal, AsFiltered) :-
-    get_all_assertions(Goal, As),
-    ( current_pp_flag(output_show_tautologies, off) ->
-        filter_tautologies(As, AsFiltered)
-    ; As = AsFiltered 
-    ).
+    get_all_assertions(Goal, AsFiltered).
 
 get_all_assertions(Goal, AsrList) :-
     findall(Asr, get_assertion(Goal, Asr), AsrList).
-
-% TODO: wrong name and probabily not the best idea (calls indicate reachability?)
-filter_tautologies([], []).
-filter_tautologies([A|As], AsF) :-
-    is_tautology(A),
-    !,
-    filter_tautologies(As, AsF).
-filter_tautologies([A|As], [A|AsF]) :-
-    filter_tautologies(As, AsF).
-
-is_tautology(A) :-
-    A = as${ type => calls, call => Call },
-    it_has_some_true( Call ).
-
-it_has_some_true([A|As]) :- 
-    ( it_has_some_true_1(A) ; it_has_some_true(As) ),!.
-it_has_some_true((A;As)) :- 
-    ( it_has_some_true_1(A) ; it_has_some_true(As) ),!.
-
-it_has_some_true_1([]) :- !.  
 
 % ---------------------------------------------------------------------------
 

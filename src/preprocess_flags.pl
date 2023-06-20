@@ -723,11 +723,6 @@ pp_flag(rem_use_cls, 'Decides whether to remove useless clauses.').
 current_pp_flags(  rem_use_cls        , off).
 valid_flag_values( rem_use_cls        , member(_, [off, pre, post, both])).
 
-pp_flag(output_show_tautologies).
-pp_flag(output_show_tautologies, 'Decides whether to show tautological assertions or not in the output.').
-current_pp_flags(  output_show_tautologies, off).
-valid_flag_values( output_show_tautologies, member(_, [on, off])).
-
 
 pp_flag(part_conc).
 pp_flag(part_conc, 'The kind of partial concretization to be performed.').
