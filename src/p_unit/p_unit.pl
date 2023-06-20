@@ -85,10 +85,10 @@
 
 :- use_module(ciaopp(p_unit/p_asr), [cleanup_pasr/0, preprocessing_unit_opts/4]).
 :- use_module(ciaopp(p_unit/tr_syntax), [cleanup_tr_syntax/0, traverse_clauses/5]).
-:- use_module(typeslib(typeslib),
-    [ legal_user_type_pred/1, insert_user_type_pred_def/2, post_init_types/0]).
 
 :- use_module(ciaopp(preprocess_flags)).
+
+:- include(ciaopp(p_unit/p_unit_hooks)).
 
 % ---------------------------------------------------------------------------
 
@@ -164,7 +164,6 @@ preprocessing_unit_list(Fs,Ms,E):-
     init_native_props,
     % setup type definitions
     init_types,
-    post_init_types,
     % TODO: code seems to work without this; perhaps because some other ensure_registry_file; however it seems necessary at least to upload types from the registry (see patch_registry_file_/3)
     % TODO: this was done just before build_defined_types_lattice/0 (when current_pp_flag(types,deftypes)), is it fine here?
     % remove disjunctions and all that stuff
@@ -205,7 +204,7 @@ init_types :-
     get_module_from_sg(Head,Module),%% JCF
     \+ preloaded_module(Module,_),  %% JCF: preloaded modules are processed already.
     % definable (i.e., not basic --top, num, etc.-- not [] nor [_|_])
-    legal_user_type_pred(Head),
+    hook_legal_regtype(Head),
     ( Head==Prop ->
         findall((Head:-Body),
                 ( one_type_clause(Head,Body0),
@@ -214,10 +213,11 @@ init_types :-
     ; Cls=[(Head:-Prop)]
     ),
     ( Cls=[] -> true
-    ; insert_user_type_pred_def(Head,Cls) % TODO: IG: remove previous definition
+    ; hook_insert_regtype(Head,Cls)
     ),
     fail.
-init_types.
+init_types :-
+    hook_post_init_regtypes.
 
 one_type_clause(Head,Body):-
     clause_read(_,Head,Body,_VarNames,_Source,_LB,_LE).

@@ -9,3 +9,9 @@
 % Hooks for p_printer
 :- multifile hook_pp_info_clause/3.
 :- multifile hook_pp_info_lit/4.
+
+% Hooks for regtypes
+:- multifile hook_legal_regtype/1.
+:- multifile hook_insert_regtype/2.
+:- multifile hook_post_init_regtypes/0.
+

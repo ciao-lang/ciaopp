@@ -328,6 +328,24 @@ detect_language_from_list([AbsFile|_], Lang) :- !,
 detect_language_from_list(_, Lang) :- Lang = ciao.
 
 % ---------------------------------------------------------------------------
+
+:- use_module(typeslib(typeslib), [
+    legal_user_type_pred/1, insert_user_type_pred_def/2, post_init_types/0
+]).
+
+% (hook)
+hook_legal_regtype(Head) :-
+    legal_user_type_pred(Head).
+
+% (hook)
+hook_insert_regtype(Head,Cls) :-
+    insert_user_type_pred_def(Head,Cls). % TODO: IG: remove previous definition
+
+% (hook)
+hook_post_init_regtypes :-
+    post_init_types.
+
+% ---------------------------------------------------------------------------
 % Use cached libraries
 %
 % Lib cache to load faster (requires running gen_lib_cache command)
