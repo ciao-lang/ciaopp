@@ -848,17 +848,12 @@ inject_output_package(A) :-
     ).
 
 load_package_info(M, File) :-
-    load_package_info_(File, [load_pkg_from(M)]),
+    set_ciaopp_expansion(true), % TODO: try to avoid this
+    ( preprocessing_unit_opts([File], [load_pkg_from(M)], _, _) -> true ; true ), % TODO: can it fail?
+    set_ciaopp_expansion(false),
     % TODO: update unexpanded data?
     clean_unexpanded_data,
     generate_unexpanded_data(M).
-
-load_package_info_(File, Opts) :-
-    set_ciaopp_expansion(true), % TODO: try to avoid this
-    ( preprocessing_unit_opts([File], Opts, _, _E) -> true ; true ), % TODO: can it fail?
-    fail.
-load_package_info_(_File, _Opts) :-
-    set_ciaopp_expansion(false).
 
 % ---------------------------------------------------------------------------
 :- doc(section, "Packages that must be included in the output"). % TODO: per module?

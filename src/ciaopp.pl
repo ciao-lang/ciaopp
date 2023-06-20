@@ -88,8 +88,6 @@ Other commands useful when developing or debugging CiaoPP:
 :- doc(doinclude,output/0).
 :- doc(hide,supported_language/1).
 :- doc(hide,language_extension/2).
-:- doc(hide,translate_input_file/5).
-:- doc(hide,initial_transformations/2).
 
 :- reexport(ciaopp(transform_driver)).
 :- doc(doinclude,transformation/1).

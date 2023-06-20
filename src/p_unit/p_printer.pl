@@ -22,7 +22,6 @@
                get_assertion/2, get_output_operator/3]).
 :- use_module(ciaopp(p_unit/program_keys), [predkey_from_sg/2]).
 
-:- use_module(ciaopp(frontend_driver), [add_srcloc_prop/0]). 
 :- use_module(library(assertions/assrt_lib), [assertion_body/7]).
 :- use_module(ciaopp(p_unit/clause_db), [source_clause/3, clause_locator/2]).
 :- use_module(ciaopp(p_unit/unexpand), [
@@ -347,6 +346,9 @@ get_infos([],_Vars,[]).
 
 % ---------------------------------------------------------------------------
 :- doc(section, "Print assertions").
+
+:- export(add_srcloc_prop/0).
+:- data add_srcloc_prop/0.
 
 print_assrts([], _).
 print_assrts([A|As], S) :-

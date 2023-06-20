@@ -110,26 +110,25 @@ language_output_extension(java,        '.java').
 :- use_module(engine(runtime_control),
               [push_prolog_flag/2, pop_prolog_flag/1]). % TODO: do in a better way
 
-:- export(translate_input_file/5).
-:- pred translate_input_file(L,In,O,M,Out)
-    : (language(L),file_name(In),list(atm,O),module_name(M),var(Out))
-       => (language(L),file_name(In),list(atm,O),module_name(M),file_name(Out)).
-:- doc(translate_input_file(L,In,O,M,Out),
+%:- export(translate_input_file/3).
+:- pred translate_input_file(L,In,Out)
+    : (language(L),file_name(In),var(Out))
+       => (language(L),file_name(In),file_name(Out)).
+:- doc(translate_input_file(L,In,Out),
     "This is the main predicate called when the file @var{In}
      needs to be translated from language @var{L} into Ciao Prolog.
      Some options to the translation may be passed in the
-     variable @var{O} and the module name that one wants to
-     get can be given in @var{M}. The translation should produce
+     variable @var{O}. The translation should produce
      a file and indicate where it is located through @var{O}.").
-translate_input_file(ciao, I, _, _, I).
+translate_input_file(ciao, I, I).
 :- if(defined(has_ciaopp_llvm)).
-translate_input_file(c, I, _, _, Pl) :- translate_c(I,Pl).
+translate_input_file(c, I, Pl) :- translate_c(I,Pl).
 :- endif.
 :- if(defined(has_ciaopp_java)).
-translate_input_file(java, I, _, _, NI) :-
+translate_input_file(java, I, NI) :-
     current_pp_flag(java_analysis_level,source),!,
     cafelito_module(I,NI).
-translate_input_file(java, I, _, _, NI) :-
+translate_input_file(java, I, NI) :-
     java_stop_jvm,
     push_prolog_flag(write_strings, on),
     java_start_jvm,
@@ -139,7 +138,7 @@ translate_input_file(java, I, _, _, NI) :-
     pop_prolog_flag(write_strings).
 :- endif.
 
-:- export(initial_transformations/2).
+%:- export(initial_transformations/2).
 :- pred initial_transformations(L,T)
     : (language(L), var(T))
        => (language(L), list(transformation,T)).
@@ -160,7 +159,7 @@ initial_transformations(java,        []).
 % initial_transformations(xc_assembly, [unfold_entry]).
 :- endif.
 
-:- export(detect_language/2).
+%:- export(detect_language/2).
 :- pred detect_language(AbsFile, Lang) # "@var{Lang} is the
    detected language for @var{AbsFile} file.".
 
@@ -171,6 +170,33 @@ detect_language(AbsFile, Lang) :-
         Lang = Lang0
     ; Lang = ciao
     ).
+
+% Detect language and translate
+maybe_translate_files([], []) :- !.
+maybe_translate_files([F|Fs], [NF|NFs]) :- !,
+    maybe_translate_file(F, NF),
+    maybe_translate_files(Fs, NFs).
+
+maybe_translate_file(F, NF) :-
+    atom(F),
+    detect_language(F, Lang),
+    call_to_sockets_init, % TODO:[new-resources] this should not be needed
+    translate_input_file(Lang, F, NF).
+
+%% ---------------------------------------------------------------------------
+% TODO: sockets (foreign code) are sometimes not initialized properly, why?
+
+:- if(defined(has_ciaopp_java)).
+:- use_module(library(sockets), [initial_from_ciaopp/0]).
+:- data socket_initialized/0.
+call_to_sockets_init :-
+    current_fact(socket_initialized), !.
+call_to_sockets_init :-
+    asserta_fact(socket_initialized),
+    sockets:initial_from_ciaopp.
+:- else.
+call_to_sockets_init.
+:- endif.
 
 % ===========================================================================
 :- doc(section, "Module loading for preprocessing").
@@ -240,7 +266,11 @@ load_modules(ModList,Info) :-
     %
     assert_curr_files(AbsFileList), % TODO: move into preprocessing_unit/3?
     % assert_initial_types,
-    preprocessing_unit(AbsFileList,_Ms,E),
+    maybe_translate_files(AbsFileList, NFs),
+    detect_language_from_list(AbsFileList, Lang),
+    set_pp_flag(prog_lang, Lang), % TODO: one per module? only affects fixpo?
+    %
+    preprocessing_unit(NFs,_Ms,E),
     ( E == yes -> Info=[error|Info0] ; Info=Info0 ),
     pp_statistics(runtime,[T1,_]),
     TotalT is T1 - T0,
@@ -248,12 +278,8 @@ load_modules(ModList,Info) :-
     Info0=[time(TotalT,[])],
     pplog(load_module, ['}']),
     % Perform initial transformations -- ASM % TODO: improve?
-    detect_language_from_list(AbsFileList, Lang),
     initial_transformations(Lang, Trans),
     perform_transformations(Trans), !. % TODO: module leaves choicepoints, fix!!
-    % The analysis is transparent so setting prog_lang to ciao
-    % after loading module should not effect analysis.
-    %set_pp_flag(prog_lang, ciao).
 
 absolute_file_names([], []).
 absolute_file_names([M|Ms], [A|As]):-
@@ -464,9 +490,6 @@ perform_transformations([E|Ls]) :-
 output_option(output_symlink).
 output_option(no_written_file_msg).
 output_option(add_srcloc_prop).
-
-:- data add_srcloc_prop/0.
-:- export(add_srcloc_prop/0).
 
 :- export(output/0).
 :- pred output # "Outputs the current module preprocessing state

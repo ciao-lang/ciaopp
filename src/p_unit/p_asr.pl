@@ -172,9 +172,6 @@ importing libraries @lib{ciaopp/p_unit}, @lib{ciaopp/p_unit/itf_db},
     preloaded_module/2,
     dump_lib_itf/1,
     load_lib_itf/1]).
-:- use_module(ciaopp(frontend_driver), [
-    detect_language/2,
-    translate_input_file/5]).
 :- use_module(ciaopp(p_unit/p_canonical)).
 :- use_module(ciaopp(p_unit), [add_output_operator/3, add_output_package/1]).
 :- use_module(ciaopp(p_unit), [add_assertions/1, add_commented_assertion/1, get_assertion/2]).
@@ -282,26 +279,19 @@ preprocessing_unit_opts(Fs, Opts, Ms, E) :-
 
 % ---------------------------------------------------------------------------
 
+% TODO: (review)
 % DTM: When loading ast file, if we are adding the module to the
 % output, i.e., we add one module information to the current one (see
 % load_package_info/1), we have to add import fact in
 % itf_db. adding_to_module specifies the original (first) loaded module 
 :- data adding_to_module/1.
 
-process_main_files([],     _Opts, []) :- !.
-process_main_files([F|Fs], Opts,  [M|Ms]) :- !,
-    process_main_file1(F,  Opts, M),
+process_main_files([], _Opts, []) :- !.
+process_main_files([F|Fs], Opts, [M|Ms]) :- !,
+    process_main_file(F, Opts, M),
     process_main_files(Fs, Opts, Ms).
 
-maybe_translate(F, Opts, M, Lang, NF) :-
-    atom(F),
-    detect_language(F, Lang),
-    call_to_sockets_init, % TODO:[new-resources] this should not be needed
-    translate_input_file(Lang, F, Opts, M, NF).
-
-process_main_file1(F, Opts, M) :-
-    maybe_translate(F, Opts, M, Lang, NF),
-    set_pp_flag(prog_lang, Lang), % TODO: one per module
+process_main_file(NF, Opts, M) :-
     error_protect(ctrlc_clean(
             process_file(NF, asr, any,
                 process_main_info_file(M, Opts),
@@ -1215,19 +1205,3 @@ close_asr_to_write :-
         retractall_fact(asr_stream(_))
     ; true
     ).
-
-%% ---------------------------------------------------------------------------
-% TODO: sockets (foreign code) are sometimes not initialized properly, why?
-
-:- if(defined(has_ciaopp_java)).
-:- use_module(library(sockets), [initial_from_ciaopp/0]).
-:- data socket_initialized/0.
-call_to_sockets_init :-
-    current_fact(socket_initialized), !.
-call_to_sockets_init :-
-    asserta_fact(socket_initialized),
-    sockets:initial_from_ciaopp.
-:- else.
-call_to_sockets_init.
-:- endif.
-
