@@ -833,16 +833,6 @@ pp_flag(variants, 'Whether to keep analysis variants or not (multi-variant analy
 current_pp_flags(  variants           , off).
 valid_flag_values( variants           , member(_, [off,on])).
 
-pp_flag(tmp_dir).
-pp_flag(tmp_dir, 'Directory for temporary files, or \'source\' if temporary files are to be stored where source files reside.').
-current_pp_flags(  tmp_dir            , source).
-valid_flag_values( tmp_dir            , tmp_dir( _)).
-
-pp_flag(asr_dir).
-pp_flag(asr_dir, 'Directory for asr files, or \'source\' if asr files are to be stored where source files reside.').
-current_pp_flags(  asr_dir            , source).
-valid_flag_values( asr_dir            , asr_dir( _)).
-
 pp_flag(punit_boundary).
 pp_flag(punit_boundary, 'Whether to process libraries or not during intermodular analysis / specialization.').
 current_pp_flags(  punit_boundary  , bundle).

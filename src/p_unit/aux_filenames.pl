@@ -11,11 +11,7 @@
 :- doc(author,"Jes@'{u}s Correas").
 
 :- doc(module,"This module provides names for auxiliary files used
-   during the execution of ciaopp. Depending on the value of several
-   preprocess flags (e.g. @code{tmp_dir}, @code{asr_dir}), absolute
-   paths are computed in some way. If a temporary directory is
-   provided in those flags, a unique file name is generated
-   automatically in order to avoid name clashes.").
+   during the execution of ciaopp.").
 
 :- use_module(library(pathnames), [path_basename/2, path_splitext/3]).
 :- use_module(ciaopp(preprocess_flags), [current_pp_flag/2]).
@@ -44,14 +40,10 @@ get_module_filename(Type,Source,FileName):-
     ;
         Base = Base0
     ),
-    get_extension_and_dir(Type,Ext,TmpDir),
+    get_extension(Type,Ext),
     % TODO: better integration with CIAOCCACHE (jfmc)
-    ( TmpDir = source ->
-        ( Ext = '.ast' -> ast_filename(Base, FileName)
-        ; atom_concat(Base,Ext,FileName)
-        )
-    ; unique_name(Base,Name),
-      atom_concat([TmpDir,'/',Name,Ext],FileName)
+    ( Ext = '.ast' -> ast_filename(Base, FileName)
+    ; atom_concat(Base,Ext,FileName)
     ).
 
 %% get_loaded_module_name(+Module,-AbsName,-AbsBase)
@@ -64,30 +56,9 @@ get_loaded_module_name(Module,AbsName,AbsBase):-
     current_itf(defines_module,MName,Base),
     absolute_file_name(Base,'_opt','.pl','.',AbsName,AbsBase,_).
     
-
-get_extension_and_dir(asr,'.ast',TmpDir):-
-    current_pp_flag(asr_dir,TmpDir).
-get_extension_and_dir(reg,'.reg',TmpDir):-
-    current_pp_flag(tmp_dir,TmpDir).
-get_extension_and_dir(dump,'.dmp',TmpDir):-
-    current_pp_flag(tmp_dir,TmpDir).
-
-%% --------------------------------------------------------------------
-
-unique_name(Base,Name):-
-    atom_codes(Base,[0'/|BaseS]),
-    unique_name_(BaseS,NameS),
-    atom_codes(Name,NameS).
-
-unique_name_([],[]).
-unique_name_([0'.|Bs],[0'.,0'.|Ns]):-
-    !,
-    unique_name_(Bs,Ns).
-unique_name_([0'/|Bs],[0'.|Ns]):-
-    !,
-    unique_name_(Bs,Ns).
-unique_name_([X|Bs],[X|Ns]):-
-    unique_name_(Bs,Ns).
+get_extension(asr,'.ast').
+get_extension(reg,'.reg').
+get_extension(dump,'.dmp'). % TODO: sure? .dump?
 
 %% --------------------------------------------------------------------
 
