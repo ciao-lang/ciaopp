@@ -45,6 +45,8 @@
 
 :- use_module(library(aggregates), [findall/3]).
 
+:- include(ciaopp(p_unit/p_unit_hooks)).
+
 % ===========================================================================
 :- doc(section, "Frontend languages").
 
@@ -657,6 +659,52 @@ analysis_info_to_assertions :-
 analysis_info_to_assertions.
 
 % ---------------------------------------------------------------------------
+% program point info
+
+:- use_module(library(sort), [sort/2]).
+:- use_module(library(terms_vars), [varset/2]).
+:- use_module(library(formulae), [llist_to_disj/2]).
+
+:- use_module(ciaopp(infer/infer_db), [domain/1, point_info/5]).
+:- use_module(ciaopp(p_unit), [type_of_goal/2]).
+
+% (hook)
+% (get info necessary for hook_pp_info_lit)
+hook_pp_info_clause(H, B, Info) :-
+    current_pp_flag(pp_info, on), !,
+    varset((H,B),Vars),
+    findall(AbsInt,domain(AbsInt),Domains),
+    Info = dump_lit(Vars,Domains).
+
+% (hook)
+% (annotate literal)
+hook_pp_info_lit(Key, dump_lit(Vars,Domains), AtInfo, Tail) :-
+    atom_info(Domains, Key, Vars, AtInfo, Tail).
+
+atom_info([Dom|Domains], Key, Vars, (Info,InfoT), Tail) :-
+    atom_info_(Dom, Key, Vars, Info),
+    atom_info(Domains, Key, Vars, InfoT, Tail).
+atom_info([], _Key, _Vars, Tail, Tail).
+
+atom_info_(AbsInt, Key, Vars, G) :-
+    current_fact(point_info(Key,AbsInt,_Vars,_FVars,_Info)),
+    !,
+    findall((Vars,Info),
+            current_fact(point_info(Key,AbsInt,Vars,_FVars,Info)),
+            List),
+    get_infos(List, Vars, ListInfo0),
+    % take out identical info
+    sort(ListInfo0, ListInfo),
+    llist_to_disj(ListInfo, Goal),
+    (type_of_goal(builtin(true(Goal)),G) -> true
+    ; G = true(Goal)).
+atom_info_(_Dom, _Key, _Vars, true).
+
+get_infos([(Vars,Info)|List],Vars,[Info|ListInfo]):-
+    get_infos(List,Vars,ListInfo).
+get_infos([],_Vars,[]).
+
+% ---------------------------------------------------------------------------
 
 output_ext('.pl').
 :- if(defined(with_fullpp)).
@@ -846,8 +894,6 @@ transform_one_type_clause_args(N, Pred, NPred, T) :-
 
 :- if(defined(with_fullpp)).
 :- if(defined(has_ciaopp_cost)).
-
-:- include(ciaopp(p_unit/p_unit_hooks)).
 
 :- use_module(library(resdefs/rescostfunc), [compact_cf/3, compact_size/3]).
 

@@ -38,6 +38,11 @@
        returns unsolved cost equations instead of cost function").
 
 % ---------------------------------------------------------------------------
+
+% hooks: hook_compact_global_prop/2, hook_compact_calls_prop/2
+:- include(ciaopp(p_unit/p_unit_hooks)).
+
+% ---------------------------------------------------------------------------
 :- doc(section, "Print program").
 
 :- pred print_program(S)
@@ -148,24 +153,24 @@ get_all_assertions(Goal, AsrList) :-
     findall(Asr, get_assertion(Goal, Asr), AsrList).
 
 % TODO: wrong name and probabily not the best idea (calls indicate reachability?)
-filter_tautologies( [], [] ).
-filter_tautologies( [A|As], AsF ) :-
-    is_tautology( A ),
+filter_tautologies([], []).
+filter_tautologies([A|As], AsF) :-
+    is_tautology(A),
     !,
-    filter_tautologies( As, AsF ).
-filter_tautologies( [A|As], [A|AsF] ) :-
-    filter_tautologies( As, AsF ).
+    filter_tautologies(As, AsF).
+filter_tautologies([A|As], [A|AsF]) :-
+    filter_tautologies(As, AsF).
 
 is_tautology(A) :-
     A = as${ type => calls, call => Call },
     it_has_some_true( Call ).
 
-it_has_some_true( [A|As] ) :- 
-    (it_has_some_true_1( A ) ; it_has_some_true( As )),!.
-it_has_some_true( (A;As) ) :- 
-    (it_has_some_true_1( A ) ; it_has_some_true( As )),!.
+it_has_some_true([A|As]) :- 
+    ( it_has_some_true_1(A) ; it_has_some_true(As) ),!.
+it_has_some_true((A;As)) :- 
+    ( it_has_some_true_1(A) ; it_has_some_true(As) ),!.
 
-it_has_some_true_1( [] ) :- !.  
+it_has_some_true_1([]) :- !.  
 
 % ---------------------------------------------------------------------------
 
@@ -187,24 +192,16 @@ print_directive(directive(Body):_ClId*Dic, S) :-
 % ---------------------------------------------------------------------------
 :- doc(section, "Print clauses").
 
-:- use_module(library(sort), [sort/2]).
-:- use_module(library(terms_vars), [varset/2]).
-:- use_module(library(formulae), [llist_to_disj/2]).
-
-:- use_module(ciaopp(infer/infer_db), [domain/1, point_info/5]).
-:- use_module(ciaopp(p_unit), [type_of_goal/2]).
-
 print_clauses([], _M, _).
 print_clauses([Cl|Cls], M, S) :-
     print_clause(Cl, M, S),
     print_clauses(Cls, M, S).
 
 print_clause(clause(H1,B1):Clid*Dic, M, S) :-
-    ( current_pp_flag(pp_info, off) ->
-        H = H1, B = B1
-    ; % TODO: do as transformation instead? (it simplifies something)
-      findall(AbsInt,domain(AbsInt),Domains), % TODO: not here!
-      dump_clause(clause(H1, B1), Clid, Domains, clause(H, B))
+    % TODO: do as transformation instead? (it simplifies something)
+    ( hook_pp_info_clause(H1, B1, Hook) ->
+        dump_clause(clause(H1, B1), Clid, Hook, clause(H, B))
+    ; H = H1, B = B1
     ),
     clause_remove_litkey(clause(H, B), Cl1b),
     transform_clause_list([Cl1b], M, Cls2),
@@ -231,16 +228,15 @@ body_remove_litkey(':'(L, _), L) :- !.
 body_remove_litkey(L, L).
 
 % Insert program point info between body literals
-dump_clause(clause(Head,Body),Clid,Domains,clause(Head,NewBody)):- 
-    varset((Head,Body),Vars),
+dump_clause(clause(Head,Body),Clid,Hook,clause(Head,NewBody)):- 
     Body2 = (Body,'\6\cl_end_mark'(Clid)),
-    dump_body(Body2,dump_lit(Vars,Domains),NewBody).
+    dump_body(Body2,Hook,NewBody).
 
 % TODO: simplify
-dump_body(Cl , Hook , NCl) :-
-    dump_body_(Cl , Hook , NCl),
+dump_body(Cl, Hook, NCl) :-
+    dump_body_(Cl, Hook, NCl),
     !.
-dump_body(Cl , _ , Cl) :-
+dump_body(Cl, _, Cl) :-
     error_message("Internal error: dump_body: Unable to process ~p.",[Cl]).
 
 dump_body_(B, Hook, NNB) :-
@@ -250,18 +246,18 @@ dump_body_(B, Hook, NNB) :-
 dump_body__(Lit, _Hook, Lit) :-
     var(Lit), !.
 dump_body__(Lit, Hook, Out) :-
-    ( Lit = (A, B) ;
-      Lit = (A; B), Out = (NA;NB)  ;
-      Lit = (A->B), Out = (NA->NB) ),
+    ( Lit = (A, B)
+    ; Lit = (A;B), Out = (NA;NB)
+    ; Lit = (A->B), Out = (NA->NB)
+    ),
     !,
-    dump_body__( A , Hook , NA ),
-    dump_body__( B , Hook , NB ),
-    ( Lit = (_,_) -> literal_concat( NA , NB , Out ) ; true ).
-dump_body__( B , Hook , NB ) :-
-    Hook = dump_lit(Vars,Domains),
-    dump_lit(B, Vars, Domains, NB),
+    dump_body__(A, Hook, NA),
+    dump_body__(B, Hook, NB),
+    ( Lit = (_,_) -> literal_concat(NA, NB, Out) ; true ).
+dump_body__(B, Hook, NB) :-
+    dump_lit(B, Hook, NB),
     !.
-dump_body__( A , _Hook , A ) :-
+dump_body__(A, _Hook, A) :-
     error_message("Internal error: dump_lit: Unable to process ~p.", [A]).
 
 % TODO: be careful when removing 'true'! (code is not always equivalent)
@@ -314,35 +310,12 @@ literal_concat(A, B, A) :-
     !.
 literal_concat(A, B, (A,B)).
 
-dump_lit('\6\cl_end_mark'(Clid),Vars,Domains, AtInfo) :- !,
-    atom_info(Domains, Clid, Vars, AtInfo, true).
-dump_lit(At:Key, Vars, Domains, AtInfo) :-
-    atom_info(Domains, Key, Vars, AtInfo, At:Key),
-    !.
-dump_lit(At, _Vars, _Domains, At).
-
-atom_info([Dom|Domains], Key, Vars, (Info,InfoT), Tail) :-
-    atom_info_(Dom, Key, Vars, Info),
-    atom_info(Domains, Key, Vars, InfoT, Tail).
-atom_info([], _Key, _Vars, Tail, Tail).
-
-atom_info_(AbsInt, Key, Vars, G) :-
-    current_fact(point_info(Key,AbsInt,_Vars,_FVars,_Info)),
-    !,
-    findall((Vars,Info),
-            current_fact(point_info(Key,AbsInt,Vars,_FVars,Info)),
-            List),
-    get_infos(List, Vars, ListInfo0),
-    % take out identical info
-    sort(ListInfo0, ListInfo),
-    llist_to_disj(ListInfo, Goal),
-    (type_of_goal(builtin(true(Goal)),G) -> true
-    ; G = true(Goal)).
-atom_info_(_Dom, _Key, _Vars, true).
-
-get_infos([(Vars,Info)|List],Vars,[Info|ListInfo]):-
-    get_infos(List,Vars,ListInfo).
-get_infos([],_Vars,[]).
+dump_lit('\6\cl_end_mark'(Clid), Hook, AtInfo) :- !,
+    hook_pp_info_lit(Clid, Hook, AtInfo, true).
+dump_lit(At:Key, Hook, AtInfo) :-
+    hook_pp_info_lit(Key, Hook, AtInfo, At:Key),
+    !. % TODO: misplaced cut?
+dump_lit(At, _, At).
 
 % ---------------------------------------------------------------------------
 :- doc(section, "Print assertions").
@@ -420,10 +393,6 @@ print_assrt(A, S) :-
 
 :- use_module(library(assertions/assrt_lib), [assertion_body/7]).
 
-% hooks: hook_compact_global_prop/2, hook_compact_calls_prop/2
-:- include(ciaopp(p_unit/p_unit_hooks)).
-
-:- export(compact_assrt/2).
 compact_assrt(In, Out) :-
     assertion_body(Pred, Compat, Call0, Succ, Comp0, Comm, In),
     compact_props(Call0, compact_calls_prop, Call),
@@ -463,7 +432,7 @@ compact_calls_prop(A, A).
 % TODO: we still see a lot of _NNN vars; is this not working properly?
 % TODO: slow? simpler alternatives? (like get the Dic of the first assertion)
 
-:- pred create_dict_with_assrt_and_cl( Head , NDic )
+:- pred create_dict_with_assrt_and_cl(Head, NDic)
     : (term(Head),var(NDic))
 # "For a given head @var{Head} (from assertion or a clause), a new
   dictionary @var{NDic} is returned using the dictionaries found in
@@ -497,7 +466,7 @@ dict_for_head(H, D) :-
 
 @begin{verbatim}
 ?- complete_goal_dic( [hd(ap(A1,A2,A3),
-                  [=('A',A1),=('B',A2),=('C',A3)])], [E,D,F] , [] , DF ).
+                  [=('A',A1),=('B',A2),=('C',A3)])], [E,D,F], [], DF ).
 
 D = A2,
 DF = ['C'=A3,'B'=A2,'A'=A1],
