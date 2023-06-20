@@ -104,7 +104,7 @@ Other commands useful when developing or debugging CiaoPP:
 % :- doc(hide,add_action/1).
 :- doc(hide,clean_analysis_info/0).
 
-%% From: :- reexport(ciaopp(p_unit/p_dump)).
+%% From: :- reexport(ciaopp(p_dump)).
 % :- doc(hide,dump/1).
 % :- doc(hide,restore/1).
 % :- doc(hide,restore/2).

@@ -9,7 +9,7 @@
 :- use_module(library(streams)).
 :- use_module(library(aggregates), [findall/3]).
 
-:- use_module(ciaopp(p_unit/p_dump), [restore/1]).
+:- use_module(ciaopp(p_dump), [restore/1]).
 :- use_module(ciaopp(plai/plai_db), [complete/7]).
 :- use_module(ciaopp(plai/domains), [identical_abstract/3, unknown_call/5, unknown_entry/4]).
 

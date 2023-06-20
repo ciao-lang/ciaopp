@@ -421,7 +421,7 @@ perform_transformations([E|Ls]) :-
 % DUMP MODULE.
 %------------------------------------------------------------------------
 :- if(defined(with_fullpp)).
-:- reexport(ciaopp(p_unit/p_dump)).
+:- reexport(ciaopp(p_dump)).
 :- endif. % with_fullpp
 
 %------------------------------------------------------------------------

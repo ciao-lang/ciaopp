@@ -33,7 +33,7 @@ defined, no useful information appears in the usual.
 
 Dump the analysis graph in some <file>:
 @begin{verbatim}
-ciaopp ?- use_module(ciaopp(p_unit/p_dump)).
+ciaopp ?- use_module(ciaopp(p_dump)).
 ciaopp ?- dump(<file>).
 @end{verbatim}
 

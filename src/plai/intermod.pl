@@ -68,7 +68,7 @@ Global compilation options of intermodular analysis are available in
 :- use_module(ciaopp(p_unit/aux_filenames), [get_module_filename/3, just_module_name/2]).
 :- use_module(ciaopp(p_unit/itf_db), [get_module_from_sg/2]).
 :- use_module(ciaopp(preprocess_flags)).
-:- use_module(ciaopp(p_unit/p_dump), [dump_dir/1, dump/2]).
+:- use_module(ciaopp(p_dump), [dump_dir/1, dump/2]).
 :- use_module(ciaopp(ciaopp_log)).
 :- use_module(ciaopp(raw_printer)).
 % ctcheck

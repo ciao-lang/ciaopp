@@ -18,7 +18,7 @@ the graphviz library (dot comand).
 Analyze a module and dump the result
 @begin{verbatim}
 ?- use_module(ciaopp(ciaopp)).
-?- use_module(ciaopp(p_unit/p_dump)).
+?- use_module(ciaopp(p_dump)).
 
 ?- module(['path/to/your/main', 'path/to/your/lib', '...']).
 ?- Domain = shfr, analyze(Domain).

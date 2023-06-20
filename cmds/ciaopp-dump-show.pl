@@ -1,6 +1,6 @@
 :- module(_, [main/1], [assertions, datafacts, fsyntax]).
 
-:- use_module(ciaopp(p_unit/p_dump), [show_dump/1]).
+:- use_module(ciaopp(p_dump), [show_dump/1]).
 :- use_module(ciaopp(raw_printer), [show_registry_info/0]).
 :- use_module(ciaopp(test_aux/compare_dump), [not_hidden_directory_files/2]).
 :- use_module(library(pathnames), [path_splitext/3, path_concat/3]).

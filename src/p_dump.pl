@@ -22,7 +22,7 @@
 :- use_module(ciaopp(analysis_stats), [pp_statistics/2]).
 :- use_module(library(hiordlib), [maplist/2]).
 
-:- use_module(ciaopp(p_unit/auxinfo_dump)).
+:- use_module(ciaopp(plai/auxinfo_dump)).
 :- use_module(ciaopp(preprocess_flags), [current_pp_flag/2]).
 :- use_module(ciaopp(ciaopp_log), [pplog/2]).
 

@@ -53,7 +53,7 @@ predicates}.
 :- use_module(ciaopp(frontend_driver), [module/2,ensure_lib_sources_loaded/0]).
 :- use_module(ciaopp(analyze_driver), [analyze/2]).
 :- use_module(ciaopp(preprocess_flags), [set_pp_flag/2]).
-:- use_module(ciaopp(p_unit/p_dump), [dump/2]).
+:- use_module(ciaopp(p_dump), [dump/2]).
 
 :- use_module(ciaopp_batch(ciaopp_batch_aux)).
 

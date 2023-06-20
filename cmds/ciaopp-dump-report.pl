@@ -9,7 +9,7 @@
 The program needs to be analyzed with the pp flag fact_info=on, and dumped with the option 'incremental':
 
 @begin{verbatim}
-?- use_module(ciapp(p_unit/p_dump)).
+?- use_module(ciaopp(p_dump)).
 ?- dump('file.dump', [incremental]).
 @end{verbatim}
 
@@ -23,7 +23,7 @@ The program needs to be analyzed with the pp flag fact_info=on, and dumped with 
 :- use_module(library(messages), [show_message/4, show_message/3]).
 
 :- use_module(ciaopp(plai/plai_db), [get_memo_table/7,complete/7]).
-:- use_module(ciaopp(p_unit/p_dump), [restore/1]).
+:- use_module(ciaopp(p_dump), [restore/1]).
 :- use_module(ciaopp(p_unit/clause_db), [clause_locator/2]).
 :- use_module(ciaopp(plai/transform), [trans_clause/3]).
 :- use_module(ciaopp(plai/fixpo_ops), [bottom/1]).

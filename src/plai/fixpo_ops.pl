@@ -64,10 +64,10 @@
 
 :- use_module(ciaopp(plai/apply_assertions), [apply_assrt_exit/7]).
 :- use_module(ciaopp(plai/plai_db)).
+:- use_module(ciaopp(plai/auxinfo_dump)).
 :- use_module(ciaopp(preprocess_flags), [current_pp_flag/2]).
 :- use_module(ciaopp(p_unit), [language/1, type_of_goal/2]).
 :- use_module(ciaopp(p_unit/program_keys), [predkey_from_sg/2]).
-:- use_module(ciaopp(p_unit/auxinfo_dump)).
 
 :- use_module(ciaopp(ciaopp_log), [pplog/2]).
 

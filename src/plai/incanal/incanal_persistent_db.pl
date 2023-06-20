@@ -6,7 +6,7 @@
 :- use_module(library(system_extra), [del_file_nofail/1]).
 :- use_module(library(pathnames), [path_split/3, path_splitext/3, path_concat/3]).
 
-:- use_module(ciaopp(p_unit/p_dump), [dump/2, restore/2]).
+:- use_module(ciaopp(p_dump), [dump/2, restore/2]).
 :- use_module(ciaopp(analysis_stats), [add_stat/2]).
 :- use_module(ciaopp(preprocess_flags)).
 :- use_module(ciaopp(ciaopp_log), [pplog/2]).

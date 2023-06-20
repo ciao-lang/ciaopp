@@ -109,7 +109,7 @@ rename_all_types_in_abs([],_AbsInt,_Dict,[],_).
 %% :- module(dump_example,[dump/1,restore/1]).
 %% 
 %% :- use_module(ciaopp(plai/plai_db), [complete/7]).
-%% :- use_module(ciaopp(p_unit/auxinfo_dump)).
+%% :- use_module(ciaopp(plai/auxinfo_dump)).
 %% 
 %% :- data my_complete/7.  % stores copies of complete/7
 %% :- data aux/1.          % stores required type definitions

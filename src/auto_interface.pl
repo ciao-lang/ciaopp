@@ -31,7 +31,7 @@
 :- use_module(ciaopp(transform_driver), [transform/1]).
 :- use_module(ciaopp(ciaopp_log), [pplog/2]).
 %% *** These two for ACC, need to be revised MH
-:- use_module(ciaopp(p_unit/p_dump), [dump/1, dump/2, restore/1]).
+:- use_module(ciaopp(p_dump), [dump/1, dump/2, restore/1]).
 
 :- use_module(ciaopp(plai/fixpo_ops), [store_previous_analysis/1]).
 :- use_module(ciaopp(plai/acc_ops), [remove_irrelevant_entries/0]).

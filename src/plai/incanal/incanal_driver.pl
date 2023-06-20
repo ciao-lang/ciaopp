@@ -65,10 +65,10 @@ according to the strategy defined.
         [current_pp_flag/2, set_pp_flag/2,typeanalysis/1]).
 :- use_module(ciaopp(analysis_stats)).
 :- use_module(ciaopp(ciaopp_log), [pplog/2]).
+:- use_module(ciaopp(p_dump), [clean_all_ciaopp_db/0]).
 
 %%% p_unit
 :- use_module(ciaopp(p_unit), [program/2]).
-:- use_module(ciaopp(p_unit/p_dump), [clean_all_ciaopp_db/0]).
 :- use_module(ciaopp(p_unit/clause_db), [source_clause/3, cleanup_clause_db/0]).
 :- use_module(ciaopp(p_unit/assrt_db), [cleanup_assrt_db/0]).
 

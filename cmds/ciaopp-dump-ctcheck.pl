@@ -12,7 +12,7 @@
 :- use_module(ciaopp(ciaopp)).
 :- use_module(ciaopp(frontend_driver), [module/1]).
 :- use_module(ciaopp(ctchecks/ctchecks_pred), [simplify_assertions_all/1]).
-:- use_module(ciaopp(p_unit/p_dump), [restore/1]).
+:- use_module(ciaopp(p_dump), [restore/1]).
 
 main([Module,DumpFile,AbsInt]) :-
     module(Module),
