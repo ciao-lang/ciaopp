@@ -122,7 +122,8 @@ analysis(Analysis) :- lazy_analysis(Analysis), !.
 % ---------------------------------------------------------------------------
 :- doc(subsection, "Analysis").
 
-:- use_module(ciaopp(p_unit), [program/2, push_history/1]).
+:- use_module(ciaopp(p_unit), [program/2]).
+:- use_module(ciaopp(frontend_driver), [push_history/1]).
 
 :- if(defined(with_fullpp)).
 % (Reexport for documentation)

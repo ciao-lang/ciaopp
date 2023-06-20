@@ -367,6 +367,7 @@ warn_no_cache :-
 cleanup_all :-
     cleanup_itf_db,
     clean_analysis_info,
+    cleanup_history,
     cleanup_punit,
     cleanup_pasr,
     cleanup_code_and_related_assertions,
@@ -471,9 +472,72 @@ perform_transformations([E|Ls]) :-
 %%                    is written by output/1 as
 %%                    :- doc(title,[84,101,114,109,32,105,110,112,117,116])"). 
 
-%------------------------------------------------------------------------
+% ---------------------------------------------------------------------------
+:- doc(section, "History of analysis/transformations (for output name)").
 
-:- use_module(ciaopp(p_unit), [get_output_path/2]).
+:- use_module(library(lists), [reverse/2]).
+:- use_module(library(pathnames), [path_splitext/3]).
+
+:- pred history_item(X) # "History item (in reverse order)".
+
+:- doc(history_item(X), "The history of analysis/transformation steps,
+   which is used to assign a name (e.g. @tt{filename_shfr_pred_op.pl})
+   to the output file in @pred{output/0}").
+
+:- data history_item/1.
+
+:- export(cleanup_history/0).
+:- pred cleanup_history # "Cleanup history items.".
+cleanup_history :-
+    retractall_fact(history_item(_)).
+
+:- export(push_history/1).
+:- pred push_history(X) : atom(X) # "Push history item @var{X}.".
+push_history(X) :-
+    asserta_fact(history_item(X)).
+
+:- export(pop_history/1).
+:- pred pop_history(X) : atom(X) # "Pop history item @var{X}.".
+pop_history(X) :-
+    retract_fact(history_item(X)).
+% TODO: should be pop_history :- retract_fact(history_item(_)), !.
+
+% TODO: if we export history_item (or similar) this predicate could be moved to another module
+:- export(get_output_path/2).
+:- pred get_output_path(UseHistory, Path) => (atm(UseHistory),atm(Path))
+   # "Default output file name based. Encode analysis/transformation
+      history if @var{UseHistory} is @tt{yes}.".
+
+get_output_path(UseHistory, OptFile) :-
+    % Base and extension of the main file
+    % TODO: allow a different main file?
+    ( curr_file(SrcFile, _) -> true ; fail ), % (first)
+    path_splitext(SrcFile, Base, Ext),
+    % Get list of history (analysis/transformation) items, for name
+    ( UseHistory = yes ->
+        findall(X, history_item(X), Ls0),
+        ( Ls0 = [] -> Ls = [none]
+        ; reverse(Ls0, Ls)
+        )
+    ; Ls = []
+    ),
+    % Compose name
+    atom_concat_with_underscore([Base|Ls], File),
+    atom_concat(File, '_co', FileCo),
+    ( current_pp_flag(output_lang, intermediate) ->
+        Ext2 = '.pl'
+    ; Ext2 = Ext
+    ),
+    atom_concat(FileCo, Ext2, OptFile).
+
+atom_concat_with_underscore([L], L) :- !.
+atom_concat_with_underscore([A|As], L) :- !,
+    atom_concat_with_underscore(As, AsC),
+    atom_concat(A, '_', A2),
+    atom_concat(A2, AsC, L).
+atom_concat_with_underscore(L, L).
+
+% ---------------------------------------------------------------------------
 
 :- doc(output_option/1, "Options for @pred{output/2}. The current set
    of options is:

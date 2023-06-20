@@ -14,7 +14,7 @@
 dump_file(FilePath, Module, AbsInt, DumpFile) :-
     path_split(FilePath, Path, _),
     atom_concat(Module, '_', Dump0),
-    % TODO: see p_unit:get_output_path/2
+    % TODO: see frontend_driver:get_output_path/2
     atom_concat(Dump0, AbsInt, Dump1),
     atom_concat(Dump1, '.dump', Dump),
     path_concat(Path, Dump, DumpFile).

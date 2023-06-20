@@ -29,10 +29,6 @@
     %
     language/1,
     %
-    push_history/1,
-    pop_history/1,
-    get_output_path/2,
-    %
     inject_output_package/1,
     %
     % TODO: move to clause_db or similar?
@@ -62,7 +58,6 @@
 
 :- use_module(library(messages)).
 
-:- use_module(library(pathnames), [path_splitext/3]).
 :- use_module(library(aggregates), [findall/3, setof/3]).
 :- use_module(library(compiler/c_itf), [opt_suffix/2, set_ciaopp_expansion/1]).
 
@@ -188,8 +183,6 @@ preprocessing_unit_list(_Fs,_Ms,_E):-
 cleanup_punit :-
     cleanup_program_keys,
     cleanup_tr_syntax,
-    %
-    cleanup_history,
     %
     retractall_fact(pl_output_op(_, _, _)),
     retractall_fact(pl_output_package(_)),
@@ -346,66 +339,6 @@ language(clp):-
     current_fact(source_clause(_Key,directive(impl_defined('.=.'/2)),_D)),
     !.
 language(lp).
-
-% ---------------------------------------------------------------------------
-:- doc(section, "History of analysis/transformations (for output name)").
-
-:- use_module(library(lists), [reverse/2]).
-
-:- pred history_item(X) # "History item (in reverse order)".
-
-:- doc(history_item(X), "The history of analysis/transformation steps,
-   which is used to assign a name (e.g. @tt{filename_shfr_pred_op.pl})
-   to the output file in @pred{output/0}").
-
-:- data history_item/1.
-
-:- pred cleanup_history # "Cleanup history items.".
-cleanup_history :-
-    retractall_fact(history_item(_)).
-
-:- pred push_history(X) : atom(X) # "Push history item @var{X}.".
-push_history(X) :-
-    asserta_fact(history_item(X)).
-
-:- pred pop_history(X) : atom(X) # "Pop history item @var{X}.".
-pop_history(X) :-
-    retract_fact(history_item(X)).
-% TODO: should be pop_history :- retract_fact(history_item(_)), !.
-
-% TODO: if we export history_item (or similar) this predicate could be moved to another module
-:- pred get_output_path(UseHistory, Path) => (atm(UseHistory),atm(Path))
-   # "Default output file name based. Encode analysis/transformation
-      history if @var{UseHistory} is @tt{yes}.".
-
-get_output_path(UseHistory, OptFile) :-
-    % Base and extension of the main file
-    % TODO: allow a different main file?
-    ( curr_file(SrcFile, _) -> true ; fail ), % (first)
-    path_splitext(SrcFile, Base, Ext),
-    % Get list of history (analysis/transformation) items, for name
-    ( UseHistory = yes ->
-        findall(X, history_item(X), Ls0),
-        ( Ls0 = [] -> Ls = [none]
-        ; reverse(Ls0, Ls)
-        )
-    ; Ls = []
-    ),
-    % Compose name
-    atom_concat_with_underscore([Base|Ls], File),
-    atom_concat(File, '_co', FileCo),
-    ( current_pp_flag(output_lang, intermediate) ->
-        Ext2 = '.pl'
-    ; Ext2 = Ext
-    ),
-    atom_concat(FileCo, Ext2, OptFile).
-
-atom_concat_with_underscore([L], L) :- !.
-atom_concat_with_underscore([A|As], L) :- !,
-    atom_concat_with_underscore(As, AsC),
-    atom_concat(A, '_', A2),
-    atom_concat(A2, AsC, L).
-atom_concat_with_underscore(L, L).
 
 %% ---------------------------------------------------------------------------
 
