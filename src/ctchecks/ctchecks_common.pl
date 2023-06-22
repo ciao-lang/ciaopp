@@ -28,7 +28,8 @@
 :- use_module(ciaopp(p_unit),
               [assertion_set_status/3, assertion_set_calls/3,
                assertion_set_success/3, assertion_set_comp/3,
-               entry_assertion/3,prop_to_native/2]).
+               prop_to_native/2]).
+:- use_module(ciaopp(frontend_driver), [entry_assertion/3]).
 :- use_module(library(terms_vars), [varset/2]).
 :- use_module(ciaopp(ctchecks/comp_ctchecks),
               [abs_execute_comp/5, abs_execute_sizes/5]).

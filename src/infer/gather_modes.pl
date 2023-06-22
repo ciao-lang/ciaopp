@@ -27,7 +27,8 @@ get_modes_assrt(_,_) :- fail. % (default)
 :- use_module(ciaopp(p_unit/program_keys), [first_key/2, null_directive_key/1,
     is_directive/3, is_clause/4, lit_ppkey/3, get_predkey/3,
     predkey_from_sg/2]).
-:- use_module(ciaopp(p_unit), [type_of_goal/2, entry_assertion/3]).
+:- use_module(ciaopp(p_unit), [type_of_goal/2]).
+:- use_module(ciaopp(frontend_driver), [entry_assertion/3]).
 :- use_module(library(assertions/assrt_lib), [assertion_body/7]).
 :- use_module(ciaopp(p_unit/assrt_db)).
 :- use_module(library(hiordlib), [

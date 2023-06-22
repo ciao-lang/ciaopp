@@ -14,7 +14,7 @@
 :- use_module(library(lists)).
 :- use_module(library(aggregates)).
 
-:- use_module(ciaopp(p_unit), [entry_assertion/3]).
+:- use_module(ciaopp(frontend_driver), [entry_assertion/3]).
 :- use_module(ciaopp(p_unit/program_keys)).
 :- use_module(ciaopp(p_unit/clause_db)).
 :- use_module(ciaopp(preprocess_flags)).

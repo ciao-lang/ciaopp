@@ -161,7 +161,6 @@ importing libraries @lib{ciaopp/p_unit}, @lib{ciaopp/p_unit/itf_db},
 :- use_module(library(stream_utils), [write_string/1]).
 :- use_module(engine(messages_basic), [message/2]).
 
-:- use_module(ciaopp(preprocess_flags), [current_pp_flag/2, set_pp_flag/2]).
 :- use_module(ciaopp(ciaopp_log), [pplog/2]).
 :- use_module(ciaopp(p_unit/assrt_db)).
 :- use_module(ciaopp(p_unit/assrt_norm)).
@@ -970,7 +969,6 @@ cleanup_lib_sources :-
 :- pred load_lib_sources(Path) # "Loads source files for preloading
     assertion info.  Files are loaded from directory @var{Path}.".
 load_lib_sources(Path) :-
-    % current_pp_flag(library_preloading,on),!,
     load_from_file(Path, 'lib_assertion_read.pl', assrt_db:load_lib_assrt),
     load_from_file(Path, 'lib_prop_clause_read.pl', clause_db:load_lib_props),
     load_from_file(Path, 'lib_itf_db.pl', itf_db:load_lib_itf),

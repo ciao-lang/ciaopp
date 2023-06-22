@@ -329,6 +329,42 @@ detect_language_from_list(_, Lang) :- Lang = ciao.
 
 % ---------------------------------------------------------------------------
 
+:- use_module(library(assertions/assrt_lib), [assertion_body/7]).
+:- use_module(ciaopp(p_unit/assrt_db), [assertion_read/9]).
+:- use_module(ciaopp(p_unit/native), [builtin/2]).
+
+:- export(entry_assertion/3).
+:- pred entry_assertion(Goal,Call,Name) => cgoal(Goal)
+    # "There is an entry assertion for @var{Goal} with call
+       pattern @var{Call}, uniquely identifiable by @var{Name}.".
+entry_assertion(Goal,Call,Name):-
+    current_pp_flag(entry_points_auto,EntryPointsAuto),
+    curr_module(M),
+    assertion_read(Goal,M,_Status,Type,Body,_Dict,_S,_LB,_LE),
+    valid_assertion_type(Type,EntryPointsAuto),
+    ( Type = entry ->
+        true
+    ; current_pp_flag(entry_calls_scope,EntryCallsScope),
+      ( EntryCallsScope = exported ->
+          ( type_of_goal(exported,Goal) -> true ) % Avoid choice points.
+      ; EntryCallsScope = all
+      )
+    ),
+    assertion_body(Goal,_Compat,Call,_Succ,Comp,_Comm,Body),
+    ( builtin(entry_point_name(Goal,Name),Entry),
+      member(Entry,Comp)
+    -> true
+    ; functor(Goal,Name,_)
+    ).
+
+valid_assertion_type(entry,_) :- !.
+valid_assertion_type(calls,calls) :- !.
+valid_assertion_type(_,all).
+
+% exit_assertion/3, % TODO: Not imported anywhere
+
+% ---------------------------------------------------------------------------
+
 :- use_module(typeslib(typeslib), [
     legal_user_type_pred/1, insert_user_type_pred_def/2, post_init_types/0
 ]).

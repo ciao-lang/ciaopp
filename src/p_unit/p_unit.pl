@@ -4,8 +4,6 @@
     filtered_program_clauses/3,
     replace_program/2,
     %
-    entry_assertion/3,
-    % exit_assertion/3, % TODO: Not imported anywhere
     native_to_prop/2,
     prop_to_native/2,
     native_to_props_visible/2,
@@ -85,8 +83,6 @@
 
 :- use_module(ciaopp(p_unit/p_asr), [cleanup_pasr/0, preprocessing_unit_opts/4]).
 :- use_module(ciaopp(p_unit/tr_syntax), [cleanup_tr_syntax/0, traverse_clauses/5]).
-
-:- use_module(ciaopp(preprocess_flags)).
 
 :- include(ciaopp(p_unit/p_unit_hooks)).
 
@@ -341,33 +337,6 @@ language(clp):-
 language(lp).
 
 %% ---------------------------------------------------------------------------
-
-:- pred entry_assertion(Goal,Call,Name) => cgoal(Goal)
-    # "There is an entry assertion for @var{Goal} with call
-       pattern @var{Call}, uniquely identifiable by @var{Name}.".
-entry_assertion(Goal,Call,Name):-
-    current_pp_flag(entry_points_auto,EntryPointsAuto),
-    curr_module(M),
-    assertion_read(Goal,M,_Status,Type,Body,_Dict,_S,_LB,_LE),
-    valid_assertion_type(Type,EntryPointsAuto),
-    ( Type = entry ->
-        true
-    ; current_pp_flag(entry_calls_scope,EntryCallsScope),
-      ( EntryCallsScope = exported ->
-          ( type_of_goal(exported,Goal) -> true ) % Avoid choice points.
-      ; EntryCallsScope = all
-      )
-    ),
-    assertion_body(Goal,_Compat,Call,_Succ,Comp,_Comm,Body),
-    ( builtin(entry_point_name(Goal,Name),Entry),
-      member(Entry,Comp)
-    -> true
-    ; functor(Goal,Name,_)
-    ).
-
-valid_assertion_type(entry,_) :- !.
-valid_assertion_type(calls,calls) :- !.
-valid_assertion_type(_,all).
 
 :- pred get_call_from_call_assrt(Sg,M,Status,Call,Source,LB,LE)
    # "Returns in @var{Call}, upon backtracking call patterns from calls

@@ -16,7 +16,6 @@
 
 :- use_module(library(aggregates)).
 
-:- use_module(ciaopp(preprocess_flags)).
 :- use_module(ciaopp(p_unit),
               [get_comment/1, pr_key_get/1, get_commented_assertion/2,
                get_assertion/2, get_output_operator/3]).
