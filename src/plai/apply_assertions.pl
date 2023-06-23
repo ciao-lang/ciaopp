@@ -91,11 +91,11 @@ a native property. Then we could use it for rtchecks in this module.").
 
 :- use_module(ciaopp(preprocess_flags), [current_pp_flag/2]).
 
+:- use_module(ciaopp(frontend_driver), [is_library/1]).
 :- use_module(ciaopp(p_unit/program_keys), [predkey_from_sg/2]).
 :- use_module(library(assertions/assrt_lib), [assertion_body/7]).
 :- use_module(ciaopp(p_unit/assrt_db), [assertion_read/9]).
 :- use_module(ciaopp(p_unit), [type_of_goal/2]).
-:- use_module(ciaopp(p_unit/aux_filenames), [is_library/1]).
 :- use_module(ciaopp(p_unit/itf_db), [current_itf/3, get_module_from_sg/2]).
 
 :- use_module(ciaopp(plai/fixpo_ops), [bottom/1, get_singleton/2]).

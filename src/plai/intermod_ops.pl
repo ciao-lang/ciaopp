@@ -42,8 +42,9 @@
               [identical_proj/5, less_or_equal_proj/5, abs_sort/3, identical_abstract/3,
               needs/2]).
 :- use_module(ciaopp(plai/auxinfo_dump)).
+:- use_module(ciaopp(frontend_driver), [is_library/1]).
 :- use_module(ciaopp(p_unit/aux_filenames), [
-    get_module_filename/3, just_module_name/2, is_library/1, get_loaded_module_name/3]).
+    get_module_filename/3, just_module_name/2, get_loaded_module_name/3]).
 :- use_module(ciaopp(p_unit/program_keys),
               [decode_litkey/5, predkey_from_sg/2, get_predkey/3]).
 

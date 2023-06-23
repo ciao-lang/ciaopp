@@ -364,6 +364,40 @@ valid_assertion_type(_,all).
 % exit_assertion/3, % TODO: Not imported anywhere
 
 % ---------------------------------------------------------------------------
+% TODO: refine
+
+:- use_module(ciaopp(preprocess_flags), [current_pp_flag/2]).
+
+:- multifile file_search_path/2.
+:- dynamic(file_search_path/2). % (just declaration, dynamic not needed in this module)
+
+:- multifile library_directory/1.
+:- dynamic(library_directory/1). % (just declaration, dynamic not needed in this module)
+
+:- export(is_library/1).
+:- pred is_library(+Base).
+% Base corresponds to a library(_) or engine(_) path (if no_engine is not set)
+is_library(Base):-
+    current_pp_flag(punit_boundary,no_engine),
+    !,
+    is_library_(Base, no).
+is_library(Base):-
+    is_library_(Base, yes).
+
+is_library_(Base, AllowEngine):-
+    absolute_file_name(Base,'','.pl','.',_,_,AbsPath),
+    ( AllowEngine = yes, % (allow engine(_) paths)
+      file_search_path(engine, Path)
+    ; library_directory(Path)
+    ),
+    absolute_file_name(Path,'','.pl','.',_,_,LibPath),
+    (
+        AbsPath == LibPath, !
+    ;
+        atom_concat(LibPath,_,AbsPath)
+    ).
+
+% ---------------------------------------------------------------------------
 
 :- use_module(typeslib(typeslib), [
     legal_user_type_pred/1, insert_user_type_pred_def/2, post_init_types/0

@@ -18,12 +18,12 @@
       contains_parameters/2, unknown_entry/4]).
 :- use_module(typeslib(typeslib), [set_param_matching_mode/1]).
 
+:- use_module(ciaopp(frontend_driver), [is_library/1]).
 :- use_module(ciaopp(plai/intermod_success), [get_success_info/7]).
 :- use_module(ciaopp(p_unit/itf_db),
               [curr_file/2, current_itf/3, get_module_from_sg/2]).
 :- use_module(ciaopp(p_unit/aux_filenames), [get_loaded_module_name/3]).
 :- use_module(ciaopp(plai/intermod_punit), [module_is_processable/1]).
-:- use_module(ciaopp(p_unit/aux_filenames), [is_library/1]).
 :- use_module(ciaopp(preprocess_flags), [current_pp_flag/2]).
 
 %-----------------------------------------------------------------------------

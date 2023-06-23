@@ -44,10 +44,10 @@
 
 :- use_module(ciaopp(infer/infer_db),        [domain/1]).
 :- use_module(library(assertions/assrt_lib), [assertion_body/7]).
+:- use_module(ciaopp(frontend_driver), [is_library/1]).
 :- use_module(ciaopp(p_unit/assrt_db),      [assertion_read/9]).
 :- use_module(ciaopp(p_unit), [prop_to_native/2]).
 :- use_module(ciaopp(p_unit/itf_db),        [curr_file/2]).
-:- use_module(ciaopp(p_unit/aux_filenames), [is_library/1]).
 :- use_module(ciaopp(infer/infer_dom),       [knows_of/2]).
 
 :- use_module(engine(io_basic)).

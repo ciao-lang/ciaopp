@@ -1,8 +1,7 @@
 :- module(aux_filenames,[
     get_module_filename/3,
     get_loaded_module_name/3,
-    just_module_name/2,
-    is_library/1
+    just_module_name/2
    ], [assertions, isomodes]).
 
 :- doc(title,"Auxiliary file name generation").
@@ -14,16 +13,9 @@
    during the execution of ciaopp.").
 
 :- use_module(library(pathnames), [path_basename/2, path_splitext/3]).
-:- use_module(ciaopp(preprocess_flags), [current_pp_flag/2]).
-:- use_module(library(terms), [atom_concat/2]).
 :- use_module(ciaopp(p_unit/itf_db), [current_itf/3]).
 :- use_module(engine(internals), [ast_filename/2]).
 :- use_module(engine(stream_basic), [absolute_file_name/7]).
-
-:- multifile library_directory/1.
-:- dynamic(library_directory/1). % (just declaration, dynamic not needed in this module)
-:- multifile file_search_path/2.
-:- dynamic(file_search_path/2). % (just declaration, dynamic not needed in this module)
 
 :- doc(bug,"the get_module_filename/3 predicate name does not
    correspond to the real meaning. It needs a file name without
@@ -104,29 +96,5 @@ just_module_name(IM0,IM):-
         true
     ;
         IM = IM3
-    ).
-
-%% --------------------------------------------------------------------
-
-:- pred is_library(+Base).
-% Base corresponds to a library(_) or engine(_) path (if no_engine is not set)
-is_library(Base):-
-    current_pp_flag(punit_boundary,no_engine),
-    !,
-    is_library_(Base, no).
-is_library(Base):-
-    is_library_(Base, yes).
-
-is_library_(Base, AllowEngine):-
-    absolute_file_name(Base,'','.pl','.',_,_,AbsPath),
-    ( AllowEngine = yes, % (allow engine(_) paths)
-      file_search_path(engine, Path)
-    ; library_directory(Path)
-    ),
-    absolute_file_name(Path,'','.pl','.',_,_,LibPath),
-    (
-        AbsPath == LibPath, !
-    ;
-        atom_concat(LibPath,_,AbsPath)
     ).
 
