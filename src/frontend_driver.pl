@@ -402,6 +402,11 @@ is_library_(Base, AllowEngine):-
 :- use_module(typeslib(typeslib), [
     legal_user_type_pred/1, insert_user_type_pred_def/2, post_init_types/0
 ]).
+:- use_module(typeslib(typeslib), [
+    gen_lib_type_info/1,
+    load_lib_type_info/1,
+    cleanup_lib_type_info/0
+]).
 
 % (hook)
 hook_legal_regtype(Head) :-
@@ -414,6 +419,18 @@ hook_insert_regtype(Head,Cls) :-
 % (hook)
 hook_post_init_regtypes :-
     post_init_types.
+
+% (hook)
+hook_cleanup_lib_regtypes :-
+    typeslib:cleanup_lib_type_info.
+
+% (hook)
+hook_restore_lib_regtypes(Stream) :-
+    typeslib:load_lib_type_info(Stream).
+
+% (hook)
+hook_save_lib_regtypes(Stream) :-
+    typeslib:gen_lib_type_info(Stream).
 
 % ---------------------------------------------------------------------------
 % Use cached libraries

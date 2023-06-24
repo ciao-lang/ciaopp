@@ -14,4 +14,6 @@
 :- multifile hook_legal_regtype/1.
 :- multifile hook_insert_regtype/2.
 :- multifile hook_post_init_regtypes/0.
-
+:- multifile hook_cleanup_lib_regtypes/0.
+:- multifile hook_restore_lib_regtypes/1.
+:- multifile hook_save_lib_regtypes/1.

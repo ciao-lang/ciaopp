@@ -161,7 +161,6 @@ importing libraries @lib{ciaopp/p_unit}, @lib{ciaopp/p_unit/itf_db},
 :- use_module(library(stream_utils), [write_string/1]).
 :- use_module(engine(messages_basic), [message/2]).
 
-:- use_module(ciaopp(ciaopp_log), [pplog/2]).
 :- use_module(ciaopp(p_unit/assrt_db)).
 :- use_module(ciaopp(p_unit/assrt_norm)).
 :- use_module(ciaopp(p_unit/clause_db)).
@@ -278,6 +277,19 @@ preprocessing_unit_opts(Fs, Opts, Ms, E) :-
 
 % ---------------------------------------------------------------------------
 
+:- use_module(engine(messages_basic), [message/2]).
+:- use_module(engine(runtime_control), [current_prolog_flag/2]).
+
+define_flag(verbose_p_unit, [on,  off], off).
+
+:- export(p_unit_log/1).
+p_unit_log(Message) :-
+    current_prolog_flag(verbose_p_unit,on), !,
+    message(inform, Message).
+p_unit_log(_Message).
+
+% ---------------------------------------------------------------------------
+
 % TODO: (review)
 % DTM: When loading ast file, if we are adding the module to the
 % output, i.e., we add one module information to the current one (see
@@ -338,7 +350,7 @@ load_related_files([F|Fs], M) :-
     load_related_files(Fs, M).
 
 process_main_info_file(M, Opts, Base) :-
-    pplog(load_assrts,['{Processing main module ']),
+    p_unit_log(['{Processing main module ']),
     defines_module(Base, M),
     assertz_fact(processed_file(Base)),
     assert_itf(defines_module, M, _, _, Base),
@@ -373,7 +385,7 @@ process_main_info_file(M, Opts, Base) :-
     deactivate_second_translation(Base, M),
 %% initialize the (directly) related files of Base
     assert_related_files_direct(Base),
-    pplog(load_assrts,['}']).
+    p_unit_log(['}']).
 
 save_itf_info_of(Base, M, _IsMain) :-
     defines(Base, F, A, DefType, Meta),
@@ -866,7 +878,7 @@ process_related_file(Rel, Opts, Base) :-
 %       display( processed_file( Base ) ), nl,
 
     assert_itf(defines_module, M, _, _, Base),
-    pplog(load_assrts,['{Processing related module ', M]),
+    p_unit_log(['{Processing related module ', M]),
 %% .asr file
     get_module_filename(asr, Base, AsrName),
     open_asr_to_write(AsrName),
@@ -888,7 +900,7 @@ process_related_file(Rel, Opts, Base) :-
     close_asr_to_write,
     % TODO: should multifile be saved?
     save_itf_info_of(Base, M, no),
-    pplog(load_assrts,'}').
+    p_unit_log(['}']).
 
 save_exported_assertions_of(Base, M) :-
     ( % (failure-driven loop)
@@ -949,6 +961,8 @@ add_indirect_imports(CM, M, F, A) :-
 %% Library preloading info generation.
 %% ---------------------------------------------------------------------------
 
+:- include(ciaopp(p_unit/p_unit_hooks)).
+
 :- use_module(ciaopp(p_unit/itf_db), [cleanup_lib_itf/0]).
 
 :- use_module(typeslib(typeslib), [
@@ -961,7 +975,7 @@ add_indirect_imports(CM, M, F, A) :-
     # "Cleans up all preloaded assertion information.".
 cleanup_lib_sources :-
     assrt_db:cleanup_lib_assrt,
-    typeslib:cleanup_lib_type_info,
+    hook_cleanup_lib_regtypes,
     clause_db:cleanup_lib_props,
     itf_db:cleanup_lib_itf.
 
@@ -972,7 +986,7 @@ load_lib_sources(Path) :-
     load_from_file(Path, 'lib_assertion_read.pl', assrt_db:load_lib_assrt),
     load_from_file(Path, 'lib_prop_clause_read.pl', clause_db:load_lib_props),
     load_from_file(Path, 'lib_itf_db.pl', itf_db:load_lib_itf),
-    load_from_file(Path, 'lib_typedb.pl', typeslib:load_lib_type_info).
+    load_from_file(Path, 'lib_typedb.pl', hook_restore_lib_regtypes).
 
 :- meta_predicate load_from_file(?, ?, pred(1)).
 load_from_file(Path, Name, Pred) :-
@@ -998,7 +1012,7 @@ gen_lib_sources(Path) :-
     write_to_file(Path, 'lib_assertion_read.pl', assrt_db:gen_lib_assrt),
     write_to_file(Path, 'lib_prop_clause_read.pl', gen_lib_props),
     write_to_file(Path, 'lib_itf_db.pl', dump_lib_itf),
-    write_to_file(Path, 'lib_typedb.pl', typeslib:gen_lib_type_info),
+    write_to_file(Path, 'lib_typedb.pl', hook_save_lib_regtypes),
     pop_prolog_flag(write_strings).
 
 :- meta_predicate write_to_file(?, ?, pred(1)).
@@ -1117,12 +1131,12 @@ read_asr_file(AsrName) :-
         asr_version(V),
         read(Stream, v(V)),
         !,
-        pplog(load_assrts,['{Reading ', AsrName]),
+        p_unit_log(['{Reading ', AsrName]),
         read_asr_data_loop(AsrName, Stream),
         close(Stream),
-        pplog(load_assrts,['}'])
+        p_unit_log(['}'])
     ;
-        pplog(load_assrts,['{Old version in ', AsrName, '}']),
+        p_unit_log(['{Old version in ', AsrName, '}']),
         close(Stream),
         fail
     ).

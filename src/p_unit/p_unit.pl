@@ -47,7 +47,7 @@
     cleanup_punit/0, % TODO: update with other cleanup_* preds here
     %
     get_call_from_call_assrt/7
-], [assertions, basicmodes, regtypes, datafacts, hiord, nativeprops]).
+], [assertions, basicmodes, regtypes, datafacts, hiord, nativeprops, define_flag]).
 
 :- use_package(ciaopp(p_unit/p_unit_argnames)).
 
@@ -74,8 +74,6 @@
 :- use_module(ciaopp(p_unit/clause_db)).
 :- use_module(ciaopp(p_unit/program_keys),
     [clause_key/2,cleanup_program_keys/0,rewrite_source_clause/3, clause/1]).
-:- use_module(ciaopp(p_unit/unexpand),
-    [ generate_unexpanded_data/1, clean_unexpanded_data/0, unexpand_meta_calls/2]).
 :- use_module(ciaopp(p_unit/native),
     [ builtin/2, native_prop_map/3, native_prop_term/1, native_property/2]).
 
@@ -580,6 +578,7 @@ new_internal_predicate(F,A,NewF):-
 % ---------------------------------------------------------------------------
 :- doc(section, "Native props").
 
+:- use_module(ciaopp(p_unit/unexpand), [unexpand_meta_calls/2]).
 :- use_module(library(streams)).
 
 :- redefining(native/2). % also in basic_props % TODO: rename?
@@ -722,9 +721,9 @@ native_to_prop_visible(NProp,NProp).
 % ---------------------------------------------------------------------------
 :- doc(section, "Inject packages for output (post-preprocessing unit)"). % TODO: per module?
 
+:- use_module(engine(runtime_control), [statistics/2]).
 :- use_module(engine(stream_basic), [absolute_file_name/7]).
-:- use_module(ciaopp(ciaopp_log), [pplog/2]).
-:- use_module(ciaopp(analysis_stats), [pp_statistics/2]).
+:- use_module(ciaopp(p_unit/p_asr), [p_unit_log/1]).
 
 :- pred inject_output_package(A) : atm(A)
    # "Inject the package @var{A} in the current program database (including the
@@ -741,13 +740,15 @@ inject_output_package(A) :-
     ; % warning_message("Adding package '~q', required for assertion-based output. Update the package list to remove this warning.",[A]),
       atom_concat('wrap_', A, AWrapper), % TODO: using custom modules (under ciaopp/lib/) include those packages (sometimes as reduced versions)
       absolute_file_name(library(AWrapper),'_opt','.pl','.',_,File,_),
-      pp_statistics(runtime,[T0,_]),
+      statistics(runtime,[T0,_]),
       load_package_info(M, File),
-      pp_statistics(runtime,[T1,_]),
+      statistics(runtime,[T1,_]),
       TotalT is T1 - T0,
-      pplog(load_module, ['{adding missing package ',~~(A), ' in ',time(TotalT), ' msec.}']),
+      p_unit_log(['{adding missing package ',~~(A), ' in ',time(TotalT), ' msec.}']),
       add_output_package(A)
     ).
+
+:- use_module(ciaopp(p_unit/unexpand), [generate_unexpanded_data/1, clean_unexpanded_data/0]).
 
 load_package_info(M, File) :-
     set_ciaopp_expansion(true), % TODO: try to avoid this
