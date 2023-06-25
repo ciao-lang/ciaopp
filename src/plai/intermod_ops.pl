@@ -30,9 +30,17 @@
 :- use_module(library(terms_check), [variant/2]).
 :- use_module(library(messages)).
 
+:- use_module(library(compiler/p_unit/itf_db), [
+    current_itf/3, curr_file/2, get_module_from_sg/2
+]).
+:- use_module(library(compiler/p_unit/aux_filenames), [
+    get_module_filename/3, just_module_name/2, get_loaded_module_name/3
+]).
+:- use_module(library(compiler/p_unit/program_keys), [
+    decode_litkey/5, predkey_from_sg/2, get_predkey/3
+]).
+
 % CiaoPP libraries %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-:- use_module(ciaopp(p_unit/itf_db),
-              [current_itf/3, curr_file/2, get_module_from_sg/2]).
 :- use_module(ciaopp(infer/infer_db), [domain/1]).
 :- use_module(ciaopp(preprocess_flags), [current_pp_flag/2]).
 :- use_module(ciaopp(analysis_stats), [pp_statistics/2]).
@@ -43,10 +51,6 @@
               needs/2]).
 :- use_module(ciaopp(plai/auxinfo_dump)).
 :- use_module(ciaopp(frontend_driver), [is_library/1]).
-:- use_module(ciaopp(p_unit/aux_filenames), [
-    get_module_filename/3, just_module_name/2, get_loaded_module_name/3]).
-:- use_module(ciaopp(p_unit/program_keys),
-              [decode_litkey/5, predkey_from_sg/2, get_predkey/3]).
 
 :- use_module(spec(spec_multiple), [publish_pred_name/2, get_version_name/4]).
 

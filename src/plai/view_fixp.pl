@@ -16,7 +16,7 @@
 :- use_module(library(graphs/ugraphs), [vertices_edges_to_ugraph/3]).
 :- use_module(library(write), [numbervars/3]).
 
-:- use_module(ciaopp(p_unit/program_keys), [predkey_from_sg/2]).
+:- use_module(library(compiler/p_unit/program_keys), [predkey_from_sg/2]).
 :- use_module(ciaopp(plai/domains), [call_to_entry/10, project/6]).
 :- use_module(ciaopp(plai/trace_fixp), [trace_fixp/1]).
 

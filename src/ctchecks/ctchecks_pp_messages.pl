@@ -6,7 +6,7 @@
     message_clause_incompatible/5
 ], [assertions, regtypes]).
 
-:- use_package(ciaopp(p_unit/p_unit_argnames)).
+:- use_package(library(compiler/p_unit/p_unit_argnames)).
 
 :- use_module(library(formulae), [list_to_conj/2]).
 :- use_module(library(lists),    [append/3]).
@@ -16,10 +16,10 @@
 :- use_module(library(write),  [numbervars/3, prettyvars/1]).
 
 :- use_module(library(assertions/assrt_lib), [prop_unapply/3]).
-:- use_module(ciaopp(p_unit/clause_db), [maybe_clause_locator/2]).
-%:- use_module(ciaopp(p_unit/clause_db), [clause_locator/2]).
-:- use_module(ciaopp(p_unit), [prop_to_native/2]).
-:- use_module(ciaopp(p_unit/program_keys),
+:- use_module(library(compiler/p_unit/clause_db), [maybe_clause_locator/2]).
+%:- use_module(library(compiler/p_unit/clause_db), [clause_locator/2]).
+:- use_module(library(compiler/p_unit), [prop_to_native/2]).
+:- use_module(library(compiler/p_unit/program_keys),
               [decode_litkey/5, get_predkey/3, get_clkey/4]).
 
 :- use_module(typeslib(typeslib), [pretty_type_lit_rules/4]).

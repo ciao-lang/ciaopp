@@ -12,7 +12,7 @@
     ],
     [assertions, regtypes, datafacts, ciaopp(ciaopp_options), nativeprops]).
 
-:- use_package(ciaopp(p_unit/p_unit_argnames)).
+:- use_package(library(compiler/p_unit/p_unit_argnames)).
 
 :- if(defined(has_ciaopp_cost)).
 %[LD] for interval
@@ -52,9 +52,9 @@
     ]).
 :- endif.
 %
-:- use_module(ciaopp(p_unit), [native_to_prop/2, prop_to_native/2]).
+:- use_module(library(compiler/p_unit), [native_to_prop/2, prop_to_native/2]).
+:- use_module(library(compiler/p_unit/assrt_norm), [norm_goal_prop/3]).
 :- use_module(ciaopp(plai/domains), [abs_sort/3]).
-:- use_module(ciaopp(p_unit/assrt_norm), [norm_goal_prop/3]).
 :- use_module(spec(abs_exec),      [abs_exec/4, determinable/2]).
 :- use_module(spec(abs_exec_cond), [cond/4]).
 :- use_module(spec(abs_exec_ops), [adapt_info_to_assrt_head/6]).

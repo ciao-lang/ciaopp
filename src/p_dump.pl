@@ -38,11 +38,11 @@
 %% --------------------------------------------------------------------
 
 % clauses
-:- use_module(ciaopp(p_unit/clause_db), [source_clause/3, cleanup_clause_db/0]).
+:- use_module(library(compiler/p_unit/clause_db), [source_clause/3, cleanup_clause_db/0]).
 :- use_module(ciaopp(plai/transform), [trans_clause_/6]).
 
 % assertions
-:- use_module(ciaopp(p_unit/assrt_db), [pgm_assertion_read/9]).
+:- use_module(library(compiler/p_unit/assrt_db), [pgm_assertion_read/9]).
 :- use_module(ciaopp(plai/apply_assertions),
     [call_asr/5, success_asr/6]). % assertions translated to some domain
 

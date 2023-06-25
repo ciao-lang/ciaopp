@@ -24,7 +24,7 @@ builtins").
     [can_continue/3,
      decide_arith_simp/2]).
 
-:- use_module(ciaopp(p_unit), [type_of_goal/2]).
+:- use_module(library(compiler/p_unit), [type_of_goal/2]).
 
 :- use_module(library(lists), [member/2, reverse/2, append/3]).
 

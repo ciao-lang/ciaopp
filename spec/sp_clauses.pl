@@ -19,8 +19,8 @@
 
 :- use_module(spec(ch_trees), [clean_up_ch_trees/0]).
 :- use_module(spec(unfold_builtins), [init_cut_predicates/0, decide_has_cuts/3 ]).
-:- use_module(ciaopp(p_unit), [ program/2]).
-:- use_module(ciaopp(p_unit/program_keys), [inverse_rewrite_source_program/2]).
+:- use_module(library(compiler/p_unit), [ program/2]).
+:- use_module(library(compiler/p_unit/program_keys), [inverse_rewrite_source_program/2]).
 :- use_module(spec(unfold_operations), [body2list/2, list2body/2]).
 
 :- use_module(ciaopp(preprocess_flags)).

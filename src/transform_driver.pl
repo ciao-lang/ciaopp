@@ -46,12 +46,12 @@
 % ===========================================================================
 :- doc(section, "Program transformation").
     
-:- use_module(ciaopp(p_unit/itf_db), [curr_file/2]).
-:- use_module(ciaopp(p_unit), [program/2]). 
+:- use_module(library(compiler/p_unit/itf_db), [curr_file/2]).
+:- use_module(library(compiler/p_unit), [program/2]). 
 :- use_module(ciaopp(frontend_driver), [push_history/1]).
 
 :- if(defined(with_fullpp)).
-:- use_module(ciaopp(p_unit), [replace_program/2]).
+:- use_module(library(compiler/p_unit), [replace_program/2]).
 
 :- use_module(ciaopp(plai/normalize_args), [normalize_args/4]).
 

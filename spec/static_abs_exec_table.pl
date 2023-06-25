@@ -8,7 +8,7 @@
       libraries. This table now coexists with a dynamic table and may
       be replaced by it in the future.").
 
-:- use_module(ciaopp(p_unit), [language/1]).
+:- use_module(library(compiler/p_unit), [language/1]).
 
 :- doc(bug,"1. Handling of ground should be improved so that it is
    done by assertions and also calls to ground with lists of variables is

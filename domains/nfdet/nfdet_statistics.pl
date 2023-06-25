@@ -1,10 +1,10 @@
 :- module(nfdet_statistics, [nfdet_statistics/7], [hiord, fsyntax, assertions]).
 
-:- use_module(ciaopp(p_unit), [predicate_names/1]).
+:- use_module(library(compiler/p_unit), [predicate_names/1]).
 :- use_module(library(lists), [member/2, length/2]).
 :- use_module(library(aggregates), [findall/3]).
 :- use_module(ciaopp(plai/plai_db), [complete/7]).
-:- use_module(ciaopp(p_unit/program_keys), [get_predkey/3]).
+:- use_module(library(compiler/p_unit/program_keys), [get_predkey/3]).
 
 nfdet_statistics(AbsDomain, S, Total, NF_Preds, Cov_Preds, NF_Variants, Cov_Variants):-
     predicate_names(Pred_Names),

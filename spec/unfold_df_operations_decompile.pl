@@ -39,8 +39,8 @@
 :- use_module(ciaopp(plai/domains), [call_to_entry/10]).
 :- use_module(ciaopp(plai/transform), [trans_clause/3]).
 
-:- use_module(ciaopp(p_unit), [type_of_goal/2, prop_to_native/2]).
-:- use_module(ciaopp(p_unit/program_keys), [predkey_from_sg/2]).
+:- use_module(library(compiler/p_unit), [type_of_goal/2, prop_to_native/2]).
+:- use_module(library(compiler/p_unit/program_keys), [predkey_from_sg/2]).
 
 :- use_module(ciaopp(preprocess_flags), [current_pp_flag/2]).
 

@@ -44,7 +44,7 @@
 :- dom_impl(fr, empty_entry/3).
 % TODO: body_succ_builtin/9: (old comment) these do not have special(_), so ok: AbsInt \== def, AbsInt \== fr, AbsInt \== frdef
 
-:- use_module(ciaopp(p_unit), [language/1]).
+:- use_module(library(compiler/p_unit), [language/1]).
 :- use_module(ciaopp(plai/plai_errors), [compiler_error/1]).
 
 :- use_module(domain(fr_sets)).

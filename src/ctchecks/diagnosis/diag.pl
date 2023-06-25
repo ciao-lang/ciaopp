@@ -15,7 +15,7 @@
 
 % ciaopp stuff
 :- use_module(ciaopp(plai/plai_db), [complete/7, memo_table/6]).
-:- use_module(ciaopp(p_unit/clause_db), [source_clause/3, maybe_clause_locator/2]).
+:- use_module(library(compiler/p_unit/clause_db), [source_clause/3, maybe_clause_locator/2]).
 :- use_module(ciaopp(plai/domains), [project/5,
     project/6,
     call_to_entry/10, 
@@ -27,8 +27,8 @@
     info_to_asub/7,
     extend/6,
     less_or_equal/3]).
-:- use_module(ciaopp(p_unit/p_unit_basic), [type_of_goal/2]).
-:- use_module(ciaopp(p_unit/program_keys), [decode_litkey/5, is_clkey/1]).
+:- use_module(library(compiler/p_unit/p_unit_basic), [type_of_goal/2]).
+:- use_module(library(compiler/p_unit/program_keys), [decode_litkey/5, is_clkey/1]).
 
 % ciao libs
 :- use_module(library(assertions/assrt_lib), [prop_apply/3,prop_unapply/3]).

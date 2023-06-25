@@ -9,9 +9,9 @@
 %% :- use_module(spec(unfold_builtins), [peel_call/2]).
 :- use_module(spec(modular_spec), [dyn_abs_spec/5]).
 :- use_module(spec(abs_exec_cond), [type_of/4]). %PLG
-:- use_module(ciaopp(p_unit), [prop_to_native/2]).
-:- use_module(ciaopp(p_unit/assrt_db), [assertion_read/9]). %PLG
-:- use_module(ciaopp(p_unit/program_keys), [predkey_from_sg/2]). %PLG
+:- use_module(library(compiler/p_unit), [prop_to_native/2]).
+:- use_module(library(compiler/p_unit/assrt_db), [assertion_read/9]). %PLG
+:- use_module(library(compiler/p_unit/program_keys), [predkey_from_sg/2]). %PLG
 :- use_module(ciaopp(ctchecks/ctchecks_pred), [decide_get_info/4]). %PLG
 :- use_module(ciaopp(plai/domains), [abs_sort/3]). %PLG
 :- use_module(library(assertions/assrt_lib), [denorm_goal_prop/3]).

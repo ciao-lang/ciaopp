@@ -12,7 +12,7 @@ calls, and, optionally, generates entries automatically for the meta calls.").
 :- use_module(library(lists), [member/2, intersection/3, append/3]).
 :- use_module(library(sort), [sort/2]).
 
-:- use_module(ciaopp(p_unit), [type_of_goal/2]).
+:- use_module(library(compiler/p_unit), [type_of_goal/2]).
 :- use_module(ciaopp(plai/psets), [ord_remove/3]).
 
 :- use_module(ciaopp(preprocess_flags), [current_pp_flag/2]).
@@ -462,8 +462,8 @@ is_rec_clause([_|_],N,A,r,[N/A|RPs],RPs).
 
 :- doc(section, "Preproc meta calls").
 
-:- use_module(ciaopp(p_unit/itf_db)).
-:- use_module(ciaopp(p_unit/assrt_db)).
+:- use_module(library(compiler/p_unit/itf_db)).
+:- use_module(library(compiler/p_unit/assrt_db)).
 % Add entries for all the calls to meta_predicates
 
 :- pred create_entries(+Goal,+Type,+Meta,+Mod) #"@var{Meta} is the info in the

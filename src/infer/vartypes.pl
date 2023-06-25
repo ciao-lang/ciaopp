@@ -4,8 +4,8 @@
 :- use_module(ciaopp(infer/infer_db), [inferred/3]).
 :- use_module(ciaopp(infer/infer_dom), [knows_of/2]).
 
-:- use_module(ciaopp(p_unit), [prop_to_native/2]).
-:- use_module(ciaopp(p_unit/program_keys), [get_predkey/3]).
+:- use_module(library(compiler/p_unit), [prop_to_native/2]).
+:- use_module(library(compiler/p_unit/program_keys), [get_predkey/3]).
 
 :- use_module(typeslib(typeslib), [set_top_type/1]).
 :- use_module(ciaopp(plai/domains), [asub_to_info/5, unknown_entry/4]).

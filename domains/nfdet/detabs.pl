@@ -28,7 +28,7 @@
 :- use_module(domain(s_eqs), [peel/4]).
 :- use_module(domain(nfdet/nfdet_statistics)).
 :- use_module(domain(nfdet/nfdetabs), [pred_test/1, tests/5, clause_test/1, unfold_t/1]).
-:- use_module(ciaopp(p_unit/program_keys), [predkey_from_sg/2]).
+:- use_module(library(compiler/p_unit/program_keys), [predkey_from_sg/2]).
 
 :- use_module(library(idlists), [memberchk/2]).
 :- use_module(library(lists), [member/2, append/3]).

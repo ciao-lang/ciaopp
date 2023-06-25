@@ -144,8 +144,8 @@ generated when transforming the code can be modified.
 :- use_module(ciaopp(frontend_driver), [module/2]).
 :- use_module(ciaopp(analyze_driver), [clean_analysis_info/0]).
 :- use_module(ciaopp(preprocess_flags)).
-:- use_module(ciaopp(p_unit/clause_db), [cleanup_clause_db/0]).
-:- use_module(ciaopp(p_unit/program_keys), [get_predkey/3]).
+:- use_module(library(compiler/p_unit/clause_db), [cleanup_clause_db/0]).
+:- use_module(library(compiler/p_unit/program_keys), [get_predkey/3]).
 :- use_module(ciaopp(plai/fixpo_dd), ['$change_list'/3]).
 %:- use_module(typeslib(typeslib), [cleanup_types/0]).
 
@@ -319,7 +319,7 @@ all_clauses_pred([Cl|Cls], F/A, PredCls, NCls) :-
     ),
     all_clauses_pred(Cls, F/A, PredCls1, NCls1).
 
-:- use_module(ciaopp(p_unit/assrt_db), [pgm_assertion_read/9]).
+:- use_module(library(compiler/p_unit/assrt_db), [pgm_assertion_read/9]).
 
 :- pred assrts_diff(Assrts1, Assrts2, Diff) #"Computes the differences of
     assertions for each predicate separately".

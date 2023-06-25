@@ -13,7 +13,7 @@
 :- use_module(spec(unfold_builtins), [execute/1]).
 
 :- use_module(library(assertions/assrt_lib), [assertion_body/7]).
-:- use_module(ciaopp(p_unit/assrt_db), [assertion_read/9]).
+:- use_module(library(compiler/p_unit/assrt_db), [assertion_read/9]).
 
 :- use_module(library(lists), [member/2]).
 

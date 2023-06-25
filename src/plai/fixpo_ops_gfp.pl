@@ -46,7 +46,7 @@
 :- use_module(ciaopp(plai/apply_assertions_old), [apply_trusted/7, apply_trusted_each/7]).
 :- use_module(ciaopp(plai/plai_db), [complete/7, memo_table/6]).
 :- use_module(ciaopp(preprocess_flags), [current_pp_flag/2]).
-:- use_module(ciaopp(p_unit/program_keys), [predkey_from_sg/2]).
+:- use_module(library(compiler/p_unit/program_keys), [predkey_from_sg/2]).
 
 :- use_module(library(sort), [sort/2]).  
 :- use_module(library(terms_vars), [varset/2]).

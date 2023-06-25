@@ -20,7 +20,7 @@
 :- use_module(spec(spec_multiple), 
     [second_components/2, simplif/3, equalities/2]).
 
-:- use_module(ciaopp(p_unit/program_keys), [get_predkey/3]).
+:- use_module(library(compiler/p_unit/program_keys), [get_predkey/3]).
 :- use_module(ciaopp(plai/plai_db), [complete/7]).
 
 :- use_module(library(idlists), [memberchk/2]).

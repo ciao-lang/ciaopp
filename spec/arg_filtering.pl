@@ -12,7 +12,7 @@
 
 :- use_module(ciaopp(plai/fixpo_ops), [collect_exported_completes/2]).
 
-:- use_module(ciaopp(p_unit/itf_db), [assert_itf/5]).
+:- use_module(library(compiler/p_unit/itf_db), [assert_itf/5]).
 
 :- use_module(library(terms),      [copy_args/3]). 
 :- use_module(library(terms_vars), [varset/2]). 

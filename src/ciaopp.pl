@@ -188,7 +188,7 @@ Other commands useful when developing or debugging CiaoPP:
 
 :- use_module(ciaopp(preprocess_flags), [current_pp_flag/2]).
 :- use_module(ciaopp(frontend_driver), [is_library/1]).
-:- use_module(ciaopp(p_unit/itf_db), [current_itf/3, preloaded_module/2, curr_file/2]).
+:- use_module(library(compiler/p_unit/itf_db), [current_itf/3, preloaded_module/2, curr_file/2]).
 :- use_module(engine(runtime_control), [module_split/3]).
 
 % TODO: move somewhere else?
@@ -237,7 +237,7 @@ interesting_module(Module,_) :-
 % TODO: optional?
 
 :- if(defined(with_fullpp)).
-:- reexport(ciaopp(p_unit/p_asr), [show_asr/1]).
+:- reexport(library(compiler/p_unit/p_asr), [show_asr/1]).
 :- doc(hide,show_asr/1).
 :- endif.
 

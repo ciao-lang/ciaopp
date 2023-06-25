@@ -13,7 +13,7 @@
 :- use_module(ciaopp(analyze_driver)).
 
 :- use_module(ciaopp(plai), [generate_trans_clauses/4]).
-:- use_module(ciaopp(p_unit), [program/2]).
+:- use_module(library(compiler/p_unit), [program/2]).
 :- use_module(ciaopp(plai/transform), [trans_clause/3]).
 :- use_module(ciaopp(plai/tarjan), [recursive_classes/1]).
 

@@ -31,10 +31,10 @@
 % ---------------------------------------------------------------------------
 % (Common)
 
-:- use_package(ciaopp(p_unit/p_unit_argnames)).
-:- use_module(ciaopp(p_unit), [get_output_package/1]).
+:- use_package(library(compiler/p_unit/p_unit_argnames)).
+:- use_module(library(compiler/p_unit), [get_output_package/1]).
 
-:- use_module(ciaopp(p_unit/p_printer)).
+:- use_module(library(compiler/p_unit/p_printer)).
 
 :- use_module(ciaopp(ciaopp_log), [pplog/2]).
 :- use_module(ciaopp(analysis_stats), [pp_statistics/2]).
@@ -45,7 +45,7 @@
 
 :- use_module(library(aggregates), [findall/3]).
 
-:- include(ciaopp(p_unit/p_unit_hooks)).
+:- include(library(compiler/p_unit/p_unit_hooks)).
 
 % ===========================================================================
 :- doc(section, "Frontend languages").
@@ -207,13 +207,13 @@ call_to_sockets_init.
 :- use_module(engine(stream_basic), [sourcename/1, absolute_file_name/7]).
 :- use_module(engine(runtime_control), [push_prolog_flag/2, pop_prolog_flag/1]).
 
-:- use_module(ciaopp(p_unit), [preprocessing_unit/3]). 
+:- use_module(library(compiler/p_unit), [preprocessing_unit/3]). 
 % :- use_module(typeslib(typeslib),[assert_initial_types/0]). 
-:- use_module(ciaopp(p_unit/unexpand), [ 
+:- use_module(library(compiler/p_unit/unexpand), [ 
     generate_unexpanded_data/1, % TODO: kludge?
     clean_unexpanded_data/0     % TODO: kludge?
    ]).
-:- use_module(ciaopp(p_unit/itf_db), [curr_module/1, curr_file/2]).
+:- use_module(library(compiler/p_unit/itf_db), [curr_module/1, curr_file/2]).
 
 % (support for incremental analysis)
 :- use_module(ciaopp(plai/incanal), [incremental_module/2]).
@@ -330,8 +330,8 @@ detect_language_from_list(_, Lang) :- Lang = ciao.
 % ---------------------------------------------------------------------------
 
 :- use_module(library(assertions/assrt_lib), [assertion_body/7]).
-:- use_module(ciaopp(p_unit/assrt_db), [assertion_read/9]).
-:- use_module(ciaopp(p_unit/native), [builtin/2]).
+:- use_module(library(compiler/p_unit/assrt_db), [assertion_read/9]).
+:- use_module(library(compiler/p_unit/native), [builtin/2]).
 
 :- export(entry_assertion/3).
 :- pred entry_assertion(Goal,Call,Name) => cgoal(Goal)
@@ -438,7 +438,7 @@ hook_save_lib_regtypes(Stream) :-
 % Lib cache to load faster (requires running gen_lib_cache command)
 
 :- use_module(library(persdb/datadir), [ensure_datadir/2]).
-:- use_module(ciaopp(p_unit/p_asr), [load_lib_sources/1, loaded_lib_sources/0]).
+:- use_module(library(compiler/p_unit/p_asr), [load_lib_sources/1, loaded_lib_sources/0]).
 
 :- export(ensure_lib_sources_loaded/0).
 
@@ -462,10 +462,10 @@ warn_no_cache :-
 % Cleanup
 :- use_module(ciaopp(analyze_driver), [clean_analysis_info/0]).
 :- use_module(ciaopp(plai/intermod_ops), [cleanup_p_abs/0]).
-:- use_module(ciaopp(p_unit/itf_db), [cleanup_itf_db/0]).
-:- use_module(ciaopp(p_unit), [cleanup_punit/0, cleanup_comment_db/0]).
-:- use_module(ciaopp(p_unit), [pr_key_clean/0, cleanup_commented_assrt/0]).
-:- use_module(ciaopp(p_unit/p_asr), [cleanup_code_and_related_assertions/0, cleanup_pasr/0]).
+:- use_module(library(compiler/p_unit/itf_db), [cleanup_itf_db/0]).
+:- use_module(library(compiler/p_unit), [cleanup_punit/0, cleanup_comment_db/0]).
+:- use_module(library(compiler/p_unit), [pr_key_clean/0, cleanup_commented_assrt/0]).
+:- use_module(library(compiler/p_unit/p_asr), [cleanup_code_and_related_assertions/0, cleanup_pasr/0]).
 %
 % TODO: make sure that it does what it is documented (are domains, types, etc. cleanup?)
 :- pred cleanup_all # "Cleanup the whole CiaoPP state (equivalent to
@@ -504,9 +504,9 @@ perform_transformations([E|Ls]) :-
 :- use_module(library(pathnames)).
 :- use_module(library(lists)).
 
-:- use_module(ciaopp(p_unit), [internal_predicate_names/1]).
-:- use_module(ciaopp(p_unit/itf_db),   [curr_file/2]).
-:- use_module(ciaopp(p_unit/unexpand),
+:- use_module(library(compiler/p_unit), [internal_predicate_names/1]).
+:- use_module(library(compiler/p_unit/itf_db),   [curr_file/2]).
+:- use_module(library(compiler/p_unit/unexpand),
               [transform_clause_list/3, transform_name/3]).
 
 :- if(defined(with_fullpp)).
@@ -771,7 +771,7 @@ analysis_info_to_assertions.
 :- use_module(library(formulae), [llist_to_disj/2]).
 
 :- use_module(ciaopp(infer/infer_db), [domain/1, point_info/5]).
-:- use_module(ciaopp(p_unit), [type_of_goal/2]).
+:- use_module(library(compiler/p_unit), [type_of_goal/2]).
 
 % (hook)
 % (get info necessary for hook_pp_info_lit)
@@ -839,7 +839,7 @@ output_by_ext('.pl', Stream) :- !,
 % Recover header declarations from the original source
 % (EMM)
 
-:- use_module(ciaopp(p_unit/clause_db), [source_clause/3]).
+:- use_module(library(compiler/p_unit/clause_db), [source_clause/3]).
 
 % TODO: MH: may be incorrect? Needs revision!
 
@@ -882,9 +882,9 @@ write_mod_headers(Stream) :-
 :- else.
 
 :- use_module(library(write),      [writeq/2]).
-:- use_module(ciaopp(p_unit/unexpand),   [transform_body/3]).
-:- use_module(ciaopp(p_unit),     [type_of_goal/2]).
-:- use_module(ciaopp(p_unit/itf_db), [current_itf/3]).
+:- use_module(library(compiler/p_unit/unexpand),   [transform_body/3]).
+:- use_module(library(compiler/p_unit),     [type_of_goal/2]).
+:- use_module(library(compiler/p_unit/itf_db), [current_itf/3]).
 
 write_mod_headers(S) :-
     curr_file(_, Mod), % TODO: is it correct?
@@ -1031,8 +1031,8 @@ hook_compact_calls_prop(intervals(_, G, _, L), intervals(S, L)) :-
 % ---------------------------------------------------------------------------
 
 :- use_module(library(bundle/bundle_paths), [bundle_path/3]).
-:- use_module(ciaopp(p_unit/p_asr), [gen_lib_sources/1]).
-:- use_module(ciaopp(p_unit/itf_db), [fake_module_name/1]).
+:- use_module(library(compiler/p_unit/p_asr), [gen_lib_sources/1]).
+:- use_module(library(compiler/p_unit/itf_db), [fake_module_name/1]).
 
 :- export(cache_and_preload_lib_sources/0).
 :- pred cache_and_preload_lib_sources/0

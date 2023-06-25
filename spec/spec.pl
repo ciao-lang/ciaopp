@@ -56,8 +56,8 @@
 :- use_module(ciaopp(plai/domains), [call_to_entry/10, abs_sort/3, concrete/4]).
 :- use_module(ciaopp(plai/plai_db), [complete/7, memo_table/6]).
 
-:- use_module(ciaopp(p_unit), [predicate_names/1]).
-:- use_module(ciaopp(p_unit/program_keys), [get_predkey/3, predkey_from_sg/2]).
+:- use_module(library(compiler/p_unit), [predicate_names/1]).
+:- use_module(library(compiler/p_unit/program_keys), [get_predkey/3, predkey_from_sg/2]).
 
 :- use_module(spec(unfold_builtins), [translate_lattice_types/4]).
 
@@ -97,7 +97,7 @@
 
 :- use_module(spec(spec_delay)).
 %% :- use_module(spec(unfold_bultins), [peel_call/2]).
-:- use_module(ciaopp(p_unit), [prop_to_native/2]).
+:- use_module(library(compiler/p_unit), [prop_to_native/2]).
 
 :- doc(bug,"Types defined but not called dissapear!").
 

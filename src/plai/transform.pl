@@ -16,8 +16,8 @@
 :- use_module(library(sets), [ord_member/2]).
 :- use_module(library(terms_vars), [varset/2]).
 
-:- use_module(ciaopp(p_unit/program_keys), [predkey_from_sg/2]).
-:- use_module(ciaopp(p_unit), [type_of_goal/2]).
+:- use_module(library(compiler/p_unit/program_keys), [predkey_from_sg/2]).
+:- use_module(library(compiler/p_unit), [type_of_goal/2]).
 :- use_module(ciaopp(plai/domains), [combined_special_builtin0/3, special_builtin/6]).
 
 %------------------------------------------------------------------------%

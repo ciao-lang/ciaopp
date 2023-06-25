@@ -27,9 +27,9 @@
 :- use_module(engine(io_basic)).
 :- use_module(library(write), [write/2]).
 
-:- use_module(ciaopp(p_unit/program_keys),
+:- use_module(library(compiler/p_unit/program_keys),
     [null_directive_key/1,get_predkey/3, predkey_from_sg/2, make_atom/2]).
-:- use_module(ciaopp(p_unit), [type_of_goal/2]).
+:- use_module(library(compiler/p_unit), [type_of_goal/2]).
 
 % plai library
 :- use_module(spec(s_simpspec), [next_pred/2]).
@@ -70,7 +70,7 @@
      record_latest_replacement/3,
      change_call/3]).
 
-:- use_module(ciaopp(p_unit/program_keys), [decode_litkey/5]).
+:- use_module(library(compiler/p_unit/program_keys), [decode_litkey/5]).
 
 %-------------------------------------------------------------------%
 % simp_body_list_del(+,+,-,+,-,+,-)                                 %

@@ -34,7 +34,7 @@
 :- use_module(ciaopp(plai/domains),            [abs_sort/3]).
 :- use_module(ciaopp(plai/plai_db),            [memo_table/6]).
 :- use_module(library(terms),           [copy_args/3]).
-:- use_module(ciaopp(p_unit),          [type_of_goal/2]).
+:- use_module(library(compiler/p_unit),          [type_of_goal/2]).
 :- use_module(ciaopp(pool),             [there_is_delay/0]).
 :- use_module(ciaopp(plai/plai_errors),        [compiler_error/1]).
 

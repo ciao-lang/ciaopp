@@ -90,20 +90,19 @@
 :- doc(bug, "Study with more detail if replacing check by trust
    assertions produces a similar effect than this transformation.").
 
-:- use_package(ciaopp(p_unit/p_unit_argnames)).
+:- use_package(library(compiler/p_unit/p_unit_argnames)).
 
-:- use_module(ciaopp(p_unit), [replace_program/2]).
-:- use_module(ciaopp(p_unit/tr_syntax), [traverse_clauses/5]).
-%:- use_module(ciaopp(preprocess_flags), [current_pp_flag/2]).
-:- use_module(ciaopp(p_unit/program_keys),
-    [ clause_key/2, rewrite_source_clause/3
-%         inverse_rewrite_source_program/2
-    ]).
-:- use_module(ciaopp(p_unit), [add_directive/1]).
-:- use_module(ciaopp(p_unit/clause_db), [maybe_clause_locator/2, add_clause_locator/2]).
+:- use_module(library(compiler/p_unit), [replace_program/2]).
+:- use_module(library(compiler/p_unit/tr_syntax), [traverse_clauses/5]).
+:- use_module(library(compiler/p_unit/program_keys), [
+    clause_key/2, rewrite_source_clause/3
+]).
+:- use_module(library(compiler/p_unit), [add_directive/1]).
+:- use_module(library(compiler/p_unit/clause_db), [maybe_clause_locator/2, add_clause_locator/2]).
+
 :- use_module(library(vndict), [create_pretty_dict/2]). 
 :- use_module(library(assertions/assrt_lib), [assertion_body/7]).
-:- use_module(ciaopp(p_unit/assrt_db), [
+:- use_module(library(compiler/p_unit/assrt_db), [
     assertion_read/9,
     add_assertion_read/9,
     pgm_assertion_read/9]).
@@ -158,9 +157,9 @@ rewrite_clauses([clause(H,B):Key|Cs0], [D|Ds0], Cs, Ds) :-
 rewrite_clauses([C|Cs0], [D|Ds0], [C|Cs], [D|Ds]) :-
     rewrite_clauses(Cs0, Ds0, Cs, Ds).
 
-:- use_module(ciaopp(p_unit/itf_base_db), [defines/3, impl_defines/2]).
+:- use_module(library(compiler/p_unit/itf_base_db), [defines/3, impl_defines/2]).
 
-:- use_module(ciaopp(p_unit/clause_db), [source_clause/3]).
+:- use_module(library(compiler/p_unit/clause_db), [source_clause/3]).
 
 % % TODO: Adding impl_defined of the predicate does not work: assertions are not written
 % add_link_clause(N, A, Loc, Cs, Cs1, Ds, Ds1) :-

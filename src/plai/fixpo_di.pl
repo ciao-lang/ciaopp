@@ -28,8 +28,8 @@
 
 :- use_module(ciaopp(plai/acc_ops)).
 
-:- use_module(ciaopp(p_unit/program_keys), [decode_litkey/5]).
-:- use_module(ciaopp(p_unit), [type_of_goal/2]).
+:- use_module(library(compiler/p_unit/program_keys), [decode_litkey/5]).
+:- use_module(library(compiler/p_unit), [type_of_goal/2]).
 :- use_module(ciaopp(plai/intermod_success), [apply_success_policy/9]).
 :- use_module(ciaopp(plai/domains), [unknown_call/5]).
 :- use_module(library(aggregates), [findall/3]).

@@ -18,7 +18,7 @@ the analysis.").
 
 :- use_module(ciaopp(plai/tarjan), [get_recursivity_class/3]).
 
-:- use_module(ciaopp(p_unit/program_keys),
+:- use_module(library(compiler/p_unit/program_keys),
     [decode_clkey/4, decode_litkey/5, get_predkey/3, decode_predkey/3]).
 :- use_module(ciaopp(plai/domains), [abs_sort/3]).
 

@@ -28,10 +28,10 @@
 
 :- use_module(library(idlists), [memberchk/2]).
 
-:- use_module(ciaopp(p_unit), [type_of_goal/2]).
+:- use_module(library(compiler/p_unit), [type_of_goal/2]).
 
 :- use_module(spec(s_simpspec), [list2body/2, next_pred/2]).
-:- use_module(ciaopp(p_unit/program_keys),
+:- use_module(library(compiler/p_unit/program_keys),
     [get_predkeys/2, predkey_from_sg/2, get_predkey/3, make_atom/2]).
 
 :- use_module(ciaopp(plai/plai_db), [complete/7]).

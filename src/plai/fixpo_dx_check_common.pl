@@ -12,7 +12,7 @@
 
 % CiaoPP library
 :- use_module(ciaopp(preprocess_flags), [current_pp_flag/2, set_pp_flag/2]).
-:- use_module(ciaopp(p_unit/program_keys), [get_predkey/3, predkey_from_sg/2, make_atom/2]).
+:- use_module(library(compiler/p_unit/program_keys), [get_predkey/3, predkey_from_sg/2, make_atom/2]).
 :- use_module(ciaopp(plai/fixpo_ops), [fixpoint_id_reuse_prev_success/6, 
     each_identical_abstract/3, each_project/6, fixpoint_get_new_id/5]).
 

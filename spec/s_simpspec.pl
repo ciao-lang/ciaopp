@@ -11,7 +11,7 @@
     ],
     [assertions,isomodes]).
 
-:- use_module(ciaopp(p_unit/program_keys), [decode_litkey/5, make_atom/2]).
+:- use_module(library(compiler/p_unit/program_keys), [decode_litkey/5, make_atom/2]).
 
 :- op( 950, xfy,[(&),(\&)]).
 

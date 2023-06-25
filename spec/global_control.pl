@@ -40,7 +40,7 @@
 :- use_module(ciaopp(plai/transform), [trans_clause/3]).
 :- use_module(ciaopp(plai/domains), [part_conc/5, call_to_entry/10, 
                     identical_proj/5,abstract_instance/5]).
-:- use_module(ciaopp(p_unit/program_keys), [get_predkey/3, predkey_from_sg/2]).
+:- use_module(library(compiler/p_unit/program_keys), [get_predkey/3, predkey_from_sg/2]).
 
 :- use_module(spec(generalize_emb_atoms), [there_is_gen_hint/2]).
 

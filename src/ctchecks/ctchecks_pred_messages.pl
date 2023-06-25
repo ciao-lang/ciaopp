@@ -5,20 +5,20 @@
 :- doc(module, "This module prints the messages emitted during
        compile-time checking of predicate-level assertions.").
 
-:- use_package(ciaopp(p_unit/p_unit_argnames)).
+:- use_package(library(compiler/p_unit/p_unit_argnames)).
 
 :- use_module(library(formulae), [list_to_conj/2]).
 :- use_module(library(hiordlib), [maplist/2]).
 :- use_module(library(messages), [
     show_message/3, warning_message/2, error_message/2, note_message/2]).
 
-:- use_module(ciaopp(p_unit), [
+:- use_module(library(compiler/p_unit), [
     add_assertion/1,
     assertion_set_status/3,
     assertion_set_calls/3,
     assertion_set_success/3,
     assertion_set_comp/3]).
-:- use_module(ciaopp(p_unit/p_unit_basic), [type_of_goal/2]).
+:- use_module(library(compiler/p_unit/p_unit_basic), [type_of_goal/2]).
 :- use_module(ciaopp(frontend_driver), [write_one_type/2]). % TODO: move somewhere else
 :- use_module(ciaopp(preprocess_flags)).
 
@@ -198,7 +198,7 @@ checked_or_true(true).
 
 :- use_module(engine(stream_basic), [current_output/1]).
 :- use_module(library(streams), [tab/1, nl/0]).
-:- use_module(ciaopp(p_unit/p_printer), [print_assrt/2]).
+:- use_module(library(compiler/p_unit/p_printer), [print_assrt/2]).
 
 :- multifile portray/1.
 

@@ -51,7 +51,6 @@ according to the strategy defined.
 :- use_module(ciaopp(plai/domains), [identical_proj/5, init_abstract_domain/2,
                                      abs_sort/3, identical_abstract/3, compute_lub/3]).
 :- use_module(ciaopp(plai/tarjan), [recursive_class/2, get_recursivity_class/3]).
-:- use_module(ciaopp(p_unit/program_keys)).
 :- use_module(ciaopp(plai/plai_db)).
 :- use_module(ciaopp(plai), [topdown_analysis/3, mod_topdown_analysis/3, entry_point/5]).
 :- use_module(ciaopp(plai/intermod_entry), [get_entry_info/3]).
@@ -68,9 +67,10 @@ according to the strategy defined.
 :- use_module(ciaopp(p_dump), [clean_all_ciaopp_db/0]).
 
 %%% p_unit
-:- use_module(ciaopp(p_unit), [program/2]).
-:- use_module(ciaopp(p_unit/clause_db), [source_clause/3, cleanup_clause_db/0]).
-:- use_module(ciaopp(p_unit/assrt_db), [cleanup_assrt_db/0]).
+:- use_module(library(compiler/p_unit), [program/2]).
+:- use_module(library(compiler/p_unit/program_keys)).
+:- use_module(library(compiler/p_unit/clause_db), [source_clause/3, cleanup_clause_db/0]).
+:- use_module(library(compiler/p_unit/assrt_db), [cleanup_assrt_db/0]).
 
 %%% incanal
 :- use_module(ciaopp(plai/incanal/tarjan_inc)).

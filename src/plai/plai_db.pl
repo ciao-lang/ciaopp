@@ -5,7 +5,7 @@
     [assertions, datafacts,regtypes,isomodes,nativeprops]).
 
 :- use_module(ciaopp(plai/transform), [cleanup_trans_clauses/0, trans_clause/3]).
-:- use_module(ciaopp(p_unit/program_keys), [get_predkey/3, decode_litkey/5,
+:- use_module(library(compiler/p_unit/program_keys), [get_predkey/3, decode_litkey/5,
     predkey/1, litkey/1]). % Props
 
 :- doc(bug,"The cleanup does not work in debugging mode!!!").

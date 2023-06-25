@@ -15,15 +15,16 @@ temporary success patterns when modular analysis is performed.").
 :- use_module(library(terms_check), [variant/2]).
 :- use_module(library(lists), [member/2]).
 
+:- use_module(library(compiler/p_unit/itf_db), [get_module_from_sg/2]).
+:- use_module(library(compiler/p_unit/program_keys), [predkey_from_sg/2]).
+
 :- use_module(ciaopp(plai/intermod_ops), [ may_be_improved_mark/2]).
-:- use_module(ciaopp(p_unit/itf_db), [get_module_from_sg/2]).
 
 :- use_module(ciaopp(preprocess_flags), [current_pp_flag/2]).
 :- use_module(ciaopp(plai/domains), 
     [abs_sort/3, compute_lub/3, glb/4, less_or_equal/3, unknown_call/5,
       call_to_entry/10]).
 :- use_module(ciaopp(plai/fixpo_ops), [clause_applies/2]).
-:- use_module(ciaopp(p_unit/program_keys), [predkey_from_sg/2]).
 :- use_module(ciaopp(plai/intermod_db), [registry/3,punit_module/2]).
 :- use_module(ciaopp(plai/intermod_punit), [open_mode/3]).
 

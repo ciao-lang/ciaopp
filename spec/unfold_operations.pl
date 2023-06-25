@@ -34,8 +34,8 @@
 :- use_module(library(term_filtering/fr_notation), [fr_to_term/3]).
 :- use_module(engine(hiord_rt), ['$meta_call'/1]).
 
-:- use_module(ciaopp(p_unit/prednames)).
-:- reexport(ciaopp(p_unit/prednames), [orig_pred_name/2, orig_goal/2]).
+:- use_module(library(compiler/p_unit/prednames)).
+:- reexport(library(compiler/p_unit/prednames), [orig_pred_name/2, orig_goal/2]).
 
 :- pred decide_orig_goal(+Goal,-Orig_Goal) # "If we are not performing
      local control, then @var{Orig_Goal} is identical to

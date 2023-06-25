@@ -16,10 +16,10 @@
 :- use_module(library(vndict), [vars_names_dict/3]).
 
 :- use_module(ciaopp(plai/intermod_ops)).
-:- use_module(ciaopp(p_unit/itf_db), [get_module_from_sg/2, current_itf/3]). % for multifile
-:- use_module(ciaopp(p_unit),   [type_of_goal/2, type_of_directive/2]).
-:- use_module(ciaopp(p_unit/program_keys), [get_predkey/3]).
-:- use_module(ciaopp(p_unit/assrt_db), [assertion_read/9]). % for entries
+:- use_module(library(compiler/p_unit/itf_db), [get_module_from_sg/2, current_itf/3]). % for multifile
+:- use_module(library(compiler/p_unit),   [type_of_goal/2, type_of_directive/2]).
+:- use_module(library(compiler/p_unit/program_keys), [get_predkey/3]).
+:- use_module(library(compiler/p_unit/assrt_db), [assertion_read/9]). % for entries
 :- use_module(library(assertions/assrt_lib), [assertion_body/7]).
 
 :- use_module(ciaopp(preprocess_flags), [current_pp_flag/2]).

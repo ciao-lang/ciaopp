@@ -45,9 +45,9 @@ whether to process the file @bf{again}.
 :- use_module(ciaopp(plai/intermod_db)).
 :- use_module(ciaopp(plai/tarjan), [step2/2]).
 :- use_module(ciaopp(frontend_driver), [is_library/1]).
-:- use_module(ciaopp(p_unit/itf_db), [current_itf/3]).
-:- use_module(ciaopp(p_unit/p_asr), [there_was_error/1]).
-:- use_module(ciaopp(p_unit/aux_filenames), [
+:- use_module(library(compiler/p_unit/itf_db), [current_itf/3]).
+:- use_module(library(compiler/p_unit/p_asr), [there_was_error/1]).
+:- use_module(library(compiler/p_unit/aux_filenames), [
     get_module_filename/3, just_module_name/2, get_loaded_module_name/3]).
 :- use_module(ciaopp(plai/intermod_ops),
               [add_changed_module/5, less_or_equal_mark/3, may_be_improved_mark/2,

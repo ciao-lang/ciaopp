@@ -40,6 +40,10 @@ Global compilation options of intermodular analysis are available in
 ").
 
 %%------------------------------------------------------------------
+:- use_module(library(compiler/p_unit), [program/2, replace_program/2]).
+:- use_module(library(compiler/p_unit/aux_filenames), [get_module_filename/3, just_module_name/2]).
+:- use_module(library(compiler/p_unit/itf_db), [get_module_from_sg/2]).
+
 :- use_module(ciaopp(plai/intermod_db)).
 :- use_module(ciaopp(plai/intermod_schedule)).
 :- use_module(ciaopp(plai/intermod_punit)).
@@ -49,7 +53,7 @@ Global compilation options of intermodular analysis are available in
 :- use_module(ciaopp(frontend_driver), [module/1,module/2,output/1,output/0]).
 :- use_module(ciaopp(analyze_driver),
               [analyze/1,analyze1/2,acheck_summary/1, acheck/2]).
-:- use_module(ciaopp(p_unit), [program/2, replace_program/2]).
+
 :- use_module(ciaopp(plai/re_analysis), [update_ai_info_case/4]).
 :- use_module(ciaopp(plai), [cleanup_plai/1]).
 
@@ -65,8 +69,6 @@ Global compilation options of intermodular analysis are available in
     compare_completes_with_prev/3,
     remove_useless_info/1
      ]).
-:- use_module(ciaopp(p_unit/aux_filenames), [get_module_filename/3, just_module_name/2]).
-:- use_module(ciaopp(p_unit/itf_db), [get_module_from_sg/2]).
 :- use_module(ciaopp(preprocess_flags)).
 :- use_module(ciaopp(p_dump), [dump_dir/1, dump/2]).
 :- use_module(ciaopp(ciaopp_log)).

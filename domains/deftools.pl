@@ -32,7 +32,7 @@
 :- use_module(library(sort), [sort/2]).
 :- use_module(library(terms_vars), [varset/2]).
 
-:- use_module(ciaopp(p_unit), [language/1]).
+:- use_module(library(compiler/p_unit), [language/1]).
 
 :- use_module(domain(s_grshfr), [merge_no_supersets/3]).
 

@@ -3,7 +3,7 @@
 :- use_package(assertions).
 
 :- use_module(spec(ch_trees),  [collect_all_ch_trees/1]).
-:- use_module(ciaopp(p_unit), [program/2]).
+:- use_module(library(compiler/p_unit), [program/2]).
 :- use_module(library(llists), [flatten/2]).
 :- use_module(library(sort)).
 

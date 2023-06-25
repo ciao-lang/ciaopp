@@ -12,7 +12,7 @@
     ],
     [ ] ).
 
-:- use_module(ciaopp(p_unit), [language/1]).
+:- use_module(library(compiler/p_unit), [language/1]).
 
 :- use_module(domain(fr_sets), 
     [ set_add_el/3,

@@ -1,7 +1,7 @@
 /*             Copyright (C)1990-2002 UPM-CLIP                         */
 :- module(normalize_args, [normalize_args/4],   [assertions]).
 
-:- use_module(ciaopp(p_unit), [type_of_goal/2]).
+:- use_module(library(compiler/p_unit), [type_of_goal/2]).
 
 :- use_module(library(vndict), [complete_dict/3]).
 

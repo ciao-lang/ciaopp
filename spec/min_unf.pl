@@ -17,7 +17,7 @@
         list2body/2
     ]).
 :- use_module(spec(unfold_builtins), [can_be_evaluated/1]).
-:- use_module(ciaopp(p_unit/program_keys),
+:- use_module(library(compiler/p_unit/program_keys),
     [decode_litkey/5, get_predkey/3, predkey_from_sg/2, make_atom/2]).
 :- use_module(spec(global_control), [locate_spec_definition/3]).
 :- use_module(spec(sp_clauses), [sp_clause/2]).

@@ -65,8 +65,8 @@
 :- use_module(ciaopp(preprocess_flags), [current_pp_flag/2]).
 :- use_module(ciaopp(plai/transform), [transform_clauses/5]).
 :- use_module(ciaopp(plai/domains),   [abs_sort/3]).
-:- use_module(ciaopp(p_unit), [ new_predicate/3, type_of_goal/2]).
-:- use_module(ciaopp(p_unit/program_keys), [rewrite_source_all_clauses/2]).
+:- use_module(library(compiler/p_unit), [ new_predicate/3, type_of_goal/2]).
+:- use_module(library(compiler/p_unit/program_keys), [rewrite_source_all_clauses/2]).
 %% 
 :- use_module(library(vndict), [create_pretty_dict/2]).
 :- use_module(library(aggregates), [findall/3]).

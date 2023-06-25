@@ -85,7 +85,7 @@ obtained after the analysis of the clause being considered
 
 % ===========================================================================
 
-:- use_module(ciaopp(p_unit), [native_to_props_visible/2, prop_to_native/2]).
+:- use_module(library(compiler/p_unit), [native_to_props_visible/2, prop_to_native/2]).
 :- use_module(ciaopp(plai/fixpo_ops), [each_exit_to_prime/8, each_abs_sort/3]).
 
 :- use_module(library(terms_check), [variant/2]).

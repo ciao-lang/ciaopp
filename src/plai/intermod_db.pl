@@ -23,8 +23,8 @@ relations of the predicates in the boundaries of the modules, i.e., how exported
 predicates call imported predicates.").
 
 :- use_module(library(streams), [absolute_file_name/7]).
-:- use_module(ciaopp(p_unit/aux_filenames), [just_module_name/2]).
-:- use_module(ciaopp(p_unit/program_keys), [predkey_from_sg/2]).
+:- use_module(library(compiler/p_unit/aux_filenames), [just_module_name/2]).
+:- use_module(library(compiler/p_unit/program_keys), [predkey_from_sg/2]).
 
 % ------------------------------------------------------------
 :- doc(section, "Program structure").

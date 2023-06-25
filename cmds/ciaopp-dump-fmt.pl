@@ -68,7 +68,7 @@ digraph G {
 % TODO: use gendot bundle without strong dependency
 
 :- use_module(ciaopp(plai/incanal/plai_db_instances), [plai_db_tuple/8]).
-:- use_module(ciaopp(p_unit/program_keys),
+:- use_module(library(compiler/p_unit/program_keys),
     [is_entrykey/1, decode_litkey/5, decode_predkey/3]).
 :- use_module(ciaopp(test_aux/compare_dump), [restore_and_copy_db/3]).
 

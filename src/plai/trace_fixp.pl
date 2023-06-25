@@ -211,7 +211,7 @@ show_spypoint_op_count_ :-
 show_spypoint_op_count_.
 
 %------------------- MEMOTABLE TRACE PREDICATES -------------------%
-:- use_module(ciaopp(p_unit/itf_db), [curr_file/2]).
+:- use_module(library(compiler/p_unit/itf_db), [curr_file/2]).
 :- use_module(library(pathnames), [path_splitext/3]).
 :- use_module(library(terms), [atom_concat/2]).
 :- use_module(ciaopp(plai/fixpo_plai), [approx/6, fixpoint/6, '$depend_list'/3]).

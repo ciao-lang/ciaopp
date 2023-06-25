@@ -30,15 +30,12 @@ components(ciaopp,[],
     [ciaopp(ciaopp),ciaopp(frontend_driver),ciaopp(analyze_driver),ciaopp(transform_driver),
      ciaopp(preprocess_flags),
      infer(infer),infercost(infercost),resources(resources),ciaopp(nfgraph/infernf),
-     plai(plai),program(p_unit),syntax(tr_syntax)]).
-components(p_unit,[ciaopp(p_unit)],
-    [ciaopp(p_unit/assrt_db),ciaopp(p_unit/assrt_norm),ciaopp(p_unit/clause_db),
-     ciaopp(p_unit/itf_db),ciaopp(p_unit/p_asr),ciaopp(p_unit/program_keys)]).
+     plai(plai),syntax(tr_syntax)]).
 components(plai,[plai(plai)],
     [plai(domains),plai(fixpo_plai),plai(normalize),plai(plai_db),
      plai(re_analysis),plai(tarjan),plai(trace_fixp),plai(transform),
      plai(trust),plai(view_fixp)]).
-     % ciaopp(p_unit),ciaopp(preprocess_flags)]
+     % ciaopp(preprocess_flags)]
 components(infernf,[ciaopp(nfgraph/infernf)],
     [domain(nfdet/cover),ciaopp(nfgraph/in_out),ciaopp(nfgraph/nfnf),domain(nfdet/nfbool),
      ciaopp(nfgraph/nfgraph),domain(nfdet/nfsets),domain(nfdet/nfsupport),

@@ -2,8 +2,8 @@
 
 :- use_module(ciaopp(infer/infer), [get_info/5]).
 :- use_module(ciaopp(infer/infer_dom), [abs_execute_with_info/4, knows_of/2]).
-:- use_module(ciaopp(p_unit/assrt_norm), [denorm_goal_prop/3]).
-:- use_module(ciaopp(p_unit), [prop_to_native/2]).
+:- use_module(library(compiler/p_unit/assrt_norm), [denorm_goal_prop/3]).
+:- use_module(library(compiler/p_unit), [prop_to_native/2]).
 :- use_module(library(lists),      [append/3, list_concat/2]).
 :- use_module(library(aggregates)).
 

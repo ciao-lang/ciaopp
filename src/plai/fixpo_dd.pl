@@ -11,7 +11,7 @@
 :- include(fixpo_dx_common).
 
 :- use_module(ciaopp(plai/tarjan), [recursive_class/2]).
-:- use_module(ciaopp(p_unit/program_keys),
+:- use_module(library(compiler/p_unit/program_keys),
     [decode_litkey/5, decode_predkey/3, is_entrykey/1, get_predkey/3, get_clkey/4]).
 :- use_module(ciaopp(plai/apply_assertions),
     [apply_assrt_no_source/6,apply_assrt_call_to_success/8,apply_assrt_exit/7]).

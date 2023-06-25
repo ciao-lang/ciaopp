@@ -58,8 +58,8 @@
 % init_abstract_domain sets widen to 'on'
 
 %%% for terms_internal_to_native
-:- use_module(ciaopp(p_unit), [new_internal_predicate/3]).
-:- use_module(ciaopp(p_unit), [type_of_goal/2]).
+:- use_module(library(compiler/p_unit), [new_internal_predicate/3]).
+:- use_module(library(compiler/p_unit), [type_of_goal/2]).
 :- use_module(typeslib(typeslib), [revert_types/5, assert_required_type/1]).
 
 :- prop termsd_asub(A) # "@var{A} is an abstract substitution".

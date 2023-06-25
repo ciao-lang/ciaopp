@@ -1,6 +1,6 @@
 :- module(ctchecks_pp, [ctcheck_pp/2], [assertions,hiord]).
 
-:- use_package(ciaopp(p_unit/p_unit_argnames)).
+:- use_package(library(compiler/p_unit/p_unit_argnames)).
 
 :- use_module(library(formulae), [conj_to_list/2]).
 :- use_module(library(messages), [debug_message/2]).
@@ -12,8 +12,8 @@
 % CiaoPP library
 :- use_module(ciaopp(infer), [get_memo_lub/5]).
 :- use_module(ciaopp(infer/infer_dom), [abs_execute/7,knows_of/2]).
-:- use_module(ciaopp(p_unit), [program/2, filtered_program_clauses/3]).
-:- use_module(ciaopp(p_unit/program_keys), [first_key/2,lit_ppkey/3]).
+:- use_module(library(compiler/p_unit), [program/2, filtered_program_clauses/3]).
+:- use_module(library(compiler/p_unit/program_keys), [first_key/2,lit_ppkey/3]).
 :- use_module(spec(s_simpspec), [next_or_last_key/3]).
 
 % Own library

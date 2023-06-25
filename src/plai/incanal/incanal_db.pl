@@ -29,9 +29,9 @@ incremental analysis").
 :- use_module(library(hiordlib), [maplist/3]).
 :- use_module(library(pathnames), [path_basename/2]).
 
-:- use_module(ciaopp(p_unit/clause_db), [cleanup_clause_db/0, source_clause/3]).
-:- use_module(ciaopp(p_unit/assrt_db), [pgm_assertion_read/9]).
-:- use_module(ciaopp(p_unit/program_keys),
+:- use_module(library(compiler/p_unit/clause_db), [cleanup_clause_db/0, source_clause/3]).
+:- use_module(library(compiler/p_unit/assrt_db), [pgm_assertion_read/9]).
+:- use_module(library(compiler/p_unit/program_keys),
     [decode_litkey/5, decode_clkey/4, decode_predkey/3, get_clkey/4,
      counter/3, make_atom/2]).
 %:- use_module(ciaopp(p_dump), [add_to_db/1]).

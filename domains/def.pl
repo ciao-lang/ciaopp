@@ -69,7 +69,7 @@
 :- use_module(library(terms_check), [variant/2]).
 :- use_module(library(terms_vars), [varset/2]).
 
-:- use_module(ciaopp(p_unit), [language/1]).
+:- use_module(library(compiler/p_unit), [language/1]).
 
 :- use_module(domain(deftools)).
 

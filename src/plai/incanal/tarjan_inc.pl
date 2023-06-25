@@ -21,13 +21,13 @@
 :- use_module(ciaopp(plai/transform),
     [trans_clause/3, update_trans_clause_rflag/3, update_trans_clause/6,
      trans_clause_/6]).
-:- use_module(ciaopp(p_unit/program_keys),
+:- use_module(library(compiler/p_unit/program_keys),
     [decode_predkey/3, decode_clkey/4, decode_litkey/5, get_predkeys/2,
      get_predkey/3, make_atom/2]).
 :- use_module(ciaopp(plai/plai_db), [complete/7]).
 :- use_module(ciaopp(plai), [transform_clauses_/5]).
 
-:- use_module(ciaopp(p_unit/clause_db), [source_clause/3]).
+:- use_module(library(compiler/p_unit/clause_db), [source_clause/3]).
 
 :- use_module(ciaopp(analysis_stats)).
 

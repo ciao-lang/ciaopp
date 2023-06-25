@@ -16,9 +16,9 @@
 :- use_package(spec(no_debug)).
 
 :- use_module(library(assertions/assrt_lib), [assertion_body/7]).
-:- use_module(ciaopp(p_unit/assrt_db), [assertion_read/9]).
+:- use_module(library(compiler/p_unit/assrt_db), [assertion_read/9]).
 
-:- use_module(ciaopp(p_unit/itf_db), [current_itf/3]).
+:- use_module(library(compiler/p_unit/itf_db), [current_itf/3]).
 
 :- use_module(spec(abs_exec_cond), 
     [

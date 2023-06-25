@@ -122,7 +122,7 @@ analysis(Analysis) :- lazy_analysis(Analysis), !.
 % ---------------------------------------------------------------------------
 :- doc(subsection, "Analysis").
 
-:- use_module(ciaopp(p_unit), [program/2]).
+:- use_module(library(compiler/p_unit), [program/2]).
 :- use_module(ciaopp(frontend_driver), [push_history/1]).
 
 :- if(defined(with_fullpp)).
@@ -133,7 +133,7 @@ analysis(Analysis) :- lazy_analysis(Analysis), !.
 :- doc(doinclude,trace_fixp/1).
 :- endif. % with_fullpp
 
-:- use_module(ciaopp(p_unit/itf_db), [curr_file/2]).
+:- use_module(library(compiler/p_unit/itf_db), [curr_file/2]).
 
 :- if(defined(with_fullpp)).
 % (support for incremental analysis)
@@ -328,7 +328,7 @@ analyze_(AbsInt,Cls,Ds,Info,_):-
 :- endif. % with_fullpp
 
 :- if(defined(with_fullpp)).
-:- use_module(ciaopp(p_unit), [inject_output_package/1]).
+:- use_module(library(compiler/p_unit), [inject_output_package/1]).
 :- use_module(ciaopp(infer/infer_dom), [knows_of/2]).
 
 :- pred add_packages_if_needed(Analysis) : analysis(Analysis)
@@ -381,7 +381,7 @@ handle_eqs(An):-
 :- use_module(ciaopp(infer/infer_db), [domain/1]).
 :- use_module(ciaopp(infer/infer_dom), [knows_of/2]).
 
-:- use_module(ciaopp(p_unit/itf_db), [curr_file/2]).
+:- use_module(library(compiler/p_unit/itf_db), [curr_file/2]).
 
 :- use_module(ciaopp(ctchecks/ctchecks_pred), [simplify_assertions_mods/2]).
 :- use_module(ciaopp(ctchecks/ctchecks_pp), [ctcheck_pp/2]).

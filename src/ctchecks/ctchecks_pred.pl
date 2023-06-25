@@ -12,10 +12,10 @@
               [abs_exec_one_assertion_all/7, clear_log/0, get_check_assertion/3]).
 
 %% CiaoPP library:
-:- use_module(ciaopp(p_unit),
+:- use_module(library(compiler/p_unit),
               [predicate_names/1, multifile_predicate_names/1,
                get_pred_mod_defined/2]).
-:- use_module(ciaopp(p_unit/program_keys), [predkey_from_sg/2]).
+:- use_module(library(compiler/p_unit/program_keys), [predkey_from_sg/2]).
 
 :- use_module(ciaopp(infer), [get_completes_lub/6, get_completes/4, get_info/5]).
 
