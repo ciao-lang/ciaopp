@@ -58,7 +58,7 @@ abs_execute_sizes(Goal,Size,ASize,NewSize,Status):-
 
 check_comp_info([],_Cost,_Nf,_Det,Status,Status,[]).
 check_comp_info([C|Comp],Cost,Nf,Det,Status0,Status,NewComp):-
-    prop_to_native(C,Prop0),
+    prop_to_native(C,Prop0), % TODO: leave choicepoints
     denorm_goal_prop(Prop0,Prop,_),
     check_comp_info_one(Prop,Cost,Nf,Det,Status1),
     compose_status(Status0,Status1,Status2),
@@ -78,7 +78,7 @@ check_comp_info_one(_C,_Cost,_Nf,_Det,check).
 
 check_size_info([],_Size,Status,Status,[]).
 check_size_info([C|Comp],Size,Status0,Status,NewComp):-
-    prop_to_native(C,Prop),
+    prop_to_native(C,Prop), % TODO: leave choicepoints
     check_size_info_one(Prop,Size,Status1),
     compose_status(Status0,Status1,Status2),
     new_comp(Status1,C,NewComp1,NewComp),

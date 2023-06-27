@@ -1024,6 +1024,15 @@ hook_compact_calls_prop(intervals(_, G, _, L), intervals(S, L)) :-
     compact_size(G, _, S), !.
 
 :- endif.
+
+:- if(defined(has_ciaopp_cost)).
+:- use_module(library(resdefs/rescostfunc), [compact_cf/3]).
+
+% (hook)
+hook_native_property('resources_props:cost'(G,Rel,Ap,Type,R,_,IF,CFN), cost(G,Rel,Ap,Type,R,CF)) :-
+    compact_cf(CFN,IF,CF).
+:- endif.
+
 :- endif. % with_fullpp
 
 % ---------------------------------------------------------------------------
