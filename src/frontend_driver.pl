@@ -1043,10 +1043,12 @@ hook_native_property('resources_props:cost'(G,Rel,Ap,Type,R,_,IF,CFN), cost(G,Re
 :- use_module(library(compiler/p_unit/p_asr), [gen_lib_sources/1]).
 :- use_module(library(compiler/p_unit/itf_db), [fake_module_name/1]).
 
+% TODO: extend to arbitrary bundles
+
 :- export(cache_and_preload_lib_sources/0).
 :- pred cache_and_preload_lib_sources/0
    # "Generate and preload the preprocessed assertions from the
-     libraries (specified in the @tt{cmds/cachedmods/cached_core.pl}
+     libraries (specified in the @tt{core/Manifest/core.libcache.pl}
      module.
 
      @alert{It cleans the current state of CiaoPP}.".
@@ -1054,11 +1056,11 @@ hook_native_property('resources_props:cost'(G,Rel,Ap,Type,R,_,IF,CFN), cost(G,Re
 cache_and_preload_lib_sources :-
     clean_analysis_info0,
     cleanup_all,
-    bundle_path(ciaopp, 'cmds/cachedmods/cached_core.pl', P),
+    bundle_path(core, 'Manifest/core.libcache.pl', P),
     push_pp_flag(preload_lib_sources, off),
     module(P),
     pop_pp_flag(preload_lib_sources),
-    set_fact(fake_module_name(cached_core)), % do not cache info of cached_core
+    set_fact(fake_module_name('core.libcache')), % do not cache info of that module
     ensure_datadir('ciaopp_lib_cache', Dir),
     p_asr:gen_lib_sources(Dir),
     ensure_lib_sources_loaded.
