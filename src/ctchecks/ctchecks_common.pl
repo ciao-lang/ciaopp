@@ -641,7 +641,7 @@ collect_succcomp_info([S|Ss],Type,AbsInt,Head,G,[SInfo|SInfoTail]):-
 select_most_useful_info(_,[],Comp,Out) :- !, Out = Comp.
 select_most_useful_info(_,Succ,[],Out) :- !, Out = Succ.
 % If we have both kinds of info, take into account type.
-select_most_useful_info(succ,Succ,_Comp,Out) :- !, Out = Succ.
+select_most_useful_info(success,Succ,_Comp,Out) :- !, Out = Succ.
 select_most_useful_info(comp,_Succ,Comp,Out) :- Out = Comp.
 % End MR !433
 

@@ -411,6 +411,7 @@ decide_call_to_entry_(AbsInt,Call_s,Go1v,Goal1,Gov,Goal,Call):-
 %    Goal is a most general atom
 %    TypeList is a list of types for variables in Goal
 
+% TODO: unused?
 type_holds(K,Goal,TypeList):-
 %        message("CALL: type_holds(~q, ~q, ~q) ~n", [K,Goal,TypeList]),
     functor(Goal,F,A),
@@ -424,6 +425,7 @@ type_holds(K,Goal,TypeList):-
 %------------------------------------------------------------------------%
 % is the typing TypeList false for Goal at point K?
 
+% TODO: unused?
 type_fails(K,Goal,TypeList):-
     functor(Goal,F,A),
     functor(Goal0,F,A),
@@ -431,7 +433,6 @@ type_fails(K,Goal,TypeList):-
     recorded_internal(Key,complete_type(Goal0,Call,Succ),_),
     ( K == call -> TypeList0=Call ; K == succ, TypeList0=Succ ),
     type_assignments_incompatible(TypeList0, Goal0, TypeList, Goal).
-
 
 %------------------------------------------------------------------------%
 % translate types to measures
