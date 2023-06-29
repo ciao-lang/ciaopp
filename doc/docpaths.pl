@@ -12,6 +12,7 @@ filepath := at_bundle(core, 'library/regexp').
 filepath := at_bundle(core, 'lib/assertions').
 filepath := at_bundle(core, 'lib/regtypes').
 filepath := at_bundle(core, 'lib/rtchecks').
+filepath := at_bundle(core, 'lib/compiler/p_unit').
 % (ciaodbg bundle)
 filepath := at_bundle(ciaodbg, 'lib/unittest').
 
@@ -29,7 +30,6 @@ filepath := at_bundle(ciaopp, 'cmds').
 filepath := at_bundle(ciaopp, 'src').
 filepath := at_bundle(ciaopp, 'src/plai').
 filepath := at_bundle(ciaopp, 'src/plai/incanal'). % IG: for incremental analysis
-filepath := at_bundle(ciaopp, 'src/p_unit').
 filepath := at_bundle(ciaopp, 'src/infer').
 filepath := at_bundle(ciaopp, 'domains').
 filepath := at_bundle(ciaopp, 'domains/nfdet').
