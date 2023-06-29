@@ -1057,10 +1057,20 @@ cache_and_preload_lib_sources :-
     clean_analysis_info0,
     cleanup_all,
     bundle_path(core, 'Manifest/core.libcache.pl', P),
-    push_pp_flag(preload_lib_sources, off),
-    module(P),
-    pop_pp_flag(preload_lib_sources),
+    %
+    pp_statistics(runtime,[T0,_]),
+    pplog(load_module, ['{generating lib cache...}']),
+    %
+    preprocessing_unit([P],_Ms,E),
+    ( E == yes -> throw(error(cache_and_preload_lib_sources/0)) ; true ),
+    %assertz_fact(curr_module('core.libcache')),
+    %assertz_fact(curr_file(P, 'core.libcache')),
     set_fact(fake_module_name('core.libcache')), % do not cache info of that module
     ensure_datadir('ciaopp_lib_cache', Dir),
     p_asr:gen_lib_sources(Dir),
+    %
+    pp_statistics(runtime,[T1,_]),
+    TotalT is T1 - T0,
+    pplog(load_module, ['{done in ',time(TotalT), ' msec.}']),
+    %
     ensure_lib_sources_loaded.
