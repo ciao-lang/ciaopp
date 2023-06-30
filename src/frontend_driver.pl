@@ -465,7 +465,7 @@ warn_no_cache :-
 :- use_module(library(compiler/p_unit/itf_db), [cleanup_itf_db/0]).
 :- use_module(library(compiler/p_unit), [cleanup_punit/0, cleanup_comment_db/0]).
 :- use_module(library(compiler/p_unit), [pr_key_clean/0, cleanup_commented_assrt/0]).
-:- use_module(library(compiler/p_unit/p_asr), [cleanup_code_and_related_assertions/0, cleanup_pasr/0]).
+:- use_module(library(compiler/p_unit/p_asr), [cleanup_code_and_related_assertions_pasr/0, cleanup_pasr/0]).
 %
 % TODO: make sure that it does what it is documented (are domains, types, etc. cleanup?)
 :- pred cleanup_all # "Cleanup the whole CiaoPP state (equivalent to
@@ -477,7 +477,7 @@ cleanup_all :-
     cleanup_history,
     cleanup_punit,
     cleanup_pasr,
-    cleanup_code_and_related_assertions,
+    cleanup_code_and_related_assertions_pasr,
     %
     cleanup_commented_assrt,
     cleanup_comment_db,
