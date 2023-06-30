@@ -461,27 +461,17 @@ warn_no_cache :-
 % ---------------------------------------------------------------------------
 % Cleanup
 :- use_module(ciaopp(analyze_driver), [clean_analysis_info/0]).
-:- use_module(ciaopp(plai/intermod_ops), [cleanup_p_abs/0]).
-:- use_module(library(compiler/p_unit/itf_db), [cleanup_itf_db/0]).
-:- use_module(library(compiler/p_unit), [cleanup_punit/0, cleanup_comment_db/0]).
-:- use_module(library(compiler/p_unit), [pr_key_clean/0, cleanup_commented_assrt/0]).
-:- use_module(library(compiler/p_unit/p_asr), [cleanup_code_and_related_assertions_pasr/0, cleanup_pasr/0]).
+:- use_module(ciaopp(plai/intermod_ops), [cleanup_p_abs/0]). % TODO: not cleaned?
+:- use_module(library(compiler/p_unit), [cleanup_punit/0]).
 %
-% TODO: make sure that it does what it is documented (are domains, types, etc. cleanup?)
+% TODO: improve documentation (are domains, types, etc. cleanup?)
 :- pred cleanup_all # "Cleanup the whole CiaoPP state (equivalent to
    start from scratch)".
 
 cleanup_all :-
-    cleanup_itf_db,
     clean_analysis_info,
     cleanup_history,
-    cleanup_punit,
-    cleanup_pasr,
-    cleanup_code_and_related_assertions_pasr,
-    %
-    cleanup_commented_assrt,
-    cleanup_comment_db,
-    pr_key_clean.
+    cleanup_punit.
 
 %------------------------------------------------------------------------
 
