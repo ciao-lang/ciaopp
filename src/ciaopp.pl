@@ -47,8 +47,6 @@ These flags can be modified or consulted with:
 Other commands useful when developing or debugging CiaoPP:
 
 @begin{itemize}
-@item @tt{show_asr(File)}: displays the content of a .asr file.
-
 @item @tt{show_dump(File)}: displays the content of a .dump file.
 
 @item @tt{show_types}: display all current types (inferred or read).
@@ -232,14 +230,6 @@ interesting_module(term_typing,_).
 interesting_module(Module,_) :- 
     current_itf(defines_module,Module,Base), !, % TODO: dangling choice points?
     \+ is_library(Base).
-
-% -----------------------------------------------------------------------
-% TODO: optional?
-
-:- if(defined(with_fullpp)).
-:- reexport(library(compiler/p_unit/p_asr), [show_asr/1]).
-:- doc(hide,show_asr/1).
-:- endif.
 
 % ---------------------------------------------------------------------------
 % Preprocess flags
