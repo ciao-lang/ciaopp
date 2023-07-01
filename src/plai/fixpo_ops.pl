@@ -58,7 +58,7 @@
 :- use_module(library(write), [writeq/1]).
 :- use_module(library(compiler/p_unit/clause_db), [clause_locator/2]).
 :- use_module(library(compiler/p_unit/program_keys), [decode_litkey/5, is_entrykey/1, orig_clause_id/2]).
-:- use_module(library(compiler/p_unit), [language/1, type_of_goal/2]).
+:- use_module(library(compiler/p_unit), [curr_language/1, type_of_goal/2]).
 :- use_module(library(compiler/p_unit/program_keys), [predkey_from_sg/2]).
 
 :- use_module(ciaopp(plai/domains)).
@@ -395,7 +395,7 @@ decide_memo(AbsInt,Key,NewN,Id,Vars_u,Exit):-
    #"Succeeds if @var{Head} of some clause matches goal @var{Sg}
    the check is omitted if we are analyzing constraints.".
 clause_applies(_Head,_Sg):-
-    language(clp), !.
+    curr_language(clp), !.
 clause_applies(Head,Sg):-
     \+ \+ ( Head = Sg ).
 

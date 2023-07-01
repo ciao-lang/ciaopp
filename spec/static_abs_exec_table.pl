@@ -8,7 +8,7 @@
       libraries. This table now coexists with a dynamic table and may
       be replaced by it in the future.").
 
-:- use_module(library(compiler/p_unit), [language/1]).
+:- use_module(library(compiler/p_unit), [curr_language/1]).
 
 :- doc(bug,"1. Handling of ground should be improved so that it is
    done by assertions and also calls to ground with lists of variables is
@@ -284,7 +284,7 @@ abs_ex(non_det/1,determinism,fail,semidet).
 % End MR !433
 
 abs_ex_if_not_constraint(Determ,Sense,Cond):-
-    language(lp),
+    curr_language(lp),
     Determ = free,
     Sense = error,
     Cond = [freerec(1),freerec(2)].

@@ -69,7 +69,7 @@
 :- use_module(library(terms_check), [variant/2]).
 :- use_module(library(terms_vars), [varset/2]).
 
-:- use_module(library(compiler/p_unit), [language/1]).
+:- use_module(library(compiler/p_unit), [curr_language/1]).
 
 :- use_module(domain(deftools)).
 
@@ -387,34 +387,34 @@ special_builtin('C/3','C'(X,Y,Z),_,'$fd_=','='(X,[Y|Z])).
 special_builtin('fail/0',_Sg,_,'$fd_fail',_Condvars).   
 special_builtin('#/2',_Sg,_,'$fd_#',_Condvars).   
 special_builtin('</2',_Sg,_,Type,_Condvars):-
-    language(clp),!,
+    curr_language(clp),!,
     Type = '$fd_comp'.
 special_builtin('</2',Sg,_,Type,Condvars):-
-    language(lp),!,
+    curr_language(lp),!,
     Type = '$fd_ground',
     Condvars = Sg.
 %% special_builtin('<=/2',_Sg,_,Type,_Condvars):-
-%%      language(clp),!,
+%%      curr_language(clp),!,
 %%      Type = '$fd_comp'.
 special_builtin('=</2',_Sg,_,Type,_Condvars):-
-    language(clp),!,
+    curr_language(clp),!,
     Type = '$fd_comp'.
 special_builtin('=</2',Sg,_,Type,Condvars):-
-    language(lp),!,
+    curr_language(lp),!,
     Type = '$fd_ground',
     Condvars = Sg.
 special_builtin('>/2',_Sg,_,Type,_Condvars):-
-    language(clp),!,
+    curr_language(clp),!,
     Type = '$fd_comp'.
 special_builtin('>/2',Sg,_,Type,Condvars):-
-    language(lp),!,
+    curr_language(lp),!,
     Type = '$fd_ground',
     Condvars = Sg.
 special_builtin('>=/2',_Sg,_,Type,_Condvars):-
-    language(clp),!,
+    curr_language(clp),!,
     Type = '$fd_comp'.
 special_builtin('>=/2',Sg,_,Type,Condvars):-
-    language(lp),!,
+    curr_language(lp),!,
     Type = '$fd_ground',
     Condvars = Sg.
 special_builtin('.<./2',_Sg,_,Type,_Condvars):-

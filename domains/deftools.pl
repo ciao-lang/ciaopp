@@ -32,7 +32,7 @@
 :- use_module(library(sort), [sort/2]).
 :- use_module(library(terms_vars), [varset/2]).
 
-:- use_module(library(compiler/p_unit), [language/1]).
+:- use_module(library(compiler/p_unit), [curr_language/1]).
 
 :- use_module(domain(s_grshfr), [merge_no_supersets/3]).
 
@@ -126,10 +126,10 @@ def_abstract_equation0(Var,Term,Call,Succ):-
 %    piii or num must be herb                                            %
 %-------------------------------------------------------------------------
 find_type(X,Type):-
-    language(clp),!,
+    curr_language(clp),!,
     find_type0(X,Type).
 find_type(_,Type):-
-    language(lp),!,
+    curr_language(lp),!,
     Type = herb.
 
 find_type0(piii(_),piii):- !.

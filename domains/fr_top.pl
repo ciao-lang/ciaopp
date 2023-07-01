@@ -44,7 +44,7 @@
 :- dom_impl(fr, empty_entry/3).
 % TODO: body_succ_builtin/9: (old comment) these do not have special(_), so ok: AbsInt \== def, AbsInt \== fr, AbsInt \== frdef
 
-:- use_module(library(compiler/p_unit), [language/1]).
+:- use_module(library(compiler/p_unit), [curr_language/1]).
 :- use_module(ciaopp(plai/plai_errors), [compiler_error/1]).
 
 :- use_module(domain(fr_sets)).
@@ -263,31 +263,31 @@ fr_call_to_success_fact(Sg,_Hv,Head,_K,Sv,Call,Proj,Prime,Succ):-
 fr_special_builtin('=/2',Sg,_Subgoal,Type,Condvars):-
     Type= '$fd_=', Condvars = Sg .
 fr_special_builtin('</2',Sg,_Subgoal,Type,Condvars):- 
-    language(clp),!,
+    curr_language(clp),!,
     Type = '$fd_comp', Condvars = Sg . 
 fr_special_builtin('</2',Sg,_Subgoal,Type,Condvars):- 
-    language(lp),!,
+    curr_language(lp),!,
     Type = '$fd_ground', Condvars = Sg . 
 %% fr_special_builtin('<=/2',Sg,_Subgoal,Type,Condvars):- 
-%%      language(clp),!,
+%%      curr_language(clp),!,
 %%      Type = '$fd_comp', Condvars = Sg . 
 fr_special_builtin('=</2',Sg,_Subgoal,Type,Condvars):- 
-    language(clp),!,
+    curr_language(clp),!,
     Type = '$fd_comp', Condvars = Sg . 
 fr_special_builtin('=</2',Sg,_Subgoal,Type,Condvars):- 
-    language(lp),!,
+    curr_language(lp),!,
     Type = '$fd_ground', Condvars = Sg . 
 fr_special_builtin('>/2',Sg,_Subgoal,Type,Condvars):- 
-    language(clp),!,
+    curr_language(clp),!,
     Type = '$fd_comp', Condvars = Sg . 
 fr_special_builtin('>/2',Sg,_Subgoal,Type,Condvars):- 
-    language(lp),!,
+    curr_language(lp),!,
     Type = '$fd_ground', Condvars = Sg . 
 fr_special_builtin('>=/2',Sg,_Subgoal,Type,Condvars):-  
-    language(clp),!,
+    curr_language(clp),!,
     Type = '$fd_comp', Condvars = Sg .
 fr_special_builtin('>=/2',Sg,_Subgoal,Type,Condvars):-  
-    language(lp),!,
+    curr_language(lp),!,
     Type = '$fd_ground', Condvars = Sg .
 fr_special_builtin('.<./2',Sg,_Subgoal,Type,Condvars):- 
     Type = '$fd_comp', Condvars = Sg . 
@@ -497,7 +497,7 @@ fr_success_builtin('$fd_nonvar',_Sv_uns,_Sg,_HvFv_u,_Call,Succ):-
 fr_success_builtin('$fd_arg',_Sv_uns,Sg,_HvFv_u,Call,Succ):-
     Sg =.. [_,A1,A2,A3],
     ( numerical(A1), fr_ground_arg(A1, Call) ->
-      ( language(lp) -> % In SICStus A2 must be a compound ter
+      ( curr_language(lp) -> % In SICStus A2 must be a compound ter
         ( fr_nonfree_arg(A2,Call) ->
             ( var(A2) ->
                     get_vars(A3, Sh),

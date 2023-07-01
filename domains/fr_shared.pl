@@ -12,7 +12,7 @@
     ],
     [ ] ).
 
-:- use_module(library(compiler/p_unit), [language/1]).
+:- use_module(library(compiler/p_unit), [curr_language/1]).
 
 :- use_module(domain(fr_sets), 
     [ set_add_el/3,
@@ -42,10 +42,10 @@ bottomelement('$bottom').
 
 get_type(Term, var):- var(Term), !.
 get_type(Term, Type):- 
-    language(clp),!,
+    curr_language(clp),!,
     get_type0(Term, Type).
 get_type(_, Type):- 
-    language(lp),!,
+    curr_language(lp),!,
     Type = herb.
     
 get_type0(Term, num):- number(Term), !.
