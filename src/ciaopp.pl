@@ -158,7 +158,7 @@ Other commands useful when developing or debugging CiaoPP:
 
 :- use_module(ciaopp(preprocess_flags), [current_pp_flag/2]).
 :- use_module(ciaopp(frontend_driver), [is_library/1]).
-:- use_module(library(compiler/p_unit/itf_db), [current_itf/3, preloaded_module/2, curr_file/2]).
+:- use_module(library(compiler/p_unit/itf_db), [current_itf/3, mod_in_libcache/2, curr_file/2]).
 :- use_module(engine(runtime_control), [module_split/3]).
 
 % TODO: move somewhere else?
@@ -194,7 +194,7 @@ typeslib_interesting_type(T, Mode) :-
     interesting_module(M,Mode).
 
 interesting_module(M,build) :-
-    preloaded_module(M,_Base),!,fail.
+    mod_in_libcache(M,_Base),!,fail.
 interesting_module(basic_props,_).
 interesting_module(arithmetic,_).
 interesting_module(assertions_props,_).
