@@ -93,7 +93,6 @@
 :- use_package(library(compiler/p_unit/p_unit_argnames)).
 
 :- use_module(library(compiler/p_unit), [replace_program/2]).
-:- use_module(library(compiler/p_unit/tr_syntax), [traverse_clauses/5]).
 :- use_module(library(compiler/p_unit/program_keys), [
     clause_key/2, rewrite_source_clause/3
 ]).
