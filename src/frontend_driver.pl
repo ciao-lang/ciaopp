@@ -433,32 +433,6 @@ hook_save_lib_regtypes(Stream) :-
     typeslib:gen_lib_type_info(Stream).
 
 % ---------------------------------------------------------------------------
-% Use cached libraries
-%
-% Lib cache to load faster (requires running gen_lib_cache command)
-
-:- use_module(library(persdb/datadir), [ensure_datadir/2]).
-:- use_module(library(compiler/p_unit/p_asr), [load_lib_sources/1, loaded_lib_sources/0]).
-
-:- export(ensure_lib_sources_loaded/0).
-
-:- pred ensure_lib_sources_loaded/0 #"Loads the already preprocess sources of
-the libraries. This predicate is called implicitly by @pred{module/1} but that
-we can call it explicitly to ensure that the cache is preloaded.".
-ensure_lib_sources_loaded :-
-    current_pp_flag(preload_lib_sources, on),
-    % Check if they were already loaded
-    \+ loaded_lib_sources, !,
-    ensure_datadir('ciaopp_lib_cache', Dir),
-    catch(load_lib_sources(Dir), error(_,_), warn_no_cache).
-    % TODO: warn if not defined??
-    % TODO: call command to generate them if not defined??
-ensure_lib_sources_loaded.
-
-warn_no_cache :-
-    note_message("uncached library sources (enable with 'ciaopp --gen-lib-cache')", []).
-
-% ---------------------------------------------------------------------------
 % Cleanup
 :- use_module(ciaopp(analyze_driver), [clean_analysis_info/0]).
 :- use_module(ciaopp(plai/intermod_ops), [cleanup_p_abs/0]). % TODO: not cleaned?
@@ -1026,41 +1000,40 @@ hook_native_property('resources_props:cost'(G,Rel,Ap,Type,R,_,IF,CFN), cost(G,Re
 :- endif. % with_fullpp
 
 % ---------------------------------------------------------------------------
-:- doc(section, "Preload libraries").
-% ---------------------------------------------------------------------------
+:- doc(section, "Cached libraries").
 
-:- use_module(library(bundle/bundle_paths), [bundle_path/3]).
-:- use_module(library(compiler/p_unit/p_asr), [gen_lib_sources/1]).
-:- use_module(library(compiler/p_unit/itf_db), [fake_module_name/1]).
+% Cache libraries (speedup p_unit, requires running gen_lib_cache command)
 
-% TODO: extend to arbitrary bundles
+:- use_module(library(compiler/p_unit), [load_libcache/1, gen_libcache/1]).
+:- use_module(library(compiler/p_unit/p_asr), [loaded_lib_sources/0]).
+
+:- export(ensure_lib_sources_loaded/0).
+:- pred ensure_lib_sources_loaded/0 # "Ensure that the libcache is
+   loaded (if @tt{preload_lib_sources} is enabled and the cache is
+   generated) (see @pred{p_unit:load_libcache/1}).".
+
+ensure_lib_sources_loaded :-
+    current_pp_flag(preload_lib_sources, on),
+    % Check if they were already loaded
+    \+ loaded_lib_sources, !,
+    catch(load_libcache('ciaopp_lib_cache'), error(_,_), warn_no_cache).
+    % TODO: warn if not defined??
+    % TODO: call command to generate them if not defined??
+ensure_lib_sources_loaded.
+
+warn_no_cache :-
+    note_message("uncached library sources (enable with 'ciaopp --gen-lib-cache')", []).
 
 :- export(cache_and_preload_lib_sources/0).
-:- pred cache_and_preload_lib_sources/0
-   # "Generate and preload the preprocessed assertions from the
-     libraries (specified in the @tt{core/Manifest/core.libcache.pl}
-     module.
-
-     @alert{It cleans the current state of CiaoPP}.".
+:- pred cache_and_preload_lib_sources/0 # "Generate and load the
+   libcache (see @pred{p_unit:gen_libcache/1}).".
 
 cache_and_preload_lib_sources :-
-    clean_analysis_info0,
-    cleanup_all,
-    bundle_path(core, 'Manifest/core.libcache.pl', P),
-    %
     pp_statistics(runtime,[T0,_]),
     pplog(load_module, ['{generating lib cache...}']),
-    %
-    preprocessing_unit([P],_Ms,E),
-    ( E == yes -> throw(error(cache_and_preload_lib_sources/0)) ; true ),
-    %assertz_fact(curr_module('core.libcache')),
-    %assertz_fact(curr_file(P, 'core.libcache')),
-    set_fact(fake_module_name('core.libcache')), % do not cache info of that module
-    ensure_datadir('ciaopp_lib_cache', Dir),
-    p_asr:gen_lib_sources(Dir),
-    %
+    gen_libcache('ciaopp_lib_cache'),
     pp_statistics(runtime,[T1,_]),
     TotalT is T1 - T0,
     pplog(load_module, ['{done in ',time(TotalT), ' msec.}']),
-    %
     ensure_lib_sources_loaded.
+
