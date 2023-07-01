@@ -78,17 +78,16 @@ last_domain_used(AbsInt) :-
 
 :- use_package(ciaopp(analysis_register)).
 
-:- if(defined(with_fullpp)).
 :- use_module(library(compiler), [use_module/1]).
 
 analysis_needs_load(Analysis) :-
     lazy_analysis(Analysis),
     \+ loaded_analysis(Analysis).
 
+% TODO: finish plugins
 load_analysis(Analysis) :-
     analysis_module(Analysis, Module),
     use_module(Module).
-:- endif. % with_fullpp
 
 % (Hooks)
 
@@ -102,7 +101,6 @@ load_analysis(Analysis) :-
     # "@var{Analysis} is a valid analysis identifier.".
 :- multifile analysis/1.
 
-:- if(defined(with_fullpp)).
 analysis(nfg). % TODO: why not in aidomain/1
 analysis(seff). % TODO: why not in aidomain/1
 analysis(res_plai). % TODO: why not in aidomain/1
@@ -110,7 +108,6 @@ analysis(res_plai_stprf). % TODO: why not in aidomain/1
 analysis(sized_types). % TODO: why not in aidomain/1
 analysis(AbsInt):- aidomain(AbsInt), !.
 analysis(Analysis) :- lazy_analysis(Analysis), !.
-:- endif. % with_fullpp
 
 :- pop_prolog_flag(multi_arity_warnings).
 
@@ -125,24 +122,19 @@ analysis(Analysis) :- lazy_analysis(Analysis), !.
 :- use_module(library(compiler/p_unit), [program/2]).
 :- use_module(ciaopp(frontend_driver), [push_history/1]).
 
-:- if(defined(with_fullpp)).
 % (Reexport for documentation)
 :- reexport(ciaopp(plai/trace_fixp), [trace_fixp/1]). % for documentation
 :- use_module(ciaopp(plai/trace_fixp), [trace_option/1]). % for documentation
 :- use_module(ciaopp(plai/trace_fixp), [trace_init/0, trace_end/0]).
 :- doc(doinclude,trace_fixp/1).
-:- endif. % with_fullpp
 
 :- use_module(library(compiler/p_unit/itf_db), [curr_file/2]).
 
-:- if(defined(with_fullpp)).
 % (support for incremental analysis)
 :- use_module(ciaopp(plai/incanal), [incremental_analyze/2]).
 % (support for intermodular analysis)
 :- use_module(ciaopp(plai/intermod), [intermod_analyze/3]).
-:- endif. % with_fullpp
 
-:- if(defined(with_fullpp)).
 :- use_module(ciaopp(plai), [plai/5, mod_plai/5, is_checker/1]).
 %
 :- if(defined(has_ciaopp_cost)).
@@ -160,7 +152,6 @@ analysis(Analysis) :- lazy_analysis(Analysis), !.
 
 % statistics (from intermod)
 :- use_module(ciaopp(analysis_stats)).
-:- endif. % with_fullpp
 
 :- export(analyze/1).
 :- pred analyze(+Analysis) : analysis + (not_fails, no_choicepoints)
@@ -172,7 +163,6 @@ analyze(Analysis) :- analyze(Analysis,_).
 :- pred analyze(+Analysis,-Info)
   # "Same as analyze(@var{Analysis}) but in @var{Info} returns statistics (time
     and memory).".
-:- if(defined(with_fullpp)).
 analyze(_Analysis,[]):-
     \+ curr_file(_File,_), !,
     message(error, ['Could not analyze, no modules have been loaded']),
@@ -184,7 +174,6 @@ analyze(Analysis,Info) :-
     curr_file(File,_),
     intermod_analyze(Analysis,File,Info).
     % pop_pp_flag(entry_policy)
-:- endif. % with_fullpp
 analyze(Analysis,Info) :-
     analyze1(Analysis,Info).
 
@@ -193,14 +182,12 @@ analyze1(AbsInt,_Info) :- var(AbsInt), !,
     throw(error(instantiation_error, analyze1/2-1)).
 analyze1(Analysis,Info) :- ( Analysis = [] ; Analysis = [_|_] ), !,
     analyze1_several_domains(Analysis,[],Info).
-:- if(defined(with_fullpp)).
 analyze1(Analysis,Info) :-
     analysis(Analysis),
     !,
     trace_init,
     analyze1_(Analysis,Info),
     trace_end.
-:- endif. % with_fullpp
 analyze1(AbsInt,_Info):-
     message(error0, ['{Not a valid analysis: ',~~(AbsInt),'}']),
     fail.
@@ -217,7 +204,6 @@ analyze1_several_domains([AbsInt|As], TotalInfo0, TotalInfo):-
     ),
     analyze1_several_domains(As, TotalInfo1, TotalInfo).
 
-:- if(defined(with_fullpp)).
 analyze1_(AbsInt,Info) :-
     current_pp_flag(incremental, on), !,
     incremental_analyze(AbsInt, Info),
@@ -238,7 +224,6 @@ analyze1_(AbsInt,Info) :-
     assert_domain(AbsInt),
     pplog(analyze_module, ['}']),
     !. % TODO: this cut should not be needed (make sure that there are no dangling choice points)
-:- endif. % with_fullpp
 
 % ---------------------------------------------------------------------------
 
@@ -250,7 +235,6 @@ not_intermod(AbsInt) :-
     ).
 
 % take care of incompatibilities here!
-:- if(defined(with_fullpp)).
 :- if(defined(has_ciaopp_cost)).
 analyze_(nfg,Cls,_Ds,nfinfo(TimeNf,Num_Pred,Num_NF_Pred,NCov),_):- !,
     not_intermod(nfg),
@@ -325,9 +309,7 @@ analyze_(AbsInt,Cls,Ds,Info,_):-
     ),
     set_pp_flag(multi_success,L),
     set_pp_flag(widen,W).
-:- endif. % with_fullpp
 
-:- if(defined(with_fullpp)).
 :- use_module(library(compiler/p_unit), [inject_output_package/1]).
 :- use_module(ciaopp(infer/infer_dom), [knows_of/2]).
 
@@ -347,12 +329,10 @@ add_packages_if_needed(A) :-
     inject_output_package(regtypes).
 add_packages_if_needed(_) :-
     inject_output_package(assertions).
-:- endif. % with_fullpp
 
 % ---------------------------------------------------------------------------
 % TODO:[new-resources] move to other module
 
-:- if(defined(with_fullpp)).
 :- if(defined(has_ciaopp_cost)).
 :- use_module(domain(resources/recurrence_processing),
     [ solve_eqs/1,
@@ -371,12 +351,9 @@ handle_eqs(An):-
     pplog(analyze_module, ['{Writing equations and results to ',~~(FileEqs),'}']),
     output_eqs_to_file(FileEqs).
 :- endif.
-:- endif. % with_fullpp
 
 % ===========================================================================
 :- doc(section, "Assertion checking").
-
-:- if(defined(with_fullpp)).
 
 :- use_module(ciaopp(infer/infer_db), [domain/1]).
 :- use_module(ciaopp(infer/infer_dom), [knows_of/2]).
@@ -541,20 +518,6 @@ perform_pp_ctchecks(AbsInts, ModList) :-
     ctcheck_pp(AbsInts,ModList).
 perform_pp_ctchecks(_,_).
 
-:- else. % \+ with_fullpp
-% TODO: enable code above, make it modular
-
-:- export(acheck/2).
-acheck(_,_) :- fail.
-:- export(acheck/1).
-acheck(_) :- fail.
-:- export(acheck/0).
-acheck.
-:- export(acheck_summary/1).
-acheck_summary(ok).
-
-:- endif. % \+ with_fullpp
-
 % ---------------------------------------------------------------------------
 % TODO: cleanup for transform?
 
@@ -590,8 +553,6 @@ clean_analysis_info0 :-
     cleanup_types,
     cleanup_domain.
 
-:- if(defined(with_fullpp)).
-
 :- use_module(ciaopp(plai), [cleanup_plai/1]).
 :- use_module(ciaopp(plai/intermod_ops), [cleanup_p_abs/0]).
 :- use_module(ciaopp(infer/inferseff), [cleanup_seff/0]).
@@ -607,4 +568,3 @@ cleanup_for_codegen :-
     cleanup_domain.
     % cleanup_errors. % TODO: why not?
 
-:- endif. % with_fullpp

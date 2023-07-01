@@ -112,18 +112,15 @@ Other commands useful when developing or debugging CiaoPP:
 % TODO: optional
 % Plugin-like modules that define analyzers -- EMM
 
-:- if(defined(with_fullpp)).
 :- if(defined(has_ciaopp_cost)).
 :- use_module(resources(resources_register), []).
 :- use_module(infercost(infercost_register), []).
-:- endif.
 :- endif.
 
 % -----------------------------------------------------------------------
 % TODO: optional?
 % Auto-interface
 
-:- if(defined(with_fullpp)).
 :- reexport(ciaopp(auto_interface)).
 :- doc(hide,auto_analyze/1).
 :- doc(hide,auto_analyze/2).
@@ -151,38 +148,13 @@ Other commands useful when developing or debugging CiaoPP:
 :- doc(hide,restore_menu_config/1).
 :- doc(hide,show_menu_configs/0).
 :- doc(hide,show_menu_config/1).
-:- else.
-% TODO: include!
-:- export(customize_and_preprocess/1).
-:- impl_defined(customize_and_preprocess/1).
-:- export(restore_menu_config/1).
-:- impl_defined(restore_menu_config/1).
-:- export(set_last_file/1).
-:- impl_defined(set_last_file/1).
-:- export(again/0).
-:- impl_defined(again/0).
-:- export(auto_analyze/2).
-:- impl_defined(auto_analyze/2).
-:- export(auto_check_assert/2).
-:- impl_defined(auto_check_assert/2).
-:- export(auto_optimize/2).
-:- impl_defined(auto_optimize/2).
-:- export(set_menu_flag/3).
-:- impl_defined(set_menu_flag/3).
-:- export(get_menu_flag/3).
-:- impl_defined(get_menu_flag/3).
-:- export(set_menu_flag/3).
-:- impl_defined(set_menu_flag/3).
-:- endif.
 
 % -----------------------------------------------------------------------
 % TODO: optional
 % (optional: types)
 
-:- if(defined(with_fullpp)).
 :- reexport(typeslib(typeslib), [show_types/0]).
 :- doc(hide,show_types/0).
-:- endif.
 
 :- use_module(ciaopp(preprocess_flags), [current_pp_flag/2]).
 :- use_module(ciaopp(frontend_driver), [is_library/1]).

@@ -50,7 +50,6 @@
 :- use_module(library(compiler/p_unit), [program/2]). 
 :- use_module(ciaopp(frontend_driver), [push_history/1]).
 
-:- if(defined(with_fullpp)).
 :- use_module(library(compiler/p_unit), [replace_program/2]).
 
 :- use_module(ciaopp(plai/normalize_args), [normalize_args/4]).
@@ -73,8 +72,6 @@
 %:- use_module(ciaopp(tr_parallel/tr_granul),[annotate_granul/6]).
 :- use_module(ciaopp(tr_parallel), []). % Enable parallel transformations
 :- endif.
-
-:- endif. % with_fullpp
 
 :- use_module(ciaopp(analyze_driver), [last_domain_used/1]).
 
@@ -103,7 +100,6 @@ transform(Trans,_Info):-
     message(error0, ['{Not a valid program transformation: ',~~(Trans),'}']),
     fail.
 
-:- if(defined(with_fullpp)).
 transform_(spec,Cls,Ds,Info):- !,
     simpspec(spec,Cls,Ds,Info).
 transform_(simp,Cls,Ds,Info):- !,
@@ -137,13 +133,10 @@ transform_(unfold_entry,Cls,Ds,_Info) :- !,
 transform_(normalize, Cls, Ds, _Info ) :- !,
     normalize_args(Cls,Ds,Cls1,Ds1), % TODO: what is this?
     replace_program(Cls1,Ds1).
-:- endif. % with_fullpp
 transform_(Tr,Cls,Ds,Info):-
     transformation(Tr,Cls,Ds,Info).
 %       last_domain_used(AbsInt),
 %       codegen_min(Cls,Ds,Info).
-
-:- if(defined(with_fullpp)).
 
 :- use_module(ciaopp(analyze_driver), [cleanup_for_codegen/0]).
 
@@ -196,7 +189,6 @@ decide_update_ai_info_case(codegen_min,Cls,Ds,Cls,Ds):-!,
     cleanup_for_codegen.
 decide_update_ai_info_case(_Spec,TmpCls,TmpDs,NewCls,NewDs):-
     update_ai_info_case(TmpCls,TmpDs,NewCls,NewDs).
-:- endif. % with_fullpp
 
 :- push_prolog_flag(multi_arity_warnings,off).
 
@@ -209,7 +201,6 @@ decide_update_ai_info_case(_Spec,TmpCls,TmpDs,NewCls,NewDs):-
     # "@var{Transformation} is a valid transformation identifier.".
 :- multifile transformation/1.
 
-:- if(defined(with_fullpp)).
 transformation( normalize     ).
 transformation( spec          ).
 transformation( simp          ).
@@ -225,7 +216,6 @@ transformation( granul        ).
 transformation( rtc           ).
 transformation( codegen_min   ).
 transformation( unfold_entry  ).
-:- endif. % with_fullpp
 
 :- pop_prolog_flag(multi_arity_warnings).
 

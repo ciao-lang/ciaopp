@@ -243,11 +243,9 @@ module(Ms, Info):-
 :- use_module(ciaopp(analyze_driver),
     [clean_analysis_info/0, clean_analysis_info0/0]).
 
-:- if(defined(with_fullpp)).
 module_(ModList, Info):-
     current_pp_flag(incremental, on), !,
     incremental_module(ModList, Info).
-:- endif. % with_fullpp
 module_(ModList, Info):-
     clean_analysis_info0, % TODO: merge! see definition, cleanup_types/0?
     cleanup_all,
@@ -473,9 +471,7 @@ perform_transformations([E|Ls]) :-
 :- use_module(library(compiler/p_unit/unexpand),
               [transform_clause_list/3, transform_name/3]).
 
-:- if(defined(with_fullpp)).
 :- use_module(ciaopp(raw_printer), [raw_output/1]).
-:- endif. % with_fullpp
 
 :- use_module(library(pretty_print),  [pretty_print/4]).
 :- use_module(library(messages),      [error_message/2, warning_message/2, note_message/2]).
@@ -492,9 +488,7 @@ perform_transformations([E|Ls]) :-
 %------------------------------------------------------------------------
 % DUMP MODULE.
 %------------------------------------------------------------------------
-:- if(defined(with_fullpp)).
 :- reexport(ciaopp(p_dump)).
-:- endif. % with_fullpp
 
 %------------------------------------------------------------------------
 
@@ -776,11 +770,9 @@ get_infos([],_Vars,[]).
 % ---------------------------------------------------------------------------
 
 output_ext('.pl').
-:- if(defined(with_fullpp)).
 output_by_ext('.pl', Stream) :-
     current_pp_flag(output_lang, raw), !,
     raw_output(Stream).
-:- endif. % with_fullpp
 output_by_ext('.pl', Stream) :- !,
     ( current_pp_flag(dump_ai, on) -> analysis_info_to_assertions ; true ),
     write_mod_headers(Stream),
@@ -788,14 +780,12 @@ output_by_ext('.pl', Stream) :- !,
     write_types(Stream).
 
 % TODO: make output_by_ext/2 a hook
-:- if(defined(with_fullpp)).
 :- if(defined(has_ciaopp_llvm)).
 :- include(ciaopp_llvm(printer_llvm)).
 :- endif.
 :- if(defined(has_ciaopp_java)).
 :- include(ciaopp(printer_java)).
 :- endif.
-:- endif. % with_fullpp
 
 % ---------------------------------------------------------------------------
 
@@ -961,7 +951,6 @@ transform_one_type_clause_args(N, Pred, NPred, T) :-
 
 % ---------------------------------------------------------------------------
 
-:- if(defined(with_fullpp)).
 :- if(defined(has_ciaopp_cost)).
 
 :- use_module(library(resdefs/rescostfunc), [compact_cf/3, compact_size/3]).
@@ -996,8 +985,6 @@ hook_compact_calls_prop(intervals(_, G, _, L), intervals(S, L)) :-
 hook_native_property('resources_props:cost'(G,Rel,Ap,Type,R,_,IF,CFN), cost(G,Rel,Ap,Type,R,CF)) :-
     compact_cf(CFN,IF,CF).
 :- endif.
-
-:- endif. % with_fullpp
 
 % ---------------------------------------------------------------------------
 :- doc(section, "Cached libraries").
