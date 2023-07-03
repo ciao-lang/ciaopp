@@ -991,8 +991,7 @@ hook_native_property('resources_props:cost'(G,Rel,Ap,Type,R,_,IF,CFN), cost(G,Re
 
 % Cache libraries (speedup p_unit, requires running gen_lib_cache command)
 
-:- use_module(library(compiler/p_unit), [load_libcache/1, gen_libcache/1]).
-:- use_module(library(compiler/p_unit/p_asr), [loaded_libcache/0]).
+:- use_module(library(compiler/p_unit), [load_libcache/1, gen_libcache/1, loaded_libcache/0]).
 
 :- export(ensure_libcache_loaded/0).
 :- pred ensure_libcache_loaded/0 # "Ensure that the libcache is
