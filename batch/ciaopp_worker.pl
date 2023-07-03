@@ -76,7 +76,7 @@ predicates}.
 start_worker(LogID) :- !,
     set_fact(worker_ID(LogID)),
     init_tmp_db(LogID),
-    set_pp_flag(preload_lib_sources, on),
+    % set_pp_flag(use_libcache, on), % (enabled by default)
     ensure_libcache_loaded,
     treat_all.
 

@@ -461,7 +461,7 @@ post_mod_ana(X,X) :-
         set_menu_flag(ana,mnu_modules_to_analyze, all),
         set_menu_flag(ana,module_loading, all), % monolithic by default
         set_menu_flag(ana,success_policy, under_all),
-        set_menu_flag(ana,preload_lib_sources, on),
+        % set_menu_flag(ana,use_libcache, on), % (enabled by default)
         set_menu_flag(ana,output, off)
     ; true ).
 

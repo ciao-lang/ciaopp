@@ -996,11 +996,11 @@ hook_native_property('resources_props:cost'(G,Rel,Ap,Type,R,_,IF,CFN), cost(G,Re
 
 :- export(ensure_libcache_loaded/0).
 :- pred ensure_libcache_loaded/0 # "Ensure that the libcache is
-   loaded (if @tt{preload_lib_sources} is enabled and the cache is
+   loaded (if @tt{use_libcache} is enabled and the cache is
    generated) (see @pred{p_unit:load_libcache/1}).".
 
 ensure_libcache_loaded :-
-    current_pp_flag(preload_lib_sources, on),
+    current_pp_flag(use_libcache, on),
     % Check if they were already loaded
     \+ loaded_libcache, !,
     catch(load_libcache('ciaopp_lib_cache'), error(_,_), warn_no_libcache).

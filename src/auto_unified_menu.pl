@@ -54,7 +54,7 @@ all, 'Action'       # inter_all  - analyze_check :: all_menu_branch.
 ~munified(0), '| Module loading'             # module_loading - all  <- new_mod.
 ~munified(1), '| Success policy'             # success_policy - under_all <- new_mod.
 ~munified(1), '| Module loading boundary'    # punit_boundary - bundle  <- new_mod.
-~munified(1), '| Preload libraries'          # preload_lib_sources - on <- new_mod.
+~munified(1), '| Use libcache'               # use_libcache - on <- new_mod.
 
 % ------------------------------------------------------------
 % fixpoint options

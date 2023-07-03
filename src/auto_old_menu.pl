@@ -107,7 +107,7 @@ para     , 'Granularity Analysis'   # para_grain       - none.
 ~mtype   , '| Module loading'             # module_loading - all  <- new_mod.
 ~mtype   , '| Success policy'             # success_policy - under_all <- new_mod.
 ~mtype   , '| Module loading boundary'    # punit_boundary - bundle <- new_mod_expert.
-~mtype   , '| Preload libraries'          # preload_lib_sources - on <- new_mod_expert.
+~mtype   , '| Use libcache'               # use_libcache - on <- new_mod_expert.
 
 % ------------------------------------------------------------
 % fixpoint options
