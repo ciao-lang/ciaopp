@@ -255,7 +255,7 @@ module_(ModList, Info):-
     generate_unexpanded_data(Mod). % TODO: only for output?
 
 load_modules(ModList,Info) :-
-    ensure_lib_sources_loaded,
+    ensure_libcache_loaded,
     pp_statistics(runtime,[T0,_]),
     absolute_file_names(ModList,AbsFileList),
     % (only for message, avoid list if possible)
@@ -992,35 +992,35 @@ hook_native_property('resources_props:cost'(G,Rel,Ap,Type,R,_,IF,CFN), cost(G,Re
 % Cache libraries (speedup p_unit, requires running gen_lib_cache command)
 
 :- use_module(library(compiler/p_unit), [load_libcache/1, gen_libcache/1]).
-:- use_module(library(compiler/p_unit/p_asr), [loaded_lib_sources/0]).
+:- use_module(library(compiler/p_unit/p_asr), [loaded_libcache/0]).
 
-:- export(ensure_lib_sources_loaded/0).
-:- pred ensure_lib_sources_loaded/0 # "Ensure that the libcache is
+:- export(ensure_libcache_loaded/0).
+:- pred ensure_libcache_loaded/0 # "Ensure that the libcache is
    loaded (if @tt{preload_lib_sources} is enabled and the cache is
    generated) (see @pred{p_unit:load_libcache/1}).".
 
-ensure_lib_sources_loaded :-
+ensure_libcache_loaded :-
     current_pp_flag(preload_lib_sources, on),
     % Check if they were already loaded
-    \+ loaded_lib_sources, !,
-    catch(load_libcache('ciaopp_lib_cache'), error(_,_), warn_no_cache).
+    \+ loaded_libcache, !,
+    catch(load_libcache('ciaopp_lib_cache'), error(_,_), warn_no_libcache).
     % TODO: warn if not defined??
     % TODO: call command to generate them if not defined??
-ensure_lib_sources_loaded.
+ensure_libcache_loaded.
 
-warn_no_cache :-
+warn_no_libcache :-
     note_message("uncached library sources (enable with 'ciaopp --gen-lib-cache')", []).
 
-:- export(cache_and_preload_lib_sources/0).
-:- pred cache_and_preload_lib_sources/0 # "Generate and load the
+:- export(gen_and_load_libcache/0).
+:- pred gen_and_load_libcache/0 # "Generate and load the
    libcache (see @pred{p_unit:gen_libcache/1}).".
 
-cache_and_preload_lib_sources :-
+gen_and_load_libcache :-
     pp_statistics(runtime,[T0,_]),
     pplog(load_module, ['{generating lib cache...}']),
     gen_libcache('ciaopp_lib_cache'),
     pp_statistics(runtime,[T1,_]),
     TotalT is T1 - T0,
     pplog(load_module, ['{done in ',time(TotalT), ' msec.}']),
-    ensure_lib_sources_loaded.
+    ensure_libcache_loaded.
 

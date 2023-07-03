@@ -62,7 +62,7 @@ CiaoPP shell (this is the default behavior):
 :- use_module(library(format), [format/3]).
 :- use_module(ciaopp_batch(ciaopp_worker)).
 :- use_module(ciaopp_actmod, [main/1]).
-:- use_module(ciaopp(frontend_driver), [cache_and_preload_lib_sources/0]).
+:- use_module(ciaopp(frontend_driver), [gen_and_load_libcache/0]).
 :- use_module(ciaopp(ciaoppcl_common), [
     parse_opts/3, ciaopp_run/2,
     ciaopp_error_message/1
@@ -81,7 +81,7 @@ handle_ciaopp_error(E) :-
     halt(1).
 
 main_(['--gen-lib-cache']) :- !,
-    cache_and_preload_lib_sources.
+    gen_and_load_libcache.
 main_(Args) :-
     % TODO: use get_opts/1 like in lpdoc
     parse_opts(Args, Cmd, Flags),

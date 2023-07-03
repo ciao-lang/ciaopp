@@ -50,7 +50,7 @@ predicates}.
 :- use_module(library(stream_utils), [file_to_string/2]).
 :- use_module(library(read), [read/2]).
 
-:- use_module(ciaopp(frontend_driver), [module/2,ensure_lib_sources_loaded/0]).
+:- use_module(ciaopp(frontend_driver), [module/2,ensure_libcache_loaded/0]).
 :- use_module(ciaopp(analyze_driver), [analyze/2]).
 :- use_module(ciaopp(preprocess_flags), [set_pp_flag/2]).
 :- use_module(ciaopp(p_dump), [dump/2]).
@@ -77,7 +77,7 @@ start_worker(LogID) :- !,
     set_fact(worker_ID(LogID)),
     init_tmp_db(LogID),
     set_pp_flag(preload_lib_sources, on),
-    ensure_lib_sources_loaded,
+    ensure_libcache_loaded,
     treat_all.
 
 % ---------------------------------------------------------------------------

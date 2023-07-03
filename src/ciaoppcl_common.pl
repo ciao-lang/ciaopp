@@ -6,7 +6,6 @@
 :- doc(author, "The Ciao Development Team").
 
 :- use_module(engine(io_basic)).
-:- use_module(ciaopp(frontend_driver), [cache_and_preload_lib_sources/0]).
 :- use_module(library(messages)).
 :- use_module(library(lists), [member/2]).
 
