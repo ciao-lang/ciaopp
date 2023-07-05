@@ -23,10 +23,10 @@
 :- use_module(ciaopp(plai/plai_db)).
 :- use_module(library(compiler/p_unit), [type_of_goal/2]).
 :- use_module(library(assertions/assrt_lib), [assertion_body/7]).
-:- use_module(library(compiler/p_unit/assrt_db), [
+:- use_module(library(compiler/p_unit/p_unit_db), [
+    curr_file/2,
     removeall_assertion_read/9,
     add_assertion_read/9]).
-:- use_module(library(compiler/p_unit/itf_db), [curr_file/2]).
 :- use_module(typeslib(typeslib), [simplify_step2/0]).
 :- if(defined(has_ciaopp_cost)).
 :- use_module(infercost(infercost_register),

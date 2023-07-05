@@ -1,7 +1,7 @@
 :- module(_,[],[]).
 
 :- use_module(library(compiler/p_unit/program_keys)).
-:- use_module(library(compiler/p_unit/clause_db), [source_clause/3]).
+:- use_module(library(compiler/p_unit/p_unit_db), [source_clause/3]).
 :- use_module(library(lists), [length/2]).
 :- use_module(library(idlists), [member_0/2]).
 :- use_module(library(terms_vars), [varset/2]).

@@ -10,7 +10,7 @@
 :- use_module(spec(modular_spec), [dyn_abs_spec/5]).
 :- use_module(spec(abs_exec_cond), [type_of/4]). %PLG
 :- use_module(library(compiler/p_unit), [prop_to_native/2]).
-:- use_module(library(compiler/p_unit/assrt_db), [assertion_read/9]). %PLG
+:- use_module(library(compiler/p_unit/p_unit_db), [assertion_read/9]). %PLG
 :- use_module(library(compiler/p_unit/program_keys), [predkey_from_sg/2]). %PLG
 :- use_module(ciaopp(ctchecks/ctchecks_pred), [decide_get_info/4]). %PLG
 :- use_module(ciaopp(plai/domains), [abs_sort/3]). %PLG

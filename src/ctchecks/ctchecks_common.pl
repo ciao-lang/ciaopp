@@ -12,14 +12,15 @@
 :- use_package(library(compiler/p_unit/p_unit_argnames)).
 
 :- use_module(library(lists), [append/3]).
-:- use_module(library(assertions/assrt_lib), [assertion_body/7]).
-:- use_module(library(compiler/p_unit/assrt_db), [ref_assertion_read/10]).
 :- use_module(library(formulae), [list_to_conj/2, list_to_disj/2]).
 :- use_module(library(messages), [debug_message/2]).
-:- use_module(library(compiler/p_unit/itf_db), [curr_file/2]).
-:- use_module(library(compiler/p_unit), [type_of_goal/2]).
 :- use_module(library(aggregates), [findall/3]).
+
+:- use_module(library(assertions/assrt_lib), [assertion_body/7]).
+:- use_module(library(compiler/p_unit), [type_of_goal/2]).
+:- use_module(library(compiler/p_unit/p_unit_db), [curr_file/2, ref_assertion_read/10]).
 :- use_module(library(compiler/p_unit/unexpand), [transform_metapred/3]).
+
 :- use_module(ciaopp(preprocess_flags), [current_pp_flag/2]).
 :- use_module(ciaopp(plai/domains),
               [asub_to_info/5,glb/4,info_to_asub/7,unknown_call/5,

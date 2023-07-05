@@ -46,7 +46,7 @@
 % ===========================================================================
 :- doc(section, "Program transformation").
     
-:- use_module(library(compiler/p_unit/itf_db), [curr_file/2]).
+:- use_module(library(compiler/p_unit/p_unit_db), [curr_file/2]).
 :- use_module(library(compiler/p_unit), [program/2]). 
 :- use_module(ciaopp(frontend_driver), [push_history/1]).
 

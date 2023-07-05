@@ -68,8 +68,7 @@ to avoid recomputation), but it not implemented yet.").
 :- use_module(library(compiler/p_unit/program_keys),
     [decode_litkey/5, decode_clkey/4, get_predkey/3, make_atom/2]).
 :- use_module(library(compiler/p_unit), [program/2]).
-:- use_module(library(compiler/p_unit/itf_db), [current_itf/3]).
-:- use_module(library(compiler/p_unit/clause_db), [source_clause/3]).
+:- use_module(library(compiler/p_unit/p_unit_db), [current_itf/3, source_clause/3]).
 
 :- set_prolog_flag(write_strings, on).
 

@@ -40,7 +40,7 @@
 :- use_module(spec(s_simpspec), [list_format/2]).
 
 :- use_module(library(compiler/p_unit), [new_predicate/3, predicate_names/1]).
-:- use_module(library(compiler/p_unit/itf_db), [assert_itf/5, retract_itf/5]).
+:- use_module(library(compiler/p_unit/p_unit_db), [assert_itf/5, retract_itf/5]).
 :- use_module(library(compiler/p_unit/program_keys),
     [decode_litkey/5, decode_entrykey/4, decode_predkey/3, get_predkeys/2,
      get_predkey/3, make_atom/2]).

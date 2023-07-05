@@ -462,8 +462,7 @@ is_rec_clause([_|_],N,A,r,[N/A|RPs],RPs).
 
 :- doc(section, "Preproc meta calls").
 
-:- use_module(library(compiler/p_unit/itf_db)).
-:- use_module(library(compiler/p_unit/assrt_db)).
+:- use_module(library(compiler/p_unit/p_unit_db)).
 % Add entries for all the calls to meta_predicates
 
 :- pred create_entries(+Goal,+Type,+Meta,+Mod) #"@var{Meta} is the info in the

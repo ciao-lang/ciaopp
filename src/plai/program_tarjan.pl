@@ -8,7 +8,7 @@
 :- use_module(library(mtarjan), [find_sccs/3]).
 
 :- use_module(library(compiler/p_unit), [type_of_goal/2]).
-:- use_module(library(compiler/p_unit/clause_db), [source_clause/3]).
+:- use_module(library(compiler/p_unit/p_unit_db), [source_clause/3]).
 :- use_module(library(compiler/p_unit/program_keys),
     [get_predkey/3, predkey_from_sg/2, decode_predkey/3]).
 

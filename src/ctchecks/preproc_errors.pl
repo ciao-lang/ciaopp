@@ -10,8 +10,7 @@
 :- use_module(library(format)).
 
 :- use_module(library(compiler/p_unit/program_keys), [decode_litkey/5, make_atom/2]).
-:- use_module(library(compiler/p_unit/clause_db), [maybe_clause_locator/2]).
-:- use_module(library(compiler/p_unit/itf_db), [curr_file/2]).
+:- use_module(library(compiler/p_unit/p_unit_db), [curr_file/2, maybe_clause_locator/2]).
 :- use_module(ciaopp(preprocess_flags), [current_pp_flag/2]).
 
 preproc_error(_Kind,_Arguments):-

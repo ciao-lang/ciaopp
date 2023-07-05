@@ -22,7 +22,7 @@
 
 :- use_module(library(compiler/p_unit), [type_of_goal/2, type_of_directive/2]).
 :- use_module(library(compiler/p_unit/program_keys), [get_predkey/3, predkey_from_sg/2, make_atom/2]).
-:- use_module(library(compiler/p_unit/assrt_db), [assertion_read/9]). %PLG
+:- use_module(library(compiler/p_unit/p_unit_db), [assertion_read/9]). %PLG
 
 % CiaoPP library
 :- use_module(ciaopp(analysis_stats), [stat_no_store/2]).

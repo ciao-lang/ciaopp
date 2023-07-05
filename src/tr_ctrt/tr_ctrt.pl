@@ -97,14 +97,17 @@
     clause_key/2, rewrite_source_clause/3
 ]).
 :- use_module(library(compiler/p_unit), [add_directive/1]).
-:- use_module(library(compiler/p_unit/clause_db), [maybe_clause_locator/2, add_clause_locator/2]).
+:- use_module(library(compiler/p_unit/p_unit_db), [
+    maybe_clause_locator/2, add_clause_locator/2,
+    assertion_read/9,
+    add_assertion_read/9,
+    pgm_assertion_read/9,
+    defines/3, impl_defines/2,
+    source_clause/3
+]).
 
 :- use_module(library(vndict), [create_pretty_dict/2]). 
 :- use_module(library(assertions/assrt_lib), [assertion_body/7]).
-:- use_module(library(compiler/p_unit/assrt_db), [
-    assertion_read/9,
-    add_assertion_read/9,
-    pgm_assertion_read/9]).
 :- use_module(library(lists), [member/2]).
 :- use_module(engine(runtime_control), [module_split/3]).
 :- use_module(engine(internals), [module_concat/3]).
@@ -156,14 +159,10 @@ rewrite_clauses([clause(H,B):Key|Cs0], [D|Ds0], Cs, Ds) :-
 rewrite_clauses([C|Cs0], [D|Ds0], [C|Cs], [D|Ds]) :-
     rewrite_clauses(Cs0, Ds0, Cs, Ds).
 
-:- use_module(library(compiler/p_unit/itf_db), [defines/3, impl_defines/2]).
-
-:- use_module(library(compiler/p_unit/clause_db), [source_clause/3]).
-
 % % TODO: Adding impl_defined of the predicate does not work: assertions are not written
 % add_link_clause(N, A, Loc, Cs, Cs1, Ds, Ds1) :-
 %       % 
-%       ( current_fact(itf_db:defines(N,A,_)) ->
+%       ( current_fact(p_unit_db:defines(N,A,_)) ->
 %           add_impl_defined(N, A, Loc)
 %       ; throw(not_defined(N,A))
 %       ),
@@ -204,9 +203,9 @@ add_inner_clause(H, B, D, Loc, Cs1, Cs2, Ds1, Ds2) :-
 % (ctchecks looks at defined predicates)
 ensure_defined(N, A) :-
     module_split(N, M, _),
-    ( current_fact(itf_db:defines(N,A,M)) ->
+    ( current_fact(p_unit_db:defines(N,A,M)) ->
         true
-    ; assertz_fact(itf_db:defines(N,A,M))
+    ; assertz_fact(p_unit_db:defines(N,A,M))
     ).
 
 % N/A needs a wrapper if it has any check calls or success assertion
@@ -293,7 +292,7 @@ inner_name(N, Ninner) :-
 add_impl_defined(MN, A, _Loc) :-
     module_split(MN, M, N),
     functor(Goal, MN, A),
-    assertz_fact(itf_db:impl_defines(Goal,M)),
+    assertz_fact(p_unit_db:impl_defines(Goal,M)),
     add_directive(impl_defined([N/A])).
 
 % ---------------------------------------------------------------------------

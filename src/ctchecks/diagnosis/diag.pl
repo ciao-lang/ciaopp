@@ -15,7 +15,7 @@
 
 % ciaopp stuff
 :- use_module(ciaopp(plai/plai_db), [complete/7, memo_table/6]).
-:- use_module(library(compiler/p_unit/clause_db), [source_clause/3, maybe_clause_locator/2]).
+:- use_module(library(compiler/p_unit/p_unit_db), [source_clause/3, maybe_clause_locator/2]).
 :- use_module(ciaopp(plai/domains), [project/5,
     project/6,
     call_to_entry/10, 

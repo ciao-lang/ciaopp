@@ -45,9 +45,8 @@
 :- use_module(ciaopp(infer/infer_db),        [domain/1]).
 :- use_module(library(assertions/assrt_lib), [assertion_body/7]).
 :- use_module(ciaopp(frontend_driver), [is_library/1]).
-:- use_module(library(compiler/p_unit/assrt_db),      [assertion_read/9]).
 :- use_module(library(compiler/p_unit), [prop_to_native/2]).
-:- use_module(library(compiler/p_unit/itf_db),        [curr_file/2]).
+:- use_module(library(compiler/p_unit/p_unit_db), [assertion_read/9, curr_file/2]).
 :- use_module(ciaopp(infer/infer_dom),       [knows_of/2]).
 
 :- use_module(engine(io_basic)).
@@ -1153,7 +1152,7 @@ do_output(OFile, Menu) :-
 %:- use_module(library(unittest), [run_tests_in_module/3]).
 %:- use_module(library(unittest/unittest_summaries), [show_test_summaries/1]).
 %:- use_module(library(unittest/unittest_statistics), [statistical_summary/1, get_statistical_summary/2]).
-:- use_module(library(compiler/p_unit/assrt_db), [add_assertion_read/9, remove_assertion_read/9, assertion_read/9]).
+:- use_module(library(compiler/p_unit/p_unit_db), [add_assertion_read/9, remove_assertion_read/9, assertion_read/9]).
 :- use_module(library(counters)).
 
 % Run unit-tests and perform assertion-based random test generation in File

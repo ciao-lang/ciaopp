@@ -42,7 +42,7 @@ Global compilation options of intermodular analysis are available in
 %%------------------------------------------------------------------
 :- use_module(library(compiler/p_unit), [program/2, replace_program/2]).
 :- use_module(library(compiler/p_unit/aux_filenames), [get_module_filename/3, just_module_name/2]).
-:- use_module(library(compiler/p_unit/itf_db), [get_module_from_sg/2]).
+:- use_module(library(compiler/p_unit/p_unit_db), [get_module_from_sg/2]).
 
 :- use_module(ciaopp(plai/intermod_db)).
 :- use_module(ciaopp(plai/intermod_schedule)).

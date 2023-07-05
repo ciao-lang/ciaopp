@@ -128,7 +128,7 @@ analysis(Analysis) :- lazy_analysis(Analysis), !.
 :- use_module(ciaopp(plai/trace_fixp), [trace_init/0, trace_end/0]).
 :- doc(doinclude,trace_fixp/1).
 
-:- use_module(library(compiler/p_unit/itf_db), [curr_file/2]).
+:- use_module(library(compiler/p_unit/p_unit_db), [curr_file/2]).
 
 % (support for incremental analysis)
 :- use_module(ciaopp(plai/incanal), [incremental_analyze/2]).
@@ -358,7 +358,7 @@ handle_eqs(An):-
 :- use_module(ciaopp(infer/infer_db), [domain/1]).
 :- use_module(ciaopp(infer/infer_dom), [knows_of/2]).
 
-:- use_module(library(compiler/p_unit/itf_db), [curr_file/2]).
+:- use_module(library(compiler/p_unit/p_unit_db), [curr_file/2]).
 
 :- use_module(ciaopp(ctchecks/ctchecks_pred), [simplify_assertions_mods/2]).
 :- use_module(ciaopp(ctchecks/ctchecks_pp), [ctcheck_pp/2]).

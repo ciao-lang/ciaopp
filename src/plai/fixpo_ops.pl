@@ -56,7 +56,7 @@
 :- use_module(library(lists), [member/2, append/3]).
 :- use_module(engine(io_basic), [nl/0]).
 :- use_module(library(write), [writeq/1]).
-:- use_module(library(compiler/p_unit/clause_db), [clause_locator/2]).
+:- use_module(library(compiler/p_unit/p_unit_db), [clause_locator/2]).
 :- use_module(library(compiler/p_unit/program_keys), [decode_litkey/5, is_entrykey/1, orig_clause_id/2]).
 :- use_module(library(compiler/p_unit), [curr_language/1, type_of_goal/2]).
 :- use_module(library(compiler/p_unit/program_keys), [predkey_from_sg/2]).

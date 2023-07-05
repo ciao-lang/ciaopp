@@ -38,7 +38,7 @@
     [decode_litkey/5, decode_clkey/4, rewrite_source_all_clauses/2,
      cleanup_program_keys/0, get_predkey/3, get_predkeys/2, make_atom/2]).
 :- use_module(library(assertions/assrt_lib), [assertion_body/7]).
-:- use_module(library(compiler/p_unit/assrt_db), [
+:- use_module(library(compiler/p_unit/p_unit_db), [
     assertion_read/9,
     add_assertion_read/9]).
 :- use_module(ciaopp(plai/fixpo_ops), [collect_exported_completes/2]).

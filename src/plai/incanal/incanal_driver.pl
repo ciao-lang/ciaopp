@@ -69,8 +69,7 @@ according to the strategy defined.
 %%% p_unit
 :- use_module(library(compiler/p_unit), [program/2]).
 :- use_module(library(compiler/p_unit/program_keys)).
-:- use_module(library(compiler/p_unit/clause_db), [source_clause/3, cleanup_clause_db/0]).
-:- use_module(library(compiler/p_unit/assrt_db), [cleanup_assrt_db/0]).
+:- use_module(library(compiler/p_unit/p_unit_db), [source_clause/3, cleanup_clause_db/0, cleanup_assrt_db/0]).
 
 %%% incanal
 :- use_module(ciaopp(plai/incanal/tarjan_inc)).

@@ -26,7 +26,7 @@
 :- use_module(ciaopp(plai/trace_fixp), [fixpoint_trace/7]).
 
 :- use_module(library(assertions/assrt_lib), [assertion_body/7]).
-:- use_module(library(compiler/p_unit/assrt_db), [assertion_read/9, assertion_type/2]).
+:- use_module(library(compiler/p_unit/p_unit_db), [assertion_read/9, assertion_type/2]).
 :- use_module(library(compiler/p_unit/program_keys)).
 
 :- use_module(ciaopp(plai/incanal/incanal_driver), [td_rec_delete_complete/3]).

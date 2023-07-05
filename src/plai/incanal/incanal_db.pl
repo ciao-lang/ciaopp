@@ -29,8 +29,9 @@ incremental analysis").
 :- use_module(library(hiordlib), [maplist/3]).
 :- use_module(library(pathnames), [path_basename/2]).
 
-:- use_module(library(compiler/p_unit/clause_db), [cleanup_clause_db/0, source_clause/3]).
-:- use_module(library(compiler/p_unit/assrt_db), [pgm_assertion_read/9]).
+:- use_module(library(compiler/p_unit/p_unit_db), [
+    source_clause/3, pgm_assertion_read/9
+]).
 :- use_module(library(compiler/p_unit/program_keys),
     [decode_litkey/5, decode_clkey/4, decode_predkey/3, get_clkey/4,
      counter/3, make_atom/2]).
@@ -79,7 +80,7 @@ update_inc_clkey(NClKey) :-
     ).
 
 % ----------------------------------------------------------------------
-:- doc(section, "Predicates for temporal source database (to calculate diff)").
+:- doc(section, "Predicates for temporary source database (to calculate diff)").
 
 :- doc(clean_incremental_db/0, "Remove databases for incremental analysis.").
 clean_incremental_db :-

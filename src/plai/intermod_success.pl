@@ -15,7 +15,7 @@ temporary success patterns when modular analysis is performed.").
 :- use_module(library(terms_check), [variant/2]).
 :- use_module(library(lists), [member/2]).
 
-:- use_module(library(compiler/p_unit/itf_db), [get_module_from_sg/2]).
+:- use_module(library(compiler/p_unit/p_unit_db), [get_module_from_sg/2]).
 :- use_module(library(compiler/p_unit/program_keys), [predkey_from_sg/2]).
 
 :- use_module(ciaopp(plai/intermod_ops), [ may_be_improved_mark/2]).

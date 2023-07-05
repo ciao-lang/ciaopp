@@ -30,7 +30,7 @@
 :- use_module(library(terms_check), [variant/2]).
 :- use_module(library(messages)).
 
-:- use_module(library(compiler/p_unit/itf_db), [
+:- use_module(library(compiler/p_unit/p_unit_db), [
     current_itf/3, curr_file/2, get_module_from_sg/2
 ]).
 :- use_module(library(compiler/p_unit/aux_filenames), [

@@ -27,7 +27,7 @@
 :- use_module(ciaopp(plai/plai_db), [complete/7]).
 :- use_module(ciaopp(plai), [transform_clauses_/5]).
 
-:- use_module(library(compiler/p_unit/clause_db), [source_clause/3]).
+:- use_module(library(compiler/p_unit/p_unit_db), [source_clause/3]).
 
 :- use_module(ciaopp(analysis_stats)).
 

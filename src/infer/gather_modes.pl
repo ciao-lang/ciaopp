@@ -30,7 +30,7 @@ get_modes_assrt(_,_) :- fail. % (default)
 :- use_module(library(compiler/p_unit), [type_of_goal/2]).
 :- use_module(ciaopp(frontend_driver), [entry_assertion/3]).
 :- use_module(library(assertions/assrt_lib), [assertion_body/7]).
-:- use_module(library(compiler/p_unit/assrt_db)).
+:- use_module(library(compiler/p_unit/p_unit_db)).
 :- use_module(library(hiordlib), [
     foldl/4,
     maplist/2,

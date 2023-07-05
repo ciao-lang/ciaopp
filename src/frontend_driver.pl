@@ -213,7 +213,7 @@ call_to_sockets_init.
     generate_unexpanded_data/1, % TODO: kludge?
     clean_unexpanded_data/0     % TODO: kludge?
    ]).
-:- use_module(library(compiler/p_unit/itf_db), [curr_module/1, curr_file/2]).
+:- use_module(library(compiler/p_unit/p_unit_db), [curr_module/1, curr_file/2]).
 
 % (support for incremental analysis)
 :- use_module(ciaopp(plai/incanal), [incremental_module/2]).
@@ -328,7 +328,7 @@ detect_language_from_list(_, Lang) :- Lang = ciao.
 % ---------------------------------------------------------------------------
 
 :- use_module(library(assertions/assrt_lib), [assertion_body/7]).
-:- use_module(library(compiler/p_unit/assrt_db), [assertion_read/9]).
+:- use_module(library(compiler/p_unit/p_unit_db), [assertion_read/9]).
 :- use_module(library(compiler/p_unit/native), [builtin/2]).
 
 :- export(entry_assertion/3).
@@ -467,7 +467,7 @@ perform_transformations([E|Ls]) :-
 :- use_module(library(lists)).
 
 :- use_module(library(compiler/p_unit), [internal_predicate_names/1]).
-:- use_module(library(compiler/p_unit/itf_db),   [curr_file/2]).
+:- use_module(library(compiler/p_unit/p_unit_db),   [curr_file/2]).
 :- use_module(library(compiler/p_unit/unexpand),
               [transform_clause_list/3, transform_name/3]).
 
@@ -793,7 +793,7 @@ output_by_ext('.pl', Stream) :- !,
 % Recover header declarations from the original source
 % (EMM)
 
-:- use_module(library(compiler/p_unit/clause_db), [source_clause/3]).
+:- use_module(library(compiler/p_unit/p_unit_db), [source_clause/3]).
 
 % TODO: MH: may be incorrect? Needs revision!
 
@@ -838,7 +838,7 @@ write_mod_headers(Stream) :-
 :- use_module(library(write),      [writeq/2]).
 :- use_module(library(compiler/p_unit/unexpand),   [transform_body/3]).
 :- use_module(library(compiler/p_unit),     [type_of_goal/2]).
-:- use_module(library(compiler/p_unit/itf_db), [current_itf/3]).
+:- use_module(library(compiler/p_unit/p_unit_db), [current_itf/3]).
 
 write_mod_headers(S) :-
     curr_file(_, Mod), % TODO: is it correct?
