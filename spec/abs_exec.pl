@@ -146,7 +146,7 @@ determinable(eterms,types).
 determinable(etermsvar,types).
 determinable(svterms,types).
 determinable(ptypes,types).
-determinable(evalterms,types).
+%determinable(evalterms,types).
 determinable(svterms,types).
 determinable(deftypes,types).
 %

@@ -567,9 +567,9 @@ type_of(etermsvar,X,Sust,T):-
 type_of(svterms,X,(Sust,_),T):-
     member(Y:(_N,T),Sust),
     X == Y,!.
-type_of(evalterms,X,Sust,T):-
-    member(Y:(_N,T),Sust),
-    X == Y,!.
+%type_of(evalterms,X,Sust,T):-
+%    member(Y:(_N,T),Sust),
+%    X == Y,!.
 type_of(ptypes,X,Sust,T):-
     member(Y:T,Sust),
     X == Y,!.
