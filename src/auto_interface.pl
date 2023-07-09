@@ -1742,7 +1742,8 @@ domain_native_property(Prop, AbsInt) :-
     ( plai_domain_native_property(Prop, _) ->
         plai_domain_native_property(Prop, AbsInt)
     ; nonplai_domain_native_property(Prop, AbsInt)
-    ).
+    ),
+    skip_unavailable_domain(AbsInt).
 
 plai_domain_native_property(Prop, AbsInt) :-
     functor(Prop,F,A),
@@ -1769,6 +1770,22 @@ nonplai_domain_native_property(Prop, AbsInt) :-
       functor(Prop1, P, M)
     ),
     knows_of(Prop1, AbsInt).
+
+:- data warned_unavailable_domain/1.
+
+skip_unavailable_domain(AbsInt) :- analysis(AbsInt), !.
+skip_unavailable_domain(AbsInt) :-
+    % warn and fail
+    maybe_warn_unavailable(AbsInt),
+    fail.
+
+% (only warn once in the whole session)
+maybe_warn_unavailable(AbsInt) :-
+    ( warned_unavailable_domain(AbsInt) ->
+        true
+    ; warning_message("Domain ~w is unavailable in this build (please use full CiaoPP version)", [AbsInt]),
+      assertz_fact(warned_unavailable_domain(AbsInt))
+    ).
 
 %! ### Auxiliary domains
 % Adds auxiliary domains to list of selected domains.
