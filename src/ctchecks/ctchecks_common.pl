@@ -178,27 +178,25 @@ pop_polynom_curr_assrt(_).
 %%%  At least check if it is a comp assertion?
 abs_exec_one_assertion_all_([], [], A, Key, [generic_comp], [AInfoOut], NAOut, StatusOut):-
     abs_exec_comp_assertion(A, Key, AInfo, NA, Status),
-    ( Status \== check ->
-        AInfoOut = AInfo,
-        NAOut = NA,
-        StatusOut = Status
-    ;
+    ( Status = check ->
         abs_exec_size_assertion(NA, Key, AInfo1, NAOut, StatusOut),
         append(AInfo, AInfo1, AInfoOut)
+    ; AInfoOut = AInfo,
+      NAOut = NA,
+      StatusOut = Status
     ).
 abs_exec_one_assertion_all_([D|Ds], [I|Is], A, Key, DomOut, InfoOut, NewA, Status) :-
-    abs_exec_one_assertion(D, I, A, Key, NA ,Flag),
-    ( (Flag = false ; Flag = checked) -> DomOut = [D], InfoOut = [I] ; true ),
-    ( new_status(Flag,A,_Goal) ->
-        Status = Flag,
-        NewA = NA
-    ;
+    abs_exec_one_assertion(D, I, A, Key, NA, Flag),
+    ( Flag = check -> % could verify or falsify, try other domains
         abs_exec_one_assertion_all_(Ds, Is, NA, Key, DomOut1, InfoOut1, NewA, Status),
-        (  Status = check ->
-            DomOut = [D|DomOut1], InfoOut = [I|InfoOut1]
-        ;
-            DomOut = DomOut1, InfoOut = InfoOut1
+        ( Status = check ->
+            DomOut = [D|DomOut1], InfoOut = [I|InfoOut1] % accum if check
+        ; DomOut = DomOut1, InfoOut = InfoOut1 % replace otherwise
         )
+    ; % (Flag = false ; Flag = checked)
+      Status = Flag,
+      NewA = NA,
+      DomOut = [D], InfoOut = [I]
     ).
 
 % TODO: (check old comment) if expression in abs_execute_one_assertion is reduced and it is different than 'fail', list_to_conj may fail
@@ -467,10 +465,6 @@ synt_compose_disj(_, Exp1,Exp2,NewExp):-
 synt_compose_disj(_,nosucc,A,A) :-!.
 synt_compose_disj(_,A,nosucc,A) :-!.
 synt_compose_disj(Orig, _NewExp1, _NewExp2, Orig).
-
-new_status(Flag,_,_):-
-    Flag \== check,
-    !.
 
 % Begin MR !433
 % TODO: Make res_plai use the default algorithm instead of
