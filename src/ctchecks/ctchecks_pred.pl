@@ -44,7 +44,7 @@ decide_get_info(AbsInt,Key,MGoal,[complete(MGoal,MCall,[MSuccess],Key,lub)]):-
     get_completes_lub(Key,MGoal,AbsInt,yes,MCall,MSuccess),!.
 % TODO: is the following unreachable? multivariant_ctchecks can only be on or off.
 decide_get_info(AbsInt,Key,MGoal,Info) :-
-    get_info(AbsInt,pred,Key,MGoal,Info),!.
+    get_info(AbsInt,pred,Key,MGoal,Info),!. % TODO: make sure that this Info is a list? (JFMC)
 decide_get_info(_AbsInt,_Key,_Goal, []).
 
 % ---------------------------------------------------------------------------
