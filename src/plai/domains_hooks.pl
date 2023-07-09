@@ -11,7 +11,7 @@
 % ===========================================================================
 :- doc(section, "Constraint domains").
 :- use_module(domain(fr_top)).
-:- use_module(domain(fd)). % TODO: domain name: frdef
+:- use_module(domain(frdef)).
 :- use_module(domain(lsign)).
 :- use_module(domain(lsigndiff)).
 % ===========================================================================

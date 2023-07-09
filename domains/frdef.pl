@@ -1,7 +1,7 @@
 /*             Copyright (C)1990-91-92-93 UPM-CLIP                      */
 /*                          1993 Katholieke Universiteit Leuven.        */
 
-:- module(fd,
+:- module(frdef,
     [ frdef_call_to_entry/9,
       frdef_call_to_success_fact/9,
       frdef_compute_lub/2,   
