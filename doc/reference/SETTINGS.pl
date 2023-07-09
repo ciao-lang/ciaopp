@@ -37,7 +37,7 @@ doc_domain(deftypes). % :- dom_def(deftypes).
 doc_domain(depthk). % :- dom_def(depthk).
 doc_domain(eterms). % :- dom_def(eterms).
 doc_domain(etermsvar). % :- dom_def(etermsvar).
-doc_domain(fd). % :- dom_def(frdef).
+doc_domain(frdef). % :- dom_def(frdef).
 doc_domain(fr_top). % :- dom_def(fr).
 doc_domain(gr). % :- dom_def(gr).
 doc_domain(lsign). % :- dom_def(lsign).

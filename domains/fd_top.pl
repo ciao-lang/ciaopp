@@ -296,7 +296,7 @@ vero_success_builtin('$fd_arg',_Sv_uns,InfoF,F_call,G_succ,F_succ):-
 
 % vero_lambda_to_success_builtin(Sg_key,_Sg,_Sv,_F_call,_F_proj,
 %                           _F_prime,_F_succ) :-
-%       compiler_error(not_implemented(fd,Sg_key)).
+%       compiler_error(not_implemented(frdef,Sg_key)).
 
 %----------------------------------------------------------------------------
 

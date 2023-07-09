@@ -257,7 +257,7 @@ ground(def,X,ac(d(a(GroundComponent,_DepComponent),_DelComponent),_)):-
 %%         ord_member(X,GroundComponent).
 %% ground(shfrson,X,((GroundComponent,_),_SharingComponent,_FreeComp)):-
 %%         ord_member(X,GroundComponent).
-%% ground(fd,X,(_F,D)):-
+%% ground(frdef,X,(_F,D)):-
 %%      ground(def,X,D).
 ground(sharefree_clique,X,(_SharingComponent,FreeComponent)):-
     var_value(FreeComponent,X,g).
@@ -291,7 +291,7 @@ free(shfrnv,X,ac(d((_,FreeComponent),_DelComponent),_)):-
 %% free(fr,X,as(Old,New)):-
 %%         ord_split_lists(Old,X,[],_DisjointO),
 %%         ord_split_lists(New,X,[],_DisjointN).
-%% free(fd,X,(_D,as(_G1,Old,_G2,New))):-
+%% free(frdef,X,(_D,as(_G1,Old,_G2,New))):-
 %%      free(fr,X,as(Old,New)).
 free(sharefree_clique,X,(_,FreeComponent)):- !,
     var_value(FreeComponent,X,f).
@@ -327,7 +327,7 @@ indep(fr,X,_,as(Old,New)):-
 indep(fr,_,X,as(Old,New)):-
     ord_split_lists(Old,X,[],_DisjointO),
     ord_split_lists(New,X,[],_DisjointN).
-indep(fd,X,Y,(_D,as(_G1,Old,_G2,New))):-
+indep(frdef,X,Y,(_D,as(_G1,Old,_G2,New))):-
     indep(fr,X,Y,as(Old,New)).
 
 %-------------------------------------------------------------------%
@@ -397,7 +397,7 @@ not_ground(sharefree_clique,X,(_SharingComponent,FreeComponent)):-
 %% not_ground(fr,X,as(Old,New)):-
 %%      ord_test_member(Old,[X],no),
 %%      ord_test_member(New,[X],no).
-%% not_ground(fd,X,(_D,as(_G1,Old,_G2,New))):-
+%% not_ground(frdef,X,(_D,as(_G1,Old,_G2,New))):-
 %%      not_ground(fr,X,as(Old,New)).
 
 test_not_ground(f,_,_):-!.

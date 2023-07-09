@@ -193,11 +193,11 @@ determinable(fr,free).
 determinable(fr,not_ground).
 %determinable(fr,unconstrained). cannot be used in any optimization by now
 %
-determinable(fd,ground).
-determinable(fd,indep).
-determinable(fd,free).
-determinable(fd,not_ground).
-%determinable(fd,unconstrained). cannot be used in any optimization by now
+determinable(frdef,ground).
+determinable(frdef,indep).
+determinable(frdef,free).
+determinable(frdef,not_ground).
+%determinable(frdef,unconstrained). cannot be used in any optimization by now
 %
 %% TODO: find a better name for Determ instead of 'polyhedra'?
 %%       (e.g., linear arithmetic)
