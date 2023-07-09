@@ -487,7 +487,8 @@ reduce_success( _    , _        , check   ).
 % reduce_comp( fail  , _Comp , check   ) :- !.  % ??? was 'checked' in the old version
 reduce_comp( _Call , true  , checked ) :- !.
 reduce_comp( _     , fail  , false   ) :- !.
-reduce_comp( _Call , Comp  , Comp    ).
+%reduce_comp( _Call , Comp  , Comp    ).
+reduce_comp(_, _, check). % TODO: check (JFMC)
 
 reduce_compl(true, true, true) :- !.
 reduce_compl(fail , fail, fail) :- !.
@@ -620,6 +621,7 @@ trans_aux(Type,AbsInt,Head,[complete(G,_C,Ss,_,_)|Completes],SInfoL):-
     append(SInfoL1,SInfoL2,SInfoL),
     trans_aux(Type,AbsInt,Head,Completes,SInfoL2).
 trans_aux(success,_,_Goal,Info,Info):-!.  % for size properties
+trans_aux(comp,_,_Goal,_,[]). % TODO: ignore if not a list (captured as generic_comp?) % TODO: check (JFMC)
 
 % Begin MR !433 -> Added a new argument Type.
 collect_succcomp_info([],_Type,_AbsInt,_Head,_G,[]).
