@@ -487,7 +487,8 @@ reduce_success( _    , _        , check   ).
 % reduce_comp( fail  , _Comp , check   ) :- !.  % ??? was 'checked' in the old version
 reduce_comp( _Call , true  , checked ) :- !.
 reduce_comp( _     , fail  , false   ) :- !.
-%reduce_comp( _Call , Comp  , Comp    ).
+reduce_comp( _     , false  , false   ) :- !. % TODO: Comp should not be 'false', but it is for cost!
+%reduce_comp( _Call , Comp  , Comp    ). % OLD
 reduce_comp(_, _, check). % TODO: check (JFMC)
 
 reduce_compl(true, true, true) :- !.
