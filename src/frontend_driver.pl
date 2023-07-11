@@ -336,30 +336,35 @@ detect_language_from_list(_, Lang) :- Lang = ciao.
     # "There is an entry assertion for @var{Goal} with call
        pattern @var{Call}, uniquely identifiable by @var{Name}.".
 entry_assertion(Goal,Call,Name):-
-    current_pp_flag(entry_points_auto,EntryPointsAuto),
     curr_module(M),
     assertion_read(Goal,M,_Status,Type,Body,_Dict,_S,_LB,_LE),
-    valid_assertion_type(Type,EntryPointsAuto),
-    ( Type = entry ->
-        true
-    ; current_pp_flag(entry_calls_scope,EntryCallsScope),
-      ( EntryCallsScope = exported ->
-          ( type_of_goal(exported,Goal) -> true ) % Avoid choice points.
-      ; EntryCallsScope = all
-      )
-    ),
+    assrt_used_as_entry(Goal, Type),
     assertion_body(Goal,_Compat,Call,_Succ,Comp,_Comm,Body),
     ( builtin(entry_point_name(Goal,Name),Entry),
-      member(Entry,Comp)
-    -> true
+      member(Entry,Comp) ->
+        true
     ; functor(Goal,Name,_)
     ).
 
-valid_assertion_type(entry,_) :- !.
-valid_assertion_type(calls,calls) :- !.
-valid_assertion_type(_,all).
+:- export(assrt_used_as_entry/2).
+:- pred assrt_used_as_entry(Sg, AssrtType) : (cgoal(Sg), atm(AssrtTYpe))
+# "Assertion with head @var{Sg} and assertion type @var{AssrtType} is
+   used as an analysis entry (depending on values of
+   @tt{entry_points_auto} and @tt{entry_calls_scope}).".
 
-% exit_assertion/3, % TODO: Not imported anywhere
+assrt_used_as_entry(Sg, AssrtType) :-
+    ( AssrtType = entry ->
+        true
+    ; current_pp_flag(entry_points_auto,EntryPointsAuto),
+      ( EntryPointsAuto=calls -> AssrtType=calls % only 'calls'
+      ; EntryPointsAuto=all % entry for all assertion types
+      ),
+      current_pp_flag(entry_calls_scope,EntryCallsScope),
+      ( EntryCallsScope = exported ->
+          ( type_of_goal(exported,Sg) -> true ) % Avoid choice points.
+      ; EntryCallsScope = all
+      )
+    ).
 
 % ---------------------------------------------------------------------------
 % TODO: refine

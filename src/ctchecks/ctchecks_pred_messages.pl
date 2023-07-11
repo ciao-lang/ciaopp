@@ -20,6 +20,7 @@
     assertion_set_comp/3]).
 :- use_module(library(compiler/p_unit/p_unit_basic), [type_of_goal/2]).
 :- use_module(ciaopp(frontend_driver), [write_one_type/2]). % TODO: move somewhere else
+:- use_module(ciaopp(frontend_driver), [assrt_used_as_entry/2]). % TODO: move somewhere else
 :- use_module(ciaopp(preprocess_flags)).
 
 :- use_module(library(lists), [length/2]).
@@ -61,8 +62,15 @@ decide_inform_user(VCT, _STAT, Old, OldRef, New, AbsInts, Info) :-
     checked_or_true(Status),
     !,
     change_assertion_status(Old, OldRef, New),
-    local_inccounter_split(simp,checked,Type,_),
-    ( VCT = on ->
+    ( % do not inform about calls used as entry (see assrt_used_as_entry/2)
+      Type = calls, New = as${head => Goal},
+      assrt_used_as_entry(Goal, Type) ->
+        true
+    ; % do not inform about calls with empty calls
+      Type = calls, New = as${call => []} ->
+        true
+    ; VCT = on ->
+        local_inccounter_split(simp,checked,Type,_),
         inform_checked(Old, New, AbsInts, Info)
     ; true
     ).
@@ -77,7 +85,6 @@ decide_inform_user(VC, STAT, Old, OldRef, New, AbsInts, Info):-
     ),
     %
     !,
-    local_inccounter_split(simp,Status,Type,_),
     ( Status = false  ->
         change_assertion_status(Old, OldRef, New)
     ; current_pp_flag(simplify_checks, on) ->
@@ -86,6 +93,7 @@ decide_inform_user(VC, STAT, Old, OldRef, New, AbsInts, Info):-
     ; true
     ),
     ( VC = on ->
+        local_inccounter_split(simp,Status,Type,_),
         inform_non_checked(STAT, Old, New, AbsInts, Info)
     ; true
     ).
