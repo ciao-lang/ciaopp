@@ -63,6 +63,7 @@ decide_inform_user(VCT, _STAT, Old, OldRef, New, AbsInts, Info) :-
     !,
     change_assertion_status(Old, OldRef, New),
     ( % do not inform about calls used as entry (see assrt_used_as_entry/2)
+      % TODO: use a more sophisticated mechanism? (e.g., looking if it was "checked by" an entry instead?) (JF)
       Type = calls, New = as${head => Goal},
       assrt_used_as_entry(Goal, Type) ->
         true
