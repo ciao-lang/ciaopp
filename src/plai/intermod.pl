@@ -930,7 +930,8 @@ acheck_info(Info,Summary) :-
     getcounter(simp_check_s,SimpCheckS),
     getcounter(simp_false_s,SimpFalseS),
     getcounter(simp_true_s,SimpTrueS),
-    Info = assert_count([(pp_checked_c,PPCheckedC),
+    Info = assert_count([
+            (pp_checked_c,PPCheckedC),
             (pp_check_c,PPCheckC),
             (pp_false_c,PPFalseC),
             (simp_checked_c,SimpCheckedC),

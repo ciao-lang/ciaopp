@@ -6,7 +6,7 @@
 
 :- doc(author, "Isabel Garcia-Contreras").
 
-:- use_module(library(lists), [member/2]).
+:- use_module(library(lists), [append/3, member/2]).
 :- use_module(library(format), [format/2]).
 :- use_module(library(aggregates), [findall/3]).
 :- use_module(engine(runtime_control), [statistics/2]).
@@ -168,8 +168,8 @@ clean_stat_steps :-
 
 modular_stat_ana_format(Stats, ModStats) :-
     get_stat(Stats, proc_diff(DiffT)),
-  get_stat(Stats, proc_assrts(DiffA)),
-  Diff is DiffT + DiffA,
+    get_stat(Stats, proc_assrts(DiffA)),
+    Diff is DiffT + DiffA,
     ModStats = [time(TotalT,[(prep(Diff), ana(AnaT))])],
     ( get_stat(Stats, add(AddT)) -> true
     ; AddT = 0
@@ -309,10 +309,13 @@ sort_total_info([I0|I0s],[I1|I1s]):-
 
 :- use_module(library(messages), [note_message/2]).
 
+% TODO: Mod unused
+% TODO: sort in CTInfo is not very robust
 :- export(pretty_print_acheck_stats/1).
 pretty_print_acheck_stats(Stats) :-
-    member(assert_count(_Mod,CTInfo),Stats),
-    CTInfo = [(pp_check_c,[PPCheckC]),
+    ( member(assert_count(_Mod,CTInfo),Stats) -> true ; fail ),
+    CTInfo = [
+        (pp_check_c,[PPCheckC]),
         (pp_check_s,[PPCheckS]),
         (pp_checked_c,[PPCheckedC]),
         (pp_checked_s,[PPCheckedS]),
@@ -324,30 +327,30 @@ pretty_print_acheck_stats(Stats) :-
         (simp_checked_s,[SimpCheckedS]),
         (simp_false_c,[SimpFalseC]),
         (simp_false_s,[SimpFalseS]),
-        (simp_true_s,_)],
-    NTotalPP = PPCheckedC+PPCheckedS+PPFalseC+PPFalseS+PPCheckC+PPCheckS,
-    NTotalSimp = SimpCheckedC+SimpCheckedS+SimpFalseC+SimpFalseS+SimpCheckC+SimpCheckS,
-    note_message( 
-        "Assertion checking summary:~n[Predicate-level] " || 
-        "Checked: ~d (~2f\%) " ||
-        "False: ~d (~2f\%) " ||
-        "Check: ~d (~2f\%) " ||
-        "Total: ~d~n" ||
-        "[Call site-level] " || 
-        "Checked: ~d (~2f\%) " ||
-        "False: ~d (~2f\%) " ||
-        "Check: ~d (~2f\%) " ||
-        "Total: ~d~n",
-        [
-            SimpCheckedC+SimpCheckedS, 100*(SimpCheckedC+SimpCheckedS)/NTotalSimp,
-            SimpFalseC+SimpFalseS, 100*(SimpFalseC+SimpFalseS)/NTotalSimp,
-            SimpCheckC+SimpCheckS, 100*(SimpCheckC+SimpCheckS)/NTotalSimp,
-            NTotalSimp,
-            PPCheckedC+PPCheckedS, 100*(PPCheckedC+PPCheckedS)/NTotalPP,
-            PPFalseC+PPFalseS, 100*(PPFalseC+PPFalseS)/NTotalPP,
-            PPCheckC+PPCheckS, 100*(PPCheckC+PPCheckS)/NTotalPP,
-            NTotalPP
-        ]).
+        (simp_true_s,_)
+    ],
+    %
+    Msg = ("Assertion checking summary:~n" || Msg1),
+    Msg1 = ("[Predicate-level] " || Msg2),
+    acheck_stats_msg(SimpCheckC, SimpCheckS, SimpCheckedC, SimpCheckedS, SimpFalseC, SimpFalseS, Msg2, Msg3, Args, Args1),
+    %
+    Msg3 = ("[Call site-level] " || Msg4),
+    acheck_stats_msg(PPCheckC, PPCheckS, PPCheckedC, PPCheckedS, PPFalseC, PPFalseS, Msg4, Msg5, Args1, Args2),
+    %
+    Msg5 = [],
+    Args2 = [],
+    note_message(Msg, Args).
+
+acheck_stats_msg(CheckC, CheckS, CheckedC, CheckedS, FalseC, FalseS, Msg, Msg0, Args, Args0) :-
+    Checked is CheckedC+CheckedS,
+    False is FalseC+FalseS,
+    Check is CheckC+CheckS,
+    N is Checked+False+Check,
+    ( N = 0 ->
+        Msg = ("Checked: 0 (--) False: 0 (--) Check: 0 (--) Total: 0~n" || Msg0), Args = Args0
+    ; Msg = ("Checked: ~d (~2f\%) False: ~d (~2f\%) Check: ~d (~2f\%) Total: ~d~n" || Msg0),
+      Args = [Checked, 100*(Checked)/N, False, 100*(False)/N, Check, 100*(Check)/N, N|Args0]
+    ).
 
 :- export(pp_statistics/2).
 % The precision of runtime vs walltime is much worse in linux than in mac
