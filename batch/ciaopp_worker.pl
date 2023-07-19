@@ -1,4 +1,4 @@
-:- module(ciaopp_worker, [start_worker/1], [assertions, regtypes, datafacts]).
+:- module(ciaopp_worker, [start_worker/1], [assertions, modes, regtypes, datafacts]).
 
 :- doc(title, "Worker for CiaoPP batch processing").
 :- doc(author, "Isabel Garcia-Contreras").

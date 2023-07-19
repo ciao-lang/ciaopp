@@ -1,4 +1,4 @@
-:- module(ctchecks_pp, [ctcheck_pp/2], [assertions,hiord]).
+:- module(ctchecks_pp, [ctcheck_pp/2], [assertions,modes,hiord]).
 
 :- use_package(library(compiler/p_unit/p_unit_argnames)).
 
