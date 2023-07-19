@@ -4,7 +4,7 @@
         td_delete_file_clause_by_clause/2,
         bu_delete_file_clause_by_clause/2
     ],
-    [assertions]).
+    [assertions, modes]).
 
 :- use_module(ciaopp(plai/incanal/incanal_driver)).
 :- use_module(ciaopp(raw_printer), [show_analysis/0]).

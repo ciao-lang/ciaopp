@@ -436,8 +436,8 @@ abs_arith_eval(/(X,Y), Call, NVal) :- !,
        => (C = i(-4.0,'$inf')).
 
 % This test depends on how abstract substitutions are represented in the nonrel
-% domain.
-:- test nonrel_call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,Succ) 
+% domain. % TODO: keep it? AbsInt param was missing (JFMC)
+:- test nonrel_call_to_success_builtin(_AbsInt,SgKey,Sg,Sv,Call,Proj,Succ) 
     : (Sg = '<'(A,B), Sv = [A,B], Call = [A/i(0,0),B/'$top',C/'$top',D/'$top',E/'$top'],
        Proj = [A/i(0,0),B/'$top'])
     => (Succ = [A/i(0,0),B/i(0,'$inf'),C/'$top',D/'$top',E/'$top'] ).

@@ -3,7 +3,7 @@
     codegen_af/4,
     codegen_min/4,
     create_all_dicts/2
-], [assertions, datafacts]).
+], [assertions, modes, datafacts]).
 
 :- use_package(spec(no_debug)).
 :- use_package(spec(nomem_usage)).

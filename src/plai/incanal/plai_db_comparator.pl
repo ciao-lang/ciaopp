@@ -1,4 +1,4 @@
-:- module(plai_db_comparator, [compare/4], [assertions, regtypes, datafacts]).
+:- module(plai_db_comparator, [compare/4], [assertions, regtypes, modes, datafacts]).
 
 :- doc(title, "plai_db (answer table) comparator").
 :- doc(author, "Isabel Garcia-Contreras").

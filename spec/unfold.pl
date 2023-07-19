@@ -1,4 +1,4 @@
-:- module(unfold, [unfold/10, unf_int/11],[assertions]).
+:- module(unfold, [unfold/10, unf_int/11],[assertions, modes]).
 
 %:- use_package(.(nomem_usage)).
 :- use_package(.(nounfold_stats)).

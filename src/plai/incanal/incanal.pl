@@ -4,7 +4,7 @@
     incremental_analyze/1,
     incremental_analyze/2,
     reset_incremental_analysis_info/0
-    ], [assertions, regtypes, datafacts, nativeprops]).
+    ], [assertions, regtypes, modes, datafacts, nativeprops]).
 
 :- include(incanal_options). % tracing and rtchecks compilation options
 
@@ -487,7 +487,7 @@ apply_diff_cl([diff(F/A, PredDiff)|Diffs], [diff(F/A, NDiff1)|NDiff]) :-
     apply_diff_pred(F/A, PredDiff, NDiff1),
     apply_diff_cl(Diffs, NDiff).
 
-:- pred apply_diff_pred(F/A, DiffList, ProcDiff) : list(DiffList) => list(ProcDiff)
+:- pred apply_diff_pred(FA, DiffList, ProcDiff) : list(DiffList) => list(ProcDiff)
     #"Asserts based on the change list @var{DiffList},
     @var{ProcDiff} is the diff after it has been processed,
     i.e. conficting ids have been solved".

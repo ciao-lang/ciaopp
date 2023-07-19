@@ -14,7 +14,7 @@
     save_registry_info/3,
     save_registry_info/2
     %%%%%%%%%%%%%%%%%%%%%%% 
-    ],[assertions, isomodes, nativeprops, datafacts]).
+],[assertions, modes, nativeprops, datafacts]).
 
 :- doc(title, "Program structure for intermodular analysis").
 

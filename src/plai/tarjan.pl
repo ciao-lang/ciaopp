@@ -1,6 +1,7 @@
-:- module(tarjan,[tarjan/2,recursive_classify/4,fake_recursive_classify/2,
-              recursive_class/2,step2/2],
-             [assertions, datafacts]).
+:- module(tarjan,[
+    tarjan/2,recursive_classify/4,fake_recursive_classify/2,
+    recursive_class/2,step2/2
+], [assertions, modes, datafacts]).
 
 :- doc(stability, alpha).
 
