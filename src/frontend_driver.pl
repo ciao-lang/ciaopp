@@ -355,6 +355,12 @@ entry_assertion(Goal,Call,Name):-
 assrt_used_as_entry(Sg, AssrtType) :-
     ( AssrtType = entry ->
         true
+    ; AssrtType = prop ->
+        % TODO: This has the same effect than the last (disabled)
+        % clause of entry_point/5, but only for local predicates. As
+        % PLG suggests in the original fix, we should only consider
+        % the necessary prop from assertions.
+        true
     ; current_pp_flag(entry_points_auto,EntryPointsAuto),
       ( EntryPointsAuto=calls -> AssrtType=calls % only 'calls'
       ; EntryPointsAuto=all % entry for all assertion types

@@ -383,18 +383,20 @@ entry_point(AbsInt,Goal,Qv,Call,Name):-
     info_to_asub(AbsInt,_approx,CInfo,Qv,Call,Goal,no).
 %       analyze_unify(Unif,AbsInt,Call0,Call).
 %
-% PLG. Added to generate a most general entry point for general
-% properties (prop) that are not exported nor have an entry assertion
-% in the source code.
-entry_point(AbsInt,Goal,Qv,Call,Name):-
-    assertion_read(Goal,_M,_Status,prop,_Body,_Dict,_S,_LB,_LE), !, % Succeeds iff Pred is a prop.
-    functor(Goal,F,A),
-    functor(G,F,A),
-    \+ entry_assertion(G,_Call,_Name),
-    \+ type_of_goal(exported,Goal), 
-    get_predkey(F,A,Name), % Name the unique topmost version of F/A
-    varset(Goal,Qv),  
-    unknown_entry(AbsInt,Goal,Qv,Call).
+% % TODO: Disabled, it forces analysis of all props (see assrt_used_as_entry/2)
+% % PLG. Added to generate a most general entry point for general
+% % properties (prop) that are not exported nor have an entry assertion
+% % in the source code.
+% entry_point(AbsInt,Goal,Qv,Call,Name):-
+%     assertion_read(Goal,_M,_Status,prop,_Body,_Dict,_S,_LB,_LE), % Succeeds iff Pred is a prop.
+%     functor(Goal,F,A),
+%     functor(G,F,A),
+%     \+ entry_assertion(G,_Call,_Name),
+%     \+ type_of_goal(exported,Goal), 
+%     get_predkey(F,A,Name), % Name the unique topmost version of F/A
+%     varset(Goal,Qv),  
+%     unknown_entry(AbsInt,Goal,Qv,Call).
+%
 % TODO: Add here clauses for get_entry_info to merge with mod_topdown_analysis
 
      % get_unify([],[],[]).
@@ -404,7 +406,6 @@ entry_point(AbsInt,Goal,Qv,Call,Name):-
 % get_unify([I|CInfo],[I|CInfo0],Unif):-
 %       get_unify(CInfo,CInfo0,Unif).
 
-
 % analyze_unify([],_AbsInt,Call,Call):- !.
 % analyze_unify([U|Unif],AbsInt,Call0,Call):-
 %         builtin_info(U,'=/2',AbsInt,T,_,Cv),
@@ -412,7 +413,6 @@ entry_point(AbsInt,Goal,Qv,Call,Name):-
 %       project(AbsInt,Sv,_,Call0,Proj),
 %       body_succ_builtin(AbsInt,T,U,Cv,Sv,_,Call0,Proj,Call1),!,
 %       analyze_unify(Unif,AbsInt,Call1,Call).
-    
 
 %------------------------------------------------------------------------%
 :- doc(mod_plai(Cls,Ds,Fixp,AbsInt,Time),"Performs the 
