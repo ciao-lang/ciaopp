@@ -20,7 +20,6 @@
 :- use_module(ciaopp_client, _, [active]). % (for set_buf/2)
 
 % ----- (loaded dynamically in ciaoppcl_common)
-%P% :- use_module(library(compiler/p_unit/p_asr), []).
 :- use_module(ciaopp(analyze_driver), []).
 :- use_module(ciaopp(transform_driver), []).
 :- use_module(ciaopp(auto_interface), []). % TODO: needed?
