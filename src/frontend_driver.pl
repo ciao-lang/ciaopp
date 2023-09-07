@@ -207,7 +207,7 @@ call_to_sockets_init.
 :- use_module(engine(stream_basic), [sourcename/1, absolute_file_name/7]).
 :- use_module(engine(runtime_control), [push_prolog_flag/2, pop_prolog_flag/1]).
 
-:- use_module(library(compiler/p_unit), [preprocessing_unit/3]). 
+:- use_module(library(compiler/p_unit), [preprocessing_unit/4]). 
 % :- use_module(typeslib(typeslib),[assert_initial_types/0]). 
 :- use_module(library(compiler/p_unit/unexpand), [ 
     generate_unexpanded_data/1, % TODO: kludge?
@@ -264,13 +264,13 @@ load_modules(ModList,Info) :-
     ),
     pplog(load_module, ['{Loading current module from ' , ~~(AbsFileDesc)]),
     %
-    assert_curr_files(AbsFileList), % TODO: move into preprocessing_unit/3?
+    assert_curr_files(AbsFileList), % TODO: move into preprocessing_unit/4?
     % assert_initial_types,
     maybe_translate_files(AbsFileList, NFs),
     detect_language_from_list(AbsFileList, Lang),
     set_pp_flag(prog_lang, Lang), % TODO: one per module? only affects fixpo?
     %
-    preprocessing_unit(NFs,_Ms,E),
+    preprocessing_unit(NFs,_Ms,E,[]), % (state cleaned in cleanup_all/0 before)
     ( E == yes -> Info=[error|Info0] ; Info=Info0 ),
     pp_statistics(runtime,[T1,_]),
     TotalT is T1 - T0,
