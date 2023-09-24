@@ -31,7 +31,7 @@
 :- use_module(library(messages)).
 
 :- use_module(library(compiler/p_unit/p_unit_db), [
-    current_itf/3, curr_file/2, get_module_from_sg/2
+    current_itf/3, get_module_from_sg/2
 ]).
 :- use_module(library(compiler/p_unit/aux_filenames), [
     get_module_filename/3, just_module_name/2, get_loaded_module_name/3
