@@ -374,7 +374,7 @@ succ_info_format(_Output,_AbsInt,_ASub,_Gv,[],[fails]).
 point_info_format(Output,AbsInt,ASub,Gv,Succ):-
     info_format(Output,AbsInt,ASub,Gv,Succ0,Comp), !,
     append(Succ0,Comp,Succ).
-point_info_format(_Output,_AbsInt,_ASub,_Gv,[fails]).
+point_info_format(_Output,_AbsInt,_ASub,_Gv,[fails('$VAR'('_'))]).
 
 info_format(cl,AbsInt,ASub,Gv,OutASub,Comp):-
     asub_to_out(AbsInt,ASub,Gv,OutASub,Comp).
