@@ -210,8 +210,7 @@ call_to_sockets_init.
 :- use_module(library(compiler/p_unit), [preprocessing_unit/4]). 
 % :- use_module(typeslib(typeslib),[assert_initial_types/0]). 
 :- use_module(library(compiler/p_unit/unexpand), [ 
-    generate_unexpanded_data/1, % TODO: kludge?
-    clean_unexpanded_data/0     % TODO: kludge?
+    regenerate_unexpanded_data/1 % TODO: kludge?
    ]).
 :- use_module(library(compiler/p_unit/p_unit_db), [curr_module/1, curr_file/2]).
 
@@ -250,9 +249,12 @@ module_(ModList, Info):-
     clean_analysis_info0, % TODO: merge! see definition, cleanup_types/0?
     cleanup_all,
     load_modules(ModList,Info),
-    curr_file(_, Mod), % TODO: use failure-driven loop?
-    clean_unexpanded_data,
-    generate_unexpanded_data(Mod). % TODO: only for output?
+    ( % (failure-driven loop)
+      curr_file(_, Mod),
+        regenerate_unexpanded_data(Mod), % TODO: only for output?
+        fail
+    ; true
+    ).
 
 load_modules(ModList,Info) :-
     ensure_libcache_loaded,
