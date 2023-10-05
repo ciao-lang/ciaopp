@@ -5,7 +5,7 @@
 % documentation for this file!
 
 %! qsort(+list(num),-list(num)): 
-%  Y is X sorted.
+%  The second argument is the first one sorted.
 qsort([], []).
 qsort([First|Rest],Result) :-
     partition(Rest,First,Sm,Lg), 

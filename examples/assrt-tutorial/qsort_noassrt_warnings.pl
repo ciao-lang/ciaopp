@@ -1,6 +1,6 @@
 :- module(_,[qsort/2],[assertions,nativeprops,modes]).
 
-% With no information on the calls to qsort/2, the 
+% With no information on the calls to qsort/2, 
 % the analyzer warns that it cannot ensure that 
 % the calls to =</2 and >/2 will not generate a 
 % run-time error.
