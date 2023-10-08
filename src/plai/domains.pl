@@ -85,7 +85,7 @@ obtained after the analysis of the clause being considered
 
 % ===========================================================================
 
-:- use_module(library(compiler/p_unit), [native_to_props_visible/2, prop_to_native/2]).
+:- use_module(library(compiler/p_unit), [native_to_props/2, prop_to_native/2]).
 :- use_module(ciaopp(plai/fixpo_ops), [each_exit_to_prime/8, each_abs_sort/3]).
 
 :- use_module(library(terms_check), [variant/2]).
@@ -594,15 +594,15 @@ full_info_to_asub_([I|Info],AbsInt,Acc0,Acc) :-
 
 asub_to_info(AbsInt,ASub,Qv,OutputUser,CompProps) :-
     asub_to_native(AbsInt,ASub,Qv,no,Info,Comp),
-    native_to_props_visible(Info,OutputUser),
-    native_to_props_visible(Comp,CompProps).
+    native_to_props(Info,OutputUser),
+    native_to_props(Comp,CompProps).
 
 :- doc(hide,asub_to_out/5).
 :- export(asub_to_out/5).
 asub_to_out(AbsInt,ASub,Qv,OutputUser,CompProps) :-
     asub_to_native(AbsInt,ASub,Qv,yes,Info,Comp),
-    native_to_props_visible(Info,OutputUser0),
-    native_to_props_visible(Comp,CompProps0),
+    native_to_props(Info,OutputUser0),
+    native_to_props(Comp,CompProps0),
     decide_low_level_format(OutputUser0,CompProps0,OutputUser,CompProps).
     
 :- export(asub_to_native/6).
