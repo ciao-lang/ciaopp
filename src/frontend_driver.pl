@@ -480,9 +480,8 @@ perform_transformations([E|Ls]) :-
 :- use_module(library(lists)).
 
 :- use_module(library(compiler/p_unit), [internal_predicate_names/1]).
-:- use_module(library(compiler/p_unit/p_unit_db),   [curr_file/2]).
-:- use_module(library(compiler/p_unit/unexpand),
-              [transform_clause_list/3, transform_name/3]).
+:- use_module(library(compiler/p_unit/p_unit_db), [curr_file/2]).
+:- use_module(library(compiler/p_unit/unexpand), [transform_clause_list/3, transform_lit/3]).
 
 :- use_module(ciaopp(raw_printer), [raw_output/1]).
 
@@ -935,7 +934,7 @@ write_one_type(typedef(::=(Pred, Def)), S) :-
         true
     ; Name=TypeName
     ),
-    transform_name(Name, M, NameT),
+    transform_lit(Name, M, NameT),
     format(S, ":- regtype ~q/~w.~n", [NameT, PredAri]),
     transform_one_type_clause(Def, (TypeName, NameT), DefT),
     typedef_to_pred(DefT, NameT, Cls),
