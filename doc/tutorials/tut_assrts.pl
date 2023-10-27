@@ -49,7 +49,7 @@ Consider the classic implementation of quick-sort:
 %! \\begin{code}
 :- module(_,[qsort/2],[assertions,nativeprops,modes]).
 
-% With no information on the calls to qsort/2, the 
+% With no information on the calls to qsort/2, 
 % the analyzer warns that it cannot ensure that 
 % the calls to =</2 and >/2 will not generate a 
 % run-time error.
@@ -142,8 +142,8 @@ Note that in practice this assertion may not be necessary since this information
 could be obtained from the analysis of the caller(s) to this module.
  
 Let us now add more assertions to the program, stating properties that
-we want checked, 
-```ciao
+we want checked: 
+```ciao_runnable
 :- module(_,[qsort/2],[assertions,nativeprops,regtypes,modes]).
 
 % qsort/2 with some assertions.
@@ -184,8 +184,11 @@ append([],Xs,Xs).
 append([X|Xs],Ys,[X|Zs]) :-
     append(Xs,Ys,Zs).
 ```
-The assertion for predicate @tt{partition/4} (twenty-third line)
-expresses, using modes, that the first  argument should be bound to a list of numbers,
+For example, the assertion for predicate @tt{partition/4} (line 23):
+```ciao
+:- pred partition(+list(num),+num,-list(num),-list(num)) + det.
+```
+expresses, using @lib{modes}, that the first  argument should be bound to a list of numbers,
 and the second to a number, and that, for any terminating call meeting this call pattern:
 a) if the call succeeds, then the third and fourth arguments will be bound
 to lists of numbers; and
@@ -193,12 +196,15 @@ b) the call is deterministic, i.e., it will produce one solution exactly, proper
 in the @tt{+} field, which is inferred in @apl{CiaoPP} as the
 conjunction of two properties: 1) the call does not (finitely) fail
 (property @tt{not_fails}) and 2) the call will produce one solution at most (property
-@tt{is\_det}). Similarly, the assertion for @tt{qsort/2} expresses
-the expected calling pattern, and that the call can have at most one answer,
+@tt{is\_det}). Similarly, the assertion for @tt{qsort/2}:
+```ciao
+:- pred qsort(+list(num),-list(num)) + semidet.
+```
+expresses the expected calling pattern, and that the call can have at most one answer,
 property @tt{semidet}.
 
 
-In the assertion model, modes are @em{macros} that serve as a
+In the Ciao assertion model, modes are @em{macros} that serve as a
 shorthand for assertions, in particular @em{predicate-level
 assertions}. These are in general of the form:
 
@@ -385,7 +391,7 @@ colorlist([H|T]) :- color(H), colorlist(T).
 :- prop sorted/1.
 sorted([]).
 sorted([_]).
-sorted([X,Y|T]) :- X .>. Y, sorted([Y|T]).
+sorted([X,Y|T]) :- X .>=. Y, sorted([Y|T]).
 %! \\end{focus}
 ``` 
     
@@ -428,7 +434,7 @@ colorlist := [] | [~color|~colorlist].
 
 :- prop sorted/1.
 sorted := [] | [_].
-sorted([X,Y|T]) :- X .>. Y, sorted([Y|T]).
+sorted([X,Y|T]) :- X .>=. Y, sorted([Y|T]).
 ```
 
 
@@ -456,7 +462,7 @@ colorlist := [] | [~color|~colorlist].
 
 :- prop sorted/1.
 sorted := [] | [_].
-sorted([X,Y|T]) :- X > Y, sorted([Y|T]).
+sorted([X,Y|T]) :- X >= Y, sorted([Y|T]).
 %! \\end{code}
 %! \\begin{opts}
 V,output=on,filter=check_pred
@@ -500,7 +506,7 @@ colorlist := [] | [~color|~colorlist].
 
 :- prop sorted/1.
 sorted := [] | [_].
-sorted([X,Y|T]) :- X > Y, sorted([Y|T]).
+sorted([X,Y|T]) :- X >= Y, sorted([Y|T]).
 ```
 we have changed the definition of incompatibility, and now @apl{CiaoPP} simply warns
 that it cannot verify the assertion for @tt{p/1}:
