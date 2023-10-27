@@ -7,7 +7,7 @@
 
 :- use_package(library(compiler/p_unit/p_unit_argnames)).
 
-:- use_module(library(formulae), [list_to_conj/2]).
+:- use_module(library(formulae), [conj_to_list/2, list_to_conj/2]).
 :- use_module(library(hiordlib), [maplist/2]).
 :- use_module(library(messages), [
     show_message/3, warning_message/2, error_message/2, note_message/2]).
@@ -152,7 +152,7 @@ inform_checked(Old, New, AbsInts, Info) :-
 
 :- export(inform_non_checked/5).
 inform_non_checked(STAT, Old, New, AbsInts, Info) :-
-    New = as(_,Status,Type,Goal,_,Call,Success,Comp,Dict,Loc,_,_),
+    New = as(M,Status,Type,Goal,_,Call,Success,Comp,Dict,Loc,_,_),
     prepare_output_info(AbsInts, Info, Goal, Type, RelInfo),
     ( Status = check ->
         filter_left_over(Type, Call, Success, Comp, LeftL),
@@ -166,7 +166,7 @@ inform_non_checked(STAT, Old, New, AbsInts, Info) :-
     ( RFrom == To -> From = RFrom ; From is RFrom + 1 ), % ?????
     ( Status = check ->
         %  show_message(STAT, "(lns ~d-~d) Cannot verify assertion:~n~pbecause on ~p ~p :~n~p ~nLeft to prove: ~w~n", 
-        %              [From, To, Old, Type, GoalCopy, '$an_results'(RelInfoCopy), Left]),
+        %              [From, To, Old, Type, GoalCopy, '$ana_info'(RelInfoCopy), Left]),
         % MH: Changed to this message format which seems easier to read. Same with rest of messages.
         show_message(STAT, "(lns ~d-~d) Could not verify assertion:~n"||
             "~p"||
@@ -174,16 +174,16 @@ inform_non_checked(STAT, Old, New, AbsInts, Info) :-
             "    ~p~n"||
             "could not be derived from inferred ~p:"||
             "~p", 
-            [From, To, OldCopy, Left, Type, '$an_results'(RelInfoCopy)]),
+            [From, To, OldCopy, '$left_props'(Type, Left, M), Type, '$ana_info'(RelInfoCopy, M)]),
         memo_ctcheck_sum(check)
     ; % error_message("(lns ~d-~d) False assertion:~n~pbecause on ~p ~p :~n~p", 
-      %               [From, To, Old, Type, GoalCopy, '$an_results'(RelInfoCopy)]),
+      %               [From, To, Old, Type, GoalCopy, '$ana_info'(RelInfoCopy)]),
       % TODO: (MH) we should get from the partial evaluator the first property that fails!
       error_message("(lns ~d-~d) False assertion:~n"||
           "~p"||
           "because the ~p field is incompatible with inferred ~p:"||
           "~p", 
-          [From, To, OldCopy, Type, Type, '$an_results'(RelInfoCopy)]),
+          [From, To, OldCopy, Type, Type, '$ana_info'(RelInfoCopy, M)]),
       memo_ctcheck_sum(false)
     ).
 
@@ -200,6 +200,11 @@ local_inccounter(_, _).
 checked_or_true(checked).
 checked_or_true(true).
 
+%:- export(filter_left_over/5).
+filter_left_over(calls, Call, _, _, Call).
+filter_left_over(success, _, Succ, _, Succ).
+filter_left_over(comp, _, _, Comp, Comp).
+
 %----------------------------------------------------------------------
 % For '~p' in error_message/2 and related
 
@@ -207,7 +212,9 @@ checked_or_true(true).
 
 :- use_module(engine(stream_basic), [current_output/1]).
 :- use_module(library(streams), [tab/1, nl/0]).
-:- use_module(library(compiler/p_unit/p_printer), [print_assrt/2]).
+:- use_module(library(compiler/p_unit/p_printer), [print_assrt/2, print_assrt/3]).
+:- use_module(library(compiler/p_unit/unexpand), [transform_body/3]).
+:- import(p_printer, [compact_comp_props/2]). % TODO: export
 
 :- multifile portray/1.
 
@@ -215,23 +222,36 @@ checked_or_true(true).
 portray(A) :- A = as${}, !,
     current_output(CO),
     print_assrt(A, CO). % (always newline ended)
-% Analysis results
-portray('$an_results'(Res)) :-
-    find_tab(Res,ResT),
-    write_results(ResT).
-% AbsInt values
-portray('$dom'(Dom,Res,Rules,Tab)) :-
-    name(Dom,Lst), length(Lst,Len),
-    format("~n[~w]",[Dom]),
-    TabLen is Tab - Len + 1,
-    tab(TabLen),
-    % MH Looks better without...
-    % format(": ",[]),
+% Literal from a given context (for ctchecks_pp_messages)
+portray('$left_props'(Type, A, FromM)) :- !,
+    ( Type = comp -> transform_comp(A, FromM, A2)
+    ; transform_body(A, FromM, A2)
+    ),
+    print(A2).
+% Assertions writen from a different context (for ctchecks_pp_messages)
+portray('$as_pp'(A, FromM)) :- !,
+    current_output(CO),
+    print_assrt(A, FromM, CO). % (always newline ended)
+% Analysis results (from module FromM)
+portray('$ana_info'(Res, FromM)) :- !,
+    write_ana_info(Res, FromM).
+
+write_ana_info(Res, FromM) :-
+    calc_tab(Res,Tab),
+    write_ana_info_(Res,Tab,FromM).
+
+write_ana_info_([],_Tab,_FromM).
+write_ana_info_([R|Rs],Tab,FromM) :-
+    print_dom_info(R,Tab,FromM),
+    write_ana_info_(Rs,Tab,FromM).
+
+print_dom_info('$dom'(Dom,Res,Rules),Tab,FromM) :-
+    write_dom(Dom,Tab),
     ( Dom == generic_comp ->
         sort(Res, Res2),
         list_to_conj(Res2,ResConj),
         write(ResConj), nl
-    ; write_info(Res, Tab)
+    ; write_info(Res, Tab, Dom, FromM)
     ),
     ( Rules = [] ->
         % nl % *** MH: Testing eliminating nl at the end 
@@ -243,22 +263,40 @@ portray('$dom'(Dom,Res,Rules,Tab)) :-
       write_rules(Rules, CO)
     ).
 
-write_results([]).
-write_results([R|Rs]) :-
-    print(R),
-    write_results(Rs).
+write_dom(Dom,Tab) :-
+    name(Dom,Lst), length(Lst,Len),
+    format("~n[~w]",[Dom]),
+    TabLen is Tab - Len + 1,
+    tab(TabLen).
 
-write_info([],_).
-write_info([A|As],Tab) :- 
-    format("~w ",[A]),
+write_info([],_,_,_).
+write_info([A|As],Tab,Dom,FromM) :- 
+    ( dom_is_comp(Dom) -> transform_comp(A, FromM, A2)
+    ; transform_body(A, FromM, A2)
+    ),
+    format("~w ",[A2]),
     ( As \== [] ->
         format(" OR ~n",[]),
         TabLen is Tab + 5,
         tab(TabLen)
     ; true
     ),
-    write_info(As,Tab).
+    write_info(As,Tab,Dom,FromM).
 
+% TODO: move somewhere else and complete the list
+dom_is_comp(nf).
+dom_is_comp(det).
+
+transform_comp(A0, FromM, A) :- A0 = [_|_], !,
+    % TODO: hack for det,nf... prepare_output_info/5 receives a list instead of a conjunction here
+    list_to_conj(A0, A1),
+    transform_comp(A1, FromM, A).
+transform_comp(A0, FromM, A) :-
+    transform_body(A0, FromM, A1),
+    conj_to_list(A1, A2),
+    compact_comp_props(A2, A3),
+    list_to_conj(A3, A).
+      
 write_rules([], _S).
 write_rules([typedef(::=(H,B))|Rules], S) :-
     write_one_type(typedef(::=(H,B)), S),
@@ -269,20 +307,18 @@ write_rules([typedef(::=(H,B))|Rules], S) :-
 %     ),
     write_rules(Rules, S).
 
-find_tab(Res,ResT) :-
-    find_tab_x(Res,Tab,Tab,ResT).
+% Calculate tab size for presenting $dom
+calc_tab(Res,Tab) :-
+    calc_tab_(Res,0,Tab).
 
-find_tab_x([],_,0,[]).
-find_tab_x(['$dom'(Dom,Res,Rules)|Rs],Tab,MaxTab,['$dom'(Dom,Res,Rules,Tab)|RsT]) :-
+calc_tab_([],Tab,Tab).
+calc_tab_(['$dom'(Dom,_,_)|Rs],Tab0,Tab) :-
     name(Dom,List),
     length(List,Length),
-    find_tab_x(Rs,Tab,MaxTab1,RsT),
-    find_max(MaxTab1,Length,MaxTab).
+    max(Tab0,Length,Tab1),
+    calc_tab_(Rs,Tab1,Tab).
 
-find_max(A,B,C) :- A > B, !, C = A.
-find_max(_,B,B).
+max(A,B,C) :- A > B, !, C = A.
+max(_,B,B).
 
-%:- export(filter_left_over/5).
-filter_left_over(calls, Call, _, _, Call).
-filter_left_over(success, _, Succ, _, Succ).
-filter_left_over(comp, _, _, Comp, Comp).
+

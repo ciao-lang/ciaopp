@@ -84,11 +84,6 @@ get_check_assertion(Goal,Assertion,Refs) :-
     Refs = [ARef],
     debug_message("~q assertion found ~q",[Type,Assertion]).
 
-rebuild_assertion(M, Status, Type, Body, Dic, S, LB, LE, A) :-
-    A = as(M,Status,Type,Key,Compat,Call,Succ,Comp,Dic,Loc,Comment,_),
-    Loc = loc(S, LB, LE),
-    assertion_body(Key, Compat, Call, Succ, Comp, Comment, Body).
-
 get_entrycalls_assertion(Type,Goal,Calls,Refs):-
     ref_assertion_read(Goal,_,Status0,Type,_Body,_Dict,_S,_LB,_LE,_),
     % TODO: Why are `true` assertions considered here?
@@ -99,15 +94,22 @@ get_entrycalls_assertion(Type,Goal,Calls,Refs):-
     ; member(Status0,[check]), LS = [true,check,trust]
     ),
     !,
-    findall( (Assertion,ARef),
-             ( ref_assertion_read(Goal, M, Status, Type, Body, Dic, S, LB, LE, ARef),
-               ( Type = entry ->
-                   true
-               ; member(Status,LS)
-               ),
-               rebuild_assertion(M, Status, Type, Body, Dic, S, LB, LE, Assertion) ),
-             Calls0 ),
+    findall((Assertion,ARef), get_entrycalls_assertion_(Goal, Type, LS, Assertion, ARef), Calls0),
     group_calls(Calls0,Calls,Refs).
+
+% TODO: check similar preds in p_unit
+get_entrycalls_assertion_(Goal, Type, LS, Assertion, ARef) :-
+    ref_assertion_read(Goal, M, Status, Type, Body, Dic, S, LB, LE, ARef),
+    ( Type = entry ->
+        true
+    ; member(Status,LS)
+    ),
+    rebuild_assertion(M, Status, Type, Body, Dic, S, LB, LE, Assertion).
+
+rebuild_assertion(M, Status, Type, Body, Dic, S, LB, LE, A) :-
+    A = as(M,Status,Type,Key,Compat,Call,Succ,Comp,Dic,Loc,Comment,_),
+    Loc = loc(S, LB, LE),
+    assertion_body(Key, Compat, Call, Succ, Comp, Comment, Body).
 
 group_calls(Group,A1,Refs):-
     group_calls_(Group,A0,Refs),

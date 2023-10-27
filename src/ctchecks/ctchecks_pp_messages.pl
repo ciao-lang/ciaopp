@@ -1,7 +1,7 @@
 :- module(ctchecks_pp_messages, [
-    message_pp_calls/7,
-    message_pp_entry/7,
-    message_pp_success/7,
+    message_pp_calls/8,
+    message_pp_entry/8,
+    message_pp_success/8,
     message_pp_check/6,
     message_clause_incompatible/5
 ], [assertions, regtypes]).
@@ -61,10 +61,10 @@ make_dict(['$VAR'(N)|Ns],[V|Vs],[Name=V|NVs]):-
     name(Name,[N1]),
     make_dict(Ns,Vs,NVs).
 
-message_pp_entrycalls(_,_,none,_,_,_,_) :- !.
-message_pp_entrycalls(As,Info,AbsInt,Head,Dict,K,Status):-
+message_pp_entrycalls(_,_,none,_,_,_,_,_) :- !.
+message_pp_entrycalls(As,Info,AbsInt,Head,Dict,K,Status,FromMod):-
     prepare_output_info(AbsInt, Info, Head, calls, RelInfo),
-    copy_term((Head,'$an_results'(RelInfo),Dict),(GoalCopy,RelInfoCopy,DictCopy)),
+    copy_term((Head,RelInfo,Dict),(GoalCopy,RelInfoCopy,DictCopy)),
     name_vars(DictCopy),
     prettyvars((GoalCopy,RelInfoCopy)),
     decode_litkey(K,F,A,C,L),
@@ -78,7 +78,9 @@ message_pp_entrycalls(As,Info,AbsInt,Head,Dict,K,Status):-
             % "because on call ~p :~n"||
             "because on call ~p :"|| % % *** MH: Testing eliminating extra nl
             "~p",
-            [L,As,GoalCopy,RelInfoCopy])
+            [L,'$as_pp'(As,FromMod),
+             '$left_props'(calls,GoalCopy,FromMod),
+             '$ana_info'(RelInfoCopy,FromMod)])
     ; Status == false -> 
         error_message(LC,
             "At literal ~w false assertion:~n"||
@@ -86,28 +88,30 @@ message_pp_entrycalls(As,Info,AbsInt,Head,Dict,K,Status):-
             % "because on call ~p :~n"||
             "because on call ~p :"|| % % *** MH: Testing eliminating extra nl
             "~p",
-            [L,As, GoalCopy, RelInfoCopy])
+            [L,'$as_pp'(As,FromMod),
+             '$left_props'(calls,GoalCopy,FromMod),
+             '$ana_info'(RelInfoCopy,FromMod)])
     ; display_message_checked_pp(LC,
           "At literal ~w successfully checked assertion:~n"||
           "~p",
-          [L,As])
+          [L,'$as_pp'(As,FromMod)])
     ).
 
-:- pred message_pp_calls/7.
-message_pp_calls(As,Info,AbsInt,Head,Dict,K,Status):-
-    message_pp_entrycalls(As,Info,AbsInt,Head,Dict,K,Status), !.
-message_pp_calls(As,Info,AbsInt,Head,Dict,K,Status) :-
-    throw(bug_failed(message_pp_calls(As,Info,AbsInt,Head,Dict,K,Status))).
+:- pred message_pp_calls/8.
+message_pp_calls(As,Info,AbsInt,Head,Dict,K,Status,FromMod):-
+    message_pp_entrycalls(As,Info,AbsInt,Head,Dict,K,Status,FromMod), !.
+message_pp_calls(As,Info,AbsInt,Head,Dict,K,Status,FromMod) :-
+    throw(bug_failed(message_pp_calls(As,Info,AbsInt,Head,Dict,K,Status,FromMod))).
 
-:- pred message_pp_entry/7.
-message_pp_entry(As,Info,AbsInt,Head,Dict,K,Status):-
-    message_pp_entrycalls(As,Info,AbsInt,Head,Dict,K,Status), !.
-message_pp_entry(As,Info,AbsInt,Head,Dict,K,Status) :-
-    throw(bug_failed(message_pp_entry(As,Info,AbsInt,Head,Dict,K,Status))).
+:- pred message_pp_entry/8.
+message_pp_entry(As,Info,AbsInt,Head,Dict,K,Status,FromMod):-
+    message_pp_entrycalls(As,Info,AbsInt,Head,Dict,K,Status,FromMod), !.
+message_pp_entry(As,Info,AbsInt,Head,Dict,K,Status,FromMod) :-
+    throw(bug_failed(message_pp_entry(As,Info,AbsInt,Head,Dict,K,Status,FromMod))).
 
-message_pp_success(As,Info,AbsInt,Head,Dict,K,Status):-
+message_pp_success(As,Info,AbsInt,Head,Dict,K,Status,FromMod):-
     prepare_output_info(AbsInt, Info, Head, success, RelInfo),
-    copy_term((Head,'$an_results'(RelInfo),Dict),(GoalCopy,RelInfoCopy,DictCopy)),
+    copy_term((Head,RelInfo,Dict),(GoalCopy,RelInfoCopy,DictCopy)),
     name_vars(DictCopy),
     prettyvars((GoalCopy,RelInfoCopy)),
     decode_litkey(K,F,A,C,L),
@@ -119,18 +123,22 @@ message_pp_success(As,Info,AbsInt,Head,Dict,K,Status):-
             "~p"||
             "because on success ~p :~n"||
             "~p",
-            [L,As,GoalCopy,RelInfoCopy])
+            [L,'$as_pp'(As,FromMod),
+             '$left_props'(success,GoalCopy,FromMod),
+             '$ana_info'(RelInfoCopy,FromMod)])
     ; Status == false ->
         error_message(LC,
             "At literal ~w false assertion:~n"||
             "~p"||
             "because on success ~p :~n"||
             "~p",
-            [L,As, GoalCopy, RelInfoCopy])
+            [L,'$as_pp'(As,FromMod),
+             '$left_props'(success,GoalCopy,FromMod),
+             '$ana_info'(RelInfoCopy,FromMod)])
     ; display_message_checked_pp(LC,
           "At literal ~w successfully verified assertion:~n"||
           "~p",
-          [L,As])
+          [L,'$as_pp'(As,FromMod)])
     ).
 %pp%message_pp_success(Info,AbsInt,Goal,Head,Calls,Succ,Dict0,K,Status):-
 %pp%    ( var(Calls) -> Calls = true ; true ),
@@ -186,8 +194,8 @@ message_pp_success(As,Info,AbsInt,Head,Dict,K,Status):-
 %pp%    ),
 %pp%    !.
 %
-message_pp_success(As,Info,AbsInt,Head,Dict,K,Status):-
-    throw(bug_failed(message_pp_success(As,Info,AbsInt,Head,Dict,K,Status))).
+message_pp_success(As,Info,AbsInt,Head,Dict,K,Status,FromMod):-
+    throw(bug_failed(message_pp_success(As,Info,AbsInt,Head,Dict,K,Status,FromMod))).
 
 message_pp_check(Info,AbsInt,Prop,Key,Dict,Status):-
     copy_term((Info,Prop,Dict),(NInfo,NProp,NDict)),

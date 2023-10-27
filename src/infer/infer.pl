@@ -96,7 +96,7 @@ get_info(determinism,Pred,Key,Goal,Info):-   %%% JNL
 get_info(determinism,Pred,Key,Goal,Info):-
     get_info(det,Pred,Key,Goal,Info).
 get_info(nf,pred,_Key,Goal,Info):-       %%% JNL 
-    current_fact(complete(_,nf,Goal0,_,LPrime,_,_)),
+    current_fact(complete(_,nf,Goal0,_,LPrime,_,_)), % TODO: bad indexing! fix structure first
     compute_lub(nf,LPrime,Abs),
     variant(Goal,Goal0),
     asub_to_props(nf,Goal,Abs,Info).
@@ -104,10 +104,10 @@ get_info(nf,point,Key,Goal,Info):- !,
     get_memo_lub(Key,_Vars,nf,yes,Asub),
     ( Asub == '$bottom' ->
         Info = [fails(Goal)]
-    ;
-        asub_to_native(nf,Asub,Goal,yes,_A,Info) ).
+    ; asub_to_native(nf,Asub,Goal,yes,_A,Info)
+    ).
 get_info(det,pred,_Key,Goal,Info):-
-    current_fact(complete(_,det,Goal0,_,LPrime,_,_)),
+    current_fact(complete(_,det,Goal0,_,LPrime,_,_)), % TODO: bad indexing! fix structure first
     compute_lub(det,LPrime,Abs),
     variant(Goal,Goal0),
     asub_to_props(det,Goal,Abs,Info).
@@ -142,7 +142,7 @@ get_info(Prop,pred,_Key,Goal,Info):- % inferred is pred level % TODO:[new-resour
     asub_to_props(Prop,Goal,Abs,Info).
 :- if(defined(has_ciaopp_cost)).
 get_info(res_plai,pred,Key,Goal,Info):-
-    current_fact(complete(Key,res_plai,Goal0,X1,LPrime,X2,X3)),
+    current_fact(complete(Key,res_plai,Goal0,X1,LPrime,X2,X3)), % TODO: bad indexing! fix structure first
     X2 \== no, % it is not a builtin ??
     translate_resource_info(complete(Key,res_plai,Goal0,X1,LPrime,_,X3),inferred(_DDD,GoalInf,Abs)),
     %current_fact(inferred(Prop,Goal0,Abs)),
@@ -152,7 +152,7 @@ get_info(res_plai,pred,Key,Goal,Info):-
     %_asserta_fact(inferred(DDD,GoalInf,Abs)).
     %asub_to_props(resources,Goal,Abs,Info).
 get_info(res_plai_stprf,pred,Key,Goal,Info):-
-    current_fact(complete(Key,res_plai_stprf,Goal0,_X1,LPrime,X2,_X3)),
+    current_fact(complete(Key,res_plai_stprf,Goal0,_X1,LPrime,X2,_X3)), % TODO: bad indexing! fix structure first
     X2 \== no, % it is not a builtin ??
     compute_lub(res_plai_stprf,LPrime, Abs),
 %       translate_resource_info(complete(Key,res_plai,Goal0,X1,LPrime,_,X3),inferred(_DDD,GoalInf,Abs)),

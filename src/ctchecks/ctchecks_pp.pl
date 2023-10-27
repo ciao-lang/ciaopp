@@ -56,31 +56,46 @@ pp_compile_time_check_types(true:_,_H,_Clid,_Dict,_AbsInts):- !.
 % The body is just a cut                                      %
 pp_compile_time_check_types(!,_H,_Clid,_Dict,_AbsInts):- !.
 % Rest of clauses. We try to simplify its body                %
-pp_compile_time_check_types(Body,_H,_Clid,dic(Vars,Names),AbsInts):-
+pp_compile_time_check_types(Body,H,_Clid,dic(Vars,Names),AbsInts):-
     conj_to_list(Body,Blist),
-    pp_compile_time_check_each(Blist,Vars,Names,AbsInts).
+    get_clause_mod(H, FromMod),
+    pp_compile_time_check_each(Blist,Vars,Names,AbsInts,FromMod).
 
-pp_compile_time_check_each([],_Vars,_Names,_AbsInts).
-pp_compile_time_check_each([Goal|Goals],Vars,Names,AbsInts):-
+pp_compile_time_check_each([],_Vars,_Names,_AbsInts,_FromMod).
+pp_compile_time_check_each([Goal|Goals],Vars,Names,AbsInts,FromMod):-
     lit_ppkey(Goal,Lit,K),
-    pp_ct_body_list_types(Lit,K,Goals,Vars,Names,AbsInts),
+    pp_ct_body_list_types(Lit,K,Goals,Vars,Names,AbsInts,FromMod),
     % If a call always fails, do not check next predicate.
     ( pp_ct_body_check_always_fails(Lit,K,Goals,Vars,Names,AbsInts) ->
         true
-    ; pp_compile_time_check_each(Goals,Vars,Names,AbsInts)
+    ; pp_compile_time_check_each(Goals,Vars,Names,AbsInts,FromMod)
     ).
 
-%-------------------------------------------------------------%
-%-------------------------------------------------------------%
+% ---------------------------------------------------------------------------
+
+:- use_module(library(compiler/p_unit/p_unit_db), [curr_module/1]). % TODO: avoid!
+:- use_module(engine(runtime_control), [module_split/3]).
+
+% Obtain the module where a clause where defined
+% TODO: use Clid, locate 'module:' properly
+get_clause_mod(H, M) :-
+    ( functor(H, MF, _),
+      module_split(MF, M0, _),
+      \+ M0 = multifile -> M = M0 % TODO: problem with multifile! deprecate 'multifile:'?
+    ; curr_module(M0) -> M = M0 % TODO: wrong in multi modular!
+    ; fail
+    ).
+
+% ---------------------------------------------------------------------------
 
 prepare_info_pp(AbsInts,Info,Dom,In):-
     ( Prop = regtypes ; Prop = sharing ),
     get_domain_knows_of(Prop,AbsInts,Info,Dom,In),!.
 prepare_info_pp([Dom|_],[Info|_],Dom,Info).
 
-pp_ct_body_list_types(!,_,_Goals,_Vars,_Names,_AbsInts):-!.
+pp_ct_body_list_types(!,_,_Goals,_Vars,_Names,_AbsInts,_FromMod):-!.
 % This goal is a program point assertion                      %
-pp_ct_body_list_types(Goal,K,_Goals,Vars,Names,AbsInts):-
+pp_ct_body_list_types(Goal,K,_Goals,Vars,Names,AbsInts,_FromMod):-
     pp_check(Goal,Prop),!,
     pp_ct_check_assertion(Prop,K,Vars,Names,AbsInts).
 % Goal is a builtin whose call is violated using type info    %
@@ -106,17 +121,17 @@ pp_ct_body_list_types(Goal,K,_Goals,Vars,Names,AbsInts):-
 %           fail
 %       )).
 %
-pp_ct_body_list_types(Goal,K,Goals,Vars,_Names,AbsInts):-
+pp_ct_body_list_types(Goal,K,Goals,Vars,_Names,AbsInts,FromMod):-
     assr_head(Goal,Head),
     % Failure-driven loop to check each relevant assertion.
     % entry and calls assertions are checked independently.
     ( get_check_assertion(Head,Assertion,_Refs),
-      check_assertion(Assertion,Goal,K,Vars,Goals,AbsInts),
+      check_assertion(Assertion,Goal,K,Vars,Goals,AbsInts,FromMod),
       fail
     ; true
     ).
 
-check_assertion(A0,Goal,K,Vars,Goals,AbsInts) :-
+check_assertion(A0,Goal,K,Vars,Goals,AbsInts,FromMod) :-
     A0 = as${type=>Type, head=>Head},
     copy_term(Head, CopyHead),
     maplist(decide_get_applicable_info(K, Vars, CopyHead, Goal), AbsInts, Calls),
@@ -133,11 +148,11 @@ check_assertion(A0,Goal,K,Vars,Goals,AbsInts) :-
     ; C = not_empty ),
     local_inccounter_split(pp,Status,Type,C),
     ( Type = success ->
-        message_pp_success_diag(A0, InfoOut, DomsOut, Head, Dict, K, Status)
+        message_pp_success_diag(A0, InfoOut, DomsOut, Head, Dict, K, Status, FromMod)
     ; Type = calls ->
-        message_pp_calls_diag(A0, InfoOut, DomsOut, Head, Dict, K, Status)
+        message_pp_calls_diag(A0, InfoOut, DomsOut, Head, Dict, K, Status, FromMod)
     ; Type = entry ->
-        message_pp_entry(A0, InfoOut, DomsOut, Head, Dict, K, Status)
+        message_pp_entry(A0, InfoOut, DomsOut, Head, Dict, K, Status, FromMod)
     ).
 
 adapt_to_completes_format(AGoal, Key, ACall, ASuccs0, Formatted) :-
@@ -242,9 +257,9 @@ decide_get_applicable_info(K,Vars,Head,Goal,Dom,Info):-
     Head = Goal,
     get_memo_lub(K,Vars,Dom,yes,Info), !.
 
-message_pp_calls_diag(A,Info,Abs,Head,Dict,K,Status):-
+message_pp_calls_diag(A,Info,Abs,Head,Dict,K,Status,FromMod):-
     A = as${call=>Calls},
-    message_pp_calls(A,Info,Abs,Head,Dict,K,Status),
+    message_pp_calls(A,Info,Abs,Head,Dict,K,Status,FromMod),
     current_pp_flag(run_diagnosis,Diag),
     Abs = [DiagAbs|_],
     decide_diag_calls(Diag,DiagAbs,Head,Calls,K,Status).
@@ -257,9 +272,9 @@ decide_diag_calls(on,Abs,Head,Calls,K,Status) :-
     ; true
     ).
 
-message_pp_success_diag(A,Info,Abs,Head,Dict,K,Status):-
+message_pp_success_diag(A,Info,Abs,Head,Dict,K,Status,FromMod):-
     A = as${succ=>Succ},
-    message_pp_success(A,Info,Abs,Head,Dict,K,Status),
+    message_pp_success(A,Info,Abs,Head,Dict,K,Status,FromMod),
     current_pp_flag(run_diagnosis,Diag),
     Abs = [DiagAbs|_],
     decide_diag_success(Diag,[DiagAbs|_],Head,Succ,K,Status).
