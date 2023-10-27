@@ -234,8 +234,10 @@ portray('$dom'(Dom,Res,Rules,Tab)) :-
     ; write_info(Res, Tab)
     ),
     ( Rules = [] ->
-        nl
-    ; format("~nwith:~n~n",[]),
+        % nl % *** MH: Testing eliminating nl at the end 
+        true 
+    ; % format("~nwith:~n~n",[]),
+      format("~nwith:~n",[]), % *** MH: Testing eliminating extra nl
       % Flag for a format of rules here 
       current_output(CO),
       write_rules(Rules, CO)

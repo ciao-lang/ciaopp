@@ -75,14 +75,16 @@ message_pp_entrycalls(As,Info,AbsInt,Head,Dict,K,Status):-
         display_message_check_pp(LC,
             "At literal ~w could not verify assertion:~n"||
             "~p"||
-            "because on call ~p :~n"||
+            % "because on call ~p :~n"||
+            "because on call ~p :"|| % % *** MH: Testing eliminating extra nl
             "~p",
             [L,As,GoalCopy,RelInfoCopy])
     ; Status == false -> 
         error_message(LC,
             "At literal ~w false assertion:~n"||
             "~p"||
-            "because on call ~p :~n"||
+            % "because on call ~p :~n"||
+            "because on call ~p :"|| % % *** MH: Testing eliminating extra nl
             "~p",
             [L,As, GoalCopy, RelInfoCopy])
     ; display_message_checked_pp(LC,
