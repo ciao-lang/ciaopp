@@ -293,7 +293,7 @@ widen_call0(AbsInt,SgKey,Sg,F1,Id0,Ids,Proj1,Proj):-
     widen_call2(AbsInt,SgKey,Sg,F1,Id0,Ids,Proj1,Proj).
 
 widen_call1(AbsInt,SgKey,Sg,F1,Id0,Ids,Proj1,Proj):-
-    current_fact(complete(SgKey0,AbsInt,Sg0,Proj0,_Prime0,Id0,Fs0)),
+    current_fact(complete(SgKey0,AbsInt,Sg0,Proj0,_Prime0,Id0,Fs0)), % TODO: bad indexing! (we'd need to index by Id0)
     ( SgKey=SgKey0,
       member((F1,_NewId0),Fs0)
     -> Sg0=Sg,

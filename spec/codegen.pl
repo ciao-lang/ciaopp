@@ -133,7 +133,7 @@ rename_completes_but_exported(_).
 rename_memo_tables(Ids,AbsInt):-
     findall(OldId,
             (member(Id,Ids),
-             current_fact(complete(_,_,_,_,_,Id,_)),
+             current_fact(complete(_,_,_,_,_,Id,_)), % TODO: really bad indexing!
              spec_wrt(Id,AbsInt,OldId)),
              Completes),
     sort(Completes,Completes_s),
@@ -228,7 +228,7 @@ rename_memo_tables_pp(_Key,_F,_AbsInt).
     in the children completes to use the original names.".
 replace_pointers(no,_Id,_F,_Abs):-!.
 replace_pointers(Child,Id,F,Abs):-
-    current_fact(complete(A,Abs,C,D,E,Child,Parents),Ref),
+    current_fact(complete(A,Abs,C,D,E,Child,Parents),Ref), % TODO: bad indexing!
     erase(Ref),
     replace_parents(Parents,Id,F,NewParents),
     assertz_fact(complete(A,Abs,C,D,E,Child,NewParents)).
@@ -249,7 +249,7 @@ replace_parents([P|Parents],Id,F,[P|NewParents]):-
     each of them.".
 collect_code(AbsInt,Clauses):-
     findall(OldId,
-            (current_fact(complete(_,_,_,_,_,Id,_)),
+            (current_fact(complete(_,_,_,_,_,Id,_)), % TODO: bad indexing!
              spec_wrt(Id,AbsInt,OldId)),
              Completes),
     sort(Completes,Completes_s),
@@ -262,7 +262,7 @@ collect_code(AbsInt,Clauses):-
     specialized definition for each of them.".
 collect_code_canonical(AbsInt,Clauses) :-
     findall(OldId,
-            (current_fact(complete(_,_,_,_,_,Id,_)),
+            (current_fact(complete(_,_,_,_,_,Id,_)), % TODO: bad indexing!
              spec_wrt(Id,AbsInt,OldId),
              is_canonical(OldId)),
              Completes),
@@ -445,7 +445,7 @@ find_son_identif(_,Key,Key).
 
 rename_orig_clauses([],_).
 rename_orig_clauses([Id|Ids],AbsInt):-
-    current_fact(complete(_,AbsInt,Sg,_,_,Id,_)),
+    current_fact(complete(_,AbsInt,Sg,_,_,Id,_)), % TODO: bad indexing!
     functor(Sg,F,A),
     locate_spec_definition(Id,NF,A),
     rename_clauses(F,NF,A),

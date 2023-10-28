@@ -545,7 +545,7 @@ same_fixpoint_ancestor(Id0,_Ids,_AbsInt):-
 same_fixpoint_ancestor(Id0,_Ids,_AbsInt):-
     current_fact(approx(_SgKey0,_Sg0,_Proj0,_Prime0,Id0,_Fs0)), !.
 same_fixpoint_ancestor(Id0,Ids,AbsInt):-
-    current_fact(complete(_SgKey0,AbsInt,_Sg0,_Proj0,_Prime0,Id0,Fs0)),
+    current_fact(complete(_SgKey0,AbsInt,_Sg0,_Proj0,_Prime0,Id0,Fs0)), % TODO: bad indexing! (we'd need to index by Id0)
     member((_F1,Id),Fs0),
     \+ member(Id,Ids),
     same_fixpoint_ancestor(Id,[Id|Ids],AbsInt).

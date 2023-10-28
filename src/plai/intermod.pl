@@ -613,7 +613,7 @@ intermod_check_certificate_one_module(AbsInt,File):-
     !.
 
 filter_completes(AbsInt,Module):-
-    current_fact(complete(_A,AbsInt,Sg,_C,_D,_E,_F),Ref),
+    current_fact(complete(_A,AbsInt,Sg,_C,_D,_E,_F),Ref), % TODO: bad indexing! (we'd need to index by module)
     get_module_from_sg(Sg,Module0),
     Module \= Module0,
     Module0 \= multifile,
