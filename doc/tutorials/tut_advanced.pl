@@ -1036,7 +1036,7 @@ program code is as follows:
 
 ```ciao
 :- module(_, [nrev/2], [assertions,functions,regtypes,nativeprops]).
-:- function(arith(false)).
+:- fun_eval(arith(false)).
 :- entry nrev/2 : {list, ground} * var.
 
 :- check pred nrev(A,B)  : list(A) => list(B).  
