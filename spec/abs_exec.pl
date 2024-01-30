@@ -154,9 +154,11 @@ determinable(def,ground).
 %
 determinable(share,ground).
 determinable(share,indep).
+determinable(share,sharing).
 %
 determinable(son,ground).
 determinable(son,indep).
+determinable(son,sharing).
 %
 determinable(shfr,ground).
 determinable(shfr,indep).
@@ -182,6 +184,27 @@ determinable(shfrnv,nonvar).
 %
 determinable(shfrson,X):-
     determinable(shfr,X).
+%
+determinable(shfret,X):-
+    determinable(shfr,X).
+%
+determinable(shfrlin_amgu,X):-
+    determinable(shfr,X).
+%
+determinable(share_amgu,X):-
+    determinable(share,X).
+%
+determinable(share_clique,X):-
+    determinable(share,X).
+%
+determinable(share_clique_1,X):-
+    determinable(share,X).
+%
+determinable(share_clique_def,X):-
+    determinable(share,X).
+%
+determinable(shareson,X):-
+    determinable(share,X).
 %
 determinable(aeq,ground).
 determinable(aeq,indep).
