@@ -318,7 +318,8 @@ analyze_(AbsInt,Cls,Ds,Info,_):-
 % --- DTM: This should be in the analysis itself
 
 % TODO: around 10-20 ms each new package, optimize with caches? (JF)
-add_packages_if_needed(shfr) :-
+add_packages_if_needed(A) :-
+    knows_of(sharing, A),
     !,
     inject_output_package(assertions),
     inject_output_package(nativeprops).
