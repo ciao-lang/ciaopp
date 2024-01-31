@@ -149,6 +149,7 @@ determinable(ptypes,types).
 %determinable(evalterms,types).
 determinable(svterms,types).
 determinable(deftypes,types).
+determinable(shfret, types).
 %
 determinable(def,ground).
 %
