@@ -643,14 +643,20 @@ gather_measures([Clause|Program], [Dc|Ds], K0, NewProgram0, NewDs0) :-
 
 :- if(defined(has_ciaopp_cost)).
 gather_measure(Clause, Dc, K0, NewProgram0, NewDs0, NewProgram, NewDs) :-
+    ( gather_measure_(Clause, K0, NewDirect, DD) ->
+        NewProgram0 = [NewDirect, Clause|NewProgram],
+        NewDs0 = [DD, Dc|NewDs]
+    ; NewProgram0 = [Clause|NewProgram],
+      NewDs0 = [Dc|NewDs]
+    ).
+
+gather_measure_(Clause, K0, NewDirect, DD) :-
     is_directive(NewDirect, D, DK),
     is_clause(Clause, Head, _B, _Id),
     functor(Head, F, A),
     K0 \== F/A,
     get_predkey(F, A, Key),
-    module_split(F, _, F0),
-    functor(Goal0, F0, A),
-    functor(Goal,  F,  A),
+    functor(Goal, F, A),
     debug_message(
         "Recovering measure information from assertion for ~w ~w",
         [Key, Measures1]),
@@ -659,26 +665,18 @@ gather_measure(Clause, Dc, K0, NewProgram0, NewDs0, NewProgram, NewDs) :-
         debug_message(
             "Recovering measure information from types for ~w ~w",
             [Key, Measures0]),
-        (
-            read_asr_measure(Goal0, Measures1) ->
+        ( read_asr_measure(Goal, Measures1) ->
             apply_glb_measures(Measures0, Measures1, Key, Measures)
-        ;
-            Measures = Measures0
+        ; Measures = Measures0
         ),
-        debug_message("Applying the glb operation for ~w ~w",
-            [Key, Measures])
-    ;
-        read_asr_measure(Goal0, Measures)
+        debug_message("Applying the glb operation for ~w ~w", [Key, Measures])
+    ; read_asr_measure(Goal, Measures)
     ),
     K = F/A,
     D = measure(K, Measures),
     create_dict(D, DD),
-    null_directive_key(DK) ->
-    NewProgram0 = [NewDirect, Clause|NewProgram],
-    NewDs0 = [DD, Dc|NewDs]
-    ;
-    NewProgram0 = [Clause|NewProgram],
-    NewDs0 = [Dc|NewDs].
+    null_directive_key(DK).
+
 :- else.
 gather_measure(Clause, Dc, _K0, NewProgram0, NewDs0, NewProgram, NewDs) :-
     NewProgram0 = [Clause|NewProgram],
@@ -687,19 +685,23 @@ gather_measure(Clause, Dc, _K0, NewProgram0, NewDs0, NewProgram, NewDs) :-
 
 :- pop_prolog_flag(multi_arity_warnings).
 
-
 :- if(defined(has_ciaopp_cost)).
+
+:- use_module(library(assertions/assrt_lib), [assertion_body/7]).
+
 % Obtain measure assertions from ':- measure(F/A,Measure)'
 read_asr_measure(Goal, Measures) :-
     functor(Goal, F, A),
-    get_measures_assrt(F/A, Measures), !.
+    module_split(F, _, F0),
+    get_measures_assrt(F0/A, Measures), !. % TODO: only for Java?! ignores mod names internally
 % Obtain measure assertions from 'size_metric(Var,Metric)'
 read_asr_measure(Goal, Measures) :-
-    assertion_of(Goal, _M, trust, _Type, (_::_:_=>_+Props#_), _Dict,
-        _Source, _LB, _LE), !,
+    assertion_read(Goal, _M, trust, _Type, ABody, _Dict, _Source, _LB, _LE),
+    !,
+    assertion_body(_,_,_,_,Comp,_,ABody),
+    %%%
     Goal =.. [_|Vars],
-    get_measures_assrt(Vars, Props, Measures), !.
-% read_asr_measure(_Goal,[]):-!.
+    get_measures_assrt(Vars, Comp, Measures), !.
 
 get_measures_assrt([],         _,     []).
 get_measures_assrt([Var|Vars], Props, [M|Ms]) :-
@@ -707,7 +709,10 @@ get_measures_assrt([Var|Vars], Props, [M|Ms]) :-
     get_measures_assrt(Vars, Props, Ms).
 
 get_size_metric_assrt([],                            _,   null).
-get_size_metric_assrt([size_metric(_, Var, M0)|_Ps], Arg, M) :-
+get_size_metric_assrt([size_metric(_, Var, M0)|_Ps], Arg, M) :- % TODO: unexpanded, only from get_measures_assrt/2, try to deprecate?
+    get_metric(M0, M),
+    Var == Arg, !.
+get_size_metric_assrt(['native_props:size_metric'(_, Var, M0)|_Ps], Arg, M) :-
     get_metric(M0, M),
     Var == Arg, !.
 get_size_metric_assrt([_|Ps], Arg, M) :-
