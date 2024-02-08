@@ -170,6 +170,7 @@ typeslib_flag(typedefs_simp) :- current_pp_flag(typedefs_simp, yes).
 typeslib_flag(use_deftypes) :- current_pp_flag(types, deftypes).
 typeslib_flag(use_defined_types_filters) :- \+ current_pp_flag(type_precision,defined). % TODO: why? only when use_deftypes
 typeslib_flag(type_output_all) :- current_pp_flag(type_output, all). % \+ current_pp_flag(type_output, defined).
+typeslib_flag(param_type_args_all) :- current_pp_flag(param_type_args, all). 
 
 % (hook)
 typeslib_is_user_type(T) :-

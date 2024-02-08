@@ -682,6 +682,10 @@ pp_flag(type_output, 'To output the types inferred for predicates in terms only 
 current_pp_flags(  type_output        , all).
 valid_flag_values( type_output        , member(_, [defined,all])).
 
+pp_flag(param_type_args).
+pp_flag(param_type_args, 'The kind of arguments that can be used for parametric types in the analysis output: only type symbols, all.').
+current_pp_flags(  param_type_args    , all).
+valid_flag_values( param_type_args    , member(_, [only_type_symbols,all])).
 
 pp_flag(global_control).
 pp_flag(global_control, 'Determines the abstraction function to use during global control.').
