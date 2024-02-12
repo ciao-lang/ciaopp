@@ -46,7 +46,6 @@ cmd('batch/ciaopp_batch_report'). % TODO: merge with ciaopp-dump?
 service(ciaopp_actmod, [actmod, child/*daemon*/, binexec(ciaopp)]).
 
 readme('INSTALLATION', [main='doc/readmes/INSTALLATION_CIAOPP.lpdoc']).
-readme('CHANGELOG', [main='doc/readmes/CHANGELOG_CIAOPP.pl']).
 
 manual('ciaopp', [main='doc/reference/SETTINGS.pl']).
 % manual('ciaopp_internals', [main='doc/internals/SETTINGS.pl']).

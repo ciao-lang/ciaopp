@@ -226,5 +226,6 @@ functionality or bugs you find.
 
 % ---------------------------------------------------------------------------
 
-:- include(ciaopp_docsrc('CHANGELOG')).
+:- doc(module, "@include{../../CHANGELOG.md}").
+
 
