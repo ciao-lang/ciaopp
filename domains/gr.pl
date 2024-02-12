@@ -13,13 +13,12 @@ Mode is ``any'', ``g'' or ``ng''.
 The abstract domain lattice is:
 
 @begin{verbatim}
-      
              any
-            /  \\\\
-           /    \\\\
+            /  \\
+           /    \\
    (ground)   g     ng  (not ground)
-           \\\\    /
-            \\\\  /
+           \\    /
+            \\  /
           $bottom
 @end{verbatim}
 
