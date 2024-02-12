@@ -15,9 +15,7 @@ actions.
 This interface can be used by means of the following command-line
 options:
 
-@begin{verbatim}
 @includefact{usage_message/1}
-@end{verbatim}
 
 @section{Description of the execution examples}
 

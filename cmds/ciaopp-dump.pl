@@ -21,9 +21,7 @@
 
    @section{Usage}
 
-   @begin{verbatim}
 @includefact{usage_text/1}
-   @end{verbatim}
 ").
 
 usage_text("ciaopp-dump <action> [<opts>] <files>
