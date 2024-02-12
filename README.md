@@ -34,3 +34,16 @@ features (including support for a variety of programming languages)
 are distributed as separate bundles. 
 
 CiaoPP is distributed under the GNU general public license.
+
+## Installation
+
+By default, Ciao will detect and build CiaoPP during system
+compilation. In order to customize the default configuration options,
+please refer to the Ciao installation instructions.
+
+It is possible to do a separate build and install of CiaoPP with the
+following command:
+
+```
+$ ciao get ciaopp
+```
