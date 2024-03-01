@@ -1,5 +1,44 @@
 # Changelog
 
+## [1.6.0] - 2022-9-28 
+
+### Added
+
+ - Integrate test case generation for assertion-based random test
+   generation (currently `ciaotest` bundle) into the CiaoPP's
+   assertion checking pipeline.
+
+### Improved
+
+ - Improvements in tutorials. Tutorials are grouped in a separate
+   CiaoPP manual, containing:
+   - Interactive tutorials from `exfilter`
+   - Other tutorials (quick start and larger) from reference manual
+ - Added `--ciaopp:lite=[yes|no]` bundle config flag (which disables
+   the inclusion of additional bundles)
+ - `output/{1,2}` instantiates unbound `File` arg with default if
+   needed.
+ - Showing summaries of assertion checking (count check, checked,
+   false, etc. assertions).
+ - Unify ctcheck assertion checking at predicate level and literal
+   level.
+ - Improved documentation of normal form expressions (`normal_form`)
+   (`ciaopp_cost`).
+
+### Fixed
+
+ - Make sure that typedefs are written to `current_output`.
+ - Call sockets initialization only if/when required.
+ - Fixed bug in `polyhedra:project_on_dimensions/5`, adding missing copies.
+ - Fix variable names in raw output (name counter was reset in the
+   wrong places).
+ - Recover documentation figure for `infercost`/`resources`.
+ - Fix in `res_plai` handling of size types. An error in the
+   length/semantics of lists in
+   `res_plai_aux:update_non_rec_param_args` made `res_plai` fail when
+   working with regtypes whose definition involves rules with some
+   recursive calls being placed before a non-recursive call.
+
 ## [1.5.0] - 2022-3-2
 
  - ADDED: CiaoPP is included now by default with the `devenv`
