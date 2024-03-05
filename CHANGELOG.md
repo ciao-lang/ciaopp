@@ -16,7 +16,7 @@
    - Other tutorials (quick start and larger) from reference manual
  - Added `--ciaopp:lite=[yes|no]` bundle config flag (which disables
    the inclusion of additional bundles)
- - `output/{1,2}` instantiates unbound `File` arg with default if
+ - `output/\{1,2\}` instantiates unbound `File` arg with default if
    needed.
  - Showing summaries of assertion checking (count check, checked,
    false, etc. assertions).
@@ -2800,7 +2800,7 @@ Filename contains the name of analysis and transformations applied.
 
 Implemented mono variant specialization of partially instantiated
 calls to regular types via the use of
-{abs_exec_reg_type_with_post_info/4`.  (German Puebla)
+`abs_exec_reg_type_with_post_info/4`.  (German Puebla)
 
 ## [1.0.554] - 2004-07-16
 
