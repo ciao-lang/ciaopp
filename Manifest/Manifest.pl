@@ -1,4 +1,6 @@
 :- bundle(ciaopp).
+version('1.6.0').
+
 depends([
     core,
     typeslib,
