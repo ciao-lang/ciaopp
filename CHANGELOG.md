@@ -1,5 +1,57 @@
 # Changelog
 
+## [1.7.0] - 2023-7-13
+
+### Added
+
+ - Mercury-like determinism properties. Those are mapped to other
+   existing determinism and non-failure properties as follows: `multi`
+   is `not_fails`, `semidet` is `is_det`, `det` is `not_fails` and
+   `is_det`.
+ - New flag `param_type_args` (control whether parametric type
+   arguments use escaped values or require new type symbols).
+ - Improved tutorials (using active logic documents) and examples.
+ - Module unexpansion in warning/error messages predicate and program
+   point assertions.
+
+### Fixed
+
+ - Avoid NaN in assertion checking summaries.
+ - Fixes in compile time checks (ctchecks) for false/check cost assertions.
+ - Automatic domain selection: avoid unavailable domains (and warn
+   user), skip properties with no known domain.
+ - Fixes in printing program point info.
+ - Fixed type visibility in output and type simplification (see `typeslib_is_visible/2`).
+ - Fixed bug in denormalization of parametric properties (introduced
+   when higher order application switched to natural argument)
+ - Minor fixes in `det` and `nf`, missing cuts, improved documentation.
+ - More accurate predicate import database (in `p_unit`).
+ - Fix in parametric type counter when using lib cache.
+ - Mark `shfret` as a domain that supports types.
+ - Fix `gather_measure/7` so that it uses `assertion_read/9`.
+ - Add `nativeprops` when when analyzing with sharing domains,
+   complete `determinable/2` to support missing sharing domains.
+
+### Improved
+
+ - Suppress superfluous ctcheck messages about calls (verified empty
+   calls and calls that come from entries)
+ - Eliminated extra newlines in assertion checking messages.
+ - Note message when library cache is not generated.
+ - Use (analysis information of) general properties "prop" (only local
+   props whose clauses are available) for assertion checking.
+ - Minor fix in builtin recsolvers' simplification of sums.
+
+### Changed
+
+ - `fd` domain renamed to `frdef`
+ - The `p_unit` has been simplified, optimized, and promoted as a Ciao
+   library. Other components has been isolated and kept in the CiaoPP
+   source tree: `p_dump` (output), multiple language frontends.
+ - Removed flags `tmp_dir` and `asr_dir` (not used, integrated into
+   `CIAOCCACHE`).
+ - Enable by default assertion simplification.
+
 ## [1.6.0] - 2022-9-28 
 
 ### Added
