@@ -479,9 +479,14 @@ current_pp_flags(  dbdebug            , off).
 valid_flag_values( dbdebug            , member(_,[off, on])).
 
 % *** BE CAREFUL! you cannot do a findall( X, valid_flag_value(opt_unf_depth,X), L)!!!
+pp_flag(depthk_k).
+pp_flag(depthk_k, 'The maximum depth of abstractions in analyses based on term depth.').
+current_pp_flags(  depthk_k             , 1).
+valid_flag_values( depthk_k              , nnegint(_)).
+
 pp_flag(depth).
 pp_flag(depth, 'The maximum depth of abstractions in analyses based on term depth.').
-current_pp_flags(  depth              , 1).
+current_pp_flags(  depth             , 1).
 valid_flag_values( depth              , nnegint(_)).
 
 pp_flag(unf_depth).
