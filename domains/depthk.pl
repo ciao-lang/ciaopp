@@ -375,15 +375,15 @@ absub_is_subset([Sub1|Subs1],LASub2) :-
 %------------------------------------------------------------------------%
 
 :- dom_impl(_, call_to_success_fact/9, [noq]).
-call_to_success_fact(Sg,Hv,Head,_K,Sv,Call,Proj,Prime,Succ):-
+call_to_success_fact(Sg,_Hv,Head,_K,Sv,Call,Proj,Prime,Succ):-
     peel(Sg, Head, Unifiers, []), % previously peel(Head, Sg, Unifiers, []) messed with variables in some corner cases.
     sort(Unifiers, Unifiers_s), 
     depthk_unify(Proj,Unifiers_s,Entry0), !,
     %% Sometimes Entry0 was not a proper ASub, these predicates are
     %% intended to keep the correct structure
-    merge(Sv, Hv, Vs), sort(Vs, Vs_s), 
-    fix_asub(Entry0, Vs_s, Entry0_), 
-    depthk_bu_project(Entry0_,Sv,Prime1),
+    variables_are_variables(LeftVars, Entry0), 
+    fix_asub(Entry0, LeftVars, Entry0_fixed), 
+    depthk_bu_project(Entry0_fixed,Sv,Prime1),
     abs_sort(Prime1,Prime),
     extend(Sg,Prime,Sv,Call,Succ).
 call_to_success_fact(_Sg,_Hv,_Head,_K,_Sv,_Call,_Proj,'$bottom','$bottom').
