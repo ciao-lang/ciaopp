@@ -152,6 +152,7 @@ determinable(deftypes,types).
 determinable(shfret, types).
 %
 determinable(def,ground).
+determinable(def,covered).
 %
 determinable(share,ground).
 determinable(share,indep).

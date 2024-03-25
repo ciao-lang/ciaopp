@@ -328,6 +328,16 @@ add_packages_if_needed(A) :-
     !,
     inject_output_package(assertions),
     inject_output_package(regtypes).
+add_packages_if_needed(A) :-
+    knows_of(polyhedra, A),
+    !,
+    inject_output_package(assertions),
+    inject_output_package(nativeprops).
+add_packages_if_needed(A) :-
+    knows_of(covered, A),
+    !,
+    inject_output_package(assertions),
+    inject_output_package(nativeprops).
 add_packages_if_needed(_) :-
     inject_output_package(assertions).
 
