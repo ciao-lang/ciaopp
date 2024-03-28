@@ -24,7 +24,7 @@
 
 :- include(core_docsrc(common/'ClipAddress')).
 
-:- doc(copyright, "Copyright @copyright{} 1996-2011 Francisco Bueno,
+:- doc(copyright, "Copyright @copyright{} 1996-2024 Francisco Bueno,
 Manuel Hermenegildo, Pedro L@'{o}pez, Jos@'{e} Francisco Morales,
 and Germ@'{a}n Puebla.
 
@@ -32,8 +32,9 @@ and Germ@'{a}n Puebla.
 ").
 
 :- doc(usage,"The @apl{ciaopp} executable starts a shell at which
-    prompt you can issue any of the commands described below and 
-    in the next chapter as exports.").
+    prompt you can issue any of the commands described below and those
+    described in the next chapters as exports. These commands and
+    options can also be issued as arguments in the command line.").
 
 :- doc(summary, "@include{CiaoPPRefSummary.lpdoc}
 
@@ -55,10 +56,10 @@ programs. These tasks include:
 @begin{itemize}
 
 @item @concept{Inference of properties} of the predicates and literals of the
-program, including @concept{types}, @concept{modes} (@ref{groundness and sharing}),
-@ref{term structure}, and other @concept{variable instantiation} properties,
+program, including @ref{Types}, @concept{modes} (@ref{Groundness and sharing}),
+@ref{Term structure}, and other @concept{variable instantiation} properties,
 @concept{non-failure}, @concept{determinacy}, bounds on @concept{computational
-cost} (e.g., @ref{number of resolution steps of the computation}), bounds on
+cost} (e.g., @ref{Number of resolution steps of the computation}), bounds on
 @concept{size of terms} in the program, etc (see @ref{Available abstract domains}).
 
 @item Certain kinds of @concept{static debugging} and verification,

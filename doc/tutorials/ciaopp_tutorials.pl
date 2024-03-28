@@ -37,7 +37,7 @@ The following tutorials are available:
 @begin{itemize}
 
 @item @ref{CiaoPP at a glance}. This brief tutorial provides a quick
-overview suitable for understanding the some basics about how @apl{CiaoPP}
+overview suitable for understanding some basics about how @apl{CiaoPP}
 works. It is however is not intended to be a tutorial on how to use
 @apl{CiaoPP}. The following tutorial is recommended for this.
 

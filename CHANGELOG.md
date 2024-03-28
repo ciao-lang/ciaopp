@@ -5311,7 +5311,7 @@ Solved bug 12. Bug 11 seems solved, too.  (Francisco Bueno Carrillo)
 
 ../p_unit/unexpand.pl
 
-Added T \== ?  in transform_terms: not correct, though complete
+Added T \\== ?  in transform_terms: not correct, though complete
 (Francisco Bueno Carrillo)
 
 ## [1.0.186] - 2003-12-30

@@ -25,21 +25,22 @@ integration with testing. Moreover, as (parts of) tests that can be verified at
 compile time are eliminated, some tests can be passed without ever running them.
 Finally, the model supports naturally assertion-based test case generation.
 
+In the following we illustrate these aspects of the @apl{Ciao}
+assertions model through examples run on the system.  While there are
+several ways to use the system, the idea is to have @apl{Ciao} already
+installed on your computer, @em{including the development
+environment} (see the @em{Ciao installation instructions} for more
+information), since this includes @apl{CiaoPP}. You can then access
+@apl{CiaoPP} from the Emacs or VSC interfaces, or from the command
+line.
 
-In the following we illustrate these aspects of the @apl{Ciao} assertions
-model through examples run on the system.
-While there are several ways to use the system, 
-the idea is to have installed @apl{Ciao} on your computer, including the development
-environment (see @ref{Installation} for more information). This
-includes @apl{CiaoPP}. You can then access
-@apl{CiaoPP} from the Emacs interface or the command line. 
 The examples can be also followed by running @apl{CiaoPP} directly on your browser
 through the @apl{Ciao} playground. To this end, load the examples into the playground
 by pressing the @key{↗} button (''Load in playground''), and
 then @apl{CiaoPP} can be run clicking the @key{More...} button
 and selecting @key{Analyze and check assertions}. Or, you can also
 interact with the code boxes (you will identify them by a question mark (?)
-in the right top corner), and by clicking the question mark you would be
+in the right top corner), and by clicking the question mark you will be
 able to run @apl{CiaoPP} and see fragments of the analysis output.
 
 @bf{A first example.}

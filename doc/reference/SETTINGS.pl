@@ -215,3 +215,6 @@ allow_markdown := yes.
 % syntax_highlight := no.
 % doc_mainopts := bugs.
 % doc_compopts := bugs.
+
+%% For debugging
+% verbosity := full.

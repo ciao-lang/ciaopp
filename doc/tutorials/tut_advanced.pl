@@ -118,21 +118,22 @@ In order to follow these examples you need to either:
 @begin{itemize}
 
 @item Install @apl{Ciao} on your computer, including the development
-      environment (see @ref{Installation} for more information). This
-      includes @apl{CiaoPP} (and @apl{LPdoc}). You can then access
-      @apl{CiaoPP} from the Emacs interface or the command line. 
+      environment (see the @em{Ciao installation instructions} for
+      more information). This includes @apl{CiaoPP} (and
+      @apl{LPdoc}). You can then access @apl{CiaoPP} from the Emacs or
+      VSC interfaces, or from the command line.  
 
 @item Run @apl{CiaoPP} directly on your browser through the @apl{Ciao}
       playground. To this end, load the examples into the playground
       by pressing the @key{↗} button (''Load in playground''), and
-      then @apl{CiaoPP} can be run clicking the @key{More...} button
-      and selecting @key{Analyze and check assertions}.
+      then @apl{CiaoPP} can be run by clicking the @key{More...}
+      button and selecting @key{Analyze and check assertions}.
 
 @end{itemize}
 
-To follow this tutorial we recommend
-installing it as many of the advanced features are not yet included in the playground.
-The instructions below use the Emacs interface.
+However, to follow this tutorial we recommend local installation,
+since some of the advanced features may not be yet included in the
+playground.  The instructions below use the Emacs interface.
 
 A @apl{CiaoPP}  session consists in the preprocessing of a file. The session is
 governed by a @bf{menu}, where you can choose the kind of preprocessing you want to
