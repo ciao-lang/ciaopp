@@ -20,4 +20,3 @@ and regular type information. Module @lib{infer\_db} is the centralized
 repository for all analysis information.
 Module @lib{typeslib} implements a library for manipulation of regular types.
 ").
-

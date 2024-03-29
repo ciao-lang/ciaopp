@@ -6,9 +6,11 @@
 
 :- doc(module, "
 
-@subsection{Groundness and sharing}
+This is an (incomplete) list of available domains. Check the CiaoPP
+sources and related bundles for the complete list.
 
-  @begin{itemize}
+@subsection{Groundness and sharing}
+@begin{itemize}
  @item @tt{gr} tracks groundness in a very simple way
         (see @ref{Simple groundness abstract domain}).
  @item @tt{def} tracks groundness dependencies, which improves the accuracy

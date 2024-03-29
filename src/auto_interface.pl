@@ -65,6 +65,7 @@
     get_menu_flag/3,
     set_menu_flag/3
    ]).
+
 :- use_module(library(prompt),[prompt_for_default/2]).
 :- use_module(library(pathnames), [path_splitext/3, path_basename/2]).
 
@@ -195,6 +196,21 @@
 :- doc(hide, current_menu_level/1).
 :- doc(hide, set_last_file/1).
 :- doc(hide, get_last_file/1).
+:- doc(hide, get_last_file/1).
+% 
+:- doc(hide, get_menu_flag/3).
+:- doc(hide, set_menu_flag/3).
+:- doc(hide, menu_branch/4).
+:- doc(hide, menu_branch/3).
+:- doc(hide, true/2).
+:- doc(hide, true1/1).
+:- doc(hide, functor1/1).
+% Multifiles: 
+:- doc(hide, hook_menu_flag_values/3).
+:- doc(hide, hook_menu_check_flag_values/3).
+:- doc(hide, hook_menu_flag_help/3).
+:- doc(hide, hook_menu_flag_option/3).
+:- doc(hide, aidomain/1).
 
 :- doc(module, "This module defines the high-level interface for
    CiaoPP, which makes it easy to perform some analysis and
