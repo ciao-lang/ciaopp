@@ -229,8 +229,9 @@ It is performed by selecting the menu option @tt{Aliasing-Mode}:
 
 @image{Figs/analysis-shfr-new}{600}{375}
 
-The output of the analysis is performed via @em{assertions} (see @ref{Using
-assertions for preprocessing programs} for a detailed description). In this
+The output of the analysis is performed via @em{assertions} (see
+section @em{Using assertions for preprocessing programs}
+in the @apl{CiaoPP} manual for a detailed description). In this
 case three assertions appear:
  
 @exfilter{qsort.pl}{A,types=none,modes=shfr,filter=tpred}
@@ -416,8 +417,9 @@ that @bf{all errors flagged are definite violations of the specifications}.
 
 As introduced before, @bf{assertions are a means of specifying @em{properties}} which
 are (or should be) true of a given predicate, predicate argument, and/or
-@em{program point}. See @ref{Using assertions for preprocessing programs} for a
-more detailed description, of the concepts that we briefly introduce now.
+@em{program point}. See section @em{Using assertions for preprocessing programs}
+in the @apl{CiaoPP} manual for a more detailed description of the concepts that we
+briefly introduce now.
 
 They are of the form @code{:- [Status] Scope Head : Pre => Post + Comp.}, where
 @var{Status} is a qualifier of the meaning of the assertion, @var{Scope}

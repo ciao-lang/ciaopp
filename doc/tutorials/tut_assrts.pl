@@ -553,7 +553,7 @@ It includes a user-provided assertion stating (among other properties) that
 the cost of @tt{nrev/2} in resolution steps, for calls to @tt{nrev(A, B)} with @tt{A}
 a ground list and @tt{B} a free variable,  should be linear 
 in the length of the (input) argument @tt{A}
-($O($@tt{length(A)}$)$, property @tt{steps_o(length(A))} in the 
+(@em{O(}@tt{length(A)}@em{)}, property @tt{steps_o(length(A))} in the 
 @tt{+} field. @apl{CiaoPP} can infer that this is false:
  
 @exfilter{revf_n_o_det_error.pl}{V,output=on,filter=check_pred}
@@ -564,7 +564,8 @@ If we continue to examine the output of @apl{CiaoPP} we can see this other asser
 
 The assertion explains that the stated worst case asymptotic
 complexity is incompatible with the quadratic lower bound cost 
-inferred by the analyzer (in fact: @math{\\frac{1}{2} \ length{(A)}^2 + \\frac{3}{2} \ length(A) + 1},
+inferred by the analyzer (in fact:
+@math{@frac{1}{2} @ length{(A)}^2 + @frac{3}{2} @ length(A) + 1},
 see the @tt{steps_lb} property). If we change the assertion to specify a quadratic upper bound:
 ```ciao
 :- pred nrev(A,B) : (list(num,A), var(B)) => list(B) 

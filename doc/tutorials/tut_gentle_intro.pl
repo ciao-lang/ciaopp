@@ -6,6 +6,7 @@
 
 :- doc(author, "Daniela Ferreiro").
 :- doc(author, "Jose F. Morales (minor)").
+:- doc(author, "Manuel Hermenegildo (minor)").
 
 :- doc(module," 
 This is a tutorial to illustrate step-by-step the development of a
@@ -22,19 +23,19 @@ Consider the following specification (taken from the Prolog
 programming contest at ICLP'95, Portland, USA):
 
 @begin{cartouche}
-@bf{Specification. }@em{Write a predicate @pred{powers/3}, which is
-called with a list of non-negative numbers as first argument, a
-non-negative number @var{N} as second argument, and a free third
+@bf{Specification.} @em{Write a predicate} @pred{powers/3}@em{, which
+is called with a list of non-negative numbers as first argument, a
+non-negative number} @var{N} @em{as second argument, and a free third
 argument. Such a call must succeed exactly once and unify the third
-argument with the list that contains the smallest @var{N} integers (in
-ascending order) that are a non-negative power of one of the elements
-of the first argument.}
+argument with the list that contains the smallest} @var{N}
+@em{integers (in ascending order) that are a non-negative power of one
+of the elements of the first argument.}
 @end{cartouche}
 
-In the next section we will show a complete fully working @ref{Initial
-implementation}. If you wish, you can skip directly to this solution
-and run some queries before start specifying properties @ref{Using
-assertions}.
+In the following section we will show a complete, fully working
+@ref{Initial implementation}. If you wish, you can skip directly to
+this solution and run some queries before we start specifying
+properties @ref{Using assertions}.
 
 @include{interactive_usage.lpdoc}
 
@@ -46,22 +47,22 @@ We will start with the module declaration:
 ```
 This module declaration states that the name of the module is
 @tt{powers}, that it exports a predicate @pred{powers/3}, and that it
-uses the @lib{assertions} package. Note that the module @lib{powers}
-will define other predicates, such as @pred{remove_power/3} (the
+uses the @lib{assertions} package. Note that the @lib{powers} module 
+will define other predicates, such as @pred{remove_power/3} (again, the
 program can be found below). These other predicates are internal to
 the module, i.e., they cannot be seen or used in other modules. One of
-the reasons why we export only the predicate @pred{powers/3} is that
-during the analysis of this program, @apl{CiaoPP} can assume that
-external calls are only to this predicate. This fact will allow
-@apl{CiaoPP} to produce more accurate information about the program
-since analysis then does not have to consider all the possible ways
-other predicates inside the module may be called, and only those that
-can actually occur in the module.
+the reasons why we export only the @pred{powers/3} predicate is that
+this allows @apl{CiaoPP} to assume during the analysis of this
+program that external calls are made only to this predicate. This fact
+will allow @apl{CiaoPP} to produce more accurate information about the
+program, since analysis then does not have to consider all the
+possible ways in which other predicates inside the module may be
+called, and only those that can actually occur in the module.
 
 @section{Writing powers/3} 
 
-Once we have defined the module we start writing the predicate
-@pred{powers/3}. We can sketch the main idea of our approach with a
+Once we have defined the module we start writing the @pred{powers/3}
+predicate. We can sketch the main idea of our approach with a
 motivating example. Consider the following query:
 
 ```ciao
@@ -84,7 +85,7 @@ In each pair @tt{(P,F)}, @var{P} is the smallest power of @var{F} that
 is not in the solution list yet.  So, the first component of the first
 element of the pair-list is the next element in the output we are
 constructing.  We remove this pair, compute the next power of @var{F}
-(i.e., @var{P}\\*@var{F}) and insert the pair @tt{(P*F,F)} into the
+(i.e., @var{P}\\*@var{F}), and insert the pair @tt{(P*F,F)} into the
 pair-list, respecting the invariants.  We start by writing
 @pred{remove_power/3}, which takes a number as first argument, and a
 list of pairs as second argument, and returns as its third argument
@@ -123,9 +124,9 @@ Using the information we have seen so far we would have the following
 implementation (there is a brief explanation of each predicate):
 
 ```ciao_runnable
+%! \\begin{focus}
 :- module(_,[powers/3],[assertions]).
 
-%! \\begin{focus}
 % powers(X,N,P): P is the sorted list that contains the smallest N integers
 % that are a non-negative power of one of the elements of the list X.
 
@@ -190,7 +191,7 @@ sorted_insert([P|L1], X, [P|L]) :- sorted_insert(L1, X, L).
 %! \\end{focus}
 ```
 
-Below are some examples queries to the @pred{powers/3} predicate (make
+Below are some examples of queries to the @pred{powers/3} predicate (make
 sure that the code box above is marked with a @em{green check mark}):
   
 ```ciao_runnable
@@ -200,27 +201,30 @@ sure that the code box above is marked with a @em{green check mark}):
 ?- powers([2,9999999,9999998],20,Powers).
 ```
 ```ciao_runnable
-?- powers([2,4],6,Powers).
+?- powers([2,4],4,Powers).
 ```
 
 @begin{cartouche}
-@bf{Exercise 1 (Understanding the predicate). }@em{What is the answer of this query?}
+@bf{Exercise 1 (Understanding the predicate). }@em{What is the answer to this query?}
 ```ciao_runnable
 ?- powers([4,2],6,Powers). 
 ```
-@em{@bf{Hint:} Remember that Powers contains the smallest N integers (in ascending order)}
+@bf{Hint:} @em{Remember that Powers contains the smallest 6 integers
+(in ascending order) that are a non-negative power of one of the
+elements of `[4,2]`.}
 @end{cartouche}
 
-@subsection{Analysis of our the initial implementation}
+@subsection{Analysis of our initial implementation}
 
 Let us analyze this implementation of the @pred{powers/3}
 predicate. The @apl{Ciao} system includes a large number of domains
 that can be used in this program and has strategies for selecting
-between them. But, by default, @apl{CiaoPP} analyzes programs with a
+among them. In programs without assertions, such as this one, 
+@apl{CiaoPP} analyzes the program typically using by default a 
 types domain (the regular types domain @tt{eterms}) and a modes domain
 (the sharing/freeness domain @tt{shfr}). We will be working mainly
-with these two. The following are the results (it is not necessary to
-look too carefully at these results yet):
+with these two doamis. The following are the results (it is not
+necessary to look too carefully into these results yet):
  
 @exfilter{power_without_assertions.pl}{V,filter=warnings}  
 
@@ -238,10 +242,10 @@ predicates in the @apl{Ciao} system libraries. Thus, a first
 observation is that it is possible to identify potential bugs even
 without actually adding assertions to programs. However, in general,
 if the program is incorrect, the more assertions are present in the
-program, the more likely errors will be detected automatically. Thus,
-we may choose to dedicate more time to writing assertions for those
-parts of the program that seem to be possibly buggy or whose
-correctness is important.
+program, the more likely it is for errors to be detected automatically.
+Thus, we may choose to dedicate more time to writing assertions for
+those parts of the program that are more likely to be buggy or whose
+correctness is paticularly important.
 
 In particular, in view of the warnings above, it seems useful to be
 able to ensure that all these library predicates will always be called
@@ -254,10 +258,10 @@ will be called from outside the module.
 
 For example, from the problem specification we know that the second
 argument should always be a number. In order to be able to state such
-properties of predicates we will have to use the assertion language,
-in particular (as we have just seen), @tt{pred} assertions which are
-used to describe a particular predicate. Such assertions use the
-following syntax: @cindex{assertions}
+properties of predicates we will have to use the assertion language.
+A particularly useful type of assertions for describing predicates
+are @tt{pred} assertions. Such assertions use the following syntax:
+@cindex{assertions}
 
 ```ciao
 :- pred Pred [:Precond] [=> Postcond] [+ CompProp] .
@@ -266,9 +270,10 @@ Such an assertion indicates that in any call to @var{Pred}, if
 @var{Precond} holds in the calling state and the computation of the
 call succeeds, then @var{Postcond} also holds in the success state. As
 we will see later, @var{Precond} and @var{Postcond} are conjunctions
-of @em{state properties}. @var{CompProp} refers to a sequence of
-states and we refer to the properties that appear there as properties
-of the computation. Examples are determinacy, non-failure, or cost.
+of @em{state properties}. @var{CompProp} refers to the sequence of
+states during excution of the predicate and we refer to the properties
+that appear there as properties of the computation. Examples are
+determinacy, non-failure, or cost.
 
 So, we can start by adding the following @tt{pred} assertion to state
 that when @pred{powers/3} is called the second argument is bound to a
@@ -286,20 +291,22 @@ As we can see, @apl{CiaoPP} continues producing some warning messages but they a
 
 @section{Regular types and other properties} 
 @cindex{regular type, types, properties}
-We have seen before how certain types can be used as @em{properties}
-to describe predicates. In @apl{CiaoPP} we can define new regular
-types using @decl{regtype} declarations. In general, properties (such
-as these types) are normal predicates, but which meet certain
-conditions (e.g., termination) and are marked as such via @tt{prop/1}
-or @tt{regtype/1} declarations). Other properties like @tt{num/1},
-@tt{var/1}, or @tt{not_fails} are builtins, defined in libraries. See
-@ref{Declaring regular types} in the @apl{CiaoPP} manual for more
-details on (regular) types, as well as other details about properties
-in @apl{Ciao}). For example, our specification states that the first
+
+We have seen before that certain @em{properties} are used in the
+assertions that describe predicates. Some of these properties, like
+@tt{num/1}, @tt{var/1}, or @tt{not_fails}, are builtins, defined in
+libraries.  However, we can also define new properties, including new
+regular types, which are a particular kind of property. In general,
+properties (and therefore types) are normal predicates, but which meet
+certain conditions (e.g., termination) and are marked as such via
+@tt{prop/1} or @tt{regtype/1} declarations.  See the section of @em{Declaring
+regular types} in the @apl{CiaoPP} manual for more details on
+(regular) types, as well as other details about properties in
+@apl{Ciao}. For example, our specification states that the first
 argument is a list of numbers.  This property is available in the
-@apl{Ciao} libraries, however, we choose to declare it ourselves. So
-we represent the set of \"lists of numbers\" by the regular type
-@tt{list_num}, defined as follows:
+@apl{Ciao} libraries, however, we choose here to declare it
+ourselves. So we represent the set of \"lists of numbers\" by the
+regular type @tt{list_num}, defined as follows:
 
 @comment{TODO: need include code with explicit language}
 @includecode{code/regtypes1.pl}
@@ -329,17 +336,18 @@ solution=equal
 ```
 @end{cartouche}
 
-If we now take a look into the file generated by @apl{CiaoPP} we will
-find that there are no warnings, i.e., @apl{CiaoPP} can now prove that
-all calls to library predicates are correct and will not raise any
-errors at run time (we will return to this topic later). Furthermore,
-we will find in the output the following assertion:
+If we now run CiaoPP we will see that there are no warning messages
+produced (and also none in the file generated by @apl{CiaoPP}), i.e.,
+@apl{CiaoPP} can now prove that all calls to library predicates are
+correct and will not raise any errors at run time (we will return to
+this topic later). Furthermore, we will find in the output the
+following assertion:
 
 @exfilter{power_without_assertions3.pl}{V,output=on,comments=on,filter=check_pred}
 
 This means that the assertion that we have included has been marked as
 checked, i.e., it has been validated, proving that indeed the third
-argument of @pred{powers/3} will be bound to a list on success.
+argument of @pred{powers/3} will be bound to a list of numbers on success.
 
 If we take a look again into the file generated by @apl{CiaoPP} we will find these assertions:  
 
@@ -349,12 +357,13 @@ If we take a look again into the file generated by @apl{CiaoPP} we will find the
 
 The sharing and freeness analysis abstract domain computes freeness,
 independence, and grounding dependencies between program
-variables. The second assertion expresses that the third argument is a
-free variable while the first and second arguments are input values
-(i.e., ground on call) when @pred{remove_power/3} is called (:). Upon
-success, all three arguments will get instantiated. On the other hand,
+variables. The second assertion expresses that, when @pred{remove_power/3}
+is called (:) the third argument is a free variable, while the first
+and second arguments are input values (i.e., ground on call). This second
+assertion also states that on 
+success all three arguments will get instantiated. On the other hand,
 the first assertion expresses that, if @pred{remove_power(N, A, B)} is
-called with a number @var{N}, a pair-list of numbers in @var{A} and
+called with a number @var{N}, a pair-list of numbers in @var{A}, and
 any term in @var{B}, then @var{B} will on exit be a pair-list of
 numbers. Therefore, we need a regular type @tt{list_pair} which
 defines a list of pairs @tt{(X,Y)}. If we continue to examine the
@@ -364,7 +373,7 @@ output of @apl{CiaoPP} we can see this other assertion:
 
 @exfilter{power_without_assertions3.pl}{A,filter=regtype} 
 
-Where we find new types, inferred by @apl{CiaoPP}.  The analyzer thus
+where we find new types, inferred by @apl{CiaoPP}.  The analyzer thus
 tells us about types that represent the data that the program builds,
 and we can use these definitions back in the source file to enhance
 the specification. In our case, the second regular type is defining
@@ -390,10 +399,10 @@ solution=equal
 %! \\end{solution}
 ```
 @begin{note}
-@em{@bf{Hint:} @pred{remove_power/3} is called in this program with
-the first parameter being a number, the second argument being of type
-@tt{list_pair} (i.e., bound to a list of pairs) and one variable. And
-on success the third argument is bound to a @tt{list-pair}.}
+@bf{Hint:} @pred{remove_power/3} @em{is called in this program with
+the first parameter being a number, the second argument being of type} 
+@tt{list_pair} @em{(i.e., bound to a list of pairs), and the third a variable.
+And on success the third argument is bound to a} @tt{list-pair}.
 @end{note}
 @end{cartouche}
 
@@ -411,11 +420,11 @@ solution=equal
 %! \\end{solution}
 ```
 @begin{note}
-@em{@bf{Hint:} @pred{sorted_insert/3} is called in this program with
-the first parameter being of type @tt{list_pair} (i.e., bound to a
-pair-list), the second argument being of type @tt{num_pair} ( i.e.,
-bound to a pair of numbers) and one variable. And on success the third
-argument is bound to a non-empty list-pair.}
+@bf{Hint:} @pred{sorted_insert/3} @em{is called in this program with
+the first parameter being of type} @tt{list_pair} @em{(i.e., bound to a
+pair-list), the second argument being of type} @tt{num_pair} @em{(i.e.,
+bound to a pair of numbers), and the third a variable. And on success
+the third argument is bound to a non-empty list-pair.}
 @end{note}
 @end{cartouche}
 
@@ -423,17 +432,17 @@ Using the information we have seen so far we would have the following
 implementation:
  
 ```ciao_runnable
+%! \\begin{focus}
 :- module(_,[powers/3],[assertions, regtypes, nativeprops]).
 
-%! \\begin{focus}
 :- regtype list_num(X) .
 list_num([]).
 list_num([X|T]) :-
     num(X),
     list_num(T).
 
-% powers(X,N,P): P is the sorted list that contains the smallest N integers
-% that are a non-negative power of one of the elements of the list X.
+%! powers(X,N,P): `P` is the sorted list that contains the smallest `N` integers
+% that are a non-negative power of one of the elements of the list `X`.
 :- pred powers(A,B,C) : (list_num(A), num(B), var(C)) => (list_num(C)).
 
 powers([],_,[]).
@@ -443,7 +452,7 @@ powers(Factors,N,Powers) :-
     first_powers(N,Pairs,Powers).
 
 %! quicksort(Xs,Ys): Performs a quicksort of a list `Xs` and returns the
-% result in Ys`.
+% result in `Ys`.
 
 quicksort(Xs,Ys) :- qsort(Xs,Ys,[]).
 
@@ -518,6 +527,10 @@ sorted_insert([(X1,F1)|L1], (X,F), [(X,F), (X1,F1)|L1]):- X =< X1, !.
 sorted_insert([X1|L1], X, [X1|L]):- sorted_insert(L1, X, L).
 %! \\end{focus}
 ```
+
+If we now run CiaoPP on this file all the assertions that we have
+written are proved to hold (no errors are reported).
+
  
 @section{Bugs detected by CiaoPP}
 @cindex{bugs, debugging}
@@ -533,14 +546,16 @@ If we now run @apl{CiaoPP} it produces the following output:
 
 @exfilter{remove_power_bug1.pl}{V,filter=warn_error} 
 
-As we can see, different messages appear. In this section, we will explain one by one what each of these messages indicates, and how we can handle them:
+As we can see, different messages appear. In this section, we will explain
+one by one what each of these messages indicates, and how we can take
+care of them:
 
 @begin{itemize}
 @item @bf{Singleton variable}: The first message is a warning message
-which indicates that there are singleton variables. We know that the
-singleton variables are those which appear only one time in a
-clause. As mistyping a variable is a common mistake, for this reason,
-@apl{CiaoPP} outputs a warning message indicating if a variable is
+which indicates that there are singleton variables. 
+Singleton variables are those which appear only one time in a
+clause. As mistyping a variable is a common mistake, 
+@apl{CiaoPP} outputs a warning message if a variable is
 used only once (such warnings would also be emitted by the compiler).
 
 @begin{cartouche}
@@ -586,7 +601,7 @@ detects that two predicates: @pred{remove_power/2} and
 @pred{remove_power/3} are defined, so it is possible that we have
 forgotten or added an argument in one of them (these warnings are also
 detected by the compiler and can also be turned off when using
-multi-arity predicates).
+multi-arity declarations).
 
 @begin{cartouche}
 @bf{Exercise 6 (Detecting Bugs). }@em{What is the correct base case?}
@@ -615,31 +630,32 @@ remove_power(Power,[_|RestPFsIn],PFsOut) :-
 ```
 @end{cartouche}
 
-We run again @apl{CiaoPP}: 
+@item @bf{Static Checking of Assertions in System Libraries}: As
+mentioned before, @apl{CiaoPP} can find incompatibilities in the
+ways in which library predicates are called.  In our example
+@pred{=\\\\=/2} is a library predicate so suppose that inadvertently a
+bug was introduced in the second clause of @pred{remove_power/3}, and
+instead of writing @var{Power1} we wrote @var{power1} (it is a bug
+since variables always begin with a capital letter). We run
+@apl{CiaoPP} again:
+
 @exfilter{remove_power_bug4.pl}{V,filter=errors}
 
-@item @bf{Static Checking of Assertions in System Libraries}: As
-mentioned before, @apl{CiaoPP} can find incompatibilities between the
-ways in which library predicates are called.  In our example
-@pred{=\\\\=/2} is a library predicate so suppose that incidentally a
-bug was introduced in the second clause of @pred{remove_power/3}, and
-instead of writing @var{Power1} we write @var{power1} (It is a bug
-since variables always begin with a capital letter).  @apl{CiaoPP}
-tells us that the @lib{arithmetic} library in @apl{Ciao} contains an
-assertion of the form:
+Note that @apl{CiaoPP} tells us that the @lib{arithmetic} library in
+@apl{Ciao} contains an assertion of the form:
 ```ciao
 :- check calls A=\\=B : ( nonvar(A), nonvar(B), arithexpression(A), arithexpression(B) ).
 ```
 which requires the second argument of @pred{=\\\\=/2} to be an
 arithmetic expression (which is a regular type also defined in the
 arithmetic library) that contains no variables.  Moreover, the
-@tt{eterms} analysis indicates us that in our program @var{A} is any
+@tt{eterms} analysis indicates to us that in our program @var{A} is any
 term and @var{B} is an auxiliary regular type which was created by
-@apl{CiaoPP} to represent the term @tt{power1}.
+@apl{CiaoPP} to represent the constant @tt{power1}.
  
 @begin{cartouche}
 @bf{Exercise 7 (Detecting Bugs). }@em{Although we have seen the
-predicate without bugs, try to write it again without any error.}
+predicate without bugs, try to write it again without any errors.}
 ```ciao_runnable
 :- module(_,[remove_power/3],[assertions, regtypes, nativeprops]).
 
@@ -675,7 +691,7 @@ remove_power(Power,[_|RestPFsIn],PFsOut) :-
     remove_power(Power,RestPFsIn,PFsOut1).
 %! \\end{code}
 %! \\begin{opts}
-solution=errors
+A,solution=errors
 %! \\end{opts}
 %! \\begin{solution}
 :- pred remove_power(A,B,C) : (num(A), list_pair(B), var(C)) => list_pair(C).
@@ -689,7 +705,12 @@ remove_power(Power, [_|RestPFsIn], PFsOut) :-
 ```
 @end{cartouche}
 @end{itemize} 
-  
+
+We can see that no error (false assertion) is now detected in the
+calls to the arithmetic library, although we still have some
+assertions that are not proved.
+
+
 @section{Nonfailure+Determinism Domain}
 @cindex{determinism, non-failure, nf, det, nfdet}
 
