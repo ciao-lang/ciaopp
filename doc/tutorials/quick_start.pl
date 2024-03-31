@@ -23,9 +23,10 @@ In order to follow these examples you need to either:
 @begin{itemize}
 
 @item Install @apl{Ciao} on your computer, including the development
-      environment (see @ref{Installation} for more information). This
-      includes @apl{CiaoPP} (and @apl{LPdoc}). You can then access
-      @apl{CiaoPP} from the Emacs interface or the command line. 
+      environment (see the Ciao manual or web site for more
+      information). This includes @apl{CiaoPP} (and @apl{LPdoc}). You
+      can then access @apl{CiaoPP} from the different IDEs (Emacs,
+      VSC), as well as and from the command line.
 
 @item Run @apl{CiaoPP} directly on your browser through the @apl{Ciao}
       playground. To this end, load the examples into the playground
@@ -36,7 +37,7 @@ In order to follow these examples you need to either:
 @end{itemize}
 
 The instructions below use the Emacs interface but the steps can also
-be performed in the playground version.
+be performed in the playground version and other interfaces.
 
 @section{Analyzing}
  
@@ -59,11 +60,12 @@ By default, @apl{CiaoPP} analyzes programs with a type domain (@tt{eterms}) and 
 sharing/freeness (modes) domain (@tt{shfr}). We can open the file with the
 inferred information by typing @tt{C-c C-v}.
 
-The inferred information is expressed with (@tt{true}) assertions (for a more
-extensive tutorial of the assertion language see @ref{Using assertions for
-preprocessing programs}). Assertion marked as @tt{true} contain safe
-approximations (safe abstractions) of the behavior of the program that were
-inferred by the analyzer. In this case @apl{CiaoPP} inferred:
+The inferred information is expressed with (@tt{true}) assertions (for
+a more extensive tutorial of the assertion language see @em{Using
+assertions for preprocessing programs} in the @apl{CiaoPP}
+manual). Assertion marked as @tt{true} contain safe approximations
+(safe abstractions) of the behavior of the program that were inferred
+by the analyzer. In this case @apl{CiaoPP} inferred:
 
 @exfilter{app_assrt_false.pl}{A,filter=tpred}
 
