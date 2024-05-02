@@ -93,6 +93,7 @@ doc_other_commands :=
       'ciaopp_batch_report'
     ].
 
+% TODO: duplicated in bndls/alldocs/reference/SETTINGS.pl
 doc_assertions :=
     part_assertions-[
       debugging_in_ciaopp,
@@ -110,7 +111,8 @@ doc_assertions :=
           native_props_polyhedral_doc,
           native_props_cost_doc
       ],
-      % TODO: use cross-refs
+      % TODO: move to its own part?
+      %
 %%      'unittest'-[...]
 %%            ['unittest/unittest_props',
 %%          'unittestdecls_doc',
@@ -119,7 +121,7 @@ doc_assertions :=
 %%          'unittest/unittest_examples'
 %%         ],
       rtchecks_doc, % TODO: use cross-refs
-      apply_assertions
+      apply_assertions % TODO: move to fixpoint options?
     ].
 
 doc_extensions :=
