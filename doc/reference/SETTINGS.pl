@@ -96,32 +96,32 @@ doc_other_commands :=
 % TODO: duplicated in bndls/alldocs/reference/SETTINGS.pl
 doc_assertions :=
     part_assertions-[
-      debugging_in_ciaopp,
-      assertions_doc,
-      assertions_props,
-      regtypes_doc,
-      basic_props,
-      % props native to analyzers, in chapters
-      native_props-[
-          native_props_shfrg_doc,
-          native_props_nfdet_doc,
-          native_props_cardinality_doc,
-          native_props_exceptions_doc,
-          native_props_sideff_doc,
-          native_props_polyhedral_doc,
-          native_props_cost_doc
-      ],
-      % TODO: move to its own part?
-      %
-%%      'unittest'-[...]
-%%            ['unittest/unittest_props',
-%%          'unittestdecls_doc',
-%%          % 'unittest/unittest_utils',
-%%          'unittest/unittest_statistics',
-%%          'unittest/unittest_examples'
-%%         ],
-      rtchecks_doc, % TODO: use cross-refs
-      apply_assertions % TODO: move to fixpoint options?
+        debugging_in_ciaopp, % TODO: move this to alldocs manual?
+        'assertions/assertions_doc'-[
+            'assertions/assertions_props'
+        ],
+        'regtypes/regtypes_doc',
+        'basic_props', % engine
+        % props native to analyzers, in chapters
+        'assertions/native_props'-[
+            'assertions/native_props_shfrg_doc',
+            'assertions/native_props_nfdet_doc',
+            'assertions/native_props_cardinality_doc',
+            'assertions/native_props_exceptions_doc',
+            'assertions/native_props_sideff_doc',
+            'assertions/native_props_polyhedral_doc',
+            'assertions/native_props_cost_doc'
+        ],
+        % TODO: move to its own part?
+        'rtchecks/rtchecks_doc',
+        % Unit tests
+        'unittest/unittest'-[
+            'unittest/unittest_props',
+            'unittestdecls_doc',
+            % 'unittest/unittest_utils',
+            'unittest/unittest_statistics',
+            'unittest/unittest_examples'
+        ]
     ].
 
 doc_extensions :=
@@ -174,6 +174,7 @@ doc_internals :=
         % 'gr', % TODO: where?
         'TypeWidening',
         'plai_db',
+        'apply_assertions', % TODO: here?
         'Trust'
       ],        
       'DebugFixp'-[
