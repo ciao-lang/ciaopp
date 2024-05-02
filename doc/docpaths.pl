@@ -13,8 +13,6 @@ filepath := at_bundle(core, 'lib/assertions').
 filepath := at_bundle(core, 'lib/regtypes').
 filepath := at_bundle(core, 'lib/rtchecks').
 filepath := at_bundle(core, 'lib/compiler/p_unit').
-% (ciaodbg bundle)
-filepath := at_bundle(ciaodbg, 'lib/unittest').
 
 % ---------------------------------------------------------------------------
 % CiaoPP (main bundle)
