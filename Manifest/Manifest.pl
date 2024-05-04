@@ -4,7 +4,7 @@ version('1.7.0').
 depends([
     core,
     typeslib,
-    ciaodbg_extra-[optional], 
+    profilercc-[optional], 
     ciaopp_testgen-[optional],
     ciao_ppl-[optional], % (optional for polyhedra, numerical constraints, etc.)
     ciao_gsl-[optional], % TODO: remove once ciaopp dep is explicit
