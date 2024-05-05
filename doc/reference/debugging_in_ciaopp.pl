@@ -4,40 +4,58 @@
 
 :- doc(title,"Using assertions for preprocessing programs").
 
-:- doc(author,"Francisco Bueno").
+:- doc(author,"Francisco Bueno (original)").
+:- doc(author,"Jose F. Morales (updates)").
 
-:- doc(summary,"The aim of this document is to serve as a
-  guideline for programmers in the use of the Ciao Program
-  Precompiler. This document explains the use of assertions to
-  describe the specification of a program and the role of other
-  assertion-related declarations so that the program can be statically
-  debugged with the Ciao Program Precompiler and programming
-  environment.").
+% TODO: this document explains basic assertions first and then
+%   compound assertions, in other papers/chapters we directly start
+%   with the compound ones (JF)
+
+% TODO: I commented this footnote (JF):
+%   Also, expressions built using conjunctions of properties, or, in
+%   principle, any predicate defined by the user, using the full
+%   underlying (C)LP language.  @footnote{Although disjunctions are also
+%   supported, we restrict our attention to only conjunctions.}
+
+% TODO: review term "foreign" (JF)
+
+% TODO: review use of entries (JF)
+
+% :- doc(summary,"The aim of this document is to serve as a
+%   guideline for programmers in the use of the Ciao Program
+%   Precompiler. This document explains the use of assertions to
+%   describe the specification of a program and the role of other
+%   assertion-related declarations so that the program can be statically
+%   debugged with CiaoPP and programming
+%   environment.").
 
 :- doc(module,"
 
 This chapter explains the use of assertions to specify a program
 behaviour and properties expected to hold of the program. It also
-clarifies the role of assertion-related declarations so that a program 
-can be statically preprocessed with CiaoPP.
+clarifies the role of assertion-related declarations so that a program
+can be statically preprocessed (analyzed, verified, debugged or
+optimized) with the CiaoPP Program Processor (CiaoPP).
 
 CiaoPP starts a preprocessing session from a piece of code, annotated
-with assertions. The code can
-be either a complete self-contained program or part of a larger
-program (e.g., a module, or a user file which is only partial). The
-assertions annotating the code describe some properties which the
-programmer requires to hold of the program.
-Assertions are used also to
-describe to the static analyzer some properties of the interface of the
-code being
-preprocessed at a given session with other parts of the program that
-code belongs to.  In addition, assertions can be used to provide
-information to the static analyzer, in order to guide it, and also to
-control specialization and other program transformations.
+with assertions. The code can be either a complete self-contained
+program or part of a larger program (e.g., a module, or a user file
+which is only partial). The assertions annotating the code describe
+some properties which the programmer requires to hold of the program.
+Assertions are used also to describe to the static analyzer some
+properties of the interface of the code being preprocessed at a given
+session with other parts of the program that code belongs to.  In
+addition, assertions can be used to provide information to the static
+analyzer, in order to guide it, and also to control specialization and
+other program transformations.
 
 This chapter explains the use of assertions in describing to CiaoPP: 
-(1) the program specification, (2) the program interface, and (3) additional 
-information that might help static preprocessing of the program.
+@begin{enumerate}
+@item the program specification
+@item the program interface
+@item additional information that might help static preprocessing
+  of the program.
+@end{enumerate}
 
 In the following, the Ciao assertion language is briefly
 described and heavily used. In @ref{The Ciao assertion language}, a
@@ -69,18 +87,27 @@ predicate can be declared.
 
 Assertions may be qualified by keywords @tt{check} or
 @tt{trust}. Assertions qualified with the former---or not
-qualifed---are known as check assertions; those qualified with the
-latter are known as trust assertions. Check assertions state the
+qualifed---are known as @em{check} assertions; those qualified with the
+latter are known as @em{trust} assertions. Check assertions state the
 programmer's intention about the program and are used by the debugger
 to check for program inconsistencies. On the contrary, trust assertions are
 ``trusted'' by CiaoPP tools.
 
-@begin{cartouche}
-@begin{itemize}
-@item The specification of a program is made of all check
-  assertions for the program predicates.
-@end{itemize}
-@end{cartouche}
+@begin{note}
+The specification of a program is made of all @bf{check}
+assertions for the program predicates.
+@end{note}
+
+@subsection{Properties of call states}
+
+It is possible to use assertions to describe properties about the
+calls for a predicate which may appear at run-time. An assertion of
+the form:
+@begin{verbatim}
+:- calls Goal : Cond.
+@end{verbatim}
+must be interpreted as, ``all calls of the form @tt{Goal} should
+satisfy @tt{Cond}''. 
 
 @subsection{Properties of success states}
 
@@ -95,9 +122,12 @@ This assertion should be interpreted as, ``for any call of the
 form @tt{Goal} which succeeds, on success @tt{Postcond} should also
 hold'' . 
 
+@begin{note}
 Note that, in contrast to other programming paradigms, calls
 to a predicate may either succeed or fail.  The postcondition stated
 in a @tt{success} assertion only refers to successful executions.
+See @em{properties of the computation} described in the next sections.
+@end{note}
 
 @subsection{Restricting assertions to a subset of calls}
 
@@ -114,17 +144,6 @@ an assertion of the form:
 which should be interpreted as, ``for any call of the
 form @tt{Goal} for which @tt{Precond} holds, if the call succeeds then
 on success @tt{Postcond} should also hold''. 
-
-@subsection{Properties of call states}
-
-It is also possible to use assertions to describe properties about the
-calls for a predicate which may appear at run-time. An assertion of
-the form:
-@begin{verbatim}
-:- calls Goal : Cond.
-@end{verbatim}
-must be interpreted as, ``all calls of the form @tt{Goal} should
-satisfy @tt{Cond}''. 
 
 @subsection{Properties of the computation}
 
@@ -213,13 +232,13 @@ In addition, we may also require that in all calls to predicate
 The @tt{qsort} procedure should be able to sort all lists. Thus, we
 also require that all calls to it that have a list in the first
 argument and a variable in the second argument do not fail:
-@begin{verbatim} 
+@begin{verbatim}
 :- comp qsort(A,B) : (list(A) , var(B)) + not_fails.
 @end{verbatim}
 
 Instead of the above basic assertions, the following compound one could
 be given:
-@begin{verbatim} 
+@begin{verbatim}
 :- pred qsort(A,B) : (list(A) , var(B)) => list(B) + not_fails.
 @end{verbatim}
 which will be equivalent to:
@@ -232,7 +251,7 @@ which will be equivalent to:
 This will not allow to call @tt{qsort} with anything else than a
 variable as second argument. If this use of @tt{qsort} is expected,
 one should have added the assertion:
-@begin{verbatim} 
+@begin{verbatim}
 :- pred qsort(A,B) : list(A) => list(B).
 @end{verbatim}
 which, together with the above one, will imply:
@@ -257,16 +276,15 @@ checked both at compile-time by CiaoPP and at run-time by Ciao itself
 In this section 
 we will concentrate exclusively on run-time checking.
 
-A property may be a predefined predicate in the language (such as 
-@tt{integer(X)}) or constraint (such as @tt{X>5}). Properties may include
-extra-logical predicates such as @tt{var(X)}). Also, expressions built
-using conjunctions of properties,@footnote{Although disjunctions are also 
-  supported, we restrict our attention to only conjunctions.}
-or, in principle, any predicate defined
-by the user, using the full underlying (C)LP language.  As an example,
-consider defining the predicate @tt{sorted(B)} and using it as a
-postcondition to check that a more involved sorting algorithm such as
-@tt{qsort(A,B)} produces correct results.
+A property may be a predefined predicate in the language (such as
+@tt{integer(X)}) or constraint (such as @tt{X>5}). Properties may
+include extra-logical predicates such as @tt{var(X)}). Also,
+expressions built using conjunctions of properties, or, in principle,
+any predicate defined by the user, using the full underlying (C)LP
+language. As an example, consider defining the predicate
+@tt{sorted(B)} and using it as a postcondition to check that a more
+involved sorting algorithm such as @tt{qsort(A,B)} produces correct
+results.
 
 While user-defined properties allow for properties that are as
 general as allowed by the full source language syntax, some
@@ -366,10 +384,13 @@ which do not appear explicitely in the unit text, i.e., from
 meta-predicates or from dynamic clauses which may be asserted during
 execution.
 In all cases, @em{entry} declarations are used to declare entry
-points.@footnote{When the language supports a module system, entry
-  points are implicitely declared by the exported predicates. In this
-  case entry declarations are only used for local predicates if there
-  are dynamic calls.}
+points.
+
+@begin{note}
+In modular programs, entry points are implicitely declared by the
+exported predicates. In this case entry declarations are only used for
+local predicates if there are dynamic calls.
+@end{note}
 
 Third, the unit code may call predicates defined in other parts of the
 program. The code defining such predicates is termed @em{foreign
@@ -394,26 +415,29 @@ The builtin predicates is one particular case of predicates the
 definitions of which are never contained in the program itself.
 Therefore, preprocessing units never contain code to define
 the builtins that they use.
-However, the Ciao Program Precompiler makes no assumptions
+However, CiaoPP makes no assumptions
 on the underlying language (except that it is constraint logic
 programming). Thus, all information on the behaviour of the language
 builtins should be made available to it by means of
 assertions (although this does not concern the application programmer
 who is going to preprocess a unit, rather it concerns the system
-programmer when installing the Ciao Program Precompiler
+programmer when installing CiaoPP
 @comment{ --see @ref{Describing builtins by means of assertions}}
 ). 
 
 The rest of this document summarizes how assertions can be used 
 to declare the preprocessing unit interactions. It shows the use of entry 
 and trust declarations in preprocessing programs
-with CiaoPP.@footnote{This manual concentrates on one
-  particular use of the declarations for solving problems related to
-  compile-time program analysis. However, there are other possible
-  solutions. For a complete discussion of these
-  see @cite{full-prolog-esop96}.}
+with CiaoPP.
 
-@section{Foreign code}
+@begin{note}
+This manual concentrates on one particular use of the
+declarations for solving problems related to compile-time program
+analysis. However, there are other possible solutions. For a complete
+discussion of these see @cite{full-prolog-esop96}.
+@end{note}
+
+@section{Foreign code (external to the preprocessing unit)}
 
 A program preprocessing unit may make use of predicates defined in other
 parts of the program. Such predicates are foreign to the preprocessing
@@ -423,26 +447,23 @@ cause on the execution of the predicates defined in the unit. For this
 purpose, trust declarations are used.
 
 Foreign code includes predicates defined in other modules which are
-used by the preprocessing unit, predicates defined in other files which do
-not form part of the preprocessing unit but which are called by it,
-builtin predicates@footnote{However, builtin predicates are usually
-  taken care of by the system programmer, and the preprocessor, once
-  installed, already ``knows'' them.}
-used by the code in the preprocessing unit, and code 
-written in a foreign language which will be linked with the program.
-All foreign calls (except to builtin predicates) need to be
-declared.@footnote{However, if the language supports a module system,
-  and the preprocessor is used in modular analysis operation mode, trust
-  declarations are imported from other modules and do not need to be
-  declared in the preprocessing unit.}
+used by the preprocessing unit, predicates defined in other files
+which do not form part of the preprocessing unit but which are called
+by it, builtin predicates used by the code in the preprocessing unit,
+and code written in a foreign language which will be linked with the
+program. Usually trust declarations are imported from other modules
+and do not need to be declared in the preprocessing unit. Otherwise,
+all foreign calls (except to builtin predicates) need to be declared.
 
-@begin{cartouche}
-@begin{itemize}
-@item The effect of calls to foreign predicates may be declared
+@comment{Builtin predicates are usually taken care of by the system
+programmer, and the preprocessor, once installed, already ``knows''
+them.}
+
+@begin{note}
+The effect of calls to foreign predicates may be declared
 @comment{(in the unit the predicates are defined)}
   by using trust declarations for such predicates.
-@end{itemize}
-@end{cartouche}
+@end{note}
 
 @cindex{trust assertions}
 Trust declarations have the following form:
@@ -521,24 +542,20 @@ both declarations is as follows:
 where @tt{Spec} is a predicate specification in the form
  @tt{PredName}/@tt{Arity}.
 
-@begin{cartouche}
-@begin{itemize}
-@item Dynamic predicates which are called must be declared by
-  using a dynamic declaration.
-@end{itemize}
-@end{cartouche}
+@begin{note}
+Dynamic predicates which are called must be declared by
+using a dynamic declaration.
+@end{note}
 
 Of course, the preprocessor cannot know of the effect that dynamic clauses 
 added to the definition of a predicate may cause in the execution of that
 predicate. However, this effect can be described to the preprocessor by
 adding trust declarations for the dynamic predicates.
 
-@begin{cartouche}
-@begin{itemize}
-@item The effect of calls to predicates which are dynamically modified
+@begin{note}
+The effect of calls to predicates which are dynamically modified
 may be declared by using trust declarations for such predicates.
-@end{itemize}
-@end{cartouche}
+@end{note}
 
 @section{Entry points}
 
@@ -562,16 +579,12 @@ predicates declared were the only entry
 points (the preprocessing session being valid for a particular use of the
 unit code---that specified by the entry declarations given).
 
-@begin{cartouche}
-@begin{itemize}
-@item All predicates that can be queried by the user and all
-  predicates that can be called
-  from parts of the program which do not explicitely appear in the
-  preprocessing unit 
-  should (but need not)
-  be declared as entry points by using entry declarations.
-@end{itemize}
-@end{cartouche}
+@begin{note}
+All predicates that can be queried by the user and all predicates that
+can be called from parts of the program which do not explicitely
+appear in the preprocessing unit should (but need not) be declared as
+entry points by using entry declarations.
+@end{note}
 
 The entry declaration has the following form:
 @cindex{entry declaration}
@@ -699,9 +712,8 @@ declared. A static metacall is, for example, @tt{once(p(X))}, where
 the predicate being called is statically identifiable (since it
 appears in the code). On the other hand, metacalls of the form
 @tt{call(Y)} are dynamic, since the predicate being called will only
-be determined at runtime.@footnote{However, sometimes analysis
-  techniques can be used to transform dynamic metacalls into static
-  ones.} 
+be determined at runtime. However, sometimes analysis techniques can
+be used to transform dynamic metacalls into static ones.
 
 @comment{
 %% Note that identifying a metacall to be static relies on the knowledge
@@ -722,13 +734,10 @@ such code during a (compile-time) preprocessing session. The calls that
 may appear from the body of a clause which is dynamically created and
 asserted are also dynamic calls.
 
-@begin{cartouche}
-@begin{itemize}
-@item All dynamic calls must be declared by using entry
-  declarations for the predicates that can be called in a dynamic
-  way.
-@end{itemize}
-@end{cartouche}
+@begin{note}
+All dynamic calls must be declared by using entry declarations for the
+predicates that can be called in a dynamic way.
+@end{note}
 
 @subsection{Examples of dynamic calls}
 Consider a program where you use the @tt{bagof} predicate to collect
@@ -781,7 +790,7 @@ declarations at the beginning of the examples may be used.
 
 @section{An overview}
 
-To process programs with the Ciao Program Precompiler
+To process programs with CiaoPP
 the following guidelines might be useful:
 @begin{enumerate}
 @item Add 
