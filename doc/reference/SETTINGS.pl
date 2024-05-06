@@ -8,7 +8,7 @@ output_name := 'ciaopp'.
 doc_structure :=
     ciaopp_ref_man-[
       ~doc_usage,
-      ~doc_assertions, % TODO: remove, use cross-refs?
+      % ~doc_assertions, % Note: assertions moved to alldocs
       ~doc_extensions,
       ~doc_internals
     ].
@@ -91,37 +91,6 @@ doc_other_commands :=
       'ciaopp-dump',
       'ciaopp-batch',
       'ciaopp_batch_report'
-    ].
-
-% TODO: duplicated in bndls/alldocs/reference/SETTINGS.pl
-doc_assertions :=
-    part_assertions-[
-        debugging_in_ciaopp, % TODO: move this to alldocs manual?
-        'assertions/assertions_doc'-[
-            'assertions/assertions_props'
-        ],
-        'regtypes/regtypes_doc',
-        'basic_props', % engine
-        % props native to analyzers, in chapters
-        'assertions/native_props'-[
-            'assertions/native_props_shfrg_doc',
-            'assertions/native_props_nfdet_doc',
-            'assertions/native_props_cardinality_doc',
-            'assertions/native_props_exceptions_doc',
-            'assertions/native_props_sideff_doc',
-            'assertions/native_props_polyhedral_doc',
-            'assertions/native_props_cost_doc'
-        ],
-        % TODO: move to its own part?
-        'rtchecks/rtchecks_doc',
-        % Unit tests
-        'unittest/unittest'-[
-            'unittest/unittest_props',
-            'unittestdecls_doc',
-            % 'unittest/unittest_utils',
-            'unittest/unittest_statistics',
-            'unittest/unittest_examples'
-        ]
     ].
 
 doc_extensions :=
