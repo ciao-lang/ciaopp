@@ -468,7 +468,7 @@ exec_unif([U|Unif],[(L=R)|Unif2],[U|NewUnif]):-
 %-------------------------------------------------------------%
 % We check if all the arguments are unifiable                 %
 %-------------------------------------------------------------%
-exec_N_unif(0,_,_).
+exec_N_unif(0,_,_) :- !.
 exec_N_unif(N,L,R):-
     arg(N,L,ArgL),
     arg(N,R,ArgR),
@@ -784,7 +784,7 @@ generate_unif(Goal,Head,GoalList):-
 %-------------------------------------------------------------%
 % first we generate one unification per argument              %
 %-------------------------------------------------------------%
-g_unif(0,_,_,GL,GL).
+g_unif(0,_,_,GL,GL) :- !.
 g_unif(N,Goal,Head,Ac,GL):-
     arg(N,Goal,ArgNG),
     arg(N,Head,ArgNH),
