@@ -349,6 +349,7 @@ numbervars_2(F,N,N1) :- numbervars_2(0,F,N,N1).
 
 numbervars_2(I,F,N,N1) :- 
     I1 is I+1,
+    functor(F,_,A), I1 =< A, % (required for ISO arg/3)
     arg(I1,F,X),
     numbervars_2(X,N,N0), !,
     numbervars_2(I1,F,N0,N1).
@@ -369,6 +370,7 @@ un_number_vars_2(F,F1,Y) :-
 
 un_number_vars_2(I,F,[X1|Tail],Y) :-
     I1 is I+1,
+    functor(F,_,A), I1 =< A, % (required for ISO arg/3)
     arg(I1,F,X),
     un_number_vars_2(X,X1,Y),!,
     un_number_vars_2(I1,F,Tail,Y).
