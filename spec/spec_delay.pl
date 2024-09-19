@@ -560,6 +560,7 @@ before(K2,K,Key):-
 subterm(X,X).
 subterm(X,Y):-
     functor(Y,_,A),
+    A > 0, % arg/3 requires A>0
     subterm_0(A,X,Y).
 
 subterm_0(A,X,Y):-
@@ -567,7 +568,7 @@ subterm_0(A,X,Y):-
     subterm(X,Arg).
 subterm_0(A,X,Y):-
     A>1,
-    A1 is A -1,
+    A1 is A - 1,
     subterm_0(A1,X,Y).
 
 % If the literal is placed after reordering behind a literal which is
