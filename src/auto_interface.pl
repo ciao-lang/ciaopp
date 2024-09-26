@@ -1331,6 +1331,9 @@ auto_analyze_(File, OFile) :-
     anakinds_to_absints_menu(AnaKinds, ana, AbsInts),
     analyze(AbsInts),
     %
+    % TODO: this should be also in auto_check_assert/1, and
+    %       transform(vers) should duplicate assertions too
+    %       (MH&JF)
     get_menu_flag(ana, vers, Vers) ,
     ( Vers == on -> transform(vers) ; true ),
     %
