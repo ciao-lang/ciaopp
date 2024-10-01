@@ -275,3 +275,17 @@ check_targetdir(Flag, Dir) :-
                     "accesible (flag: ~w)" , [Dir,Flag]),
       fail
     ).
+
+% ------------------------------------------------------------------------
+:- doc(section, "Generate CiaoPP Menu in JSON").
+
+:- use_module(library(menu/menu_json), [menu_to_json/2]).
+:- use_module(library(pillow/json), [json_to_string/2]).
+:- use_module(library(stream_utils), [write_string/1]).
+:- reexport(library(menu/menu_json), [restore_menu_flags_from_json_str/1]).
+
+:- export(write_ciaopp_menu_json/0).
+write_ciaopp_menu_json :-
+    menu_to_json(all,_I),
+    json_to_string(_I,_S),
+    write_string(_S).
