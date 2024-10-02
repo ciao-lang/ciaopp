@@ -541,7 +541,7 @@ for debugging comes naturally after observing analysis @bf{outputs for
 erroneous programs}.  Consider this buggy implementation of @tt{qsort}:
 
 ```ciao_runnable
-:- module(qsort, [qsort/2], [assertions]).
+:- module(_, [qsort/2], [assertions]).
 
 :- pred qsort(A,B) : (list(num, A), var(B)).
 
