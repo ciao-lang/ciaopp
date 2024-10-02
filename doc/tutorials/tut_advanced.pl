@@ -128,6 +128,8 @@ In order to follow these examples you need to either:
       by pressing the @key{↗} button (''Load in playground''), and
       then @apl{CiaoPP} can be run by clicking the @key{More...}
       button and selecting @key{Analyze and check assertions}.
+      Use @key{Browse analysis/checking/optimizing options} to manually
+      select the options.
 
 @end{itemize}
 
