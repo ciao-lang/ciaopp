@@ -242,7 +242,7 @@ These @em{assertions} express, for example, that the third and fourth arguments
 of @tt{partition} have ''output mode'': @bf{when @tt{partition} is called
 (@tt{:}) @var{Y1} and @var{Y2} are free unaliased variables} and they are
 @bf{ground on success (@tt{=>})}. Also, @tt{append} is used in a mode in which
-the first and second argument are input (i.e., ground on call). 
+the first and second arguments are input (i.e., ground on call). 
 ").
 
 %%%%% IG: Old from modular example
@@ -338,7 +338,7 @@ proving @bf{termination} of the predicate.
 
 Our resource analysis is @bf{parametric on the resources}, therefore a package
 defining the resource to be used has to be imported in the module, in this case
-we use the default package that infers information about computation al steps.
+we use the default package that infers information about computational steps.
 This is done by replacing the first line by:
 
 ```ciao
