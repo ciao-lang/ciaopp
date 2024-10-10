@@ -1,6 +1,6 @@
-:- module(pd, [], [assertions,regtypes,basicmodes]).
+:- module(pd, [], [assertions,regtypes,modes_extra]).
 
-:- doc(title, "PD domain").
+:- doc(title, "pd (abstract domain)").
 :- doc(module, "This abstract domain is the domain with one value,
    top. PD stands for Partial Deduction.").
 

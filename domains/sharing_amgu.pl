@@ -1,8 +1,9 @@
-:- module(sharing_amgu, [], [assertions, isomodes]).
+:- module(sharing_amgu, [], [assertions, modes_extra]).
 
-:- doc(title, "amgu-based sharing domain").
+:- doc(title, "amgu-based sharing (abstract domain)").
 :- doc(author, "Jorge Navas").
-% Copyright (C) 2004-2019 The Ciao Development Team
+:- doc(copyright,"Copyright @copyright{} 2004-2019 The Ciao Development Team").
+:- doc(stability, prod).
 
 :- include(ciaopp(plai/plai_domain)).
 :- dom_def(share_amgu, [default]).
@@ -37,17 +38,22 @@
 :- dom_impl(_, empty_entry/3, [from(sharing:share), noq]).
 % :- dom_impl(_, compute_lub_el(ASub1,ASub2,ASub), lub(ASub1,ASub2,ASub), [from(sharing:share), noq]).
 
-%------------------------------------------------------------------------%
-% This file implements the same functions than sharing.pl but the        |
-% functions call_to_entry and exit_to_prime are developed based on the   |
-% amgu.                                                                  |
-%------------------------------------------------------------------------%
+% infers(ground/1, rtcheck).
+% infers(mshare/1, rtcheck).
+
+:- doc(module,"
+This file implements the same functions than `sharing.pl` but the       
+functions `call_to_entry` and `exit_to_prime` are developed based on the  
+`amgu`.
+
+@begin{note}
+The meaning of the variables are defined in `sharing.pl`.       
+@end{note}
+").
 %------------------------------------------------------------------------%
 % Non-Redundant: the non-redundant version is not working because the    |
 % semantics of the builtins must be redefined.                           |
 %------------------------------------------------------------------------
-% The meaning of the variables are defined in sharing.pl                 |
-%------------------------------------------------------------------------%
 
 :- doc(bug,"1. The builtin ==/2 is defined but it is not used. For 
        its use, comment it out in special_builtin.").
@@ -69,11 +75,13 @@
 :- use_module(domain(share_amgu_aux)).
 
 %------------------------------------------------------------------------%
+%------------------------------------------------------------------------%
 %                      ABSTRACT Call To Entry                            %
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% call_to_entry(+,+,+,+,+,+,+,-,?)
-%-------------------------------------------------------------------------
+
+:- pred call_to_entry(+Sv,+Sg,+Hv,+Head,+K,+Fv,+Proj,-Entry,?ExtraInfo).
+   
 :- export(call_to_entry/9).
 :- dom_impl(_, call_to_entry/9, [noq]).
 call_to_entry(_Sv,Sg,_Hv,Head,_K,Fv,Proj,Entry,ExtraInfo) :-
@@ -97,11 +105,8 @@ call_to_entry(Sv,Sg,Hv,Head,_K,Fv,Proj,Entry,ExtraInfo):-
      ExtraInfo = (Eqs,Gv_Call),!.
 call_to_entry(_Sv,_Sg,_Hv,_Head,_K,_Fv,_Proj,'$bottom',_).
 
-%------------------------------------------------------------------------%
-% amgu_iterate(+,+,+,-)
-% amgu_iterate(Eqs,Flag,ASub0,ASub)
-% For each equation in Eqs, it performs the amgu.                        %
-%------------------------------------------------------------------------%
+:- pred amgu_iterate(+Eqs,+Flag,+ASub0,-ASub)
+   # "For each equation in `Eqs`, it performs the `amgu`.".
 
 amgu_iterate([],_,ASub, ASub).
 amgu_iterate([(X,Ts)|Eqs],Flag,ASub, ASub2):-
@@ -109,13 +114,14 @@ amgu_iterate([(X,Ts)|Eqs],Flag,ASub, ASub2):-
      amgu_iterate(Eqs,Flag,ASub1, ASub2).
 
 %------------------------------------------------------------------------%
+%------------------------------------------------------------------------%
 %                            ABSTRACT AMGU                               %
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% amgu(+,+,+,-)
-% amgu(Sg,Head,ASub,AMGU)
-% @var{AMGU} is the abstract unification between @var{Sg} and @var{Head}.%
-%------------------------------------------------------------------------%
+
+:- pred amgu(+Sg,+Head,+ASub,-AMGU)
+   # "`AMGU`is the abstract unification between `Sg` and `Head`.".
+
 :- export(amgu/4).
 :- dom_impl(_, amgu/4, [noq]).
 amgu(Sg,Head,ASub,AMGU):-
@@ -123,11 +129,12 @@ amgu(Sg,Head,ASub,AMGU):-
     amgu_iterate(Eqs,star,ASub,AMGU),!.
 
 %------------------------------------------------------------------------%
+%------------------------------------------------------------------------%
 %                      ABSTRACT Extend_Asub                              %
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% augment_asub(+,+,-)
-%-------------------------------------------------------------------------
+
+:- pred augment_asub(+,+,-).
 
 :- export(augment_asub/3).
 :- dom_impl(_, augment_asub/3, [noq]).
@@ -143,11 +150,13 @@ augment_asub_(ASub,[H|T],[[H]|ASub0]):-
     augment_asub_(ASub,T,ASub0).
 
 %------------------------------------------------------------------------%
+%------------------------------------------------------------------------%
 %                      ABSTRACT Extend_two_asub                          %
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% augment_two_asub(+,+,-)
-%-------------------------------------------------------------------------
+
+:- pred augment_two_asub(+,+,-).
+
 :- export(augment_two_asub/3).
 :- dom_impl(_, augment_two_asub/3, [noq]).
 augment_two_asub([],ASub1,ASub1):-!.
@@ -155,13 +164,14 @@ augment_two_asub(ASub0,[],ASub0):-!.
 augment_two_asub(ASub0,ASub1,ASub):-
     append(ASub0,ASub1,ASub_u),
     sharing:abs_sort(ASub_u,ASub),!. % TODO: cut in the wrong place
-       
+
+%------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
 %                      ABSTRACT Exit to Prime                            %
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% exit_to_prime(+,+,+,-)                                                 %
-%-------------------------------------------------------------------------
+
+:- pred exit_to_prime(+Sg,+Hv,+Head,+Sv,+Exit,?ExtraInfo,-Prime).
 
 :- dom_impl(_, exit_to_prime/7, [noq]).
 exit_to_prime(_,_,_,_,'$bottom',_,'$bottom'):-!.
@@ -181,11 +191,13 @@ exit_to_prime(Sg,_Hv,_Head,Sv,Exit,ExtraInfo,Prime):-
     ord_split_lists_from_list(Gv_Call,Prime1,_,Prime).
 
 %------------------------------------------------------------------------%
+%------------------------------------------------------------------------%
 %                      ABSTRACT Call to Success Fact                     %
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% Specialized version of call_to_entry + exit_to_prime + extend for facts%
-%------------------------------------------------------------------------%
+
+:- pred call_to_success_fact/9
+   # "Specialized version of `call_to_entry` + `exit_to_prime` + `extend` for facts".
 
 :- dom_impl(_, call_to_success_fact/9, [noq]).
 call_to_success_fact(Sg,Hv,Head,_K,Sv,Call,_Proj,Prime,Succ) :-
@@ -217,22 +229,24 @@ call_to_prime_fact(Sg,Hv,Head,Sv,Call,Prime) :-
 %------------------------------------------------------------------------%
 %                         HANDLING BUILTINS                              %
 %------------------------------------------------------------------------%
-% special_builtin(+,+,+,-,-)                                             |
-% special_builtin(SgKey,Sg,Subgoal,Type,Condvars)                        |
-% Satisfied if the builtin does not need a very complex action. It       |
-% divides builtins into groups determined by the flag returned in the    |
-% second argument + some special handling for some builtins:             |
-%                                                                        |
-% (1) ground : if the builtin makes all variables ground whithout        |
-%     imposing any condition on the previous freeness values of the      |
-%     variables                                                          |
-% (2) bottom : if the abstract execution of the builtin returns bottom   |
-% (3) unchanged : if we cannot infer anything from the builtin, the      |
-%     substitution remains unchanged and there are no conditions imposed |
-%     on the previous freeness values of the variables.                  |
-% (4) some: if it makes some variables ground without imposing conditions|
-% (5) Sgkey: special handling of some particular builtins                |
-%-------------------------------------------------------------------------
+
+:- pred special_builtin(+SgKey,+Sg,+Subgoal,-Type,---Condvars)
+   #
+"Satisfied if the builtin does not need a very complex action. It      
+divides builtins into groups determined by the flag returned in the    
+second argument + some special handling for some builtins:             
+                                                                       
+- *ground*    : if the builtin makes all variables ground whithout        
+                imposing any condition on the previous freeness values of the      
+                variables.                                                          
+- *bottom*    : if the abstract execution of the builtin returns *bottom*.   
+- *unchanged* : if we cannot infer anything from the builtin, the      
+                substitution remains unchanged and there are no conditions imposed 
+                on the previous freeness values of the variables.                  
+- *some*      : if it makes some variables ground without imposing conditions.
+- `Sgkey`     : special handling of some particular builtins.                
+".
+
 :- dom_impl(_, special_builtin/5, [noq]).
 special_builtin('read/2',read(X,Y),_,'recorded/3',p(Y,X)).
 special_builtin('length/2',length(_X,Y),_,some,[Y]).
@@ -240,17 +254,17 @@ special_builtin('==/2',_,_,_,_):- !, fail.
 special_builtin(SgKey,Sg,Subgoal,Type,Condvars):-
     sharing:special_builtin(SgKey,Sg,Subgoal,Type,Condvars).
 
-%-------------------------------------------------------------------------
-% success_builtin(+,+,+,+,+,-)
-% success_builtin(Type,Sv_u,Condv,HvFv_u,Call,Succ)
-% Obtains the success for some particular builtins:                      |
-%  * If Type = ground, it updates Call making all vars in Sv_u ground    |
-%  * If Type = bottom, Succ = '$bottom'                                  |
-%  * If Type = unchanged, Succ = Call                                    |
-%  * If Type = some, it updates Call making all vars in Condv ground     |
-%  * Otherwise Type is the SgKey of a particular builtin for each the    |
-%    Succ is computed                                                    |
-%-------------------------------------------------------------------------
+:- pred success_builtin(+Type,+Sv_u,?Condv,+HvFv_u,+Call,-Succ)
+   #
+"Obtains the success for some particular builtins:                     
+- If `Type` = *ground*, it updates *Call* making all vars in *Sv_u* ground.    
+- If `Type` = *bottom*, `Succ` = `$bottom`.                                  
+- If `Type` = *unchanged*, `Succ` = `Call`.                                    
+- If `Type` = *some*, it updates `Call` making all vars in `Condv` ground.     
+- Otherwise `Type` is the `SgKey` of a particular builtin for each the    
+  `Succ` is computed.                                                    
+".
+
 :- dom_impl(_, success_builtin/6, [noq]).
 success_builtin('=../2',_,p(X,Y),_,Call,Succ):-
     varset(X,Varsx),
@@ -303,11 +317,9 @@ success_builtin(findall,_Sv_u,_,_HvFv_u,Call,Call):- !.
 success_builtin(Type,Sv_u,Condv,HvFv_u,Call,Succ):-
     sharing:success_builtin(Type,Sv_u,Condv,HvFv_u,Call,Succ).
 
-%-------------------------------------------------------------------------
-% call_to_success_builtin(+,+,+,+,+,-)
-% call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,Succ)
-% Handles those builtins for which computing Prime is easier than Succ   %
-%-------------------------------------------------------------------------
+:- pred call_to_success_builtin(+SgKey,+Sg,+Sv,+Call,+Proj,-Succ)
+   # "Handles those builtins for which computing `Prime` is easier than `Succ`".
+
 :- dom_impl(_, call_to_success_builtin/6, [noq]).
 call_to_success_builtin('=/2','='(X,Y),Sv,Call,Proj,Succ):-
     copy_term(X,Xterm),
@@ -335,7 +347,7 @@ call_to_success_builtin('arg/3',arg(X,Y,Z),_,Call,Proj,Succ):-
     call_to_success_fact(Sg,Hv,Head,not_provided,Sv,TempCall,Proj,_Prime,Succ). % TODO: add some ClauseKey?
 
 %------------------------------------------------------------------------%
-%            Intermediate Functions                                      |
+%                     Intermediate Functions                             %
 %------------------------------------------------------------------------%
 
 %% obtain_groundness_call(Proj,Sv,Gv):-

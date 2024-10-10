@@ -27,7 +27,9 @@
     det_empty_entry/3,
     det_dom_statistics/1,
     det_obtain_info/4
-], [assertions,regtypes,basicmodes]).
+], [assertions,regtypes,modes_extra]).
+
+:- doc(title, "det: determinancy (abstract domain)").
 
 :- include(ciaopp(plai/plai_domain)).
 :- dom_def(det).

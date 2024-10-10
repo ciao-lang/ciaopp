@@ -1,13 +1,11 @@
 :- module(shfrlin_amgu_aux,
     [shfrlin_amgu_iterate/3, shfrlin_amgu_update_fr_lin/3],
-     [assertions, isomodes]).
+     [assertions, modes_extra]).
 
 :- doc(author, "Jorge Navas").
-% Copyright (C) 2006-2019 The Ciao Development Team
+:- doc(copyright,"Copyright @copyright{} 2006-2019 The Ciao Development Team").
 
-%------------------------------------------------------------------------%
-% This file implements the amgu for sharing+Freeness+linearity           |
-%------------------------------------------------------------------------%
+:- doc(module,"This file implements the amgu for sharing+Freeness+linearity.").
 
 :- use_module(library(sort), [sort/2]).
 :- use_module(domain(s_grshfr), [member_value_freeness/3]).
@@ -20,9 +18,8 @@
     [amgu_non_star/5, lin/2, update_freeness/4, map_freeness_list/3,
      shfr_update_freeness/4, share_with/3]).
 
-%------------------------------------------------------------------------%
-% shfrlin_amgu_iterate(+,+,-)                                            |
-%------------------------------------------------------------------------%
+:- pred shfrlin_amgu_iterate(+,+,-).
+
 shfrlin_amgu_iterate([],ASub,ASub).
 shfrlin_amgu_iterate([(X,(Ts,Type,L))|Eqs],ASub,ASub2):-        
      amgu_shfrlin(X,(Ts,Type,L),ASub,ASub1),
@@ -30,41 +27,43 @@ shfrlin_amgu_iterate([(X,(Ts,Type,L))|Eqs],ASub,ASub2):-
 
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-%                  UPDATE FREENESS+LINEARITY                             |
+%                    UPDATE FREENESS+LINEARITY                           %
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% shfrlin_amgu_update_fr_lin(+,+,-)                                           |
-% shfrlin_amgu_update_fr_lin((Sh,F,L),Vars,(Sh',F',L')                        |
-%------------------------------------------------------------------------%
+
+:- pred shfrlin_amgu_update_fr_lin(+(Sh,F,L),+Vars,-(Sh_prime,F_prime,L_prime)).
+
 shfrlin_amgu_update_fr_lin((Sh,F,L),Vars,(Sh,F1,L1)):-
      shfr_update_freeness(Sh,F,Vars,F1),
      filter_ground(L,F1,L1).
+
 %------------------------------------------------------------------------%
 %                      ABSTRACT UNIFICATION                              %
 %------------------------------------------------------------------------%
-% amgu_shfrlin(+,+,+,-)                                                  |
-% amgu_shfrlin(X,(T,Type,L),(Sh,f,l),SHFL')                              | 
-% Amgu describes the unification X=T (concrete unification) in a state   |
-% described by S.T is of Type t (term) or v (var) and L is l or nl       |
-% SHFL' = (Sh',f',l') where:                                             |
-% Sh'= \rel(Sh_xt) U (Sh_x \bin Sh_t)             if x in f or t in f    |       
-% \rel(Sh_xt) U (Sh_x U (Sh_x \bin Sh_xt*)) \bin  if alin(x),alin(t)     |
-%               (Sh_t U (Sh_t \bin Sh_xt*))                              | 
-%      \rel(Sh_xt) U (Sh_x* \bin Sh_t)            if alin(x),not alin(t) |
-%      \rel(Sh_xt) U (Sh_x \bin Sh_t*)            if not alin(x),alin(t) |
-%      amgu(X,T,Sh)                               otherwise              |
-%                                                                        |
-% f'  =  f                                        if x in f, t in f      |  
-%     |  f \ (U sh_x)                             if x in f, t not in f  | 
-%     |  f \ (U sh_t)                             if x not in f, t in f  |
-%     |  f \ (U sh_x) U (U sh_t)                  if x not in f, t not in f
-%                                                                        |
-% l'  =  f' U                                                            |
-%     |  l \ (U sh_x) /\ (U sh_t)                 if alin(x),alin(t)     | 
-%     |  l \ (U sh_x)                             if alin(x), not alin(t)|
-%     |  l \ (U sh_t)                             if not alin(x), alin(t)|
-%     |  l \ (U sh_x) U (U sh_t)                  otherwise              | 
-%------------------------------------------------------------------------%
+
+:- pred amgu_shfrlin(+X,+(T,Type,L),+(Sh,f,l),-SHFL_prime)
+   #
+"Amgu describes the unification `X`=`T` (concrete unification) in a state   
+described by `S`.`T` is of Type t (term) or v (var) and `L` is l or nl       
+SHFL' = (Sh',f',l') where:                                             
+Sh'= \rel(Sh_xt) U (Sh_x \bin Sh_t)             if x in f or t in f           
+\rel(Sh_xt) U (Sh_x U (Sh_x \bin Sh_xt*)) \bin  if alin(x),alin(t)     
+              (Sh_t U (Sh_t \bin Sh_xt*))                               
+     \rel(Sh_xt) U (Sh_x* \bin Sh_t)            if alin(x),not alin(t) 
+     \rel(Sh_xt) U (Sh_x \bin Sh_t*)            if not alin(x),alin(t) 
+     amgu(X,T,Sh)                               otherwise              
+                                                                       
+f'  =  f                                        if x in f, t in f        
+    |  f \ (U sh_x)                             if x in f, t not in f   
+    |  f \ (U sh_t)                             if x not in f, t in f  
+    |  f \ (U sh_x) U (U sh_t)                  if x not in f, t not in f
+                                                                       
+l'  =  f' U                                                            
+    |  l \ (U sh_x) /\ (U sh_t)                 if alin(x),alin(t)      
+    |  l \ (U sh_x)                             if alin(x), not alin(t)
+    |  l \ (U sh_t)                             if not alin(x), alin(t)
+    |  l \ (U sh_x) U (U sh_t)                  otherwise               
+".
 
 %amgu_shfrlin(X,(T,Type,TL),(Sh0,F,L0),(NewSh,NewF,NewL)):-
 amgu_shfrlin(X,(T,Type,TL),(Sh,F,L),(NewSh,NewF,NewL)):-
@@ -114,15 +113,16 @@ amgu_shfrlin_(X,(T,_),Is_Alin_x,Is_Alin_t,(Sh,F,L),(NewSh,NewF,NewL)):-
      update_linearity([X],T,Is_Alin_x,Is_Alin_t,(Sh,NewF1,L),NewL),
      map_freeness_list(NewF1,f,NewF).
 
-%------------------------------------------------------------------------%      
-% update_sh_alin(+,+,+,+,+,-)                                            |
-% Sh'=                                                                   |       
-% \rel(Sh_xt) U (Sh_x U (Sh_x \bin Sh_xt*)) \bin  if alin(x),alin(t)     |
-%               (Sh_t U (Sh_t \bin Sh_xt*))                              | 
-%      \rel(Sh_xt) U (Sh_x* \bin Sh_t)            if alin(x),not alin(t) |
-%      \rel(Sh_xt) U (Sh_x \bin Sh_t*)            if not alin(x),alin(t) |
-%      amgu(X,T,Sh)                               otherwise              |
-%------------------------------------------------------------------------%
+:- pred update_sh_alin(+,+,+,+,+,-)
+   #
+"Sh'=                                                                         
+\rel(Sh_xt) U (Sh_x U (Sh_x \bin Sh_xt*)) \bin  if alin(x),alin(t)     
+              (Sh_t U (Sh_t \bin Sh_xt*))                               
+     \rel(Sh_xt) U (Sh_x* \bin Sh_t)            if alin(x),not alin(t) 
+     \rel(Sh_xt) U (Sh_x \bin Sh_t*)            if not alin(x),alin(t) 
+     amgu(X,T,Sh)                               otherwise              
+".
+
 update_sh_alin(X,T,Is_Alin_x,Is_Alin_t,Sh,NewSh):-
     sort(T,V_t),
     ord_union([X],V_t,V_xt),
@@ -171,16 +171,17 @@ alin_l_((T,l),Sh,Lin):-
      ord_subset(Ts,Lin),!,
      lin(Sh,Ts).
 
-%------------------------------------------------------------------------%
-% update_linearity(+,+,+,+,+,-)                                          |
-% X is a list                                                            |
-%------------------------------------------------------------------------%
-% l'  =  f' U                                                            |
-%     |  l \ (U sh_x) /\ (U sh_t)   if alin(x),alin(t)                   | 
-%     |  l \ (U sh_x)               if alin(x), not alin(t)              |
-%     |  l \ (U sh_t)               if not alin(x), alin(t)              | 
-%     |  l \ (U sh_x) U (U sh_t)    otherwise                            |
-%------------------------------------------------------------------------%
+:- pred update_linearity(+,+,+,+,+,-)
+   #
+"`X` is a list.
+          
+l'  =  f' U
+    |  l \ (U sh_x) /\ (U sh_t)   if alin(x),alin(t)
+    |  l \ (U sh_x)               if alin(x), not alin(t)
+    |  l \ (U sh_t)               if not alin(x), alin(t)
+    |  l \ (U sh_x) U (U sh_t)
+".
+
 update_linearity(X,T,Is_Alin_x,Is_Alin_t,(Sh,NewF,L),NewL):-
     ( Is_Alin_x == yes ->
       ( Is_Alin_t == yes ->

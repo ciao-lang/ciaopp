@@ -16,9 +16,9 @@
       difflsign_unknown_call/4, 
       difflsign_unknown_entry/3, 
       difflsign_empty_entry/3
-    ], [assertions]).
+    ], [assertions, modes_extra]).
 
-:- doc(title, "lsigndiff domain").
+:- doc(title, "lsigndiff (abstract domain)").
 
 :- include(ciaopp(plai/plai_domain)).
 :- dom_def(difflsign).

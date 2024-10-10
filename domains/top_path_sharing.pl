@@ -1,4 +1,4 @@
-:- module(top_path_sharing, [], [assertions]).
+:- module(top_path_sharing, [], [assertions, modes_extra]).
 
 %------------------------------------------------------------------------%
 %                                                                        %
@@ -15,6 +15,9 @@
 %          being a set of elements with the form p(X,Path)               %
 %          Path is a list                                                %
 %------------------------------------------------------------------------%
+
+:- doc(title, "path (abstract domain)").
+:- doc(stability, devel).
 
 :- doc(bug,"Don't know how to do a topmost. This affects correctness
     of unknown_entry/3, unknown_call/4, and input_interface/4.").

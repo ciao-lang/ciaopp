@@ -26,15 +26,15 @@
      number_of_subsets/2,
      list_if_not_nil/2
     ],
-    [assertions, isomodes]).
+    [assertions, modes_extra]).
 
 :- doc(author, "Jorge Navas").
-% Copyright (C) 2004-2019 The Ciao Development Team
+:- doc(copyright,"Copyright @copyright{} 2004-2019 The Ciao Development Team").
 
-%------------------------------------------------------------------------%
-% This file implements the amgu for clique-sharing domain defined by     |
-% Hill,Bagnara and  Zaffanella and other auxiliary functions.            |
-%------------------------------------------------------------------------%
+:- doc(module,"
+This file implements the amgu for clique-sharing domain defined by
+Hill,Bagnara and Zaffanella and other auxiliary functions.
+").
 
 % REMARK: In order to number how many normalization processes have been
 % performed, we assert a fact for each one. To take time measurings, we
@@ -72,84 +72,104 @@
 :- use_module(ciaopp(preprocess_flags), [current_pp_flag/2]).
 
 %------------------------------------------------------------------------%
-% Handle of Widening                                                     |
+%                      Handle of Widening                                %
 %------------------------------------------------------------------------%
-% * Widening or not (off, amgu, plai_op)                                 | 
-% - off:  no widening                                                    |
-% - plai_op: widening is performed for each PLAI operation (if required) |
-% - amgu: widening is performed for each amgu                            |
+
 :- export(widen/1).
+:- pred widen/1
+   #
+"Widening or not (`off`, `amgu`, `plai_op`):                                
+- `off`:  no widening.
+- `plai_op`: widening is performed for each PLAI operation (if required).
+- `amgu`: widening is performed for each amgu.
+".
+
 widen(X):- current_pp_flag(clique_widen,X).
 
-% * Thresholds. These thresholds are used by the condition of the        |
-% widening the simpler widenings only used 'widen_upper_bound'. Some     |
-% more complex widenings also use 'widen_lower_bound'.                   |
+:- pred widen_upper_bound/1
+   #
+"**Thresholds**. These thresholds are used by the condition of the
+widening the simpler widenings only used `widen_upper_bound`. Some
+more complex widenings also use `widen_lower_bound`.
+".
 :- export(widen_upper_bound/1).
 widen_upper_bound(X):- current_pp_flag(clique_widen_ub,X).
 :- export(widen_lower_bound/1).
 widen_lower_bound(X):- current_pp_flag(clique_widen_lb,X).
 
 :- export(type_widening/1).
-% * Types of widenings. This clasification was defined by Zaffanella,Hill|
-% and Bagnara.                                                           |
-% - panic: They are at the top of the scale of widenings and they must be|
-% used with very strict guards, only to obey the 'never crash' motto.    |
-% - cautious: they're invariant wrt set-sharing representation.          |
-% - intermediate: tradeoff between precision and efficiency.             |
-% W(cl,sh) = (cl U {Ush},\emptyset)     panic_1                          |
-% W(cl,sh) = ({Ucl U Ush},\emptyset)    panic_2                          |
-% W(cl,sh) = (cl U sh,\emptyset)        inter_1                          |
-% W(cl,sh) = normalize((cl,sh))         cautious                         |
-% W((cl,sh),LB) =                       inter_2                          |        
-%           1) choose the candidate with the greatest number of subsets  |
-%              if not more candidates, end.                              |
-%           2) update clique                                             |
-%           3) compute (cl'+sh')                                         |
-%           4) if (cl'+sh') =< lower_bound, end.                         |
-%              otherwise goto 1.                                         |
+:- pred type_widening/1
+#
+"**Types of widenings**. This clasification was defined by Zaffanella, Hill
+and Bagnara.                                                           
+- **panic**: They are at the top of the scale of widenings and they must be
+used with very strict guards, only to obey the 'never crash' motto.    
+- **cautious**: they're invariant wrt set-sharing representation.          
+- **intermediate**: tradeoff between precision and efficiency.             
+W(cl,sh) = (cl U {Ush},\emptyset)     panic_1                          
+W(cl,sh) = ({Ucl U Ush},\emptyset)    panic_2                          
+W(cl,sh) = (cl U sh,\emptyset)        inter_1                          
+W(cl,sh) = normalize((cl,sh))         cautious                         
+W((cl,sh),LB) =                       inter_2                                  
+          1) choose the candidate with the greatest number of subsets  
+             if not more candidates, end.                              
+          2) update clique                                             
+          3) compute (cl'+sh')                                         
+          4) if (cl'+sh') =< lower_bound, end.                         
+             otherwise goto 1.
+".
+
 type_widening(X):- current_pp_flag(clique_widen_type,X).
 
 :- export(type_widening_condition/1).
-% * Type of conditions.                                                  |
-% - aamgu: the condition is verified after performing the amgu.          |
-% - bamgu: an upper bound is computed before performing the amgu in order| 
-%   to avoid to compute it. (default)                                    |
+:- pred type_widening_condition/1
+   #
+"**Type of conditions**.                                                  
+- `aamgu`: the condition is verified after performing the amgu.          
+- `bamgu`: an upper bound is computed before performing the amgu in order 
+  to avoid to compute it. (default)
+".
+
 type_widening_condition(bamgu). 
 %------------------------------------------------------------------------%
 
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-%           ABSTRACT UNIFICATION for CLIQUE-sharing domain (OPERATIONS)  |
+%         ABSTRACT UNIFICATION for CLIQUE-sharing domain (OPERATIONS)    %
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% amgu_clique(+,+,+,+,-)                                                 |
-% amgu_clique_(X,T,Flag,State,AMGU)                                      |
-% If Flag = star then if performs the "star" amgu                        |
-% Otherwise, it performs the "self-union" amgu (non-redundant)           |   
-%------------------------------------------------------------------------%
+
+:- pred amgu_clique(X,T,+Flag,+State,-AMGU)
+   #
+"If `Flag` = star then if performs the *star* amgu
+Otherwise, it performs the *self-union* amgu (non-redundant).
+".
+
 amgu_clique(X,T,star,ASub,ASub0):- !,        
     amgu_clique_opt(X,T,ASub,ASub0).
 amgu_clique(X,T,self,ASub,ASub0):-           
     amgu_s_clique(X,T,ASub,ASub0).
 
 %------------------------------------------------------------------------%
-%                OPTIMIZED UNIFICATION FOR CLIQUE-SHARING                |
+%                OPTIMIZED UNIFICATION FOR CLIQUE-SHARING                %
 %------------------------------------------------------------------------%
-% amgu_clique_opt(+,+,+,-)                                               |
-% amgu_clique_opt(V_x,X,V_t,State,AMGU)                                  |
-% Amgu describes the unification x=t (concrete unification) in a state   |
-% described by S                                                         |
-% amgu_clique_opt(x=t,(cl,sh)) =                                         |
-%   (cl, \sh_xt U (sh_x* bin sh_t*))   if cl_x = cl_t = empty            |
-%   (\rel(xt,cl), \sh_xt)              if cl_x = sh_x = empty            |
-%                                      or cl_t = sh_t = empty            | 
-%   (\rel'(xt,cl) U {U (cl_x U cl_t U sh_x U sh_t)}, \sh_xt)             |
-%                                      otherwise                         |
-% where \rel'(xt,cl) = {c | c \in cl, c /\ vars(xt) = \emptyset          |
-%------------------------------------------------------------------------%
+
+:- pred amgu_clique_opt(V_x,X,V_t,State,-AMGU)
+   #
+"`Amgu` describes the unification x=t (concrete unification) in a state  
+described by `S`:                                                         
+amgu_clique_opt(x=t,(cl,sh)) =                                         
+  (cl, \sh_xt U (sh_x* bin sh_t*))   if cl_x = cl_t = empty            
+  (\rel(xt,cl), \sh_xt)              if cl_x = sh_x = empty            
+                                     or cl_t = sh_t = empty             
+  (\rel'(xt,cl) U {U (cl_x U cl_t U sh_x U sh_t)}, \sh_xt)             
+                                     otherwise                         
+where \rel'(xt,cl) = {c | c \in cl, c /\ vars(xt) = \emptyset 
+".
 
 :- push_prolog_flag(multi_arity_warnings,off).
 :- push_prolog_flag(discontiguous_warnings,off).
+
 amgu_clique_opt(X,T,ASub,AMGU):-           
     widen(amgu),!,
     amgu_clique_opt(X,T,ASub,not,AMGU).
@@ -226,16 +246,18 @@ amgu_sharing_part(Irrel_Sh_xt,Sh_x,Sh_t,AMGU_sh):-
     ord_union(Irrel_Sh_xt,BinUnion_xt,AMGU_sh).
 
 %------------------------------------------------------------------------%
-%          ABSTRACT UNIFICATION with SELF UNION FOR CLIQUES              | 
+%           ABSTRACT UNIFICATION with SELF UNION FOR CLIQUES             %
 %------------------------------------------------------------------------%
-% amgu_s_clique_(+,+,+,-)                                                |
-% amgu_s_clique(X,V_t,ASub,AMGU)                                         |
-% Amgu describes the unification x=t (concrete unification) in a state   |
-% described by S.                                                        |
-% amgu_s_clique(x=t,(cl,sh)) = irrel_w(xt,shw) U^w                       |
-%                    bin^w(sbin^w(rel^w(V_x,shw)),sbin^w(rel^w(V_t,shw)))|
-% Note that in this operation, we use Bagnara's definition.              | 
-%------------------------------------------------------------------------%
+
+:- pred amgu_s_clique(X,V_t,ASub,-AMGU)
+   #
+"`Amgu` describes the unification x=t (concrete unification) in a state  
+described by `S`:                                                        
+amgu_s_clique(x=t,(cl,sh)) = irrel_w(xt,shw) U^w                       
+                   bin^w(sbin^w(rel^w(V_x,shw)),sbin^w(rel^w(V_t,shw)))
+Note that in this operation, we use Bagnara's definition.               
+".
+
 amgu_s_clique(X,T,ASub,AMGU):-           
 % Both clique and sharing part are computed together
     sort(T,V_t),
@@ -253,13 +275,15 @@ amgu_s_clique(X,T,ASub,AMGU):-
 %------------------------------------------------------------------------%
 %                      BINARY UNION FOR CLIQUE SETS                      %
 %------------------------------------------------------------------------%
-%-------------------------------------------------------------------------
-% bin_union_w(+,+,-)                                                     |
-% bin_union_w(SH1,SH2,Cl)                                                |
-% bin_union_w((cl1,sh1),(cl2,sh2)) = (bin_union(cl1,cl2) U               |
-%                                     bin_union(cl1,sh2) U               |
-%                               bin_union(sh1,cl2),bin_union(sh1,sh2))   |
 %------------------------------------------------------------------------%
+
+:- pred bin_union_w(+SH1,+SH2,-Cl)
+   #
+"bin_union_w((cl1,sh1),(cl2,sh2)) = (bin_union(cl1,cl2) U
+                                     bin_union(cl1,sh2) U
+                                      bin_union(sh1,cl2),bin_union(sh1,sh2))
+".
+
 bin_union_w((Cl1,Sh1),(Cl2,Sh2),Bin):-
     bin_union(Cl1,Cl2,Cl3),
     bin_union(Cl1,Sh2,Cl4),
@@ -272,13 +296,14 @@ bin_union_w((Cl1,Sh1),(Cl2,Sh2),Bin):-
 %------------------------------------------------------------------------%
 %                      STAR UNION FOR CLIQUE SETS                        % 
 %------------------------------------------------------------------------%
-% star_w(+,-)                                                            |
-% star_w(Xss,Star)                                                       |
-% Star is the closure under union of Xss                                 |
-% NON-OPTIMIZED version                                                  |
-% star_w((cl,sh)) = (cl* U bin_union(cl*,sh*),sh*)                       |
-% NOTE: Optimized version DOES normalize                                 |
-%------------------------------------------------------------------------%
+
+:- pred star_w(+Xss,-Star)
+   #
+"`Star` is the closure under union of `Xss` (NON-OPTIMIZED version): 
+star_w((cl,sh)) = (cl* U bin_union(cl*,sh*),sh*)
+**NOTE**: Optimized version DOES normalize.
+".
+
 :- push_prolog_flag(multi_arity_warnings,off).
 :- push_prolog_flag(discontiguous_warnings,off).
 
@@ -329,13 +354,15 @@ list_if_not_nil(X,[X]).
 %------------------------------------------------------------------------%
 %                      SELF-BIN  UNION FOR CLIQUES                       %
 %------------------------------------------------------------------------%
-%-------------------------------------------------------------------------
-% self_w(+,-)                                                            |
-% self_w(S1,S)                                                           |
-% Bagnara's definition                                                   |
-% Version of binary union of sharing is non-redundant w.r.t. pair-sharing|
-% sel_bin_w((Cl,Sh)) = (Cl^+ U bin_union(Cl,Sh),Sh^+)                    |
 %------------------------------------------------------------------------%
+
+:- pred self_w(+S1,-S)
+   #
+"Bagnara's definition                                                  
+Version of binary union of sharing is non-redundant w.r.t. pair-sharing
+sel_bin_w((Cl,Sh)) = (Cl^+ U bin_union(Cl,Sh),Sh^+)                    
+".
+
 self_w((Cl,Sh),(Cl1,Sh0)):- 
     self(Cl,Cl0),
     self(Sh,Sh0),
@@ -345,21 +372,24 @@ self_w((Cl,Sh),(Cl1,Sh0)):-
 %------------------------------------------------------------------------%
 %                        UNION FOR CLIQUE SETS                           % 
 %------------------------------------------------------------------------%
-% ord_union_w(+,+,-)                                                     |
-% ord_union_w(SH1,SH2,SH)                                                |
-% ord_union_w((Cl1,Sh1),(Cl2,Sh2)) = (Cl1 U Cl2,Sh1 U Sh2)               |
-%------------------------------------------------------------------------%
+
+:- pred ord_union_w(+SH1,+SH2,-SH)
+   # "ord_union_w((Cl1,Sh1),(Cl2,Sh2)) = (Cl1 U Cl2,Sh1 U Sh2)".
+
 ord_union_w((Cl1,Sh1),(Cl2,Sh2),(Cl0,Sh0)):-
     ord_union(Sh1,Sh2,Sh0),
     ord_union(Cl1,Cl2,Cl0).
 
 %------------------------------------------------------------------------%
-%                 INTERSECTION FOR CLIQUE SETS                           % 
+%                   INTERSECTION FOR CLIQUE SETS                         % 
 %------------------------------------------------------------------------%
-% ord_intersection_w(+,+,-)                                              |
-% ord_intersection_w((Cl1,Sh1),(Cl2,Sh2)) = (Cl1 /\^w Cl2, Cl1 /\^w Sh2  |
-%                                            U Cl2 /\^w Sh1 U Sh1 /\ Sh2)|
-%------------------------------------------------------------------------%
+
+:- pred ord_intersection_w(+,+,-)
+   #   
+"ord_intersection_w((Cl1,Sh1),(Cl2,Sh2)) = (Cl1 /\^w Cl2, Cl1 /\^w Sh2  |
+                                            U Cl2 /\^w Sh1 U Sh1 /\ Sh2)
+".
+
 ord_intersection_w((Cl1,Sh1),(Cl2,Sh2),(Cl0,Sh0)):-
     intersection_list_of_lists(Cl1,Cl2,Cl0),
     intersection_list_of_lists(Cl1,Sh2,Int0),
@@ -373,23 +403,26 @@ ord_intersection_w((Cl1,Sh1),(Cl2,Sh2),(Cl0,Sh0)):-
 %             RELEVANT AND NON-RELEVANT INFORMATION FOR CLIQUES          %
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% rel_w(+,+,-)                                                           |
-% rel_w(Vars,SH,Rel)                                                     |
-% Rel is the extraction of the relevant component of cl and sh wrt Vars. |
-% rel_w(Vars,(cl,sh)) = (rel(V,cl),rel(V,sh))                            |
-%------------------------------------------------------------------------%
-% irrel_w(+,+,-)                                                         |
-% irrel_w(Vars,SH,Irrel)                                                 |
-% Irrel is is the exclusion of the irrelevant component of cl and sh wrt |
-% Vars.                                                                  |
-% Note that a new predicate to compute irrelevant component of cl is     |
-% required.                                                              |
-% irrel_w'(V,cl) = {C \ V | C in cl} \ empty_set                         |
-%------------------------------------------------------------------------%
+
+:- pred rel_w(+Vars,+SH,-Rel)
+   #
+"`Rel` is the extraction of the relevant component of cl and sh wrt `Vars`. 
+rel_w(Vars,(cl,sh)) = (rel(V,cl),rel(V,sh))                            
+".
+
 rel_w(_,'$bottom','$bottom').
 rel_w(Vars,(Cl,Sh),(Cl0,Sh0)):- 
     split_list_of_lists(Vars,Sh,Sh0,_),
     split_list_of_lists(Vars,Cl,Cl0,_).
+
+:- pred irrel_w(+Vars,+SH,-Irrel)
+   #
+"`Irrel` is is the exclusion of the irrelevant component of cl and sh wrt
+`Vars`.                                                                  
+Note that a new predicate to compute irrelevant component of cl is     
+required.                                                              
+irrel_w'(V,cl) = {C \ V | C in cl} \ empty_set 
+".
 
 irrel_w(_,'$bottom','$bottom').
 irrel_w(Vars,(Cl,Sh),(Cl0,Sh0)):-
@@ -401,16 +434,19 @@ irrel_w(Vars,(Cl,Sh),(Cl0,Sh0)):-
 %                         NORMALIZE  Cliques                             | 
 %------------------------------------------------------------------------%
 %-------------------------------------------------------------------------
-% share_clique_normalize(+,+,+,-)                                        |
-% share_clique_normalize(SH,T,M,SH1)                                     |
-% There are three kind of possible transformations:                      |
-% -Regularization: clique which are subset of other cliques              |
-% -Minimization: sharing sets that are contained in cliques              |
-% -Normalization: sharing sets that are a powerset and so, a clique      |
-%   sharing sets with cardinality less than M are not taken into account |
-%   so that they are moved to clique part.                               |  
-%------------------------------------------------------------------------%
+
 :- push_prolog_flag(multi_arity_warnings,off).
+
+:- pred share_clique_normalize(+SH,+T,+M,-SH1)
+   #
+"There are three kind of possible transformations:                      
+- **Regularization**: clique which are subset of other cliques.
+- **Minimization**: sharing sets that are contained in cliques.
+- **Normalization**: sharing sets that are a powerset and so, a clique      
+  sharing sets with cardinality less than `M` are not taken into account 
+  so that they are moved to clique part.
+".
+
 share_clique_normalize(CL,NCL):-
     widen(off),!,
     minimum_cardinality(M),
@@ -428,17 +464,18 @@ share_clique_normalize((Cl,Sh),T,M,(Cl2,Sh2)):-
     normalize((Cl1,Sh1),T,M,(Cl2,Sh2)).
 :- pop_prolog_flag(multi_arity_warnings).
 
-%------------------------------------------------------------------------%
-% eliminate_redundancies(+,-)                                            |
-% eliminate_redundancies(SH,NewSH)                                       |
-% Performs the following process:                                        |
-% - regularize                                                           |
-% - minimize                                                             |
-% - move those clique groups with cardinality 1 to the sharing part      |
-% Note that it does not normalize.                                       |
-% REMARK: if we use move_clique2sharing qplan doesn't run with           |
-% share_clique. Thus, it should only used with freeness                  |
-%------------------------------------------------------------------------%
+
+:- pred eliminate_redundancies(+SH,-NewSH)
+   #
+"Performs the following process:                                       
+- regularize                                                           
+- minimize
+- move those clique groups with cardinality 1 to the sharing part
+Note that it does not normalize.
+
+**REMARK**: if we use `move_clique2sharing` qplan doesn't run with           
+`share_clique`. Thus, it should only used with freeness.
+".
 eliminate_redundancies('$bottom','$bottom'):-!.
 eliminate_redundancies((Cl,Sh),(Cl2,Sh2)):-!,
     % this reduce # program points
@@ -447,12 +484,12 @@ eliminate_redundancies((Cl,Sh),(Cl2,Sh2)):-!,
     regularize(Cl1,Cl2),                 
     minimize(Sh1,Cl2,Sh2).
 
-%------------------------------------------------------------------------%
-% move_clique_to_sharing(+,+,-,-)                                        |
-% move_clique_to_sharing(Cl,Sh,NewCl,NewSh)                              |
-% Eliminates those clique groups that satisfy a property (e.g. singleton)|
-% and moves them to the sharing compoonent.                              |
-%------------------------------------------------------------------------%
+:- pred move_clique_to_sharing(+Cl,+Sh,-NewCl,-NewSh)
+   #
+"Eliminates those clique groups that satisfy a property (e.g. singleton)
+and moves them to the sharing compoonent.                              
+".
+
 move_clique_to_sharing(Cl,Sh,NewCl,NewSh):-
     move_clique_to_sharing_(Cl,NewCl,Sh1),
     add_one(Sh1,Sh,NewSh).
@@ -496,12 +533,13 @@ add_one(Xs,Ys,Zs):-
 %       powerset_lists(Xs,Tem,Res),
 %       ord_union(XP,Tem,NewTemp).
 
-%------------------------------------------------------------------------%
-% regularize(+,-)                                                        |
-% regularize(Cl,NewCl)= Cl \ {c \in Cl|c is down-redundant for Cl}       |
-% Complexity = |Cl|.|Cl|                                                 |
-% Removes down-redundant cliques                                         |
-%------------------------------------------------------------------------%
+
+:- pred regularize(+Cl,-NewCl)
+   #
+"regularize(`Cl`,`NewCl`)= `Cl` \ {c \in `Cl`|c is down-redundant for `Cl`}
+Complexity = |`Cl`|.|`Cl`|
+Removes down-redundant cliques.
+".
 
 :- push_prolog_flag(multi_arity_warnings,off).
 regularize(Cl,Cl_Reg_s):-       
@@ -525,12 +563,13 @@ set_included_set_of_sets([X|_],S):-
 set_included_set_of_sets([_|Xs],S):-
     set_included_set_of_sets(Xs,S).
 
-%------------------------------------------------------------------------%
-% minimize(+,-)                                                          |
-% minimize(Sh,Cl) = Sh \ {s | s \subseteq cl, cl \in Cl,s \in Sh}        |
-% Complexity = |Sh|.|Cl|                                                 |
-% Removes sharing groups that are subset of cliques sets                 |  
-%------------------------------------------------------------------------%
+:- pred minimize(+Sh,-Cl,-Sh1)
+   #
+"minimize(`Sh`,`Cl`) = `Sh` \ {s | s \subseteq cl, cl \in `Cl`,s \in `Sh`} 
+Complexity = |`Sh`|.|`Cl`|
+Removes sharing groups that are subset of cliques sets.
+".
+
 minimize([],_,[]).
 minimize([Sh|Shs],Cl,Sh1):-
     ( ord_subset_lists_with_list(Cl,Sh) ->
@@ -540,13 +579,12 @@ minimize([Sh|Shs],Cl,Sh1):-
       Sh1 = [Sh|Sh0]
     ).
 
-%------------------------------------------------------------------------%
-% normalize(+,+,+,-)                                                     |
-% normalize(SH,T,M,SH1)                                                  |
-% Moves all sharing sets which contain T% of the clique from the sharing |
-% part to the clique part. M is the minimum cardinality                  |
-% The complexity is NP-complete (maximal clique in an undirected graph)  |
-%------------------------------------------------------------------------%
+:- pred normalize(+SH,+T,+M,-SH1)
+   #
+"Moves all sharing sets which contain `T` of the clique from the sharing
+part to the clique part. M is the minimum cardinality
+The complexity is NP-complete (maximal clique in an undirected graph).
+".
 
 % :- use_package(datafacts).
 % :- data norma_done/0.
@@ -596,11 +634,12 @@ is_powerset(CardCand,CardCandSh,CardCandCl,Threshold):-
     TotalSubsets is CardCandSh + CardCandCl,
     TotalSubsets >= Limit.
 
-%------------------------------------------------------------------------%
-% number_sets_in_cliques(CL,Cand,J)                                      |
-% J is the number of subsets which cannot appear in sh because           |
-% they are already represented in cl.                                    |
-%------------------------------------------------------------------------%
+:- pred number_sets_in_cliques(CL,Cand,J)
+   #
+"J is the number of subsets which cannot appear in sh because
+they are already represented in cl.
+".
+
 number_sets_in_cliques(CL,Cand,J):-
     intersection_lists_with_list(CL,Cand,I),
     length(I,End),
@@ -629,8 +668,9 @@ compute_inc_exc(I,Start,End,Sig,Acc,J):-
     Next is Start + 1,
     compute_inc_exc(I,Next,End,NSig,NAcc,J).
 
-% comb(L,K,Combs)
-% Combs is all possible combinations of the list L taken K at the same time
+:- pred comb(L,K,Combs)
+   # "`Combs` is all possible combinations of the list `L` taken `K` at the same time.".
+
 comb(0,_,[]) :- !.
 comb(N,[X|T],[X|Comb]):-N>0,N1 is N-1,comb(N1,T,Comb).
 comb(N,[_|T],Comb):-N>0,comb(N,T,Comb).
@@ -658,13 +698,12 @@ intersect_all_([Xs|Xss],[Int|Res]):-
     ord_intersect_all(Xs,Int),
     intersect_all_(Xss,Res).
 
-%------------------------------------------------------------------------%
-% longest_candidate(S,LB,Card,Max,Info)                                  |
-% longest_candidate(+,+,-,-,-)                                           |
-% Max is the set with the maximum cardinality Card > LB (lower bound)    |
-% of the list of lists                                                   |
-% complexity: |Sh| log (|Sh|)
-%------------------------------------------------------------------------%
+:- pred longest_candidate(+S,+LB,---Card,---Max,-Info)
+   #
+"`Max` is the set with the maximum cardinality `Card` > `LB` (lower bound)
+of the list of lists.
+complexity: |Sh| log (|Sh|).
+".
 longest_candidate(Sh,LB,Card,Max,Info):-
     neg_length_list_of_lists(Sh,LB,PairList),
     PairList \== [],!,
@@ -675,10 +714,8 @@ longest_candidate(Sh,LB,Card,Max,Info):-
 longest_candidate(_,_,_,_,Info):-
     Info = not.
 
-%------------------------------------------------------------------------%
-% smallest_candidate(S,UB,Card,Min,Info)                                 |
-% smallest_candidate(+,+,-,-,-)                                          |
-%------------------------------------------------------------------------%
+:- pred smallest_candidate(+S,+UB,-Card,-Min,-Info).
+
 smallest_candidate(Sh,LB,Card,Min,Info):-
     pos_length_list_of_lists(Sh,LB,PairList),
     PairList \== [],!,
@@ -712,12 +749,12 @@ pos_length_list_of_lists([S|Ss],M,Ss1):-
       Ss1= R
     ).
 
-%------------------------------------------------------------------------%
-% minimum_cardinality(+).                                                |
-% minimum_cardinality(M)                                                 |
-% sharing sets with cardinality less than M are not taken into account   |
-% so that they are moved to clique part. (see normalization algorithm)   |  
-%------------------------------------------------------------------------%
+:- pred minimum_cardinality(?M)
+   #
+"sharing sets with cardinality less than M are not taken into account  
+so that they are moved to clique part. (see normalization algorithm).
+".
+
 minimum_cardinality(3).
 
 check_threshold(T,Res):-

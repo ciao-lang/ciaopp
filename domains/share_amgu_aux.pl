@@ -7,16 +7,16 @@
         amgu/4,
         amgu/5
         ],
-     [assertions,isomodes]).
+     [assertions, modes_extra]).
 
 :- doc(author, "Jorge Navas").
-% Copyright (C) 2004-2019 The Ciao Development Team
+:- doc(copyright,"Copyright @copyright{} 2004-2019 The Ciao Development Team").
 
-%------------------------------------------------------------------------%
-% This file implements the amgu for sharing domain defined by Jacobs and |
-% Langen and the non-redundant amgu defined by Hill,Bagnara and          |
-% Zaffanella and other auxiliary functions.                              |
-%------------------------------------------------------------------------%
+:- doc(module,"
+This file implements the amgu for sharing domain defined by Jacobs and 
+Langen and the non-redundant amgu defined by Hill, Bagnara and          
+Zaffanella and other auxiliary functions.                              
+").
 
 :- use_module(library(sort), [sort/2]).
 :- use_module(library(sets), [ord_union/3]).
@@ -32,14 +32,15 @@
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
 :- push_prolog_flag(multi_arity_warnings,off).
-%------------------------------------------------------------------------%
-% amgu(+,+,+,+,-)                                                        |
-% amgu(X,T,Flag,AMGU,AMGU0)                                              |
-% AMGU0 describes the unification x=t (concrete unification) in a state  |
-% described by AMGU.                                                     |
-% If Flag = star then if performs the "star" amgu                        |
-% Otherwise, it performs the amgu the "self-union" amgu                  |   
-%------------------------------------------------------------------------%
+
+:- pred amgu(in_var(X),+T,+Flag,+AMGU,-AMGU0)
+   #
+"`AMGU0` describes the unification x=t (concrete unification) in a state  
+described by `AMGU`.                                                     
+If `Flag` = star then if performs the *star* amgu.                        
+Otherwise, it performs the amgu the *self-union* amgu.                     
+".
+
 amgu(X,T,star,ASub,AMGU):-      
     amgu(X,T,ASub,AMGU),!.
 amgu(X,T,self,ASub,AMGU):-      
@@ -50,16 +51,19 @@ amgu(X,T,self,ASub,AMGU):-
 %                   Abstract Unification with STAR                       %
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% amgu(+,+,+,-)                                                          |
-% amgu(X,T,AMGU,AMGU0)                                                   |
-% AMGU0 describes the unification x=t (concrete unification) in a state  |
-% described by AMGU.                                                     |
-% amgu(x=t,S) = irrel(V_xt,sh) union                                     |
-%               bin_union(star(rel(V_x,S)),star(rel(V_t,S)))             |
-% GENERAL CASE                                                           |
-% Each variable in x can be aliased to any other variable(s) in s        | 
-% via an aliasing to a variable in t (and vice versa)                    |
-%------------------------------------------------------------------------%
+
+:- pred amgu(in_var(X),+T,+AMGU,-AMGU0)
+   #
+"`AMGU0` describes the unification x=t (concrete unification) in a state 
+described by `AMGU`.                                                     
+amgu(x=t,S) = irrel(V_xt,sh) union                                     
+              bin_union(star(rel(V_x,S)),star(rel(V_t,S)))
+      
+GENERAL CASE                                                           
+Each variable in `x` can be aliased to any other variable(s) in `S`         
+via an aliasing to a variable in `t` (and vice versa).                    
+".
+   
 amgu(X,T,ASub,AMGU):-
     sort(T,V_t),
     sort(ASub,SASub),
@@ -81,13 +85,15 @@ amgu(X,T,ASub,AMGU):-
 %------------------------------------------------------------------------%
 %                   Abstract Unification with SELF UNION                 %
 %------------------------------------------------------------------------%
-% amgu_s(+,+,+,-)                                                        |
-% amgu_s(X,T,AMGU,AMGU0)                                                 |
-% AMGU0 describes the unification x=t (concrete unification) in a state  |
-% described by AMGU.                                                     |
-% amgu(x=t,S) = irrel(V_xt,sh) union                                     |
-%               bin_union(self(rel(V_x,S)),self(rel(V_t,S)))             |
 %------------------------------------------------------------------------%
+
+:- pred amgu_s(+X,+T,+AMGU,-AMGU0)
+   #
+"`AMGU0` describes the unification x=t (concrete unification) in a state  
+described by `AMGU`.                                                     
+amgu(x=t,S) = irrel(V_xt,sh) union                                     
+              bin_union(self(rel(V_x,S)),self(rel(V_t,S)))             
+".
 
 amgu_s(X,T,ASub,AMGU):-
     sort(T,V_t),
@@ -106,13 +112,14 @@ amgu_s(X,T,ASub,AMGU):-
 %                              BINARY UNION                              %
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% bin_union(+,+,-)                                                       |
-% bin_union(S1,S2,S)                                                     |
-% Cartesian product using union instead of constructing pairs. S1 and S2 |
-% must be sorted lists of lists.                                         |
-% bin(sh1,sh2) = {S1 union S2 | S1 in sh1, S2 in sh2}                    |
-% S is a sorted list of lists                                            |
-%------------------------------------------------------------------------%
+
+:- pred bin_union(+S1,+S2,-S)
+   #
+"Cartesian product using union instead of constructing pairs. `S1` and `S2` 
+must be sorted lists of lists.                                         
+bin(sh1,sh2) = {S1 union S2 | S1 in sh1, S2 in sh2}                    
+`S` is a sorted list of lists.                                            
+".
 
 :- use_module(library(lsets), [sort_list_of_lists/2]).
 
@@ -148,37 +155,37 @@ bin_union_([S|Ss],E,Acc,Res ):-
 
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-%                      SELF-BIN  UNION                                   %
+%                        SELF-BIN  UNION                                 %
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% self(+,-)                                                              |
-% self(S1,S)                                                             |
-% Version of binary union of sharing is non-redundant w.r.t. pair-sharing|
-% sel_bin(sh) = bin(sh,sh)                                               |
-%------------------------------------------------------------------------%
+
+:- pred self(+S1,-S)
+   #
+"Version of binary union of sharing is non-redundant w.r.t. pair-sharing
+sel_bin(sh) = bin(sh,sh)                                               
+".
 self(Sh,Sh0):- bin_union(Sh,Sh,Sh0).
 
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
 %                      STAR UNION (CLOSURE UNDER UNION)                  % 
 %------------------------------------------------------------------------%
-% star(+,-)                                                              |  
-% star(Xss,Star)                                                         |
-% Star is the closure under union of Xss                                 |
-% bin(sh1,sh2) = {S1 union S2 | S1 in sh1, S2 in sh2}                    |
-% Star is a sorted list of lists                                         |
-%------------------------------------------------------------------------%
+
+:- pred star(+Xss,-Star)
+   #
+"`Star` is the closure under union of `Xss`
+bin(sh1,sh2) = {S1 union S2 | S1 in sh1, S2 in sh2}
+`Star` is a sorted list of lists.
+".
 
 star(Sh,Star):-closure_under_union(Sh,Star).
 
 %------------------------------------------------------------------------%
-%                            ABSTRACT Peel Equations                     %
+%                        ABSTRACT Peel Equations                         %
 %------------------------------------------------------------------------%
-% peel_equations(+,+,-)                                                  %
-% peel_equations(Term1,Term2,Eqs)                                        %
-% Eqs is a list of pairs x-t                                             %
-% PLAI version                                                           %
-%------------------------------------------------------------------------%
+
+:- pred peel_equations(+Term1,+Term2,-Eqs)
+   # "Eqs is a list of pairs x-t. PLAI version.".
 
 peel_equations(Term1,Term2,Equs) :-
     sh_peel(Term1,Term2,Temp-[]),

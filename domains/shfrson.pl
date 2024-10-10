@@ -1,38 +1,42 @@
-:- module(shfrson, [], []).
+:- module(shfrson, [], [modes_extra]).
+
+:- doc(title, "shfrson: sharing+freeness+sondergaard (abstract domain)").
+% started: 22/10/92
+:- doc(author, "Maria Garcia de la Banda").
+:- doc(stability, beta).
 
 :- include(ciaopp(plai/plai_domain)).
 :- dom_def(shfrson, [default]).
 
-%------------------------------------------------------------------------%
-%                                                                        %
-%                          Started: 22/10/92                             %
-%                       programmer: M.J. Garcia de la Banda              %
-%                                                                        %
-% Function: combined analysis using the Sondergaard and the Sharing      %
-%           domain                                                       %
-%------------------------------------------------------------------------%
-%------------------------------------------------------------------------%
-%                    Meaning of the Program Variables                    %
-%                                                                        %
-%  _son    : Suffix added to abstract subsitutions (Prime,Exit,Proj,...) %
-%            for the part corresponding to Sondergaard domain            %
-%  _shfr   : Suffix added to abstract subsitutions (Prime,Exit,Proj,...) %
-%            for the part corresponding to Sharing+Freeness domain       %
-%  GSon    : First argument in substitutions of Sondergaard domain (set  %
-%            of ground variables)                                        %
-%  SSon    : Second argument in substitutions of Sondergaard domain (set %
-%            for singletons and couples of variables)                    %
-%  Sh      : First argument in substitutions of Sharing+Freeness domain  %
-%            (set sharing for variables)                                 %
-%  Fr      : Second argument in substitutions of Sharing+Freeness domain %
-%            (list of variable/value assignments)                        %
-%  Rest are as in domain_dependent.pl                                    %
-%-------------------------------------------------------------------------
-% All abstract functions for the combined domain "shfrson" first compute %
-% the results for the corresponding to the "shfr" and "son" functions    %
-% and then compose the information of both, eliminating redundancies.    %
-% See compose function.                                                  %
-%-------------------------------------------------------------------------
+% infers(ground/1, rtcheck).
+% infers(mshare/1, rtcheck).
+% infers(var/1, rtcheck).
+% infers(linear/1, rtcheck).
+
+:- doc(module,"
+@begin{note}
+**Meaning of the Program Variables** 
+                                                                       
+- `_son`    : Suffix added to abstract subsitutions (`Prime`,`Exit`,`Proj`,...) 
+              for the part corresponding to `sondergaard` domain.            
+- `_sh`     : Suffix added to abstract subsitutions (`Prime`,`Exit`,`Proj`,...) 
+              for the part corresponding to `sharing+freeness` domain.                
+- `GSon`    : First argument in substitutions of `sondergaard` domain (set  
+              of ground variables).                                        
+- `SSon`    : Second argument in substitutions of `sondergaard` domain (set 
+              for singletons and couples of variables).                    
+- `Sh`      : First argument in substitutions of `sharing+freeness` domain
+              (set sharing for variables).
+- `Fr`      : Second argument in substitutions of `sharing+freeness` domain
+              (list of variable/value assignments).
+Rest are as in `domain_dependent.pl`.                                    
+
+All abstract functions for the combined domain `shfrson` first compute
+the results for the corresponding to the `shfr` and `son` functions   
+and then compose the information of both, eliminating redundancies.    
+See *compose* function.                                                  
+@end{note}
+").
 
 :- use_module(domain(sharefree), [
     call_to_entry/9,
@@ -235,11 +239,9 @@ asub_to_native(((_Gr,SSon),ShFr),Qv,OutFlag,ASub_user,Comps):-
     sharefree:asub_to_native(ShFr,Qv,OutFlag,ASub_user0,Comps),
     if_not_nil(LinearVars,linear(LinearVars),ASub_user,ASub_user0).
 
-%------------------------------------------------------------------------%
-% less_or_equal(+,+)                                             %
-% less_or_equal(ASub0,ASub1)                                     %
-% Succeeds if ASub1 is more general or equal to ASub0                    %
-%------------------------------------------------------------------------%
+:- pred less_or_equal(+ASub0,+ASub1)
+   # "Succeeds if `ASub1` is more general or equal to `ASub0`.".
+
 :- dom_impl(_, less_or_equal/2, [noq]).
 less_or_equal(ASub0,ASub1):-
     ASub0 == ASub1.
@@ -254,20 +256,20 @@ less_or_equal((Son0,Sh0),(Son1,Sh1)):-
 :- dom_impl(_, glb/3, [noq]).
 glb(_ASub0,_ASub1,_ASub) :- compiler_error(op_not_implemented(glb)), fail.
 
-%-------------------------------------------------------------------------
-% compose(+,+,+,-)                                               |
-% compose((GSon,SSon),(Sh,Fr),Sv,((NewGSon,NewSon),(NewSh,NewFr))|
-% It composes the two abstract substitutions in order to eliminate       |
-% redundancies. In doing this, it performs the folowing steps:           |
-% (1) propagates the sharing info from SSon to Sh (NewSh)                |
-% (2) collects in Gv the ground variables w.r.t. NewSh                   |
-% (3) NewGSon  is the result of merging Gv and GSon                      |
-% (4) Changes the freeness value of all variables in Gv to g (checking   |
-%     that the old freeness value is different from "f", since if so, it |
-%     is an error and '$bottom' must be returned) obtaining NewFr        |
-% (5) NewSSon is the result of eliminating the pairs not allowed by      |
-%     NewSh                                                              |
-%-------------------------------------------------------------------------
+:- pred compose(+(GSon,SSon),+(Sh,Fr),+Sv,-((NewGSon,NewSon),(NewSh,NewFr)))
+   #
+"It composes the two abstract substitutions in order to eliminate       
+redundancies. In doing this, it performs the folowing steps:           
+- propagates the sharing info from `SSon` to `Sh` (`NewSh`).                
+- collects in `Gv` the ground variables w.r.t. `NewSh`.                   
+- `NewGSon`  is the result of merging `Gv` and `GSon`.                      
+- Changes the freeness value of all variables in `Gv` to `g` (checking   
+  that the old freeness value is different from `f`, since if so, it 
+  is an error and `$bottom` must be returned) obtaining `NewFr`.        
+- `NewSSon` is the result of eliminating the pairs not allowed by      
+  `NewSh`.                                                              
+".
+                
 compose((GSon,SSon),(Sh,Fr),Sv,((NewGSon,NewSon),(NewSh,NewFr))):-
     propagate_to_sh(Sh,SSon,NewSh,Allowed_sh), 
     projected_gvars(NewSh,Sv,Gv),

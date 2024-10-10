@@ -1,19 +1,27 @@
-:- module(shfrlin_amgu, [], [assertions, isomodes]).
+:- module(shfrlin_amgu, [], [assertions, modes_extra]).
 
-:- doc(title, "amgu-based sharing+freeness+linearity domain").
+:- doc(title, "amgu-based sharing+freeness+linearity (abstract domain)").
 :- doc(author, "Jorge Navas").
-% Copyright (C) 2006-2019 The Ciao Development Team
+:- doc(copyright,"Copyright @copyright{} 2006-2019 The Ciao Development Team").
+:- doc(stability, prod).
 
 :- include(ciaopp(plai/plai_domain)).
 :- dom_def(shfrlin_amgu, [default]).
 
-%------------------------------------------------------------------------%
-% This file implements the domain dependent abstract functions           |
-% sharing+freeness+linearity. The functions call2entry and exit2prime are|
-% defined based on amgu.                                                 |
-%------------------------------------------------------------------------%
-% The meaning of the variables are partially defined in sharefree.pl     |
-%------------------------------------------------------------------------%
+% infers(ground/1, rtcheck).
+% infers(mshare/1, rtcheck).
+% infers(var/1, rtcheck).
+% infers(linear/1, rtcheck).
+
+:- doc(module,"
+This file implements the domain dependent abstract functions           
+`sharing`+`freeness`+`linearity`. The functions `call2entry` and `exit2prime` are
+defined based on `amgu`.
+
+@begin{note}
+The meaning of the variables are partially defined in `sharefree.pl`.     
+@end{note}
+").
 
 :- doc(bug,"1. The builtins do not use the linearity info."). 
 :- doc(bug,"2. The extend function does not use linearity info."). 
@@ -63,11 +71,13 @@
     [shfrlin_amgu_iterate/3, shfrlin_amgu_update_fr_lin/3]).
 
 %------------------------------------------------------------------------%
+%------------------------------------------------------------------------%
 %                      ABSTRACT Call To Entry                            %
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% call_to_entry(+,+,+,+,+,+,+,-,?)                               |
-%------------------------------------------------------------------------%
+
+:- pred call_to_entry(+,+,+,+,+,+,+,-,?).
+
 :- dom_impl(_, call_to_entry/9, [noq]).
 call_to_entry(_Sv,Sg,_Hv,Head,_K,Fv,Proj,Entry,Flag):-
      variant(Sg,Head),!,
@@ -95,13 +105,15 @@ call_to_entry(_Sv,Sg,Hv,Head,_K,Fv,Project,Entry,ExtraInfo):-
      augment_asub(Entry0,Fv,Entry),
      ExtraInfo = (Equations,F2),!.
 call_to_entry(_Sv,_Sg,_Hv,_Head,_K,_Fv,_Proj,'$bottom',_).
-     
-%------------------------------------------------------------------------%
-%                      ABSTRACT Exit to Prime                            |
+
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% exit_to_prime(+,+,+,+,+,-)                                     |            
+%                      ABSTRACT Exit to Prime                            %
 %------------------------------------------------------------------------%
+%------------------------------------------------------------------------%
+
+:- pred exit_to_prime(+,+,+,+,+,?,-).
+
 :- dom_impl(_, exit_to_prime/7, [noq]).
 exit_to_prime(_,_,_,_,'$bottom',_,'$bottom'):-!.
 exit_to_prime(Sg,Hv,Head,_Sv,Exit,yes,Prime):- !,
@@ -120,13 +132,15 @@ exit_to_prime(Sg,_Hv,_Head,Sv,Exit,ExtraInfo,Prime):-
      shfrlin_amgu_iterate(Equations,ASub,ASub0),
      shfrlin_amgu_update_fr_lin(ASub0,Sv,ASub1),
      project(Sg,Sv,not_provided_HvFv_u,ASub1,Prime).
+
 %------------------------------------------------------------------------%
-%                      ABSTRACT Extend                                   |
+%------------------------------------------------------------------------%
+%                      ABSTRACT Extend                                   %
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% extend(+,+,+,+,-)                                         |
-% extend(Sg,Prime,Sv,Call,Succ)                             |
-%------------------------------------------------------------------------%
+
+:- pred extend(+Sg,+Prime,+Sv,+Call,-Succ).
+
 :- redefining(extend/5).
 :- dom_impl(_, extend/5, [noq]).
 extend(_Sg,'$bottom',_Sv,_Call,Succ):- !,
@@ -145,24 +159,27 @@ extend(Sg,Prime,Sv,Call,(Succ_sh,Succ_fr,Succ_lin)):-
     ord_union(Prime_lin,Call_lin_not_rel0,Succ_lin).
 
 %------------------------------------------------------------------------%
+%------------------------------------------------------------------------%
 %                            ABSTRACT AMGU                               %
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% amgu(+,+,+,-)                                             %
-% amgu(Sg,Head,ASub,AMGU)                                   %
-% @var{AMGU} is the abstract unification between @var{Sg} and @var{Head}.%
-%------------------------------------------------------------------------%
+
+:- pred amgu(+Sg,+Head,+ASub,-AMGU)
+   # "`AMGU` is the abstract unification between `Sg` and `Head`.".
+
 :- dom_impl(_, amgu/4, [noq]).
 amgu(Sg,Head,ASub,AMGU):-
     peel_equations_frl(Sg, Head,Eqs),
     shfrlin_amgu_iterate(Eqs,ASub,AMGU),!.
-    
-%------------------------------------------------------------------------%
-%                      ABSTRACT Extend_Asub                              |
+
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% augment_asub(+,+,-)                                             |
+%                      ABSTRACT Extend_Asub                              %
 %------------------------------------------------------------------------%
+%------------------------------------------------------------------------%
+
+:- pred augment_asub(+,+,-).
+
 :- redefining(augment_asub/3).
 :- dom_impl(_, augment_asub/3, [noq]).
 augment_asub('$bottom',_,'$bottom'):-!.
@@ -172,11 +189,13 @@ augment_asub((Sh,F,L),Vars,(NewSh,NewF,NewL)):-
     sharefree_amgu:augment_asub((Sh,F),Vars,(NewSh,NewF)).
 
 %------------------------------------------------------------------------%
-%                      ABSTRACT Project                                  |
+%------------------------------------------------------------------------%
+%                         ABSTRACT Project                               %
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% project(+,+,+,+,-)                                        |
-%------------------------------------------------------------------------%
+
+:- pred project(+,+,+,+,-).
+
 :- redefining(project/5).
 :- dom_impl(_, project/5, [noq]).
 project(_Sg,_Vars,_HvFv_u,'$bottom','$bottom') :- !.
@@ -185,11 +204,13 @@ project(Sg,Vars,HvFv_u,(Sh,F,L),(Sh_proj,F_proj,L_proj)):-
     ord_intersection(L,Vars,L_proj).
 
 %------------------------------------------------------------------------%
-%                      ABSTRACT Sort                                     |
+%------------------------------------------------------------------------%
+%                         ABSTRACT Sort                                  %
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% abs_sort(+,-)                                                  |
-%------------------------------------------------------------------------%
+
+:- pred abs_sort(+,-).
+
 :- redefining(abs_sort/2).
 :- dom_impl(_, abs_sort/2, [noq]).
 abs_sort('$bottom','$bottom').
@@ -197,10 +218,8 @@ abs_sort((Sh,F,L),(Sh_s,F_s,L_s)):-
     sharefree:abs_sort((Sh,F),(Sh_s,F_s)),
     sort(L,L_s).
 
-%------------------------------------------------------------------------%
-% glb(+,+,-)                                                     |
-% glb(ASub0,ASub1,Glb)                                           |
-%------------------------------------------------------------------------%
+:- pred glb(+ASub0,+ASub1,-Glb).
+
 :- dom_impl(_, glb/3, [noq]).
 glb('$bottom',_ASub,ASub3) :- !, ASub3='$bottom'.
 glb(_ASub,'$bottom',ASub3) :- !, ASub3='$bottom'.
@@ -216,12 +235,15 @@ glb((Sh1,Fr1,Lin1),(Sh2,Fr2,Lin2),Glb):-
     ).
 
 %------------------------------------------------------------------------%
-%                      ABSTRACT Call to Success Fact                     %
+%------------------------------------------------------------------------%
+%                   ABSTRACT Call to Success Fact                        %
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% Specialized version of call_to_entry + exit_to_prime + extend for facts%
-%------------------------------------------------------------------------%
+
 :- dom_impl(_, call_to_success_fact/9, [noq]).
+:- pred call_to_success_fact/9
+   #"Specialized version of call_to_entry + exit_to_prime + extend for facts.".
+
 call_to_success_fact(Sg,Hv,Head,_K,Sv,Call,_Proj,Prime,Succ) :-
 % exit_to_prime   -------------------------------------------------------
     augment_asub(Call,Hv,ASub),  
@@ -246,13 +268,15 @@ delete_variables_lin([X|Xs],Vars,Res):-
 delete_variables_lin([X|Xs],Vars,[X|Res]):-
     delete_variables_lin(Xs,Vars,Res).
 
-%------------------------------------------------------------------------%
-% Specialised version of share_call_to_success_fact in order to allow    |
-% the computation of the prime, the composition and then the extension   |
-% Note that if the success is computed (instead of the prime) and then   |
-% we compose the information and project it, we can loose information    |
-% since the extension is the step in which more information is lost      |
-%------------------------------------------------------------------------%
+:- pred call_to_prime_fact/6
+   #
+"Specialised version of `call_to_success_fact/7` in order to allow          
+the computation of the prime, the composition and then the extension   
+Note that if the success is computed (instead of the prime) and then   
+we compose the information and project it, we can loose information    
+since the extension is the step in which more information is lost      
+".
+
 call_to_prime_fact(Sg,Hv,Head,Sv,Call,Prime) :-
 % exit_to_prime    -------------------------------------------------------
     augment_asub(Call,Hv,Exit),
@@ -264,19 +288,15 @@ call_to_prime_fact(_Sg,_Hv,_Head,_Sv,'$bottom','$bottom').
 %                         HANDLING BUILTINS                              %
 %------------------------------------------------------------------------%
 
-%------------------------------------------------------------------------%
-% special_builtin(+,+,+,-,-)                                     |
-% special_builtin(SgKey,Sg,Subgoal,Type,Condvars)                |
-%------------------------------------------------------------------------%
 :- dom_impl(_, special_builtin/5, [noq]).
+:- pred special_builtin(+SgKey,+Sg,+Subgoal,-Type,---Condvars).
+
 special_builtin(SgKey,Sg,Subgoal,Type,Condvars):-
     sharefree_amgu:special_builtin(SgKey,Sg,Subgoal,Type,Condvars).
     
-%------------------------------------------------------------------------%
-% success_builtin(+,+,+,+,+,-)                                   |
-% success_builtin(Type,Sv_u,Condv,HvFv_u,Call,Succ)                     |
-%------------------------------------------------------------------------%
 :- dom_impl(_, success_builtin/6, [noq]).
+:- pred success_builtin(+Type,+Sv_u,?Condv,+HvFv_u,+Call,-Succ).
+
 % success_builtin(arg,_,p(X,Y,Z),_,Call,Succ):-
 %       Call = (Call_sh,Call_fr,Call_lin),
 %       varset(X,OldG),
@@ -332,11 +352,9 @@ success_builtin(Type,Sv_u,Condv,HvFv_u,Call,Succ):-
       Succ= (Sh_succ,Fr_succ,L_succ)
     ).
 
-%------------------------------------------------------------------------%
-% call_to_success_builtin(+,+,+,+,+,-)                           |
-% call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,Succ)            |
-% Handles those builtins for which computing Prime is easier than Succ   |
-%------------------------------------------------------------------------%
+:- pred call_to_success_builtin(+SgKey,+Sg,+Sv,+Call,+Proj,-Succ)
+   # "Handles those builtins for which computing `Prime` is easier than `Succ`.".
+
 :- redefining(call_to_success_builtin/6).
 :- dom_impl(_, call_to_success_builtin/6, [noq]).
 call_to_success_builtin('=/2','='(X,_Y),Sv,Call,(_,Proj_fr,_),Succ):-
@@ -426,18 +444,16 @@ call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,(Succ_sh,Succ_fr,Succ_lin)):-
     member_value_freeness(Succ_fr,Succ_lin0,f),
     ord_union(Succ_lin0,Call_lin_not_rel,Succ_lin).
 
-%------------------------------------------------------------------------%
-% compute_lub(+,-)                                                       |
-%------------------------------------------------------------------------%
+:- pred compute_lub(+,-).
+
 :- dom_impl(_, compute_lub/2, [noq]).
 compute_lub([X],X):- !.
 compute_lub([ASub1,ASub2|Xs],Lub):-
     compute_lub_el(ASub1,ASub2,ASubLub),
     compute_lub([ASubLub|Xs],Lub).
 
-%------------------------------------------------------------------------%
-% compute_lub_el(+,-)                                                    |
-%------------------------------------------------------------------------%
+:- pred compute_lub_el(+,+,-).
+
 :- redefining(compute_lub_el/3).
 compute_lub_el('$bottom',ASub,ASub):-!.
 compute_lub_el(ASub,'$bottom',ASub):-!.
@@ -446,26 +462,24 @@ compute_lub_el((Sh1,Fr1,Lin1),(Sh2,Fr2,Lin2),ASub):-
     ord_intersection(Lin1,Lin2,Lin_ASub),
     ASub = (Sh_ASub,Fr_ASub,Lin_ASub).
 
-%------------------------------------------------------------------------%
-% less_or_equal(+,+)                                                      |
-% Succeeds if ASub1 is more general or equal to ASub0                    |
-%------------------------------------------------------------------------%
 :- dom_impl(_, less_or_equal/2, [noq]).
+:- pred less_or_equal(+,+)
+   # "Succeeds if ASub1 is more general or equal to ASub0.".
+
 less_or_equal('$bottom',_ASub):- !.
 less_or_equal((Sh0,Fr0,Lin0),(Sh1,Fr1,Lin1)):-
     sharefree:less_or_equal((Sh0,Fr0),(Sh1,Fr1)),!,
     ord_subset(Lin0,Lin1).
 
-
-%------------------------------------------------------------------------%
-% input_user_interface(+,+,-,+,+)                                |
-% input_user_interface(InputUser,Qv,ASub,Sg,MaybeCallASub)       |
-% Obtaining the abstract substitution for Sh+Fr+lin from the user        |
-% supplied information just consists in taking the Sharing first and the |
-% var(Fv) element of InputUser, and construct from them the Freeness and |
-% the Linearity.                                                         |
-%------------------------------------------------------------------------%
 :- dom_impl(_, input_user_interface/5, [noq]).
+:- pred input_user_interface(?InputUser,+Qv,-ASub,+Sg,+MaybeCallASub)
+   #
+"Obtaining the abstract substitution for `Sh`+`Fr`+`lin` from the user        
+supplied information just consists in taking the `Sharing` first and the 
+`var(Fv)` element of `InputUser`, and construct from them the `Freeness` and 
+the `Linearity`.                                                         
+".
+
 input_user_interface((Sh,Vars,_),Qv,(Call_sh,Call_fr,Call_lin),Sg,MaybeCallASub):-
     sharefree:input_user_interface((Sh,Vars),Qv,(Call_sh,Call_fr),Sg,MaybeCallASub),
     member_value_freeness(Call_fr,Call_lin,f).
@@ -475,10 +489,8 @@ input_user_interface((Sh,Vars,_),Qv,(Call_sh,Call_fr,Call_lin),Sg,MaybeCallASub)
 :- dom_impl(_, obtain_info/4, [noq]).
 obtain_info(Prop,Vars,(Sh,Fr,_Lin),Info) :- sharefree:obtain_info(Prop,Vars,(Sh,Fr),Info).
 
-%------------------------------------------------------------------------%
-% input_interface(+,+,+,-)                                       |
-% input_interface(InputUser,Kind,ASub0,ASub)                     |
-%------------------------------------------------------------------------%
+:- pred input_interface(+InputUser,?Kind,?ASub0,?ASub).
+
 :- dom_impl(_, input_interface/4, [noq]).
 input_interface(linear(X),perfect,(Sh,Fr,Lin0),(Sh,Fr,Lin)):-
     myunion(Lin0,X,Lin).
@@ -501,12 +513,12 @@ myinsert(Fr0,X,Fr):-
 myinsert(Fr0,X,Fr):-
     insert(Fr0,X,Fr).
 
-%------------------------------------------------------------------------%
-% asub_to_native(+,+,+,-,-)                                      |
-% asub_to_native(ASub,Qv,OutFlag,ASub_user,Comps)                |
-% The user friendly format consists in extracting the ground variables,  |
-% free variables, and linear variables.                                  |
-%------------------------------------------------------------------------%
+:- pred asub_to_native(+ASub,+Qv,+OutFlag,-ASub_user,-Comps)
+   #
+"The user friendly format consists in extracting the ground variables, 
+free variables, and linear variables.
+".
+
 :- dom_impl(_, asub_to_native/5, [noq]).
 asub_to_native((Sh,Fr,L),_Qv,_OutFlag,Info,[]):-
     if_not_nil(Sh,sharing(Sh),Info,Info0),
@@ -523,17 +535,17 @@ asub_to_native((Sh,Fr,L),_Qv,_OutFlag,Info,[]):-
 %       member_value_freeness(Fr,Gv,g),
 %       if_not_nil(Gv,ground(Gv),Info1,[]).
 
-%------------------------------------------------------------------------%
-% unknown_call(+,+,+,-)                                          |
-% unknown_call(Sg,Vars,Call,Succ)                                |  
-% Obtained by selecting those sets in Call for which at least a variable |
-% in Vars appears, making the star of those sets, and adding the sets    |
-% with empty intersection with Vars. In freeness, all variables related  |
-% to Vars are nf, and in linearity, subtract from Call_lin all variables |
-% not related to Vars and make the union between the related Call_lin    |
-% with free variables returned by freeness.                              |
-%------------------------------------------------------------------------%
 :- dom_impl(_, unknown_call/4, [noq]).
+:- pred unknown_call(+Sg,+Vars,+Call,-Succ)
+   #
+"Obtained by selecting those sets in `Call` for which at least a variable 
+in `Vars` appears, making the star of those sets, and adding the sets    
+with empty intersection with `Vars`. In freeness, all variables related
+to `Vars` are `nf`, and in `linearity`, subtract from `Call_lin` all variables 
+not related to `Vars` and make the union between the related `Call_lin`    
+with free variables returned by freeness.                              
+".
+
 unknown_call(_Sg,_Vars,'$bottom','$bottom') :- !.
 unknown_call(Sg,Vars,(Call_sh,Call_fr,Call_lin),Succ):-
     sharefree:unknown_call(Sg,Vars,(Call_sh,Call_fr),(Succ_sh,Succ_fr)),
@@ -543,23 +555,24 @@ unknown_call(Sg,Vars,(Call_sh,Call_fr,Call_lin),Succ):-
     ord_union(Call_lin_not_rel,Succ_lin1,Succ_lin),
     Succ = (Succ_sh,Succ_fr,Succ_lin).
 
-%------------------------------------------------------------------------%
-% unknown_entry(+,+,-)                                           |
-% unknown_entry(Sg,Qv,Call)                                      |
-% The top value in Sh for a set of variables is the powerset, in Fr is   |
-% X/nf forall X in the set of variables, and in no variable is linear.   |
-%------------------------------------------------------------------------%
 :- dom_impl(_, unknown_entry/3, [noq]).
+:- pred unknown_entry(+Sg,+Qv,-Call)
+   #
+"The top value in `Sh` for a set of variables is the powerset, in `Fr` is  
+`X`/`nf` forall `X` in the set of variables, and in no variable is linear.   
+".
+
 unknown_entry(Sg,Qv,(Call_sh,Call_fr,[])):-
     sharefree:unknown_entry(Sg,Qv,(Call_sh,Call_fr)).
 
-%------------------------------------------------------------------------%
-% empty_entry(+,+,-)                                             |
-% The empty value in Sh for a set of variables is the list of singletons,|
-% in Fr is X/f forall X in the set of variables, and these variables are |
-% all linear.                                                            |
-%------------------------------------------------------------------------%
 :- dom_impl(_, empty_entry/3, [noq]).
+:- pred empty_entry(+Sg,+Qv,-Entry)
+   #
+"The empty value in `Sh` for a set of variables is the list of singletons,
+in `Fr` is `X`/`f` forall `X` in the set of variables, and these variables are 
+all linear.                                                            
+".
+
 empty_entry(Sg,Qv,(Call_sh,Call_fr,Qv)):-
     sharefree:empty_entry(Sg,Qv,(Call_sh,Call_fr)).
 

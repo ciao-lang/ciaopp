@@ -10,15 +10,15 @@
         share_with/3,
         lin/2
       ],
-      [assertions, isomodes]).
+      [assertions, modes_extra]).
 
 :- doc(author, "Jorge Navas").
-% Copyright (C) 2004-2019 The Ciao Development Team
+:- doc(copyright,"Copyright @copyright{} 2004-2019 The Ciao Development Team").
 
-%------------------------------------------------------------------------%
-% This file implements the amgu for sharing+Freeness domain defined by   |
-% Jacobs&Langen and Muthukumar&Hermenegildo and other auxiliary functions|
-%------------------------------------------------------------------------%
+:- doc(module,"
+This file implements the amgu for sharing+Freeness domain defined by   
+Jacobs&Langen and Muthukumar&Hermenegildo and other auxiliary functions.
+").
 
 :- use_module(library(lists), [length/2]). 
 :- use_module(library(sort), [sort/2]).
@@ -31,9 +31,8 @@
 :- use_module(domain(share_amgu_aux)).
 :- use_module(domain(share_aux), [append_dl/3]).
 
-%------------------------------------------------------------------------%
-% sharefree_amgu_iterate(+,+,-)                                          %
-%------------------------------------------------------------------------%
+:- pred sharefree_amgu_iterate(+,+,-).
+
 sharefree_amgu_iterate([],ASub,ASub).
 sharefree_amgu_iterate([(X,(Ts,Type,L))|Eqs],ASub,ASub2):-      
      amgu_shfr(X,(Ts,Type,L),ASub,ASub1),
@@ -42,25 +41,27 @@ sharefree_amgu_iterate([(X,(Ts,Type,L))|Eqs],ASub,ASub2):-
 %------------------------------------------------------------------------%
 %                      ABSTRACT UNIFICATION                              %
 %------------------------------------------------------------------------%
-% amgu_shfr(+,+,+,-)                                                     |
-% amgu_shfr(X,(T,Type,L),(Sh,f),SHF')                                    | 
-% Amgu describes the unification X=T (concrete unification) in a state   |
-% described by S. Type describes T is v or t and L, l or nl              |
-% SHF' = (Sh',f') where:                                                 |
-% Sh' =  \rel(Sh_xt) U Sh_x \bin Sh_t   if x in f or t in f (*)          |
-%        \rel(Sh_xt) U Sh_x \bin Sh_t*  if x \notin f or t \notin f      |     
-%                                          but t \subseteq f and lin(t)  |
-%        amgu(X,T,Sh)                      otherwise                     |
-%                                                                        |
-% f'  =  f             if x in f, t in f                                 |
-%     |  f \ (U rel_x) if x in f, t not in f                             |  
-%     |  f \ (U rel_t) if x not in f, t in f                             |  
-%     |  f \ (U rel_x) U (U rel_t) if x not in f, t not in f             |
-%                                                                        |
-% t is linear iff                                                        |
-%   1. for all y in t: [t]_y=1 and                                       |
-%   2. for all y in t: t in F  and                                       |
-%   3. for all y in t, z in t, y\neq z: sh_y /\ sh_z = \emptyset         |
+
+:- pred amgu_shfr(+X,+(T,Type,L),+(Sh,F),-SHF_prime)
+   #
+"Amgu describes the unification `X`=`T` (concrete unification) in a state   
+described by `S`. Type describes `T` is v or t and `L`, l or nl              
+SHF' = (Sh',f') where:                                                 
+Sh' =  \rel(Sh_xt) U Sh_x \bin Sh_t   if x in f or t in f (*)          
+       \rel(Sh_xt) U Sh_x \bin Sh_t*  if x \notin f or t \notin f           
+                                         but t \subseteq f and lin(t)  
+       amgu(X,T,Sh)                      otherwise                     
+                                                                       
+f'  =  f             if x in f, t in f                                 
+    |  f \ (U rel_x) if x in f, t not in f                               
+    |  f \ (U rel_t) if x not in f, t in f                               
+    |  f \ (U rel_x) U (U rel_t) if x not in f, t not in f             
+                                                                       
+t is linear iff                                                        
+  1. for all y in t: [t]_y=1 and                                       
+  2. for all y in t: t in F  and
+  3. for all y in t, z in t, y\neq z: sh_y /\ sh_z = \emptyset
+".
 %------------------------------------------------------------------------%
 % Implementation issues: The update of freeneess component consists of   |
 %  (1) remove variables (keeps track of only free variables)             |
@@ -123,10 +124,10 @@ alin_f(T,Sh,F):-
      sort(T,Ts),
      ord_subset(Ts,F),!,
      lin(Sh,Ts).
-%------------------------------------------------------------------------%
-% lin(+,+)                                                               |
-% lin(Sh,t) iff for all s \in sh_t, |s /\ t| = 1                         |
-%------------------------------------------------------------------------%
+
+:- pred lin(+,+)
+   # "lin(`Sh`,t) iff for all s \in sh_t, |s /\ t| = 1".
+
 lin(Sh,V_t):-
     split_list_of_lists(V_t,Sh,Sh_t,_),     
     lin_(Sh_t,V_t).
@@ -151,22 +152,23 @@ share_with(Vars,Sh,Rel_Vars):-
 
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-%           Abstract Unification NON STAR                                %  
+%                   Abstract Unification NON STAR                        %  
 %------------------------------------------------------------------------%
-% amgu_non_star(+,+,+,+,-)                                               |
-% amgu_non_star(Flag,X,T,AMGU,AMGU0)                                     |
-% AMGU0 describes the unification x=t (concrete unification) in a state  |
-% described by AMGU.                                                     |
-% if Flag = star_x then                                                  |
-%       amgu(x=t,S) = \rel(V_xt,sh) U (sh_x* \bin sh_t)                  |
-% else                                                                   |
-%    if Flag = star_t then                                               |
-%       amgu(x=t,S) = \rel(V_xt,sh) U (sh_x \bin sh_t*)                  |
-%    else  * non_star *                                                  | 
-%       amgu(x=t,S) = \rel(V_xt,sh) U (sh_x \bin sh_t)                   |
-%    endif                                                               |
-% endif                                                                  |
-%------------------------------------------------------------------------%
+
+:- pred amgu_non_star(+Flag,+X,+T,+AMGU,-AMGU0)
+   #
+"`AMGU0` describes the unification x=t (concrete unification) in a state  
+described by `AMGU`.                                                     
+if `Flag` = star_x then                                                  
+      amgu(x=t,S) = \rel(V_xt,sh) U (sh_x* \bin sh_t)                  
+else                                                                   
+   if `Flag` = star_t then                                               
+      amgu(x=t,S) = \rel(V_xt,sh) U (sh_x \bin sh_t*)                  
+   else * non_star *                                                   
+      amgu(x=t,S) = \rel(V_xt,sh) U (sh_x \bin sh_t)                   
+   endif                                                               
+endif                                                                  
+".
 amgu_non_star(Flag,X,T,ASub,AMGU):-
     sort(T,V_t),
     sort(ASub,SASub),
@@ -192,25 +194,27 @@ amgu_non_star(Flag,X,T,ASub,AMGU):-
       
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-%                      UPDATE FREENESS                                   % 
+%                        UPDATE FREENESS                                 % 
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% shfr_update_freeness(+,+,+,-)                                          |
-% shfr_update_freeness(Sh',f',Vars,Newf)                                 |
-% NewF = f' U {x/g | x in g'} U {x/nf | x in nf'}                        |
-% where:                                                                 |
-% - Sh' is the Set-Sharing returned by amgu                              |
-% - f' is the list of free variables returned by amgu (only f)           | 
-% - Vars are either head vars (call_to_entry) or goal vars               |
-%   (exit_to_prime)                                                      | 
-% - NewF is the final freeness ({f,nf,g})                                |
-%                                                                        |
-% nf' = x in F_Call, x not in f', x not in g'                            |
-% g'  = Vars \ (Sh)_vars                                                 |
-%                                                                        |  
-% Note: the variables of the body are free but they are added by         |
-% sharefree_amgu_augment_asub/3 (by ortogonality)                         |
-%-------------------------------------------------------------------------
+
+:- pred shfr_update_freeness(+Sh_prime,+F_prime,+Vars,-Newf)
+   #
+"`NewF` = f' U {x/g | x in g'} U {x/nf | x in nf'}                        
+where:                                                                 
+- `Sh'` is the Set-Sharing returned by amgu.
+- `F'` is the list of free variables returned by amgu (only f)           
+- `Vars` are either head vars (`call_to_entry`) or goal vars               
+  (`exit_to_prime`).
+- `NewF` is the final freeness ({f,nf,g}).                                
+                                                                       
+nf' = x in F_Call, x not in f', x not in g'                            
+g'  = `Vars` \ (Sh)_vars                                                 
+                                                                        
+Note: the variables of the body are free but they are added by         
+`sharefree_amgu_augment_asub/3` (by ortogonality).
+".
+
 shfr_update_freeness(Sh,F,Vars,F1):-
      % ground variables
      merge_list_of_lists(Sh,Sh_Vars),
@@ -234,17 +238,16 @@ unmap_freeness_list([],[]).
 unmap_freeness_list([X/_|T],[X|Ts]):-
     unmap_freeness_list(T,Ts).
 
-%------------------------------------------------------------------------%
-% peel_equations_frl(+,+,-)                                              |
-% peel_equations_frl(Term1,Term2,Eq)                                     |
-%------------------------------------------------------------------------%
-% returns a list of pairs (x,(t,T,L)) where                              |
-% x is variable                                                          | 
-% t is a list of variables                                               |
-% T represents whether t is a variable (v) or a functor (t)              |
-% L represents whether t is linear (l) or non-lineal (nl). Note that x is|
-%   always linear (variable)                                             |
-%------------------------------------------------------------------------%
+:- pred peel_equations_frl(+Term1,+Term2,-Eq)
+   #
+"returns a list of pairs (x,(t,T,L)) where                              
+x is variable                                                           
+t is a list of variables                                               
+T represents whether t is a variable (v) or a functor (t)              
+L represents whether t is linear (l) or non-lineal (nl). Note that x is
+  always linear (variable)                                             
+".
+
 peel_equations_frl(Term1,Term2,Equs) :-
     sh_peel_frl(Term1,Term2,Temp-[]),
     sort(Temp,Equs). 
@@ -294,11 +297,9 @@ linear_(Term):-
     length(Vars_non_rep,L2),
     L1 == L2.
     
-%------------------------------------------------------------------------%
-% filter_freeness_with_call(+,+,-)                                       |
-% filter_freeness_with_call(Vars,Freeness,Res)                           |
-% Res removes from Vars those variables that are ground.                 |
-%------------------------------------------------------------------------%
+:- pred filter_freeness_with_call(+Vars,+Freeness,-Res)
+   # "`Res` removes from `Vars` those variables that are ground.".
+
 filter_freeness_with_call(Vars,Freeness_Call,Res):-
      member_value_freeness(Freeness_Call,G_Vars,g),
      filter_freeness_with_call_(Vars,G_Vars,Res).

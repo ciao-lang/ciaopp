@@ -20,9 +20,9 @@
       lsign_unknown_call/4,
       lsign_unknown_entry/3,
       lsign_empty_entry/3
-    ], [assertions]).
+    ], [assertions, modes_extra]).
 
-:- doc(title, "lsign domain").
+:- doc(title, "lsign (abstract domain)").
 % (search "LSign DOMAIN" in this module for documentation)
 
 :- include(ciaopp(plai/plai_domain)).

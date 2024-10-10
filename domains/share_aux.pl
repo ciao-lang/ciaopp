@@ -1,4 +1,4 @@
-:- module(share_aux, [], [assertions, isomodes]).
+:- module(share_aux, [], [assertions, modes_extra]).
 
 % (auxiliary definitions for sharing and other domains)
 
@@ -9,12 +9,11 @@
     ]).
 :- use_module(library(lsets), [ord_split_lists_from_list/4]).
 
-%------------------------------------------------------------------------
-% eliminate_couples(+,+,+,-)                                             |
-% eliminate_couples(Sh,Xs,Ys,NewSh)                                      |
-% Eliminates from Sh all SS s.t. both X,Y\in SS for some X\in Xs,Y\in Ys |
-% All arguments ordered                                                  |
-%------------------------------------------------------------------------
+:- pred eliminate_couples(+Sh,+Xs,+Ys,-NewSh) 
+   #
+"Eliminates from `Sh` all `SS` s.t. both `X`,`Y`\in `SS` for some `X`\in `Xs`,`Y`\in `Ys`. 
+All arguments ordered.                                                  
+".
 
 :- export(eliminate_couples/4).
 eliminate_couples([],_,_,[]):- !.
@@ -23,12 +22,11 @@ eliminate_couples(Sh,Xs,Ys,NewSh) :-
     ord_split_lists_from_list(Ys,Intersect,_,Disjunct2),
     merge(Disjunct2,Disjunct1,NewSh).
 
-%------------------------------------------------------------------------
-% eliminate_if_not_possible(+,+,-)
-% eliminate_if_not_possible(ASub,Vars,More)
-% It gives in the third argument each set S in the first argument which 
-% has variables in common with Vars but Vars is not a subset of S
-%------------------------------------------------------------------------
+:- pred eliminate_if_not_possible(+ASub,+Vars,-More)
+   #
+"It gives in the third argument each set `S` in the first argument which 
+has variables in common with Vars but `Vars` is not a subset of `S`.
+".
 
 :- export(eliminate_if_not_possible/3).
 eliminate_if_not_possible([],_,X-X).
@@ -44,13 +42,12 @@ test_temp([],_).
 test_temp([X|Xs],List):-
     [X|Xs] == List.
 
-%------------------------------------------------------------------------
-% eliminate_if_not_possible(+,+,+,-)
-% eliminate_if_not_possible(ASub,X,Vars,More)
-% It gives as a diff list each set S in ASub s.t. either X appears in S
-% and no element of Vars appears in S or 
-% X does not appear but at least one element in Vars appears
-%------------------------------------------------------------------------
+:- pred eliminate_if_not_possible(+ASub,+X,+Vars,-More)
+   #
+"It gives as a diff list each set `S` in ASub s.t. either `X` appears in `S`
+and no element of Vars appears in `S` or 
+`X` does not appear but at least one element in `Vars` appears.
+".
 
 :- export(eliminate_if_not_possible/4). 
 eliminate_if_not_possible([],_,_,X-X).
@@ -83,7 +80,7 @@ test_set([_|_],X,Z,Rest,Vars,More):- !,
 :- export(handle_each_indep/4).
 handle_each_indep([],_AbsInt,Call,Call).
 handle_each_indep([[X,Y]|Rest],AbsInt,Call,Succ):-
-    success_builtin(AbsInt,'indep/2',_,p(X,Y),_HvFv_u,Call,Succ1), !, % TODO: _HvFv_u unbound! (JF)
+    success_builtin(AbsInt,'indep/2',[X,Y],p(X,Y),_HvFv_u,Call,Succ1), !, % TODO: _HvFv_u unbound! (JF)
     handle_each_indep(Rest,AbsInt,Succ1,Succ).
 
 %------------------------------------------------------------------------

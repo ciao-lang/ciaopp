@@ -1,8 +1,9 @@
-:- module(sharefree_amgu, [], [assertions, isomodes]).
+:- module(sharefree_amgu, [], [assertions, modes_extra]).
 
-:- doc(title, "amgu-based sharing+freeness domain").
+:- doc(title, "amgu-based sharing+freeness (abstract domain)").
 :- doc(author, "Jorge Navas").
-% Copyright (C) 2004-2019 The Ciao Development Team
+:- doc(copyright,"Copyright @copyright{} 2004-2019 The Ciao Development Team").
+:- doc(stability, prod).
 
 :- use_module(domain(sharefree), [
     compute_lub/2,
@@ -38,13 +39,19 @@
 :- dom_impl(_, unknown_entry/3, [from(sharefree:shfr), noq]).
 :- dom_impl(_, empty_entry/3, [from(sharefree:shfr), noq]).
 
-%------------------------------------------------------------------------%
-% This file implements the same domain-dependent abstract functions than |
-% sharefree.pl but the functions call_to_entry and exit_to_prime are     |
-% defined based on amgu.                                                 |
-%------------------------------------------------------------------------%
-% The meaning of the variables os defined in sharefree.pl                |
-%------------------------------------------------------------------------%
+% infers(ground/1, rtcheck).
+% infers(mshare/1, rtcheck).
+% infers(var/1, rtcheck).
+
+:- doc(module,"
+This file implements the same domain-dependent abstract functions than      
+`sharefree.pl` but the functions `call_to_entry` and `exit_to_prime` are 
+defined based on `amgu`.
+
+@begin{note}
+The meaning of the variables are defined in `sharefree.pl`.       
+@end{note}
+").
 
 :- doc(bug,"1. The builtin ==/2 is defined but it is not used because
        of benchmarks. For its use, comment it out in special_builtin.").
@@ -80,11 +87,13 @@
 :- use_module(domain(sharefree_amgu_aux)).
 
 %------------------------------------------------------------------------%
+%------------------------------------------------------------------------%
 %                      ABSTRACT Call To Entry                            %
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% call_to_entry(+,+,+,+,+,+,+,-,?)                        %
-%------------------------------------------------------------------------%
+
+:- pred call_to_entry(+Sv,+Sg,+Hv,+Head,+K,+Fv,+Proj,-Entry,?ExtraInfo).
+
 :- export(call_to_entry/9).
 :- dom_impl(_, call_to_entry/9, [noq]).
 call_to_entry(_Sv,Sg,_Hv,Head,_K,Fv,Proj,Entry,Flag):-
@@ -111,13 +120,15 @@ call_to_entry(_Sv,Sg,Hv,Head,_K,Fv,Project,Entry,ExtraInfo):-
      augment_asub(Entry0,Fv,Entry),
      ExtraInfo = (Equations,F2),!.
 call_to_entry(_Sv,_Sg,_Hv,_Head,_K,_Fv,_Proj,'$bottom',_).
-    
+
+%------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
 %                      ABSTRACT Exit to Prime                            %
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% exit_to_prime(+,+,+,+,+,-)                                             %
-%-------------------------------------------------------------------------
+
+:- pred exit_to_prime(+Sg,+Hv,+Head,+Sv,+Exit,+ExtraInfo,-Prime).
+
 :- export(exit_to_prime/7).
 :- dom_impl(_, exit_to_prime/7, [noq]).
 exit_to_prime(_,_,_,_,'$bottom',_,'$bottom'):-!.
@@ -138,25 +149,28 @@ exit_to_prime(Sg,_Hv,_Head,Sv,Exit,ExtraInfo,Prime):-
      sharefree:project(Sg,Sv,not_provided_HvFv_u,(Sh,F1),Prime).
 
 %------------------------------------------------------------------------%
+%------------------------------------------------------------------------%
 %                            ABSTRACT AMGU                               %
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% amgu(+,+,+,-)                                           %
-% amgu(Sg,Head,ASub,AMGU)                                 %
-% @var{AMGU} is the abstract unification between @var{Sg} and @var{Head}.%
-%------------------------------------------------------------------------%
+
+:- pred amgu(+Sg,+Head,+ASub,-AMGU)
+   # "`AMGU` is the abstract unification between `Sg` and `Head`.".
+
 :- export(amgu/4).
 :- dom_impl(_, amgu/4, [noq]).
 amgu(Sg,Head,ASub,AMGU):-
     peel_equations_frl(Sg, Head,Eqs),
     sharefree_amgu_iterate(Eqs,ASub,AMGU),!.
-    
+
+%------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
 %                      ABSTRACT Extend_Asub                              %
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% augment_asub(+,+,-)                                      %
-%-------------------------------------------------------------------------
+
+:- pred augment_asub(+,+,-).
+
 :- export(augment_asub/3).
 :- redefining(augment_asub/3).
 :- dom_impl(_, augment_asub/3, [noq]).
@@ -178,11 +192,14 @@ augment_asub1(F,[H|T],F1):-
     ord_union(F0,[H/f],F1).
 
 %------------------------------------------------------------------------%
+%------------------------------------------------------------------------%
 %                      ABSTRACT Call to Success Fact                     %
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% Specialized version of call_to_entry + exit_to_prime + extend for facts%
-%------------------------------------------------------------------------%
+
+:- pred call_to_success_fact/9
+   # "Specialized version of `call_to_entry` + `exit_to_prime` + `extend` for facts".
+
 :- export(call_to_success_fact/9).
 :- dom_impl(_, call_to_success_fact/9, [noq]).
 call_to_success_fact(Sg,Hv,Head,_K,Sv,Call,_Proj,Prime,Succ) :-
@@ -230,10 +247,8 @@ call_to_prime_fact(Sg,Hv,Head,Sv,Call,Prime) :-
 %                         HANDLING BUILTINS                              %
 %------------------------------------------------------------------------%
 
-%------------------------------------------------------------------------%
-% sharefree_special_builtin(+,+,+,-,-)                                   |
-% sharefree_special_builtin(SgKey,Sg,Subgoal,Type,Condvars)              |
-%------------------------------------------------------------------------%
+:- pred special_builtin(+SgKey,+Sg,+Subgoal,-Type,---Condvars).
+
 :- export(special_builtin/5).
 :- dom_impl(_, special_builtin/5, [noq]).
 special_builtin('read/2',read(X,Y),_,'recorded/3',p(Y,X)).
@@ -242,10 +257,7 @@ special_builtin('==/2',_,_,_,_):- !, fail.
 special_builtin(SgKey,Sg,Subgoal,Type,Condvars):-
     sharefree:special_builtin(SgKey,Sg,Subgoal,Type,Condvars).
     
-%------------------------------------------------------------------------%
-% success_builtin(+,+,+,+,+,-)                            |
-% success_builtin(Type,Sv_u,Condv,HvFv_u,Call,Succ)              |
-%------------------------------------------------------------------------%
+:- pred success_builtin(+Type,+Sv_u,?Condv,+HvFv_u,+Call,-Succ).
 
 :- export(success_builtin/6).
 :- dom_impl(_, success_builtin/6, [noq]).
@@ -298,11 +310,9 @@ success_builtin(copy_term,_,Sg,_,Call,Succ):- Sg=p(X,Y),
 success_builtin(Type,Sv_u,Condv,HvFv_u,Call,Succ):-
     sharefree:success_builtin(Type,Sv_u,Condv,HvFv_u,Call,Succ).
 
-%------------------------------------------------------------------------%
-% call_to_success_builtin(+,+,+,+,+,-)                    |
-% call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,Succ)     |
-% Handles those builtins for which computing Prime is easier than Succ   |
-%-------------------------------------------------------------------------
+:- pred call_to_success_builtin(+SgKey,+Sg,+Sv,+Call,+Proj,-Succ)
+   # "Handles those builtins for which computing `Prime` is easier than `Succ`".
+
 :- export(call_to_success_builtin/6).
 :- redefining(call_to_success_builtin/6).
 :- dom_impl(_, call_to_success_builtin/6, [noq]).
@@ -375,7 +385,7 @@ call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,Succ):-
     sharefree:call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,Succ).
 
 %------------------------------------------------------------------------%
-%            Intermediate Functions                                      |
+%                     Intermediate Functions                             %
 %------------------------------------------------------------------------%
 
 :- use_module(domain(sharefree), [

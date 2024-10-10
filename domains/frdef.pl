@@ -21,7 +21,11 @@
       frdef_unknown_entry/3,
       frdef_empty_entry/3
     ],
-    [ ] ).
+    [modes_extra] ).
+
+:- doc(title, "frdef: freeness+definiteness (abstract domain)").
+:- doc(stability, alpha).
+:- doc(copyright,"Copyright @copyright{} 1990-91-92-93 UPM-CLIP").
 
 :- include(ciaopp(plai/plai_domain)).
 :- dom_def(frdef).

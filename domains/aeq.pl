@@ -1,6 +1,10 @@
-:- module(aeq, [], [datafacts]).
+:- module(aeq, [], [datafacts, modes_extra]).
 
 :- use_package(hiord). % TODO: See success_builtin(aeq_comparison,...)! Do in other way?
+
+:- doc(title, "aeq (abstract domain)").
+:- doc(author, "Maria Garcia de la Banda").
+:- doc(stability, devel).
 
 %------------------------------------------------------------------------%
 % This file was initially implemented by KULeuven. It has been modified 
@@ -67,39 +71,41 @@
 % reduced.  The original versions had possibilities for combining
 % pair-sharing and other features...
 
-%------------------------------------------------------------------------%
-% This file was initially implemented by KULeuven. It has been modified 
-% by Maria Garcia de la Banda in 1996 in order to include comments (so
-% that future modifications become easier), to tailor it more closely to
-% PLAI, and to add the abstract functions required for dynamic scheduling
-%------------------------------------------------------------------------%
-% _ec:    suffix indicating "external code" (lists of variables, lists of
-%         list of variables, terms, etc).
-% _ic:    suffix indicating "internal code" (bit codes, lists of bitcodes,
-%          extendable arrays with logarithmic access, etc)
-% AVar:   Number which identifies an abstract variable. In _ic, the bitcode
-%         is used.
-% AnnSet: Annotation set representing the different annotations that can
-%         be associated to an abstract variable. There exists 4 different
-%         AnnSet for set sharing ({a,l,f,ng},{a,nl,f,ng},{a,l,nf,ng}, and 
-%         {a,nl,nf,ng}), and 2 for pair sharing ({a,nl,f,g},{a,nl,nf,g})
-% Ann:    list of elements of the form AVar-A, where A is in some AnnSet.
-%         In the _ic, a bitvector array is used.
-% Shr:    Represents either set sharing (list of lists of variables in _ec,
-%         and list of bitcodes in _ic) or pair sharing (in _ec pairs of 
-%         variables, in _ic ps(Lin,Sh) where Lin is the bitcode of the set 
-%         of nonlinears and Sh is the list of bitcodes of the pairs).
-% ATerm:  either and abstract variable (i.e., @(AVar)) or a term formed by
-%         abstract variables. 
-% Depth:  Positive number representing the depth of the ATerms. The default
-%         is 1. The depth can be controled at each unification step (default)
-%          or only during call_to_entry.
-% Eqs:    Set of elements of the form X = ATerm.
-% 
-% ASub:   Abstract substitution. The external form is aeqs(Eqs, Ann, Shr),
-%         the internal form is aeqs(Eqs,Ann,Shr,ASubVars,PossibleNonGround)
-%------------------------------------------------------------------------%
+:- doc(module,"
+This file was initially implemented by KULeuven. It has been modified 
+by Maria Garcia de la Banda in 1996 in order to include comments (so
+that future modifications become easier), to tailor it more closely to
+PLAI, and to add the abstract functions required for dynamic scheduling
 
+@begin{note}
+**Meaning of the Program Variables**
+- `_ec`    : suffix indicating @em{external code} (lists of variables, lists of
+             list of variables, terms, etc).
+- `_ic`    : suffix indicating @em{internal code} (bit codes, lists of bitcodes,
+             extendable arrays with logarithmic access, etc)
+- `AVar`   : Number which identifies an abstract variable. In `_ic`, the bitcode
+             is used.
+- `AnnSet` : Annotation set representing the different annotations that can
+             be associated to an abstract variable. There exists 4 different
+             AnnSet for set sharing (`\\{a,l,f,ng\\}`,`\\{a,nl,f,ng\\}`,`\\{a,l,nf,ng\\}`, and 
+             `\\{a,nl,nf,ng\\}`), and 2 for pair sharing (`\\{a,nl,f,g\\}`,`\\{a,nl,nf,g\\}`).
+- `Ann`    : list of elements of the form `AVar`-`A`, where `A` is in some `AnnSet`.
+             In the `_ic`, a bitvector array is used.
+- `Shr`    : Represents either set sharing (list of lists of variables in `_ec`,
+             and list of bitcodes in `_ic`) or pair sharing (in `_ec` pairs of 
+             variables, in `_ic` `ps(Lin,Sh)` where `Lin` is the bitcode of the set 
+             of nonlinears and `Sh` is the list of bitcodes of the pairs).
+- `ATerm`  : either and abstract variable (i.e., @(`AVar`)) or a term formed by
+             abstract variables. 
+- `Depth`  : Positive number representing the depth of the `ATerms`. The default
+             is 1. The depth can be controled at each unification step (default)
+             or only during `call_to_entry`.
+- `Eqs`    : Set of elements of the form `X` = `ATerm`.
+
+- `ASub`   : Abstract substitution. The external form is `aeqs(Eqs, Ann, Shr)`,
+             the internal form is `aeqs(Eqs,Ann,Shr,ASubVars,PossibleNonGround)`.
+@end{note}
+").
 
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%

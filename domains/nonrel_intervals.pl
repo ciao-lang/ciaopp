@@ -1,6 +1,6 @@
-:- module(_, [], [assertions,regtypes,basicmodes]).
+:- module(_, [], [assertions,regtypes,modes_extra]).
 
-:- doc(title,"Interval Domain").
+:- doc(title,"Intervals (abstract domain)").
 :- doc(author, "Isabel Garcia-Contreras").
 :- doc(author, "Jose F. Morales").
 

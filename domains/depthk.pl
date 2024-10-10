@@ -1,10 +1,5 @@
-:- module(depthk, [], [assertions]).
+:- module(depthk, [], [assertions, modes_extra]).
 
-% ------------------------------------------------------------------------%
-%                                                                         %
-% Programmer: Francisco Bueno                                             %
-% Date:       February 1, 1995                                            %
-%                                                                         %
 % ------------------------------------------------------------------------%
 % MODULE: "depthk": the depth-k domain                                    %
 % ------------------------------------------------------------------------%
@@ -12,11 +7,16 @@
 % memo lists of substitutions not singletons (lub as disjunction)         %
 % lub as disjunction selected with a flag - real lub not yet implemented! %
 % ------------------------------------------------------------------------%
+
 :- doc(bug,"tried to keep ""project"" reasonable but it seems wrong!").
-:- doc(title, "depthk  abstract domain").
+:- doc(title, "depth-k  (abstract domain)").
 
 :- doc(author, "Francisco Bueno").
 :- doc(author, "Daniel Jurjo Rivas (improvements and bug fixes)").
+:- doc(stability, beta).
+
+% infers(instance/2, rtcheck).
+
 :- doc(module, "
 
 This tutorials aims to explain how depthk analysis works.
@@ -27,29 +27,29 @@ This tutorials aims to explain how depthk analysis works.
 The abstract substitution of this domains consists in a sorted list of
 idempotent unification equations (or bottom).  For example:
 
-@begin{verbatim} 
+```ciao
 [X=_, Y=g(X)]
-@end{verbatim} 
-is not a proper abstract substitution since X appears both in the left
+```
+is not a proper abstract substitution since `X` appears both in the left
 and the right side. The correct abstract substitution would be:
 
-@begin{verbatim} 
+```ciao
 [X = A, Y = g(A)]
-@end{verbatim} 
+```
 
-Notice that X = A does not means that X is a variable. It means that
-we do not know anything about X (i.e. is top)
+Notice that `X = A` does not means that X is a variable. It means that
+we do not know anything about `X` (i.e. is top)
 
 @section{How to run the analysis}
 We can run this analysis as we do with others. In that case the depth
 is set to one. If we want to change the depth of the analysis we have
 to type in the CiaoPP top-level:
 
-@begin{verbatim}
+```ciao
 ?- set_pp_flag(depthk_k, N). 
-@end{verbatim}
+```
 
-with N a natural number (and this excludes the 0).
+with `N` a natural number (and this excludes the 0).
 
 @section{Some examples}
 
@@ -57,23 +57,25 @@ with N a natural number (and this excludes the 0).
 
 Consider this dummy predicate:
 
+```ciao
 ex1(X) :- 
     X = f(a, Y), 
     Y = g(h(k(a, b, c))).
- 
-the results of the analysis with K = 1 is:
-@begin{verbatim}
+```
+the results of the analysis with `K` = 1 is:
+
+```ciao
 :- true pred ex1(X)
    => instance(X,f(_A,_B)).
-@end{verbatim}
+```
 
 Let us check the results with another values of K:
 
 @begin{enumerate}
-@item K = 2 we obtain: instance(X,f(a,g(_A))).
-@item K = 3 we obtain: instance(X,f(a,g(h(_A)))).
-@item K = 4 we obtain: instance(X,f(a,g(h(k(_A,_B,_C))))).
-@item K = 5 we obtain: instance(X,f(a,g(h(k(a,b,c))))).
+@item `K` = 2 we obtain: `instance(X,f(a,g(_A)))`.
+@item `K` = 3 we obtain: `instance(X,f(a,g(h(_A))))`.
+@item `K` = 4 we obtain: `instance(X,f(a,g(h(k(_A,_B,_C)))))`.
+@item `K` = 5 we obtain: `instance(X,f(a,g(h(k(a,b,c)))))`.
 
 @end{enumerate}
 
@@ -82,7 +84,7 @@ This analysis is quite more useful when recursion arises:
 @subsection{Example 2}
 Consider the following example:
 
-@begin{verbatim}
+```ciao
 ex(X) :-
     li(Y),
     X = g(s(a, Y), Z).
@@ -90,41 +92,40 @@ ex(X) :-
 li(f(a, a, f(b,b, f(c,c, nil)))).
 li(f(a, a, f(b,b,T))) :-
     li(T).
-@end{verbatim}
+```
 
 in this case with the default depth we obtain:
 
-@begin{verbatim}
+```ciao
 :- true pred ex(X)
    => instance(X,g(_A,_B)).
+```
 
-@end{verbatim}
-
-Let us check the results with another values of K:
+Let us check the results with another values of `K`:
 
 @begin{enumerate}
-@item K = 2 we obtain: instance(X,g(s(_B,_C),_A)).
-@item K = 3 we obtain: instance(X,g(s(a,f(_B,_C,_D)),_A)).
-@item K = 4 we obtain: instance(X,g(s(a,f(a,a,f(_B,_C,_D))),_A)).
-@item K = 5 we obtain: instance(X,g(s(a,f(a,a,f(b,b,f(_B,_C,_D)))),_A)).
+@item `K` = 2 we obtain: `instance(X,g(s(_B,_C),_A))`.
+@item `K` = 3 we obtain: `instance(X,g(s(a,f(_B,_C,_D)),_A))`.
+@item `K` = 4 we obtain: `instance(X,g(s(a,f(a,a,f(_B,_C,_D))),_A))`.
+@item `K` = 5 we obtain: `instance(X,g(s(a,f(a,a,f(b,b,f(_B,_C,_D)))),_A))`.
 @end{enumerate}
 
 
 @section{More in depth}
 
 Consider the following example:
-@begin{verbatim}
+
+```ciao
 r(Y, Z) :-
     Y = g(L),
     M = f(K), 
     Z = f(Y).
-@end{verbatim}
-
+```
 
 If we execute the analysis with a raw output (that can be activated
-typing set_pp_flag(output_lang, raw). in the toplevel) we get:
+typing `set_pp_flag(output_lang, raw)`. in the toplevel) we get:
 
-@begin{verbatim}
+```ciao
 r(Y,Z) :-
     true(2,[[Y=_,Z=_,L=_,M=_,K=_]]),
     'term_basic:='(Y,g(L)),
@@ -133,8 +134,7 @@ r(Y,Z) :-
     true(2,[[Y=g(G),Z=_,L=G,M=f(H),K=H]]),
     'term_basic:='(Z,f(Y)),
     true(2,[[Y=g(I),Z=f(g(I)),L=I,M=f(J),K=J]]).
-
-@end{verbatim}
+```
 
 In this case we can see that all the program variables are represented
 in the abstract substitution. Moreover each variables in the left side
@@ -166,13 +166,13 @@ they are free or not with the given information.
 depth_k(K):- current_pp_flag(depthk_k,K).
 
 %------------------------------------------------------------------------%
+%------------------------------------------------------------------------%
 %                      ABSTRACT Call To Entry                            %
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% call_to_entry(+,+,+,+,+,+,+,-,-)                                       %
-% call_to_entry(Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo)                 %
-%------------------------------------------------------------------------%
+
 :- dom_impl(_, call_to_entry/9, [noq]).
+:- pred call_to_entry(+Sv,+Sg,+Hv,+Head,+K,+Fv,+Proj,-Entry,-ExtraInfo).
 
 call_to_entry(_Sv,Sg,Hv,Head,_K,Fv,Proj,Entry,Flag):- 
     variant(Sg,Head),!,
@@ -209,22 +209,23 @@ variables_are_variables([],[]).
 %                      ABSTRACT Exit To Prime                            %
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% exit_to_prime(+,+,+,+,+,-,-)                                           %
-% exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime)                      %
-% It computes the prime abstract substitution Prime, i.e.  the result of %
-% going from the abstract substitution over the head variables (Exit), to%
-% the abstract substitution over the variables in the subgoal. It will:  %
-% * If Exit is '$bottom', Prime will be also '$bottom'.                  %
-% * If Flag = yes (Head and Sg identical up to renaming) it is just a    %
-%   question of renaming Exit                                            %
-% * If Hv = [], Prime = []                                               %
-% * Otherwise:                                                           %
-%      * apply abstract unification with the original equations from     % 
-%        the head unification                                            %
-%      * then project (closing) over Sv obtaining Prime                  %
-%------------------------------------------------------------------------%
 
 :- dom_impl(_, exit_to_prime/7, [noq]).
+:- pred exit_to_prime(+Sg,+Hv,+Head,+Sv,+Exit,-ExtraInfo,-Prime)
+   #
+"It computes the prime abstract substitution `Prime`, i.e.  the result of 
+going from the abstract substitution over the head variables (`Exit`), to
+the abstract substitution over the variables in the subgoal. It will:  
+- If `Exit` is *$bottom*, `Prime` will be also *$bottom*.                  
+- If `Flag` = yes (`Head` and `Sg` identical up to renaming) it is just a    
+  question of renaming `Exit`.                                            
+- If `Hv` = [], `Prime` = []                                               
+- Otherwise:                                                           
+  - apply abstract unification with the original equations from      
+    the head unification                                            
+  - then project (closing) over `Sv` obtaining `Prime`                  
+".
+
 exit_to_prime(_Sg,_Hv,_Head,_Sv,'$bottom',_Flag,Prime) :- !,
     Prime = '$bottom'.
 exit_to_prime(Sg,Hv,Head,_Sv,Exit,yes,Prime):- !,
@@ -246,16 +247,17 @@ exit_to_prime(_Sg,_Hv,_Head,Sv,Exit,Unifiers,Prime):-
 
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-%                      ABSTRACT Extend                                   %
+%                         ABSTRACT Extend                                %
 %------------------------------------------------------------------------%
-%------------------------------------------------------------------------%
-% extend(+,+,+,+,-)                                                      %
-% extend(Sg,Prime,Sv,Call,Succ)                                          %
-% If Prime = bottom, Succ = bottom. If Sv = [], Call = Succ. Otherwise,  %
-% just add to Prime equs. for variables in Call and not in Prime.        %
 %------------------------------------------------------------------------%
 
 :- dom_impl(_, extend/5, [noq]).
+:- pred extend(+Sg,+Prime,+Sv,+Call,-Succ)
+   #
+"If `Prime` = *bottom*, `Succ` = *bottom*. If `Sv` = [], `Call` = `Succ`. Otherwise,  
+just add to `Prime` equs. for variables in `Call` and not in `Prime`.        
+".
+
 extend(_Sg,'$bottom',_Sv,_Call,Succ):- !,
     Succ = '$bottom'.
 extend(_Sg,_Prime,[],Call,Succ):- !,
@@ -269,17 +271,17 @@ extend(Sg,Prime,Sv,Call,Succ):-
     project(Sg,Nv,not_provided_HvFv_u,TCall,Succ0),
     merge(Succ0,Prime,Succ).
 extend(_, _, _, _, '$bottom'). %% [DJ] 9-jul-23 added this case
+
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
 %                      ABSTRACT PROJECTION                               %
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% project(+,+,+,+,-)                                                     %
-% project(Sg,Vars,HvFv_u,ASub,Proj)                                      %
-% Leave in Proj only equs. related to Vars                               %
-%------------------------------------------------------------------------%
 
 :- dom_impl(_, project/5, [noq]).
+:- pred project(+Sg,+Vars,+HvFv_u,+ASub,-Proj)
+   # "Leave in `Proj` only equs. related to `Vars`".
+
 project(_,_,_,'$bottom',Proj):- !,
     Proj = '$bottom'.
 project(_Sg,[],_HvFv_u,_ASub,[]):- !.
@@ -288,30 +290,27 @@ project(_Sg,Vars,_HvFv_u,ASub,Proj):-
 
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-%                      ABSTRACT SORT                                     %
+%                            ABSTRACT SORT                               %
 %------------------------------------------------------------------------%
-%------------------------------------------------------------------------%
-% abs_sort(+,-)                                                          %
-% abs_sort(Asub_u,Asub)                                                  %
-% Sorts the list of equs.                                                %
 %------------------------------------------------------------------------%
 
 :- dom_impl(_, abs_sort/2, [noq]).
+:- pred abs_sort(+Asub_u,-Asub)
+   # "Sorts the list of equs.".
+
 abs_sort('$bottom','$bottom'):- !.
 abs_sort(ASub_u,ASub):-
     sort(ASub_u,ASub).
 
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-%                      ABSTRACT LUB                                      %
+%                           ABSTRACT LUB                                 %
 %------------------------------------------------------------------------%
-%------------------------------------------------------------------------%
-%------------------------------------------------------------------------%
-% compute_lub(+,-)                                                       %
-% compute_lub(ListASub,Lub)                                              %
 %------------------------------------------------------------------------%
 
 :- dom_impl(_, compute_lub/2, [noq]).
+:- pred compute_lub(+ListASub,-Lub).
+
 compute_lub([ASub],Lub):- !,
     Lub = ASub.
 compute_lub([ASub1,ASub2|ListASub],Lub):-
@@ -328,12 +327,9 @@ lub_each_eq([X=T1|ASub1],[X=T2|ASub2],[X=T|Lub]):-
     most_specific_generalization(T1,T2,T),
     lub_each_eq(ASub1,ASub2,Lub).
 
-%------------------------------------------------------------------------%
-% glb(+,-)                                                               %
-% glb(ASub1,ASub2)                                                       %
-%------------------------------------------------------------------------%
-
 :- dom_impl(_, glb/3, [noq]).
+:- pred glb(+ASub1,+ASub2,-ASub3).
+
 glb('$bottom',_ASub,ASub3) :- !, ASub3='$bottom'.
 glb(_ASub,'$bottom',ASub3) :- !, ASub3='$bottom'.
 glb(ASub1,ASub2,Glb):-
@@ -411,17 +407,16 @@ fix_asub_([X=Y|Xs], LeftVars, FASub) :-
         )
     ),
     fix_asub_(Xs, LeftVars, TFASub).
-    
-%------------------------------------------------------------------------%
-% identical_abstract(+,+)                                                %
-% identical_abstract(ASub1,ASub2)                                        %
-% Succeeds if abstract substitutions ASub1 and ASub2 are defined on the  %
-% same variables and are equivalent                                      %
-%------------------------------------------------------------------------%
 
 %% care with top variables, which can be shared between the two substs.!!
 
 :- dom_impl(_, identical_abstract/2, [noq]).
+:- pred identical_abstract(+ASub1,+ASub2)
+   #
+"Succeeds if abstract substitutions `ASub1` and `ASub2` are defined on the  
+same variables and are equivalent                                      
+".
+
 identical_abstract('$bottom', '$bottom') :- !.
 identical_abstract(ASub1,ASub2):-
     variables_are_variables(V1,ASub1),
@@ -433,12 +428,9 @@ identical_abstract(ASub1,ASub2):-
     numbervars(T2,M,N),
     T1==T2 ).
 
-%------------------------------------------------------------------------%
-% less_or_equal(+,+)                                                     %
-% less_or_equal(ASub0,ASub1)                                             %
-%------------------------------------------------------------------------%
-
 :- dom_impl(_, less_or_equal/2, [noq]).
+:- pred less_or_equal(+ASub0,+ASub1).
+
 less_or_equal('$bottom',_).
 less_or_equal(ASub0,ASub1):-
     less_or_equal_(ASub0,ASub1).
@@ -448,42 +440,38 @@ less_or_equal_([X=T1|ASub1],[X=T2|ASub2]):-
     instance(T1,T2),
     less_or_equal_(ASub1,ASub2).
 
-%-------------------------------------------------------------------------
-% unknown_call(+,+,+,-)                                                  |
-% unknown_call(Sg,Qv,Call,Succ)                                          |
-%-------------------------------------------------------------------------
-
 :- dom_impl(_, unknown_call/4, [noq]).
+:- pred unknown_call(+Sg,+Vars,+Call,-Succ).
+
 unknown_call(_Sg,Qv,Call,Succ):-
     subtract_keys(Call,Qv,Succ0),
     variables_are_variables(Qv,Succ1),
     merge(Succ0,Succ1,Succ).
 
-%------------------------------------------------------------------------%
-% unknown_entry(+,+,-)                                                   %
-% unknown_entry(Sg,Qv,Call)                                              %
-%------------------------------------------------------------------------%
-
 :- dom_impl(_, unknown_entry/3, [noq]).
+:- pred unknown_entry(+Sg,+Qv,-Call).
+   
 unknown_entry(_Sg,Qv,Call):-
     variables_are_variables(Qv,Call).
 
 :- dom_impl(_, empty_entry/3, [noq]).
+:- pred empty_entry(+Sg,+Vars,-Entry).
+
 empty_entry(Sg,Qv,Call):-
     unknown_entry(Sg,Qv,Call).
 
 %------------------------------------------------------------------------%
-%                      USER INTERFACE                                    %
-%------------------------------------------------------------------------%
-                     
-%------------------------------------------------------------------------%
-% input_user_interface(+,+,-,+,+)                                        %
-% input_user_interface(InputUser,Qv,ASub,Sg,MaybeCallASub)               %
-% Obtaining the abstract substitution for Depthk from the user supplied  %
-% information                                                            %
-%------------------------------------------------------------------------%
+%                         USER INTERFACE                                 %
+%------------------------------------------------------------------------%     
 
 :- dom_impl(_, input_user_interface/5, [noq]).
+:- pred input_user_interface(?InputUser,+Qv,-ASub,+Sg,+MaybeCallASub)
+   : term * list * term * term * term
+   #
+"Obtaining the abstract substitution for *depthk* from the user supplied  
+information
+".
+
 input_user_interface(Info,Qv,Call,_Sg,_MaybeCallASub):-
     may_be_var(Info),
     sort(Info,Eqs),
@@ -555,15 +543,12 @@ myappend(Vs,V,[V|Vs]).
 
 may_be_var(X):- ( X=[] ; true ), !.
 
-%------------------------------------------------------------------------%
-% asub_to_native(+,+,+,-,-)                                              %
-% asub_to_native(ASub,Qv,OutFlag,Info,Comps)                             %
-%------------------------------------------------------------------------%
-
 :- dom_impl(_, asub_to_native/5, [noq]).
+:- pred asub_to_native(+ASub,+Qv,+OutFlag,-Info,-Comps).
 %% ASub to native was showing a bad output in which some program
 %% variables where unified when something like [X=A, Y=A] was
-%% abstracter. This fixes it.
+   %% abstracter. This fixes it.
+   
 asub_to_native(ASub,_Qv,_OutFlag,OutputUser,[]) :-
     unifying_vars(ASub, Unifs_us), sort(Unifs_us, Unifs), %% To avoid unify program variables
     variables_are_variables(LeftUnifs, Unifs),

@@ -27,7 +27,9 @@
     nf_empty_entry/3,
     nf_dom_statistics/1,
     nf_obtain_info/4
-], [assertions,regtypes,basicmodes,hiord]).
+], [assertions,regtypes,modes_extra,hiord]).
+
+:- doc(title, "nf: non-failure (abstract domain)").
 
 :- include(ciaopp(plai/plai_domain)).
 :- dom_def(nf).

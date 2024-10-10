@@ -3,17 +3,17 @@
       amgu_clique_ff/4,   %% by obtain_prime_clique_var_var/3
       sharefree_clique_update_freeness/4 %% by call2entry/8
     ],
-    [assertions, isomodes]).
+    [assertions, modes_extra]).
 
 :- doc(author, "Jorge Navas").
-% Copyright (C) 2004-2019 The Ciao Development Team
+:- doc(copyright,"Copyright @copyright{} 2004-2019 The Ciao Development Team").
 
-%------------------------------------------------------------------------%
-% This file implements the amgu for clique-sharing+Freeness domain       |
-% defined by Hill, Bagnara and Zaffanella (for bottom-up analysis and    |
-% inferring pair-sharing). This version (for top-down analysis and for   |
-% inferring sharing) is defined by J.Navas, F.Bueno and M.Hermenegildo.  |
-%------------------------------------------------------------------------%
+:- doc(module,"
+This file implements the amgu for clique-sharing+Freeness domain
+defined by Hill, Bagnara and Zaffanella (for bottom-up analysis and
+inferring pair-sharing). This version (for top-down analysis and for   
+inferring sharing) is defined by J.Navas, F.Bueno and M.Hermenegildo.
+").
 
 :- doc(bug,"1. The amgu does not use linearity information").
 :- doc(bug,"2. The amgu for supporting linearity information is 
@@ -36,9 +36,9 @@
 %                            ABSTRACT Iterate                            %
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% sharefree_clique_iterate(+,+,-)                                        %
-% sharefree_clique_iterate(Eqs,ASub0,ASub)                               %
-%------------------------------------------------------------------------%
+
+:- pred sharefree_clique_iterate(+Eqs,+ASub0,-ASub).
+
 sharefree_clique_iterate([],ASub, ASub).
 sharefree_clique_iterate([(X,(Ts,Type,L))|Eqs],ASub, ASub2):-
      amgu_shfr_clique(X,(Ts,Type,L),ASub,ASub1),
@@ -48,9 +48,10 @@ sharefree_clique_iterate([(X,(Ts,Type,L))|Eqs],ASub, ASub2):-
 %------------------------------------------------------------------------%
 %               ABSTRACT UNIFICATION CLIQUE-SHARING+FREENESS             |
 %------------------------------------------------------------------------%
-% amgu_shfr_clique(+,+,+,-)                                              |
-% amgu_shfr_clique(X,T,((Cl,Sh),f),SHF')                                 |   
 %------------------------------------------------------------------------%
+
+:- pred amgu_shfr_clique(+X,+T,+((Cl,Sh),f),-SHF_prime).
+
 amgu_shfr_clique(X,(T,Type,L),(SH,F),(SH1,F1)):-
      member_value_freeness(F,Free_Vars0,f),
      sort(Free_Vars0,Free_Vars),
@@ -107,23 +108,22 @@ amgu_shfr_clique_(X,(T,_,_),(SH,F),(SH0,F0)):-
 %%      lin(Sh,Ts),
 %%      lin(Cl,Ts).
 
-%------------------------------------------------------------------------%
-% amgu_clique_ff(+,+,+,-)                                                |
-% amgu_clique_ff(V_x,X,V_t,State,AMGU)                                   |
-% x or t free                                                            |
-%------------------------------------------------------------------------%
-% amgu_clique_ff(x=t,(cl,sh)) =                                          |
-% (cl                                                                    |
-% , \nrel(xt,sh) U (sh_x \bin sh_t))   if cl_x = cl_t = empty            |
-%                                                                        |
-% (\nrel(xt,cl)                                                          |
-% , \nrel(xt,sh))                      if cl_x = sh_x = empty or         |
-%                                         cl_t = sh_t = empty            |
-% (\nrel(xt,cl) U                                                        | 
-% ((cl_x U sh_x) \bin cl_t) U          otherwise                         |
-%  (cl_x \bin sh_t)                                                      |
-% , \nrel(xt,sh) U (sh_x \bin sh_t))                                     |
-%------------------------------------------------------------------------%
+:- pred amgu_clique_ff(+V_x,+X,V_t,+State,-AMGU)
+   #
+"x or t free                                                           
+
+amgu_clique_ff(x=t,(cl,sh)) =                                          
+(cl                                                                    
+, \nrel(xt,sh) U (sh_x \bin sh_t))   if cl_x = cl_t = empty            
+                                                                       
+(\nrel(xt,cl)                                                          
+, \nrel(xt,sh))                      if cl_x = sh_x = empty or         
+                                        cl_t = sh_t = empty            
+(\nrel(xt,cl) U                                                         
+((cl_x U sh_x) \bin cl_t) U          otherwise                         
+ (cl_x \bin sh_t)                                                      
+, \nrel(xt,sh) U (sh_x \bin sh_t))                                     
+".
 
 :- push_prolog_flag(multi_arity_warnings,off).
 :- push_prolog_flag(discontiguous_warnings,off).
@@ -281,9 +281,9 @@ share_clique_with(Vars,SH,Result):-
 %                      UPDATE FREENESS                                   % 
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% sharefree_clique_update_freeness(+,+,+,-)                              |
-% sharefree_clique_update_freeness(Sh',f',Vars,Newf)                     |
-%-------------------------------------------------------------------------
+
+:- pred sharefree_clique_update_freeness(+Sh_prime,+F_prime,+Vars,-Newf).
+
 sharefree_clique_update_freeness((Cl,Sh),F,Vars,F1):-
      % ground variables
      merge_list_of_lists(Cl,Cl_Vars),

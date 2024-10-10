@@ -20,7 +20,10 @@
       fr_empty_entry/3,
     % humm...
       get_free_vars/3
-    ], [datafacts]).
+    ], [datafacts, modes_extra]).
+
+:- doc(title, "fr:  minimal freeness (abstract domain)").
+:- doc(stability, alpha).
 
 :- include(ciaopp(plai/plai_domain)).
 :- dom_def(fr).

@@ -1,9 +1,10 @@
-:- module(sharing, [], [assertions, regtypes, isomodes]).
+:- module(sharing, [], [assertions, regtypes, modes_extra]).
 
-:- doc(title, "sharing (abstract domain)").
+:- doc(title, "share: sharing (abstract domain)").
 :- doc(author, "Kalyan Muthukumar"). % started: 5/2/89
 :- doc(author, "Maria Garcia de la Banda").
 :- doc(author, "Francisco Bueno").
+:- doc(stability, prod).
 
 :- include(ciaopp(plai/plai_domain)).
 :- dom_def(share, [default]).
@@ -17,32 +18,37 @@
 :- dom_impl(_, augment_asub/3, [from(sharing_amgu:share_amgu), noq]).
 :- dom_impl(_, augment_two_asub/3, [from(sharing_amgu:share_amgu), noq]).
 
-%------------------------------------------------------------------------%
-%                    Meaning of the Program Variables                    %
-%                                                                        %
-% BPrime   : similar to the abstract prime constraint: abstract          %
-%            subtitution obtained after the analysis of the clause being %
-%            considered still projected onto Hv (i.e. just before going  %
-%            Sv and thus, to Prime)                                      %
-% Binds    : List of primitive bindings corresponding to the unification %
-%            of Term1 = Term2.                                           %
-% Gv       : set of ground variables (can be added as a prefix of a set  %
-%            of variables, e.g. GvHv means the set of ground variables of%
-%            the head variables)                                         %
-% Partition: Set of set of variables in which ach variable appears only  %
-%            in one set. It is the result of a transitive closure        %
-% _args    : Added as a prefix of a term, means the set of variables     %
-%            s.t. the i-th set contains the set of variables (ordered) in%
-%            the i-th argument of the Term                               %
-% Star     : a closure under union of a set of sets (can be added as a   %
-%            suffix of a set of sets)                                    %
-% ArgShare : Sets of numbers representing the possible set sharing among %
-%            the argument positions indicated by the numbers             %
-% ShareArgs: Set of sets of numbers in which each set represents the     %
-%            possible set sharing among the argument positions indicated %
-%            by the numbers                                              %
-% Rest are as in domain_dependent.pl                                     %
-%------------------------------------------------------------------------%
+% infers(ground/1, rtcheck).
+% infers(mshare/1, rtcheck).
+
+:- doc(module,"
+@begin{note}
+**Meaning of the Program Variables**  
+                                                                      
+- `BPrime`   : similar to the abstract prime constraint: abstract         
+               subtitution obtained after the analysis of the clause being 
+               considered still projected onto `Hv` (i.e. just before going  
+               `Sv` and thus, to `Prime`).                                      
+- `Binds`    : List of primitive bindings corresponding to the unification 
+               of `Term1` = `Term2`.                                           
+- `Gv`       : set of ground variables (can be added as a prefix of a set  
+               of variables, e.g. `GvHv` means the set of ground variables of
+               the head variables).                                         
+- `Partition`: Set of set of variables in which ach variable appears only 
+               in one set. It is the result of a transitive closure.         
+- `_args`    : Added as a prefix of a term, means the set of variables    
+               s.t. the i-th set contains the set of variables (ordered) in 
+               the i-th argument of the `Term`.                                
+- `Star`     : a closure under union of a set of sets (can be added as a 
+               suffix of a set of sets).                                    
+- `ArgShare` : Sets of numbers representing the possible set sharing among
+               the argument positions indicated by the numbers.              
+- `ShareArgs`: Set of sets of numbers in which each set represents the   
+               possible set sharing among the argument positions indicated 
+               by the numbers.                                              
+Rest are as in `domain_dependent.pl`.                                   
+@end{note}
+").
 
 :- use_module(domain(s_grshfr), [new1_gvars/4, projected_gvars/3]).
 
@@ -79,21 +85,22 @@
 
 %------------------------------------------------------------------------%
 
-:- regtype absu(A) # "@var{A} is an abstract substitution".
+:- regtype absu(A) # "`A` is an abstract substitution".
 absu(_). % TODO: define properly for this domain
 
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-%                      ABSTRACT PROJECTION
+%                      ABSTRACT PROJECTION                               %
 %------------------------------------------------------------------------%
-%-------------------------------------------------------------------------
-% project(+,+,+,+,-)
-% project(Sg,Vars,HvFv_u,ASub,Proj)
-% Eliminates from each element of the list of lists of variables given as|
-% second argument any variable which is not an element of the first      |
-% argument. Both ordered.                                                |
-% i.e. Proj = {Ys | Xs in ASub, Ys = Xs intersect Vars }                 |
 %------------------------------------------------------------------------%
+
+:- pred project(+Sg,+Vars,+HvFv_u,+ASub,-Proj)
+   #
+"Eliminates from each element of the list of lists of variables given as
+second argument any variable which is not an element of the first      
+argument. Both ordered.                                                
+i.e. `Proj` = `\\{` `Ys` | `Xs` in `ASub`, `Ys` = `Xs` intersect `Vars` `\\}`                 
+".
 
 :- export(project/5).    
 :- dom_impl(_, project/5, [noq]).
@@ -125,37 +132,38 @@ project_share1(yes,Proj1,NewVars,Ls,[Proj1|Proj]):-
 %                      ABSTRACT Call To Entry                            %
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% call_to_entry(+,+,+,+,+,+,+,-,-)
-% call_to_entry(Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo)
-% It obtains the abstract substitution (Entry) which results from adding %
-% the abstraction of the Sg = Head to Proj, later projecting the         %
-% resulting substitution onto Hv. This is done as follows:               %
-%  * If Sg and Head are identical up to renaming it is just a question   %
-%    or renaming Proj and adding the Fv as singletons                    %
-%  * If Hv = [], Entry is just the Fv as singletons                      %
-%  * Otherwise, it will                                                  %
-%       - obtain Gv1 (ground variables in Sv due to Proj)                %
-%       - obtain Binds (sorted list of primitive equations corresponding %
-%         to the equation Sg = Head)                                     %
-%       - obtain Gv2 (variables in Sv or Hv involved in a primitive      %
-%         equation with a ground term)                                   %
-%       - propagate the groundnes of Gv1 and Gv2 to Proj through Binds   %
-%         obtaining NewBinds (grounding bindings eliminated) NewProj     %
-%         (ground variables eliinated) Gv (final set of ground variables)%
-%         GvSv and GvHv (subset of vars in Gv belonging to Sg and Head   %
-%         respectively)                                                  %
-%       - then it obtains Partition (the transitive closure of due to    %
-%         the sharing established by NewProj) and H_partition (Partition %
-%         projected onto the Hv variables)                               %
-%       - then it obtains in ShareArgsStar the star of the sharing among %
-%         the arguments of Sg established by NewProj, and in Head_args   %
-%         the set of variables belonging to each argument of Head        %
-%       - Then the idea is to obtain Entry by computing the powerset of  %
-%         each equivalence class in H_partition and eliminating those    %
-%         sets in the powerset which are not allowed (they would imply   %
-%         sharing among arguments in the head while there is no sharing  %
-%         among those arguments in ShareArgsStar)
-%-------------------------------------------------------------------------
+
+:- pred call_to_entry(+Sv,+Sg,+Hv,+Head,+K,+Fv,+Proj,-Entry,-ExtraInfo)
+   #
+"It obtains the abstract substitution (`Entry`) which results from adding
+the abstraction of the `Sg` = `Head` to `Proj`, later projecting the         
+resulting substitution onto `Hv`. This is done as follows:               
+- If `Sg` and `Head` are identical up to renaming it is just a question   
+  or renaming `Proj` and adding the `Fv` as singletons.                     
+- If `Hv` = [], `Entry` is just the `Fv` as singletons.                      
+- Otherwise, it will                                                  
+  - obtain `Gv1` (ground variables in `Sv` due to `Proj`).                
+  - obtain `Binds` (sorted list of primitive equations corresponding 
+    to the equation `Sg` = `Head`).                                     
+  - obtain `Gv2` (variables in `Sv` or `Hv` involved in a primitive      
+    equation with a ground term).                                   
+  - propagate the groundnes of `Gv1` and `Gv2` to `Proj` through `Binds`   
+    obtaining `NewBinds` (grounding bindings eliminated) `NewProj`     
+    (ground variables eliinated) `Gv` (final set of ground variables)
+    `GvSv` and `GvHv` (subset of vars in `Gv` belonging to `Sg` and `Head`   
+    respectively).                                                  
+  - then it obtains `Partition` (the transitive closure of due to    
+    the sharing established by `NewProj`) and `H_partition` (`Partition` 
+    projected onto the `Hv` variables).                               
+  - then it obtains in `ShareArgsStar` the star of the sharing among 
+    the arguments of Sg established by `NewProj`, and in `Head_args`   
+    the set of variables belonging to each argument of `Head`.        
+  - Then the idea is to obtain `Entry` by computing the powerset of  
+    each equivalence class in `H_partition` and eliminating those    
+    sets in the powerset which are not allowed (they would imply   
+    sharing among arguments in the head while there is no sharing  
+    among those arguments in `ShareArgsStar`).
+".
 
 :- export(call_to_entry/9).
 :- dom_impl(_, call_to_entry/9, [noq]).
@@ -186,29 +194,30 @@ call_to_entry(Sv,Sg,Hv,Head,_K,Fv,Proj,Entry,ExtraInfo) :-
 %                      ABSTRACT Exit to Prime                            %
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% exit_to_prime(+,+,+,+,+,+,-)
-% exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime)
-% It computes the prime abstract substitution Prime, i.e.  the result of %
-% going from the abstract substitution over the head variables (Exit), to%
-% the abstract substitution over the variables in the subgoal. It will:  %
-% * If Exit is '$bottom', Prime will be also '$bottom'.                  %
-% * If Flag = yes (Head and Sg identical up to renaming) it is just a    %
-%   question or renaming Exit                                            %
-% * If Hv = [], Prime = []                                               %
-% * Otherwise, it will:                                                  %
-%      - project Exit onto Hv obtaining BPrime                           %
-%      - subtract from Hv those vars which were ground due to the        %
-%        equation Head = Sg (Gv) obtaining Hv_rem                        %
-%      - obtain the vars Hv_rem which had becomed ground after the       %
-%        of the clause (NewGv_Hv)                                        %
-%      - Then if NewGv_Hv is \== [], groundness must be propagated       %
-%        to obtain ASub                                                  %
-%      - Otherwise, ASub is just equal to NewProj                        %
-%      - Then Prime is obtained by obtaining New_partition (transitive   %
-%        closure of the sharing specified in Bprime) and performing the  %
-%        same kind of prunning that in the call_to_entry but in the      %
-%        opposite direction.                                             %
-%-------------------------------------------------------------------------
+
+:- pred exit_to_prime(+Sg,+Hv,+Head,+Sv,+Exit,+ExtraInfo,-Prime)
+   #
+"It computes the prime abstract substitution `Prime`, i.e.  the result of
+going from the abstract substitution over the head variables (`Exit`), to
+the abstract substitution over the variables in the subgoal. It will:  
+- If `Exit` is `$bottom`, `Prime` will be also `$bottom`.                  
+- If `Flag` = yes (`Head` and `Sg` identical up to renaming) it is just a    
+  question or renaming `Exit`.                                            
+- If `Hv` = [], `Prime` = [].                                               
+- Otherwise, it will:                                                  
+  - project `Exit` onto `Hv` obtaining `BPrime`.                           
+  - subtract from `Hv` those vars which were ground due to the        
+    equation `Head` = `Sg` (`Gv`) obtaining `Hv_rem`.                         
+  - obtain the vars `Hv_rem` which had becomed ground after the       
+    of the clause (`NewGv_Hv`).                                        
+  - Then if `NewGv_Hv` is `\==` [], groundness must be propagated       
+    to obtain `ASub`.                                                   
+  - Otherwise, `ASub` is just equal to `NewProj`.                        
+  - Then `Prime` is obtained by obtaining `New_partition` (transitive   
+    closure of the sharing specified in `BPrime`) and performing the  
+    same kind of prunning that in the `call_to_entry` but in the      
+    opposite direction.                                             
+".
 
 :- export(exit_to_prime/7).
 :- dom_impl(_, exit_to_prime/7, [noq]).
@@ -244,13 +253,12 @@ exit_to_prime(Sg,Hv,Head,Sv,Exit,(Gv,NewBinds,NewProj,Partition),Prime):-
 
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-%                      ABSTRACT SORT                                     %
+%                            ABSTRACT SORT                               %
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% abs_sort(+,-)
-% abs_sort(Asub,Asub_s)
-% sorts the set of set of variables ASub to obtaint the Asub_s           |
-%-------------------------------------------------------------------------
+
+:- pred abs_sort(+Asub,-Asub_s)
+   # "sorts the set of set of variables `ASub` to obtaint the `Asub_s`.".
 
 :- export(abs_sort/2).
 :- dom_impl(_, abs_sort/2, [noq]).
@@ -260,15 +268,16 @@ abs_sort(ASub,ASub_s):-
 
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-%                      ABSTRACT LUB                                      %
+%                            ABSTRACT LUB                                %
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% compute_lub(+,-)
-% compute_lub(ListASub,Lub)
-% It computes the lub of a set of Asub. For each two abstract            %
-% substitutions ASub1 and ASub2 in ListASub, obtaining the lub is just   %
-% merging the ASub1 and ASub2.                                           %
-%------------------------------------------------------------------------%
+
+:- pred compute_lub(+ListASub,-Lub)
+   #
+"It computes the lub of a set of `Asub`. For each two abstract           
+substitutions `ASub1` and `ASub2` in `ListASub`, obtaining the lub is just   
+merging the `ASub1` and `ASub2`.
+".
 
 :- export(compute_lub/2).
 :- dom_impl(_, compute_lub/2, [noq]).
@@ -290,11 +299,8 @@ merge_subst(Xss,'$bottom',Xss):- !.
 merge_subst(Xss,Yss,Zss) :-
     merge(Xss,Yss,Zss).
 
-%------------------------------------------------------------------------%
-% glb(+,+,-)
-% glb(ASub0,ASub1,Lub)
-% Glb is just intersection.                                              %
-%------------------------------------------------------------------------%
+:- pred glb(+ASub0,+ASub1,-Lub)
+   # "`Glb` is just intersection.".
 
 :- export(glb/3).
 :- dom_impl(_, glb/3, [noq]).
@@ -305,19 +311,21 @@ glb(ASub0,ASub1,Glb):-
 %%      ( ASub=[], ASub0\==[], ASub1\==[] -> Glb = '$bottom' ; Glb=ASub ).
 %% this is not true AADEBUG
     Glb = ASub.
+
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-%                      ABSTRACT EXTEND                                   %
+%                         ABSTRACT EXTEND                                %
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% extend(+,+,+,+,-)
-% extend(Sg,Prime,Sv,Call,Succ)
-% If Prime = bottom, Succ = bottom. If Sv = [], Call = Succ. Otherwise,  %
-% it splits Call into two sets of sets: Intersect (those sets containing %
-% at least a variabe in Sv) and Disjunct (the rest). Then is obtains     %
-% in Star the closure under union of Intersect. Finally, it prunes Star  %
-% with the information in Prime adding, at the end, Disjunct.            %
-%------------------------------------------------------------------------%
+
+:- pred extend(+Sg,+Prime,+Sv,+Call,-Succ)
+   #
+"If `Prime` = `bottom`, `Succ` = `bottom`. If `Sv` = [], `Call` = `Succ`. Otherwise, 
+it splits `Call` into two sets of sets: `Intersect` (those sets containing 
+at least a variabe in `Sv`) and `Disjunct` (the rest). Then is obtains     
+in `Star` the closure under union of `Intersect`. Finally, it prunes `Star`  
+with the information in `Prime` adding, at the end, `Disjunct`.
+".            
 
 :- export(extend/5).     
 :- dom_impl(_, extend/5, [noq]).
@@ -335,8 +343,9 @@ extend(_Sg,Prime,Sv,Call,Succ) :-
 %                      ABSTRACT Call to Success Fact                     %
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% Specialized version of call_to_entry + exit_to_prime + extend for facts%
-%------------------------------------------------------------------------%
+
+:- pred call_to_success_fact/9
+   # "Specialized version of `call_to_entry` + `exit_to_prime` + `extend` for facts".
 
 :- export(call_to_success_fact/9).
 :- dom_impl(_, call_to_success_fact/9, [noq]).
@@ -360,7 +369,7 @@ call_to_success_fact(Sg,Hv,Head,_K,Sv,Call,Proj,Prime,Succ) :-
 call_to_success_fact(_Sg,_Hv,_Head,_K,_Sv,_Call,_Proj, '$bottom','$bottom').
 
 %-------------------------------------------------------------------------
-% Specialised version of call_to_success_fact in order to allow    |
+% Specialised version of call_to_success_fact in order to allow          |
 % the computation of the prime, the composition and then the extension   |
 % Note that if the success is computed (instead of the prime) and then   |
 % we compose the information and project it, we can loose information    |
@@ -386,9 +395,9 @@ call_to_prime_fact(Sg,Hv,Head,Sv,Call,Prime) :-
     closure_under_union(Call,Star),
     compute_success_proj(S_partition,Sg_args,ShareArgsHeadStar,Star,[],Prime).
 
-%-------------------------------------------------------------------------
-%            Intermediate Functions                                      %
-%-------------------------------------------------------------------------
+%------------------------------------------------------------------------%
+%                      Intermediate Functions                            %
+%------------------------------------------------------------------------%
 
 %-------------------------------------------------------------------------
 % projected_gvars(+,+,-)                                                 |
@@ -398,15 +407,14 @@ call_to_prime_fact(Sg,Hv,Head,Sv,Call,Prime) :-
 
 % MOVED TO MODULE TOPC
 
-%-------------------------------------------------------------------------
-% abs_unify(+,+,-,-)                                                     |
-% abs_unify(Term1,Term2,Binds,Gv)                                        |
-% First obtains in Temp2 the sorted list of normalized equations         |
-% corresponding to the equation Term1 = Term2.                           |
-% Then for each X such that exists (X,S) and (X.S') in Temp2, it replaces|
-% them by (X [S,S']) obtaining Binds and computes Gv (the variables in   |
-%  Sv or Hv involved in a primitive equation with a ground term)         |
-%-------------------------------------------------------------------------
+:- pred abs_unify(+Term1,+Term2,-Binds,-Gv)
+   #
+"First obtains in `Temp2` the sorted list of normalized equations         
+corresponding to the equation `Term1` = `Term2`.                           
+Then for each `X` such that exists (`X`,`S`) and (`X`,`S'`) in `Temp2`, it replaces
+them by (`X` [`S`,`S'`]) obtaining `Binds` and computes `Gv` (the variables in   
+`Sv` or `Hv` involved in a primitive equation with a ground term).         
+".
 
 abs_unify(Term1,Term2,Binds,Gv) :-
     sh_peel(Term1,Term2,Temp1-[]),
@@ -464,18 +472,16 @@ collect([(X,List)],[(X,[List])],Gv):-
     ).
 collect([],[],[]).
 
-%-------------------------------------------------------------------------
-% groundness_propagate(+,+,+,+,+,-,-,-,-,-)                              |
-% groundness_propagate(OldBinds,Sv,Gv1,Gv2,Proj,                         |
-%                              NewBinds,NewProj,Gv,SvGv,HvGv)            |
-% It first propagates the groundness of the variables contained in       |
-% Gv1 and Gv2  to OldBinds obtaining Gv. Then it splits Gv into SvGv     |
-% and HvGv(i.e. those belonging to the subgoal and head respectively)    |
-% Then it substract from SvGv those variables which where known to be    |
-% ground in Proj obtaining in New_gvars those which have become ground   |
-% due to the unification.                                                |
-% Finally, it updates Proj with this information and sorts it            |
-%-------------------------------------------------------------------------
+:- pred groundness_propagate(+OldBinds,+Sv,+Gv1,+Gv2,+Proj,-NewBinds,-NewProj,-Gv,-SvGv,-HvGv)
+   #
+"It first propagates the groundness of the variables contained in     
+`Gv1` and `Gv2` to `OldBinds` obtaining `Gv`. Then it splits `Gv` into `SvGv`    
+and `HvGv`(i.e. those belonging to the subgoal and head respectively).   
+Then it substract from `SvGv` those variables which where known to be   
+ground in `Proj` obtaining in `New_gvars` those which have become ground  
+due to the unification.                                               
+Finally, it updates `Proj` with this information and sorts it.           
+".
 
 groundness_propagate(OldBinds,Sv,Gv1,Gv2,Proj,NewBinds,NewProj,Gv,SvGv,HvGv) :-
     merge(Gv1,Gv2,Gvars),                
@@ -504,18 +510,17 @@ new2_gvars([(Y,Bind)|Rest],X,[(Y,New_bind)|New_rest],New2_gvars) :-
     ; New2_gvars = Rem_gvars
     ),
     new2_gvars(Rest,X,New_rest,Rem_gvars).
-        
-%-------------------------------------------------------------------------
-% pd_graph(+,+,+,+,+,+,-,-)                                              |
-% pd_graph(Sv,Hv,SvGv,HvGv,NewProj,Binds,Partition,Proj_Partition)       |
-% It first obtains in Partition0 a list of singletons in which [X] is    |
-% an element of the list if X is in either Hv or Sv and it is non ground |
-% (i.e. is not an element of SvGv or HvGv).                              |
-% Then it obtains in Partition1 the transitive closure of the sharing    |
-% among the Sv and Hv variables specified in NewProj, and then           |
-% in Partition it extends the transitive closure of Partition1 due to the|
-% new sharing established by Binds. Finally it projects it onto the Hv   |
-%-------------------------------------------------------------------------
+                                              
+:- pred pd_graph(+Sv,+Hv,+SvGv,+HvGv,+NewProj,+Binds,-Partition,-Proj_Partition)
+   #
+"It first obtains in `Partition0` a list of singletons in which `[X]` is    
+an element of the list if `X` is in either `Hv` or `Sv` and it is non ground 
+(i.e. is not an element of `SvGv` or `HvGv`).                              
+Then it obtains in `Partition1` the transitive closure of the sharing    
+among the `Sv` and `Hv` variables specified in `NewProj`, and then           
+in `Partition` it extends the transitive closure of `Partition1` due to the
+new sharing established by `Binds`. Finally it projects it onto the `Hv`.   
+".
 
 pd_graph(Sv,Hv,SvGv,HvGv,NewProj,Binds,Partition,Proj_Partition) :-
     ng_vars(Hv,HvGv,[],Part0_head),
@@ -525,12 +530,11 @@ pd_graph(Sv,Hv,SvGv,HvGv,NewProj,Binds,Partition,Proj_Partition) :-
     sort(Partition_u,Partition),
     project(not_provided_Sg,Hv,not_provided_HvFv_u,Partition,Proj_Partition).
 
-%-------------------------------------------------------------------------
-% ng_vars(+,+,+,-)                                                       |
-% ng_vars(Vars,Gv,Tail,Singletons)                                       |
-% Obtains in Singletons the [X] corresponding to each X which is in Vars |
-% and not in Gv and then adds Tail at the end of the list                |
-%-------------------------------------------------------------------------
+:- pred ng_vars(+Vars,+Gv,+Tail,-Singletons)
+   #
+"Obtains in Singletons the `[X]` corresponding to each `X` which is in `Vars` 
+and not in `Gv` and then adds `Tail` at the end of the list.                
+".
 
 :- push_prolog_flag(multi_arity_warnings,off).
 
@@ -550,14 +554,13 @@ ng_vars(=, _, Tail1, _, Tail2, Initial, Intersection) :-
 
 :- pop_prolog_flag(multi_arity_warnings).
 
-%-------------------------------------------------------------------------
-% transitive_closure_binds(+,+,-)                                        |
-% transitive_closure_binds(Binds,Old_partition,New_partition)            |
-% It starts with a transitive closure in Old_partition (each variable    |
-% appears only in one set). The aim is to obtain in New_partition the    |
-% new transitive closure of the Old_partition due to the bindings in     |
-% Binds.                                                                 |
-%-------------------------------------------------------------------------
+:- pred transitive_closure_binds(+Binds,+Old_partition,-New_partition)
+   #
+"It starts with a transitive closure in `Old_partition` (each variable  
+appears only in one set). The aim is to obtain in `New_partition` the  
+new transitive closure of the `Old_partition` due to the bindings in   
+`Binds`.                                                               
+".
 
 transitive_closure_binds([],Partition,Partition).
 transitive_closure_binds([(X,Xss)|Rest],Old_partition,New_partition) :-
@@ -566,14 +569,12 @@ transitive_closure_binds([(X,Xss)|Rest],Old_partition,New_partition) :-
     merge_list_of_lists(Intersect,Merged),
     transitive_closure_binds(Rest,[Merged|NotIntersect],New_partition).
 
-%-------------------------------------------------------------------------
-% compute_entry(+,+,+,+,-)                                               |
-% compute_entry(Partition,Head_args,ShareArgsStar,FvSingl,Entry)         |
-% Foreach Xs in Partition it computes the powerset of Xs and prunes the  |
-% result with the information available in Head_args and ShareArgsStar   |
-% The result is added to FvSingl                                         |
-%-------------------------------------------------------------------------
-
+:- pred compute_entry(+Partition,+Head_args,+ShareArgsStar,+FvSingl,-Entry)
+   #
+"Foreach `Xs` in `Partition` it computes the powerset of `Xs` and prunes the  
+result with the information available in `Head_args` and `ShareArgsStar`.   
+The result is added to `FvSingl`.                                         
+".
 compute_entry([],_Head_args,_ShareArgsStar,Entry,Entry).
 compute_entry([Xs|Xss],Head_args,ShareArgsStar,FvSingl,Entry) :-
     powerset(Xs,Powerset),
@@ -589,14 +590,13 @@ prune_entry([Xs|Xss],Head_args,ShareArgsStar,Temp1,Entry) :-
     ),
     prune_entry(Xss,Head_args,ShareArgsStar,Temp2,Entry).
 
-%-------------------------------------------------------------------------
-% pos(+,+,+,-)                                                           |
-% pos(Xss,Arg,Xs,ArgShare)                                               |
-% Xss is a list containing in each Set_i the variables in the i-th       |
-% arg of the Term. Arg is the number of the current arg. Xs is a sorted  |
-% list of variables. It will obtain ArgShare, the set of arguments in    |
-% at least one variable in Xs appears                                    |
-%-------------------------------------------------------------------------
+:- pred pos(+Xss,+Arg,+Xs,-ArgShare)
+   #
+"`Xss` is a list containing in each `Set_i` the variables in the i-th       
+arg of the `Term`. `Arg` is the number of the current arg. `Xs` is a sorted  
+list of variables. It will obtain `ArgShare`, the set of arguments in    
+at least one variable in `Xs` appears.                                    
+".
 
 :- export(pos/4).
 pos([],_,_,[]).
@@ -609,13 +609,12 @@ pos([_Ys|Yss],N,Xs,ArgShare) :-
     N1 is N+1,
     pos(Yss,N1,Xs,ArgShare).
 
-%-------------------------------------------------------------------------
-% script_p_star(+,+,-)                                                   |
-% script_p_star(Atom,ASub,ShareArgsStar)                                 | 
-% It first obtains in ArgSare_info the set of sets of argument numbers   |
-% of Atom each one corresponding to each set in ASub. Then it obtains    |
-% the closure under union.                                               |
-%-------------------------------------------------------------------------
+:- pred script_p_star(+Atom,+ASub,-ShareArgsStar)
+   #
+"It first obtains in `ArgSare_info` the set of sets of argument numbers   
+of `Atom` each one corresponding to each set in `ASub`. Then it obtains    
+the closure under union.                                               
+".
 
 :- export(script_p_star/3).
 script_p_star(Atom,ASub,ShareArgsStar) :-
@@ -633,14 +632,13 @@ script_p1([Xs|Xss],Atom_args,[ArgShare|ShareArgs_info]) :-
     pos(Atom_args,1,Xs,ArgShare),
     script_p1(Xss,Atom_args,ShareArgs_info).
 
-%-------------------------------------------------------------------------
-% compute_success_proj(+,+,+,+,+,-)                                      |
-% compute_success_proj(Partition,Sg_args,ShareArgsStar,Star,Temp,Prime)  |
-% For each element in Partition, it computes its Powerset. Then, for each|
-% element Xs in Powerset it computes the corresponding ArgsShare w.r.t   |
-% Sg_args. If ArgsShare is in ShareArgsStar and Xs is in Star, Xs is     |
-% added to Prime. Otherwise, it is eliminated                            |
-%-------------------------------------------------------------------------
+:- pred compute_success_proj(+Partition,+Sg_args,+ShareArgsStar,+Star,+Temp,-Prime)
+   #
+"For each element in `Partition`, it computes its `Powerset`. Then, for each
+element `Xs` in `Powerset` it computes the corresponding `ArgsShare` w.r.t   
+`Sg_args`. If `ArgsShare` is in `ShareArgsStar` and `Xs` is in `Star`, `Xs` is     
+added to `Prime`. Otherwise, it is eliminated.
+".   
 
 compute_success_proj([],_,_,_,Prime,Prime).
 compute_success_proj([Xs|Xss],Sg_args,ShareArgsStar,Star,Temp,Prime) :-
@@ -668,11 +666,8 @@ prune_success([Xs|Xss],Prime,Sv,Call,Succ) :-
     ),
     prune_success(Xss,Prime,Sv,Temp,Succ).
 
-%-------------------------------------------------------------------------
-% unknown_entry(+,+,-)
-% unknown_entry(Sg,Qv,Call)
-% The top value in Sharing for a set of variables is the powerset        |
-%-------------------------------------------------------------------------
+:- pred unknown_entry(+Sg,+Qv,-Call)
+   # "The top value in `Sharing` for a set of variables is the powerset.".
 
 :- export(unknown_entry/3).
 :- dom_impl(_, unknown_entry/3, [noq]).
@@ -683,11 +678,12 @@ unknown_entry(_Sg,Qv,Call):-
 :- export(empty_entry/3).
 :- dom_impl(_, empty_entry/3, [noq]).
 :- pred empty_entry(+Sg,+Vars,-Entry): cgoal * list * absu
-   # "Gives the ""empty"" value in this domain for a given set of
-   variables @var{Vars}, resulting in the abstract substitution
-   @var{Entry}. I.e., obtains the abstraction of a substitution in
-   which all variables @var{Vars} are unbound: free and unaliased. In
-   this domain is the list of singleton lists of variables".
+   #
+"Gives the *empty* value in this domain for a given set of
+variables `Vars`, resulting in the abstract substitution
+`Entry`. I.e., obtains the abstraction of a substitution in
+which all variables `Vars` are unbound: free and unaliased. In
+this domain is the list of singleton lists of variables.".
 
 empty_entry(_Sg,Vars,Entry):-
     list_to_list_of_lists(Vars,Entry).
@@ -702,28 +698,24 @@ empty_entry(_Sg,Vars,Entry):-
 %:- export(output_interface/2). 
 % output_interface(Succ,Succ).
 
-%------------------------------------------------------------------------%
-% asub_to_native(+,+,+,-,-)
-% asub_to_native(ASub,Qv,OutFlag,ASub_user,Comps)
-% The user friendly format consists in extracting the ground variables   %
-%------------------------------------------------------------------------%
-
 :- export(asub_to_native/5). 
 :- dom_impl(_, asub_to_native/5, [noq]).
+:- pred asub_to_native(+ASub,+Qv,+OutFlag,-ASub_user,-Comps)
+      # "The user friendly format consists in extracting the ground variables.".
+
 asub_to_native('$bottom',_Qv,_OutFlag,_ASub_user,_Comps):- !, fail.
 asub_to_native(Succ,Qv,_OutFlag,Info,[]):-
     if_not_nil(Succ,sharing(Succ),Info,Info0),
     projected_gvars(Succ,Qv,Gv),
     if_not_nil(Gv,ground(Gv),Info0,[]).
 
-%------------------------------------------------------------------------%
-% input_user_interface(+,+,-,+,+)
-% input_user_interface(InputUser,Qv,ASub,Sg,MaybeCallASub)
-% Obtaining the abstract substitution for Sharing from the user supplied %
-% information just consists in taking the mshare(Sharing) element of     %
-% InputUser and sorting it. If there is no such element, get the "top"   %
-% sharing for the variables involved.                                    %
-%------------------------------------------------------------------------%
+:- pred input_user_interface(?InputUser,+Qv,-ASub,+Sg,+MaybeCallASub)
+   #
+"Obtaining the abstract substitution for `Sharing` from the user supplied 
+information just consists in taking the `mshare(Sharing)` element of     
+`InputUser` and sorting it. If there is no such element, get the *top*   
+sharing for the variables involved.                                    
+".
 
 :- export(input_user_interface/5).  
 :- dom_impl(_, input_user_interface/5, [noq]).
@@ -778,16 +770,15 @@ myappend(Vs,V0,V):-
 
 may_be_var(X,X):- ( X=[] ; true ), !.
 
-%-------------------------------------------------------------------------
-% unknown_call(+,+,+,-)
-% unknown_call(Sg,Vars,Call,Succ)
-% Obtained by selecting those sets in Call for which at least a variable |
-% in Vars appears, making the star of those sets, and adding the sets    |
-% with empty intersection with Vars                                      |
-%-------------------------------------------------------------------------
-
 :- export(unknown_call/4).
 :- dom_impl(_, unknown_call/4, [noq]).
+:- pred unknown_call(+Sg,+Vars,+Call,-Succ)
+   #
+"Obtained by selecting those sets in `Call` for which at least a variable 
+in `Vars` appears, making the star of those sets, and adding the sets   
+with empty intersection with `Vars`.                                     
+".
+
 unknown_call(_Sg,_Vars,'$bottom','$bottom') :- !.
 unknown_call(_Sg,_Vars,[],[]) :- !.
 unknown_call(_Sg,Vars,[C|Call],Succ) :-
@@ -795,14 +786,11 @@ unknown_call(_Sg,Vars,[C|Call],Succ) :-
     closure_under_union(Intersect,Star),
     merge(Star,Rest,Succ).
 
-%------------------------------------------------------------------------%
-% less_or_equal(+,+)
-% less_or_equal(ASub0,ASub1)
-% Succeeds if ASub1 is more general or equal to ASub0                    %
-%------------------------------------------------------------------------%
-
 :- export(less_or_equal/2).
 :- dom_impl(_, less_or_equal/2, [noq]).
+:- pred less_or_equal(+ASub0,+ASub1)
+   # "Succeeds if `ASub1` is more general or equal to `ASub0`.".
+
 less_or_equal('$bottom',_ASub):- !.
 less_or_equal(ASub0,ASub1):-
     ASub0 == ASub1, !.
@@ -813,26 +801,25 @@ less_or_equal(ASub0,ASub1):-
 %                         HANDLING BUILTINS                              %
 %------------------------------------------------------------------------%
 
-%-------------------------------------------------------------------------
-% special_builtin(+,+,+,-,-)
-% special_builtin(SgKey,Sg,Subgoal,Type,Condvars)
-% Satisfied if the builtin does not need a very complex action. It       |
-% divides builtins into groups determined by the flag returned in the    |
-% second argument + some special handling for some builtins:             |
-%                                                                        |
-% (1) ground : if the builtin makes all variables ground whithout        |
-%     imposing any condition on the previous freeness values of the      |
-%     variables                                                          |
-% (2) bottom : if the abstract execution of the builtin returns bottom   |
-% (3) unchanged : if we cannot infer anything from the builtin, the      |
-%     substitution remains unchanged and there are no conditions imposed |
-%     on the previous freeness values of the variables.                  |
-% (4) some: if it makes some variables ground without imposing conditions|
-% (5) Sgkey: special handling of some particular builtins                |
-%-------------------------------------------------------------------------
-
 :- export(special_builtin/5).
 :- dom_impl(_, special_builtin/5, [noq]).
+
+:- pred special_builtin(+SgKey,+Sg,+Subgoal,-Type,---Condvars)
+   #
+"Satisfied if the builtin does not need a very complex action. It      
+divides builtins into groups determined by the flag returned in the    
+second argument + some special handling for some builtins:        
+- *ground*    : if the builtin makes all variables ground whithout        
+                imposing any condition on the previous freeness values of the      
+                variables.                                                          
+- *bottom*    : if the abstract execution of the builtin returns bottom*.   
+- *unchanged* : if we cannot infer anything from the builtin, the      
+                substitution remains unchanged and there are no conditions imposed 
+                on the previous freeness values of the variables.                  
+- *some*      : if it makes some variables ground without imposing conditions.
+- `Sgkey`     : special handling of some particular builtins.
+".
+
 %-------------------------------------------------------------------------
 % metacuts
 %% special_builtin('CHOICE IDIOM/1',_,_,ground,_).
@@ -991,20 +978,19 @@ not_that_special_builtin('arg/3').
 not_that_special_builtin('keysort/2').
 not_that_special_builtin('sort/2').
 
-%-------------------------------------------------------------------------
-% success_builtin(+,+,+,+,+,-)
-% success_builtin(Type,Sv_u,Condv,HvFv_u,Call,Succ)
-% Obtains the success for some particular builtins:                      |
-%  * If Type = ground, it updates Call making all vars in Sv_u ground    |
-%  * If Type = bottom, Succ = '$bottom'                                  |
-%  * If Type = unchanged, Succ = Call                                    |
-%  * If Type = some, it updates Call making all vars in Condv ground     |
-%  * Otherwise Type is the SgKey of a particular builtin for each the    |
-%    Succ is computed                                                    |
-%-------------------------------------------------------------------------
-
 :- export(success_builtin/6).
 :- dom_impl(_, success_builtin/6, [noq]).
+:- pred success_builtin(+Type,+Sv_u,?Condv,?HvFv_u,+Call,-Succ)
+   #
+"Obtains the success for some particular builtins:                    
+- If `Type` = *ground*, it updates `Call` making all vars in `Sv_u` ground.  
+- If `Type` = *bottom*, `Succ` = `$bottom`.                                
+- If `Type` = *unchanged*, `Succ` = `Call`.                                  
+- If `Type` = *some*, it updates `Call` making all vars in `Condv` ground.   
+- Otherwise `Type` is the `SgKey` of a particular builtin for each the  
+  `Succ` is computed.
+".
+
 success_builtin(ground,Sv_u,_,_,Call,Succ):-
     sort(Sv_u,Sv),
     ord_split_lists_from_list(Sv,Call,_Intersect,Succ).
@@ -1090,14 +1076,11 @@ success_builtin(var,_Sv,p(X),_,Call,Succ):-
     Succ = Call.
 success_builtin(var,_Sv,_Condvars,_,_Call,'$bottom').
 
-%-------------------------------------------------------------------------
-% call_to_success_builtin(+,+,+,+,+,-)                             %
-% call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,Succ)              %
-% Handles those builtins for which computing Prime is easier than Succ   %
-%-------------------------------------------------------------------------
-
 :- export(call_to_success_builtin/6).
 :- dom_impl(_, call_to_success_builtin/6, [noq]).
+:- pred call_to_success_builtin(+SgKey,+Sg,+Sv,+Call,+Proj,-Succ)
+   # "Handles those builtins for which computing `Prime` is easier than `Succ`.".
+   
 call_to_success_builtin('=/2','='(X,Y),Sv,Call,Proj,Succ):-
     copy_term(X,Xterm),
     copy_term(Y,Yterm),

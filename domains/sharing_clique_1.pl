@@ -1,6 +1,6 @@
-:- module(sharing_clique_1, [], [assertions, isomodes]).
+:- module(sharing_clique_1, [], [assertions, modes_extra]).
 
-:- doc(title, "1-CLIQUE-Sharing domain").
+:- doc(title, "1-CLIQUE-sharing (abstract domain)").
 :- doc(author, "Jorge Navas").
 % Copyright (C) 2004-2019 The Ciao Development Team
 

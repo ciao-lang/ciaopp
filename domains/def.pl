@@ -1,4 +1,9 @@
-:- module(def, [], [assertions, datafacts]).
+:- module(def, [], [assertions, datafacts, modes_extra]).
+
+:- doc(title, "def: definiteness (abstract domain)").
+:- doc(author, "Maria Garcia de la Banda").
+:- doc(author, "Manuel Hermenegildo").
+:- doc(stability, beta).
 
 :- include(ciaopp(plai/plai_domain)).
 :- dom_def(def, [default]).
@@ -7,60 +12,59 @@
 
 %% :- doc(bug,"1. length/2 is not working properly.").
 
-/*             Copyright (C)1990-94 UPM-CLIP                            */
-% -------------------------------------------------------------------------------
-% Note: This file contains the definiteness abstract domain and abstract
-%       functions for CLP languages by
-%        M.J. Garcia de la Banda  and M. Hermenegildo
-%
-% The abstract constraint is kept as a(Ground,Set) in which:
-%       - Ground is a sorted list of uniquely defined variables
-%       - Set is a sorted list of elements with format (X,SS) in which
-%         X is a variable and SS is a sorted set of set of variables
-%         such that for each S in SS, uniquely defining all variables
-%         in S, uniquely defines X, and there is no S' in SS, such that
-%         S' subseteq S.
-%       - Not that "top variables" (variables from which nothing is known)
-%         cannot appear in Ground but can appear in some SS.
-%
-%------------------------------------------------------------------------%
-%                                                                        %
-%        programmer: M. Garcia de la Banda                               %
-%                                                                        %
-%------------------------------------------------------------------------%
-%                    Meaning of the Program Variables                    %
-%                                                                        %
-%  AbsInt  : identifier of the abstract interpreter being used           %
-%  Sg      : Subgoal being analysed                                      %
-%  SgKey   : Subgoal key (represented by functor/arity)                  %
-%  Sv      : Subgoal variables                                           %
-%  Call    : Abstract call constraint                                    %
-%  Proj    : Call projected onto Sv                                      %
-%  Head    : Head of one of the clauses which define the Sg predicate    %
-%  Hv      : Head variables                                              %
-%  Fv      : Free variables in the body of the clause being considered   %
-%  Entry   : Abstract entry constraint (i.e. the abstract subtitution    %
-%            obtained after the abstract unification of Sg and Head      %
-%            projected onto Hv + Fv)                                     %
-%  BothEntry: Similar to the abstract entry constraint: the abstract     %
-%            subtitution obtained after the abstract unification of Sg   %
-%            and Head but without being projected onto Hv + Fv)          %
-%  Exit    : Abstract exit constraint (i.e. the abstract subtitution     %
-%            obtained after the analysis of the clause being considered  %
-%            projected onto Hv)                                          %
-%  Prime   : Abstract prime constraint (i.e. the abstract subtitution    %
-%            obtained after the analysis of the clause being considered  %
-%            projected onto Sv)                                          %
-%  BPrime  : similar to the abstract prime constraint: abstract          %
-%            subtitution obtained after the analysis of the clause being %
-%            considered still projected onto Hv (i.e. just before going  %
-%            Sv and thus, to Prime)                                      %
-%  Succ    : Abstract success constraint (i.e. the abstract subtitution  %
-%            obtained after the analysis of the clause being considered  %
-%            extended to the variables of the clause in which Sg appears)%
-%  Constr  : Any abstract constraint                                     %
-%------------------------------------------------------------------------%
+:- doc(copyright,"Copyright @copyright{} 1990-94 UPM-CLIP").
 
+% infers(ground/1, rtcheck).
+% inters(covered/2, rtcheck).
+
+:- doc(module,"
+This file contains the definiteness abstract domain and abstract
+unctions for CLP languages.
+
+The abstract constraint is kept as `a(Ground,Set)` in which:
+- `Ground` is a sorted list of uniquely defined variables
+- `Set` is a sorted list of elements with format (`X`,`SS`) in which
+  `X` is a variable and `SS` is a sorted set of set of variables
+  such that for each `S` in `SS`, uniquely defining all variables
+  in `S`, uniquely defines `X`, and there is no `S'` in `SS`, such that
+  `S'` subseteq `S`.
+- Not that *top variables* (variables from which nothing is known)
+  cannot appear in `Ground` but can appear in some `SS`.
+
+@begin{note}
+**Meaning of the Program Variables**                                     
+                                                                       
+- `AbsInt`   : identifier of the abstract interpreter being used. 
+- `Sg`       : Subgoal being analysed.                                      
+- `SgKey`    : Subgoal key (represented by functor/arity).                  
+- `Sv`       : Subgoal variables.                                           
+- `Call`     : Abstract call constraint.                                    
+- `Proj`     : Call projected onto `Sv`.                                      
+- `Head`     : Head of one of the clauses which define the `Sg` predicate.    
+- `Hv`       : Head variables.                                              
+- `Fv`       : Free variables in the body of the clause being considered   
+- `Entry`    : Abstract entry constraint (i.e. the abstract subtitution    
+               obtained after the abstract unification of `Sg` and `Head`     
+               projected onto `Hv` + `Fv`).                                     
+- `BothEntry`: Similar to the abstract entry constraint: the abstract     
+               subtitution obtained after the abstract unification of `Sg`   
+               and Head but without being projected onto `Hv` + `Fv`).          
+- `Exit`     : Abstract exit constraint (i.e. the abstract subtitution     
+               obtained after the analysis of the clause being considered  
+               projected onto `Hv`).                                          
+- `Prime`    : Abstract prime constraint (i.e. the abstract subtitution    
+               obtained after the analysis of the clause being considered  
+               projected onto `Sv`).                                          
+- `BPrime`   : similar to the abstract prime constraint: abstract          
+               subtitution obtained after the analysis of the clause being 
+               considered still projected onto `Hv` (i.e. just before going  
+               `Sv` and thus, to `Prime`).                                      
+- `Succ`     : Abstract success constraint (i.e. the abstract subtitution  
+               obtained after the analysis of the clause being considered  
+               extended to the variables of the clause in which `Sg` appears).
+- `Constr`   : Any abstract constraint.                                     
+@end{note}
+").
 % Some changes made by wims@cs.kuleuven.ac.be 
 
 :- use_module(library(sets), 
@@ -73,24 +77,29 @@
 
 :- use_module(domain(deftools)).
 
-%-------------------------------------------------------------------------
-% call_to_entry(+,+,+,+,+,+,+,-,-)                                   %
-% call_to_entry(Sv,Sg,Hv,Head,K,Fv,Proj,Entry,BothEntry)             %
-% It obtains the abstract constraint (Entry) which results from adding   %
-% the abstraction of the constraint Sg = Head to Proj, later projecting  %
-% the resulting constraint onto Hv.                                      %
-% This is done as follows:                                               %
-% * It will add to Call the information corresponding to the set of      %
-%   equations =(ArgSg,ArgHead) resulting from the unification Sg = Head  %
-%   by calling to def_herbrand_equation/6, obtaining NewProj.            %
-% * If NewProj is '$bottom' (i.e. if Sg and Head are not unifiables)     %
-%   then Entry = '$bottom'. Otherwise, it will project NewProj onto Hv   %
-%   and it will add the free variables in the body of the clause to the  %
-%   projected constraint, obtaining Entry.                               %
-%-------------------------------------------------------------------------
-
+%------------------------------------------------------------------------%
+%------------------------------------------------------------------------%
+%                      ABSTRACT Call To Entry                            %
+%------------------------------------------------------------------------%
+%------------------------------------------------------------------------%
 :- export(call_to_entry/9).
 :- dom_impl(_, call_to_entry/9, [noq]).
+:- pred call_to_entry(+Sv,+Sg,+Hv,+Head,+K,+Fv,+Proj,-Entry,-BothEntry)
+   #
+"It obtains the abstract constraint (`Entry`) which results from adding  
+the abstraction of the constraint `Sg` = `Head` to `Proj`,
+later projecting the resulting constraint onto `Hv`.                
+This is done as follows:
+- It will add to `Call` the information corresponding to the set of     
+  equations `=`(`ArgSg`,`ArgHead`) resulting from the unification `Sg` = `Head` 
+  by calling to `def_herbrand_equation/6`, obtaining `NewProj`.           
+- If `NewProj` is `$bottom` (i.e. if `Sg` and `Head` are not
+  unifiables) then `Entry` = `bottom`.
+  Otherwise, it will project `NewProj` onto `Hv` and it will add the free
+  variables in the body of the clause to the projected constraint,
+  obtaining `Entry`.
+".
+
 call_to_entry(_Sv,Sg,_Hv,Head,_K,_Fv,Proj,Entry,BothEntry):-
     variant(Sg,Head),!,
     copy_term((Sg,Proj),(NewTerm,NewProj)),
@@ -108,21 +117,26 @@ handle_bottom_project('$bottom',_Hv,Entry):- !,
 handle_bottom_project(NewProj,Hv,Entry):- 
     project(not_provided_Sg,Hv,not_provided_HvFv_u,NewProj,Entry).
 
-%-------------------------------------------------------------------------
-% exit_to_prime(+,+,+,+,+,+,-)                                       %
-% exit_to_prime(Sg,Hv,Head,Sv,Exit,BothEntry,Prime)                  %
-% It computes the prime abstract constraint Prime, i.e.  the result of   %
-% going from the abstract constraint over the head variables (Exit), to  %
-% the abstract constraint over the variables in the subgoal.             %
-% If Exit is '$bottom', Prime will be also '$bottom'.                    %
-% Otherwise Prime is the result of projecting Exit onto Hv obtaining     %
-% BPrime, then adding the information in BPrime to the BothEntry (the    %
-% abstract constraint obtained during the call to entry over all         %
-% variables in Sg and Head) and later projecting onto Sv                 %
-%-------------------------------------------------------------------------
-
+%------------------------------------------------------------------------%
+%------------------------------------------------------------------------%
+%                      ABSTRACT Exit To Prime                            %
+%------------------------------------------------------------------------%
+%------------------------------------------------------------------------%
 :- export(exit_to_prime/7).
 :- dom_impl(_, exit_to_prime/7, [noq]).
+:- pred exit_to_prime(+Sg,+Hv,+Head,+Sv,+Exit,+BothEntry,-Prime)
+   #
+"It computes the prime abstract constraint `Prime`, i.e.  the result
+of going from the abstract constraint over the head variables
+(`Exit`), to the abstract constraint over the variables in the subgoal.     
+If `Exit` is `$bottom`, `Prime` will be also `$bottom`.          
+Otherwise `Prime` is the result of projecting `Exit` onto `Hv`
+obtaining `BPrime`, then adding the information in `BPrime` to the
+`BothEntry` (the abstract constraint obtained during the
+call to entry over all variables in `Sg` and `Head` and later
+projecting onto `Sv`.
+".
+
 exit_to_prime(_,_,_,_,'$bottom',_,Prime):- !,
     Prime = '$bottom'.
 exit_to_prime(Sg,Hv,Head,_,Exit,yes,Prime):- !,
@@ -135,42 +149,48 @@ exit_to_prime(Sg,Hv,_,Sv,Exit,BothEntry,Prime):-
     def_conjunct_constr(BetaPrime,BothEntry,TempPrime),
     project(Sg,Sv,not_provided_HvFv_u,TempPrime,Prime).
 
-%-------------------------------------------------------------------------
-% project(+,+,+,+,-)                                                 %
-% project(Sg,Vars,HvFv_u,Constr,Projected)                           %
-% It projects the ordered abstract subtitution given in the first        %
-% argument on the ordered list of variables Vars in the second argument. %
-% All the variables in the second argument are assumed to appear also    %
-% in the abstract constraint                                             %
-%  (1) If the abstract constraint is "$bottom" the projected abstract    %
-%       constraint  will be also '$bottom'                               %
-%  (3) Otherwise: let a(Ground,Set) be the abstract constraint           %
-%      and a(PGround, PSet) be the result of the projection              %
-%       - PGround will be the intersection of Ground and Vars            %
-%       - PSet will be the result of for each (X,SS) in Set s.t. X in    %
-%         Vars remove from SS those sets which are not subsetseq of Vars %
-%         obtaining NewSS. This will be done by calling project_vars/5
-%         Note that if NewSS is [], (X,NewSS) will not be in PSet        %
-%-------------------------------------------------------------------------
-
+%------------------------------------------------------------------------%
+%------------------------------------------------------------------------%
+%                         ABSTRACT PROJECTION                            %
+%------------------------------------------------------------------------%
+%------------------------------------------------------------------------%
 :- export(project/5).
 :- dom_impl(_, project/5, [noq]).
+:- pred project(+Sg,+Vars,+HvFv_u,+Constr,-Projected)
+   #
+"It projects the ordered abstract subtitution given in the first          
+argument on the ordered list of variables `Vars` in the second argument. 
+All the variables in the second argument are assumed to appear also    
+in the abstract constraint.                                          
+- If the abstract constraint is `$bottom` the projected abstract    
+  constraint  will be also `$bottom`                               
+- Otherwise: let a(`Ground`,`Set`) be the abstract constraint           
+  and a(`PGround`, `PSet`) be the result of the projection
+  - `PGround` will be the intersection of `Ground` and `Vars`            
+  - `PSet` will be the result of for each (`X`,`SS`) in `Set`
+     s.t.`X` in `Vars` remove from `SS` those sets which are not
+     subsetseq of `Vars` obtaining `NewSS`. This will be done by calling
+     `project_vars/5`.
+     Note that if `NewSS` is [], (`X`,`NewSS`) will not be in `PSet`
+".
+
 project(_Sg,_Vars,_HvFv_u,'$bottom','$bottom') :- !.
 project(_Sg,Vars,_HvFv_u,a(Ground,Set),Projected):-
     ord_intersection(Ground,Vars,PGround),  
     project_vars(Vars,Set,Vars,PSet),
     Projected = a(PGround,PSet).
 
-%-------------------------------------------------------------------------
-% project_vars(+,+,+,-)                                              %
-% project_vars(Vars1,Set,Vars2,PSet)                                 %
-% It will project the list of (X,SS) in Set onto Vars2 obtaining PSet    %
-% This will be done in the following way, for each (X,SS) in Set:        %
-%  - If X not in Vars1, (X,SS) will be eliminated                        %
-%  - Otherwise, we will compute NewSS= {S in SS| S in Vars2}             %
-%        - If NewSS = [], X becomes top and it will be ignored           %
-%        - Otherwise, (X,NewSS) will be added to PSet                    %
-%-------------------------------------------------------------------------
+:- export(project_vars/4).
+:- pred project_vars(+Vars1,+Set,+Vars2,-PSet)
+   #
+"It will project the list of (`X`,`SS`) in `Set` onto
+`Vars2` obtaining `PSet`.  
+This will be done in the following way, for each (`X`,`SS`) in `Set`:
+- If `X` not in `Vars1`, (`X`,`SS`) will be eliminated.                    
+- Otherwise, we will compute `NewSS` = `\\{` `S` in `SS`| `S` in `Vars2` `\\}`.
+  -  If `NewSS` = [], `X` becomes *top* and it will be ignored.
+  - Otherwise, (`X`,`NewSS`) will be added to `PSet`.
+".
 
 project_vars(_,[],_Vars,[]) :- !.
 project_vars([],_Proj,_Vars,[]).
@@ -188,34 +208,31 @@ project_vars_(>,Hd1,Tl1,_Hd0,Tl2,Vars,Projected) :-
 project_vars_(<,_Hd1,Tl1,Hd2,Tl2,Vars,Projected) :-
     project_vars(Tl1,[Hd2|Tl2],Vars,Projected).
 
-%-------------------------------------------------------------------------
-% decide_top(+,+,-,?)
-% decide_top(Set,X,Proj,Tail)
-% If Set = [], X is a top variable and it is ignored.Otherwise it adds
-% (X,Set) to Proj
-%-------------------------------------------------------------------------
+:- pred decide_top(+Set,in_var(X),---Proj,?Tail)
+   #
+"If `Set` = [], `X` is a top variable and it is ignored.
+Otherwise it adds (`X`,`Set`) to `Proj`.
+".
 
 decide_top([],_X,Proj,Proj):- !.
 decide_top(Set,X,[(X,Set)|Proj],Proj).
 
-%-------------------------------------------------------------------------
-% compute_lub(+,-)                                                   %
-% compute_lub(ListConstr,Lub)                                        % 
-% It obtains the lub between all abstract constraints which are elements %
-% of the list given in the first argument. We assume that the abstract   %
-% constraints are ordered and defined over the same set of variables.    %
-% It will be computed recursively by obtaining the lub of 2 abstract     %
-%  constraints in each iteration in the following way:                   %
-% - The lub between two abstract constraints one of which is '$bottom'   %
-%   will result in the other abstract constraint                         %
-% - Otherwise, let Constr1 = a(G1,T1,S1) and Constr2 = a(G2,T2,S2):      %
-%      - NewG will be the intersection between G1 and G2                 %
-%      - NewT will be the union of T1 and T2                             %
-%      - NewS will be computed by lub_set/4                          %
-%-------------------------------------------------------------------------
-
 :- export(compute_lub/2).
 :- dom_impl(_, compute_lub/2, [noq]).
+:- pred compute_lub(+ListConstr,-Lub)
+   #
+"It obtains the *lub* between all abstract constraints which are elements 
+of the list given in the first argument. We assume that the abstract  
+constraints are ordered and defined over the same set of variables.   
+It will be computed recursively by obtaining the *lub* of 2 abstract    
+constraints in each iteration in the following way:
+- The lub between two abstract constraints one of which is `$bottom` 
+  will result in the other abstract constraint                        
+- Otherwise, let `Constr1` = a(`G1`,`T1`,`S1`) and `Constr2` = a(`G2`,`T2`,`S2`)
+  - `NewG` will be the intersection between `G1` and `G2`.
+  - `NewT` will be the union of `T1` and `T2`.
+  - `NewS` will be computed by `lub_set/4`.
+".     
 compute_lub([X],X):- !.
 compute_lub([Constr1,Constr2|Xs],Lub):- 
     compute_lub_el(Constr1,Constr2,LubConstr),
@@ -229,25 +246,29 @@ compute_lub_el(a(G1,S1),a(G2,S2),a(LubG,LubS)):- !,
     lub_set(S1,S2,G1,G2,LubS).
 compute_lub_el(Constr,'$bottom',Constr).
 
-%-------------------------------------------------------------------------
-%lub_set(+,+,-,-).                                                   %
-%lub_set(S1,S2,NewT,NewS)                                            %
-% S1 and S2 are the third component of two abstract constraints L1 and L2%
-% This predicate computes NewS the lub between the two sets. In doing    % 
-% this it will do the following:                                         %
-%    - for each (X,SS1) in Set1 s.t. there is no (X,_) in Set2, there are%
-%      two possibilities, X is ground in L2 or X is top in L2. In the first
-%      case (X,SS1) must be in NewS, otherwise (X,SS1) will be eliminated.
-%      This will be done by calling def_look_for_ground                  %
-%      To detect this NewT (the set of top variables in the lub of L1    %
-%      and L2) is provided. If X is in NewT, (X,SS1) will be eliminated. %
-%    - for each (X,SS2) in Set2 s.t. there is no (X,_) in Set1, there    %
-%      same can apply                                                    %
-%    - for each (X,SS1) in Set1 s.t. exists (X,SS2) in Set2:             %
-%      we will compute the pairwise union of SS1 and SS2, and then       %
-%      we will eliminate the supersets. This will be done by calling     %
-%      lub_each/3                                                    %
-%-------------------------------------------------------------------------
+:- pred lub_set(+S1,+S2,-NewT,-NewS,LubL)
+   #
+"`S1` and `S2` are the third component of two abstract constraints
+`L1` and `L2`.
+This predicate computes `NewS` the *lub* between the two sets. In doing       
+this it will do the following:                                          
+  - for each (`X`,`SS1`) in Set1 s.t. there is no (`X`,_) in
+    `Set2`, there are two possibilities, `X` is ground in `L2` or
+    `X` is @em{top} in `L2`. In the first case (`X`,`SS1`) must
+    be in `NewS`, otherwise (`X`,`SS1`) will be eliminated. 
+    This will be done by calling @pred{def_remain_if_element_all/3}  
+    To detect this `NewT` (the set of top variables in the @em{lub} of `L1`
+    and `L2`) is provided. If `X` is in `NewT`, (`X`,`SS1`)
+    will be eliminated.   
+  - for each (`X`,`SS2`) in `Set2` s.t. there is no (`X`,_) in
+    `Set1`, there same can apply.                        
+  - for each (`X`,`SS1`) in `Set1` s.t. exists (`X`,`SS2`)
+    in `Set2`:
+    we will compute the pairwise union of `SS1` and `SS2`, and then         
+    we will eliminate the supersets. This will be done by calling       
+    `lub_each/3`.
+".
+
 lub_set([],[],_,_,[]):- !.
 lub_set([],S2,G1,_G2,LubL):- !,
     def_remain_if_element_all(G1,S2,LubL).
@@ -275,14 +296,10 @@ lub_each(Tx,Ty,Lub):-
     sort(Merged,NewMerged),
     def_minimize_each(NewMerged,[],Lub).
 
-%-------------------------------------------------------------------------
-% glb(+,+,-)                                                         %
-% glb(Constr1,Constr2,Constr)                                        %
-%-------------------------------------------------------------------------
-% Not quiet sure this is correct, but looks good... (PBC)
-
 :- export(glb/3).      
-:- dom_impl(_, glb/3, [noq]).
+:- dom_impl(_, glb/3, [noq]). % Not quiet sure this is correct, but looks good... (PBC)
+:- pred glb(+Constr1,+Constr2,-Constr).
+
 glb('$bottom',_ASub,ASub3) :- !, ASub3='$bottom'.
 glb(_ASub,'$bottom',ASub3) :- !, ASub3='$bottom'.
 glb(a(G1,SS1),a(G2,SS2),Conj):-
@@ -291,19 +308,18 @@ glb(a(G1,SS1),a(G2,SS2),Conj):-
     def_conjunct_constr(a(Gr,[]),a(G2,SS2),ASub2),
     def_conjunct_constr(ASub1,ASub2,Conj).
 
-%-------------------------------------------------------------------------
-% abs_sort(+,-)                                                          %
-% abs_sort(Constr,SortedConstr)                                          %
-% It sorts the abstract constraint a(Ground,Set) received as first       %
-% argument. In doing this it will:                                       %
-%     - sort the list of variables in Ground                             %
-%     - for each (X,SS) in Set:                                          %
-%          - sort each S in SS obtaining TempSet                         %
-%          - sort TempSet                                                %
-%-------------------------------------------------------------------------
-
 :- export(abs_sort/2).       
 :- dom_impl(_, abs_sort/2, [noq]).
+:- pred abs_sort(+Constr,-SortedConstr)
+   #
+"It sorts the abstract constraint a(`Ground`,`Set`) received as first 
+argument. In doing this it will:
+- sort the list of variables in `Ground`                            
+- for each (`X`,`SS`) in `Set`:
+  - sort each `S` in `SS` obtaining `TempSet`.
+  - sort `TempSet`.
+".
+
 abs_sort('$bottom','$bottom').
 abs_sort(a(Ground,Set),a(NewGround,NewSet)):-
     sort(Ground,NewGround),
@@ -317,6 +333,7 @@ abs_sort(ac(Asub_u,Fg),ac(Asub,Fg)):-
     abs_sort(Asub_u,Asub).
 
 %sort_set(+,-).
+:- pred abs_sort(+Set1,-Set2).
 sort_set([],[]).
 sort_set([(X,Tx)|Xs],[(X,NewTx)|NewConstr]):-
     sort_list_of_lists(Tx,TempTx),
@@ -324,39 +341,48 @@ sort_set([(X,Tx)|Xs],[(X,NewTx)|NewConstr]):-
     sort_set(Xs,NewConstr).
 
 %sort_list_of_lists(+,-)
+:- pred sort_list_of_lists(+ListSet1,-ListSet2).
 sort_list_of_lists([],[]).
 sort_list_of_lists([X|Xs],[Y|Ys]):-
     sort(X,Y),
     sort_list_of_lists(Xs,Ys).
 
-%-------------------------------------------------------------------------
-% extend(+,+,+,+,-)                                                  %
-% extend(Sg,Prime,Sv,Call,Succ)                                      %
-% It extends the information given by the new abstract constraint on the %
-% subgoal Prime (first argument) to the original information about all   %
-% the clause variables which is contained in Call, obtaining Succ        %
-% - If Prime is '$bottom', Succ = '$bottom'                              %
-%  - Otherwise, the result will be the same as conjunting the new        %
-%    abstract constraint Prime with Call                                 %
-%-------------------------------------------------------------------------
-
+%------------------------------------------------------------------------%
+%------------------------------------------------------------------------%
+%                      ABSTRACT Extend                                   %
+%------------------------------------------------------------------------%
+%------------------------------------------------------------------------%
 :- export(extend/5).
 :- dom_impl(_, extend/5, [noq]).
+:- pred extend(+Sg,+Prime,+Sv,+Call,-Succ)
+   #
+"It extends the information given by the new abstract constraint on the 
+ subgoal `Prime` (first argument) to the original information about all   
+ the clause variables which is contained in `Call`, obtaining `Succ`.
+ - If `Prime` is `$bottom`, `Succ` = `$bottom`.
+ - Otherwise, the result will be the same as conjunting the new 
+   abstract constraint `Prime` with `Call`.
+".
+
 extend(_Sg,'$bottom',_Sv,_Call,'$bottom'):- !.
 extend(_Sg,Prime,_Sv,Call,Succ):-
     def_conjunct_constr(Prime,Call,Succ).
 
-%-------------------------------------------------------------------------
-% call_to_success_fact(+,+,+,+,+,+,+,-,-).                           %
-% call_to_success_fact(Sg,Hv,Head,K,Sv,Call,Proj,Prime,Succ)         %
-% It obtains the prime and success constraint for a fact. However, since %
-% the program are assumed to be normilised, a fact should have all their %
-% arguments as voids, and therefore Prime = Proj, and                    %
-% Succ = Call                                                            %
-%-------------------------------------------------------------------------
-
+%------------------------------------------------------------------------%
+%------------------------------------------------------------------------%
+%                   ABSTRACT Call to Success Fact                        %
+%------------------------------------------------------------------------%
+%------------------------------------------------------------------------%
 :- export(call_to_success_fact/9).
 :- dom_impl(_, call_to_success_fact/9, [noq]).
+:- pred call_to_success_fact(+Sg,+Hv,+Head,+K,+Sv,+Call,+Proj,-Prime,-Succ)
+   #
+"It obtains the prime and success constraint for a fact. However, since 
+the program are assumed to be normilised, a fact should have all their 
+arguments as voids, and therefore `Prime` = `Proj`, and
+`Succ` = `Call`.
+".
+
 call_to_success_fact(_Sg,_Hv,_Head,_K,_Sv,_Call,'$bottom',Prime,Succ):- !,
     Prime = '$bottom',
     Succ = '$bottom'.
@@ -364,24 +390,25 @@ call_to_success_fact(Sg,_Hv,Head,_K,Sv,Call,_Proj,Prime,Succ):-
     def_herbrand_equation(Sg,Head,Call,Succ),
     handle_bottom_project(Succ,Sv,Prime).
 
-%-------------------------------------------------------------------------
-% special_builtin(+,+,+,-,-)                                         %
-% special_builtin(SgKey,Sg,Subgoal,Type,Condvars)                    %
-% succeeds if the Sgkey indicates a builtin or a constraint              %
-% Type indicates the kind of builtin and Condvars contains the info      %
-% needed for their abstraction                                           %
-%       Type            Condvars  Meaning                                %
-%       '$fd_=/2'       Sg        =/2 builtin                            %
-%       '$fd_comp/2'    _         comparisons like <,>,etc               % 
-%       '$fd_piii/2'    Sg        PrologIII list                         %
-%       '$fd_fail'      _         fail, abort,etc                        %
-%       '$fd_unchanged' _         does not affect the info               %
-%       ....                                                             %
-%       should be completed                                              %
-%-------------------------------------------------------------------------
+%------------------------------------------------------------------------%
+%                         HANDLING BUILTINS                              %
+%------------------------------------------------------------------------%
 
 :- export(special_builtin/5).
 :- dom_impl(_, special_builtin/5, [noq]).
+:- pred special_builtin(+SgKey,+Sg,+Subgoal,-Type,---Condvars)
+   #
+"The predicate succeeds if the `Sgkey` indicates a builtin or a
+constraint `Type` indicates the kind of builtin and `Condvars`
+contains the info needed for their abstraction.
+- Type:  `'$fd_=/2'` |  Condvars: `Sg` |  Meaning: `=/2` builtin              
+- Type:  `'$fd_comp/2'` | Condvars: _ | Meaning:  comparisons like `<`,`>`,etc  
+- Type:  `'$fd_piii/2'` | Condvars: `Sg` | Meaning:  PrologIII list           
+- Type:  `'$fd_fail'` | Condvars: _ | Meaning:  fail, abort,etc          
+- Type:  `'$fd_unchanged'` | Condvars: _ | Meaning:  does not affect the info 
+-  ....                              
+".
+
 special_builtin('=/2',Sg,_,'$fd_=',Sg).
 special_builtin('C/3','C'(X,Y,Z),_,'$fd_=','='(X,[Y|Z])).
 special_builtin('fail/0',_Sg,_,'$fd_fail',_Condvars).   
@@ -511,15 +538,15 @@ special_builtin('findall/3',findall(X,_,Z),_,findall,p(X,Z)).
 special_builtin('compare/3',compare(X,_,_),_,'$fd_ground',Vars):-
     varset(X,Vars).
 special_builtin('number/1',Sg,_,'$fd_ground',Sg).
-%-------------------------------------------------------------------------
-% success_builtin(+,+,+,+,+,-)                                       %
-% success_builtin(Type,Sv_uns,Term,HvFv_u,Call,Succ)                 %
-% By now, it is tricky since it assumes the following things:            %
-%     - booleans are still not allowed                                   %
-%-------------------------------------------------------------------------
 
 :- export(success_builtin/6).
 :- dom_impl(_, success_builtin/6, [noq]).
+:- pred success_builtin(+Type,+Sv_uns,?Term,+HvFv_u,+Call,-Succ)
+   #
+"By now, it is tricky since it assumes the following things:
+- booleans are still not allowed 
+".
+
 success_builtin('$fd_fail',_Sv_uns,_Condvars,_,_Call,'$bottom').
 success_builtin('$fd_unchanged',_Sv_uns,_Condvars,_,Call,Call).
 success_builtin('$fd_#',_Sv_uns,_Condvars,_,Call,Call).
@@ -570,14 +597,14 @@ success_builtin(findall,_Sv_uns,p(X,Z),HvFv_u,a(G,S),Succ):-  %% added by JN
     success_builtin('$fd_ground',_Sv_uns,Varsz,HvFv_u,a(G,S),Succ).
 success_builtin(findall,_Sv_uns,_,_,Call,Call).  %% jcf
 
-%-------------------------------------------------------------------------
-% input_user_interface(+,+,-,+,+)
-% It translate the query mode given by the user into the internal 
-% structure.
-%-------------------------------------------------------------------------
-
 :- export(input_user_interface/5).  
 :- dom_impl(_, input_user_interface/5, [noq]).
+:- pred input_user_interface(?InputUser,+Qv,-ASub,+Sg,+MaybeCallASub)
+   : term * list * term * term * term
+   #
+"It translate the query mode given by the user into the internal 
+structure.".
+
 input_user_interface(Gv0,_Qv,a(Gv,[]),_Sg,_MaybeCallASub):-
     may_be_var(Gv0,Gv).
 %       get_domain(Info,defdeps,[],Dep).
@@ -596,14 +623,13 @@ myappend(Vs,V0,V):-
 
 may_be_var(X,X):- ( X=[] ; true ), !.
 
-%-------------------------------------------------------------------------
-% asub_to_native(+,+,+,-,-)
-% It translates an internal abstract constraint into something friendly
-% for the user. 
-%-------------------------------------------------------------------------
-
 :- export(asub_to_native/5). 
 :- dom_impl(_, asub_to_native/5, [noq]).
+:- pred asub_to_native(+ASub,+Qv,+OutFlag,-ASub_user,-Comps)
+   #
+"It translates an internal abstract constraint into something friendly
+for the user.".
+
 asub_to_native(ASub,_Qv,_OutFlag,Succ,[]) :-
     asub_to_native_(ASub,Succ).
 
@@ -654,51 +680,52 @@ defdeps2covered_([L|List],V,[covered(V,L)|Native],Native0):-
 %%      output_interface0(LSucc,_Vars,LOutSucc).
 %% output_interface0([],_Vars,[]).
 
-%-------------------------------------------------------------------------
-% unknown_call(+,+,+,-)                                              %
-% unknown_call(Sg,Vars,Call,Succ)                                    %
-% Gives the "top" value for the variables Vars involved in a literal     %
-% whose definition is not present, and adds this top value to            %
-% Call (it is like conjunting the information in Call with the top for   %
-% a subset of variables)                                                 %
-% In the definiteness analyser, nothing needs to be done.                %
-%-------------------------------------------------------------------------
-
 :- export(unknown_call/4).
 :- dom_impl(_, unknown_call/4, [noq]).
-unknown_call(_Sg,_Vars,Call,Call).
+:- pred unknown_call(+Sg,+Vars,+Call,-Succ)
+   #"
+Gives the *top* value for the variables `Vars` involved in a literal       
+whose definition is not present, and adds this @em{top} value to            
+`Call` (it is like conjunting the information in `Call` with the *top*
+for a subset of variables)                                                 
+In the definiteness analyser, nothing needs to be done.                
+".
 
-%------------------------------------------------------------------------%
-% unknown_entry(+,+,-)                                               %
-% unknown_entry(Sg,Vars,Call)                                        %
-% Gives the "top" value for a given set of variables, resulting in the   %
-% abstract constraint Call. In the definiteeness domain the top          %
-% abstraction for a set of variables Vars is T = a({},{}).               %
-%------------------------------------------------------------------------%
+unknown_call(_Sg,_Vars,Call,Call).
 
 :- export(unknown_entry/3).
 :- dom_impl(_, unknown_entry/3, [noq]).
+:- pred unknown_entry(+Sg,+Vars,-Call)
+   #"
+Gives the *top* value for a given set of variables, resulting in the
+abstract constraint `Call`. In the definiteeness domain the *top*
+abstraction for a set of variables `Vars` is `T` = a(\\{\\},\\{\\}).
+".
+
 unknown_entry(_Sg,_Vars,a([],[])).
 
 %------------------------------------------------------------------------%
 
 :- export(empty_entry/3).
 :- dom_impl(_, empty_entry/3, [noq]).
+:- pred empty_entry(+Sg,+Vars,-Entry).
+   
 empty_entry(Sg,Qv,Call) :- unknown_entry(Sg,Qv,Call).
-
-%------------------------------------------------------------------------%
-% less_or_equal(+,+)                                                 %
-% less_or_equal(ASub0,ASub1)                                         %
-% Succeeds if ASub0=(G0,T0,R0) is less or equal than ASub1=a(G1,T1,R1)   %
-% i.e. if ASub0 is more concrete or equal than ASub1. This will be true  %
-% if either ASub0 is bottom or:                                          %
-%   * G1 subseteq G0                                                     %
-%   * forall (X,SS1) in R1, X \in G0, or exists (X,SS0) in R0, such that %
-%     forall S1 in SS1, exists S0 in SS0 such that S0 in S1              %
-%------------------------------------------------------------------------%
 
 :- export(less_or_equal/2).
 :- dom_impl(_, less_or_equal/2, [noq]).
+:- pred less_or_equal(+ASub0,+ASub1)
+   #"
+Succeeds if `ASub0` = (`G0`,`T0`,`R0`) is less or equal
+than `ASub1` = a(`G1`,`T1`,`R1`)
+i.e. if `ASub0` is more concrete or equal than `ASub1`.
+This will be true if either `ASub0` is *bottom* or:
+- `G1` subseteq `G0`.
+- forall (`X`,`SS1`) in `R1`, `X` in `G0`,
+  or exists (`X`,`SS0`) in `R0`, such that
+  forall `S1` in `SS1`, exists `S0` in `SS0` such that `S0` in
+  `S1`.
+".
 less_or_equal('$bottom',_).
 less_or_equal(a(G0,D0),a(G1,D1)):-
     ord_subset(G1,G0),

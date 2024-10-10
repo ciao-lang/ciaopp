@@ -1,14 +1,17 @@
-:- module(gr, [], [assertions,regtypes,basicmodes,datafacts,nativeprops]).
+:- module(gr, [], [assertions,regtypes,modes_extra,datafacts,nativeprops]).
 
-:- doc(title,"Simple groundness abstract domain").
+:- doc(title,"gr: simple groundness (abstract domain)").
 :- doc(author, "Claudio Vaucheret").
+:- doc(stability, beta).
+
+% infers(ground/1, rtcheck).
 
 :- doc(module,"
 
 This module implements the abstract operations of a simple groundness
 domain for the PLAI framework of abstract interpretation.  An abstract
-substitution is a list of Var/Mode elements, where Var is a variable and
-Mode is ``any'', ``g'' or ``ng''. 
+substitution is a list of `Var`/`Mode` elements, where
+`Var` is a variable and `Mode` is `any`, `g` or `ng`. 
 
 The abstract domain lattice is:
 
@@ -16,7 +19,7 @@ The abstract domain lattice is:
              any
             /  \\
            /    \\
-   (ground)   g     ng  (not ground)
+  (ground) g     ng (not ground)
            \\    /
             \\  /
           $bottom
@@ -78,7 +81,7 @@ The abstract domain lattice is:
 % :- compilation_fact(check_wellformed_asub).
 :- if(defined(check_wellformed_asub)).
 :- prop asub(A)
-   # "@var{A} is a well-formed abstract substitution of the gr domain.".
+   # "`A` is a well-formed abstract substitution of the gr domain.".
 asub('$bottom').
 asub([]).
 asub([A/M|Asub]):- 
@@ -99,7 +102,7 @@ not_unified([V/_|R],A) :-
 
 :- else.
 :- prop asub(A)
-   # "@var{A} is a well-formed abstract substitution of the gr domain.".
+   # "`A` is a well-formed abstract substitution of the `gr` domain.".
 asub('$bottom').
 asub([]).
 asub([E|Asub]):- % cheaper check
@@ -107,122 +110,118 @@ asub([E|Asub]):- % cheaper check
     asub(Asub).
 :- endif.
 
-:- prop asub_elem(E) # "@var{E} is a single substitution".
+:- prop asub_elem(E) # "`E` is a single substitution.".
 asub_elem(Var/Mode):-
     var(Var),
     gr_mode(Mode).
 
-:- regtype gr_mode(M) # "@var{M} is g (ground), ng (nonground), or any".
+:- regtype gr_mode(M) # "`M` is `g` (ground), `ng` (nonground), or `any`.".
 gr_mode(g).
 gr_mode(ng).
 gr_mode(any).
 
-:- prop extrainfo(E) # "@var{E} is a par (asub,binds)".
+:- prop extrainfo(E) # "`E` is a par (`asub/1`,`binds/1`).".
 extrainfo(yes).
+extrainfo(no).
 extrainfo((A,B)):-
     asub(A),
     binds(B).
 
-:- prop binds(B) # "@var{B} is a list of bindings".
+:- prop binds(B) # "`B` is a list of bindings.".
 binds(B) :- list(binding,B).
 
-:- prop binding(B) # "@var{B} is a triple (X,Term,Vars), where X is
-a variable, Term is a term and Vars is the set of variables in Term".
+:- prop binding(B) # "`B` is a triple (`X`,`Term`,`Vars`), where `X` is
+a variable, `Term` is a term and `Vars` is the set of variables in `Term`.".
 binding((X,Term,Vars)):-
     var(X),
     term(Term),
     list(Vars).
 
-%-----------------------------------------------------------------------
-% unknown_entry(+,+,-)                                                 |
-% unknown_entry(Sg,Qv,Call)                                            |
-% The top value is  X/any forall X in the set of variables             |
-%-----------------------------------------------------------------------
+
+:- export(unknown_entry/3).
 :- dom_impl(_, unknown_entry/3, [noq]).
-:- pred unknown_entry(+Sg,+Qv,-Call)
+:- pred unknown_entry(Sg, Qv, Call)
    : cgoal * list * term => asub(Call) + (not_fails, is_det)
-   #"Gives the ``top'' value for the variables involved in a literal whose
-   definition is not present, and adds this top value to Call. In this domain
-   the top value is X/any forall X in the set of variables".
+   #
+"Gives the *top* value for the variables involved in a literal whose
+definition is not present, and adds this top value to `Call`. In this domain
+the *top* value is `X`/`any` forall `X` in the set of variables.
+".
+   
 unknown_entry(_Sg,Qv,Call):-
     create_values(Qv,Call,any).
 
 %-----------------------------------------------------------------------
-% create_values(+,-,+)                                                 |
-% create_values(Vars,Asub,Value)                                       |
-% Forall X in Vars, X/Value is in Asub                                 |
-%-----------------------------------------------------------------------
+
 :- pred create_values(+Vars,-Asub,+Value)
    : list * term * gr_mode => asub(Asub) + (not_fails, is_det)
-   #"Forall @var{X} in @var{Vars}, @var{X}/@var{Value} is in @var{Asub}".
+   # "Forall `X` in `Vars`, `X`/`Value` is in `Asub`.".
+
 create_values([],[],_Value).
 create_values([X|Xs],[X/Value|New],Value):-
     create_values(Xs,New,Value).
 
+:- export(empty_entry/3).
 :- dom_impl(_, empty_entry/3, [noq]).
 :- pred empty_entry(+Sg,+Vars,-Entry)
    : cgoal * list * term => asub(Entry) + (not_fails, is_det)
-   # "Gives the ``empty'' value in this domain for a given set of variables
-   @var{Vars}, resulting in the abstract substitution @var{Entry}. I.e., obtains
-   the abstraction of a substitution in which all variables @var{Vars} are
-   unbound: free and unaliased. In this domain the empty value is equivalent to
-   the unknown value".
+   #
+"Gives the *empty* value in this domain for a given set of variables
+`Vars`, resulting in the abstract substitution `Entry`. I.e., obtains
+the abstraction of a substitution in which all variables `Vars` are
+unbound: free and unaliased. In this domain the *empty* value is equivalent to
+the *unknown* value.
+".
+
 empty_entry(Sg,Vars,Entry):- 
     unknown_entry(Sg,Vars,Entry).
 
-%-------------------------------------------------------------------------
-%-------------------------------------------------------------------------
-%                      ABSTRACT SORT
-%-------------------------------------------------------------------------
-%-------------------------------------------------------------------------
-% abs_sort(+,-)                                                          |
-% abs_sort(Asub,Asub_s)                                                  |
-% it sorts the set of X/Value in Asub obtaining Asub_s.                  |
-%-------------------------------------------------------------------------
+%------------------------------------------------------------------------%
+%------------------------------------------------------------------------%
+%                             ABSTRACT SORT                              %
+%------------------------------------------------------------------------%
+%------------------------------------------------------------------------%
+
+:- export(abs_sort/2).       
 :- dom_impl(_, abs_sort/2, [noq]).
-:- pred abs_sort(+Asub,-Asub_s) : asub(Asub) => asub(Asub_s)
-   + (not_fails, is_det)
-   #"It sorts the set of @var{X}/@var{Value} in @var{Asub} obtaining
-     @var{Asub_s}".
+:- pred abs_sort(+Asub,-Asub_s)
+   : asub(Asub) => asub(Asub_s) + (not_fails, is_det)
+   # "It sorts the set of `X`/`Value` in `Asub` obtaining `Asub_s`.".
+
 abs_sort('$bottom','$bottom'):- !.
 abs_sort(Asub,Asub_s):-
     sort(Asub,Asub_s).
 
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-%                      ABSTRACT PROJECTION
+%                        ABSTRACT PROJECTION                             %
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% project(+,+,+,+,?)                                                     %
-% project(Sg,Vars,HvFv_u,ASub,Proj)                                      %
-% Proj is the result of                                                  %
-% eliminating from ASub all X/Value such that X not in Vars              %
-%------------------------------------------------------------------------%
-:- dom_impl(_, project/5, [noq]).
-:- pred project(+Sg,+Vars,+HvFv_u,+Asub,?Proj)
-   : term * list * term * asub * term => asub(Proj)
-   + (not_fails, is_det)
-   #"@var{Proj} is the result of eliminating from @var{Asub} all
-    @var{X}/@var{Value} such that @var{X} is not in @var{Vars}. @var{HvFv_u} may
-    be a list or '@tt{not_provided_HvFv_u}'.
 
-    This predicate may be used with @var{Proj} instantiated, see
-    call_to_success_builtin/6. ".
+:- export(project/5).
+:- dom_impl(_, project/5, [noq]).
+:- pred  project(+Sg,+Vars,+HvFv_u,+Asub,?Proj)
+   : term * list * term * asub * term => asub(Proj) + (not_fails, is_det)
+   # 
+"`Proj` is the result of eliminating from `Asub` all `X`/`Value`
+such that `X` is not in `Vars`. `HvFv_u` may be a list or
+'`not_provided_HvFv_u`'.
+This predicate may be used with `Proj` instantiated, see
+`call_to_success_builtin/6`.
+".
+
 project(_Sg,_Vars,_HvFv_u,'$bottom',Proj) :- !,
     Proj = '$bottom'.
 project(_Sg,Vars,_HvFv_u,ASub,Proj) :- 
     project_aux(Vars,ASub,Proj).
 
-%------------------------------------------------------------------------%
-% project_aux(+,+,?)                                                     %
-% project_aux(Vars,ListValues,Proj)                                      %
-% Eliminates from each list in the second argument any variable/Value    %
-% such that the variable is not an element of the first argument         %
-%------------------------------------------------------------------------%
-:- pred project_aux(+Vars,+ListValues,?Proj)
+:- pred  project_aux(+Vars,+ListValues,?Proj)
    : list * list * term => asub(Proj)
-   #"Eliminates from each list in the second argument any variable/value such
-    that the variable is not an element of @var{Vars}".
+   #
+"Eliminates from each list in the second argument any variable/value such
+that the variable is not an element of `Vars`.
+".
+
 project_aux([],_,Proj):- !,
     Proj = [].
 project_aux(_,[],Proj):- !,
@@ -239,58 +238,41 @@ project_aux_(>,Head1,Tail1,_,[Head2/Val|Tail2],Proj) :-
 
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% ABSTRACT Call To Entry
+%                        ABSTRACT Call To Entry                          %
 %------------------------------------------------------------------------%
-%------------------------------------------------------------------------%
-% call_to_entry(+,+,+,+,+,+,+,-,-)                                       %
-% call_to_entry(Sv,Sg,Hv,Head,K,Fv,Proj,Entry,ExtraInfo)                 %
-% It obtains the abstract substitution (Entry) which results from adding % 
-% the abstraction of the Sg = Head to Proj, later projecting the         %
-% resulting substitution onto Hv. This is done as follows:               %
-% * If Sg and Head are identical up to renaming it is just a question    %
-% or renaming Proj and adding the Fv                                     %
-% * If Hv = [], Entry is just adding the Fv                              %
-% * Otherwise, it will                                                   %
-% - obtain in Binds the primitive equations corresponding to Sg=Head     %
-% - add to Proj the variables in Hv as not ground in Temp1               %
-% - update Temp1, grounding some variables obtaining Temp2               %
-% - insert Fv in Temp2 as not ground Temp3                               %
-% - projects Temp3 onto Hv + Fv obtaining Entry                          %
 %------------------------------------------------------------------------%
 
+:- export(call_to_entry/9).
 :- dom_impl(_, call_to_entry/9, [noq]).
 :- pred call_to_entry(+Sv,+Sg,+Hv,+Head,+K,+Fv,+Proj,-Entry,-ExtraInfo)
    : ( list(Sv), cgoal(Sg), list(Hv), cgoal(Head), term(K), list(Fv), asub(Proj)) % cheaper properties
    => (asub(Entry), extrainfo(ExtraInfo)) + (not_fails, is_det)
-   #"
-It obtains the abstract substitution @var{Entry} which results from
-adding the abstraction of the @var{Sg} = @var{Head} to @var{Proj},
-later projecting the resulting substitution onto @var{Hv} + @var{Fv}. This is
-done as follows: 
-@begin{itemize} 
-@item If @var{Sg} and @var{Head} are identical up to renaming it is just  
- renaming @var{Proj} and adding the @var{Fv} 
-@item If @var{Hv} = [], @var{Entry} is just adding the @var{Fv} 
-@item Otherwise, it will 
- @begin{itemize} 
- @item obtain in Binds the primitive equations corresponding to Sg=Head 
- @item add to Proj the variables in Hv as not ground in Temp1 
- @item update Temp1, grounding some variables obtaining Temp2 
- @item insert Fv in Temp2 as 'any' obtaining Temp3 
- @item projects Temp3 onto Hv + Fv obtaining Entry 
- @end{itemize} 
-@end{itemize} 
+   #
+"It obtains the abstract substitution `Entry` which results from
+adding the abstraction of the `Sg` = `Head` to `Proj`,
+later projecting the resulting substitution onto `Hv` + `Fv`. This is
+done as follows:  
+- If `Sg` and `Head` are identical up to renaming it is just  
+ renaming `Proj` and adding the `Fv`. 
+- If `Hv` = [], `Entry` is just adding the `Fv`. 
+- Otherwise, it will 
+ - obtain in `Binds` the primitive equations corresponding to `Sg` = `Head`. 
+ - add to `Proj` the variables in `Hv` as not ground in `Temp1`. 
+ - update `Temp1`, grounding some variables obtaining `Temp2`. 
+ - insert `Fv` in `Temp2` as `any` obtaining `Temp3`.
+ - projects `Temp3` onto `Hv` + `Fv` obtaining `Entry`.  
 
 The meaning of the variables is
-@begin{itemize}
-@item @var{Sv} is a list of subgoal variables. 
-@item @var{Sg} is the subgoal being analysed. 
-@item @var{Head} is the Head of the clause being analysed. 
-@item @var{Fv} is a list of free variables in the body of the clause being considered. 
-@item @var{Proj} is the abstract substitution @var{Call} projected onto @var{Sv}. 
-@item @var{Entry} is the Abstract entry substitution (i.e. the abstract subtitution obtained after the abstract unification of @var{Sg} and @var{Head} projected onto @var{Hv} + @var{Fv}). 
-@item @var{ExtraInfo} Info computed during the call_to_entry that can be reused during the exit_to_prime step.
-@end{itemize}
+- `Sv` is a list of subgoal variables. 
+- `Sg` is the subgoal being analysed. 
+- `Head` is the Head of the clause being analysed. 
+- `Fv` is a list of free variables in the body of the clause being considered. 
+- `Proj` is the abstract substitution `Call` projected onto `Sv`. 
+- `Entry` is the Abstract entry substitution (i.e. the abstract subtitution
+   obtained after the abstract unification of `Sg` and `Head` projected
+   onto `Hv` + `Fv`). 
+- `ExtraInfo` Info computed during the `call_to_entry/9` that can
+   be reused during the `exit_to_prime/7` step.  
 ".
 
 call_to_entry(_Sv,Sg,_Hv,Head,_K,Fv,Proj,Entry,Flag):-
@@ -313,45 +295,32 @@ call_to_entry(Sv,Sg,Hv,Head,_K,Fv,Proj,Entry,ExtraInfo):-
     ExtraInfo= (NewProj,NewBinds),!.
 % (*) See why it is not ng in comment below the lattice sketch
 
-%-------------------------------------------------------------------------
-%-------------------------------------------------------------------------
-%                      ABSTRACT Exit To Prime
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% exit_to_prime(+,+,+,+,+,-,-)                                           %
-% exit_to_prime(Sg,Hv,Head,Sv,Exit,ExtraInfo,Prime)                      %
-% It computes the prime abstract substitution Prime, i.e.  the result of %
-% going from the abstract substitution over the head variables (Exit), to%
-% the abstract substitution over the variables in the subgoal. It will:  %
-% * If Exit is '$bottom', Prime will be also '$bottom'.                  %
-% * If Flag = yes (Head and Sg identical up to renaming) it is just a    %
-%   question or renaming Exit                                            %
-% * If Hv = [], Prime = {X/g| forall X in Sv}                            %
-% * Otherwise:                                                           %
+%                      ABSTRACT Exit To Prime                            %
+%------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
 
+:- export(exit_to_prime/7).
 :- dom_impl(_, exit_to_prime/7, [noq]).
-:- pred exit_to_prime(+Sg,+Hv,+Head,+Sv,+Exit,?ExtraInfo,-Prime)
+:- pred  exit_to_prime(+Sg,+Hv,+Head,+Sv,+Exit,?ExtraInfo,-Prime)
    : term * list * cgoal * cgoal * asub * term * term
    => ( extrainfo(ExtraInfo), asub(Prime))
-   #"
-It computes the prime abstract substitution @var{Prime}, i.e.  the result of 
- going from the abstract substitution over the head variables @var{Exit}, to
- the abstract substitution over the variables in the subgoal. It will:
- @begin{itemize}
-@item If @var{Exit} is '$bottom', @var{Prime} will be also '$bottom'.               
-@item If @var{Flag} = yes (@var{Head} and @var{Sg} identical up to renaming) it is just 
-renaming Exit                                            %
-@item  If @var{Hv} = [], @var{Prime} = @{ @var{X}/g | forall @var{X} in @var{Sv} @}                
-@item  Otherwise: it will 
- @begin{itemize}                                                        
-  @item  obtain the primitive equations corresponding to Sg=Head from @var{Extrainfo}.     
-  @item projects @var{Exit} onto @var{Hv} obtaining @var{BPrime}. 
-  @item merge @var{Proj} from @var{Extrainfo} and @var{BPrime} obtaining @var{TempPrime}.
-  @item update  @var{TempPrime}, grounding some variables obtaining  @var{NewTempPrime}.
-  @item projects  @var{NewTempPrime} onto @var{Sv} obtaining @var{Prime}.
- @end{itemize}
-@end{itemize}
+   #
+"It computes the prime abstract substitution `Prime`, i.e.  the result of 
+going from the abstract substitution over the head variables `Exit`, to
+the abstract substitution over the variables in the subgoal. It will:
+- If `Exit` is `$bottom`, `Prime` will be also `$bottom`.               
+- If `Flag` = yes (`Head` and `Sg` identical up to renaming) it is just 
+  renaming `Exit`.
+-  If `Hv` = [], `Prime` = `\\{` `X`/`g`| forall `X` in `Sv` `\\}`                
+-  Otherwise: it will 
+  - obtain the primitive equations corresponding to `Sg`=`Head`
+    from `Extrainfo`.
+  - projects `Exit` onto `Hv` obtaining `BPrime`. 
+  - merge `Proj` from `Extrainfo` and `BPrime` obtaining `TempPrime`.
+  - update  `TempPrime`, grounding some variables obtaining  `NewTempPrime`.
+  - projects  `NewTempPrime` onto `Sv` obtaining `Prime`.
 ".
 
 exit_to_prime(_Sg,_Hv,_Head,_Sv,'$bottom',_Flag,Prime) :- !,
@@ -370,33 +339,26 @@ exit_to_prime(Sg,Hv,_Head,Sv,Exit,ExtraInfo,Prime):-
     abs_gunify(TempPrime,Binds,NewTempPrime,_),
     project(Sg,Sv,not_provided_HvFv_u,NewTempPrime,Prime),!.
 
-%-------------------------------------------------------------------------
-%-------------------------------------------------------------------------
-%                      ABSTRACT LUB
-%-------------------------------------------------------------------------
 %------------------------------------------------------------------------%
-% compute_lub(+,-)                                                       %
-% compute_lub(ListASub,Lub)                                              %
-% It computes the lub of a set of Asub. For each two abstract            %
-% substitutions ASub1 and ASub2 in ListASub, obtaining the lub is just   %
-% foreach X/Value1 in ASub1 and X/Value2 in ASub2:                       %
-%    - if Value1 == Value2, X/Value1 in Lub                              %
-%    - otherwise, X/any in Lub                                           %
+%------------------------------------------------------------------------%
+%                           ABSTRACT LUB                                 %
+%------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
 
+:- export(compute_lub/2).
 :- dom_impl(_, compute_lub/2, [noq]).
 :- pred compute_lub(+ListASub,-Lub)
    : list(asub, ListASub) => asub(Lub) + (not_fails, is_det)
-   #"It computes the least upper bound of a set of abstract substitutions. 
-For each two abstract substitutions @var{ASub1} and @var{ASub2} in @var{ListASub}, 
-obtaining the lub is just:    
-
- foreach X/Value1 in @var{ASub1} and X/Value2 in @var{ASub2}:   
-@begin{itemize}                    
-   @item if Value1 == Value2, X/Value1 in Lub                              
-   @item otherwise, X/any in Lub                                           
-@end{itemize}
+   #
+"It computes the least upper bound of a set of abstract substitutions. 
+For each two abstract substitutions `ASub1` and `ASub2` in `ListASub`, 
+obtaining the *lub* is just:
+ 
+foreach `X`/`Value1` in `ASub1` and `X`/`Value2` in `ASub2`:   
+- if `Value1` == `Value2`, `X`/`Value1` in `Lub`.
+- otherwise, `X`/`any` in `Lub`.
 ".
+
 compute_lub([X],X):- !.
 compute_lub([ASub1,ASub2|Xs],Lub):-
     compute_lub_el(ASub1,ASub2,ASubLub),
@@ -405,13 +367,12 @@ compute_lub([ASub1,ASub2|Xs],Lub):-
 % :- dom_impl(_, compute_lub_el(ASub1,ASub2,ASub), compute_lub_el(ASub1,ASub2,ASub)).
 :- pred compute_lub_el(+ASub1,+ASub2,-Lub)
    : asub * asub * term => asub(Lub) + (not_fails, is_det)
-   #"For each two abstract substitutions @var{ASub1} and @var{ASub2} 
+   #
+"For each two abstract substitutions `ASub1` and `ASub2` 
 obtaining the least upper bound is just:    
- foreach X/Value1 in @var{ASub1} and X/Value2 in @var{ASub2}:   
-@begin{itemize}                    
-   @item if Value1 == Value2, X/Value1 in Lub                              
-   @item otherwise, X/any in Lub                                           
-@end{itemize}
+foreach `X`/`Value1` in `ASub1` and `X`/`Value2` in `ASub2`:  
+- if `Value1` == `Value2`, `X`/`Value1` in `Lub`.                              
+- otherwise, `X`/`any` in `Lub`.                                           
 ".
 
 compute_lub_el('$bottom',ASub,ASub):- !.
@@ -429,24 +390,22 @@ compute_lub_gr([Xv|ASub1],[Yv|ASub2],Lub):-
 compute_lub_gr([X/_|ASub1],[X/_|ASub2],[X/any|Lub_Cont]):-
     compute_lub_gr(ASub1,ASub2,Lub_Cont).
 
-%-------------------------------------------------------------------------
-%-------------------------------------------------------------------------
-%                      ABSTRACT Extend
-%-------------------------------------------------------------------------
 %------------------------------------------------------------------------%
-% extend(+,+,+,+,-)                                                      %
-% extend(Sg,Prime,Sv,Call,Succ)                                          %
-% If Prime = bottom, Succ = bottom. If Sv = [], Call = Succ.             %
-% Otherwise, Succ is computed updating the values of Call with those in  %
-% Prime                                                                  %
+%------------------------------------------------------------------------%
+%                            ABSTRACT Extend                             %
+%------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
 
+:- export(extend/5).
 :- dom_impl(_, extend/5, [noq]).
-:- pred extend(+Sg,+Prime,+Sv,+Call,-Succ)
+:- pred  extend(+Sg,+Prime,+Sv,+Call,-Succ)
    : term * asub * list * asub * term => asub(Succ) + (not_fails, is_det)
-   #"If @var{Prime} = '$bottom', @var{Succ} = '$bottom'. If @var{Sv} = [],
-   @var{Call} = @var{Succ}. Otherwise, @var{Succ} is computed updating the
-   values of @var{Call} with those in @var{Prime}".
+   #
+"If `Prime` = `$bottom`, `Succ` = `$bottom`. If `Sv` = [],
+`Call` = `Succ`. Otherwise, `Succ` is computed updating the
+values of `Call` with those in `Prime`.
+".
+
 extend(_Sg,'$bottom',_Sv,_Call,Succ):- !,
     Succ = '$bottom'.
 extend(_Sg,_Prime,[],Call,Succ):- !,
@@ -470,14 +429,13 @@ update_Call_(<,ElemC,Call,ElemP,Prime,[ElemC|Succ]):-
 %                   ABSTRACT Call to Success Fact                        %
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% Specialized version of call_to_entry + exit_to_prime + extend for facts%
-%-------------------------------------------------------------------------
 
+:- export(call_to_success_fact/9).
 :- dom_impl(_, call_to_success_fact/9, [noq]).
 :- pred call_to_success_fact(+Sg,+Hv,+Head,+K,+Sv,+Call,+Proj,-Prime,-Succ)
    : cgoal * list * cgoal * term * list * asub * asub * term * term
    => ( asub(Prime), asub(Succ) ) + (not_fails, is_det)
-   #"Specialized version of call_to_entry + exit_to_prime + extend for facts".
+   # "Specialized version of `call_to_entry/9` + `exit_to_prime/7` + `extend/5` for facts.".
 
 call_to_success_fact(Sg,[],_Head,_K,Sv,Call,_Proj,Prime,Succ) :- !,
     create_values(Sv,Prime,g),
@@ -494,47 +452,25 @@ call_to_success_fact(_Sg,_Hv,_Head,_K,_Sv,_Call,_Proj,'$bottom','$bottom').
 %                         HANDLING BUILTINS                              %
 %------------------------------------------------------------------------%
 
-%-------------------------------------------------------------------------
-% special_builtin(+,+,+,-,-)                                             |
-% special_builtin(SgKey,Sg,Subgoal,Type,Condvars)                        |
-% Satisfied if the builtin does not need a very complex action. It       |
-% divides builtins into groups determined by the flag returned in the    |
-% second argument + some special handling for some builtins:             |
-%                                                                        |
-% (1) new_ground if the builtin makes all variables ground whithout      |
-%     imposing any condition on the previous freeness values of the      |
-%     variables                                                          |
-% (2) old_ground if the builtin requires the variables to be ground      |
-% (3) old_new_ground" if the builtin requires some variables to be       |
-%     ground and grounds the rest                                        |
-% (4) unchanged if we cannot infer anything from the builtin, the        |
-%     substitution remains unchanged and there are no conditions imposed |
-%     on the previous freeness values of the variables.                  |
-% (5) some if it makes some variables ground without imposing conditions |
-% (6) Sgkey, special handling of some particular builtins                |
-%-------------------------------------------------------------------------
-
-%-------------------------------------------------------------------------
-
+:- export(special_builtin/5).
 :- dom_impl(_, special_builtin/5, [noq]).
-:- pred special_builtin(+Pred,+Sg,+Subgoal,?Type,-Condvars)
+:- pred special_builtin(+Pred,+Sg,+Subgoal,?Type,---Condvars)
    : term * cgoal * term * term * term
-   #" Satisfied if the builtin does not need a very complex action. It       
- divides builtins into groups determined by the flag returned in the    
- second argument + some special handling for some builtins:             
-@begin{enumerate}
-@item @em{new_ground} if the builtin makes all variables ground whithout      
-     imposing any condition on the previous freeness values of the      
-     variables                                                          
-@item @em{old_ground} if the builtin requires the variables to be ground      
-@item @em{old_new_ground} if the builtin requires some variables to be       
-     ground and grounds the rest                                        
-@item unchanged if we cannot infer anything from the builtin, the        
-     substitution remains unchanged and there are no conditions imposed 
-     on the previous freeness values of the variables.                  
-@item @em{some} if it makes some variables ground without imposing conditions 
-@item Sgkey, special handling of some particular builtins                
-@end{enumerate}
+   #
+"Satisfied if the builtin does not need a very complex action. It       
+divides builtins into groups determined by the flag returned in the    
+second argument + some special handling for some builtins:             
+- *new_ground* if the builtin makes all variables ground whithout      
+  imposing any condition on the previous freeness values of the      
+  variables.                                                          
+- *old_ground* if the builtin requires the variables to be ground.      
+- *old_new_ground* if the builtin requires some variables to be       
+  ground and grounds the rest.                                        
+- unchanged if we cannot infer anything from the builtin, the        
+  substitution remains unchanged and there are no conditions imposed 
+  on the previous freeness values of the variables.                  
+- *some* if it makes some variables ground without imposing conditions. 
+- `Sgkey`, special handling of some particular builtins.                
 ".
 
 special_builtin('CHOICE IDIOM/1',_,_,new_ground,_).
@@ -725,42 +661,24 @@ very_special_builtin('C/3').
 %very_special_builtin('keysort/2').
 %very_special_builtin('sort/2').
 
-%-------------------------------------------------------------------------
-% success_builtin(+,+,+,+,+,-)                                           |
-% success_builtin(Type,Sv_u,Condv,HvFv_u,Call,Succ)                      |
-% Obtains the success for some particular builtins:                      |
-%  * If Type = new_ground, it updates Call making all vars in Sv_u ground|
-%  * If Type = bottom, Succ = '$bottom'                                  |
-%  * If Type = unchanged, Succ = Call                                    |
-%  * If Type = some, it updates Call making all vars in Condv ground     |
-%  * If Type = old_ground, if grouds all variables in Sv and checks that |
-%              no free variables has becomed ground                      |
-%  * If Type = old_ground, if grounds all variables in OldG and checks   |
-%              thatno free variables has becomed ground. If so, it       |
-%              grounds all variables in NewG                             |
-%  * Otherwise Type is the SgKey of a particular builtin for each the    |
-%    Succ is computed                                                    |
-%-------------------------------------------------------------------------
-
+:- export(success_builtin/6).
 :- dom_impl(_, success_builtin/6, [noq]).
-:- pred success_builtin(+Type,+Sv_u,?Condv,+HvFv_u,+Call,-Succ)
+:- pred  success_builtin(+Type,+Sv_u,?Condv,+HvFv_u,+Call,-Succ)
    : atm * list * term * list * asub * term => asub(Succ)
-   #"Obtains the success for some particular builtins:
-@begin{itemize}
-@item  If Type = new_ground, it updates Call making all vars in Sv_u ground
-@item If Type = bottom, Succ = '$bottom'                                  
-@item If Type = unchanged, Succ = Call                                    
-@item If Type = some, it updates Call making all vars in Condv ground     
-@item If Type = old_ground, if grouds all variables in Sv and checks that 
-          no free variables has becomed ground                      
-@item If Type = old_ground, if grounds all variables in OldG and checks   
-          thatno free variables has becomed ground. If so, it       
-          grounds all variables in NewG                             
-@item Otherwise Type is the SgKey of a particular builtin for each the    
-    Succ is computed                                                    
-@end{itemize}
+   #
+"Obtains the success for some particular builtins:
+- If `Type` = *new_ground*, it updates `Call` making all vars in `Sv_u` ground.
+- If `Type` = *bottom*, `Succ` = `$bottom`.                              
+- If `Type` = *unchanged*, `Succ` = `Call`.       
+- If `Type` = *some*, it updates `Call` making all vars in `Condv` ground.
+- If `Type` = *old_ground*, if grounds all variables in `Sv` and checks that 
+  no free variables has becomed ground.                      
+- If `Type` = *old_ground*, if grounds all variables in `OldG` and checks   
+  that no free variables has becomed ground. If so, it grounds all
+  variables in `NewG`.                             
+- Otherwise `Type` is the `SgKey` of a particular builtin for each the    
+  `Succ` is computed.      
 ".
-
 % TODO: Missing cuts in all the following clauses
 success_builtin(new_ground,Sv_u,_,_,Call,Succ):-
     sort(Sv_u,Sv),
@@ -886,17 +804,11 @@ success_builtin('compare/3',_,_,_,_,'$bottom').
 success_builtin(Key,_,_,_,Succ,Succ):-
     warning_message("the builtin key ~q is not defined",[Key]).
 
-%-------------------------------------------------------------------------
-% call_to_success_builtin(+,+,+,+,+,-)                                   %
-% call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,Succ)                    %
-% Handles those builtins for which computing Proj is easier than Succ    %
-%-------------------------------------------------------------------------
+:- export(call_to_success_builtin/6).
 :- dom_impl(_, call_to_success_builtin/6, [noq]).
-:- pred call_to_success_builtin(+SgKey,+Sg,+Sv,+Call,+Proj,-Succ)
+:- pred  call_to_success_builtin(+SgKey,+Sg,+Sv,+Call,+Proj,-Succ)
    : atm * cgoal * list * asub * asub * term
-   => asub(Succ) + (not_fails, is_det)
-   #"Handles those builtins for which computing @var{Proj} is easier than
-    @var{Succ}".
+   # "Handles those builtins for which computing `Proj` is easier than `Succ`.".
 
 call_to_success_builtin('==/2',Sg,Sv,Call,Proj,Succ):- Sg='=='(X,Y),
     gr_simplify_equations(X,Y,Binds),
@@ -944,18 +856,15 @@ gr_comp([(X,_,Tv)|Binds],Proj,Exit):-
     ),
     gr_comp(Binds,Proj1,Exit).
 
-%------------------------------------------------------------------------%
-% input_user_interface(+,+,-,+,+)                                        %
-% input_user_interface(InputUser,Qv,ASub,Sg,MaybeCallASub)               %
-% Obtaining the abstract substitution for gr from the user supplied      %
-%------------------------------------------------------------------------%
-
+:- export(input_user_interface/5). 
 :- dom_impl(_, input_user_interface/5, [noq]).
 :- pred input_user_interface(?InputUser,+Qv,-ASub,+Sg,+MaybeCallASub)
-   : term * list * term * term * term
-   => asub(ASub) + (not_fails, is_det)
-   #"Obtains the abstract substitution for gr from the native properties found
-   in the user supplied info.".
+   : term * list * term * term * term => asub(ASub) + (not_fails, is_det)
+   #
+"Obtains the abstract substitution for `gr` from the native properties found
+in the user supplied info.
+".
+
 input_user_interface((Gv_u,Ng_u),Qv,ASub,_Sg,_MaybeCallASub):-
     may_be_var(Gv_u,Gv),
     may_be_var(Ng_u,Ng),
@@ -968,9 +877,12 @@ input_user_interface((Gv_u,Ng_u),Qv,ASub,_Sg,_MaybeCallASub):-
 
 :- dom_impl(_, input_interface/4, [noq]).
 :- pred input_interface(+Prop,?Kind,?Struc0,?Struc1)
-   # "Adds native property @var{Prop} to the structure accumulating the
-   properties relevant to this domain, namely: ground/1, free/1, and
-   not_ground/1.".
+   #
+"Adds native property `Prop` to the structure accumulating the
+properties relevant to this domain, namely: `ground/1`, `free/1`, and
+`not_ground/1`.
+".
+   
 %input_interface(regtype(gnd(X)),K,S0,S1) :-
 %    input_interface(ground(X),K,S0,S1).
 input_interface(ground(X),perfect,(Gv0,NGv),(Gv,NGv)):-
@@ -992,18 +904,14 @@ myappend(Vs,V0,V):-
 
 may_be_var(X,X):- ( X=[] ; true ), !.
 
-%------------------------------------------------------------------------%
-% asub_to_native(+,+,+,-,-)                                           %
-% asub_to_native(ASub,Qv,OutFlag,ASub_user,Comps)                     %
-% The user friendly format consists in extracting the ground variables   %
-% and the nonground variables                                            %
-%------------------------------------------------------------------------%
-
+:- export(asub_to_native/5). 
 :- dom_impl(_, asub_to_native/5, [noq]).
-:- pred asub_to_native(+ASub,+Qv,+OutFlag,-ASub_user,-Comps)
+:- pred  asub_to_native(+ASub,+Qv,+OutFlag,-ASub_user,-Comps)
    : asub * list * term * term * term
-   #"The user friendly format consists in extracting the ground variables
-   and the nonground variables".
+   #
+"The user friendly format consists in extracting the ground variables
+and the nonground variables.
+".
 
 asub_to_native(Abs,_Qv,_OutFlag,ASub_user,[]):-
     member_value_gr(Abs,Gv,g),
@@ -1011,10 +919,8 @@ asub_to_native(Abs,_Qv,_OutFlag,ASub_user,[]):-
     ( Gv=[] -> ASub_user=ASub_user0 ; ASub_user=[ground(Gv)|ASub_user0] ),
     ( NGv=[] -> ASub_user0=[] ; ASub_user0=[not_ground(Gv)] ).
 
-%------------------------------------------------------------------------%
-% member_value_gr(+,-,+)                                        %
-% member_value_gr(Abs,Vars,Value)                                        %
-% %------------------------------------------------------------------------%
+:- pred member_value_gr(+Abs,-Vars,+Value).
+
 member_value_gr([],[],_).
 member_value_gr([X/V|Rest],[X|RestV],Value):-
     V==Value,!,
@@ -1028,48 +934,41 @@ member_value_gr([_|Rest],RestV,Value):-
 %% % The readible format still close to the internal formal is identical    %
 %% %-------------------------------------------------------------------------
 %% 
-%% :- pred output_interface(+ASub,-Output): asub * asub # 
+%% %!  output_interface(+ASub,-Output): asub * asub # 
 %% "The readible format still close to the internal formal is identical".
 %%  
 %% output_interface(Output,Output).
 
-%------------------------------------------------------------------------%
-% unknown_call(+,+,+,-)                                                  %
-% unknown_call(Sg,Vars,Call,Succ)                                        %
-% Gives the "top" value for the variables involved in a                  %
-% literal whose definition is not present, and adds this top value to    %
-% Call                                                                   %
-%------------------------------------------------------------------------%
-
+:- export(unknown_call/4).
 :- dom_impl(_, unknown_call/4, [noq]).
 :- pred unknown_call(+Sg,+Vars,+Call,-Succ)
    : cgoal * list * asub * term => asub(Succ) + (not_fails, is_det)
-   #"Gives the ``top'' value for the variables involved in a literal whose
-   definition is not present, and adds this top value to @var{Call}".
+   #
+"Gives the *top* value for the variables involved in a literal whose
+definition is not present, and adds this *top* value to `Call`.
+".
+
 unknown_call(_Sg,Vars,Call,Succ):-
     gr_change_values_insert(Vars,Call,Succ,any).
 
-%------------------------------------------------------------------------%
-% less_or_equal(+,+)                                                     %
-% less_or_equal(ASub0,ASub1)                                             %
-% Succeeds if ASub1 is more general or equal to ASub0                    %
-%------------------------------------------------------------------------%
+:- export(less_or_equal/2).
+:- dom_impl(_, less_or_equal/2, [noq]).
+:- pred less_or_equal(+ASub0,+ASub1)
+   : asub * asub + is_det
+   #
+"Succeeds if `ASub1` is more general or equal to `ASub0`. It's
+assumed the two abstract substitutions are defined on the same variables.
+".
 
 % it's assumed the two abstract        
 % substitutions are defined on the same variables 
-
-:- dom_impl(_, less_or_equal/2, [noq]).
-:- pred less_or_equal(+ASub0,+ASub1)
-   : asub * asub + (not_fails, is_det)
-   # "Succeeds if @var{ASub1} is more general or equal to @var{ASub0}. it's
-   assumed the two abstract substitutions are defined on the same variables".
-
 less_or_equal('$bottom',_) :- !.
 less_or_equal(ASub0,ASub1):-
     less_or_equal_(ASub0,ASub1).
 
 less_or_equal_([],[]).
 less_or_equal_([X/Value0|Rest0],[X/Value1|Rest1]):-
+
     less_or_equal_el(Value0,Value1),
     less_or_equal_(Rest0,Rest1).
 
@@ -1079,15 +978,12 @@ less_or_equal_el(ng,ng) :- !.
 less_or_equal_el(ng,any).
 less_or_equal_el(any,any).
 
-%------------------------------------------------------------------------%
-% glb(+,+,-)                                                             %
-% glb(ASub0,ASub1,Glb)                                                   %
-%------------------------------------------------------------------------%
-
+:- export(glb/3).  
 :- dom_impl(_, glb/3, [noq]).
-:- pred glb(+ASub0,+ASub1,-Glb): asub * asub * term
+:- pred  glb(+ASub0,+ASub1,-Glb): asub * asub * term
    => asub(Glb) + (not_fails, is_det)
-   #"@var{Glb} is the great lower bound of @var{ASub0} and @var{ASub1}".
+   # "`Glb` is the great lower bound of `ASub0` and `ASub1`.".
+   
 glb('$bottom',_ASub,ASub3) :- !, ASub3='$bottom'.
 glb(_ASub,'$bottom',ASub3) :- !, ASub3='$bottom'.
 glb(ASub0,ASub1,Glb):-
@@ -1119,21 +1015,22 @@ glb_([X/Value|ASub0],[X/any|ASub1],[X/Value|Glb]):-
 %% extend_free(ASub,Vars,NewASub):-
 %%      gr_change_values_insert(Vars,ASub,NewASub,ng).
 
-%-------------------------------------------------------------------------
-%-------------------------------------------------------------------------
-%            Intermediate Functions                                      %
-%-------------------------------------------------------------------------
-%-------------------------------------------------------------------------
-
-%-------------------------------------------------------------------------
-% gr_simplify_equations(+,+,-)                                              |
-% gr_simplify_equations(Term1,Term2,Binds)                                  |
-% It returns in Binds the simplified set of primitive equations obtained |
-% from the unification of Term1 and Term2 with the following format:     |
-%  (X,Term,Tv) where X is a variable, Term is a term and Tv is the set of|
-% variables in Term                                                      |
-% COMMENT!!!!!!! is sort(Temp,E) needed??????????                        |
 %------------------------------------------------------------------------%
+%------------------------------------------------------------------------%
+%                      Intermediate Functions                            %
+%------------------------------------------------------------------------%
+%------------------------------------------------------------------------%
+
+:- pred gr_simplify_equations(+Term1,+Term2,-Binds)
+   #
+"It returns in `Binds` the simplified set of primitive equations obtained 
+from the unification of `Term1` and `Term2` with the following format:     
+(`X`,`Term`,`Tv`) where `X` is a variable, `Term` is a term and `Tv` is
+the set of variables in `Term`.
+".
+
+%  COMMENT!!!!!!! is sort(Temp,E) needed??????????                        
+
 gr_simplify_equations(Term1,Term2,Binds):-
     gr_free_peel(Term1,Term2,Temp,[]),
     sort(Temp,Binds).
@@ -1163,12 +1060,12 @@ gr_free_peel_args(N1,N,Term1,Term2,Binds,Rest) :-
     gr_free_peel(A1,A2,Binds,Rest1),
     gr_free_peel_args(N2,N,Term1,Term2,Rest1,Rest).
 
-%-------------------------------------------------------------------------
-% gr_change_values_insert(+,+,-,+)                                       |
-% gr_change_values_insert(Vars,Fr,NewFr,Value)                           |
-% Forall X in Vars, if exists X/V in Fr it is changed to X/Value,        |
-% otherwise X/Value is added to Fr. Both Ordered                         |
-%-------------------------------------------------------------------------
+:- pred gr_change_values_insert(+Vars,+Fr,-NewFr,+Value)
+   #
+"Forall `X` in `Vars`, if exists `X`/`V` in `Fr` it is changed
+to `X`/`Value`, otherwise `X`/`Value` is added to `Fr`. Both ordered.
+".
+
 gr_change_values_insert([],Fr,Fr,_):- !.
 gr_change_values_insert(Vars,[],NewFr,Value):- !,
     create_values(Vars,NewFr,Value).
@@ -1188,11 +1085,9 @@ gr_change_values_insert_(<,Elem,[],X,Xs,NewFr,Value):- !,
 gr_change_values_insert_(<,Elem,Fr,X,Xs,[Elem|NewFr],Value):-
     gr_change_values_insert([X|Xs],Fr,NewFr,Value).
 
-%-------------------------------------------------------------------------
-% gr_var_value(+,+,-)                                                    |
-% gr_var_value(Fr,X,Value)                                               |
-% It obtains in the third argument the value of X (g, ng or any)         |
-%-------------------------------------------------------------------------
+:- pred gr_var_value(+Fr,in_var(X),-Value)
+   # "It obtains in the third argument the value of `X` (`g`, `ng` or `any`).".
+
 gr_var_value([Y/V|More],X,Value):-
     compare(D,X,Y),
     gr_var_value_(D,V,More,X,Value).
@@ -1202,11 +1097,9 @@ gr_var_value_(>,_Elem,[Y/V|More],X,Value):-
     compare(D,X,Y),
     gr_var_value_(D,V,More,X,Value).
 
-%-------------------------------------------------------------------------
-% gr_values_equal(+,+,+)                                                 |
-% gr_values_equal(Vars,Fr,Value)                                         |
-% Satisfied if the values of all variables in Vars is not equal to Value |
-%-------------------------------------------------------------------------
+:- pred gr_values_equal(+Vars,+Fr,+Value)
+   # "Satisfied if the values of all variables in `Vars` is not equal to `Value`.".
+
 gr_values_notequal([],_,_).
 gr_values_notequal([X|Xs],[Y/V|Ys],Value):-
     compare(D,X,Y),
@@ -1219,11 +1112,10 @@ gr_values_notequal_(>,X,Xs,_,[Y/V|Ys],Value):-
     compare(D,X,Y),
     gr_values_notequal_(D,X,Xs,V,Ys,Value).
 
-%-------------------------------------------------------------------------
-% gr_values_equal(+,+,+)                                                 |
-% gr_values_equal(Vars,Fr,Value)                                         |
-% Satisfied if the values of all variables in Vars is equal to Value     |
-%-------------------------------------------------------------------------
+
+:- pred gr_values_equal(+Vars,+Fr,+Value)
+   # "Satisfied if the values of all variables in `Vars` is equal to `Value`.".
+
 gr_values_equal([],_,_).
 gr_values_equal([X|Xs],[Y/V|Ys],Value):-
     compare(D,X,Y),
@@ -1235,15 +1127,15 @@ gr_values_equal_(>,X,Xs,_,[Y/V|Ys],Value):-
     compare(D,X,Y),
     gr_values_equal_(D,X,Xs,V,Ys,Value).
 
-%-------------------------------------------------------------------------
-% abs_gunify(+,+,+,+,-,-,-)                                        %
-% abs_gunify(Proj,Binds,NewProj,NewBinds)                          %
-% It will traverse Binds updating Proj (grounding some variables due     %
-% to the bindings in Binds), updating and eliminating from Binds         %
-% all primitive equations (X,Term,Tv) s.t. X or Term are ground          %
-% The fixpoint will be reached when both Proj and Binds  remain          %
-% unchanged through one iteration                                        %
-%-------------------------------------------------------------------------
+:- pred abs_gunify(Proj,Binds,NewProj,NewBinds)
+   #
+"It will traverse Binds updating `Proj` (grounding some variables due     
+to the bindings in `Binds`), updating and eliminating from `Binds`         
+all primitive equations (`X`,`Term`,`Tv`) s.t. `X` or `Term` are ground  
+The fixpoint will be reached when both `Proj` and `Binds` remain          
+unchanged through one iteration.                                       
+".
+
 abs_gunify(Proj,Binds,NewProj,NewBinds):-
     ab_unify(Binds,Proj,Proj1,Binds1),
     fixpoint_gunify(Proj,Binds,Proj1,Binds1,NewProj,NewBinds).
@@ -1277,11 +1169,9 @@ ab_unify([(X,Term,Tv)|Binds],Proj,Proj1,NewBinds):-
     NewBinds = [(X,Term,Tv)|RestBinds],
     ab_unify(Binds,Proj,Proj1,RestBinds).
 
-%-------------------------------------------------------------------------
-% collect_vars_gr(+,-)                                                   |
-% collect_vars_gr(Abs,Vars)                                              |
-% It returns in Vars the list of variables in Abs.                       |
-%-------------------------------------------------------------------------
+:- pred collect_vars_gr(+Abs,-Vars)
+   # "It returns in `Vars` the list of variables in `Abs`.".
+
 collect_vars_gr([],[]).
 collect_vars_gr([X/_|Rest],[X|Vars]):-
     collect_vars_gr(Rest,Vars).

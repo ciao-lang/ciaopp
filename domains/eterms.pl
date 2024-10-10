@@ -1,9 +1,10 @@
-:- module(eterms, [], [assertions,regtypes,basicmodes,hiord]).
+:- module(eterms, [], [assertions,regtypes,modes_extra,hiord]).
 
 :- doc(title,"eterms: types with lnewiden_el/4 (abstract domain)").
 :- doc(author, "Claudio Vaucheret").
 :- doc(author, "Francisco Bueno").
 :- doc(author, "Ciao Development Team").
+:- doc(stability, prod).
 
 % TODO: Document widening and abstract domain (Name) (see paper)
 
@@ -109,12 +110,19 @@ eterms_asub([Elem|Absu]):-
 eterms_asub_elem(Var:Type):-
     var(Var),
     pure_type_term(Type). % TODO: incorrect? (we have pairs)
+eterms_asub_elem(ListVar:Type):-
+    list(var,ListVar),
+    pure_type_term(Type).
 
 % (shared with etermsvar.pl)
 :- export(get_type/3). % TODO: get type from asub, rename
 get_type(Var,[NVar:(_,T0)|_],T):- Var == NVar, !, T = T0.
 get_type(Var,[_|ASub],T):- 
     get_type(Var,ASub,T).
+
+:- prop hvfv_u(A) # "`A` is head variables and free variables possibly unsorted".
+hvfv_u(not_provided_HvFv_u).
+hvfv_u(X):- list(var,X).
 
 %------------------------------------------------------------------%
 :- dom_impl(eterms, init_abstract_domain/1).
@@ -277,7 +285,7 @@ variables_are_variable_type(Fv,ASub):-
 :- dom_impl(eterms, exit_to_prime/7).
 :- export(eterms_exit_to_prime/7).
 :- pred eterms_exit_to_prime(+Sg,+Hv,+Head,+Sv,+Exit,-ExtraInfo,-Prime)
-   : list * list * cgoal * cgoal * eterms_asub * term * term
+   : term * list * cgoal * cgoal * eterms_asub * term * term
    => (eterms_extrainfo(ExtraInfo), eterms_asub(Prime))
    # "It computes the prime abstract substitution @var{Prime}, i.e.
    the result of going from the abstract substitution over the head
@@ -474,7 +482,7 @@ apply([]).
 :- dom_impl(eterms, project/5).
 :- export(eterms_project/5).
 :- pred eterms_project(+Sg,+Vars,+HvFv_u,+ASub,-Proj)
-   : term * list * list * eterms_asub * term => eterms_asub(Proj)
+   : term * list * hvfv_u * eterms_asub * term => eterms_asub(Proj)
    # "@var{Proj} is the result of eliminating from @var{ASub} all
    @var{X}:@var{Value} such that @var{X} is not in @var{Vars}.".
 
@@ -976,7 +984,7 @@ eterms_obtain_info(_Prop,Vars,ASub,Info) :- asub_to_info(eterms,ASub,Vars,Info,_
 
 :- dom_impl(eterms, input_user_interface/5).
 :- export(eterms_input_user_interface/5).
-:- pred eterms_input_user_interface(+InputUser,+Qv,-ASub,+Sg,+MaybeCallASub)
+:- pred eterms_input_user_interface(?InputUser,+Qv,-ASub,+Sg,+MaybeCallASub)
    # "Obtains the abstract substitution @var{ASub} from user supplied
    information.".
 

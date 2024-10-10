@@ -1,23 +1,31 @@
-:- module(sharefree_clique, [], [assertions, isomodes]).
+:- module(sharefree_clique, [], [assertions, modes_extra]).
 
-:- doc(title, "CLIQUE-Sharing+Freeness domain").
+:- doc(title, "CLIQUE-sharing+freeness (abstract domain)").
 :- doc(author, "Jorge Navas").
-% Copyright (C) 2004-2019 The Ciao Development Team
+:- doc(copyright,"Copyright @copyright{} 2004-2019 The Ciao Development Team").
+:- doc(stability, prod).
 
 :- use_module(domain(sharefree), [obtain_info/4]).
 :- include(ciaopp(plai/plai_domain)).
 :- dom_def(sharefree_clique, [default]).
 :- dom_impl(_, obtain_info/4, [from(sharefree:shfr), noq]).
 
-%------------------------------------------------------------------------%
-% This file contains an extension (freeness) of the domain dependent     |
-% abstract functions for the clique-sharing domain.                      |
-%------------------------------------------------------------------------%
-% The representation of this domain augments the Clique-sharing domain   |
-% with a third component that keep track of freeness.                    |
-%------------------------------------------------------------------------%
-% The meaning of the variables are defined in sharefree.pl               |
-%------------------------------------------------------------------------%
+% infers(ground/1, rtcheck).
+% infers(mshare/1, rtcheck).
+% infers(var/1, rtcheck).
+% infers(clique/1, rtcheck).
+
+:- doc(module,"
+This file contains an extension (freeness) of the domain dependent     
+abstract functions for the clique-sharing domain.                      
+
+The representation of this domain augments the Clique-sharing domain   
+with a third component that keep track of freeness.                    
+
+@begin{note}
+The meaning of the variables are defined in `sharefree.pl`.                
+@end{note}
+").
 
 :- use_module(library(sets), [
     ord_subset/2,
@@ -87,14 +95,17 @@
        simple way.").
 :- doc(bug,"4. The non-redundant version is not working because the 
        semantics of the builtins has not been defined yet.").
+
+%------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
 %                      ABSTRACT Call To Entry                            %
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% call_to_entry(+,+,+,+,+,+,+,-,?)                      %
-%-------------------------------------------------------------------------
+
 :- export(call_to_entry/9).
 :- dom_impl(_, call_to_entry/9, [noq]).
+:- pred call_to_entry(+,+,+,+,+,+,+,-,?).                     
+
 call_to_entry(_Sv,Sg,_Hv,Head,_K,Fv,Proj,Entry,Flag):-
      variant(Sg,Head),!,
      Flag = yes,
@@ -125,14 +136,17 @@ call_to_entry(_Sv,Sg,Hv,Head,_K,Fv,Proj,Entry,ExtraInfo):-
      ExtraInfo = (Equations,F2),!.
 call_to_entry(_Sv,_Sg,_Hv,_Head,_K,_Fv,_Proj,'$bottom',_):-!.
 
+
+%------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
 %                      ABSTRACT Exit to Prime                            %
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% exit_to_prime(+,+,+,+,+,+,-)                          %
-%-------------------------------------------------------------------------
+
 :- export(exit_to_prime/7).
 :- dom_impl(_, exit_to_prime/7, [noq]).
+:- pred exit_to_prime(+,+,+,+,+,+,-).
+
 exit_to_prime(_,_,_,_,'$bottom',_,'$bottom'):-!.
 exit_to_prime(Sg,Hv,Head,_Sv,Exit,yes,Prime):- !,
      project(Sg,Hv,not_provided_HvFv_u,Exit,(BPrime_sh,BPrime_fr)),
@@ -160,14 +174,15 @@ exit_to_prime(Sg,_Hv,_Head,Sv,Exit,ExtraInfo,Prime):-
      Prime = (SH_Prime_N,Prime_Fr).
 
 %------------------------------------------------------------------------%
+%------------------------------------------------------------------------%
 %                            ABSTRACT AMGU                               %
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% amgu(+,+,+,-)                                         %
-% amgu(Sg,Head,ASub,AMGU)                               %
-% @var{AMGU} is the abstract unification between @var{Sg} and @var{Head}.%
-%------------------------------------------------------------------------%
+
 :- dom_impl(_, amgu/4, [noq]).
+:- pred amgu(+Sg,+Head,+ASub,-AMGU)
+   # "`AMGU` is the abstract unification between `Sg` and `Head`.".
+
 amgu(Sg,Head,ASub,AMGU):-
     peel_equations_frl(Sg, Head,Eqs),
     sharefree_clique_iterate(Eqs,ASub,AMGU),!.
@@ -177,10 +192,11 @@ amgu(Sg,Head,ASub,AMGU):-
 %                      ABSTRACT Extend_Asub                              %
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% augment_asub(+,+,-)                                    %
-%-------------------------------------------------------------------------
+                                    
 :- redefining(augment_asub/3).
 :- dom_impl(_, augment_asub/3, [noq]).
+:- pred augment_asub(+,+,-).
+
 augment_asub(ASub,[],ASub).
 augment_asub((SH,F),Vars,(SH1,F1)):-
     sharing_clique:augment_asub(SH,Vars,SH1),
@@ -188,26 +204,28 @@ augment_asub((SH,F),Vars,(SH1,F1)):-
 
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-%                      ABSTRACT Extend                                   |
+%                         ABSTRACT Extend                                %
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% extend(+,+,+,+,-)                                     |
-% extend(Sg,Prime,Sv,Call,Succ)                         |
-% If Prime = bottom, Succ = bottom. If Sv = [], Call = Succ.             |
-% Otherwise, Succ_sh is computed as in sharing_clique:extend/4,            |
-% Call_fr is computed by:                                                |
-%   * obtainig in NewGv the set of variables which have becomed ground   |
-%   * adding this NewGv variables to Prime_fr, obtaining Temp1_fr        |
-%   * obtaining in BVars the set of nonground variables in Succ which do |
-%     not belong to Sg (ar not in Sv)                                    |
-%   * Then it obtains in BVarsf the subset of BVars which are free w.r.t |
-%     Call_fr, and in Temp2_fr, the result of adding X/nf to Temp1_fr    |
-%     for the rest of variables in BVars                                 |
-%   * If BVarsf = [],                                                    |
-%------------------------------------------------------------------------%
+
 :- redefining(extend/5).                   
 :- export(extend/5).
 :- dom_impl(_, extend/5, [noq]).
+:- pred extend(+Sg,+Prime,+Sv,+Call,-Succ)
+   #
+"If `Prime` = *bottom*, `Succ` = *bottom*. If `Sv` = [], `Call` = `Succ`.            
+Otherwise, `Succ_sh` is computed as in `sharing_clique:extend/4`,          
+`Call_fr` is computed by:                                                
+- obtainig in `NewGv` the set of variables which have becomed ground.   
+- adding this `NewGv` variables to `Prime_fr`, obtaining `Temp1_fr`.        
+- obtaining in `BVars` the set of nonground variables in `Succ` which do 
+  not belong to `Sg` (ar not in `Sv`).                                    
+- Then it obtains in `BVarsf` the subset of `BVars` which are free w.r.t 
+  `Call_fr`, and in `Temp2_fr`, the result of adding `X`/`nf` to `Temp1_fr`    
+  for the rest of variables in `BVars`.                                 
+- If `BVarsf` = [],                                                    
+".
+
 extend(_Sg,'$bottom',_Sv,_Call,Succ):- !,
     Succ = '$bottom'.
 extend(_Sg,_Prime,[],Call,Succ):- !,
@@ -238,15 +256,15 @@ extend(Sg,(Prime_SH,Prime_fr),Sv,(Call_SH,Call_fr),(Succ_SH_N,Succ_fr)):-
 
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-%                      ABSTRACT PROJECTION
+%                         ABSTRACT PROJECTION                            %
 %------------------------------------------------------------------------%
 %-------------------------------------------------------------------------
-% project(+,+,+,+,-)                                    |
-% project(Sg,Vars,HvFv_u,ASub,Proj)                     |
-%------------------------------------------------------------------------%
+
 :- redefining(project/5).
 :- export(project/5).
 :- dom_impl(_, project/5, [noq]).
+:- pred project(+Sg,+Vars,+HvFv_u,+ASub,-Proj).
+
 project(_Sg,_,_HvFv_u,'$bottom','$bottom'):- !.
 project(Sg,Vars,HvFv_u,(SH,F),(Proj_SH,Proj_F)) :-
     sharing_clique:project(Sg,Vars,HvFv_u,SH,Proj_SH),
@@ -254,13 +272,13 @@ project(Sg,Vars,HvFv_u,(SH,F),(Proj_SH,Proj_F)) :-
 
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-%                      ABSTRACT SORT                                     %
+%                         ABSTRACT SORT                                  %
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% abs_sort(+,-)                                             |
-% abs_sort(Asub,Asub_s)                                     |
-% sorts the set of set of variables ASub to obtaint the Asub_s           |
-%-------------------------------------------------------------------------
+
+:- pred abs_sort(+Asub,-Asub_s)
+   # "Sorts the set of set of variables `ASub` to obtaint the `Asub_s`.".
+
 :- redefining(abs_sort/2).                     
 :- export(abs_sort/2).
 :- dom_impl(_, abs_sort/2, [noq]).
@@ -269,14 +287,14 @@ abs_sort((SH,F),(Sorted_SH,Sorted_F) ):-
     sharing_clique:abs_sort(SH,Sorted_SH),
     sort(F,Sorted_F).
 
-%------------------------------------------------------------------------%
-% identical_abstract(+,+)                               |
-% identical_abstract(ASub0,ASub1)                            |
-% Succeeds if the two abstract substitutions are defined on the same     |
-% variables and are equivalent                                           |
-%------------------------------------------------------------------------%
 :- export(identical_abstract/2).
 :- dom_impl(_, identical_abstract/2, [noq]).
+:- pred identical_abstract(+ASub0,+ASub1)
+   #
+"Succeeds if the two abstract substitutions are defined on the same     
+variables and are equivalent.                                           
+".
+
 identical_abstract('$bottom','$bottom'):-!.
 identical_abstract('$bottom',_):- !,fail.
 identical_abstract(_,'$bottom'):- !,fail.
@@ -291,13 +309,14 @@ identical_abstract((SH0,Fr0),(SH1,Fr1)):-
       share_clique_normalize(SH1,100,1,NSH1),
       NSH0 == NSH1
     ).
-%------------------------------------------------------------------------%
-% sharefre_clique_eliminate_equivalent(+,-)                              |
-% sharefre_clique_eliminate_equivalent(TmpLSucc,LSucc)                   |
-% The list LSucc is reduced wrt the list TmpLSucc  in that it            | 
-% does not contain abstract substitutions which are equivalent.          |
-%------------------------------------------------------------------------%
+
 :- dom_impl(_, eliminate_equivalent/2, [noq]).
+:- pred eliminate_equivalent(+TmpLSucc,-LSucc)
+   #
+"The list `LSucc` is reduced wrt the list `TmpLSucc` in that it             
+does not contain abstract substitutions which are equivalent.          
+".
+
 eliminate_equivalent(TmpLSucc,Succ):-
     sort(TmpLSucc,Succ).
 
@@ -311,13 +330,11 @@ eliminate_equivalent(TmpLSucc,Succ):-
 %       sort(Fr,NFr),
 %         normalize_fr_abstract_substitutions(Ss,Res).
 
-%------------------------------------------------------------------------%
-% less_or_equal(+,+)                                    |
-% less_or_equal(ASub0,ASub1)                            |
-% Succeeds if ASub1 is more general or equal to ASub0                    |
-%------------------------------------------------------------------------%
 :- export(less_or_equal/2).
 :- dom_impl(_, less_or_equal/2, [noq]).
+:- pred less_or_equal(+ASub0,+ASub1)
+   # "Succeeds if `ASub1` is more general or equal to `ASub0`.".
+
 less_or_equal('$bottom',_ASub):- !.
 less_or_equal((SH0,Fr0),(SH1,Fr1)):-
     sharing_clique:less_or_equal(SH0,SH1),
@@ -329,8 +346,6 @@ less_or_equal((SH0,Fr0),(SH1,Fr1)):-
 %------------------------------------------------------------------------%
 %                      ABSTRACT Call to Success Fact                     |
 %------------------------------------------------------------------------%
-%------------------------------------------------------------------------%
-% Specialized version of call_to_entry + exit_to_prime + extend for facts|
 %------------------------------------------------------------------------%
 
 %% sharefree_call_to_success_fact(_Sg,[],_Head,Sv,Call,_Proj,Prime,Succ) :- 
@@ -344,6 +359,9 @@ less_or_equal((SH0,Fr0),(SH1,Fr1)):-
 
 :- export(call_to_success_fact/9).
 :- dom_impl(_, call_to_success_fact/9, [noq]).
+:- pred call_to_success_fact/9
+   # "Specialized version of `call_to_entry` + `exit_to_prime` + `extend` for facts.".
+
 call_to_success_fact(Sg,Hv,Head,_K,Sv,Call,_Proj,Prime,Succ):-
 % exit_to_prime
     augment_asub(Call,Hv,ASub),    
@@ -389,16 +407,18 @@ call_to_prime_fact(Sg,Hv,Head,Sv,(_SH,Extra_Info),Prime) :-
 
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-%                      ABSTRACT LUB                                      %
+%                          ABSTRACT LUB                                  %
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% compute_lub(+,-)                                      |
-% compute_lub(ListASub,Lub)                             |
-% It computes the lub of a set of Asub. For each two abstract            |
-% substitutions ASub1 and ASub2 in ListASub, obtaining the lub is just   |
-% merging the ASub1 and ASub2.                                           |
-%------------------------------------------------------------------------%
+
 :- dom_impl(_, compute_lub/2, [noq]).
+:- pred compute_lub(+ListASub,-Lub)
+   #
+"It computes the *lub* of a set of `Asub`. For each two abstract           
+substitutions `ASub1` and `ASub2` in `ListASub`, obtaining the *lub* is just  
+merging the `ASub1` and `ASub2`.                                          
+".
+
 compute_lub([ASub1,ASub2|Rest],Lub) :- !,
     compute_lub_el(ASub1,ASub2,ASub3),
     compute_lub([ASub3|Rest],Lub).
@@ -424,11 +444,9 @@ compute_lub_fr([Xv|Fr1],[Yv|Fr2],Lub):-
 compute_lub_fr([X/_|Fr1],[X/_|Fr2],[X/nf|Lub_fr]):-
     compute_lub_fr(Fr1,Fr2,Lub_fr).
 
-%------------------------------------------------------------------------%
-% glb(+,+,-)                                            |
-% glb(ASub0,ASub1,Lub)                                  |
-% Glb is just intersection.                                              |
-%------------------------------------------------------------------------%
+:- pred glb(+ASub0,+ASub1,-Lub)
+   # "`Glb` is just intersection.".
+
 :- export(glb/3).
 :- dom_impl(_, glb/3, [noq]).
 glb('$bottom',_ASub,ASub3) :- !, ASub3='$bottom'.
@@ -460,15 +478,16 @@ glb((SH1,Fr1),(SH2,Fr2),Glb):-
           change_values_insert(GVars,TmpFr,Glb_fr,g)
     )  ).
 
-%------------------------------------------------------------------------%
-% input_user_interface(+,+,-,+,+)                       |
-% input_user_interface(InputUser,Qv,ASub,Sg,MaybeCallASub) |
-% Obtaining the abstract substitution for Cl+Fr from the user supplied   |
-% information just consists in taking th Cliques first and the var(Fv)   |
-% element of InputUser, and construct from them the Freeness.            |
-%------------------------------------------------------------------------%
 :- export(input_user_interface/5).
 :- dom_impl(_, input_user_interface/5, [noq]).
+:- pred input_user_interface(?InputUser,+Qv,-ASub,+Sg,+MaybeCallASub)
+   : term * list * term * term * term
+   #
+"Obtaining the abstract substitution for `Cl`+`Fr` from the user supplied   
+information just consists in taking the cliques first and the `var(Fv)`  
+element of `InputUser`, and construct from them the `Freeness`.            
+".
+
 input_user_interface((SH,Fv0),Qv,(Call_SH,Call_fr),Sg,MaybeCallASub):-
     sharing_clique:input_user_interface(SH,Qv,Call_SH,Sg,MaybeCallASub),
 %% freeness  
@@ -497,13 +516,13 @@ myinsert(Fr0,X,Fr):-
 myinsert(Fr0,X,Fr):-
     insert(Fr0,X,Fr).
 
-%------------------------------------------------------------------------%
-% asub_to_native(+,+,+,-,-)                             |
-% asub_to_native(ASub,Qv,OutFlag,ASub_user,Comps)       |
-% The user friendly format consists in extracting the ground variables   |
-% and the free variables                                                 |
-%------------------------------------------------------------------------%
 :- dom_impl(_, asub_to_native/5, [noq]).
+:- pred asub_to_native(+ASub,+Qv,+OutFlag,-ASub_user,-Comps)
+   #
+"The user friendly format consists in extracting the ground variables   
+and the free variables                                                 
+".
+
 asub_to_native((SH,Fr),_Qv,_OutFlag,Info,[]):-
     SH = (Cl,Sh),
     if_not_nil(Cl,clique(Cl),Info,Info0),
@@ -513,12 +532,10 @@ asub_to_native((SH,Fr),_Qv,_OutFlag,Info,[]):-
     member_value_freeness(Fr,Gv,g),
     if_not_nil(Gv,ground(Gv),Info2,[]).
 
-%------------------------------------------------------------------------%
-% unknown_call(+,+,+,-)                                 |
-% unknown_call(Sg,Vars,Call,Succ)                       |
-%------------------------------------------------------------------------%
 :- export(unknown_call/4).
 :- dom_impl(_, unknown_call/4, [noq]).
+:- pred unknown_call(+Sg,+Vars,+Call,-Succ).
+
 unknown_call(_Sg,_Vars,'$bottom','$bottom') :- !.
 unknown_call(_Sg,Vars,(Call_SH,Call_fr),(Succ_SH,Succ_fr)):-
     rel_w(Vars,Call_SH,Intersect),
@@ -530,87 +547,86 @@ unknown_call(_Sg,Vars,(Call_SH,Call_fr),(Succ_SH,Succ_fr)):-
     merge_list_of_lists(Int_All,Nonfree_vars),
     change_values_if_f(Nonfree_vars,Call_fr,Succ_fr,nf).
 
-%------------------------------------------------------------------------%
-% empty_entry(+,+,-)                                    |
-% empty_entry(Sg,Vars,Entry)                            |
-% The empty value in Sh for a set of variables is the list of singletons,|
-% in Fr is X/f forall X in the set of variables                          |            
-%------------------------------------------------------------------------%
 :- export(empty_entry/3).
 :- dom_impl(_, empty_entry/3, [noq]).
+:- pred empty_entry(+Sg,+Vars,-Entry)
+   #
+"The empty value in `Sh` for a set of variables is the list of singletons,
+in `Fr` is `X`/`f` forall `X` in the set of variables.                                     
+".
+
 empty_entry(_Sg,Qv,Entry):-
     list_to_list_of_lists(Qv,Entry_sh),     
     create_values(Qv,Entry_fr,f),
     Entry=(([],Entry_sh),Entry_fr).
 
-%------------------------------------------------------------------------%
-% unknown_entry(+,+,-)                                          |
-% unknown_entry(Sg,Qv,Call)                                     |
-% The top value in Sharing for a set of variables is the powerset, in Fr |
-% X/nf forall X in the set of variables.                                 |    
-%------------------------------------------------------------------------%
 :- dom_impl(_, unknown_entry/3, [noq]).
+:- pred unknown_entry(+Sg,+Qv,-Call)
+   #
+"The *top* value in `Sharing` for a set of variables is the powerset, in `Fr` 
+`X`/`nf` forall `X` in the set of variables.                                     
+".
+
 unknown_entry(_Sg,Qv,Call):-
     sort(Qv,QvS),
     create_values(Qv,Call_fr,nf),
     Call = (([QvS],[]),Call_fr).
 
 %------------------------------------------------------------------------%
-%                         HANDLING BUILTINS                              |
+%                         HANDLING BUILTINS                              %
 %------------------------------------------------------------------------%
 
-%------------------------------------------------------------------------%
-% special_builtin(+,+,+,-,-)                            |
-% special_builtin(SgKey,Sg,Subgoal,Type,Condvars)       |
-% Satisfied if the builtin does not need a very complex action. It       |
-% divides builtins into groups determined by the flag returned in the    |
-% second argument + some special handling for some builtins:             |
-% (1) new_ground if the builtin makes all variables ground whithout      |
-%     imposing any condition on the previous freeness values of the      |
-%     variables                                                          |
-% (2) old_ground if the builtin requires the variables to be ground      |
-% (3) old_new_ground" if the builtin requires some variables to be       |
-%     ground and grounds the rest                                        |
-% (4) unchanged if we cannot infer anything from the builtin, the        |
-%     substitution remains unchanged and there are no conditions imposed |
-%     on the previo
-% (5) some if it makes some variables ground without imposing conditions |
-% (6) all_nonfree if the builtin makes all variables possible non free   |
-% (6) Sgkey, special handling of some particular builtins                |
-%------------------------------------------------------------------------%
-% list/1 is not defined
-%------------------------------------------------------------------------%
 :- export(special_builtin/5).
 :- dom_impl(_, special_builtin/5, [noq]).
+:- pred special_builtin(+SgKey,+Sg,+Subgoal,-Type,---Condvars)
+   #
+"Satisfied if the builtin does not need a very complex action. It      
+divides builtins into groups determined by the flag returned in the    
+second argument + some special handling for some builtins:             
+- *new_ground* if the builtin makes all variables ground whithout      
+  imposing any condition on the previous freeness values of the      
+  variables.                                                          
+- *old_ground* if the builtin requires the variables to be ground.     
+- *old_new_ground* if the builtin requires some variables to be       
+  ground and grounds the rest.                                        
+- *unchanged* if we cannot infer anything from the builtin, the        
+  substitution remains unchanged and there are no conditions imposed 
+  on the previo.
+- *some* if it makes some variables ground without imposing conditions. 
+- *all_nonfree* if the builtin makes all variables possible non free.    
+- `Sgkey`, special handling of some particular builtins.                
+".
+
 special_builtin('read/2',read(X,Y),_,'recorded/3',p(Y,X)) :- !.
 special_builtin('length/2',length(_X,Y),_,some,[Y]) :- !.
 special_builtin('==/2',_,_,_,_):- !, fail.
 special_builtin(SgKey,Sg,Subgoal,Type,Condvars):-
     sharefree:special_builtin(SgKey,Sg,Subgoal,Type,Condvars).
     
-%------------------------------------------------------------------------%
-% success_builtin(+,+,+,+,+,-)                          |
-% success_builtin(Type,Sv_u,Condv,HvFv_u,Call,Succ)     |
-% Obtains the success for some particular builtins:                      |
-%  * If Type = new_ground, it updates Call making all vars in Sv_u ground|
-%  * If Type = bottom, Succ = '$bottom'                                  |
-%  * If Type = unchanged, Succ = Call                                    |
-%  * If Type = some, it updates Call making all vars in Condv ground     |
-%  * If Type = old_ground, if grouds all variables in Sv and checks that |
-%              no free variables has becomed ground                      |
-%  * If Type = old_ground, if grounds all variables in OldG and checks   |
-%              thatno free variables has becomed ground. If so, it       |
-%              grounds all variables in NewG                             |
-%  * If Type = all_non_free it projects Call onto this variables,        |
-%              obatins the closure under union for the Sh, changes in    |
-%              Fr all f to nf and later extends the result               |
-%  * Otherwise Type is the SgKey of a particular builtin for each the    |
-%    Succ is computed                                                    |
+:- dom_impl(_, success_builtin/6, [noq]).
+:- pred success_builtin(+Type,+Sv_u,?Condv,+HvFv_u,+Call,-Succ)
+   #
+"Obtains the success for some particular builtins:                      
+- If `Type` = *new_ground*, it updates `Call` making all vars in `Sv_u` ground.
+- If `Type` = *bottom*, `Succ` = `$bottom`.                                  
+- If `Type` = *unchanged*, `Succ` = `Call`.                                    
+- If `Type` = *some*, it updates `Call` making all vars in `Condv` ground.     
+- If `Type` = *old_ground*, if grouds all variables in `Sv` and checks that 
+              no free variables has becomed ground.                      
+- If `Type` = *old_ground*, if grounds all variables in `OldG` and checks   
+              that no free variables has becomed ground. If so, it       
+              grounds all variables in `NewG`.                             
+- If `Type` = *all_non_free* it projects `Call` onto this variables,      
+              obtains the closure under union for the `Sh`, changes in    
+              `Fr` all `f` to `nf` and later extends the result.               
+- Otherwise `Type` is the `SgKey` of a particular builtin for each the   
+  `Succ` is computed.                                                   
+".
 %------------------------------------------------------------------------%
 % NOTE: In comparison with shfr, the following builtins are not defined: |
 % - list/1                                                               |
 %------------------------------------------------------------------------%
-:- dom_impl(_, success_builtin/6, [noq]).
+
 success_builtin(new_ground,Sv_u,_,_,Call,Succ):-
     sort(Sv_u,Sv),
     Call = (Lda_SH,Lda_fr),
@@ -852,11 +868,9 @@ success_builtin('var/1',_,_,_,_,'$bottom').
 success_builtin('free/1',[V],p(V),HvFv_u,Call,Succ):- !,
     success_builtin('var/1',[V],p(V),HvFv_u,Call,Succ).
 
-%------------------------------------------------------------------------%
-% call_to_success_builtin(+,+,+,+,+,-)                  |
-% call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,Succ)   |
-% Handles those builtins for which computing Prime is easier than Succ   |
-%------------------------------------------------------------------------%
+:- pred call_to_success_builtin(+SgKey,+Sg,+Sv,+Call,+Proj,-Succ)
+   # "Handles those builtins for which computing `Prime` is easier than `Succ`.".
+
 :- dom_impl(_, call_to_success_builtin/6, [noq]).
 call_to_success_builtin('=/2','='(X,_Y),Sv,Call,(_,Proj_fr),Succ):-
     varset(X,VarsX), values_equal(VarsX,Proj_fr,g), !,
@@ -921,7 +935,7 @@ call_to_success_builtin('keysort/2',keysort(X,Y),Sv,Call,Proj,Succ):-
 
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-%                      Intermediate operations                           |
+%                      Intermediate operations                           %
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
 % Most of the following operations are defined in sharefree.pl           | 
@@ -939,16 +953,15 @@ call_to_success_builtin('keysort/2',keysort(X,Y),Sv,Call,Proj,Succ):-
     values_equal/3
    ]).
 
-%-------------------------------------------------------------------------
-% update_lambda_clique_non_free(+,+,+,-,-)                               |
-% update_lambda_clique_non_free(Gv,Fr,Sh,NewFr,NewSh)                    |
-% Identical to update_lambda_sf but:                                     |
-% *  it tests that the variables that become ground are not free.        |
-%    The reason is that Ground should be ground already, and therefore   |
-%    they cannot make a definitely free variable to become ground        |
-% *  it does not change the freeness value of any variable from f to nf  |
-%    The same reason                                                     |
-%-------------------------------------------------------------------------
+:- pred update_lambda_clique_non_free(+Gv,+Fr,+Sh,-NewFr,-NewSh)
+   #
+"Identical to `update_lambda_sf` but:                                    
+-  it tests that the variables that become ground are not free.        
+   The reason is that `Ground` should be ground already, and therefore   
+   they cannot make a definitely free variable to become ground.        
+-  it does not change the freeness value of any variable from `f` to `nf`  
+   (The same reason).                                                     
+".
 update_lambda_clique_non_free([],Fr,Sh,Fr,Sh).
 update_lambda_clique_non_free([X|Xs],Fr,SH,Fr1,SH1):-
     rel_w([X|Xs],SH,(Int_Cl,Int_Sh)),
@@ -964,17 +977,17 @@ update_lambda_clique_non_free([X|Xs],Fr,SH,Fr1,SH1):-
     sort_list_of_lists(Cl2,Cl2_sorted),
     ord_union(Cl2_sorted,Disj_Cl,Cl1).
     
-%------------------------------------------------------------------------%
-% update_lambda_cf(+,+,+,-,-)                                            |
-% update_lambda_cf(Gv,Fr,Sh,NewFr,NewSh)                                 |
-% This predicates handles the case in which a set of variables (Gv) have |
-% been determined as ground, and it has to:                              |
-%   - Update the sharing&clique component                                |
-%   - Update the freeness component in order to:                         |
-%         - all ground variables appear as ground                        |
-%         - those free variables which are coupled (but not are become   |
-%           ground) should become non free.                              |
-%------------------------------------------------------------------------%
+:- pred update_lambda_cf(+Gv,+Fr,+Sh,-NewFr,-NewSh)
+   #
+"This predicates handles the case in which a set of variables (`Gv`) have 
+been determined as ground, and it has to:                              
+- Update the sharing&clique component.                                
+- Update the freeness component in order to:                         
+  - all ground variables appear as ground.                        
+  - those free variables which are coupled (but not are become   
+    ground) should become non free.                              
+".
+
 update_lambda_cf([],Fr,Sh,Fr,Sh):- !.
 update_lambda_cf(Gv,Fr,SH,Fr1,SH1):-
     rel_w(Gv,SH,(Int_Cl,Int_Sh)),
@@ -1004,16 +1017,15 @@ update_lambda_cf(Gv,Fr,SH,Fr1,SH1):-
 %%      impossible(NewSh,NewSh,Vars),!,
 %%      mynonvar(Rest,Sh,Free).
 
-%-------------------------------------------------------------------------
-% non_free_vars(+,+,+,-,-)                                               %
-% non_free_vars(Vars,Fr1,Fr2,Fv,NewFr).                                  %
-% NewFr is the result of adding to Fr2 all X/nf s.t. X in Vars and X/nf  %
-% in Fr1 (Note that if X in Vars, then X/_ not in Fr2).                  %
-% Fv contains the rest of variables in Vars. All Ordered                 %
-% The reason is the following: Vars is the set of variables in success   %
-% and not in prime. Thus, those variables in Vars with value in Call     %
-% different from nf are free, and should be added to BVarsf.             %
-%-------------------------------------------------------------------------
+:- pred non_free_vars(+Vars,+Fr1,+Fr2,-Fv,-NewFr)
+   #
+"`NewFr` is the result of adding to `Fr2` all `X`/`nf` s.t. `X` in `Vars` and `X`/`nf`  
+in `Fr1` (Note that if `X` in `Vars`, then `X`/_ not in `Fr2`).                  
+`Fv` contains the rest of variables in `Vars`. All ordered.                 
+The reason is the following: `Vars` is the set of variables in success   
+and not in prime. Thus, those variables in `Vars` with value in `Call`     
+different from `nf` are free, and should be added to `BVarsf`.             
+".
 
 :- push_prolog_flag(multi_arity_warnings,off).
 % TODO: change names for different arities?
@@ -1056,13 +1068,12 @@ non_free_vars(no,X,Xs,Fr1,Fr2,[X|BVarsf],NewFr):-
 
 :- pop_prolog_flag(multi_arity_warnings).
 
-%-------------------------------------------------------------------------
-% var_value_rest(+,+,+,-,-)                                              |
-% var_value_rest(Fr,X,Value,NewFr,Flag)                                  |
-% If the freeness value of X in Fr is Value, then Flag = yes.            |
-% Otherwise it is set to no.                                             |
-% NewFr is the result of eliminating all Y/V s.t. Y less equal X.        |
-%-------------------------------------------------------------------------
+:- pred var_value_rest(+Fr,in_var(X),+Value,-NewFr,-Flag)
+   #
+"If the freeness value of `X` in `Fr` is `Value`, then `Flag` = yes.            
+Otherwise it is set to no.                                             
+`NewFr` is the result of eliminating all `Y`/`V` s.t. `Y` less equal `X`.        
+".
 
 :- push_prolog_flag(multi_arity_warnings,off).
 
@@ -1083,23 +1094,21 @@ var_value_rest(>,_Elem,More,X,Value,Rest,Flag):-
 
 :- pop_prolog_flag(multi_arity_warnings).
 
-%-------------------------------------------------------------------------
-% make_dependence(+,+,+,-,-)                                             |
-% make_dependence(Sh,Vars,Fr,NewFr,NewSh),                               |
-% It gives the new sharing and freeness component for the variables in Y |
-% (Vars) when recorded(X,Y,Z) was called, once the variables in Z have   |
-%  been made ground                                                      |
-%-------------------------------------------------------------------------
+:- pred make_clique_dependence(+Sh,+Vars,+Fr,-NewFr,-NewSh)
+   #
+"It gives the new sharing and freeness component for the variables in `Y` 
+(`Vars`) when `recorded(X,Y,Z)` was called, once the variables in `Z` have   
+been made ground.                                                      
+".
+
 make_clique_dependence(([],[]),Y,TempPrime_fr,Prime_fr,([],[])):- !,
     change_values(Y,TempPrime_fr,Prime_fr,g).
 make_clique_dependence(SH,Y,TempPrime_fr,Prime_fr,Prime_SH):- 
     star_w(SH,Prime_SH),
     change_values_if_f(Y,TempPrime_fr,Prime_fr,nf).
 
-%-------------------------------------------------------------------------%
-% propagate_clique_non_freeness(+,+,+,+,-)                                |
-% propagate_clique_non_freeness(Vars,NonFv,Sh,Fr,NewFr)                   |
-%-------------------------------------------------------------------------%
+:- pred propagate_clique_non_freeness(+Vars,+NonFv,+Sh,+Fr,-NewFr).
+
 propagate_clique_non_freeness([],_,_,Fr,Fr) :- !.
 propagate_clique_non_freeness(Vars,NonFv,(Cl,Sh),Fr,NewFr):-
       propagate_non_freeness(Vars,NonFv,Cl,Fr,NewFr1),
@@ -1120,13 +1129,13 @@ product_clique(nf,X,VarsY,Sv,SH,Lda_fr,Prime_SH,Prime_fr):-
     take_clique_coupled(SH,Sv,Coupled),
     change_values_if_f(Coupled,Lda_fr,Prime_fr,nf).
 
-%------------------------------------------------------------------------%
-% take_clique_coupled(+,+,-)                                             |
-% take_clique_coupled(Sh,Vars,Coupled)                                   |
-% SH is pair of list of lists of variables, Vars is a list of variables  |
-% Returns in Coupled the list of variables X s.t. exists at least        |
-% one list in SH containing X and at least one element in Vars.          |
-%------------------------------------------------------------------------%
+:- pred take_clique_coupled(+Sh,+Vars,-Coupled)
+   #
+"`Sh` is pair of list of lists of variables, `Vars` is a list of variables.  
+Returns in `Coupled` the list of variables `X` s.t. exists at least        
+one list in `Sh` containing `X` and at least one element in `Vars`.          
+".
+
 take_clique_coupled((Cl,Sh),Vars_u,Coupled):-
     sort(Vars_u,Vars),
 %% sharing
@@ -1138,12 +1147,12 @@ take_clique_coupled((Cl,Sh),Vars_u,Coupled):-
     merge_list_of_lists(Intersect_Cl,IntVars_Cl),
     merge(Coupled_Sh,IntVars_Cl,Coupled).
 
-%------------------------------------------------------------------------%
-% obtain_prime_clique_var_var(+,+,+,-)                                   |
-% obtain_prime_clique_var_var(Sv,[X/V,Y/V],Call,Success)                 |
-% handles the case X = Y where both X,Y are variables which freeness     |
-% value \== g                                                            |
-%------------------------------------------------------------------------%
+:- pred obtain_prime_clique_var_var(+[X/V,Y/V],+Call,-Success)
+   #
+"Handles the case `X` = `Y` where both `X`,`Y` are variables which freeness     
+value \== `g`.                                                            
+".
+
 obtain_prime_clique_var_var([X/f,Y/f],(Call_SH,Call_fr),Succ):- !,
     amgu_clique_ff(X,[Y],Call_SH,Succ_SH),
     Succ = (Succ_SH,Call_fr).

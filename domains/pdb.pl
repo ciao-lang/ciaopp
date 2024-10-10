@@ -1,6 +1,6 @@
-:- module(pdb,[],[assertions,regtypes,basicmodes]).
+:- module(pdb,[],[assertions,regtypes,modes_extra]).
 
-:- doc(title, "PD domain with bottom").
+:- doc(title, "pdb: pd with bottom (abstract domain)").
 :- doc(module, "This abstract domain is the domain with only two
    values, top and bottom. This simple improvement over the @tt{pd}
    domain provides improvements, both in specialization time and

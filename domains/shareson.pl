@@ -1,4 +1,9 @@
-:- module(shareson, [], []).
+:- module(shareson, [], [modes_extra]).
+
+:- doc(title, "shareson: sharing+sondergaard (abstract domain)").
+% started: 22/10/92
+:- doc(author, "Maria Garcia de la Banda").
+:- doc(stability, beta).
 
 :- include(ciaopp(plai/plai_domain)).
 :- dom_def(shareson, [default]).
@@ -46,32 +51,31 @@
 :- use_module(library(sets), [merge/3, ord_subtract/3]).
 :- use_module(library(terms_vars), [varset/2]).
 
-%------------------------------------------------------------------------%
-%                                                                        %
-%                          started: 22/10/92                             %
-%                       programmer: M.J. Garcia de la Banda              %
-%                                                                        %
-% Function: combined analysis using the Sondergaard and the Sharing      %
-%           domain                                                       %
-%------------------------------------------------------------------------%
-%                    Meaning of the Program Variables                    %
-%                                                                        %
-%  _son    : Suffix added to abstract subsitutions (Prime,Exit,Proj,...) %
-%            for the part corresponding to Sondergaard domain            %
-%  _sh     : Suffix added to abstract subsitutions (Prime,Exit,Proj,...) %
-%            for the part corresponding to Sharing domain                %
-%  GSon    : First argument in substitutions of Sondergaard domain (set  %
-%            of ground variables)                                        %
-%  SSon    : Second argument in substitutions of Sondergaard domain (set %
-%            for singletons and couples of variables)                    %
-%  Sh      : Sharing domain (second component of the combination)        %
-%  Rest are as in domain_dependent.pl                                    %
-%-------------------------------------------------------------------------
-% All abstract functions for the combined domain "shareson" first compute%
-% the results for the corresponding to the "share" and "son" functions   %
-% and then compose the information of both, eliminating redundancies.    %
-% See compose function.                                                  %
-%-------------------------------------------------------------------------
+% infers(ground/1, rtcheck).
+% infers(mshare/1, rtcheck).
+% infers(linear/1, rtcheck).
+
+:- doc(module,"
+@begin{note}
+**Meaning of the Program Variables** 
+                                                                       
+- `_son`    : Suffix added to abstract subsitutions (`Prime`,`Exit`,`Proj`,...) 
+              for the part corresponding to `sondergaard` domain.            
+- `_sh`     : Suffix added to abstract subsitutions (`Prime`,`Exit`,`Proj`,...) 
+              for the part corresponding to `sharing` domain.                
+- `GSon`    : First argument in substitutions of `sondergaard` domain (set  
+              of ground variables).                                        
+- `SSon`    : Second argument in substitutions of `sondergaard` domain (set 
+              for singletons and couples of variables).                    
+- `Sh`      : `sharing` domain (second component of the combination).        
+Rest are as in `domain_dependent.pl`.                                    
+
+All abstract functions for the combined domain `shareson` first compute
+the results for the corresponding to the `share` and `son` functions   
+and then compose the information of both, eliminating redundancies.    
+See *compose* function.                                                  
+@end{note}
+").
 
 :- dom_impl(_, call_to_entry/9, [noq]).
 call_to_entry(Sv,Sg,Hv,Head,K,Fv,(Proj_son,Proj_sh),Entry,ExtraInfo):-
@@ -222,11 +226,8 @@ asub_to_native(((Gr,SSon),Sh),Qv,_OutFlag,ASub_user,[]):-
     if_not_nil(LinearVars,linear(LinearVars),ASub_user0,ASub_user1),
     if_not_nil(Sh,sharing(Sh),ASub_user1,[]).
 
-%------------------------------------------------------------------------%
-% less_or_equal(+,+)                                            %
-% less_or_equal(ASub0,ASub1)                                    %
-% Succeeds if ASub1 is more general or equal to ASub0                    %
-%------------------------------------------------------------------------%
+:- pred less_or_equal(+ASub0,+ASub1)
+   # "Succeeds if `ASub1` is more general or equal to `ASub0`.".
 
 :- dom_impl(_, less_or_equal/2, [noq]).
 less_or_equal(ASub0,ASub1):-
@@ -239,18 +240,17 @@ less_or_equal((Son0,Sh0),(Son1,Sh1)):-
 
 :- dom_impl(_, glb/3, [noq]).
 glb(_ASub0,_ASub1,_ASub) :- compiler_error(op_not_implemented(glb)), fail.
-
-%-------------------------------------------------------------------------
-% compose(+,+,+,-)                                                       |
-% compose(ASub_son,ASub_sh,Sv,(NewASub_son,NewASub_sh))                  |
-% It composes the two abstract substitutions in order to eliminate       |
-% redundancies. In doing this, it performs the folowing steps:           |
-% (1) propagates the sharing info from SSon to ASub_sh (NewASub_sh)      |
-% (2) collects in  Gv the ground variables w.r.t. NewASub_sh             |
-% (3) NewGSon  is the result of merging Gv and GSon                      |
-% (4) NewSSon is the result of eliminating the pairs not allowed by      |
-%     NewASub_sh                                                         |
-%-------------------------------------------------------------------------
+                                                    
+:- pred compose(+ASub_son,+ASub_sh,+Sv,-(NewASub_son,NewASub_sh))
+   #
+"It composes the two abstract substitutions in order to eliminate      
+redundancies. In doing this, it performs the folowing steps:           
+- propagates the sharing info from `SSon` to `ASub_sh` (`NewASub_sh`).      
+- collects in  `Gv` the ground variables w.r.t. `NewASub_sh`.             
+- `NewGSon`  is the result of merging `Gv` and `GSon`.                      
+- `NewSSon` is the result of eliminating the pairs not allowed by      
+  `NewASub_sh`.                                                          
+".
 
 compose((GSon,SSon),ASub_sh,Sv,((NewGSon,NewSSon),NewASub_sh)):-
     propagate_to_sh(ASub_sh,SSon,NewASub_sh,Allowed_sh),

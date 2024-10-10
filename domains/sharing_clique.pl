@@ -1,26 +1,33 @@
-:- module(sharing_clique, [], [assertions, isomodes]).
+:- module(sharing_clique, [], [assertions, modes_extra]).
 
-:- doc(title, "CLIQUE-Sharing domain").
+:- doc(title, "CLIQUE-sharing (abstract domain)").
 :- doc(author, "Jorge Navas").
-% Copyright (C) 2004-2019 The Ciao Development Team
+:- doc(copyright,"Copyright @copyright{} 2004-2019 The Ciao Development Team").
+:- doc(stability, prod).
 
 :- include(ciaopp(plai/plai_domain)).
 :- dom_def(share_clique, [default]).
 
-%------------------------------------------------------------------------%
-% This file contains the domain dependent abstract functions for the     |
-% clique-sharing domain defined by Hill, Bagnara and Zaffanella (for     |
-% bottom-up analysis and inferring pair-sharing).                        |
-%------------------------------------------------------------------------%
-% The representation of this domain is different from Set-Sharing. It is |
-% made up of two components: one is the original set-sharing domain      |
-% while the other represents all possible subsets of each of its         |
-% elements.                                                              |
-% SH = (Cl,Sh) where Sh is the known Set-Sharing and Cl is the           |
-% clique-set.                                                            |
-%------------------------------------------------------------------------%
-% The meaning of the variables are defined in sharing.pl                 
-%------------------------------------------------------------------------%
+% infers(ground/1, rtcheck).
+% infers(mshare/1, rtcheck).
+% infers(clique/1, rtcheck).
+
+:- doc(module,"
+This file contains the domain dependent abstract functions for the     
+clique-sharing domain defined by Hill, Bagnara and Zaffanella (for     
+bottom-up analysis and inferring pair-sharing).                        
+
+The representation of this domain is different from Set-Sharing. It is 
+made up of two components: one is the original set-sharing domain      
+while the other represents all possible subsets of each of its         
+elements.                                                              
+`SH` = (`Cl`,`Sh`) where `Sh` is the known Set-Sharing and `Cl` is the           
+clique-set.
+                                                           
+@begin{note}
+The meaning of the variables are defined in `sharing.pl`.                
+@end{note}
+").
 
 %------------------------------------------------------------------------%
 % REMARK: In order to number how many widening process have been
@@ -102,13 +109,15 @@
 :- use_module(library(messages), [error_message/1]).
 
 %------------------------------------------------------------------------%
-%                      ABSTRACT Call To Entry                            |
+%------------------------------------------------------------------------%
+%                      ABSTRACT Call To Entry                            %
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% call_to_entry(+,+,+,+,+,+,+,-,?)                          |
-%------------------------------------------------------------------------%
+
 :- export(call_to_entry/9).
 :- dom_impl(_, call_to_entry/9, [noq]).
+:- pred call_to_entry(+,+,+,+,+,+,+,-,?).
+
 call_to_entry(_Sv,Sg,_Hv,Head,_K,Fv,Proj,Entry,ExtraInfo) :-
      variant(Sg,Head),!,
      ExtraInfo = yes,
@@ -139,14 +148,15 @@ call_to_entry(Sv,Sg,Hv,Head,_K,Fv,Proj,Entry,ExtraInfo):-
 call_to_entry(_Sv,_Sg,_Hv,_Head,_K,_Fv,_Proj,'$bottom',_).
 
 %------------------------------------------------------------------------%
-%                      ABSTRACT Exit to Prime                            |
 %------------------------------------------------------------------------%
+%                      ABSTRACT Exit to Prime                            %
 %------------------------------------------------------------------------%
-% exit_to_prime(+,+,+,+,+,-,-)                              |
 %------------------------------------------------------------------------%
 
 :- export(exit_to_prime/7).            
 :- dom_impl(_, exit_to_prime/7, [noq]).
+:- pred exit_to_prime(+,+,+,+,+,-,-).
+
 exit_to_prime(_,_,_,_,'$bottom',_,'$bottom'):-!.
 exit_to_prime(Sg,Hv,Head,_Sv,Exit,Flag,Prime):-  
      Flag == yes, !,
@@ -166,27 +176,28 @@ exit_to_prime(Sg,_Hv,_Head,Sv,Exit,ExtraInfo,Prime):-
      Prime = (Cl1,Sh1).
 
 %------------------------------------------------------------------------%
+%------------------------------------------------------------------------%
 %                            ABSTRACT AMGU                               %
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% amgu(+,+,+,-)                                             %
-% amgu(Sg,Head,ASub,AMGU)                                   %
-% @var{AMGU} is the abstract unification between @var{Sg} and @var{Head}.%
-%------------------------------------------------------------------------%
+
 :- export(amgu/4).
 :- dom_impl(_, amgu/4, [noq]).
+:- pred amgu(+Sg,+Head,+ASub,-AMGU)
+   # "`AMGU` is the abstract unification between `Sg` and `Head`.".
+
 amgu(Sg,Head,ASub,AMGU):-
     peel_equations(Sg, Head,Eqs),
     share_clique_iterate(Eqs,star,ASub,AMGU),!.
 
 %------------------------------------------------------------------------%
+%------------------------------------------------------------------------%
 %                            ABSTRACT Iterate                            %
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% share_clique_iterate(+,+,+,-)                                          %
-% share_clique_iterate(Eqs,Flag,ASub0,ASub)                              %
-% For each equation in Eqs, it performs the amgu.                        %
-%------------------------------------------------------------------------%
+
+:- pred share_clique_iterate(+Eqs,+Flag,+ASub0,-ASub)
+   # "For each equation in `Eqs`, it performs the `amgu`.".
 
 share_clique_iterate([],_,ASub, ASub).
 share_clique_iterate([(X,Ts)|Eqs],Flag,ASub, ASub2):-
@@ -194,14 +205,14 @@ share_clique_iterate([(X,Ts)|Eqs],Flag,ASub, ASub2):-
      share_clique_iterate(Eqs,Flag,ASub1, ASub2).
 
 %------------------------------------------------------------------------%
-%                      ABSTRACT Extend                                   %
 %------------------------------------------------------------------------%
+%                            ABSTRACT Extend                             %
 %------------------------------------------------------------------------%
-% extend(+,+,+,+,-)                                         |
-% extend(Sg,Prime,Sv,Call,Succ)                             |
 %------------------------------------------------------------------------%
 :- export(extend/5).
 :- dom_impl(_, extend/5, [noq]).
+:- pred extend(+Sg,+Prime,+Sv,+Call,-Succ).
+
 extend(_Sg,'$bottom',_Hv,_Call,Succ):- !,
      Succ = '$bottom'.
 extend(_Sg,_Prime,[],Call,Succ):- !,
@@ -386,14 +397,16 @@ shcl_([Xs|Xss],Cl,Sv,Call,Succ):-
     shcl_(Xss,Cl,Sv,Temp,Succ).
 
 %------------------------------------------------------------------------%
-%                      ABSTRACT Extend_Asub                              |
+%------------------------------------------------------------------------%
+%                      ABSTRACT Extend_Asub                              %
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% augment_asub(+,+,-)                                        |
-% Augments the abstract subtitution with fresh variables                 |
-%------------------------------------------------------------------------%
+
 :- export(augment_asub/3).
 :- dom_impl(_, augment_asub/3, [noq]).
+:- pred augment_asub(+,+,-)
+   # "Augments the abstract subtitution with fresh variables".
+
 augment_asub(ASub,[],ASub) :- !.
 augment_asub(ASub,Vars,ASub_s):-
     abs_sort(ASub,SASub),
@@ -406,43 +419,45 @@ augment_asub_(ASub,[H|T],(Cl,[[H]|Sh])):-
     augment_asub_(ASub,T,(Cl,Sh)).
 
 %------------------------------------------------------------------------%
-%                      ABSTRACT PROJECTION
 %------------------------------------------------------------------------%
-%-------------------------------------------------------------------------
-% project(+,+,+,+,-)                                        |
-% project(Sg,Vars,HvFv_u,ASub,Proj)                         |
+%                        ABSTRACT PROJECTION                             %
 %------------------------------------------------------------------------%
+%------------------------------------------------------------------------%
+
 :- export(project/5).                  
 :- redefining(project/5).                  
 :- dom_impl(_, project/5, [noq]).
+:- pred project(+Sg,+Vars,+HvFv_u,+ASub,-Proj).
+
 project(_,_,_,'$bottom','$bottom'):- !.
 project(Sg,Vars,HvFv_u,(Cl,Sh),(Cl0,Sh0)) :-
     sharing:project(Sg,Vars,HvFv_u,Sh,Sh0),
     intersection_lists_with_list(Cl,Vars,Cl0).
 
 %------------------------------------------------------------------------%
+%------------------------------------------------------------------------%
 %                      ABSTRACT SORT                                     %
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% abs_sort(+,-)                                                 |
-% abs_sort(Asub,Asub_s)                                         |
-% sorts the set of set of variables ASub to obtaint the Asub_s           |
-%-------------------------------------------------------------------------
+
 :- export(abs_sort/2).                     
 :- dom_impl(_, abs_sort/2, [noq]).
+:- pred abs_sort(+Asub,-Asub_s)
+   # "Sorts the set of set of variables `ASub` to obtaint the `Asub_s`.".
+
 abs_sort('$bottom','$bottom'):- !.
 abs_sort((Cl_ASub,Sh_ASub),(Cl_ASub_s,Sh_ASub_s) ):-
     sort_list_of_lists(Cl_ASub,Cl_ASub_s),
     sort_list_of_lists(Sh_ASub,Sh_ASub_s).
 
-%------------------------------------------------------------------------%
-% identical_abstract(+,+)                                   |
-% identical_abstract(ASub0,ASub1)                           |
-% Succeeds if the two abstract substitutions are defined on the same     |
-% variables and are equivalent                                           |
-%------------------------------------------------------------------------%
 :- export(identical_abstract/2).
 :- dom_impl(_, identical_abstract/2, [noq]).
+:- pred identical_abstract(+ASub0,+ASub1)
+   #
+"Succeeds if the two abstract substitutions are defined on the same    
+variables and are equivalent.                                           
+".
+
 identical_abstract('$bottom','$bottom'):- !.
 identical_abstract('$bottom',_):- !,fail.
 identical_abstract(_,'$bottom'):- !,fail.
@@ -457,16 +472,16 @@ identical_abstract(ASub0,ASub1):- !,
       NASub0 == NASub1
     ).
 
-%------------------------------------------------------------------------%
-% eliminate_equivalent(+,-)                                              |
-% eliminate_equivalent(TmpLSucc,LSucc)                                   |
-% The list LSucc is reduced wrt the list TmpLSucc  in that it            | 
-% does not contain abstract substitutions which are equivalent.          |
-% Note that new clique groups can be introduced because of the use of    |
-% normalization process.                                                 |
-%------------------------------------------------------------------------%
 :- export(eliminate_equivalent/2).
 :- dom_impl(_, eliminate_equivalent/2, [noq]).
+:- pred eliminate_equivalent(+TmpLSucc,-LSucc)
+   #
+"The list `LSucc` is reduced wrt the list `TmpLSucc` in that it             
+does not contain abstract substitutions which are equivalent.          
+Note that new clique groups can be introduced because of the use of    
+normalization process.                                                 
+".
+
 eliminate_equivalent(TmpLSucc,Succ):-
     sort(TmpLSucc,Succ).
 
@@ -478,15 +493,12 @@ eliminate_equivalent(TmpLSucc,Succ):-
 % normalize_lists([X|Xs],[New_X|Res]):-
 %       share_clique_normalize(X,100,1,New_X),
 %       normalize_lists(Xs,Res).
-    
-%------------------------------------------------------------------------%
-% less_or_equal(+,+)                                        |
-% less_or_equal(ASub0,ASub1)                                |
-% Succeeds if ASub1 is more general or equal to ASub0                    |
-%------------------------------------------------------------------------%
 
 :- export(less_or_equal/2).
 :- dom_impl(_, less_or_equal/2, [noq]).
+:- pred less_or_equal(+ASub0,+ASub1)
+   # "Succeeds if `ASub1` is more general or equal to `ASub0`".
+
 less_or_equal('$bottom',_ASub):- !.
 less_or_equal(ASub,ASub1):-
     share_clique_normalize(ASub,100,1,(Cl0,Sh0)),
@@ -515,20 +527,24 @@ sharing_part_less_or_equal_([Sh|Shs],Sh1,Cl1):-
     sharing_part_less_or_equal_(Shs,Sh1,Cl1).
     
 %------------------------------------------------------------------------%
-%                      ABSTRACT Call to Success Fact                     |
 %------------------------------------------------------------------------%
+%                     ABSTRACT Call to Success Fact                      %
 %------------------------------------------------------------------------%
-% Specialized version of call_to_entry + exit_to_prime + extend for facts|
-%------------------------------------------------------------------------%
-% Note that if the success is computed (instead of the prime) and then   |
-% we compose the information and project it, we can loose information    |
-% since the extension is the step in which more information is lost      |
-% Note that if we use Proj we need to call explicitly the function       |
-% extend, so we can loose information.                                   |
 %------------------------------------------------------------------------%
 
 :- export(call_to_success_fact/9).
 :- dom_impl(_, call_to_success_fact/9, [noq]).
+:- pred call_to_success_fact/9
+   # "
+Specialized version of `call_to_entry` + `exit_to_prime` + `extend` for facts.
+
+Note that if the success is computed (instead of the prime) and then   
+we compose the information and project it, we can loose information    
+since the extension is the step in which more information is lost      
+Note that if we use `Proj` we need to call explicitly the function       
+extend, so we can loose information.                                   
+".
+
 call_to_success_fact(_,[],_Head,_K,Sv,(Cl,Sh),_,([],[]),Succ):-!,
     ord_split_lists_from_list(Sv,Sh,_,Succ_Sh),
     delete_vars_from_list_of_lists(Sv,Cl,Succ_Cl),
@@ -559,18 +575,22 @@ call_to_prime_fact(Sg,Hv,Head,Sv,Call,Prime) :-
     widen(plai_op,(Cl1,Sh1),_,(Cl,Sh)),
     project(Sg,Sv,not_provided_HvFv_u,(Cl,Sh),Prime),!.
 call_to_prime_fact(_Sg,_Hv,_Head,_Sv,_Call,'$bottom').
+
 %------------------------------------------------------------------------%
-%                      ABSTRACT LUB                                      |
+%------------------------------------------------------------------------%
+%                           ABSTRACT LUB                                 %
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
-% compute_lub(+,-)                                          |
-% compute_lub(ListASub,Lub)                                 |
-% It computes the lub of a set of Asub. For each two abstract            |
-% substitutions ASub1 and ASub2 in ListASub, obtaining the lub is just   |
-% merging the ASub1 and ASub2.                                           |
-%------------------------------------------------------------------------%
+
 :- export(compute_lub/2).
 :- dom_impl(_, compute_lub/2, [noq]).
+:- pred compute_lub(+ListASub,-Lub)
+   #
+"It computes the *lub* of a set of `Asub`. For each two abstract            
+substitutions `ASub1` and `ASub2` in `ListASub`, obtaining the *lub* is just   
+merging the `ASub1` and `ASub2`.                                           
+".
+
 compute_lub([ASub1,ASub2|Rest],Lub) :- !,
     share_clique_lub_cl(ASub1,ASub2,ASub3),
     widen(extend,ASub3,_,ASub_widen),
@@ -593,30 +613,27 @@ merge_subst((Cl1,Sh1),(Cl2,Sh2),Lub) :-
 %       Lub = (Cl0,Sh0).
     share_clique_normalize((Cl0,Sh0),Lub).
 
-%------------------------------------------------------------------------%
-% glb(+,+,-)                                                       |
-% glb(ASub0,ASub1,Lub)                                             |
-% Glb is just intersection.                                              |
-%------------------------------------------------------------------------%
-
 :- export(glb/3).      
 :- dom_impl(_, glb/3, [noq]).
+:- pred glb(+ASub0,+ASub1,-Lub)
+   # "`Glb` is just intersection.".
+
 glb('$bottom',_ASub,ASub3) :- !, ASub3='$bottom'.
 glb(_ASub,'$bottom',ASub3) :- !, ASub3='$bottom'.
 glb(ASub0,ASub1,Glb):- 
     ord_intersection_w(ASub0,ASub1,Glb).
 
-%------------------------------------------------------------------------%
-% input_user_interface(+,+,-,+,+)                           |
-% input_user_interface(InputUser,Qv,ASub,Sg,MaybeCallASub)  |
-% Obtaining the abstract substitution for Sharing from the user supplied |
-% information just consists in taking the mshare(Sharing) and            | 
-% clique(Clique)element of InputUser and sorting it. If there is no such |
-% element, get the "top" sharing for the variables involved.             |
-%------------------------------------------------------------------------%
-
 :- export(input_user_interface/5).
 :- dom_impl(_, input_user_interface/5, [noq]).
+:- pred input_user_interface(?InputUser,+Qv,-ASub,+Sg,+MaybeCallASub)
+   : term * list * term * term * term
+   #
+"Obtaining the abstract substitution for `Sharing` from the user supplied 
+information just consists in taking the `mshare(Sharing)` and             
+`clique(Clique)` element of InputUser and sorting it. If there is no such 
+element, get the *top* sharing for the variables involved.             
+".
+
 input_user_interface((Gv,Sh,Cl,I),Qv,Call,Sg,MaybeCallASub):-
     sharing:input_user_interface((Gv,Sh,I),Qv,New_Sh,Sg,MaybeCallASub),
     may_be_var(Cl,Cl0),
@@ -648,14 +665,11 @@ myappend(Vs,V0,V):-
 myappend(Vs,V0,V):-
     merge(Vs,V0,V).
 
-%------------------------------------------------------------------------%
-% asub_to_native(+,+,+,-,-)                                 |
-% asub_to_native(ASub,Qv,OutFlag,ASub_user,Comps)           |
-% The user friendly format consists in extracting the ground variables   |
-%------------------------------------------------------------------------%
-
 :- export(asub_to_native/5). 
 :- dom_impl(_, asub_to_native/5, [noq]).
+:- pred asub_to_native(+ASub,+Qv,+OutFlag,-ASub_user,-Comps)
+   # "The user friendly format consists in extracting the ground variables.".
+
 asub_to_native('$bottom',_Qv,_OutFlag,_ASub_user,_Comps):- !, fail.
 asub_to_native((Cl,Sh),Qv,_OutFlag,Info,[]):-
     ord_union(Sh,Cl,All),
@@ -664,16 +678,14 @@ asub_to_native((Cl,Sh),Qv,_OutFlag,Info,[]):-
     if_not_nil(Sh,sharing(Sh),Info0,Info1),
     if_not_nil(Gv,ground(Gv),Info1,[]).
 
-%------------------------------------------------------------------------%
-% unknown_call(+,+,+,-)                                     |
-% unknown_call(Sg,Vars,Call,Succ)                           |
-% Gives the ``top'' value for the variables involved in a                |
-% literal whose definition is not present, and adds this top value to    |
-% Call.                                                                  |
-%------------------------------------------------------------------------%
-
 :- export(unknown_call/4).
 :- dom_impl(_, unknown_call/4, [noq]).
+:- pred unknown_call(+Sg,+Vars,+Call,-Succ)
+   #
+"Gives the *top* value for the variables involved in a literal
+whose definition is not present, and adds this top value to `Call`.  
+".
+
 unknown_call(_Sg,_Vars,'$bottom','$bottom') :- !.
 unknown_call(_Sg,_Vars,([],[]),([],[])) :- !.
 unknown_call(_Sg,Vars,(Cl,Sh),Succ):-
@@ -683,49 +695,46 @@ unknown_call(_Sg,Vars,(Cl,Sh),Succ):-
     star_w((Cl_vars,Sh_vars),Star),
     ord_union_w(Star,(Irrel_Cl_vars,Irrel_Sh_vars),Succ).
 
-%------------------------------------------------------------------------%
-% empty_entry(+,+,-)                                        |
-% empty_entry(Sg,Vars,Entry)                                |
-% Gives the ""empty"" value in this domain for a given set of variables  |
-% Vars, resulting in the abstract substitution Entry. I.e.,              |
-% obtains the abstraction of a substitution in which all variables       |
-% Vars are unbound: free and unaliased. In this domain is the list       |
-% of singleton lists of variables in the sharing part. The clique part   |
-% is initialized to empty list.                                          |
-%------------------------------------------------------------------------%
-
 :- export(empty_entry/3).
 :- dom_impl(_, empty_entry/3, [noq]).
+:- pred empty_entry(+Sg,+Vars,-Entry)
+   #
+"Gives the *empty* value in this domain for a given set of variables 
+`Vars`, resulting in the abstract substitution `Entry`. I.e.,              
+obtains the abstraction of a substitution in which all variables       
+`Vars` are unbound: free and unaliased. In this domain is the list       
+of singleton lists of variables in the sharing part. The clique part   
+is initialized to empty list.                                          
+".
+
 empty_entry(Sg,Vars,Entry):-
     sharing:empty_entry(Sg,Vars,EntryVars),!,
     Entry = ([],EntryVars).
-
-%------------------------------------------------------------------------%
-% unknown_entry(+,+,-)                                      |
-% unknown_entry(Sg,Qv,Call)                                 |
-% The top value in Clique for a set of variables is the powerset. It     |
-% consits of putting Qv directly in the clique part.                     |
-%------------------------------------------------------------------------%
      
 :- export(unknown_entry/3).
 :- dom_impl(_, unknown_entry/3, [noq]).
+:- pred unknown_entry(+Sg,+Qv,-Call)
+   #
+"The top value in `Clique` for a set of variables is the powerset. It    
+consits of putting Qv directly in the clique part.                     
+".
+
 unknown_entry(_Sg,Qv,Call):-
     sort(Qv,QvS),   
     Call = (QvS,[]).
 
-%------------------------------------------------------------------------%
-% widen(+,+,+,-)                                            |
-% widen(Who,ASub1,ExtraInfo,ASub)                           |
-%------------------------------------------------------------------------%
-% ASub is the result of widening the abstract substitution ASub1.        |
-% This interface is only defined for sake of clarity. Who defines what   |
-% operation has called to widen. The actions depend on this argument.    |
-% if Who = amgu then the value of widen is amgu.                         |
-% if Who = extend then the value of widen is not off                     |
-% if Who = plai_op then the value of widen is plai_op                    |
-%------------------------------------------------------------------------%
 :- push_prolog_flag(multi_arity_warnings,off).
 :- export(widen/4).
+:- pred widen(+Who,+ASub1,?ExtraInfo,-ASub)
+   #
+"`ASub` is the result of widening the abstract substitution `ASub1`.
+This interface is only defined for sake of clarity. Who defines what 
+operation has called to widen. The actions depend on this argument.
+- if `Who` = *amgu* then the value of widen is *amgu*.
+- if `Who` = *extend* then the value of widen is not off.
+- if `Who` = *plai_op* then the value of widen is *plai_op*.
+".
+
 widen(_,ASub,_,ASub):-
     widen(off),!.
 widen(amgu,ASub1,ExtraInfo,ASub):-
@@ -763,16 +772,17 @@ widening_clique_1('cautious','cautious_clique_1'):-!.
 widening_clique_1('inter_1','inter_1_clique_1'):-!.
 widening_clique_1(_,_):-!,
     error_message("Widening not allowed for 1-clique-sharing").
-%------------------------------------------------------------------------%
-% widen(?,?,+,+,-)                                          |
-% widen(TCond,TWid,ASub1,ExtraInfo,ASub)                    |
-% ASub is the result of widening the abstract substitution ASub1.        |
-% TCond is the type of condition used and TWid is the type of widening.  |
-%------------------------------------------------------------------------%
-% Compute the number of widening done.
-% Note that it should be removed if time measuring is required.
 
 :- export(widen/5).
+:- pred widen(?TCond,?TWid,+ASub1,?ExtraInfo,-ASub)
+   #
+"`ASub` is the result of widening the abstract substitution `ASub1`.
+`TCond` is the type of condition used and `TWid` is the type of widening.
+
+Compute the number of widening done.
+Note that it should be removed if time measuring is required.
+".
+
 widen(_,_,ASub,_,ASub):-
     widen(off),!.
 widen(TCond,TWid,ASub1,ExtraInfo,ASub):-!,
@@ -792,16 +802,17 @@ widen(TCond,TWid,ASub1,ExtraInfo,ASub):-!,
     ).
 
 :- pop_prolog_flag(multi_arity_warnings).
-%-------------------------------------------------------------------------%
-% widening_condition(+,+,+)                                  |
-% widening_condition(Type,ASub,ExtraInfo)                    |
-% Succeeds if ASub satisfies a condition.                                 |
-% Type can be:                                                            |
-% - aamgu (after amgu). The condition is verified after performing the    |
-%   amgu.                                                                 |
-% - bamgu (before amgu). An upper bound is computed before performing the |
-%   amgu in order to avoid to compute it.                                 |
-%-------------------------------------------------------------------------%
+
+:- pred widening_condition(+Type,+ASub,+ExtraInfo)
+   #
+"Succeeds if `ASub` satisfies a condition.                                 
+`Type` can be:                                                            
+- *aamgu* (after *amgu*). The condition is verified after performing the    
+  *amgu*.                                                                 
+- *bamgu* (before *amgu*). An upper bound is computed before performing the 
+  *amgu* in order to avoid to compute it.                                 
+".
+
 widening_condition(aamgu,SH,_ExtraInfo):-
     widen_upper_bound(UB),
     size_clsh(SH,N),
@@ -816,24 +827,23 @@ widening_condition(bamgu,(Cl,Sh),_):-
     UB_ClSh > UB.
 %       format("~d > ~d ", [UB_ClSh,UB]).
 
-%------------------------------------------------------------------------%
-% widening(+,+,-)                                           |
-% widening(Type,ASub,ASub0)                                 |
-% ASub0 is a safe approximation of ASub obtained after widening ASub.    |
-%------------------------------------------------------------------------%
-% So far, some different widenings are defined:                          |
-% W(cl,sh) = (cl U {Ush},\emptyset)     panic_1                          |
-% W(cl,sh) = ({Ucl U Ush},\emptyset)    panic_2                          |
-% W(cl,sh) = normalize((cl,sh))         cautious                         |
-% W(cl,sh) = (cl U sh,\emptyset)        inter_1                          |
-% W((cl,sh),LB) =                       inter_2                          |
-%           1) choose the candidate with the greatest number of subsets  |
-%           2) update clique                                             |
-%           3) if not more candidates, stop.                             |
-%           4) Otherwise, compute (cl'+sh')                              |
-%           5) if (cl'+sh') =< lower_bound, stop.                        |
-%              otherwise goto 1.                                         |
-%------------------------------------------------------------------------%
+:- pred widening(+Type,+ASub,-ASub0)
+   #
+"`ASub0` is a safe approximation of `ASub` obtained after widening `ASub`.   
+
+So far, some different widenings are defined:                          
+- W(cl,sh) = (cl U {Ush},\emptyset)     panic_1                          
+- W(cl,sh) = ({Ucl U Ush},\emptyset)    panic_2                          
+- W(cl,sh) = normalize((cl,sh))         cautious                         
+- W(cl,sh) = (cl U sh,\emptyset)        inter_1                          
+- W((cl,sh),LB) =                       inter_2                          
+  - choose the candidate with the greatest number of subsets  
+  - update clique                                             
+  - if not more candidates, stop.                             
+  - Otherwise, compute (cl'+sh')                              
+  - if (cl'+sh') =< lower_bound, stop.                        
+    otherwise goto 1.                                         
+".
 
 % Panic widening
 widening(panic_1,(Cl,Sh),(Cl1,[])):-
@@ -867,15 +877,14 @@ widening(inter_1_clique_1,(Cl,Sh),(Cl1,Sing)):-
 widening(cautious_clique_1,SH,SH1):-     
      share_clique_1_normalize(SH,40,2,SH1).
 
-%------------------------------------------------------------------------%
-% compute_subsets_for_sh_groups(+,+,+,-)                                 |
-% compute_subsets_for_sh_groups(Cands,Sh,UB,Pows)                        |
-%------------------------------------------------------------------------%
-% Compute the subsets of every sharing group belonging to Cands in Sh    | 
-% such that the number of subsets is at least as great as UB.            |
-% Pows is a list of a tuple that consists of (number of subsets,         |
-% candidate,subsets).                                                    |
-%------------------------------------------------------------------------%
+:- pred compute_subsets_for_sh_groups(+Cands,+Sh,+UB,-Pows)
+   #
+"Compute the subsets of every sharing group belonging to `Cands` in `Sh`     
+such that the number of subsets is at least as great as `UB`.            
+`Pows` is a list of a tuple that consists of (number of subsets,         
+candidate,subsets).                                                    
+".
+
 compute_subsets_for_sh_groups([],_,_,[]).
 compute_subsets_for_sh_groups([X|Xs],Sh,M,Xs1):-
     sublist_list_of_lists(Sh,X,CardCandSh,CandSh),!,        
@@ -920,46 +929,47 @@ reduce_sharing([(L-Cand-Sh_cand)|T],SH,LB,Size,Res):-
        Res = NewSH
      ). 
 %------------------------------------------------------------------------%
-%                         HANDLING BUILTINS                              |
+%                         HANDLING BUILTINS                              %
 %------------------------------------------------------------------------%
-% special_builtin(+,+,+,-,-)                                |
-% special_builtin(SgKey,Sg,Subgoal,Type,Condvars)           |
-% Satisfied if the builtin does not need a very complex action. It       |
-% divides builtins into groups determined by the flag returned in the    |
-% second argument + some special handling for some builtins:             |
-%                                                                        |
-% (1) ground : if the builtin makes all variables ground whithout        |
-%     imposing any condition on the previous freeness values of the      |
-%     variables                                                          |
-% (2) bottom : if the abstract execution of the builtin returns bottom   |
-% (3) unchanged : if we cannot infer anything from the builtin, the      |
-%     substitution remains unchanged and there are no conditions imposed |
-%     on the previous freeness values of the variables.                  |
-% (4) some: if it makes some variables ground without imposing conditions|
-% (5) Sgkey: special handling of some particular builtins                |
-%------------------------------------------------------------------------%
+
 :- export(special_builtin/5).
 :- dom_impl(_, special_builtin/5, [noq]).
+:- pred special_builtin(+SgKey,+Sg,+Subgoal,-Type,---Condvars)
+   #
+"Satisfied if the builtin does not need a very complex action. It      
+divides builtins into groups determined by the flag returned in the    
+second argument + some special handling for some builtins:             
+                                                                       
+- *ground*    : if the builtin makes all variables ground whithout        
+                imposing any condition on the previous freeness values of the      
+                variables.                                                          
+- *bottom*    : if the abstract execution of the builtin returns *bottom*.   
+- *unchanged* : if we cannot infer anything from the builtin, the      
+                substitution remains unchanged and there are no conditions imposed 
+                on the previous freeness values of the variables.                  
+- *some*      : if it makes some variables ground without imposing conditions.
+- *Sgkey*     : special handling of some particular builtins.                
+".
+
 special_builtin('read/2',read(X,Y),_,'recorded/3',p(Y,X)) :- !.
 special_builtin('length/2',length(_X,Y),_,some,[Y]) :- !.
 special_builtin('==/2',_,_,_,_):- !, fail.
 special_builtin(SgKey,Sg,Subgoal,Type,Condvars):-
     sharing:special_builtin(SgKey,Sg,Subgoal,Type,Condvars).
-    
-%------------------------------------------------------------------------%
-% success_builtin(+,+,+,+,+,-)                              |
-% success_builtin(Type,Sv_u,Condv,HvFv_u,Call,Succ)                |
-% Obtains the success for some particular builtins:                      |
-%  * If Type = ground, it updates Call making all vars in Sv_u ground    |
-%  * If Type = bottom, Succ = '$bottom'                                  |
-%  * If Type = unchanged, Succ = Call                                    |
-%  * If Type = some, it updates Call making all vars in Condv ground     |
-%  * Otherwise Type is the SgKey of a particular builtin for each the    |
-%    Succ is computed                                                    |
-%------------------------------------------------------------------------%
 
 :- export(success_builtin/6).
 :- dom_impl(_, success_builtin/6, [noq]).
+:- pred success_builtin(+Type,+Sv_u,?Condv,+HvFv_u,+Call,-Succ)
+   #
+"Obtains the success for some particular builtins:                      
+- If `Type` = *ground*, it updates `Call` making all vars in `Sv_u` ground.    
+- If `Type` = *bottom*, `Succ` = *$bottom*.                                  
+- If `Type` = *unchanged*, `Succ` = `Call`.                                    
+- If `Type` = *some*, it updates `Call` making all vars in `Condv` ground.     
+- Otherwise `Type` is the `SgKey` of a particular builtin for each the    
+  `Succ` is computed.                                                    
+".
+
 success_builtin(ground,Sv_u,_,_,Call,Succ):-
     sort(Sv_u,Sv),  
     irrel_w(Sv,Call,Succ).
@@ -1080,14 +1090,11 @@ success_builtin(var,_Sv,p(X),_,(Cl,Sh),Succ):-
     Succ = (Cl,Sh).
 success_builtin(var,_Sv,_Condvars,_HvFv_u,_Call,'$bottom').
 
-%------------------------------------------------------------------------%
-% call_to_success_builtin(+,+,+,+,+,-)                      |
-% call_to_success_builtin(SgKey,Sg,Sv,Call,Proj,Succ)       |
-% Handles those builtins for which computing Prime is easier than Succ   |
-%------------------------------------------------------------------------%
-
 :- export(call_to_success_builtin/6).
 :- dom_impl(_, call_to_success_builtin/6, [noq]).
+:- pred call_to_success_builtin(+SgKey,+Sg,+Sv,+Call,+Proj,-Succ)
+   # "Handles those builtins for which computing Prime is easier than `Succ`.".
+
 call_to_success_builtin('=/2','='(X,Y),Sv,Call,Proj,Succ):-
     copy_term(X,Xterm),
     copy_term(Y,Yterm),
@@ -1117,21 +1124,21 @@ call_to_success_builtin('arg/3',arg(X,Y,Z),_,Call,Proj,Succ):- !,
 %------------------------------------------------------------------------%
 %                      Intermediate operations                           |
 %------------------------------------------------------------------------%
-%------------------------------------------------------------------------%
-% clique_make_decomposition(+,+,+,-,-):-                                |
-% clique_make_decomposition(Eqs,Cl,Ground,NewGround,NewSH):-            | 
-% It gives the adecuate abstract substitution                            |
-% resulting of the unification of A and B when ==(A,B) was called.       |
-% If neither X nor Term in one binding is ground, since they have to     |
-% be identicals (==), each set C of the clique domain have to            |
-% satisfied that X is an element of C if and only if at least one        |
-% variable in Term appears also in C. Therefore, we have to decompose    |
-% the initial clique in subcliques and sharing sets such that either only| 
-% X or only variables of Term cannot appear. The difference wrt          |
-% share_make_reduction/5 is that clique_make_decomposition/5 returns    |
-% the final elements and share_make_reduction/5 returns the sharing sets |
-% that have to be eliminated.                                            |
-%------------------------------------------------------------------------%
+
+:- pred clique_make_decomposition(+Eqs,+Cl,+Ground,-NewGround,-NewSH)
+   #
+"It gives the adecuate abstract substitution                            
+resulting of the unification of `A` and `B `when `==`(`A`,`B`) was called.       
+If neither `X` nor `Term` in one binding is ground, since they have to     
+be identicals (`==`), each set `C` of the clique domain have to            
+satisfied that `X` is an element of `C` if and only if at least one        
+variable in `Term` appears also in `C`. Therefore, we have to decompose    
+the initial clique in subcliques and sharing sets such that either only 
+`X` or only variables of `Term` cannot appear. The difference wrt          
+`share_make_reduction/5` is that `clique_make_decomposition/5` returns    
+the final elements and `share_make_reduction/5` returns the sharing sets 
+that have to be eliminated.                                            
+".
 
 :- export(clique_make_decomposition/5).
 clique_make_decomposition([],_,_,[],([],[])).
@@ -1159,16 +1166,17 @@ clique_make_decomposition([(X,VarsTerm)|More],Cl,Ground,NewGround,NewSH):-
     decompose_if_not_possible(Cl,X,List,NewSH0), 
     clique_make_decomposition(More,Cl,Ground,NewGround,NewSH1),
     ord_union_w(NewSH0,NewSH1,NewSH).
-
-%-----------------------------------------------------------------------%
-% decompose_if_not_possible(+,+,-)                                      |  
-% decompose_if_not_possible(Cls,Vars,(Cl0,Sh0))                         |
-% {(c \ Vars,sh)  |c \in Cls}                                           |
-% where:                                                                |
-% sh= { Vars U p | p \in P(c \ Vars)}                                   |
-% Note: decompose_if_not_possible/3 is the complement operation of      |
-% eliminate_if_possible/3 for cliques                                   |
-%-----------------------------------------------------------------------%
+                                   
+:- pred decompose_if_not_possible(+Cls,+Vars,-(Cl0,Sh0))
+   #
+"`decompose_if_not_possible(+Cls,+Vars,-(Cl0,Sh0))`=
+`\{`(c \ `Vars`,sh)  |c \in `Cls` `\}`                                           
+where:                                                                
+sh = `\{` `Vars` U p | p \in `P`(c \ `Vars`)`\}`.
+                                  
+Note: `decompose_if_not_possible/3` is the complement operation of      
+`eliminate_if_possible/3` for cliques.                                   
+".
 
 decompose_if_not_possible([],_,([],[])).
 decompose_if_not_possible([Z|Rest],Vars,(NewCl,Sh)):-
@@ -1182,17 +1190,18 @@ decompose_if_not_possible([Z|Rest],Vars,(NewCl,Sh)):-
 decompose_if_not_possible([_|Rest],Vars,ASub):-
     decompose_if_not_possible(Rest,Vars,ASub).
 
-%-----------------------------------------------------------------------%
-% decompose_if_not_possible(+,+,+,-)                                    |
-% decompose_if_not_possible(Cl,X,Vars,(Cl,Sh)) =                        |
-% {(c \ (X U Vars'),sh1 U sh2)  |c \in Cls}                             |
-% where:                                                                |
-% Vars' = Vars /\ c                                                     |
-% sh1= {{x} U p1 | p1 \in (Powerset(Vars')\empty)}                      |
-% sh2= {s U p2 | s \in sh1, p2 \in Powerset(c \ (X U Vars'))}           |
-% Note: decompose_if_not_possible/4 is the complement operation of      |
-% eliminate_if_possible/4 for cliques                                   |
-%-----------------------------------------------------------------------%
+:- pred decompose_if_not_possible(+Cl,+X,+Vars,-(Cl,Sh))
+   #
+"`decompose_if_not_possible(+Cl,+X,+Vars,-(Cl,Sh))` =
+{(c \ (X U Vars'),sh1 U sh2)  |c \in Cls}                             
+where:                                                                
+`Vars'` = `Vars` /\ c                                                     
+sh1 = `\{`{x} U p1 | p1 \in (`Powerset`(`Vars'`)\empty)`\}`                     
+sh2 = `\{`s U p2 | s \in sh1, p2 \in `Powerset`(c \ (`X` U `Vars'`))`\}`          
+
+Note: `decompose_if_not_possible/4` is the complement operation of      
+`eliminate_if_possible/4` for cliques.                                  
+".
 
 :- push_prolog_flag(multi_arity_warnings,off).
 decompose_if_not_possible([],_,_,([],[])).
@@ -1236,12 +1245,10 @@ obtain_sharing([D|Disj],Term,NewSh):-
     obtain_sharing(Disj,Term,NewSh0),
     merge(NewSh0,[NewTerm],NewSh).
 
-%------------------------------------------------------------------------
-% eliminate_couples_clique(+,+,+,-)                                      |
-% eliminate_couples_clique(Cl,Xv,Yv,NewCl)                               |
-% All arguments ordered                                                  |
-%------------------------------------------------------------------------
 :- export(eliminate_couples_clique/4).
+:- pred eliminate_couples_clique(+Cl,+Xv,+Yv,-NewCl)
+   # "All arguments ordered".
+
 eliminate_couples_clique(Cl,Xv,Yv,NewCl1):-
     split_list_of_lists(Xv,Cl,Int1,Disj1),
     split_list_of_lists(Yv,Int1,Int2,Disj2),
@@ -1256,10 +1263,8 @@ partition_cliques([Cl|Cls],Xv,Yv,Tail,[NewXv0,NewYv0|NewCls]):-
     merge(NewYv,Disj,NewYv0),
     partition_cliques(Cls,Xv,Yv,Tail,NewCls).
 
-%------------------------------------------------------------------------
-% partition_set(+,+,+,-,-,-)                                             |
-% partition_set(Set,Xv,Yv,IntXv,IntYv,Disj)                              |
-%------------------------------------------------------------------------
+:- pred partition_set(+Set,+Xv,+Yv,-IntXv,-IntYv,-Disj).
+
 partition_set([],_,_,[],[],[]).
 partition_set([H|T],Xv,Yv,[H|NXv],NYv,NDisj):-
     ord_member(H,Xv),!,
@@ -1273,18 +1278,20 @@ partition_set([H|T],Xv,Yv,NXv,NYv,[H|Disj]):-
 %------------------------------------------------------------------------%
 % This predicates is defined in sharing.pl. It should be exported        |
 %------------------------------------------------------------------------%
-% share_make_reduction(+,+,+,-,-)                                        |
-% share_make_reduction(Eqs,Lambda,Ground,NewGround,Eliminate)            |
-% It gives the adecuate abstract substitution                            |
-% resulting of the unification of A and B when ==(A,B) was called.       |
-% If neither X nor Term in one binding is ground, since they have to     |
-% be identicals (==), each set S of the sharing domain have to           |
-% satisfied that X is an element of S if and only if at least one        |
-% variable in Term appears also in S. Therefore, each set in which       |
-% either only X or only variables of Term appear, has to be eliminated.  |
-%------------------------------------------------------------------------%
+
 %%% TODO: [IG] This code is duplicated from sharing.pl!!!
 :- export(share_make_reduction/5).
+:- pred share_make_reduction(+Eqs,+Lambda,+Ground,-NewGround,-Eliminate)
+   #
+"It gives the adecuate abstract substitution                            
+resulting of the unification of `A` and `B` when `==(A,B)` was called.       
+If neither `X` nor `Term` in one binding is ground, since they have to     
+be identicals (`==`), each set `S` of the sharing domain have to           
+satisfied that `X` is an element of `S` if and only if at least one        
+variable in `Term` appears also in `S`. Therefore, each set in which       
+either only `X` or only variables of `Term` appear, has to be eliminated.  
+".
+
 share_make_reduction([],_,_,[],Y-Y).
 share_make_reduction([(X,VarsTerm)|More],Lambda,Ground,NewGround,Eliminate):-
     ord_member(X,Ground), !,
@@ -1313,12 +1320,13 @@ projected_gvars_clique(Proj,Sv,Gv):-
      ord_union(Vars_Cl,Vars_Sh,Vars_Proj),
      ord_subtract(Sv,Vars_Proj,Gv).
 
-%------------------------------------------------------------------------%
-% size_clsh(+,-)                                                         |
-%------------------------------------------------------------------------%
-% size_clsh((Cl,SH)) = size'(Cl) + size'(Sh)                             |
-% where   size'(X) = Sum{for all x \in X} |x|                            |
-%------------------------------------------------------------------------%
+:- pred size_clsh(+,-)
+   #
+"   
+`size_clsh((Cl,SH))` = `size'(Cl)` + `size'(Sh)`                             
+where   `size'(X)` = `Sum``\{`for all x \in `X``\}` |x|                            
+".
+
 % size_clsh((Cl,Sh),N):-
 %       size_set_of_sets(Cl,Size_cl),
 %       size_set_of_sets(Sh,Size_sh),
@@ -1326,10 +1334,9 @@ projected_gvars_clique(Proj,Sv,Gv):-
 size_clsh((_Cl,Sh),Size_sh):-
     size_set_of_sets(Sh,Size_sh).
 
-%------------------------------------------------------------------------%
-% size_set_of_sets(+,-)                                                  |
-% size_set_of_sets(X) = Sum{for all x \in X} |x|                         |
-%------------------------------------------------------------------------%
+:- pred size_set_of_sets(+,-)
+   # "`size_set_of_sets(X)` = `Sum``\{` for all x \in `X``\}` |x|.".
+
 size_set_of_sets([],0).
 size_set_of_sets([S|Ss],Res):-
     length(S,L_S),
