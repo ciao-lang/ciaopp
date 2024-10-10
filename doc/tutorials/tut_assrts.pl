@@ -153,7 +153,7 @@ we want checked:
 :- module(_,[qsort/2],[assertions,nativeprops,regtypes,modes]).
 
 % qsort/2 with some assertions.
-% The system verifes the assertions and also that 
+% The system verifies the assertions and also that 
 % the =</2 and >/2 are called correctly and will not 
 % generate any run-time errors.  
 % Try also generating the documentation for this file!
@@ -209,6 +209,11 @@ conjunction of two properties: 1) the call does not (finitely) fail
 expresses the expected calling pattern, and that the call can have at most one answer,
 property @tt{semidet}.
 
+All the assertions in the program indeed get verified by @apl{CiaoPP},
+which is shown in the output:
+
+@exfilter{qsort_assrt_det.pl}{V,ana_det=nfdet,output=on,filter=check_pred}  
+
 @section{Modes in the Ciao assertion model}
 
 In the Ciao assertion model, modes are @em{macros} that serve as a
@@ -224,21 +229,24 @@ states properties that hold if @var{Head} is called in a state compatible
 with @var{Pre} and the call succeeds.
 @var{Comp} describes properties of the whole computation such as
 determinism, non-failure, resource usage, termination, etc.,
-also for calls that meet @var{Pre}. In particular, the modes for @tt{qsort/2} in
-the last example are expanded by the @tt{modes} package 
-(see module declaration in the above examples) to:
+also for calls that meet @var{Pre}. In particular,
+thanks to the @tt{modes} package included in the module declaration in
+the previous example:
+```
+:- module(_,[qsort/2],[assertions,nativeprops,regtypes,modes]).
+ ```
+the modes used for @tt{qsort/2}:
+```ciao
+:- pred qsort(+list(num),-list(num)) + semidet.
+```
+are expanded to the assertion:
 ```ciao
 :- pred qsort(X,Y) : list(num,X) => list(num,Y) + semidet.
 ```
 
-All the assertions in the last example indeed get verified by @apl{CiaoPP}, which is shown in
-the output:
-
-@exfilter{qsort_assrt_det.pl}{V,ana_det=nfdet,output=on,filter=check_pred}  
-
 @section{Using the doccomments package}
 
-In the next example, the assertions are written as machine readable comments enabled by the @tt{doccomments}
+In this example the assertions are written as machine readable comments enabled by the @tt{doccomments}
 package. Such comments can contain embedded assertions, which are
 also verified.  Here we use again modes and determinacy. This format is familiar to
 Prolog programmers and compatible with any Prolog system without
@@ -250,7 +258,7 @@ we can see that, as before, the assertions get verified by @apl{CiaoPP}:
 :- module(_,[qsort/2],[assertions,nativeprops,regtypes,modes,doccomments]).
 
 % Describing predicates with modes/assertions in doccommmments syntax
-% (which also get veryfied by the system). Try also generating the 
+% (which also get verified by the system). Try also generating the 
 % documentation for this file!
 
 %! qsort(+list(num),-list(num)): 
@@ -282,6 +290,8 @@ append([X|Xs],Ys,[X|Zs]) :-
 V,ana_det=nfdet,output=on,filter=check_pred
 %! \\end{opts}
 ```
+
+@section{Detecting possible failure}
 
 Imagine that we replace @tt{=</2} with
 @tt{</2} in the second clause of @tt{partition/4},
@@ -327,6 +337,9 @@ V,ana_det=nfdet,filter=warn_error
 @apl{CiaoPP} warns that this predicate may fail.
 This is because the case where @tt{X=F} is not ''covered'' by the
 ''tests'' of @tt{partition/4}.
+
+@section{Detecting possible non-determinism}
+
 Conversely, if we replace @tt{>/2} with @tt{>=/2} in the
 second clause of the original definition of @tt{partition/4},
 
@@ -422,18 +435,20 @@ etc. For example:
 ?- colorlist(X).
 ```
 or, we can select breadth-first execution (useful here for fair generation) by adding
-the package @tt{srt/fall}.
+the package @tt{sr/bffall}.
 ```ciao
 :- module(_,[color/1,colorlist/1,sorted/1],[assertions,regtypes,clpq,sr/bfall]).
 ``` 
 
-The next example shows the same properties as the last example but written
+@section{Defining properties in functional notation}
+
+This next example shows the same properties as the last example but written
 using functional notation. The definitions are equivalent, functional syntax being
 just syntactic sugar.
 ```ciao
 :- module(_,[colorlist/1,sorted/1,color/1],[assertions,regtypes,fsyntax]).
 
-% Defining some types and properties (using functiomal syntax)
+% Defining some types and properties (using functional syntax)
 % which can then be used in assertions. 
 
 :- regtype color/1.
@@ -447,16 +462,17 @@ sorted := [] | [_].
 sorted([X,Y|T]) :- X .>=. Y, sorted([Y|T]).
 ```
 
+@section{Using the properties defined}
 
 In the following example we add some simple definitions for @tt{p/1} and @tt{q/1}:
 ```ciao_runnable
 %! \\begin{code}
 :- module(_,[p/1,colorlist/1,sorted/1,color/1],[assertions,regtypes,fsyntax]).
 
-% Defining some types and properties (using functiomal syntax)
+% Defining some types and properties (using functional syntax)
 % which are then used in two simple assertions. The system
 % detects that property sorted is incompatible with the success
-% tyoe of p/1.
+% type of p/1.
 
 :- pred p(X) => sorted(X).
 p(X) :- q(X).
@@ -479,12 +495,15 @@ V,output=on,filter=check_pred
 %! \\end{opts}
 ``` 
     
-and a @tt{pred} assertion for @tt{q/1}, meaning ''in all calls @tt{q(X)} that succeed,
+We also added a @tt{pred} assertion for @tt{q/1}, meaning ''in all calls @tt{q(X)} that succeed,
 @tt{X} is @em{instantiated} on success to a term of @tt{color} type''.
-This is verified by @apl{CiaoPP}. We have also added an assertion for @tt{p/1}
+This is verified by @apl{CiaoPP}.
+
+We have also added an assertion for @tt{p/1}
 meaning ''in all calls @tt{p(X)} that succeed, @tt{X} gets instantiated to a
 term meeting the @tt{sorted} property.'' 
-@apl{CiaoPP} detects that such assertion is false and shows the reason
+
+@apl{CiaoPP} detects that such assertion is false and shows the reason:
 the analyzer (with the @tt{eterms} abstract domain @tt{eterms}) infers that
 on success @tt{X} gets bound to @tt{red}, expressed as the automatically inferred regular
 type @tt{rt27/1}, and @apl{CiaoPP} finds that @tt{rt27(X)} and
@@ -493,11 +512,13 @@ terms they represent):
 
 @exfilter{incompatible_type_f_error.pl}{V,filter=warn_error}
 
-In the program,
+@section{Using the properties defined}
+
+In the following program:
 ```ciao
 :- module(_,[p/1,colorlist/1,sorted/1,color/1],[assertions,regtypes,fsyntax]).
 
-% Defining some types and properties (using functiomal syntax)
+% Defining some types and properties (using functional syntax)
 % which are then used in two simple assertions. With default domain
 % sorted/1 is not proved and will generate a run-time check and 
 % optionally initiate assertion-based test generation.
@@ -518,20 +539,22 @@ colorlist := [] | [~color|~colorlist].
 sorted := [] | [_].
 sorted([X,Y|T]) :- X >= Y, sorted([Y|T]).
 ```
-we have changed the definition of incompatibility, and now @apl{CiaoPP} simply warns
-that it cannot verify the assertion for @tt{p/1}:
+
+We have changed @pred{q/1} to instantiate its argument to a list. Now
+@apl{CiaoPP} does not flag an error, but simply warns that it cannot
+verify the assertion for @tt{p/1}:
 
 @exfilter{incompatible_type_f_fixed.pl}{V,filter=warn_error}
 
-The success type @tt{rt27(X)} inferred for @tt{p/1} (lists of three 
+Indeed, the success type @tt{rt27(X)} inferred for @tt{p/1} (lists of three 
 arbitrary terms) and @tt{sorted(X)} are now compatible, and thus no error is flagged.
 However, @tt{rt27(X)} does not imply @tt{sorted(X)} for all @tt{X}'s, and thus
 @tt{sorted(X)} is not verified (with the default set of abstract domains). 
-In this case, the system will (optionally)
-introduce a run-time check so that @tt{sorted(X)} is tested when
-@tt{p/1} is called. Furthermore, the system can run unit tests or
-generate test cases (in this case arbitrary terms) automatically to
-exercise such run-time tests.
+
+In this case, the system will (optionally) introduce a run-time check
+so that @tt{sorted(X)} is tested when @tt{p/1} is called. Furthermore,
+the system can run unit tests or generate test cases (in this case
+arbitrary terms) automatically to exercise such run-time tests.
 
 @section{An example with more complex properties}
 
