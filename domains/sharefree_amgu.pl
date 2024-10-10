@@ -49,7 +49,7 @@ This file implements the same domain-dependent abstract functions than
 defined based on `amgu`.
 
 @begin{note}
-The meaning of the variables are defined in `sharefree.pl`.       
+The meaning of the variables is defined in `sharefree.pl`.       
 @end{note}
 ").
 

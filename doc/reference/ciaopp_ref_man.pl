@@ -94,7 +94,7 @@ license}.
 
 @section{How to use this manual}
 
-This is a @em{reference manual}. I also includes a part on the CiaoPP
+This is a @em{reference manual}. It also includes a part on the CiaoPP
 internals. You can use this manual to:
 
 @begin{itemize}
@@ -110,6 +110,9 @@ internals. You can use this manual to:
       CiaoPP is described; and the Global Index includes all of the
       above plus references to pages where the command, type, or
       concept is used (not necessarily defined).
+
+@item Learn about all the abstract domains currently included with
+      CiaoPP and the properties that they can infer.
 
 @item Learn about how to extend CiaoPP, for example by defining new
       analysis domains. 

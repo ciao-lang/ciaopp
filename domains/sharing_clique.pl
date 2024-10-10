@@ -25,7 +25,7 @@ elements.
 clique-set.
                                                            
 @begin{note}
-The meaning of the variables are defined in `sharing.pl`.                
+The meaning of the variables is defined in `sharing.pl`.                
 @end{note}
 ").
 

@@ -20,8 +20,8 @@ clique-sharing+Freeness domain combined with the definiteness abstract
 domain.                                                                
 
 @begin{note}
-The meaning of the variables are defined in sharefree_clique.pl and      
-def.pl                                                                 
+The meaning of the variables is defined in `sharefree_clique.pl` and      
+`def.pl`.                                                                 
 @end{note}                                                                 
 
 This domain is represented by a pair (`SHF`,`D`) where `SHF` is the original 

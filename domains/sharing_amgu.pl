@@ -47,7 +47,7 @@ functions `call_to_entry` and `exit_to_prime` are developed based on the
 `amgu`.
 
 @begin{note}
-The meaning of the variables are defined in `sharing.pl`.       
+The meaning of the variables is defined in `sharing.pl`.       
 @end{note}
 ").
 %------------------------------------------------------------------------%

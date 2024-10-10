@@ -27,11 +27,11 @@
 % groundness dependencies, without combining it with Def or Pos by       |
 % J.Navas, F.Bueno and M.Hermenegildo.                                   |
 %------------------------------------------------------------------------%
-% The representation of this domain is the same that Clique-Sharing      |
+% The representation of this domain is the same as in the Clique-Sharing |
 % domain but in this case, a clique C represents all the sharing groups  |
-% in the powerset of C but those with cardinality 1.                     |
+% in the powerset of C except those with cardinality 1.                  |
 %------------------------------------------------------------------------%
-% The meaning of the variables are defined in sharing.pl                 |
+% The meaning of the variables is defined in sharing.pl                  |
 %------------------------------------------------------------------------%
 
 :- doc(bug,"1. THIS DOMAIN HAS A LIMITATION. Since singletons

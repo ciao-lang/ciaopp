@@ -22,8 +22,8 @@ This file contains the domain dependent abstract functions for the
 clique-sharing domain combined with the definiteness abstract domain.  
 
 @begin{note}
-The meaning of the variables are defined in sharing_clique.pl and      
-def.pl                                                                 
+The meaning of the variables is defined in `sharing_clique.pl` and      
+`def.pl`.                                                                 
 @end{note}
 
 This domain is represented by a pair (`SH`,`D`) where `SH` is the original   

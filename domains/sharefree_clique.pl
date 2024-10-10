@@ -23,7 +23,7 @@ The representation of this domain augments the Clique-sharing domain
 with a third component that keep track of freeness.                    
 
 @begin{note}
-The meaning of the variables are defined in `sharefree.pl`.                
+The meaning of the variables is defined in `sharefree.pl`.                
 @end{note}
 ").
 
