@@ -7505,7 +7505,7 @@ Garcia).
 
 First version of typeslib. (Pedro Lopez Garcia).
 
-# (Prior changelogs not lpdoc-based, probably lost?)
+## (Prior changelogs not lpdoc-based, probably lost?)
 
 ## [0.1.1] - 1993-10-1
 
