@@ -38,7 +38,7 @@ The following tutorials are available:
 
 @item @ref{CiaoPP at a glance}. This brief tutorial provides a quick
 overview suitable for understanding some basics about how @apl{CiaoPP}
-works. It is however is not intended to be a tutorial on how to use
+works. It is however not intended to be a tutorial on how to use
 @apl{CiaoPP}. The following tutorial is recommended for this.
 
 @item @ref{A Gentle Introduction to Static Verification and Bug
