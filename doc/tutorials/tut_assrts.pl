@@ -43,7 +43,8 @@ interact with the code boxes (you will identify them by a question mark (?)
 in the right top corner), and by clicking the question mark you will be
 able to run @apl{CiaoPP} and see fragments of the analysis output.
 
-@bf{A first example.}
+@section{A first example - no assertions}
+
 Consider the classic implementation of quick-sort:
 
 ```ciao_runnable
@@ -98,6 +99,8 @@ express the calling restrictions for @tt{=</2} and
 these standard predicates.  Further details can be obtained
 by reading the messages.
 
+@section{Adding an assertion}
+
 We can add an assertion for the exported predicate @tt{qsort/2}
 expressing that it should be called with its first argument bound to a list of numbers:
 
@@ -142,6 +145,8 @@ are displayed.
 Note that in practice this assertion may not be necessary since this information
 could be obtained from the analysis of the caller(s) to this module.
  
+@section{Adding more assertions}
+
 Let us now add more assertions to the program, stating properties that
 we want checked: 
 ```ciao_runnable
@@ -204,6 +209,7 @@ conjunction of two properties: 1) the call does not (finitely) fail
 expresses the expected calling pattern, and that the call can have at most one answer,
 property @tt{semidet}.
 
+@section{Modes in the Ciao assertion model}
 
 In the Ciao assertion model, modes are @em{macros} that serve as a
 shorthand for assertions, in particular @em{predicate-level
@@ -230,6 +236,8 @@ the output:
 
 @exfilter{qsort_assrt_det.pl}{V,ana_det=nfdet,output=on,filter=check_pred}  
 
+@section{Using the doccomments package}
+
 In the next example, the assertions are written as machine readable comments enabled by the @tt{doccomments}
 package. Such comments can contain embedded assertions, which are
 also verified.  Here we use again modes and determinacy. This format is familiar to
@@ -242,7 +250,7 @@ we can see that, as before, the assertions get verified by @apl{CiaoPP}:
 :- module(_,[qsort/2],[assertions,nativeprops,regtypes,modes,doccomments]).
 
 % Describing predicates with modes/assertions in doccommmments syntax
-% (which also get veryfied by the sustem). Try also generating the 
+% (which also get veryfied by the system). Try also generating the 
 % documentation for this file!
 
 %! qsort(+list(num),-list(num)): 
@@ -365,7 +373,8 @@ This is because the analyzer infers that not all the clauses of
 the second and third clauses are not), and thus, multiple solutions
 may be obtained.
 
-@bf{Defining properties.}
+@section{Defining properties}
+
 The reader may be wondering at this point where the properties that
 are used in assertions (such as @tt{list(num)}) come from. As
 mentioned before, such properties are typically written in Prolog and
@@ -524,7 +533,8 @@ introduce a run-time check so that @tt{sorted(X)} is tested when
 generate test cases (in this case arbitrary terms) automatically to
 exercise such run-time tests.
 
-@bf{An example with more complex properties.}
+@section{An example with more complex properties}
+
 To follow this part of the tutorial we recommend to have installed @apl{CiaoPP} as many of the advanced
 features are not yet included in the playground. An example with more complex properties (also
 using the functional syntax package) is shown here:
