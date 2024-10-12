@@ -1,37 +1,41 @@
-:- module(domains, [], [assertions,regtypes,isomodes,nativeprops,ciaopp(ciaopp_options)]).
+:- module(domains, [], [assertions,regtypes,modes,nativeprops,ciaopp(ciaopp_options)]).
 
-:- doc(title,"Plug-in points for abstract domains").
+%:- doc(title,"Plug-in points for abstract domains").
+:- doc(title,"Domain Interface for Defining Abstract Domains").
 
 :- doc(author,"Maria Garcia de la Banda").
 :- doc(author,"Francisco Bueno").
 :- doc(author,"Jose F. Morales (aidomain package)").
 
-:- doc(module,"This module contains the predicates for selecting
-   the abstract operations that correspond to an analysis domain. The
-   selection depends on the name of the domain given as first argument
-   to all predicates. Whenever a new domain is added to the system, a
-   new clause for each predicate exported here will be needed to call
-   the corresponding domain operation in the domain module. Some local
-   operations used but not exported by this module would have to be
-   defined, too. See the following chapter for an example domain module.
+:- doc(module,"This module contains the predicates that can be used to
+   define the abstract operations that correspond to an analysis
+   domain. The name of the domain is given as first argument to all
+   predicates. Thus, whenever a new domain is added to the system, a
+   new clause for each predicate exported here will be needed to be
+   defined in the new domain's module without featuring the first
+   argument. 
 
-   Adding an analysis domain to PLAI requires only changes in this module.
-   However, in order for other CiaoPP operations to work, you may need to
-   change other modules. See, for example, module @tt{infer_dom}.
-
-   In this chapter, arguments referred to as @tt{Sv}, @tt{Hv}, @tt{Fv},
-   @tt{Qv}, @tt{Vars} are lists of program variables and are supposed to 
-   always be sorted. Abstract substitutions are referred to as @tt{ASub}, 
-   and are also supposed sorted (except where indicated), although this 
-   depends on the domain.
+   Notice that not all the operations  need to be implemented in order
+   to define  an abstract domain in  PLAI. Some are optional  and only
+   required to accelerate or guarantee the  convergence (for instance
+   @tt{widen/3}) while  other  are  only  required  if  some  special
+   fixpoints.
+   Some local operations used but not exported by this module would
+   have to be defined, too. See the following chapter for an example
+   domain module.
+   In this chapter, arguments referred to as @tt{Sv}, @tt{Hv},
+   @tt{Fv}, @tt{Qv}, @tt{Vars} are lists of program variables and are
+   supposed to always be sorted. Abstract substitutions are referred
+   to as @tt{ASub}, and are also supposed sorted (except where
+   indicated), although this depends on the domain. 
 
 @section{Variable naming convention for CiaoPP domains}
 
 Both in the PLAI fixpoints and domains, for simplicity, we use the following
 variable name meanings:
 
- @begin{itemize}
-@item @var{AbsInt}  : identifier of the abstract interpreter being used.
+@begin{itemize}
+@item @var{AbsInt}  : Identifier of the abstract domain being used.
 @item @var{Sg}      : Subgoal being analysed.
 @item @var{SgKey}   : Subgoal key (represented by functor/arity).
 @item @var{Head}    : Head of the clause being analysed.
@@ -100,7 +104,7 @@ obtained after the analysis of the clause being considered
 %------------------------------------------------------------------------%
 %                    Meaning of the Program Variables                    %
 %                                                                        %
-%  AbsInt  : identifier of the abstract interpreter being used           %
+%  AbsInt  : Identifier of the abstract domain being used           %
 %  Sg      : Subgoal being analysed                                      %
 %  SgKey   : Subgoal key (represented by functor/arity)                  %
 %  Head    : Head of the clause being analysed                           %
@@ -149,10 +153,9 @@ obtained after the analysis of the clause being considered
 :- doc(section, "Initialization").
 
 :- export(init_abstract_domain/2).
-% init_abstract_domain(+,-)
-:- doc(init_abstract_domain(AbsInt,PushedFlags), "Initializes abstract
-   domain @var{AbsInt}. Tells the list of modified (pushed) PP flags to
-   pop afterwards.").
+:- pred init_abstract_domain(+AbsInt, -PushedFlags) : atm(AbsInt)
+   # "Initializes abstract domain @var{AbsInt}. Tells the list of
+   modified (pushed) PP flags to pop afterwards.  ".
 % TODO: This initialization predicate silently overwrites some
 %   pp_flags. This may be very confusing for the user.
 % TODO: This should be part of the definition of the domain. 
@@ -164,29 +167,28 @@ obtained after the analysis of the clause being considered
 % (for fixpo_bu)
 :- export(amgu/5).
 :- pred amgu(+AbsInt,+Sg,+Head,+ASub,-AMGU) : atm(AbsInt) + not_fails
-   #"Perform the abstract unification @var{AMGU} between @var{Sg} and
+   # "Perform the abstract unification @var{AMGU} between @var{Sg} and
    @var{Head} given an initial abstract substitution @var{ASub} and
    abstract domain @var{AbsInt}.".
 
 % (for fixpo_bu)
 :- export(augment_asub/4).
-% augment_asub(+,+,+,-)
-:- doc(augment_asub(AbsInt,ASub,Vars,ASub0), "Augment the abstract
-   substitution @var{ASub} adding the variables @var{Vars} and then
-   resulting the abstract substitution @var{ASub0}.").
+:- pred augment_asub(+AbsInt,+ASub,+Vars,-ASub0)
+   # "Augment the abstract substitution @var{ASub} adding the
+   variables @var{Vars} and then resulting the abstract substitution
+   @var{ASub0}.".
 
 % (for fixpo_bu)
 :- export(augment_two_asub/4).
-% augment_two_asub(+,+,+,-)
-:- doc(augment_two_asub(AbsInt,ASub0,ASub1,ASub), "@var{ASub} is an
-       abstract substitution resulting of augmenting two abstract
-       substitutions: @var{ASub0} and @var{ASub1} whose domains are
-       disjoint.").
+:- pred augment_two_asub(+AbsInt,+ASub0,+ASub1,-ASub)
+   # "@var{ASub} is an abstract substitution resulting of augmenting
+       two abstract substitutions: @var{ASub0} and @var{ASub1} whose
+       domains are disjoint.".
 
 :- export(call_to_entry/10).
 :- pred call_to_entry(+AbsInt,+Sv,+Sg,+Hv,+Head,+ClauseKey,+Fv,+Proj,-Entry,-ExtraInfo)
    : (atm(AbsInt), list(Sv), list(Hv), list(Fv)) + (not_fails, is_det)
-   #"Obtains the abstract substitution @var{Entry} which results from
+   # "Obtains the abstract substitution @var{Entry} which results from
    adding the abstraction of the unification @var{Sg} = @var{Head} to
    abstract substitution @var{Proj} (the call substitution for
    @var{Sg} projected on its variables @var{Sv}) and then projecting
@@ -198,7 +200,7 @@ obtained after the analysis of the clause being considered
    @begin{alert}
    @bf{Assumtions}: This predicate assumes that the variables in @var{Sv} and
    @var{Proj} are sorted (see sortedness for each domain).
-   @end{alert}.".
+   @end{alert}".
 % TODO: Document ClauseKey (required by res_plai)
 % TODO: Document ClauseKey=not_provided
 
@@ -253,10 +255,10 @@ project(AbsInt,Vars,HvFv,ASub,Proj) :-
    @end{alert} ".
 
 :- export(dual_widencall/4).
-% dual_widencall(+,+,+,-)
-:- doc(dual_widencall(AbsInt,ASub0,ASub1,ASub),"@var{ASub} is the result of
-   dual widening abstract substitution @var{ASub0} and @var{ASub1}, which
-   are supposed to be consecutive call patterns in a fixpoint computation.").
+:- pred dual_widencall(+AbsInt,+ASub0,+ASub1,-ASub)  
+   # "@var{ASub} is the result of dual widening abstract substitution
+   @var{ASub0} and @var{ASub1}, which are supposed to be consecutive
+   call patterns in a fixpoint computation.". 
 dual_widencall(_AbsInt,_ASub0,_ASub1,_ASub) :- fail.
 % TODO: [IG]This is only used in fixpo_plai_gfp.
 
@@ -268,11 +270,10 @@ dual_widencall(_AbsInt,_ASub0,_ASub1,_ASub) :- fail.
 
 % (for fixpo_plai_gfp) % TODO: see note below
 :- export(dual_widen/4).
-% dual_widen(+,+,+,-)
-:- doc(dual_widen(AbsInt,ASub0,ASub1,ASub),"@var{ASub} is the result of
-   dual widening abstract substitution @var{ASub0} and @var{ASub1}, which
-   are supposed to be consecutive approximations to the same abstract
-   value.").
+:- pred dual_widen(+AbsInt,+ASub0,+ASub1,-ASub)
+   # "@var{ASub} is the result of dual widening abstract substitution
+   @var{ASub0} and @var{ASub1}, which are supposed to be consecutive
+   approximations to the same abstract value.". 
 
 dual_widen(AbsInt,Prime0,Prime1,NewPrime) :-
     compute_glb(AbsInt,[Prime0,Prime1],NewPrime).
@@ -281,10 +282,12 @@ dual_widen(AbsInt,Prime0,Prime1,NewPrime) :-
 
 :- export(normalize_asub/3).
 % normalize_asub(+,+,-)
-:- doc(normalize_asub(AbsInt,ASub0,ASub1),"@var{ASub1} is the
-   result of normalizing abstract substitution @var{ASub0}. This is
-   required in some domains, specially to perform the widening.").
+:- pred normalize_asub(+AbsInt, +ASub0, -ASub1)
+   # "@var{ASub1} is the result of normalizing abstract substitution
+   @var{ASub0}. This is required in some domains, specially to perform
+   the widening.".
 % some domains need normalization to perform the widening:
+%% [DJ] Which domains? This predicate is never implemented
 normalize_asub(_AbsInt,Prime,Prime).
 % [IG] This fixpo_plai and fixpo_plai_gfp each time an internal fixpoint is
 % started if the widen flag is set to on, maybe because the widening on calls is
@@ -297,9 +300,9 @@ normalize_asub(_AbsInt,Prime,Prime).
 
 % (for fixpo_plai_gfp)
 :- export(compute_glb/3).
-% compute_glb(+,+,-)
-:- doc(compute_glb(AbsInt,ListASub,GlbASub),"@var{GlbASub} is the
-   greatest lower bound of the abstract substitutions in list @var{ListASub}.").
+:- pred compute_glb(+AbsInt,+ListASub,-GlbASub)
+   # "@var{GlbASub} is the greatest lower bound of the abstract
+   substitutions in list @var{ListASub}.".
 % TODO:[new-resources] needed?
 compute_glb(AbsInt,[A,B],Glb) :-
     glb(AbsInt,A,B,Glb). % For backwards compatibility
@@ -444,16 +447,15 @@ less_or_equal_proj(AbsInt,Sg,Proj,Sg1,Proj1) :-
 :- doc(section, "Specialized operations (including builtin handling)").
 
 :- export(eliminate_equivalent/3).
-% eliminate_equivalent(+,+,-)
-:- doc(eliminate_equivalent(AbsInt,TmpLSucc,LSucc),
-   "The list @var{LSucc} is reduced wrt the list @var{TmpLSucc} in that it
-    does not contain abstract substitutions which are equivalent.").
+:- pred eliminate_equivalent(+AbsInt,+TmpLSucc,-LSucc)
+   # "The list @var{LSucc} is reduced wrt the list @var{TmpLSucc} in
+    that it does not contain abstract substitutions which are
+    equivalent.".
 
 :- export(abs_subset/3).
-% abs_subset(+,+,+)
-:- doc(abs_subset(AbsInt,LASub1,LASub2),
-   "Succeeds if each abstract substitution in list @var{LASub1} is equivalent
-    to some abstract substitution in list @var{LASub2}.").
+:- pred abs_subset(+AbsInt,+LASub1,+LASub2)
+   # "Succeeds if each abstract substitution in list @var{LASub1} is
+    equivalent to some abstract substitution in list @var{LASub2}.".
 
 :- export(call_to_success_fact/10). % TODO:[new-resources] (extra)
 :- pred call_to_success_fact(+AbsInt,+Sg,+Hv,+Head,+K,+Sv,+Call,+Proj,-Prime,-Succ)
@@ -467,8 +469,9 @@ less_or_equal_proj(AbsInt,Sg,Proj,Sg1,Proj1) :-
 %
 % :- pred special_builtin(+AbsInt,+SgKey,+Sg,?Subgoal,-Type,-Condvars) : atm(AbsInt)
 %
+% DJ: disabled -CondVars, sometimes is var after execution.
 :- export(special_builtin/6).
-:- pred special_builtin(+AbsInt,+SgKey,?Sg,?Subgoal,-Type,-Condvars) : atm(AbsInt)
+:- pred special_builtin(+AbsInt,+SgKey,?Sg,?Subgoal,-Type,?Condvars) : atm(AbsInt)
    #"Predicate @var{Sg} is considered a ""builtin"" of type @var{Type} in
      domain @var{AbsInt}. Types are domain dependent. Domains may have two
      different ways to treat these predicates: see
@@ -522,14 +525,16 @@ less_or_equal_proj(AbsInt,Sg,Proj,Sg1,Proj1) :-
 :- doc(section, "Properties to domain and viceversa").
 
 :- export(info_to_asub/7).
-% info_to_asub(+,+,+,+,-,+,+)
-:- doc(info_to_asub(AbsInt,Kind,InputUser,Qv,ASub,Sg,MaybeCallASub),
-   "Obtains the abstract substitution @var{ASub} on variables @var{Qv} for
-    domain @var{AbsInt} from the user supplied information @var{InputUser}
-    refering to properties on @var{Qv}. It works by calling
-    @tt{input_interface/5} on each property of @var{InputUser} which is a
-    native property, so that they are accumulated, and then calls
-    @tt{input_user_interface/6}."). % TODO: Document MaybeCallASub
+%% TODO: DJ: Fix modes, King should be +Kind but sometimes is left as a free varible...
+% Original: :- pred info_to_asub(+AbsInt,+Kind,+InputUser,+Qv,-ASub,+Sg,+MaybeCallASub)
+:- pred info_to_asub(+AbsInt,?Kind,+InputUser,+Qv,-ASub,+Sg,+MaybeCallASub)
+   # "Obtains the abstract substitution @var{ASub} on variables
+    @var{Qv} for domain @var{AbsInt} from the user supplied
+    information @var{InputUser} refering to properties on @var{Qv}. It
+    works by calling @tt{input_interface/5} on each property of
+    @var{InputUser} which is a native property, so that they are
+    accumulated, and then calls @tt{input_user_interface/6}.".
+% TODO: Document MaybeCallASub
 info_to_asub(AbsInt,Kind,InputUser,Qv,ASub,Sg,MaybeCallASub) :-
     info_to_asub_(InputUser,AbsInt,Kind,_,Input),
     input_user_interface(AbsInt,Input,Qv,ASub,Sg,MaybeCallASub),
@@ -552,10 +557,10 @@ info_to_asub_([I|Info],AbsInt,_Kind,Acc0,Acc) :-
 %%      info_to_asub_(Info,AbsInt,Kind,Acc1,Acc).
 
 :- export(full_info_to_asub/5).
-:- doc(full_info_to_asub(AbsInt,InputUser,Qv,ASub,Sg),
-   "Same as @tt{info_to_asub(AbsInt,InputUser,Qv,ASub)} except that it fails
-    if some property in @var{InputUser} is not native or not relevant to the
-    domain @var{AbsInt}.").
+:- pred full_info_to_asub(+AbsInt,+InputUser,+Qv,-ASub,+Sg)
+   # "Behaves similar as @tt{info_to_asub/7} except that
+    it fails if some property in @var{InputUser} is not native or not
+    relevant to the domain @var{AbsInt}.".
 
 full_info_to_asub(AbsInt,InputUser,Qv,ASub,Sg) :-
     full_info_to_asub_(InputUser,AbsInt,_,Input),
@@ -570,27 +575,31 @@ full_info_to_asub_([I|Info],AbsInt,Acc0,Acc) :-
     full_info_to_asub_(Info,AbsInt,Acc1,Acc).       % into native_prop
 
 :- doc(doinclude,input_interface/5).
-:- doc(input_interface(AbsInt,Prop,Kind,Struc0,Struc1),
-   "@var{Prop} is a native property that is relevant to domain @var{AbsInt}
-    (i.e., the domain knows how to fully --@var{+Kind}=perfect-- or 
-    approximately --@var{-Kind}=approx-- abstract it) and @var{Struct1} is a
-    (domain defined) structure resulting of adding the (domain dependent)
-    information conveyed by @var{Prop} to structure @var{Struct0}. This way,
-    the properties relevant to a domain are being accumulated.").
+%%% TODO: Fix modes, Kind is ignored in info_to_asub_
+:- pred input_interface(+AbsInt,+Prop,?Kind,?Struc0,-Struc1)
+   # "@var{Prop} is a native property that is relevant to domain
+      @var{AbsInt} (i.e., the domain knows how to fully
+      --@var{+Kind}=perfect-- or approximately --@var{-Kind}=approx--
+      abstract it) and @var{Struct1} is a (domain defined) structure
+      resulting of adding the (domain dependent) information conveyed
+      by @var{Prop} to structure @var{Struct0}. This way, the
+      properties relevant to a domain are being accumulated.".
 
 :- doc(doinclude,input_user_interface/6).
-:- doc(input_user_interface(AbsInt,Struct,Qv,ASub,Sg,MaybeCallASub),
-   "@var{ASub} is the abstraction in @var{AbsInt} of the information collected
-    in @var{Struct} (a domain defined structure) on variables @var{Qv}.").
+%% TODO: ?Struct? Should it be +Struct?
+:- pred input_user_interface(+AbsInt,?Struct,+Qv,-ASub,+Sg,+MaybeCallASub)
+   # "@var{ASub} is the abstraction in @var{AbsInt} of the information
+    collected in @var{Struct} (a domain defined structure) on
+    variables @var{Qv}.".
 
 :- export(asub_to_info/5).
-% asub_to_info(+,+,+,-,-)
-:- doc(asub_to_info(AbsInt,ASub,Qv,OutputUser,CompProps),
-   "Transforms an abstract substitution @var{ASub} on variables @var{Qv} for a
-    domain @var{AbsInt} to a list of state properties @var{OutputUser} and
-    computation properties @var{CompProps}, such that properties are
-    visible in the preprocessing unit. It fails if @var{ASub} represents
-    bottom. It works by calling @tt{asub_to_native/6}.").
+:- pred asub_to_info(+AbsInt,+ASub,+Qv,-OutputUser,-CompProps)
+   # " Transforms an abstract substitution @var{ASub} on variables
+    @var{Qv} for a domain @var{AbsInt} to a list of state properties
+    @var{OutputUser} and computation properties @var{CompProps}, such
+    that properties are visible in the preprocessing unit. It fails if
+    @var{ASub} represents bottom. It works by calling
+    @tt{asub_to_native/6}.".
 
 asub_to_info(AbsInt,ASub,Qv,OutputUser,CompProps) :-
     asub_to_native(AbsInt,ASub,Qv,no,Info,Comp),
@@ -606,19 +615,19 @@ asub_to_out(AbsInt,ASub,Qv,OutputUser,CompProps) :-
     decide_low_level_format(OutputUser0,CompProps0,OutputUser,CompProps).
     
 :- export(asub_to_native/6).
-:- doc(asub_to_native(AbsInt,ASub,Qv,OutFlag,NativeStat,NativeComp),
-   "@var{NativeStat} and @var{NativeComp} are the list of native (state and
-    computational, resp.) properties that are the concretization
-    of abstract substitution @var{ASub} on variables @var{Qv} for domain
-    @var{AbsInt}. These are later translated to the properties which are
-    visible in the preprocessing unit."). % TODO: document OutFlag=yes for output
+:- pred asub_to_native(+AbsInt,+ASub,+Qv,+OutFlag,-NativeStat,-NativeComp)
+   # "@var{NativeStat} and @var{NativeComp} are the list of native
+    (state and computational, resp.) properties that are the
+    concretization of abstract substitution @var{ASub} on variables
+    @var{Qv} for domain @var{AbsInt}. These are later translated to
+    the properties which are visible in the preprocessing unit.".
+% TODO: document OutFlag=yes for output
 
 :- export(concrete/4).
-% concrete(+,+,+,-)
-:- doc(concrete(AbsInt,Var,ASub,List),
-   "@var{List} are (all) the terms to which @var{Var} can be bound in the 
-    concretization of @var{ASub}, if they are a finite number of finite
-    terms. Otherwise, the predicate fails.").
+:- pred concrete(+AbsInt,+Var,+ASub,-List)
+   # "@var{List} are (all) the terms to which @var{Var} can be bound
+    in the concretization of @var{ASub}, if they are a finite number
+    of finite terms. Otherwise, the predicate fails.".
 
 % TODO: body_succ0('$var',...) passes unbound Sg (due to metacall), use call(Sg) (or similar) instead? (JF)
 :- export(unknown_call/5).
@@ -690,18 +699,18 @@ asub_to_out(AbsInt,ASub,Qv,OutputUser,CompProps) :-
 %% % del_impose_cond(AbsInt,Cond,Sv,ASub,NewASub)
 
 :- export(part_conc/5).
-:- doc(part_conc(AbsInt,Sg,Subs,NSg,NSubs), "This operation
-     returns in @var{NSg} an instance of @var{Sg} in which the
-     deterministic structure information available in @var{Subs} is
-     materialized. The substitution @var{NSubs} refers to the
-     variables in @var{NSg}. ").
+:- pred part_conc(+AbsInt,+Sg,+Subs,-NSg,-NSubs)
+   # "This operation returns in @var{NSg} an instance of @var{Sg} in
+     which the deterministic structure information available in
+     @var{Subs} is materialized. The substitution @var{NSubs} refers
+     to the variables in @var{NSg}.".
 
 :- export(multi_part_conc/4).
-:- doc(multi_part_conc(AbsInt,Sg,Subs,List), "Similar to part_conc
-     but it gives instantiations of goals even in the case types are
-     not deterministic, it generates a @var{List} of pairs of goals
-     and substitutions. It stops unfolding types as soon as they are
-     recursive.").
+:- pred multi_part_conc(+AbsInt,+Sg,+Subs,-List)
+   # "Similar to @tt{part_conc/5} but it gives instantiations of goals
+     even in the case types are not deterministic, it generates a
+     @var{List} of pairs of goals and substitutions. It stops
+     unfolding types as soon as they are recursive.".
 
 % ---------------------------------------------------------------------------
 % % TODO: [IG] move?
@@ -730,15 +739,15 @@ rename_types_in_abs(ASub0,AbsInt,Dict,ASub1) :-
 % :- export(rename_auxinfo_asub/4).
 
 :- export(dom_statistics/2).
-:- doc(dom_statistics(AbsInt, Info), "Obtains in list @var{Info}
-   statistics about the results of the abstract interpreter
-   @var{AbsInt}.").
+:- pred dom_statistics(+AbsInt, -Info)
+   # "Obtains in list @var{Info} statistics about the results of the
+   abstract interpreter @var{AbsInt}.".
 
 :- export(abstract_instance/5).
-:- pred abstract_instance(AbsInt,Sg1,Proj1,Sg2,Proj2)
-   #"The pair <Sg1,Proj1> is an abstract instance of the pair <Sg2,Proj2>, i.e.,
-    the concretization of <Sg1,Proj1> is included in the concretization of
-    <Sg2,Proj2>.".
+:- pred abstract_instance(+AbsInt,+Sg1,+Proj1,+Sg2,+Proj2)
+   #"The pair @var{<Sg1,Proj1>} is an abstract instance of the pair @var{<Sg2,Proj2>}, i.e.,
+    the concretization of @var{<Sg1,Proj1>} is included in the concretization of
+    @var{<Sg2,Proj2>}.".
 
 abstract_instance(AbsInt,Sg1,Proj1,Sg2,Proj2) :- 
     part_conc(AbsInt,Sg1,Proj1,Sg1C,Proj1C),
@@ -751,8 +760,9 @@ abstract_instance(AbsInt,Sg1,Proj1,Sg2,Proj2) :-
     less_or_equal(AbsInt,Proj1C,Entry).
 
 :- export(contains_parameters/2).
-:- doc(contains_parameters(AbsInt,Subst), "True if an abstract substitution
-   @var{Subst} contains type parameters").
+:- pred contains_parameters(+AbsInt,+Subst)
+   # "True if an abstract substitution @var{Subst} contains type
+   parameters".
 
 % ===========================================================================
 
@@ -766,6 +776,15 @@ abstract_instance(AbsInt,Sg1,Proj1,Sg2,Proj2) :-
 :- use_module(ciaopp(preprocess_flags), [current_pp_flag/2]).
 
 :- export(absub_eliminate_equivalent/3).
+:- pred absub_eliminate_equivalent(+ASubList, +AbsInt, -NewASubList) + not_fails
+   # "This predicate is already defined and should not be
+     redefined. Given a list of abstractions @var{ASubList} for the
+     domain @var{AbsInt}, @var{NewASubList} is a list of abstractions
+     such that for each element in @var{AsubList} it is in
+     @var{NewASubList} or there exists an equivalent abstraction in
+     @var{NewASubList}. And for each two elements in @var{NewASubList}
+     they are not equivalent abstractions.".
+%% Maybe a little verbose.
 absub_eliminate_equivalent([],_AbsInt,[]).
 absub_eliminate_equivalent([ASub],_AbsInt,[ASub]) :- !.
 absub_eliminate_equivalent([ASub|LASub],AbsInt,[ASub|NLASub]) :-
@@ -782,7 +801,14 @@ equivalent_or_not(ASub0,ASub,AbsInt,NLASub,Tail) :-
     NLASub=Tail.
 equivalent_or_not(ASub0,_ASub,_AbsInt,[ASub0|Tail],Tail).
 
+:- doc(hide,absub_fixpoint_covered/3).
 :- export(absub_fixpoint_covered/3).
+:- pred absub_fixpoint_covered(+AbsInt, +Prime0, +Prime1)
+   # "This predicate is already defined and should not be
+     redefined. It succeeds when the abstraction @var{Prime0} is
+     covered by the abstraction @var{Prime1} in the domain
+     @var{AbsInt}. This predicated is used in order to check whether a
+     fixpoint is reached.".
 absub_fixpoint_covered(AbsInt,Prime0,Prime1) :-
     ( current_pp_flag(multi_call,on) ->
         identical_abstract(AbsInt,Prime0,Prime1)
@@ -791,7 +817,14 @@ absub_fixpoint_covered(AbsInt,Prime0,Prime1) :-
     ; fail % TODO: anything else?
     ).
 
+:- doc(hide, body_builtin/9).
 :- export(body_builtin/9).
+:- pred body_builtin(+AbsInt, +SgKey, +Sg, ?Condvs, +Sv, ?HvFv_u, +Call, +Proj, -Succ)
+   # "This predicate is already defined and should not be redefined.
+     It calls to @tt{call_to_success_builtin/6} or to
+     @tt{success_builtin} in order to abstract the subgoal @var{Sg}
+     received provided the information abstracted in @var{Call} and
+     @var{Proj}.".
 body_builtin(AbsInt,special(SgKey),Sg,_Condvs,Sv,_HvFv_u,Call,Proj,Succ) :- !,
     call_to_success_builtin(AbsInt,SgKey,Sg,Sv,Call,Proj,Succ).
 body_builtin(AbsInt,Type,_Sg,Condvs,Sv,HvFv_u,Call,_Proj,Succ) :-
@@ -800,8 +833,15 @@ body_builtin(AbsInt,Type,_Sg,_Condvs,_Sv,_HvFv_u,_Call,_Proj,'$bottom') :-
     warning_message("body_builtin: the builtin key ~q is not defined in domain ~w",
                     [Type,AbsInt]).
 
+:- doc(hide,undef_call_to_success_builtin/2).
 :- export(undef_call_to_success_builtin/2).
+:- pred undef_call_to_success_builtin(+AbsInt, +SgKey)
+   # "This predefined predicate raises a warning message when a
+     builtin with key @var{SgKey} that has succeeded in
+     @tt{special_builtin/5} is not defined in
+     @tt{call_to_success_builtin/6} or such definition fails
+     (@tt{call_to_success_builtin/6} can not fail.".
 undef_call_to_success_builtin(AbsInt,SgKey) :-
-    warning_message("call_to_success_builtin: the builtin key ~q is not defined in domain ~w",
-                    [special(SgKey),AbsInt]).
+     warning_message("call_to_success_builtin: the builtin key ~q is
+     not defined in domain ~w", [special(SgKey),AbsInt]).
 
