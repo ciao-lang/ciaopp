@@ -631,9 +631,9 @@ ab_unify([(X,Term,[])|Binds],Proj,New_Proj,NewBinds):-
     Proj = (Poly,_Vars),
     var(X),
     ground(Term),
-    number(Term),!,
+    integer(Term),!,
     dim2var_var(X,Proj,Named_X),
-    ppl_Polyhedron_add_constraint(Poly,Named_X = Term),     
+    ppl_Polyhedron_add_constraint(Poly,Named_X = Term),
     ab_unify(Binds,Proj,New_Proj,NewBinds).
 ab_unify([(X,Term,[])|Binds],Proj,New_Proj,NewBinds):-
     var(X),
@@ -645,8 +645,8 @@ ab_unify([(X,Term,[])|Binds],Proj,New_Proj,NewBinds):-
     var(X),
     ground(Term),!,
     ab_unify(Binds,Proj,New_Proj,NewBinds).
-ab_unify([_Bind|Binds],Proj,Proj,NewBinds):-
-    ab_unify(Binds,Proj,Proj,NewBinds).
+ab_unify([_Bind|Binds],Proj,NewProj,NewBinds):-
+    ab_unify(Binds,Proj,NewProj,NewBinds).
 
 ab_unify_variables(X,Y,Proj,Folded_Proj):-
     dim2var_var(Y,Proj,Named_Y),
