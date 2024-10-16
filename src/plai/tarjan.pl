@@ -123,7 +123,6 @@ bodylits((B,Bs),M,S,S2):- !,
     bodylits(Bs,M,S1,S2).
 bodylits(G:_,M,S,S1):-
     type_of_goal(metapred(Type,Meta),G), !,
-    % TODO: we do not distinguish between primitive_meta_predicate and meta_predicate
     functor(G,T,A),
     create_entries(G,Type,Meta,M),
     S1 = [T/A|S2],
@@ -483,6 +482,8 @@ create_entries_args([GA|GArgs],[TA|TArgs],[MA|MArgs],M) :-
     create_entry_arg(MA,GA,TA,M),
     create_entries_args(GArgs,TArgs,MArgs,M).
 
+create_entry_arg(primitive(MA),GA,TA,M) :- !, % TODO: we do not distinguish primitive(_) in meta_predicate here
+    create_entry_arg(MA,GA,TA,M).
 create_entry_arg('?',_,_,_) :- !. % no meta
 create_entry_arg(_,'$'(_Pred,Goal:LitKey,_),_TA,_ClMod) :-
     nonvar(Goal), !,
