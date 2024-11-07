@@ -147,7 +147,7 @@ update_tasks_analysis_status :-
          dump_file(ModPath, ModName, AbsInt, DumpFile),
          ( newer(ModPath, DumpFile) ->
              % TODO: We should check also imports(m)
-             retract_fact(task_status(ModName, _, AbsInt, _, _))
+             retract_fact(task_status(ModName, _, AbsInt, _, _)) % TODO: wrong! it should be task_status_, but it fails if fixed?!
          )
     ),
     fail.
