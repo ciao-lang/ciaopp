@@ -16,7 +16,7 @@ persistent_dir(Keyword, Dir) :-
 ensure_persistent_dir(Dir) :-
     ( curr_persistent_dir(Dir) -> true
     ; persdb_dir(Dir),
-      assertz_fact(curr_persistent_dir(Dir))
+      datafacts_rt:assertz_fact(curr_persistent_dir(Dir))
     ).
 
 update_persdb :-
@@ -27,5 +27,5 @@ update_localdb :-
     persdb_keyword(K),
     persdb_data(P),
     ensure_persistent_dir(Dir),
-    asserta_fact(persistent_dir(K, Dir)), % needed for reloading
+    datafacts_rt:asserta_fact(persistent_dir(K, Dir)), % needed for reloading
     persdb_rt:make_persistent(P, K). % reload facts from persistent db
