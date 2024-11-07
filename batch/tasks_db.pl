@@ -22,7 +22,7 @@ persdb_dir(Dir) :- db_data_dir(Dir).
     #"Add a task to analyze with abtract domain @var{AbsInt} and CiaoPP configuration @var{Flags}".
 add_task(treat(File, Mod, AbsInt, Flags)) :-
     update_localdb,
-    assertz_fact(task_queue_(File, Mod, AbsInt, Flags)),
+    persdb_rt:assertz_fact(task_queue_(File, Mod, AbsInt, Flags)),
     update_persdb.
 
 :- export(add_tasks/1).
@@ -36,14 +36,14 @@ add_tasks(Tasks) :-
 
 add_tasks_([]).
 add_tasks_([treat(File, Mod, AbsInt, Flags)|Ms]) :-
-    assertz_fact(task_queue_(File,Mod,AbsInt, Flags)),
+    persdb_rt:assertz_fact(task_queue_(File,Mod,AbsInt, Flags)),
     add_tasks_(Ms).
 
 :- export(pop_task/4).
 :- pred pop_task(File,Mod, AbsInt, Flags) #"Remove a task to analyze".
 pop_task(File, Mod, AbsInt, Flags) :-
     update_localdb,
-    retract_fact(task_queue_(File, Mod, AbsInt, Flags)),
+    persdb_rt:retract_fact(task_queue_(File, Mod, AbsInt, Flags)),
     update_persdb.
 
 :- export(analysis_task/4).
@@ -57,7 +57,7 @@ analysis_task(File, Mod, AbsInt, Flags) :-
 :- pred clean_db/0 #"Empties the database.".
 clean_db :-
     update_localdb,
-    retractall_fact(task_queue_(_,_,_,_)),
+    persdb_rt:retractall_fact(task_queue_(_,_,_,_)),
     update_persdb.
 
 :- export(init_tasks_db/0).

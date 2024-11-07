@@ -30,7 +30,7 @@ persdb_dir(Dir) :- db_data_dir(Dir).
     #"Adds ciaopp action status for @var{ModName} located in @var{ModPath}".
 add_task_status(ModName, ModPath, Action, Flags, Status) :-
     update_localdb,
-    assertz_fact(task_status_(ModName, ModPath, Action, Flags, Status)),
+    persdb_rt:assertz_fact(task_status_(ModName, ModPath, Action, Flags, Status)),
     update_persdb.
 
 :- export(task_status/5).
@@ -76,7 +76,7 @@ init_tmp_db(ID) :-
 clean_db :-
     clean_tmp_db,
     update_localdb,
-    retractall_fact(task_status_(_, _, _, _, _)),
+    persdb_rt:retractall_fact(task_status_(_, _, _, _, _)),
     update_persdb.
 
 :- export(clean_tmp_db/0).
@@ -147,7 +147,7 @@ update_tasks_analysis_status :-
          dump_file(ModPath, ModName, AbsInt, DumpFile),
          ( newer(ModPath, DumpFile) ->
              % TODO: We should check also imports(m)
-             retract_fact(task_status(ModName, _, AbsInt, _, _)) % TODO: wrong! it should be task_status_, but it fails if fixed?!
+             persdb_rt:retract_fact(task_status(ModName, _, AbsInt, _, _)) % TODO: wrong! it should be task_status_, but it fails if fixed?!
          )
     ),
     fail.
