@@ -27,4 +27,5 @@ opt_b(ciaopp_testgen).
 opt_b(ciao_ppl).
 opt_b(mathematica).
 opt_b(davinci).
+opt_b(ciaopp_comb).
 

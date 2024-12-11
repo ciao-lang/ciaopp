@@ -44,6 +44,11 @@
 
 :- use_module(ciaopp(frontend_driver), [supported_language/1]).
 
+:- if(defined(has_ciaopp_comb)).
+:- use_module(library(lists), [select/3]).
+:- use_module(comb(comb), [domains/1]).
+:- endif.
+
 %%------------------------------------------------------------------------
 
 :- trust pred persistent_dir(Key, Dir) => atm * atm.
@@ -1110,6 +1115,12 @@ asr_dir(Dir) :-
 % and multifile:analysis/1
 modetypeanalysis(X):- modeanalysis(X).
 modetypeanalysis(X):- typeanalysis(X), X \== none.
+:- if(defined(has_ciaopp_comb)).
+modetypeanalysis(comb) :-
+    comb:domains(Domains),
+    select(D, Domains, _),
+    modetypeanalysis(D).
+:- endif.
 
 % to allow no mode analysis
 modeanalysis(none).
@@ -1142,6 +1153,12 @@ modeanalysis(path).
 modeanalysis(difflsign).
 modeanalysis(fr).
 modeanalysis(frdef).
+:- if(defined(has_ciaopp_comb)).
+modeanalysis(comb) :-
+    comb:domains(Domains),
+    select(D, Domains, _),
+    modeanalysis(D).
+:- endif.
 
 :- export(typeanalysis/1).
 % types
@@ -1152,9 +1169,21 @@ typeanalysis(ptypes).
 typeanalysis(svterms).
 typeanalysis(terms).
 typeanalysis(deftypes).
+:- if(defined(has_ciaopp_comb)).
+typeanalysis(comb) :-
+    comb:domains(Domains),
+    select(D, Domains, _),
+    typeanalysis(D).
+:- endif.
 
 % numeric analyses
 numericanalysis(none).
+:- if(defined(has_ciaopp_comb)).
+numericanalysis(comb) :-
+    comb:domains(Domains),
+    select(D, Domains, _),
+    numericanalysis(D).
+:- endif.
 :- if(defined(has_ciao_ppl)).
 numericanalysis(polyhedra).
 :- endif.

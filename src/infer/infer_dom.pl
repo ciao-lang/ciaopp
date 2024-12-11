@@ -52,6 +52,12 @@
     ]).
 :- endif.
 %
+:- if(defined(has_ciaopp_comb)).
+:- use_module(library(lists), [select/3]).
+:- use_module(comb(comb), [domains/1]).
+:- endif.
+
+%
 :- use_module(library(compiler/p_unit), [native_to_prop/2, prop_to_native/2]).
 :- use_module(library(compiler/p_unit/assrt_norm), [norm_goal_prop/3]).
 :- use_module(ciaopp(plai/domains), [abs_sort/3]).
@@ -1008,6 +1014,12 @@ knows_of(X,size_lb):- size_info(X).
 knows_of(X,size_ualb):- size_info(X).
 knows_of(X,size_o):- size_info(X).
 knows_of(X,Dom):- determinable(Dom,X).
+:- if(defined(has_ciaopp_comb)).
+knows_of(X,comb) :-
+    comb:domains(Doms),
+    select(D, Doms, _),
+    knows_of(X,D).
+:- endif.
 
 % TODO: legacy, see old_nfdet
 nf_info(not_fails).

@@ -11,6 +11,7 @@ depends([
     ciaopp_fpnum-[optional], % TODO: remove once ciaopp dep is explicit
     ciaopp_bshare-[optional], % TODO: remove once ciaopp dep is explicit
     ciaopp_llvm-[optional], % TODO: remove once ciaopp dep is explicit
+    ciaopp_comb-[optional], % TODO: remove once ciaopp dep is explicit
     davinci-[optional] % (for interactive trace)
 ]).
 
