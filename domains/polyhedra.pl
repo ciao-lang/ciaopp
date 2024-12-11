@@ -355,11 +355,16 @@ success_builtin(Type,Sv,Condv,_HvFv_u,Call,New_Succ):-
 
 success_builtin0(Type,Sv,Condv,Call,New_Succ):-
     success_builtin_(Type,Sv,Condv,Call,Succ),
-    Succ = (Poly,_Vars),
-    (ppl_Polyhedron_is_empty(Poly) ->
-     New_Succ = '$bottom';
+%    Succ = (Poly,_Vars), 
+    (bottom_asub(Succ) ->
+        New_Succ = '$bottom'
+    ;
      New_Succ = Succ
     ).
+
+bottom_asub('$bottom').
+bottom_asub((Poly,_Vars)) :-
+    ppl_Polyhedron_is_empty(Poly).
 
 success_builtin_(unchanged,_,_,Call,Succ):-
     Call = Succ.
@@ -373,6 +378,13 @@ success_builtin_(unification,_Sv,Condv,Call,Succ):-
     Call = (Poly1, Vars),
     ppl_new_NNC_Polyhedron_from_NNC_Polyhedron(Poly1,Poly2), %% [DJ] added to work with a copy
     abs_gunify((Poly2, Vars),Binds,Succ,_NewBinds).
+%% If the variables in the constraint (Sv) are not in Vars then some
+%% of them are not be integers and the abstraction is bottom. (All the
+%% variables are initialized as possibly integers)
+success_builtin_(constraint,Sv,_Condv,Call,Succ) :-
+    Call = (_,Vars),
+    \+ ord_subset(Sv, Vars), !,
+    Succ = '$bottom'.
 success_builtin_(constraint,_Sv,Condv,Call,Succ):-
     Call = (Poly1,Vars),
     dim2var_constraint(Condv,Vars,Condv_As_PPL_Cons),!,
@@ -455,20 +467,17 @@ asub_to_native(ASub1,_Qv,_OutFlag,[Output],[]):-
 %------------------------------------------------------------------------%
 %------------------------------------------------------------------------%
 
-:- push_prolog_flag(multi_arity_warnings,off).
-
-print_absu('$bottom') :- 
-    display('No solution'),!.
-print_absu((Poly,Vars)) :-
-    ppl_Polyhedron_get_minimized_constraints(Poly,Poly_Cons),!,     
-    ppl_Polyhedron_space_dimension(Poly,Dims),
-    display('Dims: '),write(Dims),nl,
-    display('Cons: '),write(Poly_Cons),nl,
-    display('Vars: '),display(Vars),nl.
-print_absu(Poly):-
-    print_absu(('$address'(Poly),whatever_vars)).
-
-:- pop_prolog_flag(multi_arity_warnings).
+%% :- export(print_absu/1).
+%% print_absu('$bottom') :- 
+%%    display('No solution'),!.
+%% print_absu((Poly,Vars)) :-
+%%     ppl_Polyhedron_get_minimized_constraints(Poly,Poly_Cons),!,     
+%%     ppl_Polyhedron_space_dimension(Poly,Dims),
+%%     display('Dims: '),write(Dims),nl,
+%%     display('Cons: '),write(Poly_Cons),nl,
+%%     display('Vars: '),display(Vars),nl.
+%% print_absu(Poly):-
+%%     print_absu(('$address'(Poly),whatever_vars)).
 
 
 % Dimension Dim  associated with Var
@@ -690,7 +699,6 @@ find_nonint_dims([Dim|Rest_Dim],Poly,[_|Rest_Vars],Vars,Result):-
 
 %-------------------------------------------------------------------------
 % CONSTRAINT MANIPULATION/ TYPE CHECKER
-
 dim2var_var(Var,Vars_Or_ASub,Renamed_Var):-
     var(Var),!,
     get_dimension(Vars_Or_ASub,Var,Dim_Var),
