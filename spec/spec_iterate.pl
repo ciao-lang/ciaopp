@@ -244,7 +244,7 @@ it_body_list_meta_call(_Pred,Goal,NewGoal,Goals,NewGoals,Result,DictFlag):-
     functor(Call,N,A),
     it_body_list_meta_call(N/A,Call,NewCall,Goals,NewGoals,Result,DictFlag).
 it_body_list_meta_call(_Pred,Goal,NewGoal,Goals,NewGoals,Result,DictFlag):-
-    type_of_goal(metapredicate(_,_),Goal),
+    type_of_goal(metapred(_,_),Goal), % TODO:[JF] was "type_of_goal(metapredicate(_,_),Goal),", which is clearly a typo
     functor(Goal,Name,Arity),
     functor(NewGoal,Name,Arity),
     (Arity == 1 ->
