@@ -6,6 +6,9 @@
     message_clause_incompatible/5
 ], [assertions, regtypes]).
 
+% TODO: This module should be splitted up in one module implementing the
+% ctchecks logic, and one module only for generating messages!
+
 :- use_package(library(compiler/p_unit/p_unit_argnames)).
 
 :- use_module(library(formulae), [list_to_conj/2]).
@@ -31,6 +34,9 @@
 :- use_module(ciaopp(ctchecks/preproc_errors), [preproc_error/2]).
 :- use_module(ciaopp(ctchecks/ctchecks_common),
               [memo_ctcheck_sum/1,prepare_output_info/5,name_vars/1]).
+
+% This hook intercepts the result of the ctchecks
+:- multifile ciaopp_ctchecks_pp_hook/3.
 
 output_user_interface(AbsInt,ASub,NVars,Props):-
     asub_to_info(AbsInt,ASub,NVars,Props,_NativeComp), !.
@@ -62,6 +68,10 @@ make_dict(['$VAR'(N)|Ns],[V|Vs],[Name=V|NVs]):-
     make_dict(Ns,Vs,NVs).
 
 message_pp_entrycalls(_,_,none,_,_,_,_,_) :- !.
+message_pp_entrycalls(_,_,_,_,_,K,Status,_) :-
+    decode_litkey(K,F,A,_,_),
+    ciaopp_ctchecks_pp_hook(F/A, Status, calls),
+    !.
 message_pp_entrycalls(As,Info,AbsInt,Head,Dict,K,Status,FromMod):-
     prepare_output_info(AbsInt, Info, Head, calls, RelInfo),
     copy_term((Head,RelInfo,Dict),(GoalCopy,RelInfoCopy,DictCopy)),
@@ -109,6 +119,10 @@ message_pp_entry(As,Info,AbsInt,Head,Dict,K,Status,FromMod):-
 message_pp_entry(As,Info,AbsInt,Head,Dict,K,Status,FromMod) :-
     throw(bug_failed(message_pp_entry(As,Info,AbsInt,Head,Dict,K,Status,FromMod))).
 
+message_pp_success(_,_,_,_,_,K,Status,_) :-
+    decode_litkey(K,F,A,_,_),
+    ciaopp_ctchecks_pp_hook(F/A, Status, success),
+    !.
 message_pp_success(As,Info,AbsInt,Head,Dict,K,Status,FromMod):-
     prepare_output_info(AbsInt, Info, Head, success, RelInfo),
     copy_term((Head,RelInfo,Dict),(GoalCopy,RelInfoCopy,DictCopy)),

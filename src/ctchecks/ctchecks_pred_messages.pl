@@ -1,5 +1,8 @@
 :- module(_, [], [assertions, isomodes, regtypes, datafacts, nativeprops, ciaopp(ciaopp_options)]).
 
+% TODO: This module should be splitted up in one module implementing the
+% ctchecks logic, and one module only for generating messages!
+
 :- doc(title, "Messages for predicate compile-time checking").
 
 :- doc(module, "This module prints the messages emitted during
@@ -42,6 +45,9 @@
 get_interval_check(_, _) :- fail.
 decide_inform_user_interval(_, _, _, _, _, _, _, _).
 :- endif.
+
+% This hook intercepts the result of the ctchecks
+:- multifile ciaopp_ctchecks_pred_hook/3.
 
 % ===========================================================================
 % Process assertion level
@@ -114,6 +120,11 @@ change_assertion_status(Old, OldRef, New) :-
     add_assertion(NewToPrint).
 
 :- export(inform_checked/4).
+inform_checked(Old, New, _, _) :-
+    New = as${type => Type},
+    Old = as${head => Goal},
+    ciaopp_ctchecks_pred_hook(Goal, checked, Type),
+    !.
 inform_checked(Old, New, AbsInts, Info) :-
     New = as${type => Type, dic => Dict, call => Call},
     Old = as${head => Goal, locator => Loc},
@@ -151,6 +162,10 @@ inform_checked(Old, New, AbsInts, Info) :-
     ).
 
 :- export(inform_non_checked/5).
+inform_non_checked(_, _, New, _, _) :-
+    New = as${head => Goal, status => Status, type => Type},
+    ciaopp_ctchecks_pred_hook(Goal, Status, Type),
+    !.
 inform_non_checked(STAT, Old, New, AbsInts, Info) :-
     New = as(M,Status,Type,Goal,_,Call,Success,Comp,Dict,Loc,_,_),
     prepare_output_info(AbsInts, Info, Goal, Type, RelInfo),
