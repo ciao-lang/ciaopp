@@ -19,12 +19,12 @@
 
 :- doc(module, "
 
-This tutorials aims to explain how depthk analysis works.
+This tutorial aims to explain how depthk analysis works.
 
 
 @section{The abstract substitution}
 
-The abstract substitution of this domains consists in a sorted list of
+The abstract substitution of this domain consists in a sorted list of
 idempotent unification equations (or bottom).  For example:
 
 ```ciao
@@ -37,39 +37,41 @@ and the right side. The correct abstract substitution would be:
 [X = A, Y = g(A)]
 ```
 
-Notice that `X = A` does not means that X is a variable. It means that
-we do not know anything about `X` (i.e. is top)
+Notice that `X = A` does not mean that X is a variable. It means that
+we do not know anything about `X` (i.e., it is top).
 
 @section{How to run the analysis}
-We can run this analysis as we do with others. In that case the depth
-is set to one. If we want to change the depth of the analysis we have
-to type in the CiaoPP top-level:
+
+We can run this analysis by simply calling `analyze(depthk)` as
+usual. In that case the depth is set to one. If we want to change the
+depth paramemter we have to type the follwoing in the CiaoPP
+top level:
 
 ```ciao
 ?- set_pp_flag(depthk_k, N). 
 ```
 
-with `N` a natural number (and this excludes the 0).
+with `N` a natural number (but not 0).
 
 @section{Some examples}
 
 @subsection{Example 1}
 
-Consider this dummy predicate:
+Consider this predicate:
 
 ```ciao
 ex1(X) :- 
     X = f(a, Y), 
     Y = g(h(k(a, b, c))).
 ```
-the results of the analysis with `K` = 1 is:
+the result of the analysis with `K` = 1 is:
 
 ```ciao
 :- true pred ex1(X)
    => instance(X,f(_A,_B)).
 ```
 
-Let us check the results with another values of K:
+Let us check the results with other values of K:
 
 @begin{enumerate}
 @item `K` = 2 we obtain: `instance(X,f(a,g(_A)))`.
@@ -79,7 +81,9 @@ Let us check the results with another values of K:
 
 @end{enumerate}
 
-This analysis is quite more useful when recursion arises:
+Larger depths can be more useful when recursion arises (but not to the
+point of covering the complete recursiomn, as, e.g., a regular type
+analysis will):
 
 @subsection{Example 2}
 Consider the following example:
@@ -101,7 +105,7 @@ in this case with the default depth we obtain:
    => instance(X,g(_A,_B)).
 ```
 
-Let us check the results with another values of `K`:
+Let us check the results with other values of `K`:
 
 @begin{enumerate}
 @item `K` = 2 we obtain: `instance(X,g(s(_B,_C),_A))`.
@@ -137,7 +141,7 @@ r(Y,Z) :-
 ```
 
 In this case we can see that all the program variables are represented
-in the abstract substitution. Moreover each variables in the left side
+in the abstract substitution. Moreover, each variable in the left side
 of a unification is a program variable. Notice that we do not know if
 they are free or not with the given information.
 
