@@ -62,7 +62,7 @@
 % abstract equation systems analyser developed at KULeuven,
 % auxiliary procedures are defined in aeq_aux.pl
 
-:- use_module(library(logarray)).
+:- use_module(library(logarrays)).
 :- use_module(library(bitcodesets)).
 
 :- use_module(ciaopp(pool)).
